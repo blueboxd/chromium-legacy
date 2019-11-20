@@ -15,15 +15,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -276,9 +273,6 @@ void PushMessagingNotificationManager::ProcessSilentPush(
 
   RecordUserVisibleStatus(blink::mojom::PushUserVisibleStatus::
                               REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED);
-  rappor::SampleDomainAndRegistryFromGURL(
-      g_browser_process->rappor_service(),
-      "PushMessaging.GenericNotificationShown.Origin", origin);
 
   // The site failed to show a notification when one was needed, and they don't
   // have enough budget to cover the cost of suppressing, so we will show a

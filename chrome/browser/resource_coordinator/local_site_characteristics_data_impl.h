@@ -225,8 +225,7 @@ class LocalSiteCharacteristicsDataImpl
 
   // Returns the usage of |site_feature| for this site.
   performance_manager::SiteFeatureUsage GetFeatureUsage(
-      const SiteDataFeatureProto& feature_proto,
-      const base::TimeDelta min_obs_time) const;
+      const SiteDataFeatureProto& feature_proto) const;
 
   // Helper function to update a given |SiteDataFeatureProto| when a
   // feature gets used.

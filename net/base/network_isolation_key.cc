@@ -60,6 +60,11 @@ NetworkIsolationKey& NetworkIsolationKey::operator=(
 NetworkIsolationKey& NetworkIsolationKey::operator=(
     NetworkIsolationKey&& network_isolation_key) = default;
 
+NetworkIsolationKey NetworkIsolationKey::CreateTransient() {
+  url::Origin opaque_origin;
+  return NetworkIsolationKey(opaque_origin, opaque_origin);
+}
+
 std::string NetworkIsolationKey::ToString() const {
   if (IsTransient())
     return "";

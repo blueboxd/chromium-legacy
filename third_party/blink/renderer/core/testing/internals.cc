@@ -2505,7 +2505,7 @@ void Internals::startTrackingRepaints(Document* document,
   LocalFrameView* frame_view = document->View();
   frame_view->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
-  frame_view->SetTracksPaintInvalidations(true);
+  frame_view->SetTracksRasterInvalidations(true);
 }
 
 void Internals::stopTrackingRepaints(Document* document,
@@ -2520,7 +2520,7 @@ void Internals::stopTrackingRepaints(Document* document,
   LocalFrameView* frame_view = document->View();
   frame_view->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
-  frame_view->SetTracksPaintInvalidations(false);
+  frame_view->SetTracksRasterInvalidations(false);
 }
 
 void Internals::updateLayoutAndRunPostLayoutTasks(

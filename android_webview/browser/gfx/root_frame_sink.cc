@@ -90,8 +90,7 @@ void RootFrameSink::RemoveChildFrameSinkId(
 bool RootFrameSink::BeginFrame(const viz::BeginFrameArgs& args) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   begin_frame_source_->OnBeginFrame(args);
-  // This is a hack and wrong. Remove this once we have proper frame submission
-  // tracking.
+  // TODO(vasilyt): Implement new Android.View invalidation heuristics
   return needs_begin_frames_;
 }
 

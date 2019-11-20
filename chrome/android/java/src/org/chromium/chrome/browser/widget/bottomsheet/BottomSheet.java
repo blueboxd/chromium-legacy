@@ -632,7 +632,7 @@ class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.Swipea
      * @return Get the height in px that the peeking bar is offset due to the browser controls.
      */
     private float getOffsetFromBrowserControls() {
-        if (mSheetContent == null || mSheetContent.hideOnScroll() || !isPeekStateEnabled()) {
+        if (mSheetContent == null || !mSheetContent.hideOnScroll() || !isPeekStateEnabled()) {
             return 0;
         }
 

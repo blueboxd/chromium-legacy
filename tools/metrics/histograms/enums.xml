@@ -21292,7 +21292,7 @@ Called by update_net_error_codes.py.-->
   <int value="1358" label="ACTION_SETBADGETEXT"/>
   <int value="1359" label="ACTION_GETBADGEBACKGROUNDCOLOR"/>
   <int value="1360" label="ACTION_SETBADGEBACKGROUNDCOLOR"/>
-  <int value="1361" label="AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE"/>
+  <int value="1361" label="DELETED_AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE"/>
   <int value="1362" label="ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE"/>
   <int value="1363" label="ACTION_ENABLE"/>
   <int value="1364" label="ACTION_DISABLE"/>
@@ -21305,8 +21305,8 @@ Called by update_net_error_codes.py.-->
   <int value="1371" label="LOGINSCREENSTORAGE_RETRIEVEPERSISTENTDATA"/>
   <int value="1372" label="LOGINSCREENSTORAGE_STORECREDENTIALS"/>
   <int value="1373" label="LOGINSCREENSTORAGE_RETRIEVECREDENTIALS"/>
-  <int value="1374" label="AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE"/>
-  <int value="1375" label="AUTOTESTPRIVATE_GETARCAPPWINDOWINFO"/>
+  <int value="1374" label="DELETED_AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE"/>
+  <int value="1375" label="DELETED_AUTOTESTPRIVATE_GETARCAPPWINDOWINFO"/>
   <int value="1376" label="AUTOTESTPRIVATE_GETALLINSTALLEDAPPS"/>
   <int value="1377" label="AUTOTESTPRIVATE_SWAPWINDOWSINSPLITVIEW"/>
   <int value="1378" label="AUTOTESTPRIVATE_SETARCAPPWINDOWFOCUS"/>
@@ -25493,6 +25493,7 @@ Called by update_net_error_codes.py.-->
   <int value="3088" label="GetComputedStyleOutsideFlatTree"/>
   <int value="3089" label="ARIADescriptionAttribute"/>
   <int value="3090" label="StrictMimeTypeChecksWouldBlockWorker"/>
+  <int value="3091" label="ResourceTimingTaintedOriginFlagFail"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -29448,6 +29449,13 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="kGLImplementationStubGL"/>
   <int value="8" label="kGLImplementationDisabled"/>
   <int value="9" label="kGLImplementationEGLANGLE"/>
+</enum>
+
+<enum name="GlobalMediaControlsDismissReason">
+  <int value="0" label="User dismissed notification"/>
+  <int value="1" label="Inactive timeout"/>
+  <int value="2" label="Tab closed"/>
+  <int value="3" label="Media session stopped"/>
 </enum>
 
 <enum name="GoogleCaptchaEvent">
@@ -54728,6 +54736,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="4" label="User dismissed the Safety Tip with the close button"/>
   <int value="5" label="User dismissed the Safety Tip with the ignore button"/>
   <int value="6" label="User opened help center"/>
+  <int value="7" label="No Safety Tip was shown"/>
 </enum>
 
 <enum name="SafetyTipStatus">

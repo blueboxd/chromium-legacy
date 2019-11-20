@@ -11,8 +11,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
@@ -41,7 +41,7 @@ public class CustomTabActivityTabFactory {
     private final CustomTabTabPersistencePolicy mPersistencePolicy;
     private final Lazy<ActivityWindowAndroid> mActivityWindowAndroid;
     private final Lazy<CustomTabDelegateFactory> mCustomTabDelegateFactory;
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final StartupTabPreloader mStartupTabPreloader;
 
     @Nullable
@@ -52,7 +52,7 @@ public class CustomTabActivityTabFactory {
             CustomTabTabPersistencePolicy persistencePolicy,
             Lazy<ActivityWindowAndroid> activityWindowAndroid,
             Lazy<CustomTabDelegateFactory> customTabDelegateFactory,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             StartupTabPreloader startupTabPreloader) {
         mActivity = activity;
         mPersistencePolicy = persistencePolicy;

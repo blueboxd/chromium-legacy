@@ -2005,8 +2005,6 @@ void RenderFrameImpl::PepperTextInputTypeChanged(
     return;
 
   GetLocalRootRenderWidget()->UpdateTextInputState();
-
-  FocusedElementChangedForAccessibility(WebElement());
 }
 
 void RenderFrameImpl::PepperCaretPositionChanged(
@@ -5908,12 +5906,6 @@ void RenderFrameImpl::FocusedElementChanged(const WebElement& element) {
 
   for (auto& observer : observers_)
     observer.FocusedElementChanged(element);
-}
-
-void RenderFrameImpl::FocusedElementChangedForAccessibility(
-    const WebElement& element) {
-  if (render_accessibility())
-    render_accessibility()->AccessibilityFocusedElementChanged(element);
 }
 
 void RenderFrameImpl::BeginNavigation(

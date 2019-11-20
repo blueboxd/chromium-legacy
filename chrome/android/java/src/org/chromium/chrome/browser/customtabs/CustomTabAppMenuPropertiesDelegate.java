@@ -220,7 +220,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
 
     /**
      * @return The index that the given menu item should appear in the result of
-     *         {@link CustomTabIntentDataProvider#getMenuTitles()}. Returns -1 if item not found.
+     *         {@link BrowserServicesIntentDataProvider#getMenuTitles()}. Returns -1 if item not
+     * found.
      */
     public static int getIndexOfMenuItemFromBundle(Bundle menuItemData) {
         if (menuItemData != null && menuItemData.containsKey(CUSTOM_MENU_ITEM_ID_KEY)) {

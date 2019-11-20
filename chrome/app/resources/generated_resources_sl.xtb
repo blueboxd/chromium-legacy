@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Ikona aplikacije</translation>
 <translation id="1410616244180625362">Gostitelju <ph name="HOST" /> še naprej omogočaj dostop do kamere</translation>
 <translation id="1414648216875402825">Posodabljate na nestabilno različico <ph name="PRODUCT_NAME" />, ki še niso v celoti razvite. Prišlo bo do zrušitev in nepričakovanih napak. Nadaljujte previdno.</translation>
-<translation id="1414866280542221544">Omogoči v tej napravi</translation>
 <translation id="1415708812149920388">Dostop za branje odložišča je zavrnjen</translation>
 <translation id="1415990189994829608">Razširitev <ph name="EXTENSION_NAME" /> (ID razširitve »<ph name="EXTENSION_ID" />«) ni dovoljena v seji te vrste.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Rezina pice</translation>
 <translation id="1468571364034902819">Tega profila ni mogoče uporabiti</translation>
 <translation id="1470811252759861213">Če želite dostopati do razširitev v vseh računalnikih, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">S tem bodo izbrisani vsi podatki na varnostnem ključu, vključno z njegovo kodo PIN</translation>
 <translation id="1472675084647422956">Pokaži več</translation>
 <translation id="1475502736924165259">V dokumentu so potrdila, ki ne sodijo v nobeno od drugih kategorij</translation>
 <translation id="1476088332184200792">Kopiranje v vašo napravo</translation>
@@ -842,7 +840,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2202898655984161076">Težava pri prikazu tiskalnikov. Nekateri od vaših tiskalnikov morda niso uspešno registrirani v storitvi <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2203682048752833055">Iskalnik, uporabljen v <ph name="BEGIN_LINK" />naslovni vrstici<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Branje in spreminjanje vsega, kar napišete</translation>
-<translation id="2204397710290433380">Želite onemogočiti most za odpravljanje težav s sistemom Android (ADB)?</translation>
 <translation id="220792432208469595">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Ta naprava trenutno Googlu samodejno pošilja diagnostične podatke ter podatke o uporabi naprave in aplikacij. Te podatke uporabljamo za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. To nastavitev je uveljavil lastnik naprave. Če ste vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v vašem računu za Google. <ph name="BEGIN_LINK1" />Več o tem<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Vnesite PIN za napravo »<ph name="DEVICE_NAME" />«:</translation>
 <translation id="2213140827792212876">Odstrani skupno rabo</translation>
@@ -979,6 +976,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2396783860772170191">Vnesite 4-mestno kodo PIN (0000-9999)</translation>
 <translation id="2399939490305346086">Podatki za prijavo na varnostnem ključu</translation>
 <translation id="2407481962792080328">Ko se prijavite v račun Google, se ta funkcija vklopi</translation>
+<translation id="2408018932941436077">Shranjevanje kartice</translation>
 <translation id="2408955596600435184">Vnos kode PIN</translation>
 <translation id="241082044617551207">Neznani vtičnik</translation>
 <translation id="2412593942846481727">Na voljo je posodobitev</translation>
@@ -2007,7 +2005,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3873315167136380065">Če želite to vklopiti, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" />, da odstranite geslo za sinhronizacijo</translation>
 <translation id="3873423927483480833">Prikaz kod PIN</translation>
 <translation id="3873915545594852654">Prišlo je do težave s tehnologijo ARC++.</translation>
-<translation id="387924939625099872">Če želite onemogočiti most za odpravljanje težav s sistemom Android (ADB), znova zaženite napravo <ph name="DEVICE_TYPE" />. Ponastavljena bo na tovarniške nastavitve in vsi uporabniški računi ter lokalni podatki bodo izbrisani.</translation>
 <translation id="3879748587602334249">Upravitelj prenosov</translation>
 <translation id="3886446263141354045">Vaša zahteva za dostop do tega mesta je poslana uporabniku <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Ustvarjanje zapiskov z aplikacijo <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4501530680793980440">Potrditev odstranitve</translation>
 <translation id="4502423230170890588">Odstrani iz naprave</translation>
 <translation id="4504940961672722399">Razširitev uporabite tako, da kliknete to ikono ali pritisnete <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Če nadaljujete, bo omogočeno orodje ADB za ustvarjanje in preizkušanje aplikacij za Android. Upoštevajte, da orodje ADB omogoča namestitev preizkusnih aplikacij, ki jih ni preveril Google.</translation>
 <translation id="4508051413094283164">Odpiranje vseh v oknu brez beleženja zgodovine</translation>
 <translation id="4508265954913339219">Aktiviranje ni uspelo</translation>
 <translation id="4508765956121923607">Prikaz &amp;izvorne kode</translation>
@@ -3314,7 +3310,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5851868085455377790">Izdajatelj</translation>
 <translation id="5852112051279473187">Ojoj, pri prijavljanju te naprave je prišlo do hude napake. Poskusite znova ali poiščite pomoč.</translation>
 <translation id="5852137567692933493">Ponovni zagon in izvedba funkcije Powerwash</translation>
-<translation id="5852360662347412211">Odprite nastavitve za Linux in poskusite znova</translation>
 <translation id="5854912040170951372">Kos</translation>
 <translation id="5855643921295613558">0,6 sekunde</translation>
 <translation id="5856721540245522153">Omogočanje funkcij za odpravljanje napak</translation>
@@ -3327,7 +3322,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5860494867054883682">Posodabljanje naprave na kanal <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Prikaz orodij za pisalo na polici</translation>
 <translation id="5863445608433396414">Omogoči funkcije za odpravljanje napak</translation>
-<translation id="5863471434640009253">Če želite omogočiti most za odpravljanje težav s sistemom Android, najprej znova zaženite napravo <ph name="DEVICE_TYPE" />. Če onemogočite most za odpravljanje težav s sistemom Android (ADB), je potrebna ponastavitev na tovarniške nastavitve.</translation>
 <translation id="5864471791310927901">Iskanje DHCP-ja ni uspelo</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> izvajate s posnetka diska. Če ga namestite v računalnik, ga lahko izvajate brez posnetka diska in s tem zagotovite, da bo vedno posodobljen.</translation>
 <translation id="5865733239029070421">Samodejno pošilja statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
@@ -3397,7 +3391,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5958529069007801266">Zaščiteni uporabnik</translation>
 <translation id="5959471481388474538">Omrežje ni na voljo</translation>
 <translation id="595959584676692139">Znova naložite stran, če želite uporabljati to razširitev</translation>
-<translation id="5961320084471308154">Želite omogočiti most za odpravljanje težav s sistemom Android (ADB)?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (največ <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Določa tudi, katera stran je prikazana, ko kliknete gumb za domačo stran ali iščete v naslovni vrstici.</translation>
 <translation id="5969419185858894314">Spletno mesto <ph name="ORIGIN" /> si lahko ogleda datoteke v mapi <ph name="FOLDERNAME" /></translation>
@@ -4261,7 +4254,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7254554697254365959">Te strani ni bilo mogoče prevesti.</translation>
 <translation id="7254951428499890870">Ali res želite zagnati aplikacijo »<ph name="APP_NAME" />« v diagnostičnem načinu?</translation>
 <translation id="7255002516883565667">Trenutno je mogoče eno vašo kartico uporabljati samo v tej napravi.</translation>
-<translation id="7255916308560539517">Znova se dotaknite varnostnega ključa, da potrdite ponastavitev. Vsi podatki, shranjeni na varnostnem ključu, vključno s kodo PIN, bodo izbrisani.</translation>
 <translation id="7255935316994522020">Prijava</translation>
 <translation id="7256069762010468647">Spletno mesto uporablja vašo kamero</translation>
 <translation id="7256405249507348194">Neprepoznana napaka: <ph name="DESC" /></translation>
@@ -4771,6 +4763,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7968833647796919681">Omogoči zbiranje podatkov o učinkovitosti delovanja</translation>
 <translation id="7968982339740310781">Prikaži podrobnosti</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">Kartice trenutno ni mogoče shraniti</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 s šifriranjem RSA</translation>
 <translation id="7973962044839454485">Preverjanje pristnosti PPP ni uspelo zaradi napačnega uporabniškega imena ali gesla</translation>
 <translation id="7974566588408714340">Poskusi znova z razširitvijo <ph name="EXTENSIONNAME" /></translation>
@@ -5092,7 +5085,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8431909052837336408">Spreminjanje kode PIN kartice SIM</translation>
 <translation id="8434480141477525001">Vrata za odpravljanje napak NaCl</translation>
 <translation id="8435395510592618362">Preverjanje identitete z aplikacijo <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Shrani kreditno kartico</translation>
 <translation id="8438328416656800239">Preklop na pametni brskalnik</translation>
 <translation id="8438566539970814960">Izboljšanje iskanja in brskanja</translation>
 <translation id="8439506636278576865">Ponudi prevajanje strani v tem jeziku</translation>
@@ -5475,6 +5467,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8965037249707889821">Vnesite staro geslo</translation>
 <translation id="8966870118594285808">Znova odprite zavihek, če ste ga pomotoma zaprli</translation>
 <translation id="8967866634928501045">Pritisnite Alt + Shift + A, če želite pokazati</translation>
+<translation id="8968766641738584599">Shrani kartico</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Pri skrbniku omrežja se prepričajte, da požarni zid ne blokira prenosov iz Googlovih strežnikov.</translation>
 <translation id="8973557916016709913">Odstranitev stopnje povečave</translation>
@@ -5581,7 +5574,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9116799625073598554">Aplikacija za ustvarjanje zapiskov</translation>
 <translation id="9117030152748022724">Upravljanje aplikacij</translation>
 <translation id="9121814364785106365">Odpri na pripetem zavihku</translation>
-<translation id="9122074588095746047">Orodja ADB ni bilo mogoče omogočiti</translation>
 <translation id="9124003689441359348">Shranjena gesla bodo prikazana tukaj</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (še <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Nastavitve ni bilo mogoče dokončati</translation>

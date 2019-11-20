@@ -173,7 +173,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
   // Calls ConfigureService method.
   // |callback| is called after the method call succeeds.
   virtual void ConfigureService(const base::DictionaryValue& properties,
-                                const ObjectPathCallback& callback,
+                                ObjectPathCallback callback,
                                 const ErrorCallback& error_callback) = 0;
 
   // Calls ConfigureServiceForProfile method.
@@ -181,13 +181,13 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
   virtual void ConfigureServiceForProfile(
       const dbus::ObjectPath& profile_path,
       const base::DictionaryValue& properties,
-      const ObjectPathCallback& callback,
+      ObjectPathCallback callback,
       const ErrorCallback& error_callback) = 0;
 
   // Calls GetService method.
   // |callback| is called after the method call succeeds.
   virtual void GetService(const base::DictionaryValue& properties,
-                          const ObjectPathCallback& callback,
+                          ObjectPathCallback callback,
                           const ErrorCallback& error_callback) = 0;
 
   // For each technology present, connects to the "best" service available.

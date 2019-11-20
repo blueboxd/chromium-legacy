@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">App-pictogram</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> toegang tot je camera blijven geven</translation>
 <translation id="1414648216875402825">Je voert een upgrade uit naar een instabiele versie van <ph name="PRODUCT_NAME" />, die opties bevat die nog in ontwikkeling zijn. Crashes en onverwachte fouten zullen optreden. Ga voorzichtig te werk.</translation>
-<translation id="1414866280542221544">Inschakelen op dit apparaat</translation>
 <translation id="1415708812149920388">Leestoegang voor klembord geweigerd</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (extensie-ID '<ph name="EXTENSION_ID" />') is niet toegestaan in dit type sessie.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizzapunt</translation>
 <translation id="1468571364034902819">Dit profiel kan niet worden gebruikt</translation>
 <translation id="1470811252759861213">Als je je extensies wilt gebruiken op al je computers, moet je <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Hierdoor worden alle gegevens op de beveiligingssleutel, waaronder de pincode, gewist.</translation>
 <translation id="1472675084647422956">Meer weergeven</translation>
 <translation id="1475502736924165259">Je hebt certificaten die niet in een van de andere categorieën vallen</translation>
 <translation id="1476088332184200792">Kopiëren naar je apparaat</translation>
@@ -842,7 +840,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2202898655984161076">Er is een probleem opgetreden met het genereren van het printeroverzicht. Sommige van je printers zijn mogelijk niet geregistreerd voor <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">De zoekmachine die wordt gebruikt in de <ph name="BEGIN_LINK" />adresbalk<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Alles lezen en wijzigen wat je typt</translation>
-<translation id="2204397710290433380">De ADB uitschakelen?</translation>
 <translation id="220792432208469595">Verzend gebruiks- en diagnostische gegevens. Dit apparaat verzendt momenteel automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google. Deze gegevens kunnen worden gebruikt om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Deze instelling wordt afgedwongen door de eigenaar. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld, kunnen deze gegevens worden opgeslagen in je Google-account. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Voer deze pincode in op '<ph name="DEVICE_NAME" />':</translation>
 <translation id="2213140827792212876">Delen verwijderen</translation>
@@ -979,6 +976,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2396783860772170191">Voer een viercijferige pincode in (0000-9999)</translation>
 <translation id="2399939490305346086">Inloggegevens voor beveiligingssleutel</translation>
 <translation id="2407481962792080328">Als je inlogt op je Google-account, wordt deze functie ingeschakeld</translation>
+<translation id="2408018932941436077">Kaart opslaan</translation>
 <translation id="2408955596600435184">Je pincode opgeven</translation>
 <translation id="241082044617551207">Onbekende plug-in</translation>
 <translation id="2412593942846481727">Update beschikbaar</translation>
@@ -2007,7 +2005,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3873315167136380065">Als je dit wilt inschakelen, <ph name="BEGIN_LINK" />reset je de synchronisatie<ph name="END_LINK" /> om de wachtwoordzin voor synchronisatie te verwijderen</translation>
 <translation id="3873423927483480833">Pincodes weergeven</translation>
 <translation id="3873915545594852654">Er is een probleem opgetreden met ARC++.</translation>
-<translation id="387924939625099872">Als je ADB wilt uitschakelen, start je je <ph name="DEVICE_TYPE" /> opnieuw op. Hierdoor wordt je apparaat teruggezet op de fabrieksinstellingen en worden alle gebruikersaccounts en lokale gegevens gewist.</translation>
 <translation id="3879748587602334249">Downloadbeheer</translation>
 <translation id="3886446263141354045">Je verzoek voor toegang tot deze website is verzonden naar <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Notities maken met <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4501530680793980440">Verwijderen bevestigen</translation>
 <translation id="4502423230170890588">Verwijderen van dit apparaat</translation>
 <translation id="4504940961672722399">Gebruik deze extensie door op dit pictogram te klikken of op <ph name="EXTENSION_SHORTCUT" /> te drukken.</translation>
-<translation id="4506379069541445709">Als je doorgaat, wordt ADB ingeschakeld om Android-apps te maken en te testen. Houd er rekening mee dat ADB toestaat dat er test-apps worden geïnstalleerd die niet zijn geverifieerd door Google.</translation>
 <translation id="4508051413094283164">Alles openen in incognitovenster</translation>
 <translation id="4508265954913339219">Activering mislukt</translation>
 <translation id="4508765956121923607">Br&amp;on weergeven</translation>
@@ -3312,7 +3308,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5851868085455377790">Uitgever</translation>
 <translation id="5852112051279473187">Oeps! Er is iets misgegaan bij de aanmelding van dit apparaat. Probeer het opnieuw of neem contact op met een medewerker van het supportteam.</translation>
 <translation id="5852137567692933493">Opnieuw opstarten en Powerwash uitvoeren</translation>
-<translation id="5852360662347412211">Ga naar de Linux-instellingen en probeer het opnieuw</translation>
 <translation id="5854912040170951372">Pizzapunt</translation>
 <translation id="5855643921295613558">0,6 seconden</translation>
 <translation id="5856721540245522153">Foutopsporingsfuncties inschakelen</translation>
@@ -3325,7 +3320,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5860494867054883682">Je apparaat updaten naar het kanaal <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Stylustools op de plank weergeven</translation>
 <translation id="5863445608433396414">Foutopsporingsfuncties inschakelen</translation>
-<translation id="5863471434640009253">Als je de Android Debug Bridge wilt inschakelen, start je eerst <ph name="DEVICE_TYPE" /> opnieuw op. Je kunt ADB alleen uitschakelen door je apparaat terug te zetten op de fabrieksinstellingen.</translation>
 <translation id="5864471791310927901">Opzoeken van DHCP mislukt</translation>
 <translation id="586567932979200359">Je voert <ph name="PRODUCT_NAME" /> uit via de schijfkopie. Als je dit programma installeert op je computer, kun je dit uitvoeren zonder de schijfkopie te gebruiken en blijft het programma bijgewerkt.</translation>
 <translation id="5865733239029070421">Hiermee worden automatisch gebruiksstatistieken en crashrapporten naar Google verzonden</translation>
@@ -3395,7 +3389,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5958529069007801266">Gebruiker met beperkte rechten</translation>
 <translation id="5959471481388474538">Netwerk niet beschikbaar</translation>
 <translation id="595959584676692139">Laad de pagina opnieuw om deze extensie te gebruiken</translation>
-<translation id="5961320084471308154">ADB inschakelen?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> piek)</translation>
 <translation id="5965661248935608907">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je op de knop 'Homepage' klikt of vanuit de omnibox zoekt.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> kan bestanden bekijken in <ph name="FOLDERNAME" /></translation>
@@ -4259,7 +4252,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7254554697254365959">Deze pagina kan niet worden vertaald.</translation>
 <translation id="7254951428499890870">Weet je zeker dat je '<ph name="APP_NAME" />' in diagnostische modus wilt starten?</translation>
 <translation id="7255002516883565667">Je hebt momenteel één pas die alleen op dit apparaat kan worden gebruikt</translation>
-<translation id="7255916308560539517">Tik opnieuw op de beveiligingssleutel om het resetten te bevestigen. Alle informatie die is opgeslagen op de beveiligingssleutel, inclusief de pincode, wordt gewist.</translation>
 <translation id="7255935316994522020">Toepassen</translation>
 <translation id="7256069762010468647">Site gebruikt je camera</translation>
 <translation id="7256405249507348194">Onbekende fout: <ph name="DESC" /></translation>
@@ -4768,6 +4760,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7968833647796919681">Het verzamelen van prestatiegegevens inschakelen</translation>
 <translation id="7968982339740310781">Details weergeven</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">Kaart kan nu niet worden opgeslagen</translation>
 <translation id="7972714317346275248">PKCS nr. 1 SHA-384 met RSA-encryptie</translation>
 <translation id="7973962044839454485">PPP-verificatie mislukt wegens een onjuiste gebruikersnaam of wachtwoord</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> opnieuw proberen te gebruiken</translation>
@@ -5089,7 +5082,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8431909052837336408">Pincode van simkaart wijzigen</translation>
 <translation id="8434480141477525001">Foutopsporingspoort voor systeemeigen client</translation>
 <translation id="8435395510592618362">Je identiteit verifiëren met <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Creditcard opslaan</translation>
 <translation id="8438328416656800239">Overschakelen naar een slimme browser</translation>
 <translation id="8438566539970814960">Zoekopdrachten en browsefunctionaliteit verbeteren</translation>
 <translation id="8439506636278576865">Aanbieden pagina's te vertalen in deze taal</translation>
@@ -5473,6 +5465,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8965037249707889821">Oud wachtwoord opgeven</translation>
 <translation id="8966870118594285808">Een tabblad opnieuw openen wanneer je dit per ongeluk hebt gesloten</translation>
 <translation id="8967866634928501045">Druk op Alt+Shift+A om weer te geven</translation>
+<translation id="8968766641738584599">Pas opslaan</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Neem contact op met je netwerkbeheerder om ervoor te zorgen dat downloads van Google-servers niet door de firewall worden geblokkeerd.</translation>
 <translation id="8973557916016709913">Zoomniveau verwijderen</translation>
@@ -5579,7 +5572,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9116799625073598554">Notitie-app</translation>
 <translation id="9117030152748022724">Je apps beheren</translation>
 <translation id="9121814364785106365">Openen als vastgezet tabblad</translation>
-<translation id="9122074588095746047">Kan ADB niet inschakelen</translation>
 <translation id="9124003689441359348">Opgeslagen wachtwoorden worden hier weergegeven</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (nog <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Installatie is niet voltooid</translation>

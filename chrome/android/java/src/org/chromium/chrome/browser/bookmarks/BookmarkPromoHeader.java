@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
@@ -16,8 +15,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
@@ -54,12 +53,6 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
         int PROMO_SYNC = 2;
     }
 
-    // Personalized signin promo preference.
-    private static final String PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED =
-            "signin_promo_bookmarks_declined";
-    // Generic signin and sync promo preferences.
-    private static final String PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT =
-            "enhanced_bookmark_signin_promo_show_count";
     // TODO(kkimlabs): Figure out the optimal number based on UMA data.
     private static final int MAX_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT = 10;
 
@@ -101,12 +94,8 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
 
         mPromoState = calculatePromoState();
         if (mPromoState == PromoState.PROMO_SYNC) {
-            int promoShowCount = ContextUtils.getAppSharedPreferences().getInt(
-                    PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT, 0);
-            ContextUtils.getAppSharedPreferences()
-                    .edit()
-                    .putInt(PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT, promoShowCount + 1)
-                    .apply();
+            SharedPreferencesManager.getInstance().incrementInt(
+                    ChromePreferenceKeys.PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT);
         }
     }
 
@@ -178,10 +167,8 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
      * Saves that the personalized signin promo was declined and updates the UI.
      */
     private void setPersonalizedSigninPromoDeclined() {
-        SharedPreferences.Editor sharedPreferencesEditor =
-                ContextUtils.getAppSharedPreferences().edit();
-        sharedPreferencesEditor.putBoolean(PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, true);
-        sharedPreferencesEditor.apply();
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, true);
         mPromoState = calculatePromoState();
         triggerPromoUpdate();
     }
@@ -190,8 +177,8 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
      * @return Whether the user declined the personalized signin promo.
      */
     private boolean wasPersonalizedSigninPromoDeclined() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, false);
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, false);
     }
 
     private @PromoState int calculatePromoState() {
@@ -213,8 +200,9 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
             return PromoState.PROMO_SIGNIN_PERSONALIZED;
         }
 
-        boolean impressionLimitNotReached = ContextUtils.getAppSharedPreferences().getInt(
-                                                    PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT, 0)
+        boolean impressionLimitNotReached =
+                SharedPreferencesManager.getInstance().readInt(
+                        ChromePreferenceKeys.PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT)
                 < MAX_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT;
         if (!AndroidSyncSettings.get().isChromeSyncEnabled() && impressionLimitNotReached) {
             return PromoState.PROMO_SYNC;
@@ -271,6 +259,6 @@ class BookmarkPromoHeader implements AndroidSyncSettingsObserver, SignInStateObs
     @VisibleForTesting
     static void setPrefPersonalizedSigninPromoDeclinedForTests(boolean isDeclined) {
         SharedPreferencesManager.getInstance().writeBoolean(
-                PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, isDeclined);
+                ChromePreferenceKeys.PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED, isDeclined);
     }
 }

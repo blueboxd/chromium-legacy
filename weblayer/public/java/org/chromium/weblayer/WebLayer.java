@@ -90,8 +90,8 @@ public final class WebLayer {
      * @param appContext The hosting application's Context.
      * @param callback {@link Callback} which will receive the WebLayer instance.
      */
-    public static void loadAsync(@NonNull Context appContext,
-            @NonNull Callback<WebLayer> callback) throws UnsupportedVersionException {
+    public static void loadAsync(@NonNull Context appContext, @NonNull Callback<WebLayer> callback)
+            throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
         if (sLoader == null) sLoader = new WebLayerLoader();
         sLoader.loadAsync(appContext, callback);
@@ -133,16 +133,17 @@ public final class WebLayer {
             }
             mCallbacks.add(callback);
             if (mIWebLayer != null) {
-                return;  // Already loading.
+                return; // Already loading.
             }
             try {
-                getIWebLayer(appContext).loadAsync(ObjectWrapper.wrap(appContext),
-                        ObjectWrapper.wrap((ValueCallback<Boolean>) result -> {
-                            // TODO: figure out when |result| is false and what to do in such a
-                            // scenario.
-                            assert result;
-                            onWebLayerReady();
-                        }));
+                getIWebLayer(appContext)
+                        .loadAsync(ObjectWrapper.wrap(appContext),
+                                ObjectWrapper.wrap((ValueCallback<Boolean>) result -> {
+                                    // TODO: figure out when |result| is false and what to do in
+                                    // such a scenario.
+                                    assert result;
+                                    onWebLayerReady();
+                                }));
             } catch (RemoteException e) {
                 throw new APICallException(e);
             }

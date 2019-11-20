@@ -125,30 +125,41 @@ Json::Value TreeBuilder::Open(const char* path) {
 void TreeBuilder::AddFileEntry(const std::string_view source_path,
                                const std::vector<const BaseSymbol*>& symbols) {
   // Creates a single file node with a child for each symbol in that file.
-  TreeNode* file_node = new TreeNode();
-  file_node->container_type = ContainerType::kFile;
+  TreeNode* file_node = nullptr;
 
-  if (source_path.empty()) {
-    file_node->id_path = kNoName;
-  } else {
-    file_node->id_path = source_path;
-  }
-  if (group_by_component_) {
-    std::string component;
-    if (symbols[0]->Component() && *symbols[0]->Component()) {
-      component = symbols[0]->Component();
+  // In legacy .size files, unattributed .dex symbols symbols aggregated and
+  // attributed to a path which is actually a directory. Therefore it's
+  // possible that a TreeNode has already been created for |source_path|. This
+  // is made slightly more complicated by the fact that _parents[""] is root,
+  // but we do want to create a a new (No path) file entry.
+  const auto node = _parents.find(source_path);
+  if (node == _parents.end() || source_path.empty()) {
+    file_node = new TreeNode();
+    file_node->container_type = ContainerType::kFile;
+
+    if (source_path.empty()) {
+      file_node->id_path = kNoName;
     } else {
-      component = kNoComponent;
+      file_node->id_path = source_path;
     }
-    owned_strings_.push_back(component + std::string(1, kComponentSep) +
-                             std::string(file_node->id_path));
-    file_node->id_path = owned_strings_.back();
-  }
+    if (group_by_component_) {
+      std::string component;
+      if (symbols[0]->Component() && *symbols[0]->Component()) {
+        component = symbols[0]->Component();
+      } else {
+        component = kNoComponent;
+      }
+      owned_strings_.push_back(component + std::string(1, kComponentSep) +
+                               std::string(file_node->id_path));
+      file_node->id_path = owned_strings_.back();
+    }
 
-  file_node->short_name_index =
-      LastSeparatorIndex(file_node->id_path, sep_, kPathSep) + 1;
-  _parents[file_node->id_path] = file_node;
-  // TODO: Initialize file type, source path, component
+    file_node->short_name_index =
+        LastSeparatorIndex(file_node->id_path, sep_, kPathSep) + 1;
+    _parents[file_node->id_path] = file_node;
+  } else {
+    file_node = node->second;
+  }
 
   // Create symbol nodes.
   for (const BaseSymbol* sym : symbols) {
@@ -156,7 +167,7 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
     symbol_node->container_type = ContainerType::kSymbol;
     symbol_node->id_path = sym->FullName();
     symbol_node->size = sym->Pss();
-    symbol_node->node_stats = NodeStats(sym->Section(), 1, symbol_node->size);
+    symbol_node->node_stats = NodeStats(*sym);
     symbol_node->symbol = sym;
     AttachToParent(symbol_node, file_node);
   }

@@ -20,7 +20,6 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/window/dialog_client_view.h"
 
 const char kVmName[] = "vm_name";
 const char kContainerName[] = "container_name";
@@ -47,13 +46,9 @@ class CrostiniUpdateFilesystemViewBrowserTest
     return CrostiniUpdateFilesystemView::GetActiveViewForTesting();
   }
 
-  bool HasAcceptButton() {
-    return ActiveView()->GetDialogClientView()->ok_button() != nullptr;
-  }
+  bool HasAcceptButton() { return ActiveView()->GetOkButton() != nullptr; }
 
-  bool HasCancelButton() {
-    return ActiveView()->GetDialogClientView()->cancel_button() != nullptr;
-  }
+  bool HasCancelButton() { return ActiveView()->GetCancelButton() != nullptr; }
 
   void ExpectView() {
     base::RunLoop().RunUntilIdle();
@@ -93,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateFilesystemViewBrowserTest, HitOK) {
   EXPECT_TRUE(HasAcceptButton());
   EXPECT_FALSE(HasCancelButton());
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
   ExpectNoView();
 
@@ -131,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateFilesystemViewBrowserTest,
       ->StartLxdContainer(kVmName, kContainerName, base::DoNothing());
   ExpectView();
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
   ExpectNoView();
 

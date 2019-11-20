@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Icona de l'aplicació</translation>
 <translation id="1410616244180625362">Continua permetent que <ph name="HOST" /> accedeixi a la càmera</translation>
 <translation id="1414648216875402825">Esteu a punt de passar a una versió inestable de <ph name="PRODUCT_NAME" /> que conté funcions en curs. Es produiran bloqueigs i errors inesperats. Continueu amb precaució.</translation>
-<translation id="1414866280542221544">Activa en aquest dispositiu</translation>
 <translation id="1415708812149920388">S'ha denegat l'accés de lectura al porta-retalls</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (amb identificador d'extensió "<ph name="EXTENSION_ID" />") no es permet en aquest tipus de sessions.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Tall de pizza</translation>
 <translation id="1468571364034902819">Aquest perfil no es pot utilitzar</translation>
 <translation id="1470811252759861213">Per accedir a les extensions des de tots els ordinadors, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Amb aquesta acció s'esborraran totes les dades de la clau de seguretat, inclòs el PIN</translation>
 <translation id="1472675084647422956">Mostra'n més</translation>
 <translation id="1475502736924165259">Tens certificats arxivats que no s'ajusten a cap de les altres categories</translation>
 <translation id="1476088332184200792">Copia-ho al dispositiu</translation>
@@ -842,7 +840,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2202898655984161076">S'ha produït un problema en enumerar les impressores. Pot ser que algunes impressores no s'hagin registrat correctament a <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motor de cerca utilitzat a la <ph name="BEGIN_LINK" />barra d'adreces<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Llegir i canviar tot el que s'escrigui</translation>
-<translation id="2204397710290433380">Vols desactivar ADB?</translation>
 <translation id="220792432208469595">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. El propietari ha aplicat aquesta opció de configuració. Si tens activada l'opció Activitat al web i en aplicacions addicional, és possible que aquestes dades es desin al teu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Introduïu aquest codi PIN a "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Deixa de compartir</translation>
@@ -979,6 +976,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2396783860772170191">Introdueix un PIN de 4 dígits (0000-9999)</translation>
 <translation id="2399939490305346086">Dades d'inici de sessió de la clau de seguretat</translation>
 <translation id="2407481962792080328">En iniciar la sessió al Compte de Google, aquesta funció està sempre activada</translation>
+<translation id="2408018932941436077">S'està desant la targeta</translation>
 <translation id="2408955596600435184">Introdueix el PIN</translation>
 <translation id="241082044617551207">Connector desconegut</translation>
 <translation id="2412593942846481727">Hi ha una actualització disponible</translation>
@@ -2005,7 +2003,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="3873315167136380065">Si vols activar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronització<ph name="END_LINK" /> per suprimir la frase de contrasenya de sincronització</translation>
 <translation id="3873423927483480833">Mostra els PIN</translation>
 <translation id="3873915545594852654">S'ha produït un problema amb ARC++.</translation>
-<translation id="387924939625099872">Per desactivar ADB, reinicia <ph name="DEVICE_TYPE" />. Es restablirà la configuració de fàbrica del dispositiu i s'esborraran tots els comptes d'usuari i totes les dades locals.</translation>
 <translation id="3879748587602334249">Gestor de baixades</translation>
 <translation id="3886446263141354045">La teva sol·licitud per accedir a aquest lloc s'ha enviat a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Escriu notes amb <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2406,7 +2403,6 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4501530680793980440">Confirmació de la supressió</translation>
 <translation id="4502423230170890588">Suprimeix d'aquest dispositiu</translation>
 <translation id="4504940961672722399">Per fer servir aquesta extensió, feu clic en aquesta icona o premeu <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Si continues, s'activarà ADB per crear i provar les aplicacions d'Android. Tingues en compte que ADB permet instal·lar aplicacions de prova que Google no ha verificat.</translation>
 <translation id="4508051413094283164">Obre-ho tot en una finestra d'incògnit</translation>
 <translation id="4508265954913339219">S'ha produït un error en l'activació.</translation>
 <translation id="4508765956121923607">Visualitza l'&amp;origen</translation>
@@ -3311,7 +3307,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5851868085455377790">Emissor</translation>
 <translation id="5852112051279473187">Vaja! Ha fallat alguna cosa en inscriure aquest dispositiu. Torneu-ho a provar o contacteu amb el vostre representant d'assistència.</translation>
 <translation id="5852137567692933493">Reinicia i utilitza Powerwash</translation>
-<translation id="5852360662347412211">Ves a la configuració de Linux i torna-ho a provar</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0,6 segons</translation>
 <translation id="5856721540245522153">Activar les funcions de depuració</translation>
@@ -3324,7 +3319,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5860494867054883682">S'està actualitzant el dispositiu al canal <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Mostra les eines del llapis òptic al prestatge</translation>
 <translation id="5863445608433396414">Activa les funcions de depuració</translation>
-<translation id="5863471434640009253">Per activar l'eina Android Debug Bridge, primer has de reiniciar <ph name="DEVICE_TYPE" />. Per desactivar-la, cal restablir la configuració de fàbrica del dispositiu.</translation>
 <translation id="5864471791310927901">Error en la cerca de DHCP</translation>
 <translation id="586567932979200359">Esteu executant <ph name="PRODUCT_NAME" /> des de la imatge de disc. Si instal·leu l'aplicació a l'equip, podreu executar-la sense la imatge de disc i es mantindrà actualitzada.</translation>
 <translation id="5865733239029070421">Envia automàticament a Google estadístiques d'ús i informes d'error</translation>
@@ -3394,7 +3388,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5958529069007801266">Usuari supervisat</translation>
 <translation id="5959471481388474538">Xarxa no disponible</translation>
 <translation id="595959584676692139">Torna a carregar la pàgina per utilitzar aquesta extensió</translation>
-<translation id="5961320084471308154">Vols activar ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> màxim)</translation>
 <translation id="5965661248935608907">També controla la pàgina que es mostra quan feu clic al botó Pàgina d'inici o quan feu una cerca des de l'omnibox.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> pot veure els fitxers que conté la carpeta <ph name="FOLDERNAME" /></translation>
@@ -4258,7 +4251,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7254554697254365959">Aquesta pàgina no s'ha pogut traduir.</translation>
 <translation id="7254951428499890870">Confirmes que vols iniciar "<ph name="APP_NAME" />" en mode de diagnòstic?</translation>
 <translation id="7255002516883565667">En aquest moment tens una targeta que només es pot utilitzar en aquest dispositiu</translation>
-<translation id="7255916308560539517">Torna a tocar la clau de seguretat per confirmar el restabliment. Se suprimirà tota la informació desada a la clau de seguretat, inclòs el PIN.</translation>
 <translation id="7255935316994522020">Aplica</translation>
 <translation id="7256069762010468647">El lloc web està utilitzant la càmera</translation>
 <translation id="7256405249507348194">Error no reconegut: <ph name="DESC" /></translation>
@@ -4768,6 +4760,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7968833647796919681">Activa la recollida de dades de rendiment</translation>
 <translation id="7968982339740310781">Mostra els detalls</translation>
 <translation id="7969046989155602842">Ordre</translation>
+<translation id="7970882136539140748">Ara mateix no es pot desar la targeta</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 amb encriptació RSA</translation>
 <translation id="7973962044839454485">L'autenticació de PPA ha fallat perquè el nom d'usuari o la contrasenya no eren correctes</translation>
 <translation id="7974566588408714340">Torna-ho a provar amb <ph name="EXTENSIONNAME" /></translation>
@@ -5089,7 +5082,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8431909052837336408">Canvia el PIN de la SIM</translation>
 <translation id="8434480141477525001">Port de depuració NaCI</translation>
 <translation id="8435395510592618362">Verifica la teva identitat amb <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Desa la targeta de crèdit</translation>
 <translation id="8438328416656800239">Canvia a un navegador intel·ligent</translation>
 <translation id="8438566539970814960">Millora les cerques i la navegació</translation>
 <translation id="8439506636278576865">Proposa'm traduir pàgines en aquest idioma</translation>
@@ -5472,6 +5464,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8965037249707889821">Introduïu la contrasenya antiga</translation>
 <translation id="8966870118594285808">Torna a obrir una pestanya si l'has tancat per error</translation>
 <translation id="8967866634928501045">Prem Alt+Maj+A perquè es mostri</translation>
+<translation id="8968766641738584599">Desa la targeta</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Consulteu amb l'administrador de xarxa per assegurar-vos que el tallafoc no estigui bloquejant les baixades dels servidors de Google.</translation>
 <translation id="8973557916016709913">Suprimeix el nivell de zoom</translation>
@@ -5578,7 +5571,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9116799625073598554">Aplicació per prendre notes</translation>
 <translation id="9117030152748022724">Gestiona les teves aplicacions</translation>
 <translation id="9121814364785106365">Obre-ho com a pestanya reduïda</translation>
-<translation id="9122074588095746047">No s'ha pogut activar ADB</translation>
 <translation id="9124003689441359348">Les contrasenyes desades es mostraran aquí</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (restants: <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">No s'ha pogut completar la configuració</translation>

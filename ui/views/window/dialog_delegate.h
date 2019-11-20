@@ -243,6 +243,12 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // "unintended interaction" detection mechanism.
   void ResetViewShownTimeStampForTesting();
 
+  // Set the insets used for the dialog's button row. This should be used only
+  // rarely.
+  // TODO(ellyjones): Investigate getting rid of this entirely and having all
+  // dialogs use the same button row insets.
+  void SetButtonRowInsets(const gfx::Insets& insets);
+
  protected:
   ~DialogDelegate() override;
 

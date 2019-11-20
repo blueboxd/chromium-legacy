@@ -459,11 +459,13 @@ void CheckClientDownloadRequest::OnDeepScanningComplete(
                                                     &download_reason);
   }
 
-  // If we're not delaying verdicts, we already ran |callback_| with the final
-  // result in FinishRequest.
-  callback_.Run(download_result);
-  NotifyRequestFinished(download_result, download_reason);
-  service()->RequestFinished(this);
+  if (!IsCancelled()) {
+    // If we're not delaying verdicts, we already ran |callback_| with the final
+    // result in FinishRequest.
+    callback_.Run(download_result);
+    NotifyRequestFinished(download_result, download_reason);
+    service()->RequestFinished(this);
+  }
 }
 
 }  // namespace safe_browsing

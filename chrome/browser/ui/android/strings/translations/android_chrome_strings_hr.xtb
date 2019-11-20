@@ -789,6 +789,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6818926723028410516">Odaberite stavke</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Prevedi</translation>
+<translation id="6840155290835956714">Pitaj prije slanja</translation>
 <translation id="6845325883481699275">Pomognite poboljšati sigurnost na Chromeu</translation>
 <translation id="6846298663435243399">Učitavanje…</translation>
 <translation id="6850409657436465440">Preuzimanje je još u tijeku</translation>
@@ -1095,7 +1096,6 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="9133397713400217035">Istraživanje izvan mreže</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
-<translation id="9139068048179869749">Web-lokacije moraju tražiti dopuštenje za slanje obavijesti (preporučeno)</translation>
 <translation id="9139318394846604261">Kupnja</translation>
 <translation id="9155898266292537608">Možete i kratko dodirnuti riječ da biste je pretražili</translation>
 <translation id="9169507124922466868">Povijest navigacije je poluotvorena</translation>

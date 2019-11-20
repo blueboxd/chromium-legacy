@@ -2201,7 +2201,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   UpdateAllLifecyclePhases();
   Document* document =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
-  document->View()->SetTracksPaintInvalidations(true);
+  document->View()->SetTracksRasterInvalidations(true);
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, smallest_height),
                                            browser_controls_height, 0, true);
 
@@ -2219,9 +2219,9 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
           ScrollingBackgroundClient(document).DebugName(),
           IntRect(0, 0, 640, 1000), PaintInvalidationReason::kBackground}));
 
-  document->View()->SetTracksPaintInvalidations(false);
+  document->View()->SetTracksRasterInvalidations(false);
 
-  document->View()->SetTracksPaintInvalidations(true);
+  document->View()->SetTracksRasterInvalidations(true);
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, page_height),
                                            browser_controls_height, 0, true);
 
@@ -2235,7 +2235,7 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
           ScrollingBackgroundClient(document).DebugName(),
           IntRect(0, 0, 640, 1000), PaintInvalidationReason::kBackground}));
 
-  document->View()->SetTracksPaintInvalidations(false);
+  document->View()->SetTracksRasterInvalidations(false);
 }
 
 // Make sure a browser control resize with background-attachment:not-fixed
@@ -2285,7 +2285,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
 
   UpdateAllLifecyclePhases();
   // Do a real resize to check for invalidations.
-  document->View()->SetTracksPaintInvalidations(true);
+  document->View()->SetTracksRasterInvalidations(true);
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, smallest_height),
                                            browser_controls_height, 0, true);
 
@@ -2300,7 +2300,7 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
     EXPECT_FALSE(ScrollingContentsLayerHasRasterInvalidations(document));
   }
 
-  document->View()->SetTracksPaintInvalidations(false);
+  document->View()->SetTracksRasterInvalidations(false);
 }
 
 TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
@@ -2321,7 +2321,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
 
   // Do a resize to check for invalidations.
-  document->View()->SetTracksPaintInvalidations(true);
+  document->View()->SetTracksRasterInvalidations(true);
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, largest_height),
                                            browser_controls_height, 0, false);
 
@@ -2342,10 +2342,10 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
             IntRect(0, 590, 320, 50), PaintInvalidationReason::kIncremental}));
   }
 
-  document->View()->SetTracksPaintInvalidations(false);
+  document->View()->SetTracksRasterInvalidations(false);
 
   // Resize back to the original size.
-  document->View()->SetTracksPaintInvalidations(true);
+  document->View()->SetTracksRasterInvalidations(true);
   web_view_impl->ResizeWithBrowserControls(WebSize(page_width, page_height),
                                            browser_controls_height, 0, false);
 
@@ -2356,7 +2356,7 @@ TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
     EXPECT_FALSE(ScrollingContentsLayerHasRasterInvalidations(document));
   }
 
-  document->View()->SetTracksPaintInvalidations(false);
+  document->View()->SetTracksRasterInvalidations(false);
 }
 
 // Ensure we create transform node for overscroll elasticity properly.

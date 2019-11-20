@@ -35,8 +35,6 @@ size_t CountOriginsInURLRows(const history::URLRows& rows) {
 LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
     Profile* profile)
     : profile_(profile) {
-  DCHECK(base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase));
-
   database_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
       profile->GetPath().AppendASCII(kSiteCharacteristicsDirectoryName));
 

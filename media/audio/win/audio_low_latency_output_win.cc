@@ -281,7 +281,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
       if (!Open() || !CoreAudioUtil::FillRenderEndpointBufferWithSilence(
                          audio_client_.Get(), audio_render_client_.Get())) {
         DLOG(ERROR) << "Failed recovery of audio clients; Start() failed.";
-        callback->OnError();
+        callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
         return;
       }
     }
@@ -301,7 +301,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   if (!render_thread_->HasBeenStarted()) {
     LOG(ERROR) << "Failed to start WASAPI render thread.";
     StopThread();
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
     return;
   }
 
@@ -310,7 +310,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to start output streaming: " << std::hex << hr;
     StopThread();
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 }
 
@@ -324,7 +324,7 @@ void WASAPIAudioOutputStream::Stop() {
   HRESULT hr = audio_client_->Stop();
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to stop output streaming: " << std::hex << hr;
-    source_->OnError();
+    source_->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   // Make a local copy of |source_| since StopThread() will clear it.
@@ -335,7 +335,7 @@ void WASAPIAudioOutputStream::Stop() {
   hr = audio_client_->Reset();
   if (FAILED(hr)) {
     PLOG(ERROR) << "Failed to reset streaming: " << std::hex << hr;
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   ReportAndResetStats();
@@ -446,7 +446,7 @@ void WASAPIAudioOutputStream::Run() {
 
     // Notify clients that something has gone wrong and that this stream should
     // be destroyed instead of reused in the future.
-    source_->OnError();
+    source_->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   // Disable MMCSS.

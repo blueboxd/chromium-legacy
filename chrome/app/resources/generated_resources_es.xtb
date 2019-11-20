@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Icono de la aplicación</translation>
 <translation id="1410616244180625362">Seguir permitiendo que <ph name="HOST" /> acceda a la cámara</translation>
 <translation id="1414648216875402825">Vas a actualizar a una versión inestable de <ph name="PRODUCT_NAME" /> que incluye funciones que están en desarrollo. Se producirán fallos y errores inesperados. Utiliza esta versión con precaución.</translation>
-<translation id="1414866280542221544">Habilitar en este dispositivo</translation>
 <translation id="1415708812149920388">Se ha denegado el acceso de lectura al portapapeles</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID de extensión "<ph name="EXTENSION_ID" />") no se puede utilizar en este tipo de sesión.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Porción de pizza</translation>
 <translation id="1468571364034902819">No se puede utilizar este perfil</translation>
 <translation id="1470811252759861213">Para ver tus extensiones en todos tus ordenadores, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Esta acción borrará todos los datos de la llave de seguridad, incluido el PIN</translation>
 <translation id="1472675084647422956">Mostrar más</translation>
 <translation id="1475502736924165259">Tienes certificados registrados que no corresponden a ninguna otra categoría</translation>
 <translation id="1476088332184200792">Copiar en el dispositivo</translation>
@@ -842,7 +840,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2202898655984161076">Se ha producido un error al mostrar las impresoras. Es posible que algunas impresoras no se hayan registrado correctamente en <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Buscador utilizado en la <ph name="BEGIN_LINK" />barra de direcciones<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Leer y modificar todo lo que escribas</translation>
-<translation id="2204397710290433380">¿Inhabilitar ADB?</translation>
 <translation id="220792432208469595">Enviar datos de uso y diagnóstico. Este dispositivo envía automáticamente a Google datos de diagnóstico, del dispositivo y del uso de las aplicaciones. Los datos servirán para aumentar la estabilidad de las aplicaciones y del sistema y realizar otras mejoras. Parte de los datos recogidos también ayudarán a las aplicaciones y los colaboradores de Google, como los desarrolladores de Android. El propietario ha aplicado este ajuste. Si la opción Actividad en la Web y en Aplicaciones Adicional está activada, es posible que estos datos se guarden en tu cuenta de Google. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Introduce este código PIN en "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Dejar de compartir</translation>
@@ -979,6 +976,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2396783860772170191">Introduce el PIN de 4 dígitos (0000-9999)</translation>
 <translation id="2399939490305346086">Datos de inicio de sesión de la llave de seguridad</translation>
 <translation id="2407481962792080328">Esta función se activará cuando inicies sesión en tu cuenta de Google</translation>
+<translation id="2408018932941436077">Guardando tarjeta</translation>
 <translation id="2408955596600435184">Introduce tu PIN</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
@@ -2007,7 +2005,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3873315167136380065">Para activar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /> para eliminar tu frase de contraseña de sincronización</translation>
 <translation id="3873423927483480833">Mostrar PINs</translation>
 <translation id="3873915545594852654">Ha habido un problema con ARC++.</translation>
-<translation id="387924939625099872">Para inhabilitar Android Debug Bridge (ADB), reinicia tu <ph name="DEVICE_TYPE" />. Se restablecerá la configuración de fábrica de tu dispositivo y se borrarán todas las cuentas de usuario y todos los datos locales.</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>
 <translation id="3886446263141354045">Tu solicitud de acceso a este sitio web se ha enviado a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Tomando notas con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2408,7 +2405,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4501530680793980440">Confirmar eliminación</translation>
 <translation id="4502423230170890588">Eliminar del dispositivo</translation>
 <translation id="4504940961672722399">Para utilizar esta extensión, haz clic en este icono o pulsa <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Si continúas, se habilitará ADB para crear y probar aplicaciones Android. Ten en cuenta que ADB permite instalar aplicaciones de prueba que no han sido verificadas por Google.</translation>
 <translation id="4508051413094283164">Abre todos los marcadores en una ventana de incógnito</translation>
 <translation id="4508265954913339219">Error de activación</translation>
 <translation id="4508765956121923607">Ver código f&amp;uente</translation>
@@ -3311,7 +3307,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5851868085455377790">Emisor</translation>
 <translation id="5852112051279473187">¡Ups! Algo no ha funcionado como debía al registrar este dispositivo. Inténtalo de nuevo o ponte en contacto con tu representante de asistencia técnica.</translation>
 <translation id="5852137567692933493">Reiniciar y Powerwash</translation>
-<translation id="5852360662347412211">Ve a los ajustes de Linux y vuelve a intentarlo</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0,6 segundos</translation>
 <translation id="5856721540245522153">Habilitar funciones de depuración</translation>
@@ -3324,7 +3319,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5860494867054883682">Actualizando el canal del dispositivo a <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Mostrar herramientas del lápiz óptico en la estantería</translation>
 <translation id="5863445608433396414">Habilitar funciones de depuración</translation>
-<translation id="5863471434640009253">Para habilitar Android Debug Bridge, reinicia primero tu <ph name="DEVICE_TYPE" />. Para inhabilitar ADB es necesario restablecer la configuración de fábrica.</translation>
 <translation id="5864471791310927901">Error de búsqueda de DHCP</translation>
 <translation id="586567932979200359">Estás ejecutando <ph name="PRODUCT_NAME" /> desde la imagen de disco. Al instalar la aplicación en tu ordenador, podrás ejecutarla sin la imagen de disco y, de esta forma, te asegurarás de que siempre esté actualizada.</translation>
 <translation id="5865733239029070421">Envía automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
@@ -3394,7 +3388,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5958529069007801266">Usuario supervisado</translation>
 <translation id="5959471481388474538">Red no disponible</translation>
 <translation id="595959584676692139">Vuelve a cargar la página para usar esta extensión</translation>
-<translation id="5961320084471308154">¿Habilitar ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> máximo)</translation>
 <translation id="5965661248935608907">También controla qué página se muestra al hacer clic en el botón Página de inicio o al hacer búsquedas desde el omnibox.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> puede ver los archivos que haya en <ph name="FOLDERNAME" /></translation>
@@ -4258,7 +4251,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7254554697254365959">No se ha podido traducir la página.</translation>
 <translation id="7254951428499890870">¿Seguro que quieres iniciar <ph name="APP_NAME" /> en modo de diagnóstico?</translation>
 <translation id="7255002516883565667">Tienes una tarjeta que solo se puede usar en este dispositivo</translation>
-<translation id="7255916308560539517">Vuelve a tocar tu llave de seguridad para confirmar el restablecimiento. Se borrará toda la información guardada en la llave de seguridad, incluido el PIN.</translation>
 <translation id="7255935316994522020">Aplicar</translation>
 <translation id="7256069762010468647">El sitio web está usando tu cámara</translation>
 <translation id="7256405249507348194">Error no reconocido: <ph name="DESC" /></translation>
@@ -4768,6 +4760,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7968833647796919681">Habilitar recogida de datos de rendimiento</translation>
 <translation id="7968982339740310781">Ver detalles</translation>
 <translation id="7969046989155602842">Comando</translation>
+<translation id="7970882136539140748">No se puede guardar tu tarjeta en este momento</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 con cifrado RSA</translation>
 <translation id="7973962044839454485">Se ha producido un error en la autenticación de PPP porque la contraseña o el nombre de usuario son incorrectos</translation>
 <translation id="7974566588408714340">Intentar de nuevo con <ph name="EXTENSIONNAME" /></translation>
@@ -5089,7 +5082,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8431909052837336408">Cambiar PIN de la tarjeta SIM</translation>
 <translation id="8434480141477525001">Puerto de depuración NaCl</translation>
 <translation id="8435395510592618362">Verifica tu identidad con <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Guarda la tarjeta de crédito</translation>
 <translation id="8438328416656800239">Cambia a un navegador inteligente</translation>
 <translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8439506636278576865">Ofrecer la traducción de páginas en este idioma</translation>
@@ -5472,6 +5464,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8965037249707889821">Introducir contraseña anterior</translation>
 <translation id="8966870118594285808">Vuelve a abrir una pestaña si se cierra por error</translation>
 <translation id="8967866634928501045">Pulsa Alt + Mayús + A para mostrarlo</translation>
+<translation id="8968766641738584599">Guardar tarjeta</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">Consulta al administrador de tu red para asegurarte de que el cortafuegos no está bloqueando las descargas procedentes de los servidores de Google.</translation>
 <translation id="8973557916016709913">Quitar el nivel de zoom</translation>
@@ -5578,7 +5571,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9116799625073598554">Aplicación para tomar notas</translation>
 <translation id="9117030152748022724">Gestionar tus aplicaciones</translation>
 <translation id="9121814364785106365">Abrir como pestaña fija</translation>
-<translation id="9122074588095746047">No se ha podido habilitar ADB</translation>
 <translation id="9124003689441359348">Las contraseñas guardadas aparecerán aquí</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (restantes: <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">No se ha podido completar la configuración</translation>

@@ -431,6 +431,40 @@ DragWindowFromShelfController::GetSnapPosition(
     snap_position = SplitViewController::NONE;
   }
 
+  // If the drag does not start in the screen edge, the window has to be dragged
+  // toward the snap position by |min_drag_distance| to allow to be snapped.
+  if (snap_position != SplitViewController::NONE) {
+    // Check if the drag starts within 16dp from screen edge. Only need to
+    // consider about landscape case as in portrait mode, the drag always starts
+    // from bottom and we don't allow to snap in bottom.
+    bool started_in_screen_edge = false;
+    const int initial_x = initial_location_in_screen_.x();
+    const int initial_y = initial_location_in_screen_.y();
+    if (is_landscape) {
+      started_in_screen_edge =
+          initial_x <= work_area.x() + kDistanceFromEdge ||
+          initial_x > work_area.right() - kDistanceFromEdge;
+    }
+
+    if (!started_in_screen_edge) {
+      // Check if the drag starts in the snap region.
+      const bool started_in_snap_region =
+          ::ash::GetSnapPosition(window_, initial_location_in_screen_,
+                                 work_area) != SplitViewController::NONE;
+      const int distance = is_landscape ? location_in_screen.x() - initial_x
+                                        : location_in_screen.y() - initial_y;
+      const int min_drag_distance = started_in_snap_region
+                                        ? kMinDragDistanceInSnapRegion
+                                        : kMinDragDistanceOutsideSnapRegion;
+      if ((IsPhysicalLeftOrTop(snap_position) &&
+           distance > -min_drag_distance) ||
+          (!IsPhysicalLeftOrTop(snap_position) &&
+           distance < min_drag_distance)) {
+        snap_position = SplitViewController::NONE;
+      }
+    }
+  }
+
   return snap_position;
 }
 

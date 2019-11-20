@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">অ্যাপ আইকন</translation>
 <translation id="1410616244180625362">আপনার ক্যামেরা অ্যাক্সেস করতে <ph name="HOST" /> এর মঞ্জুরি অবিরত রাখুন</translation>
 <translation id="1414648216875402825">আপনি <ph name="PRODUCT_NAME" />-এর অস্থায়ী ভার্সনে আপডেট করছেন, এটিতে থাকা বৈশিষ্টগুলি প্রগতিতে রয়েছে৷ ক্র্যাশ এবং অপ্রত্যাশিত ত্রুটিগুলি ঘটবে৷ সাবধানতার সাথে এগিয়ে যান৷</translation>
-<translation id="1414866280542221544">এই ডিভাইসে চালু করুন</translation>
 <translation id="1415708812149920388">ক্লিপবোর্ড পড়ার অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (এক্সটেনশন আইডি "<ph name="EXTENSION_ID" />") এই ধরনের সেশনে অনুমোদিত নয়৷</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">পিৎজার টুকরা</translation>
 <translation id="1468571364034902819">এই প্রোফাইলটি ব্যবহার করা যাবে না</translation>
 <translation id="1470811252759861213">আপনার সকল কম্পিউটারে আপনার এক্সটেনশানগুলি পেতে, <ph name="SIGN_IN_LINK" />।</translation>
-<translation id="1470967055429794975">এটি নিরাপত্তা কী ডিভাইসের পিন নম্বর সহ সমস্ত ডেটা মুছে ফেলবে</translation>
 <translation id="1472675084647422956">আরও দেখান</translation>
 <translation id="1475502736924165259">আপনার কাছে ফাইলে সেই শংসাপত্রগুলি আছে যা অন্য বিভাগগুলির একটিতেও মেলে না</translation>
 <translation id="1476088332184200792">আপনার ডিভাইসে কপি করুন</translation>
@@ -842,7 +840,6 @@
 <translation id="2202898655984161076">মুদ্রকগুলি তালিকাকরণে একটি সমস্যা ছিল৷ আপনার মুদ্রকগুলির মধ্যে কয়েকটি সফলভাবে <ph name="CLOUD_PRINT_NAME" />তে নিবন্ধীকৃত নাও থাকতে পারে৷</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />অ্যাড্রেস বারে<ph name="END_LINK" /> যে সার্চ ইঞ্জিন ব্যবহার করা হয়েছে</translation>
 <translation id="2204034823255629767">আপনি যা টাইপ করেন তা পড়ুন এবং পরিবর্তন করুন</translation>
-<translation id="2204397710290433380">ADB বন্ধ করতে চান?</translation>
 <translation id="220792432208469595">ব্যবহার এবং ডায়াগনস্টিক ডেটা পাঠান। এখন এই ডিভাইসটি নিজে থেকেই Google-এ ডায়াগনিস্টিক, ডিভাইস এবং অ্যাপ ব্যবহারের ডেটা পাঠাচ্ছে। এটি সিস্টেম ও অ্যাপের স্থিতিশীলতা এবং অন্যান্য উন্নতিতে সাহায্য করে। ব্যবহারকারীদের কিছু সম্মিলিত ডেটা Google অ্যাপ এবং Android ডেভেলপারদের মতো পার্টনারদের কাজে লাগবে। এই সেটিং মালিকের নিয়ন্ত্রণে রয়েছে। আপনার অতিরিক্ত ওয়েব ও অ্যাপ অ্যাক্টিভিটি সেটিং চালু থাকলে, এই ডেটা আপনার Google অ্যাকাউন্টে সেভ করা হতে পারে। <ph name="BEGIN_LINK1" />আরও জানুন<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">দয়া করে  <ph name="DEVICE_NAME" /> "-এ পিন কোড লিখুন:</translation>
 <translation id="2213140827792212876">শেয়ার করা বন্ধ করুন</translation>
@@ -979,6 +976,7 @@
 <translation id="2396783860772170191">৪ সংখ্যার পিন লিখুন (০০০০-৯৯৯৯)</translation>
 <translation id="2399939490305346086">নিরাপত্তা কীয়ের সাইন-ইন ডেটা</translation>
 <translation id="2407481962792080328">আপনার Google অ্যাকাউন্টে সাইন-ইন করলে এই ফিচারটি চালু হয়ে যাবে</translation>
+<translation id="2408018932941436077">কার্ড সেভ করা হচ্ছে</translation>
 <translation id="2408955596600435184">আপনার পিন লিখুন</translation>
 <translation id="241082044617551207">অজানা প্লাগ-ইন</translation>
 <translation id="2412593942846481727">আপডেট উপলভ্য</translation>
@@ -2006,7 +2004,6 @@
 <translation id="3873315167136380065">এটি চালু করতে, আপনার সিঙ্ক পাসফ্রেজটি সরিয়ে দিতে <ph name="BEGIN_LINK" />সিঙ্ক রিসেট করুন<ph name="END_LINK" /></translation>
 <translation id="3873423927483480833">পিন দেখুন</translation>
 <translation id="3873915545594852654">ARC++ নিয়ে একটি সমস্যা হয়েছে।</translation>
-<translation id="387924939625099872">ADB বন্ধ করতে, আপনার <ph name="DEVICE_TYPE" /> রিস্টার্ট করুন। এটি আবার ফ্যাক্টরি সেটিংসে রিসেট হয়ে যাবে এবং সকল ব্যবহারকারীর অ্যাকাউন্ট এবং স্থানীয় ডেটা মুছে যাবে।</translation>
 <translation id="3879748587602334249">ডাউনলোড ম্যানেজার</translation>
 <translation id="3886446263141354045">এই সাইটটি অ্যাক্সেস করার জন্য আপনার অনুরোধ <ph name="NAME" />কে পাঠানো হয়েছে</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> ব্যবহার করে নোট নেওয়া হচ্ছে</translation>
@@ -2407,7 +2404,6 @@
 <translation id="4501530680793980440">সরানো নিশ্চিত করুন</translation>
 <translation id="4502423230170890588">এই ডিভাইস থেকে সরান</translation>
 <translation id="4504940961672722399">এই আইকনে ক্লিক করে বা <ph name="EXTENSION_SHORTCUT" /> টিপে এই এক্সটেনশনটি ব্যবহার করুন৷</translation>
-<translation id="4506379069541445709">চালিয়ে যাওয়ার অর্থ হল Android অ্যাপ তৈরি এবং পরীক্ষা করার জন্য ADB চালু করে দেবে। মনে রাখবেন এই অ্যাকশন Google-এ যাচাই করা হয়নি এমন অ্যাপ ইনস্টলের অনুমতি দেয়।</translation>
 <translation id="4508051413094283164">সবগুলি ছদ্মবেশী উইন্ডোতে খুলুন</translation>
 <translation id="4508265954913339219">সক্রিয়করণ ব্যর্থ</translation>
 <translation id="4508765956121923607">উ&amp;ৎস দেখুন</translation>
@@ -3041,7 +3037,7 @@
 <translation id="5466374726908360271">“<ph name="SEARCH_TERMS" />” পে&amp;স্ট করে সার্চ করুন</translation>
 <translation id="5468173180030470402">ফাইল শেয়ার বিকল্পটি খোঁজা হচ্ছে</translation>
 <translation id="5471768120198416576">হ্যালো! আমি হলাম আপনার পাঠ্য থেকে ভাষ্য ভয়েস।</translation>
-<translation id="5472133193607270166">এটি চালু থাকাকালীন, বিজ্ঞাপন নিজের মতো করে সাজিয়ে নিতে সাইট আপনার অন্যান্য সাইটে করা ব্রাউজিং অ্যাক্টিভিটি ব্যবহার করতে পারবে না। কিছু সাইট সঠিকভাবে কাজ নাও করতে পারে।</translation>
+<translation id="5472133193607270166">এটি চালু থাকাকালীন, বিজ্ঞাপন আপনার মতো করে সাজিয়ে নিতে সাইট আপনার অন্যান্য সাইটে করা ব্রাউজিং অ্যাক্টিভিটি ব্যবহার করতে পারবে না। কিছু সাইট সঠিকভাবে কাজ নাও করতে পারে।</translation>
 <translation id="5473333559083690127">নতুন পিন পুনরায় লিখুন</translation>
 <translation id="5481941284378890518">আশেপাশের প্রিন্টারগুলি যোগ করুন</translation>
 <translation id="5483785310822538350">ফাইল এবং ডিভাইসের অ্যাক্সেস প্রত্যাহার করুন</translation>
@@ -3311,7 +3307,6 @@
 <translation id="5851868085455377790">ইস্যুকারী</translation>
 <translation id="5852112051279473187">ওহো! এই ডিভাইসটি নথিভুক্তির চেষ্টা করার সময় সত্যই কোনও গোলোযোগ হয়েছিল৷  দয়া করে আবার চেষ্টা করুন৷</translation>
 <translation id="5852137567692933493">পুনরায় আরম্ভ করুন এবং পাওয়ারওয়াশ করুন</translation>
-<translation id="5852360662347412211">Linux সেটিংস দেখুন এবং আবার চেষ্টা করুন</translation>
 <translation id="5854912040170951372">স্লাইস</translation>
 <translation id="5855643921295613558">০.৬ সেকেন্ড</translation>
 <translation id="5856721540245522153">ডিবাগিং বৈশিষ্ট্যাবলী চালু করুন</translation>
@@ -3324,7 +3319,6 @@
 <translation id="5860494867054883682">আপনার ডিভাইস <ph name="CHANNEL_NAME" /> চ্যানেলে আপডেট করা হচ্ছে (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">শেল্ফে স্টাইলাস টুল দেখান</translation>
 <translation id="5863445608433396414">ডিবাগিং বৈশিষ্ট্যাবলী চালু করুন</translation>
-<translation id="5863471434640009253">Android ডিবাগ ব্রিজ চালু করতে, প্রথমে আপনার <ph name="DEVICE_TYPE" /> রিস্টার্ট করুন। ADB বন্ধ করতে হলে ডিভাইসকে ফ্যাক্টরি সেটিংসে রিসেট করুন।</translation>
 <translation id="5864471791310927901">DHCP লুকআপ ব্যর্থ</translation>
 <translation id="586567932979200359">আপনি <ph name="PRODUCT_NAME" /> থেকে এটির ডিস্ক ইমেজ চালাচ্ছেন৷ এটিকে আপনার কম্পিউটারে ইনস্টল করা হলে তা ডিস্ক ইমেজ ছাড়াই এটিকে চালাতে দেয় এবং এটিকে আপ টু ডেট আছে কিনা তা নিশ্চিত করে৷</translation>
 <translation id="5865733239029070421">ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ রিপোর্ট নিজে থেকেই Google-কে পাঠায়</translation>
@@ -3394,7 +3388,6 @@
 <translation id="5958529069007801266">তত্ত্বাবধানে থাকা ব্যবহারকারী</translation>
 <translation id="5959471481388474538">নেটওয়ার্ক উপলব্ধ নয়</translation>
 <translation id="595959584676692139">এই এক্সটেনশন ব্যবহার করার জন্য পৃষ্ঠাটি আবার লোড করুন</translation>
-<translation id="5961320084471308154">ADB চালু করতে চান?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> পিক)</translation>
 <translation id="5965661248935608907">আপনি হোম বোতাম ক্লিক করলে বা Omnibox থেকে সার্চ করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="5969419185858894314"><ph name="FOLDERNAME" />-এর ফাইল <ph name="ORIGIN" />-এর দেখার অ্যাক্সেস আছে</translation>
@@ -4259,7 +4252,6 @@
 <translation id="7254554697254365959">এই পৃষ্ঠাটির অনুবাদ করা যায়নি।</translation>
 <translation id="7254951428499890870">আপনি কি ডায়গনিস্টিক মোডে "<ph name="APP_NAME" />" লঞ্চ করার বিষয়ে নিশ্চিত?</translation>
 <translation id="7255002516883565667">এই মুহূর্তে, আপনার কাছে একটি কার্ড রয়েছে যা শুধুমাত্র এই ডিভাইসে ব্যবহার করা যেতে পারে</translation>
-<translation id="7255916308560539517">রিসেট করা কনফার্ম করতে আপনার নিরাপত্তা কী আবার টাচ করুন। পিন সহ নিরাপত্তা কীয়ে সেভ করা সব তথ্য মুছে যাবে।</translation>
 <translation id="7255935316994522020">প্রয়োগ করুন</translation>
 <translation id="7256069762010468647">সাইটটি আপনার ক্যামেরা ব্যবহার করছে</translation>
 <translation id="7256405249507348194">অস্বীকৃত ত্রুটি: <ph name="DESC" /></translation>
@@ -4768,6 +4760,7 @@
 <translation id="7968833647796919681">কার্য-সম্পাদনা ডেটা সংগ্রহ সক্ষম করুন</translation>
 <translation id="7968982339740310781">বিশদ বিবরণ দেখুন</translation>
 <translation id="7969046989155602842">কমান্ড</translation>
+<translation id="7970882136539140748">এই মুহূর্তে কার্ডটি সেভ করা যাবে না</translation>
 <translation id="7972714317346275248">RSA এনক্রিপশানের সাথে PKCS #1 SHA-384</translation>
 <translation id="7973962044839454485">একটি ভুল ইউজারনেম বা পাসওয়ার্ডের কারণে PPP যাচাই করা যায়নি৷</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> ব্যবহার করার জন্য আবার চেষ্টা করুন</translation>
@@ -5088,7 +5081,6 @@
 <translation id="8431909052837336408">সিম পিন পরিবর্তন করুন</translation>
 <translation id="8434480141477525001">NaCl ডিবাগ পোর্ট</translation>
 <translation id="8435395510592618362"><ph name="APP_NAME" /> ব্যবহার করে আপনার পরিচয় যাচাই করুন</translation>
-<translation id="843760761634048214">ক্রেডিট কার্ড সেভ করুন</translation>
 <translation id="8438328416656800239">একটি স্মার্ট ব্রাউজারে স্যুইচ করুন</translation>
 <translation id="8438566539970814960">সার্চ এবং ব্রাউজিং অভিজ্ঞতা আরও উন্নত করুন</translation>
 <translation id="8439506636278576865">এই ভাষাতে পৃষ্ঠাগুলি অনুবাদ করার প্রস্তাব করে</translation>
@@ -5471,6 +5463,7 @@
 <translation id="8965037249707889821">পুরানো পাসওয়ার্ড লিখুন</translation>
 <translation id="8966870118594285808">ভুল করে কোন ট্যাব বন্ধ করে থাকলে সেটি আবার খুলুন</translation>
 <translation id="8967866634928501045">দেখতে Alt Shift A টিপুন</translation>
+<translation id="8968766641738584599">কার্ড সেভ করুন</translation>
 <translation id="89720367119469899">অব্যাহতি</translation>
 <translation id="8972513834460200407">Google সার্ভারগুলি থেকে ডাউনলোডগুলিকে ফায়ারওয়াল ব্লক করছে না তা নিশ্চিত করতে অনুগ্রহ করে আপনার নেটওয়ার্ক অ্যাডমিনিস্ট্রেটরের মাধ্যমে পরীক্ষা করুন৷</translation>
 <translation id="8973557916016709913">জুম লেভেল সরান</translation>
@@ -5577,7 +5570,6 @@
 <translation id="9116799625073598554">টিকা-লেখার অ্যাপ</translation>
 <translation id="9117030152748022724">আপনার অ্যাপ ম্যানেজ করুন</translation>
 <translation id="9121814364785106365">পিন করা ট্যাব হিসেবে খুলুন</translation>
-<translation id="9122074588095746047">ADB চালু করা যায়নি</translation>
 <translation id="9124003689441359348">সংরক্ষিত পাসওয়ার্ডগুলি এখানে দেখা যাবে</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" />টি বাকি)</translation>
 <translation id="9128317794749765148">সেট-আপ করা যায়নি</translation>

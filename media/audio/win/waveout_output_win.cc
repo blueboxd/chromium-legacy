@@ -320,8 +320,9 @@ void PCMWaveOutAudioOutputStream::GetVolume(double* volume) {
 
 void PCMWaveOutAudioOutputStream::HandleError(MMRESULT error) {
   DLOG(WARNING) << "PCMWaveOutAudio error " << error;
+  // TODO(dalecurtis): See about sending a translated |error| code.
   if (callback_)
-    callback_->OnError();
+    callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
 }
 
 void PCMWaveOutAudioOutputStream::QueueNextPacket(WAVEHDR *buffer) {

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_DELEGATE_H_
 #define CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_DELEGATE_H_
 
-#include "base/macros.h"
-
 class Browser;
 class SigninViewController;
 
@@ -53,11 +51,7 @@ class SigninViewControllerDelegate {
   virtual content::WebContents* GetWebContents() = 0;
 
  protected:
-  SigninViewControllerDelegate();
-  virtual ~SigninViewControllerDelegate();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SigninViewControllerDelegate);
+  virtual ~SigninViewControllerDelegate() = default;
 };
 
 #endif  // CHROME_BROWSER_UI_SIGNIN_VIEW_CONTROLLER_DELEGATE_H_

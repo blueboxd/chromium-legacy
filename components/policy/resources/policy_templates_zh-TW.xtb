@@ -961,6 +961,15 @@
           如果啟用或不設定這項政策，使用某些指令列標記啟動 Chrome 時，系統會顯示安全性警告。
 
           在 Windows 上，這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
+<translation id="2480971699591919564">啟用「點選通話」功能，讓登入 Google 帳戶的使用者可以將電話號碼從 Chrome 桌面傳送到 Android 裝置。詳情請參閱說明中心文章：https://support.google.com/chrome/answer/9430554?hl=zh-TW。
+
+      如果將這項政策設為啟用，Chrome 使用者便可以將電話號碼傳送到 Android 裝置。
+
+      如果將這項政策設為停用，Chrome 使用者則無法將電話號碼傳送到 Android 裝置。
+
+      設好這項政策後，使用者即無法變更或覆寫設定。
+
+      如果不設定這項政策，系統在預設狀態下會啟用「點選通話」功能。</translation>
 <translation id="2482676533225429905">內建訊息傳遞</translation>
 <translation id="2483146640187052324">無論使用任何網路連線，皆預測網路動作</translation>
 <translation id="2484208301968418871">這項政策可決定是否套用安全網站網址篩選器。
@@ -1942,6 +1951,7 @@
 <translation id="4075864623710596000">這份清單中指定的主機名稱會從 HTTP 嚴格傳輸安全性政策檢查作業中排除，該檢查可能會將要求從 HTTP 升級為 HTTPS。這項政策只允許單一標籤主機名稱。主機名稱必須標準化：任何 IDN 都必須轉換為單一標籤格式，且所有 ASCII 字母都必須使用小寫。這項政策只適用於指定的主機名稱，不適用於指定主機名稱的子網域。</translation>
 <translation id="408029843066770167">允許向 Google 時間服務傳送查詢</translation>
 <translation id="408076456549153854">允許登入瀏覽器</translation>
+<translation id="4082498585300984671">啟用「點選通話」功能</translation>
 <translation id="40853027210512570">覆寫 <ph name="PRODUCT_NAME" /> 的預設印表機選取規則。
 
       這項政策可讓你決定在 <ph name="PRODUCT_NAME" /> 中首次透過設定檔使用列印功能時，選取預設印表機的規則。
@@ -3492,13 +3502,6 @@
       如要禁止透過無痕模式登入其他帳戶，建議你使用 IncognitoModeAvailability 政策封鎖該模式。
 
       請注意，使用者只要封鎖 Google 服務的 Cookie，即可在未經驗證的狀態下存取 Google 服務。</translation>
-<translation id="6837480141980366278">控制是否要在 <ph name="PRODUCT_NAME" /> 中使用內建 DNS 用戶端。
-
-      如果你將這項政策設為 True，系統就會使用內建 DNS 用戶端 (如果可用)。
-
-      如果你將這項政策設為 False，系統就一律不會使用內建 DNS 用戶端。
-
-      如未設定這項政策，根據預設，系統會為 MacOS、Android (當私人 DNS 和 VPN 皆未啟用) 和 Chrome 作業系統啟用內建 DNS 用戶端；使用者可以透過編輯 chrome://flags 或指定命令列標記，自行決定是否要使用內建 DNS 用戶端。</translation>
 <translation id="6843296367238757293">這項政策已遭到淘汰，因此不建議你使用此政策。詳情請參閱 https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">這項政策已在 <ph name="PRODUCT_NAME" /> 68 中遭到移除，並已由 <ph name="ARC_GLS_POLICY_NAME" /> 取代。</translation>
 <translation id="6851199885688265233">啟用游標醒目顯示無障礙功能</translation>
@@ -3893,13 +3896,6 @@
 <translation id="7373200034079131670">在 Android 或 VM 已啟動的前提下，於使用者登出時重新啟動。</translation>
 <translation id="737655323154569539">限制列印頁面大小。未設定這項政策或將設定留空，系統會視為未設限制。</translation>
 <translation id="7382191643394429934">不論是否使用背景圖形一律允許列印</translation>
-<translation id="7383445181072113521">決定 DHCP 要求所使用的裝置主機名稱。
-
-      如果將這項政策的值設為非空白字串，系統會將該字串設為 DHCP 要求中的裝置主機名稱。
-
-      字串可包含 <ph name="ASSET_ID_PLACEHOLDER" />、<ph name="SERIAL_NUM_PLACEHOLDER" />、<ph name="MAC_ADDR_PLACEHOLDER" />、<ph name="MACHINE_NAME_PLACEHOLDER" /> 變數，這些變數會先替換成裝置的值，再做為主機名稱使用。請注意，替換後的值必須是有效的主機名稱 (根據 RFC 1035 文件第 3.1 條的規定)。
-
-      如果未設定這項政策，或是替換後的值不是有效的主機名稱，系統將不會設定 DHCP 要求中的主機名稱。 </translation>
 <translation id="7389872682701720082">如果啟用這項設定，系統會一律執行未過期的外掛程式。
 
       如果停用這項設定或不設定，系統將徵求使用者許可來執行需要授權的外掛程式。這些外掛程式可能會危害系統的安全性。</translation>
@@ -4282,7 +4278,6 @@
 <translation id="8141795997560411818">這項政策不會禁止使用者使用 Android Google 雲端硬碟應用程式。如要禁止存取 Google 雲端硬碟，則必須一併禁止安裝 Android Google 雲端硬碟應用程式。</translation>
 <translation id="8142894094385450823">針對受管理工作階段設定建議語言代碼</translation>
 <translation id="8146727383888924340">允許使用者透過 Chrome OS Registration 兌換優惠</translation>
-<translation id="8148785525797916822">在我們已停止支援的電腦或作業系統執行 <ph name="PRODUCT_NAME" /> 時，不顯示警告訊息。</translation>
 <translation id="8148901634826284024">啟用高反差模式協助功能。
 
           如果你將這項政策設為 True，系統將一律啟用高反差模式。

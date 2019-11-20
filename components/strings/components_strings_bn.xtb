@@ -278,7 +278,6 @@
 <translation id="2248949050832152960">WebAuthn ব্যবহার করুন</translation>
 <translation id="2250931979407627383">বাঁদিকে ধারের দিকে সেলাই</translation>
 <translation id="225207911366869382">এই মান এই নীতির জন্য অসমর্থিত হয়েছে৷</translation>
-<translation id="2257315177824333709">আপনার কার্ড এখন সেভ করা যাচ্ছে না</translation>
 <translation id="2258928405015593961">ভবিষ্যতের কোনও একটি তারিখকে মেয়াদ শেষের তারিখ হিসেবে লিখুন এবং আবার চেষ্টা করুন</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
 <translation id="2263079731045660823">Chrome সেটিংসে ক্রেডিট কার্ডের অটোমেটিক পূরণের তথ্য আপডেট করুন</translation>
@@ -665,6 +664,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{আরও <ph name="ITEM_COUNT" />টি আইটেম}one{আরও <ph name="ITEM_COUNT" />টি আইটেম}other{আরও <ph name="ITEM_COUNT" />টি আইটেম}}</translation>
 <translation id="4176463684765177261">অক্ষম হয়েছে</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4194250254487269611">এই মুহূর্তে আপনার কার্ডটি সেভ করা যাবে না</translation>
 <translation id="4196861286325780578">&amp;সরানোর কাজটি আবার করুন</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ফায়ারওয়াল এবং অ্যান্টিভাইরাস কনফিগারেশন পরীক্ষা করে দেখুন<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>

@@ -107,8 +107,8 @@ struct MessageMemoryDumpInfo {
 
 struct MessageMemoryDumpInfoHash {
   size_t operator()(const MessageMemoryDumpInfo& info) const {
-    return base::HashInts32(
-        info.id, info.profiler_tag ? base::Hash(info.profiler_tag) : 0);
+    return base::HashInts(
+        info.id, info.profiler_tag ? base::FastHash(info.profiler_tag) : 0);
   }
 };
 

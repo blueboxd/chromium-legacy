@@ -129,6 +129,28 @@ TEST_P(BrowserDMTokenStorageStoreAndRetrieveTest, StoreDMToken) {
   }
 }
 
+TEST_F(BrowserDMTokenStorageTest, InvalidateDMToken) {
+  storage_.SetDMToken(kDMToken1);
+  auto initial_dm_token = storage_.RetrieveBrowserDMToken();
+  EXPECT_EQ(kDMToken1, initial_dm_token.value());
+  EXPECT_TRUE(initial_dm_token.is_valid());
+
+  storage_.InvalidateDMToken(base::DoNothing());
+  auto invalid_dm_token = storage_.RetrieveBrowserDMToken();
+  EXPECT_TRUE(invalid_dm_token.is_invalid());
+}
+
+TEST_F(BrowserDMTokenStorageTest, ClearDMToken) {
+  storage_.SetDMToken(kDMToken1);
+  auto initial_dm_token = storage_.RetrieveBrowserDMToken();
+  EXPECT_EQ(kDMToken1, initial_dm_token.value());
+  EXPECT_TRUE(initial_dm_token.is_valid());
+
+  storage_.ClearDMToken(base::DoNothing());
+  auto empty_dm_token = storage_.RetrieveBrowserDMToken();
+  EXPECT_TRUE(empty_dm_token.is_empty());
+}
+
 TEST_P(BrowserDMTokenStorageStoreAndRetrieveTest, RetrieveDMToken) {
   auto dm_token = storage_.RetrieveBrowserDMToken();
   if (GetParam().expect_valid || GetParam().expect_empty) {

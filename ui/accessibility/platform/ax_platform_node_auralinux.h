@@ -138,8 +138,23 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
   void ScrollToPoint(AtkCoordType atk_coord_type, int x, int y);
+  void ScrollNodeRectIntoView(gfx::Rect rect, AtkScrollType atk_scroll_type);
   void ScrollNodeIntoView(AtkScrollType atk_scroll_type);
 #endif  // defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 30, 0)
+
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 32, 0)
+  base::Optional<gfx::Rect> GetUnclippedHypertextRangeBoundsRect(
+      int start_offset,
+      int end_offset);
+  bool ScrollSubstringIntoView(AtkScrollType atk_scroll_type,
+                               int start_offset,
+                               int end_offset);
+  bool ScrollSubstringToPoint(int start_offset,
+                              int end_offset,
+                              AtkCoordType atk_coord_type,
+                              int x,
+                              int y);
+#endif  // defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 32, 0)
 
   // Misc helpers
   void GetFloatAttributeInGValue(ax::mojom::FloatAttribute attr, GValue* value);

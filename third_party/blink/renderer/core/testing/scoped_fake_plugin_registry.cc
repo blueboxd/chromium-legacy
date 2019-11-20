@@ -31,20 +31,42 @@ class FakePluginRegistryImpl : public mojom::blink::PluginRegistry {
   void GetPlugins(bool refresh,
                   const scoped_refptr<const SecurityOrigin>& origin,
                   GetPluginsCallback callback) override {
-    auto mime = mojom::blink::PluginMimeType::New();
-    mime->mime_type = "application/pdf";
-    mime->description = "pdf";
-
-    auto plugin = mojom::blink::PluginInfo::New();
-    plugin->name = "pdf";
-    plugin->description = "pdf";
-    plugin->filename = base::FilePath(FILE_PATH_LITERAL("pdf-files"));
-    plugin->background_color = SkColorSetRGB(38, 38, 38);
-    plugin->may_use_external_handler = true;
-    plugin->mime_types.push_back(std::move(mime));
-
     Vector<mojom::blink::PluginInfoPtr> plugins;
-    plugins.push_back(std::move(plugin));
+    {
+      auto mime = mojom::blink::PluginMimeType::New();
+      mime->mime_type = "application/pdf";
+      mime->description = "pdf";
+
+      auto plugin = mojom::blink::PluginInfo::New();
+      plugin->name = "pdf";
+      plugin->description = "pdf";
+      plugin->filename = base::FilePath(FILE_PATH_LITERAL("pdf-files"));
+      plugin->background_color = SkColorSetRGB(38, 38, 38);
+      // Setting |true| below means we create an HTML document instead of a
+      // PluginDocument, and mark it for an external handler (see
+      // DOMImplementation::createDocument()).
+      plugin->may_use_external_handler = true;
+      plugin->mime_types.push_back(std::move(mime));
+
+      plugins.push_back(std::move(plugin));
+    }
+    {
+      auto mime = mojom::blink::PluginMimeType::New();
+      mime->mime_type = "application/x-webkit-test-webplugin";
+      mime->description = "test-plugin";
+
+      auto plugin = mojom::blink::PluginInfo::New();
+      plugin->name = "test-plugin";
+      plugin->description = "test-plugin";
+      plugin->filename = base::FilePath(FILE_PATH_LITERAL("test-plugin-files"));
+      plugin->background_color = SkColorSetRGB(38, 38, 38);
+      // Setting |false| below ensures a PluginDocument will be created.
+      plugin->may_use_external_handler = false;
+      plugin->mime_types.push_back(std::move(mime));
+
+      plugins.push_back(std::move(plugin));
+    }
+
     std::move(callback).Run(std::move(plugins));
   }
 

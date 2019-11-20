@@ -1,1 +1,8 @@
-# TODO(jonross): Remove once Finch completes.
+# Flaky Input Related Tests
+crbug.com/1026375 media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure Pass ]
+crbug.com/1026375 media/media-controls-tap-show-controls-without-activating.html [ Failure Pass ]
+crbug.com/1026375 media/video-controls-auto-hide-after-play-by-touch.html [ Failure Pass ]
+crbug.com/1026375 media/video-controls-hide-after-touch-on-control.html [ Failure Pass ]
+crbug.com/1026375 media/video-controls-hide-on-move-outside-controls.html [ Failure Pass ]
+crbug.com/1026375 media/video-controls-visibility-multimodal-touch-after-mouse.html [ Failure Pass ]
+crbug.com/1026375 media/video-persistence.html [ Failure Pass ]

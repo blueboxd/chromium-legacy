@@ -6,6 +6,7 @@ package org.chromium.device.bluetooth;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -143,10 +144,11 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
 
     /**
      * Starts a Low Energy scan.
+     * @param filters List of filters used to minimize number of devices returned
      * @return True on success.
      */
     @CalledByNative
-    private boolean startScan() {
+    private boolean startScan(List<ScanFilter> filters) {
         Wrappers.BluetoothLeScannerWrapper scanner = mAdapter.getBluetoothLeScanner();
 
         if (scanner == null) {
@@ -165,7 +167,7 @@ final class ChromeBluetoothAdapter extends BroadcastReceiver {
         mScanCallback = new ScanCallback();
 
         try {
-            scanner.startScan(null /* filters */, scanMode, mScanCallback);
+            scanner.startScan(filters, scanMode, mScanCallback);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Cannot start scan: " + e);
             mScanCallback = null;

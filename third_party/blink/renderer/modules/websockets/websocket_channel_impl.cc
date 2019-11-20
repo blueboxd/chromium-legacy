@@ -990,6 +990,7 @@ void WebSocketChannelImpl::OnConnectionError(const base::Location& set_from,
 }
 
 void WebSocketChannelImpl::Dispose() {
+  message_chunks_.Reset();
   has_initiated_opening_handshake_ = true;
   feature_handle_for_scheduler_.reset();
   handshake_throttle_.reset();

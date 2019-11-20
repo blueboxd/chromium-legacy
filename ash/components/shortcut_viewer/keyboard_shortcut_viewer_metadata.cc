@@ -1387,6 +1387,26 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
        // |accelerator_ids|
        {{ui::VKEY_A, ui::EF_COMMAND_DOWN}}},
+
+      {// |categories|
+       {ShortcutCategory::kAccessibility},
+       IDS_KSV_DESCRIPTION_MOVE_APPS_IN_GRID,
+       IDS_KSV_SHORTCUT_MOVE_APPS_IN_GRID,
+       // |accelerator_ids|
+       {},
+       // |shortcut_key_codes|
+       {ui::VKEY_CONTROL, ui::VKEY_LEFT, ui::VKEY_RIGHT, ui::VKEY_UP,
+        ui::VKEY_DOWN}},
+
+      {// |categories|
+       {ShortcutCategory::kAccessibility},
+       IDS_KSV_DESCRIPTION_MOVE_APPS_IN_OUT_FOLDER,
+       IDS_KSV_SHORTCUT_MOVE_APPS_IN_OUT_FOLDER,
+       // |accelerator_ids|
+       {},
+       // |shortcut_key_codes|
+       {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT, ui::VKEY_LEFT,
+        ui::VKEY_RIGHT, ui::VKEY_UP, ui::VKEY_DOWN}},
   });
 
   static bool is_initialized = false;

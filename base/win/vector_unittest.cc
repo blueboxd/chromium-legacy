@@ -663,6 +663,7 @@ TEST(VectorTest, First) {
   hr = iterator->MoveNext(&has_current);
   EXPECT_FALSE(SUCCEEDED(hr));
   EXPECT_EQ(E_BOUNDS, hr);
+  EXPECT_FALSE(has_current);
   hr = iterator->get_Current(&current);
   EXPECT_FALSE(SUCCEEDED(hr));
   EXPECT_EQ(E_BOUNDS, hr);

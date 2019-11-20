@@ -49,7 +49,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
       scoped_refptr<media::VideoFrame> frame,
       MockMediaStreamVideoSink* sink) {
     base::RunLoop run_loop;
-    base::Closure quit_closure = run_loop.QuitClosure();
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
     EXPECT_CALL(*sink, OnVideoFrame())
         .WillOnce(RunClosure(std::move(quit_closure)));
     mock_source()->DeliverVideoFrame(std::move(frame));
@@ -276,7 +276,7 @@ TEST_F(MediaStreamVideoTrackTest, CheckTrackRequestsFrame) {
   // Add sink and expect to get a frame.
   MockMediaStreamVideoSink sink;
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(sink, OnVideoFrame())
       .WillOnce(RunClosure(std::move(quit_closure)));
   sink.ConnectToTrack(track);

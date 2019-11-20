@@ -19,4 +19,7 @@ extern NSString* const kFindInPagePreviousButtonId;
 // The a11y ID of the "close" button in the find-in-page bar.
 extern NSString* const kFindInPageCloseButtonId;
 
+// The a11y ID of the find-in-page bar.
+extern NSString* const kFindInPageContainerViewId;
+
 #endif  // IOS_CHROME_BROWSER_UI_FIND_BAR_FIND_BAR_CONSTANTS_H_

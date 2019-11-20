@@ -44,6 +44,19 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // view is active during dragging.
   static constexpr float kVelocityToOverviewThreshold = 1000.f;
 
+  // If the window drag starts within |kDistanceFromEdge| from screen edge, it
+  // will get snapped if the drag ends in the snap region, no matter how far
+  // the window has been dragged.
+  static constexpr int kDistanceFromEdge = 16;
+  // If the window drag starts in a snap region, it needs to be dragged
+  // |kMinDragDistanceInSnapRegion| toward the snap direction for the window to
+  // be snapped.
+  static constexpr int kMinDragDistanceInSnapRegion = 48;
+  // If the window drag starts outside a snap region, it needs to be dragged
+  // |kMinDragDistanceOutsideSnapRegion| toward the snap direction for the
+  // window to be snapped.
+  static constexpr int kMinDragDistanceOutsideSnapRegion = 96;
+
   // The distance for the dragged window to pass over the bottom of the display
   // so that it can be dragged into home launcher or overview. If not pass this
   // value, the window will snap back to its original position. The value is

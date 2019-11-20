@@ -591,16 +591,22 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureParam
     kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant[] = {
         {"feed_ui_enabled", "true"},
-        {"undoable_actions_enabled", "true"}};
+        {"undoable_actions_enabled", "true"},
+        {"manage_interests_enabled", "true"},
+        {"card_menu_tooltip_eligible", "true"}};
 const FeatureEntry::FeatureParam
     kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant[] = {
         {"snippets_enabled", "true"},
-        {"undoable_actions_enabled", "true"}};
+        {"undoable_actions_enabled", "true"},
+        {"manage_interests_enabled", "true"},
+        {"card_menu_tooltip_eligible", "true"}};
 const FeatureEntry::FeatureParam
     kInterestFeedLargeImagesAndSnippetsWithUndoableActionsFeatureVariationConstant
         [] = {{"feed_ui_enabled", "true"},
               {"snippets_enabled", "true"},
-              {"undoable_actions_enabled", "true"}};
+              {"undoable_actions_enabled", "true"},
+              {"manage_interests_enabled", "true"},
+              {"card_menu_tooltip_eligible", "true"}};
 const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
     {"(larger images)", kInterestFeedLargerImagesFeatureVariationConstant,
      base::size(kInterestFeedLargerImagesFeatureVariationConstant), nullptr},

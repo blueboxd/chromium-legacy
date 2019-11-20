@@ -11,7 +11,7 @@ class Timeout;
 class Status;
 
 class NonBlockingNavigationTracker : public PageLoadStrategy {
-public:
+ public:
   NonBlockingNavigationTracker() {}
 
   ~NonBlockingNavigationTracker() override;
@@ -21,6 +21,7 @@ public:
                              const Timeout* timeout,
                              bool* is_pending) override;
   void set_timed_out(bool timed_out) override;
+  void ClearState(const std::string& new_frame_id) override;
   bool IsNonBlocking() const override;
 };
 

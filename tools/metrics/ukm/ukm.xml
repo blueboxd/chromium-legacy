@@ -7444,6 +7444,47 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Security.SafetyTip">
+  <owner>jdeblasio@chromium.org</owner>
+  <owner>enamelites@google.com</owner>
+  <owner>beggs@google.com</owner>
+  <summary>
+    Collected when any safety tip heuristic triggers, regardless of whether the
+    Safety Tip UI is shown.
+  </summary>
+  <metric name="SafetyTipInteraction" enum="SafetyTipInteraction">
+    <summary>
+      How the user interacted with the UI, if applicable.
+    </summary>
+  </metric>
+  <metric name="SafetyTipStatus" enum="SafetyTipStatus">
+    <summary>
+      The final reported Safety Tip status.
+    </summary>
+  </metric>
+  <metric name="TriggeredKeywordsHeuristics" enum="Boolean">
+    <summary>
+      Whether the sensitive keywords heuristic triggered.
+    </summary>
+  </metric>
+  <metric name="TriggeredLookalikeHeuristics" enum="Boolean">
+    <summary>
+      Whether the lookalike keywords heuristic triggered.
+    </summary>
+  </metric>
+  <metric name="TriggeredServerSideBlocklist" enum="Boolean">
+    <summary>
+      Whether the server-side blocklist heuristic triggered.
+    </summary>
+  </metric>
+  <metric name="UserPreviouslyIgnored" enum="Boolean">
+    <summary>
+      Whether the user had already ignored a safety tip warning for this page in
+      the past, meaning no tip was shown.
+    </summary>
+  </metric>
+</event>
+
 <event name="Security.SiteEngagement">
   <owner>cthomp@chromium.org</owner>
   <owner>enamelites@google.com</owner>

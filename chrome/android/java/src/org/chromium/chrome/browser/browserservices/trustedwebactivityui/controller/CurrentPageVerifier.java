@@ -12,7 +12,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.Promise;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -87,10 +86,8 @@ public class CurrentPageVerifier implements NativeInitObserver {
             ActivityLifecycleDispatcher lifecycleDispatcher,
             TabObserverRegistrar tabObserverRegistrar,
             CustomTabActivityTabProvider tabProvider,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             Verifier delegate) {
-        // TODO(peconn): Change the CustomTabIntentDataProvider to a BrowserServices... once
-        // https://chromium-review.googlesource.com/c/chromium/src/+/1877600 has landed.
         mTabProvider = tabProvider;
         mIntentDataProvider = intentDataProvider;
         mDelegate = delegate;

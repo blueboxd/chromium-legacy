@@ -68,72 +68,72 @@ selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0|<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div>|<br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div>|<br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-7 ltr right word');
 
 selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div>|<br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div>|<br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div>|<br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-8 ltr right word');
 
 selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br>|</div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div>|<br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div>|<br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-9 ltr right word');
 
 selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div>|<div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div>|<br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div>|<br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-10 ltr right word');
 
 selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div>|<br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div>|<br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div>|<br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-11 ltr right word');
 
 selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br>|</div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div>|<br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div>|<br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-12 ltr right word');
 
 selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div>|<div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>|\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>|\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-13 ltr right word');
 
 selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div>|<br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>|\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>|\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-14 ltr right word');
 
 selection_test(
   '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br>|</div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
   isMac
-      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>|\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="ltr">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>|\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-15 ltr right word');
 
 selection_test(

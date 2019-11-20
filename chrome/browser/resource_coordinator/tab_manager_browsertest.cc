@@ -9,7 +9,6 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "build/build_config.h"
@@ -153,8 +152,6 @@ class TabManagerTest : public InProcessBrowserTest {
     // Start with a non-null TimeTicks, as there is no discard protection for
     // a tab with a null focused timestamp.
     test_clock_.Advance(kShortDelay);
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteCharacteristicsDatabase);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -319,7 +316,6 @@ class TabManagerTest : public InProcessBrowserTest {
   util::test::FakeMemoryPressureMonitor fake_memory_pressure_monitor_;
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class TabManagerTestWithTwoTabs : public TabManagerTest {

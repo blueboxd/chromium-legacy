@@ -79,9 +79,7 @@ CdmProxy::KeyType ToMediaKeyType(cdm::CdmProxy::KeyType key_type) {
 MojoCdmProxy::MojoCdmProxy(
     mojo::PendingRemote<mojom::CdmProxy> cdm_proxy_remote,
     cdm::CdmProxyClient* client)
-    : cdm_proxy_remote_(std::move(cdm_proxy_remote)),
-      client_(client),
-      client_binding_(this) {
+    : cdm_proxy_remote_(std::move(cdm_proxy_remote)), client_(client) {
   DVLOG(1) << __func__;
   DCHECK(client);
 }
@@ -93,14 +91,11 @@ MojoCdmProxy::~MojoCdmProxy() {
 void MojoCdmProxy::Initialize() {
   DVLOG(2) << __func__;
 
-  mojom::CdmProxyClientAssociatedPtrInfo client_ptr_info;
-  client_binding_.Bind(mojo::MakeRequest(&client_ptr_info));
-
   auto callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       base::BindOnce(&MojoCdmProxy::OnInitialized, weak_factory_.GetWeakPtr()),
       media::CdmProxy::Status::kFail, media::CdmProxy::Protocol::kNone, 0,
       CdmContext::kInvalidCdmId);
-  cdm_proxy_remote_->Initialize(std::move(client_ptr_info),
+  cdm_proxy_remote_->Initialize(client_receiver_.BindNewEndpointAndPassRemote(),
                                 std::move(callback));
 }
 

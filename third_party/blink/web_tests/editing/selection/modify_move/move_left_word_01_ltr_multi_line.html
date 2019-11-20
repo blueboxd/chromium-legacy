@@ -59,19 +59,19 @@ selection_test(
 selection_test(
   '<div contenteditable dir="ltr">abc def<br>|<br><br>uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc |def<br><br><br>uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def|<br><br><br>uvw xyz</div>',
   '1-8 ltr left word');
 
 selection_test(
   '<div contenteditable dir="ltr">abc def<br><br>|<br>uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc |def<br><br><br>uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def<br>|<br><br>uvw xyz</div>',
   '1-9 ltr left word');
 
 selection_test(
   '<div contenteditable dir="ltr">abc def<br><br><br>|uvw xyz</div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="ltr">abc |def<br><br><br>uvw xyz</div>',
+  '<div contenteditable dir="ltr">abc def<br><br>|<br>uvw xyz</div>',
   '1-10 ltr left word');
 
 selection_test(

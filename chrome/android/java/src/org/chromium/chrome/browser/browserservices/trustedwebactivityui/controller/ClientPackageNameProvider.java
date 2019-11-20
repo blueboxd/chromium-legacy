@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.browserservices.trustedwebactivityui.control
 import android.os.Bundle;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -30,7 +30,7 @@ public class ClientPackageNameProvider implements SaveInstanceStateObserver {
     public ClientPackageNameProvider(
             ChromeActivity activity,
             ActivityLifecycleDispatcher lifecycleDispatcher,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabsConnection customTabsConnection) {
         Bundle savedInstanceState = activity.getSavedInstanceState();
         if (savedInstanceState != null) {

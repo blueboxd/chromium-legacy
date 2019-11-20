@@ -26,9 +26,10 @@ namespace chromeos {
 // live on a single thread (where all methods must be called).
 class CHROMEOS_EXPORT ProcessProxyRegistry {
  public:
-  using OutputCallback = base::Callback<void(const std::string& id,
-                                             const std::string& output_type,
-                                             const std::string& output_data)>;
+  using OutputCallback =
+      base::RepeatingCallback<void(const std::string& id,
+                                   const std::string& output_type,
+                                   const std::string& output_data)>;
 
   // Info we need about a ProcessProxy instance.
   struct ProcessProxyInfo {

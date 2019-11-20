@@ -746,7 +746,7 @@ class TestAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
     return 0;
   }
 
-  void OnError() override { FAIL(); }
+  void OnError(ErrorType type) override { FAIL(); }
 
  private:
   const int expected_frames_per_buffer_;

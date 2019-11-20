@@ -6,7 +6,10 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.support.annotation.IntDef;
 
+import androidx.browser.customtabs.CustomTabsSessionToken;
+
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.gsa.GSAState;
@@ -19,8 +22,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import javax.inject.Inject;
-
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /**
  * Keeps the client app alive, when possible, while CustomTabActivity is in foreground (see
@@ -41,14 +42,14 @@ public class CustomTabActivityClientConnectionKeeper implements StartStopWithNat
     }
 
     private final CustomTabsConnection mConnection;
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final CustomTabActivityTabProvider mTabProvider;
 
     private boolean mIsKeepingAlive;
 
     @Inject
     public CustomTabActivityClientConnectionKeeper(CustomTabsConnection connection,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             CustomTabActivityTabProvider tabProvider) {
         mConnection = connection;

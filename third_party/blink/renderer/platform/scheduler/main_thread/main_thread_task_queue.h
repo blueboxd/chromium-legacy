@@ -27,8 +27,8 @@ namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplTest;
 }
 
-namespace frame_interference_recorder_test {
-class FrameInterferenceRecorderTest;
+namespace agent_interference_recorder_test {
+class AgentInterferenceRecorderTest;
 }
 
 class FrameSchedulerImpl;
@@ -400,7 +400,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   friend class base::sequence_manager::SequenceManager;
   friend class blink::scheduler::main_thread_scheduler_impl_unittest::
       MainThreadSchedulerImplTest;
-  friend class frame_interference_recorder_test::FrameInterferenceRecorderTest;
+  friend class agent_interference_recorder_test::AgentInterferenceRecorderTest;
 
   // Clear references to main thread scheduler and frame scheduler and dispatch
   // appropriate notifications. This is the common part of ShutdownTaskQueue and

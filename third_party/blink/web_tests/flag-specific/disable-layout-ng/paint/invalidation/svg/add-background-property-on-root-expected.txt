@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV",
+          "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 100, 100],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutSVGRoot svg",

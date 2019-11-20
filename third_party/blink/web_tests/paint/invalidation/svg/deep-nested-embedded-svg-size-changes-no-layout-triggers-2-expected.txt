@@ -17,11 +17,6 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [1, 1, 300, 150],
-          "reason": "chunk disappeared"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [212, 12, 180, 180],
           "reason": "paint property change"

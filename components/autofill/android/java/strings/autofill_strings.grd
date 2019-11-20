@@ -58,6 +58,7 @@
     <output filename="values-zh-rTW/autofill_strings.xml" lang="zh-TW" type="android" />
   </outputs>
   <translations>
+    <file lang="af" path="translations/autofill_strings_af.xtb" />
     <file lang="am" path="translations/autofill_strings_am.xtb" />
     <file lang="ar" path="translations/autofill_strings_ar.xtb" />
     <file lang="bg" path="translations/autofill_strings_bg.xtb" />

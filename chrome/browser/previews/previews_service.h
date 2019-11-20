@@ -17,33 +17,20 @@
 #include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/optimization_guide/top_host_provider.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace content {
 class BrowserContext;
-}
-
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
-
-namespace optimization_guide {
-class OptimizationGuideService;
-}
+}  // namespace content
 
 namespace previews {
 class PreviewsUIService;
 typedef std::vector<std::unique_ptr<re2::RE2>> RegexpList;
 }  // namespace previews
-
-namespace leveldb_proto {
-class ProtoDatabaseProvider;
-}
 
 class PreviewsOfflineHelper;
 
@@ -54,13 +41,9 @@ class PreviewsService : public KeyedService {
   explicit PreviewsService(content::BrowserContext* browser_context);
   ~PreviewsService() override;
 
-  // Initializes the UI Service. |optimization_guide_service| is the
-  // Optimization Guide Service that is being listened to and is guaranteed to
-  // outlive |this|. |ui_task_runner| is the UI thread task runner.
+  // Initializes the UI Service. |ui_task_runner| is the UI thread task runner.
   // |profile_path| is the path to user data on disc.
   void Initialize(
-      optimization_guide::OptimizationGuideService* optimization_guide_service,
-      leveldb_proto::ProtoDatabaseProvider* database_provider,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
       const base::FilePath& profile_path);
 
@@ -113,15 +96,7 @@ class PreviewsService : public KeyedService {
   // which DeferAllScript preview can't be shown.
   bool MatchesDeferAllScriptDenyListRegexp(const GURL& url) const;
 
-  optimization_guide::TopHostProvider* GetTopHostProviderForTesting() const {
-    return top_host_provider_.get();
-  }
-
  private:
-  // The top site provider for use with the Previews Optimization Guide's Hints
-  // Fetcher.
-  std::unique_ptr<optimization_guide::TopHostProvider> top_host_provider_;
-
   // The previews UI thread service.
   std::unique_ptr<previews::PreviewsUIService> previews_ui_service_;
 
@@ -134,10 +109,6 @@ class PreviewsService : public KeyedService {
 
   // Guaranteed to outlive |this|.
   content::BrowserContext* browser_context_;
-
-  // URL Factory for the Previews Optimization Guide's Hints Fetcher.
-  scoped_refptr<network::SharedURLLoaderFactory>
-      optimization_guide_url_loader_factory_;
 
   // Stores history of URL redirects. Key is the starting URL and value is the
   // URL that the starting URL redirected to. Populated only when DeferAllScript

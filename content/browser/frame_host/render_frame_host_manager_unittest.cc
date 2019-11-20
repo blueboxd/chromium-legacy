@@ -148,7 +148,7 @@ class RenderFrameHostManagerTestWebUIControllerFactory
     // If WebUI creation is enabled for the test and this is a WebUI URL,
     // returns a mock WebUI type.
     if (HasWebUIScheme(url)) {
-      return reinterpret_cast<WebUI::TypeID>(base::Hash(url.host()));
+      return reinterpret_cast<WebUI::TypeID>(base::FastHash(url.host()));
     }
     return WebUI::kNoWebUI;
   }

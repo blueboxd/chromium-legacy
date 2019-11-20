@@ -20,7 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using crostini::mojom::InstallerError;
 using crostini::mojom::InstallerState;
@@ -40,12 +39,12 @@ class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
   }
 
   bool HasEnabledAcceptButton() {
-    return ActiveView()->GetDialogClientView()->ok_button() != nullptr &&
+    return ActiveView()->GetOkButton() != nullptr &&
            ActiveView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK);
   }
 
   bool HasEnabledCancelButton() {
-    return ActiveView()->GetDialogClientView()->cancel_button() != nullptr &&
+    return ActiveView()->GetCancelButton() != nullptr &&
            ActiveView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_CANCEL);
   }
 
@@ -73,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
   EXPECT_FALSE(fake_delegate_.progress_callback_)
       << "Install() should not be called";
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_FALSE(HasEnabledAcceptButton());
   EXPECT_TRUE(HasEnabledCancelButton());
@@ -97,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
   ShowUi("default");
   ASSERT_NE(nullptr, ActiveView());
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
 
   ASSERT_TRUE(fake_delegate_.result_callback_);
   std::move(fake_delegate_.result_callback_)
@@ -109,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
             l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_RETRY_BUTTON));
   EXPECT_TRUE(HasEnabledCancelButton());
 
-  ActiveView()->GetDialogClientView()->CancelWindow();
+  ActiveView()->CancelDialog();
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(nullptr, ActiveView());
@@ -122,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenRetry) {
   ShowUi("default");
   ASSERT_NE(nullptr, ActiveView());
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
 
   ASSERT_TRUE(fake_delegate_.result_callback_);
   std::move(fake_delegate_.result_callback_)
@@ -133,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenRetry) {
   EXPECT_EQ(ActiveView()->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
             l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_RETRY_BUTTON));
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_TRUE(fake_delegate_.result_callback_)
       << "Install() should be called again";
 
@@ -153,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, CancelBeforeStart) {
   EXPECT_TRUE(HasEnabledCancelButton());
   EXPECT_FALSE(fake_delegate_.cancel_before_start_called_);
 
-  ActiveView()->GetDialogClientView()->CancelWindow();
+  ActiveView()->CancelDialog();
 
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
   base::RunLoop().RunUntilIdle();
@@ -168,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, CancelAfterStart) {
   ASSERT_NE(nullptr, ActiveView());
   EXPECT_TRUE(HasEnabledAcceptButton());
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_TRUE(HasEnabledCancelButton());
   EXPECT_TRUE(fake_delegate_.progress_callback_)
@@ -176,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, CancelAfterStart) {
 
   EXPECT_FALSE(fake_delegate_.cancel_callback_)
       << "Cancel() should not be called";
-  ActiveView()->GetDialogClientView()->CancelWindow();
+  ActiveView()->CancelDialog();
   EXPECT_TRUE(fake_delegate_.cancel_callback_) << "Cancel() should be called";
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed())
       << "Dialog should not close before cancel callback";

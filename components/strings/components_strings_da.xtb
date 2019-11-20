@@ -277,7 +277,6 @@
 <translation id="2248949050832152960">Brug WebAuthn</translation>
 <translation id="2250931979407627383">Kanthæftning i venstre side</translation>
 <translation id="225207911366869382">Denne værdi er forældet for denne politik.</translation>
-<translation id="2257315177824333709">Kortet kan desværre ikke gemmes lige nu</translation>
 <translation id="2258928405015593961">Angiv en fremtidig udløbsdato, og prøv igen</translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
 <translation id="2263079731045660823">Opdater AutoFyld-oplysninger for betalingskort i indstillingerne for Chrome</translation>
@@ -664,6 +663,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> element mere}one{<ph name="ITEM_COUNT" /> element mere}other{<ph name="ITEM_COUNT" /> elementer mere}}</translation>
 <translation id="4176463684765177261">Deaktiveret</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4194250254487269611">Dit kort kan ikke gemmes lige nu</translation>
 <translation id="4196861286325780578">&amp;Annuller fortryd flytning</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollere firewall- og antiviruskonfigurationer<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>

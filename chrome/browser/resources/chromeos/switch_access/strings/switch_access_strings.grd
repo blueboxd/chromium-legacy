@@ -58,7 +58,8 @@
     <output filename="_locales/zh_TW/messages.json" type="chrome_messages_json" lang="zh-TW"/>
   </outputs>
   <translations>
-  <file path="switch_access_strings_am.xtb" lang="am" />
+    <file path="switch_access_strings_af.xtb" lang="af" />
+    <file path="switch_access_strings_am.xtb" lang="am" />
     <file path="switch_access_strings_ar.xtb" lang="ar" />
     <file path="switch_access_strings_bg.xtb" lang="bg" />
     <file path="switch_access_strings_bn.xtb" lang="bn" />

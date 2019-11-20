@@ -481,8 +481,9 @@ void OpenSLESOutputStream::ReleaseAudioBuffer() {
 
 void OpenSLESOutputStream::HandleError(SLresult error) {
   DLOG(ERROR) << "OpenSLES Output error " << error;
+  // TODO(dalecurtis): Consider sending a translated |error|.
   if (callback_)
-    callback_->OnError();
+    callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
 }
 
 void OpenSLESOutputStream::CacheHardwareLatencyIfNeeded() {

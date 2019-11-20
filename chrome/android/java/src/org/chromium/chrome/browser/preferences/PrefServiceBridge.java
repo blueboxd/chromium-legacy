@@ -10,17 +10,12 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 
 /**
- * PrefServiceBridge is a singleton which provides access to some native preferences. Ideally
- * preferences should be grouped with their relevant functionality but this is a grab-bag for other
- * preferences.
+ * PrefServiceBridge is a singleton which provides read and write access to native PrefService for
+ * preferences enumerated in chrome/browser/android/preferences/prefs.h.
  */
 public class PrefServiceBridge {
-
-    private static final String LOG_TAG = "PrefServiceBridge";
-
     // Singleton constructor. Do not call directly unless for testing purpose.
     @VisibleForTesting
     protected PrefServiceBridge() {}
@@ -28,7 +23,7 @@ public class PrefServiceBridge {
     private static PrefServiceBridge sInstance;
 
     /**
-     * @return The singleton preferences object.
+     * @return The singleton PrefServiceBridge instance.
      */
     public static PrefServiceBridge getInstance() {
         ThreadUtils.assertOnUiThread();
@@ -95,31 +90,13 @@ public class PrefServiceBridge {
         return PrefServiceBridgeJni.get().isManagedPreference(preference);
     }
 
-    /**
-     * @return Network predictions preference.
-     *
-     * TODO(crbug.com/1016957): Remove after inlined downstream.
-     */
-    public boolean getNetworkPredictionEnabled() {
-        return PrivacyPreferencesManager.getInstance().getNetworkPredictionEnabled();
-    }
-
-    /**
-     * Sets network predictions preference.
-     *
-     * TODO(crbug.com/1016957): Remove after inlined downstream.
-     */
-    public void setNetworkPredictionEnabled(boolean enabled) {
-        PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled(enabled);
-    }
-
     @VisibleForTesting
     public static void setInstanceForTesting(@Nullable PrefServiceBridge instanceForTesting) {
         sInstance = instanceForTesting;
     }
 
     @NativeMethods
-    public interface Natives {
+    interface Natives {
         boolean getBoolean(int preference);
         void setBoolean(int preference, boolean value);
         int getInteger(int preference);

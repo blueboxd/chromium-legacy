@@ -52,7 +52,7 @@ for (const platform of platforms) {
     assert_selection(
       '<div contenteditable>abc <div dir="rtl">def ghi</div> |jkl</div>',
       selection => selection.modify('extend', 'left', 'word'),
-      '<div contenteditable>abc <div dir="rtl">def |ghi</div>^ jkl</div>');
+      '<div contenteditable>abc <div dir="rtl">def ghi|</div>^ jkl</div>');
   }, `${platform}: extend word left: rtl <- ltr`);
 
   // Extend right character
@@ -76,8 +76,8 @@ for (const platform of platforms) {
       '<div contenteditable>abc |<div dir="rtl">def ghi</div> jkl</div>',
       selection => selection.modify('extend', 'right', 'word'),
       isWin
-         ? '<div contenteditable>abc ^<div dir="rtl">def |ghi</div> jkl</div>'
-         : '<div contenteditable>abc ^<div dir="rtl">def| ghi</div> jkl</div>');
+         ? '<div contenteditable>abc ^<div dir="rtl">|def ghi</div> jkl</div>'
+         : '<div contenteditable>abc ^<div dir="rtl">|def ghi</div> jkl</div>');
   }, `${platform}: extend word right: ltr -> rtl`);
 
   test(() => {

@@ -109,12 +109,16 @@ TEST_F(SyncUserSettingsTest, PreferredTypesSyncEverything) {
   std::unique_ptr<SyncUserSettingsImpl> sync_user_settings =
       MakeSyncUserSettings(UserTypes());
 
+  ModelTypeSet expected_types = UserTypes();
+#if !defined(OS_CHROMEOS)
+  expected_types.RemoveAll({PRINTERS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES});
+#endif
   EXPECT_TRUE(sync_user_settings->IsSyncEverythingEnabled());
-  EXPECT_EQ(UserTypes(), GetPreferredUserTypes(*sync_user_settings));
+  EXPECT_EQ(expected_types, GetPreferredUserTypes(*sync_user_settings));
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
     sync_user_settings->SetSelectedTypes(/*sync_everything=*/true,
                                          /*selected_type=*/{type});
-    EXPECT_EQ(UserTypes(), GetPreferredUserTypes(*sync_user_settings));
+    EXPECT_EQ(expected_types, GetPreferredUserTypes(*sync_user_settings));
   }
 }
 

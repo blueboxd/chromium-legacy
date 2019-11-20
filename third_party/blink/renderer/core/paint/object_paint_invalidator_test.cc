@@ -314,7 +314,7 @@ TEST_F(ObjectPaintInvalidatorTest, InvalidatePaintRectangle) {
       "<div id='target' style='width: 200px; height: 200px; background: blue'>"
       "</div>");
 
-  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().View()->SetTracksRasterInvalidations(true);
 
   auto* target = GetLayoutObjectByElementId("target");
   target->InvalidatePaintRectangle(PhysicalRect(10, 10, 50, 50));
@@ -358,7 +358,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   EXPECT_EQ(IntRect(), target->SelectionVisualRect());
 
   // Add selection.
-  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().View()->SetTracksRasterInvalidations(true);
   GetDocument().GetFrame()->Selection().SelectAll();
   UpdateAllLifecyclePhasesForTest();
   const auto* graphics_layer = GetLayoutView().Layer()->GraphicsLayerBacking();
@@ -368,20 +368,20 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
   EXPECT_EQ(IntRect(8, 8, 100, 100), target->SelectionVisualRect());
-  GetDocument().View()->SetTracksPaintInvalidations(false);
+  GetDocument().View()->SetTracksRasterInvalidations(false);
 
   // Simulate a change without full invalidation or selection change.
-  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().View()->SetTracksRasterInvalidations(true);
   target->SetShouldCheckForPaintInvalidation();
   UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(graphics_layer->GetRasterInvalidationTracking()
                   ->Invalidations()
                   .IsEmpty());
   EXPECT_EQ(IntRect(8, 8, 100, 100), target->SelectionVisualRect());
-  GetDocument().View()->SetTracksPaintInvalidations(false);
+  GetDocument().View()->SetTracksRasterInvalidations(false);
 
   // Remove selection.
-  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().View()->SetTracksRasterInvalidations(true);
   GetDocument().GetFrame()->Selection().Clear();
   UpdateAllLifecyclePhasesForTest();
   invalidations =
@@ -390,7 +390,7 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   EXPECT_EQ(IntRect(8, 8, 100, 100), (*invalidations)[0].rect);
   EXPECT_EQ(PaintInvalidationReason::kSelection, (*invalidations)[0].reason);
   EXPECT_EQ(IntRect(), target->SelectionVisualRect());
-  GetDocument().View()->SetTracksPaintInvalidations(false);
+  GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 
 // Passes if it does not crash.

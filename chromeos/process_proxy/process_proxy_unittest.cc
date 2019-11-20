@@ -197,7 +197,8 @@ class ProcessProxyTest : public testing::Test {
     base::CommandLine cmdline{{kCatCommand}};
     bool success = registry_->OpenProcess(
         cmdline, kFakeUserHash,
-        base::Bind(&ProcessProxyTest::HandleRead, base::Unretained(this)),
+        base::BindRepeating(&ProcessProxyTest::HandleRead,
+                            base::Unretained(this)),
         &id_);
     handle_ = registry_->GetProcessHandleForTesting(id_);
 

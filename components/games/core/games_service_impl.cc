@@ -22,13 +22,13 @@ void GamesServiceImpl::GetHighlightedGame(HighlightedGameCallback callback) {
   // downloaded and we cannot provide the surface with a highlighted game.
   base::FilePath data_file_path;
   if (!prefs::TryGetInstallDirPath(prefs_, &data_file_path)) {
-    // TODO crbug.com/1018201: Add callback error handling.
+    std::move(callback).Run(ResponseCode::kFileNotFound, nullptr);
     return;
   }
 
   auto game_proto = std::make_unique<Game>();
   game_proto->set_title("Some Game!");
-  std::move(callback).Run(std::move(game_proto));
+  std::move(callback).Run(ResponseCode::kSuccess, std::move(game_proto));
 }
 
 }  // namespace games

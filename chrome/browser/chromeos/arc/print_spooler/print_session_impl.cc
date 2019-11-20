@@ -29,7 +29,6 @@
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/filename_util.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
@@ -196,7 +195,6 @@ PrintSessionImpl::PrintSessionImpl(
     : ArcCustomTabModalDialogHost(std::move(custom_tab),
                                   std::move(web_contents)),
       instance_(std::move(instance)),
-      print_renderer_binding_(this),
       session_binding_(this, std::move(request)) {
   session_binding_.set_connection_error_handler(
       base::BindOnce(&PrintSessionImpl::Close, weak_ptr_factory_.GetWeakPtr()));
@@ -288,9 +286,8 @@ void PrintSessionImpl::OnPrintPreviewClosed() {
 }
 
 void PrintSessionImpl::StartPrintAfterDelay() {
-  printing::mojom::PrintRendererAssociatedPtrInfo print_renderer_ptr_info;
-  print_renderer_binding_.Bind(mojo::MakeRequest(&print_renderer_ptr_info));
-  printing::StartPrint(web_contents_.get(), std::move(print_renderer_ptr_info),
+  printing::StartPrint(web_contents_.get(),
+                       print_renderer_receiver_.BindNewEndpointAndPassRemote(),
                        false, false);
 }
 

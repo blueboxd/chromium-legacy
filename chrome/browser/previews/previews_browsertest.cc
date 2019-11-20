@@ -8,13 +8,13 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,33 +37,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
-
-namespace {
-
-// Retries fetching |histogram_name| until it contains at least |count| samples.
-void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
-                                        const std::string& histogram_name,
-                                        size_t count) {
-  while (true) {
-    base::ThreadPoolInstance::Get()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-    const std::vector<base::Bucket> buckets =
-        histogram_tester->GetAllSamples(histogram_name);
-    size_t total_count = 0;
-    for (const auto& bucket : buckets) {
-      total_count += bucket.count;
-    }
-    if (total_count >= count) {
-      break;
-    }
-  }
-}
-
-}  // namespace
 
 class PreviewsBrowserTest : public InProcessBrowserTest {
  public:
@@ -287,12 +260,6 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
   optimization_guide::testing::TestHintsComponentCreator
       test_hints_component_creator_;
 };
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
-#endif
 
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is evaluated and the

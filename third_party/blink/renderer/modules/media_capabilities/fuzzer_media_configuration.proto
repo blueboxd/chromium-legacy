@@ -21,7 +21,7 @@ message MediaDecodingConfigProto {
     optional uint32 bitrate = 4;
 
     // String representing the videos frames-per-second (e.g. "60").
-    optional string framerate = 5;
+    optional double framerate = 5;
   }
   optional VideoConfigProto video = 1;
 

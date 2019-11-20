@@ -16,6 +16,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_state.h"
@@ -596,6 +597,75 @@ TEST_F(DragWindowFromShelfControllerTest, FlingWithHiddenHotseat) {
               -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
   // The window should be minimized.
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
+}
+
+TEST_F(DragWindowFromShelfControllerTest, DragToSnapMinDistance) {
+  UpdateDisplay("400x400");
+  const gfx::Rect shelf_bounds =
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
+
+  auto window1 = CreateTestWindow();
+  auto window2 = CreateTestWindow();
+
+  const gfx::Rect display_bounds = display::Screen::GetScreen()
+                                       ->GetDisplayNearestWindow(window1.get())
+                                       .bounds();
+  int snap_edge_inset =
+      display_bounds.width() * kHighlightScreenPrimaryAxisRatio +
+      kHighlightScreenEdgePaddingDp;
+
+  // If the drag starts outside of the snap region and then into snap region,
+  // but the drag distance is not long enough.
+  gfx::Point start = gfx::Point(display_bounds.x() + snap_edge_inset + 50,
+                                shelf_bounds.CenterPoint().y());
+  StartDrag(window1.get(), start, HotseatState::kExtended);
+  // Drag into the snap region and release.
+  gfx::Point end = gfx::Point(
+      start.x() -
+          DragWindowFromShelfController::kMinDragDistanceOutsideSnapRegion + 10,
+      200);
+  EndDrag(end, base::nullopt);
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+
+  // If the drag starts outside of the snap region and then into snap region,
+  // and the drag distance is long enough.
+  StartDrag(window1.get(), start, HotseatState::kExtended);
+  // Drag into the snap region and release.
+  end.set_x(start.x() - 10 -
+            DragWindowFromShelfController::kMinDragDistanceOutsideSnapRegion);
+  EndDrag(end, base::nullopt);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
+
+  WindowState::Get(window1.get())->Maximize();
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+
+  // If the drag starts inside of the snap region, but the drag distance is not
+  // long enough.
+  start = gfx::Point(display_bounds.x() + snap_edge_inset - 5,
+                     shelf_bounds.CenterPoint().y());
+  StartDrag(window1.get(), start, HotseatState::kExtended);
+  // Drag for a small distance and release.
+  end.set_x(start.x() -
+            DragWindowFromShelfController::kMinDragDistanceInSnapRegion + 10);
+  EndDrag(end, base::nullopt);
+  EXPECT_FALSE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+
+  // If the drag starts near the screen edge, the window should snap directly.
+  start = gfx::Point(
+      display_bounds.x() + DragWindowFromShelfController::kDistanceFromEdge - 5,
+      shelf_bounds.CenterPoint().y());
+  StartDrag(window1.get(), start, HotseatState::kExtended);
+  end.set_x(start.x() - 5);
+  EndDrag(end, base::nullopt);
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_TRUE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window1.get()));
 }
 
 }  // namespace ash

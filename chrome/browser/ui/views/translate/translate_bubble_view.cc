@@ -714,14 +714,7 @@ void TranslateBubbleView::ConfirmAdvancedOptions() {
       SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
     }
   } else if (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB) {
-    // Switch back to the original page language if target language is the same
-    // as source language without triggering translating.
-    if (target_language_combobox_->GetSelectedIndex() ==
-        model_->GetOriginalLanguageIndex()) {
-      SwitchView(TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE);
-      tabbed_pane_->SelectTabAt(0);
-      ShowOriginal();
-    } else if (model_->IsPageTranslatedInCurrentLanguages()) {
+    if (model_->IsPageTranslatedInCurrentLanguages()) {
       SwitchView(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
       SizeToContents();
     } else {
@@ -763,37 +756,18 @@ void TranslateBubbleView::HandleComboboxPerformAction(
     TranslateBubbleView::ComboboxID sender_id) {
   switch (sender_id) {
     case COMBOBOX_ID_SOURCE_LANGUAGE: {
-      if (model_->GetOriginalLanguageIndex() ==
-          // Selected Index is increased by 1 because we added "Unknown".
-          source_language_combobox_->GetSelectedIndex() - 1) {
-        UpdateAdvancedView();
-        break;
-      } else {
-        model_->UpdateOriginalLanguageIndex(
-            source_language_combobox_->GetSelectedIndex() - 1);
-        UpdateAdvancedView();
-        translate::ReportUiAction(translate::SOURCE_LANGUAGE_MENU_CLICKED);
-        break;
-      }
+      model_->UpdateOriginalLanguageIndex(
+          source_language_combobox_->GetSelectedIndex() - 1);
+      UpdateAdvancedView();
+      translate::ReportUiAction(translate::SOURCE_LANGUAGE_MENU_CLICKED);
+      break;
     }
     case COMBOBOX_ID_TARGET_LANGUAGE: {
-      if (model_->GetTargetLanguageIndex() ==
-              target_language_combobox_->GetSelectedIndex() ||
-          // TAB UI doesn't change target language if it's the same as original
-          // source language. It simply shows page in original language and
-          // return to |after_translate_view_|.
-          (bubble_ui_model_ == language::TranslateUIBubbleModel::TAB &&
-           target_language_combobox_->GetSelectedIndex() ==
-               model_->GetOriginalLanguageIndex())) {
-        UpdateAdvancedView();
-        break;
-      } else {
-        model_->UpdateTargetLanguageIndex(
-            target_language_combobox_->GetSelectedIndex());
-        UpdateAdvancedView();
-        translate::ReportUiAction(translate::TARGET_LANGUAGE_MENU_CLICKED);
-        break;
-      }
+      model_->UpdateTargetLanguageIndex(
+          target_language_combobox_->GetSelectedIndex());
+      UpdateAdvancedView();
+      translate::ReportUiAction(translate::TARGET_LANGUAGE_MENU_CLICKED);
+      break;
     }
   }
 }

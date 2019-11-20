@@ -40,8 +40,8 @@ constexpr int kPaddingBetweenMenuItems = 8;
 SkColor GetMenuBackgroundColor() {
   return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
       features::IsBackgroundBlurEnabled()
-          ? AshColorProvider::BaseLayerType::kTransparentWithBlur
-          : AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+          ? AshColorProvider::BaseLayerType::kTransparent74
+          : AshColorProvider::BaseLayerType::kTransparent90,
       kPowerButtonMenuBackgroundColor);
 }
 

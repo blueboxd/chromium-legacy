@@ -61,6 +61,10 @@
 #define ATK_230
 #endif
 
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 32, 0)
+#define ATK_232
+#endif
+
 #if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 34, 0)
 #define ATK_234
 #endif
@@ -184,6 +188,10 @@ void SetIntPointerValueIfNotNull(int* pointer, int value) {
 
 bool SupportsAtkComponentScrollingInterface() {
   return dlsym(RTLD_DEFAULT, "atk_component_scroll_to_point");
+}
+
+bool SupportsAtkTextScrollingInterface() {
+  return dlsym(RTLD_DEFAULT, "atk_text_scroll_substring_to_point");
 }
 
 AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
@@ -1292,6 +1300,35 @@ AtkAttributeSet* GetDefaultAttributes(AtkText* atk_text) {
   return ToAtkAttributeSet(obj->GetDefaultTextAttributes());
 }
 
+#if defined(ATK_232)
+gboolean ScrollSubstringTo(AtkText* atk_text,
+                           gint start_offset,
+                           gint end_offset,
+                           AtkScrollType scroll_type) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (!obj)
+    return FALSE;
+
+  return obj->ScrollSubstringIntoView(scroll_type, start_offset, end_offset);
+}
+
+gboolean ScrollSubstringToPoint(AtkText* atk_text,
+                                gint start_offset,
+                                gint end_offset,
+                                AtkCoordType atk_coord_type,
+                                gint x,
+                                gint y) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
+  if (!obj)
+    return FALSE;
+
+  return obj->ScrollSubstringToPoint(start_offset, end_offset, atk_coord_type,
+                                     x, y);
+}
+#endif  // ATK_232
+
 void Init(AtkTextIface* iface) {
   iface->get_text = GetText;
   iface->get_character_count = GetCharacterCount;
@@ -1314,6 +1351,13 @@ void Init(AtkTextIface* iface) {
 
 #if defined(ATK_210)
   iface->get_string_at_offset = GetStringAtOffset;
+#endif
+
+#if defined(ATK_232)
+  if (SupportsAtkTextScrollingInterface()) {
+    iface->scroll_substring_to = ScrollSubstringTo;
+    iface->scroll_substring_to_point = ScrollSubstringToPoint;
+  }
 #endif
 }
 
@@ -4223,19 +4267,14 @@ void AXPlatformNodeAuraLinux::ScrollToPoint(AtkCoordType atk_coord_type,
   action_data.target_point = scroll_to;
   GetDelegate()->AccessibilityPerformAction(action_data);
 }
-#endif  // defined(ATK_230)
 
-#if defined(ATK_230)
-void AXPlatformNodeAuraLinux::ScrollNodeIntoView(
+void AXPlatformNodeAuraLinux::ScrollNodeRectIntoView(
+    gfx::Rect rect,
     AtkScrollType atk_scroll_type) {
-  gfx::Rect r = GetDelegate()->GetBoundsRect(AXCoordinateSystem::kScreen,
-                                             AXClippingBehavior::kUnclipped);
-  r -= r.OffsetFromOrigin();
-
   ui::AXActionData action_data;
   action_data.target_node_id = GetData().id;
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
-  action_data.target_rect = r;
+  action_data.target_rect = rect;
 
   action_data.horizontal_scroll_alignment = ax::mojom::ScrollAlignment::kNone;
   action_data.vertical_scroll_alignment = ax::mojom::ScrollAlignment::kNone;
@@ -4280,7 +4319,75 @@ void AXPlatformNodeAuraLinux::ScrollNodeIntoView(
   GetDelegate()->AccessibilityPerformAction(action_data);
 }
 
+void AXPlatformNodeAuraLinux::ScrollNodeIntoView(
+    AtkScrollType atk_scroll_type) {
+  gfx::Rect rect = GetDelegate()->GetBoundsRect(AXCoordinateSystem::kScreen,
+                                                AXClippingBehavior::kUnclipped);
+  rect -= rect.OffsetFromOrigin();
+  ScrollNodeRectIntoView(rect, atk_scroll_type);
+}
 #endif  // defined(ATK_230)
+
+#if defined(ATK_232)
+base::Optional<gfx::Rect>
+AXPlatformNodeAuraLinux::GetUnclippedHypertextRangeBoundsRect(int start_offset,
+                                                              int end_offset) {
+  start_offset = UnicodeToUTF16OffsetInText(start_offset);
+  end_offset = UnicodeToUTF16OffsetInText(end_offset);
+
+  base::string16 text = GetHypertext();
+  if (start_offset < 0 || start_offset > int{text.length()})
+    return base::nullopt;
+  if (end_offset < 0 || end_offset > int{text.length()})
+    return base::nullopt;
+
+  if (end_offset < start_offset)
+    std::swap(start_offset, end_offset);
+
+  return GetDelegate()->GetHypertextRangeBoundsRect(
+      UnicodeToUTF16OffsetInText(start_offset),
+      UnicodeToUTF16OffsetInText(end_offset), AXCoordinateSystem::kScreen,
+      AXClippingBehavior::kUnclipped);
+}
+
+bool AXPlatformNodeAuraLinux::ScrollSubstringIntoView(
+    AtkScrollType atk_scroll_type,
+    int start_offset,
+    int end_offset) {
+  base::Optional<gfx::Rect> optional_rect =
+      GetUnclippedHypertextRangeBoundsRect(start_offset, end_offset);
+  if (!optional_rect.has_value())
+    return false;
+
+  gfx::Rect rect = *optional_rect;
+  gfx::Rect node_rect = GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
+  rect -= node_rect.OffsetFromOrigin();
+  ScrollNodeRectIntoView(rect, atk_scroll_type);
+
+  return true;
+}
+
+bool AXPlatformNodeAuraLinux::ScrollSubstringToPoint(
+    int start_offset,
+    int end_offset,
+    AtkCoordType atk_coord_type,
+    int x,
+    int y) {
+  base::Optional<gfx::Rect> optional_rect =
+      GetUnclippedHypertextRangeBoundsRect(start_offset, end_offset);
+  if (!optional_rect.has_value())
+    return false;
+
+  gfx::Rect rect = *optional_rect;
+  gfx::Rect node_rect = GetDelegate()->GetBoundsRect(
+      AXCoordinateSystem::kScreen, AXClippingBehavior::kUnclipped);
+  ScrollToPoint(atk_coord_type, x - (rect.x() - node_rect.x()),
+                y - (rect.y() - node_rect.y()));
+
+  return true;
+}
+#endif  // defined(ATK_232)
 
 void AXPlatformNodeAuraLinux::ComputeStylesIfNeeded() {
   if (!offset_to_text_attributes_.empty())

@@ -17,6 +17,7 @@ import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IBrowserClient;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.List;
 
@@ -235,6 +236,7 @@ public final class Browser {
     private final class BrowserClientImpl extends IBrowserClient.Stub {
         @Override
         public void onActiveTabChanged(int activeTabId) {
+            StrictModeWorkaround.apply();
             Tab tab = Tab.getTabById(activeTabId);
             for (TabListCallback callback : mTabListCallbacks) {
                 callback.onActiveTabChanged(tab);
@@ -243,6 +245,7 @@ public final class Browser {
 
         @Override
         public void onTabAdded(ITab iTab) {
+            StrictModeWorkaround.apply();
             int id = 0;
             try {
                 id = iTab.getId();
@@ -262,6 +265,7 @@ public final class Browser {
 
         @Override
         public void onTabRemoved(int tabId) {
+            StrictModeWorkaround.apply();
             Tab tab = Tab.getTabById(tabId);
             // This should only be called with a previously created tab.
             assert tab != null;

@@ -7,7 +7,7 @@
 enum XRSessionMode {
   "inline",
   "immersive-vr",
-  /* [RuntimeEnabled=WebXRARModule] */ "immersive-ar",
+  "immersive-ar",
 };
 
 enum XREnvironmentBlendMode {

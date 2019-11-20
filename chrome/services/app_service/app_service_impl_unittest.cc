@@ -17,6 +17,7 @@
 #include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/cpp/preferred_apps.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -173,14 +174,16 @@ class FakeSubscriber : public apps::mojom::Subscriber {
 };
 
 class AppServiceImplTest : public testing::Test {
- private:
+ protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
+  TestingPrefServiceSimple pref_service_;
 };
 
 TEST_F(AppServiceImplTest, PubSub) {
   const int size_hint_in_dip = 64;
 
-  AppServiceImpl impl(nullptr);
+  AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
+  AppServiceImpl impl(&pref_service_);
 
   // Start with one subscriber.
   FakeSubscriber sub0(&impl);
@@ -271,7 +274,8 @@ TEST_F(AppServiceImplTest, PubSub) {
 
 TEST_F(AppServiceImplTest, PreferredApps) {
   // Test Initialize.
-  AppServiceImpl impl(nullptr);
+  AppServiceImpl::RegisterProfilePrefs(pref_service_.registry());
+  AppServiceImpl impl(&pref_service_);
   impl.GetPreferredAppsForTesting().Init(nullptr);
 
   // TODO(crbug.com/853604): Update this test after reading from disk done.

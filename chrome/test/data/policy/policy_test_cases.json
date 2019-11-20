@@ -4394,10 +4394,7 @@
         "url": "http://localhost/",
         "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
       }
-    },
-    "pref_mappings": [
-      { "pref": "cros.device_wallpaper_image" }
-    ]
+    }
   },
 
   "BrowserNetworkTimeQueriesEnabled": {

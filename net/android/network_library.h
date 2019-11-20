@@ -55,10 +55,6 @@ bool HaveOnlyLoopbackAddresses();
 bool GetMimeTypeFromExtension(const std::string& extension,
                               std::string* result);
 
-// Returns the ISO country code equivalent of the current MCC (mobile country
-// code).
-NET_EXPORT std::string GetTelephonyNetworkCountryIso();
-
 // Returns MCC+MNC (mobile country code + mobile network code) as
 // the numeric name of the current registered operator.
 NET_EXPORT std::string GetTelephonyNetworkOperator();

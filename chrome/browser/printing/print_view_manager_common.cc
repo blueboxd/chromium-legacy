@@ -49,10 +49,11 @@ content::RenderFrameHost* GetRenderFrameHostToUse(
 
 }  // namespace
 
-void StartPrint(content::WebContents* contents,
-                mojom::PrintRendererAssociatedPtrInfo print_renderer,
-                bool print_preview_disabled,
-                bool has_selection) {
+void StartPrint(
+    content::WebContents* contents,
+    mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
+    bool print_preview_disabled,
+    bool has_selection) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   using PrintViewManagerImpl = PrintViewManager;
 #else

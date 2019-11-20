@@ -23,7 +23,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.components.signin.AccountIdProvider;
-import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.identitymanager.ClearAccountsAction;
@@ -406,15 +405,6 @@ public class SigninManager
         notifySignInAllowedChanged();
 
         progressSignInFlowSeedSystemAccounts();
-    }
-
-    /**
-     * Same as above but retrieves the Account object for the given accountName.
-     */
-    // TODO(crbug.com/1002056) SigninManager.Signin should use CoreAccountInfo as a parameter.
-    public void signIn(String accountName, @Nullable final SignInCallback callback) {
-        AccountManagerFacade.get().getAccountFromName(
-                accountName, account -> signIn(account, callback));
     }
 
     private void progressSignInFlowSeedSystemAccounts() {

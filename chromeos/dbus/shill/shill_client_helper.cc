@@ -101,7 +101,7 @@ void OnVoidMethod(ShillClientHelper::RefHolder* ref_holder,
 // Handles responses for methods with ObjectPath results and no status.
 void OnObjectPathMethodWithoutStatus(
     ShillClientHelper::RefHolder* ref_holder,
-    const ObjectPathCallback& callback,
+    ObjectPathCallback callback,
     const ShillClientHelper::ErrorCallback& error_callback,
     dbus::Response* response) {
   if (!response) {
@@ -114,7 +114,7 @@ void OnObjectPathMethodWithoutStatus(
     error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 // Handles responses for methods with DictionaryValue results.
@@ -263,7 +263,7 @@ void ShillClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
 
 void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
     dbus::MethodCall* method_call,
-    const ObjectPathCallback& callback,
+    ObjectPathCallback callback,
     const ErrorCallback& error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
@@ -271,7 +271,7 @@ void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnObjectPathMethodWithoutStatus,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                     callback, error_callback),
+                     std::move(callback), error_callback),
       base::BindOnce(&OnError, error_callback));
 }
 

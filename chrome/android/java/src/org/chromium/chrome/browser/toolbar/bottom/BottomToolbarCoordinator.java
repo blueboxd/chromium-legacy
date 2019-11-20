@@ -10,6 +10,7 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 
+import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ThemeColorProvider;
@@ -47,12 +48,13 @@ class BottomToolbarCoordinator {
      */
     BottomToolbarCoordinator(ViewStub stub, ActivityTabProvider tabProvider,
             OnClickListener homeButtonListener, OnClickListener searchAcceleratorListener,
-            OnClickListener shareButtonListener, OnLongClickListener tabsSwitcherLongClickListner,
+            ObservableSupplier<OnClickListener> shareButtonListenerSupplier,
+            OnLongClickListener tabsSwitcherLongClickListner,
             ThemeColorProvider themeColorProvider) {
         View root = stub.inflate();
 
         mBrowsingModeCoordinator = new BrowsingModeBottomToolbarCoordinator(root, tabProvider,
-                homeButtonListener, searchAcceleratorListener, shareButtonListener,
+                homeButtonListener, searchAcceleratorListener, shareButtonListenerSupplier,
                 tabsSwitcherLongClickListner);
 
         mTabSwitcherModeStub = root.findViewById(R.id.bottom_toolbar_tab_switcher_mode_stub);

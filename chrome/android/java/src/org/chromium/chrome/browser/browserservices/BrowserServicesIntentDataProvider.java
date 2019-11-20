@@ -304,6 +304,15 @@ public class BrowserServicesIntentDataProvider {
     }
 
     /**
+     * @return Whether the Activity should attempt to load a dynamic module.
+     *
+     * Will return false if native is not initialized.
+     */
+    public boolean isDynamicModuleEnabled() {
+        return false;
+    }
+
+    /**
      * @return The component name of the module entry point, or null if not specified.
      */
     @Nullable
@@ -450,5 +459,10 @@ public class BrowserServicesIntentDataProvider {
      */
     public final boolean isForPaymentRequest() {
         return getUiType() == CustomTabsUiType.PAYMENT_REQUEST;
+    }
+
+    @Nullable
+    public PendingIntent getFocusIntent() {
+        return null;
     }
 }

@@ -100,9 +100,9 @@ void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info,
         // OnConnected will fire when DevToolsClient connects later.
         CHECK(!page_load_strategy_.empty());
         web_views_.push_back(std::make_unique<WebViewImpl>(
-            view.id, w3c_compliant, devtools_http_client_->browser_info(),
-            std::move(client), devtools_http_client_->device_metrics(),
-            page_load_strategy_));
+            view.id, w3c_compliant, nullptr,
+            devtools_http_client_->browser_info(), std::move(client),
+            devtools_http_client_->device_metrics(), page_load_strategy_));
       }
     }
   }

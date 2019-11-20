@@ -166,7 +166,7 @@ void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
       SND_PCM_FORMAT_S16, params_.sample_rate(), params_.channels());
   if (!audio_format) {
     LOG(WARNING) << "Error setting up audio parameters.";
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
     return;
   }
 
@@ -182,7 +182,7 @@ void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
 
   if (cras_audio_format_set_channel_layout(audio_format, layout)) {
     LOG(WARNING) << "Error setting channel layout.";
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
     return;
   }
 
@@ -197,7 +197,7 @@ void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
       audio_format);
   if (!stream_params) {
     LOG(WARNING) << "Error setting up stream parameters.";
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
     cras_audio_format_destroy(audio_format);
     return;
   }
@@ -213,7 +213,7 @@ void CrasUnifiedStream::Start(AudioSourceCallback* callback) {
   if (cras_client_add_pinned_stream(client_, pin_device_, &stream_id_,
                                     stream_params)) {
     LOG(WARNING) << "Failed to add the stream.";
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
     cras_audio_format_destroy(audio_format);
     cras_client_stream_params_destroy(stream_params);
     return;
@@ -322,8 +322,9 @@ uint32_t CrasUnifiedStream::WriteAudio(size_t frames,
 
 void CrasUnifiedStream::NotifyStreamError(int err) {
   // This will remove the stream from the client.
+  // TODO(dalecurtis): Consider sending a translated |err| code.
   if (source_callback_)
-    source_callback_->OnError();
+    source_callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
 }
 
 }  // namespace media

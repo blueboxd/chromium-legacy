@@ -9,6 +9,7 @@
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/message_center/unified_message_list_view.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/views/background.h"
@@ -50,6 +51,9 @@ class StackedNotificationBar : public views::View,
   // Set notification bar state to expanded.
   void SetExpanded();
 
+  // Clean up icon view after it's removal animation is complete.
+  void OnIconAnimatedOut(views::View* icon);
+
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
@@ -66,9 +70,12 @@ class StackedNotificationBar : public views::View,
   class StackedNotificationBarIcon;
   friend class UnifiedMessageCenterViewTest;
 
+  // Get the first icon which is not animating out.
+  StackedNotificationBarIcon* GetFrontIcon();
+
   // Search for a icon view in the stacked notification bar based on a provided
   // notification id.
-  const StackedNotificationBarIcon* GetIconFromId(const std::string& id);
+  const StackedNotificationBarIcon* GetIconFromId(const std::string& id) const;
 
   // Set visibility based on number of stacked notifications or animation state.
   void UpdateVisibility();

@@ -153,7 +153,7 @@ class TouchToFillView implements BottomSheetContent {
 
     @Override
     public boolean hideOnScroll() {
-        return true;
+        return false;
     }
 
     @Override

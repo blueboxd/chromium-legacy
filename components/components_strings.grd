@@ -135,6 +135,7 @@
 
   </outputs>
   <translations>
+    <file path="strings/components_strings_af.xtb" lang="af" />
     <file path="strings/components_strings_am.xtb" lang="am" />
     <file path="strings/components_strings_ar.xtb" lang="ar" />
     <file path="strings/components_strings_bg.xtb" lang="bg" />

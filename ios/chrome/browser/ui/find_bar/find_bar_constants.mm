@@ -12,3 +12,4 @@ NSString* const kFindInPageInputFieldId = @"kFindInPageInputFieldId";
 NSString* const kFindInPageNextButtonId = @"kFindInPageNextButtonId";
 NSString* const kFindInPagePreviousButtonId = @"kFindInPagePreviousButtonId";
 NSString* const kFindInPageCloseButtonId = @"kFindInPageCloseButtonId";
+NSString* const kFindInPageContainerViewId = @"kFindInPageContainerViewId";

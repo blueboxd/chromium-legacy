@@ -13,6 +13,7 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
@@ -47,15 +48,26 @@ class ReputationWebContentsObserver
   explicit ReputationWebContentsObserver(content::WebContents* web_contents);
 
   // Possibly show a Safety Tip. Called on visibility changes and page load.
-  void MaybeShowSafetyTip();
+  void MaybeShowSafetyTip(ukm::SourceId navigation_source_id,
+                          bool record_ukm_if_tip_not_shown);
 
   // A ReputationCheckCallback. Called by the reputation service when a
   // reputation result is available.
-  void HandleReputationCheckResult(ReputationCheckResult result);
+  void HandleReputationCheckResult(ukm::SourceId navigation_source_id,
+                                   bool record_ukm_if_tip_not_shown,
+                                   ReputationCheckResult result);
 
   // A helper method that calls and resets
   // |reputation_check_callback_for_testing_| if it is set.
   void MaybeCallReputationCheckCallback();
+
+  // A helper method to handle finalizing a reputation check. This method
+  // records UKM data about triggered heuristics if |record_ukm| is true, and
+  // calls MaybeCallReputationCheckCallback.
+  void FinalizeReputationCheckWhenTipNotShown(
+      bool record_ukm,
+      ReputationCheckResult result,
+      ukm::SourceId navigation_source_id);
 
   Profile* profile_;
   // Used to cache the last safety tip info (and associated navigation entry ID)

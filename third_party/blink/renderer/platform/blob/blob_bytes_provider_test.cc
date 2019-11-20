@@ -339,9 +339,9 @@ TEST_F(BlobBytesProviderTest, RequestAsStream) {
       pipe.consumer_handle.get(), MOJO_HANDLE_SIGNAL_READABLE,
       MOJO_WATCH_CONDITION_SATISFIED,
       base::BindRepeating(
-          [](mojo::DataPipeConsumerHandle pipe, base::Closure quit_closure,
-             Vector<uint8_t>* bytes_out, MojoResult result,
-             const mojo::HandleSignalsState& state) {
+          [](mojo::DataPipeConsumerHandle pipe,
+             base::RepeatingClosure quit_closure, Vector<uint8_t>* bytes_out,
+             MojoResult result, const mojo::HandleSignalsState& state) {
             if (result == MOJO_RESULT_CANCELLED ||
                 result == MOJO_RESULT_FAILED_PRECONDITION) {
               quit_closure.Run();

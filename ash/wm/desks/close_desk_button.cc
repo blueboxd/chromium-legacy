@@ -35,7 +35,7 @@ CloseDeskButton::CloseDeskButton(views::ButtonListener* listener)
   layer()->SetFillsBoundsOpaquely(false);
 
   SkColor icon_background_color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparentWithBlur,
+      AshColorProvider::BaseLayerType::kTransparent74,
       AshColorProvider::AshColorMode::kDark);
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(kDesksCloseDeskButtonIcon, kIconColor));

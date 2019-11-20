@@ -99,6 +99,8 @@ constexpr const char kDocumentLoadRulesetIsAvailable[] =
     "SubresourceFilter.DocumentLoad.RulesetIsAvailable";
 constexpr const char kDocumentLoadActivationLevel[] =
     "SubresourceFilter.DocumentLoad.ActivationState";
+constexpr const char kMainFrameLoadRulesetIsAvailableAnyActivationLevel[] =
+    "SubresourceFilter.MainFrameLoad.RulesetIsAvailableAnyActivationLevel";
 
 }  // namespace
 
@@ -221,6 +223,21 @@ class SubresourceFilterAgentTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgentTest);
 };
 
+TEST_F(SubresourceFilterAgentTest, RulesetUnset_RulesetNotAvailable) {
+  base::HistogramTester histogram_tester;
+  // Do not set ruleset.
+  ExpectNoSubresourceFilterGetsInjected();
+  StartLoadWithoutSettingActivationState();
+  FinishLoad();
+
+  histogram_tester.ExpectUniqueSample(
+      kDocumentLoadActivationLevel,
+      static_cast<int>(mojom::ActivationLevel::kDisabled), 1);
+  histogram_tester.ExpectTotalCount(kDocumentLoadRulesetIsAvailable, 0);
+  histogram_tester.ExpectUniqueSample(
+      kMainFrameLoadRulesetIsAvailableAnyActivationLevel, 0, 1);
+}
+
 TEST_F(SubresourceFilterAgentTest, DisabledByDefault_NoFilterIsInjected) {
   base::HistogramTester histogram_tester;
   ASSERT_NO_FATAL_FAILURE(
@@ -233,7 +250,8 @@ TEST_F(SubresourceFilterAgentTest, DisabledByDefault_NoFilterIsInjected) {
       kDocumentLoadActivationLevel,
       static_cast<int>(mojom::ActivationLevel::kDisabled), 1);
   histogram_tester.ExpectTotalCount(kDocumentLoadRulesetIsAvailable, 0);
-
+  histogram_tester.ExpectUniqueSample(
+      kMainFrameLoadRulesetIsAvailableAnyActivationLevel, 1, 1);
 }
 
 TEST_F(SubresourceFilterAgentTest, MmapFailure_FailsToInjectSubresourceFilter) {
@@ -272,6 +290,8 @@ TEST_F(SubresourceFilterAgentTest,
       kDocumentLoadActivationLevel,
       static_cast<int>(mojom::ActivationLevel::kEnabled), 1);
   histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 0, 1);
+  histogram_tester.ExpectUniqueSample(
+      kMainFrameLoadRulesetIsAvailableAnyActivationLevel, 0, 1);
 }
 
 // Never inject a filter for main frame about:blank loads, even though we do for
@@ -288,6 +308,8 @@ TEST_F(SubresourceFilterAgentTest, EmptyDocumentLoad_NoFilterIsInjected) {
 
   histogram_tester.ExpectTotalCount(kDocumentLoadActivationLevel, 0);
   histogram_tester.ExpectTotalCount(kDocumentLoadRulesetIsAvailable, 0);
+  histogram_tester.ExpectTotalCount(
+      kMainFrameLoadRulesetIsAvailableAnyActivationLevel, 0);
 }
 
 TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
@@ -328,6 +350,8 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
           base::Bucket(static_cast<int>(mojom::ActivationLevel::kDisabled), 1),
           base::Bucket(static_cast<int>(mojom::ActivationLevel::kEnabled), 1)));
   histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      kMainFrameLoadRulesetIsAvailableAnyActivationLevel, 1, 2);
 }
 
 TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
@@ -371,6 +395,8 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
         kDocumentLoadActivationLevel,
         static_cast<int>(mojom::ActivationLevel::kEnabled), 2);
     histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 1, 2);
+    histogram_tester.ExpectUniqueSample(
+        kMainFrameLoadRulesetIsAvailableAnyActivationLevel, 1, 2);
   }
 }
 
@@ -450,6 +476,8 @@ TEST_F(SubresourceFilterAgentTest, DryRun_ResourcesAreEvaluatedButNotFiltered) {
       kDocumentLoadActivationLevel,
       static_cast<int>(mojom::ActivationLevel::kDryRun), 1);
   histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      kMainFrameLoadRulesetIsAvailableAnyActivationLevel, 1, 1);
 
   EXPECT_FALSE(agent()->IsAdSubframe());
 }

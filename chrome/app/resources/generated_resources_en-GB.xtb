@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">App Icon</translation>
 <translation id="1410616244180625362">Continue allowing <ph name="HOST" /> to access your camera</translation>
 <translation id="1414648216875402825">You are updating to an unstable version of <ph name="PRODUCT_NAME" /> which contains features that are in progress. Crashes and unexpected bugs will occur. Please proceed with caution.</translation>
-<translation id="1414866280542221544">Enable on this device</translation>
 <translation id="1415708812149920388">Clipboard read access denied</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is not allowed in this type of session.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizza slice</translation>
 <translation id="1468571364034902819">Can't use this profile</translation>
 <translation id="1470811252759861213">To get your extensions on all your computers, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">This will erase all data on the security key, including its PIN</translation>
 <translation id="1472675084647422956">Show more</translation>
 <translation id="1475502736924165259">You have certificates on file that do not fit into any of the other categories</translation>
 <translation id="1476088332184200792">Copy to Your Device</translation>
@@ -842,7 +840,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2202898655984161076">There was a problem while listing printers. Some of your printers may not have registered successfully with <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Search engine used in the <ph name="BEGIN_LINK" />address bar<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Read and change anything that you type</translation>
-<translation id="2204397710290433380">Disable ADB?</translation>
 <translation id="220792432208469595">Send usage and diagnostic data. This device is currently automatically sending diagnostic, device and app usage data to Google. This will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. If your additional Web &amp; App Activity setting is turned on, this data may be saved to your Google Account. <ph name="BEGIN_LINK1" />Find out more<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Please enter this PIN code on "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Remove sharing</translation>
@@ -979,6 +976,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2396783860772170191">Enter 4-digit pin (0000-9999)</translation>
 <translation id="2399939490305346086">Security key sign-in data</translation>
 <translation id="2407481962792080328">When you sign in to your Google account, this feature is turned on</translation>
+<translation id="2408018932941436077">Saving card</translation>
 <translation id="2408955596600435184">Enter your PIN</translation>
 <translation id="241082044617551207">Unknown plug-in</translation>
 <translation id="2412593942846481727">Update available</translation>
@@ -2007,7 +2005,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3873315167136380065">To turn this on, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" /> to remove your sync passphrase</translation>
 <translation id="3873423927483480833">Show PINs</translation>
 <translation id="3873915545594852654">A problem with ARC++ occurred.</translation>
-<translation id="387924939625099872">To disable ADB, restart your <ph name="DEVICE_TYPE" />. It will be reset to factory settings, and all user accounts and local data will be erased.</translation>
 <translation id="3879748587602334249">Download manager</translation>
 <translation id="3886446263141354045">Your request to access this site has been sent to <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Taking notes with <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4501530680793980440">Confirm Removal</translation>
 <translation id="4502423230170890588">Remove from this device</translation>
 <translation id="4504940961672722399">Use this extension by clicking on this icon or by pressing <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Continuing will enable ADB for creating and testing Android apps. Note that ADB allows installation of test apps that haven't been verified by Google.</translation>
 <translation id="4508051413094283164">Open all in incognito window</translation>
 <translation id="4508265954913339219">Activation failed</translation>
 <translation id="4508765956121923607">View S&amp;ource</translation>
@@ -3312,7 +3308,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5851868085455377790">Issuer</translation>
 <translation id="5852112051279473187">Oops!  Something went really wrong while enrolling this device.  Please try again or contact your support representative.</translation>
 <translation id="5852137567692933493">Restart and Powerwash</translation>
-<translation id="5852360662347412211">Go to Linux settings and try again</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0.6 seconds</translation>
 <translation id="5856721540245522153">Enable debugging features</translation>
@@ -3325,7 +3320,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5860494867054883682">Updating your device to <ph name="CHANNEL_NAME" /> channel (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Show stylus tools in the shelf</translation>
 <translation id="5863445608433396414">Enable debugging features</translation>
-<translation id="5863471434640009253">To enable the Android Debug Bridge, first restart your <ph name="DEVICE_TYPE" />. Disabling ADB requires a reset to factory settings.</translation>
 <translation id="5864471791310927901">DHCP look-up failed</translation>
 <translation id="586567932979200359">You're running <ph name="PRODUCT_NAME" /> from its disk image. Installing it on your computer lets you run it without the disk image and ensures that it will be kept up to date.</translation>
 <translation id="5865733239029070421">Automatically sends usage statistics and crash reports to Google</translation>
@@ -3395,7 +3389,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5958529069007801266">Supervised user</translation>
 <translation id="5959471481388474538">Network not available</translation>
 <translation id="595959584676692139">Reload page to use this extension</translation>
-<translation id="5961320084471308154">Enable ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> peak)</translation>
 <translation id="5965661248935608907">It also controls what page is shown when you click the Home button or search from the Omnibox.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> can view files in <ph name="FOLDERNAME" /></translation>
@@ -4259,7 +4252,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7254554697254365959">This Page Could Not Be Translated.</translation>
 <translation id="7254951428499890870">Are you sure that you want to launch "<ph name="APP_NAME" />" in diagnostic mode?</translation>
 <translation id="7255002516883565667">At the moment, you have one card that can only be used on this device</translation>
-<translation id="7255916308560539517">Touch your security key again to confirm reset. All information stored on the security key, including its PIN, will be erased.</translation>
 <translation id="7255935316994522020">Apply</translation>
 <translation id="7256069762010468647">Site is using your camera</translation>
 <translation id="7256405249507348194">Unrecognised error: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7968833647796919681">Enable performance data collection</translation>
 <translation id="7968982339740310781">View details</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">Can't save card at the moment</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 With RSA Encryption</translation>
 <translation id="7973962044839454485">PPP authentication failed due to an incorrect username or password</translation>
 <translation id="7974566588408714340">Retry using <ph name="EXTENSIONNAME" /></translation>
@@ -5090,7 +5083,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8431909052837336408">Change SIM PIN</translation>
 <translation id="8434480141477525001">NaCl Debug Port</translation>
 <translation id="8435395510592618362">Verify your identity with <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Save credit card</translation>
 <translation id="8438328416656800239">Switch to a smart browser</translation>
 <translation id="8438566539970814960">Make searches and browsing better</translation>
 <translation id="8439506636278576865">Offer to translate pages in this language</translation>
@@ -5473,6 +5465,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8965037249707889821">Enter old password</translation>
 <translation id="8966870118594285808">Reopen a tab if you accidentally closed it</translation>
 <translation id="8967866634928501045">Press Alt Shift A to show</translation>
+<translation id="8968766641738584599">Save card</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Please check with your network administrator to make sure that the firewall is not blocking downloads from Google servers.</translation>
 <translation id="8973557916016709913">Remove zoom level</translation>
@@ -5579,7 +5572,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9116799625073598554">Note-taking app</translation>
 <translation id="9117030152748022724">Manage your apps</translation>
 <translation id="9121814364785106365">Open as pinned tab</translation>
-<translation id="9122074588095746047">Couldn't enable ADB</translation>
 <translation id="9124003689441359348">Saved passwords will appear here</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rem.)</translation>
 <translation id="9128317794749765148">Setup couldn't complete</translation>

@@ -44,8 +44,6 @@
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_background_services_context.h"
 #include "content/public/browser/notification_service.h"
@@ -294,10 +292,6 @@ void PushMessagingServiceImpl::OnMessage(const std::string& app_id,
                            blink::mojom::PushDeliveryStatus::PERMISSION_DENIED);
     return;
   }
-
-  rappor::SampleDomainAndRegistryFromGURL(
-      g_browser_process->rappor_service(),
-      "PushMessaging.MessageReceived.Origin", app_identifier.origin());
 
   // The payload of a push message can be valid with content, valid with empty
   // content, or null.

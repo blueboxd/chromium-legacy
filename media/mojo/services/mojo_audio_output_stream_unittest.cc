@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "base/test/task_environment.h"
-#include "media/audio/audio_output_controller.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

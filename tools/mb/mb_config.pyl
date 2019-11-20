@@ -1805,7 +1805,7 @@
     ],
 
     'libfuzzer_msan_release_bot': [
-      'libfuzzer', 'msan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+      'libfuzzer', 'msan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
     ],
 
     'libfuzzer_ubsan_release_bot': [

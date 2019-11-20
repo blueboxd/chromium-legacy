@@ -299,33 +299,34 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (allow_offline)
     previews_state |= content::OFFLINE_PAGE_ON;
 
-  // Check PageHint preview types first.
-  bool should_load_page_hints = false;
+  // Check commit-time preview types first.
+  bool allow_commit_time_previews = false;
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, navigation_handle, is_reload,
           previews::PreviewsType::DEFER_ALL_SCRIPT)) {
     previews_state |= content::DEFER_ALL_SCRIPT_ON;
-    should_load_page_hints = true;
+    allow_commit_time_previews = true;
   }
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, navigation_handle, is_reload,
           previews::PreviewsType::RESOURCE_LOADING_HINTS)) {
     previews_state |= content::RESOURCE_LOADING_HINTS_ON;
-    should_load_page_hints = true;
+    allow_commit_time_previews = true;
   }
   if (previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, navigation_handle, is_reload,
           previews::PreviewsType::NOSCRIPT)) {
     previews_state |= content::NOSCRIPT_ON;
-    should_load_page_hints = true;
+    allow_commit_time_previews = true;
   }
-  bool has_page_hints = false;
-  if (should_load_page_hints) {
-    // Initiate load of any applicable page hint details.
-    has_page_hints = previews_decider->LoadPageHints(navigation_handle);
+  bool commit_time_previews_are_available = false;
+  if (allow_commit_time_previews) {
+    commit_time_previews_are_available =
+        previews_decider->AreCommitTimePreviewsAvailable(navigation_handle);
   }
 
-  if ((!has_page_hints || params::LitePagePreviewsOverridePageHints()) &&
+  if ((!commit_time_previews_are_available ||
+       params::LitePagePreviewsOverridePageHints()) &&
       previews_decider->ShouldAllowPreviewAtNavigationStart(
           previews_data, navigation_handle, is_reload,
           previews::PreviewsType::LITE_PAGE_REDIRECT) &&

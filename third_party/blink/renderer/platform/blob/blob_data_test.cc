@@ -205,7 +205,7 @@ class BlobDataHandleTest : public testing::Test {
         mojo::Remote<mojom::blink::Blob> blob(
             std::move(actual->get_blob()->blob));
         blob->GetInternalUUID(base::BindOnce(
-            [](base::Closure quit_closure, String* uuid_out,
+            [](base::RepeatingClosure quit_closure, String* uuid_out,
                const String& uuid) {
               *uuid_out = uuid;
               quit_closure.Run();

@@ -237,13 +237,16 @@ bool AreGraphemePropertiesCompatible(const GraphemeProperties& first,
 }
 
 // Returns the end of the current grapheme cluster. This function is finding the
-// breaking point where grapheme properties are no longer compatible.
-// (see: UNICODE TEXT SEGMENTATION (http://unicode.org/reports/tr29/)
+// breaking point where grapheme properties are no longer compatible
+// (see: UNICODE TEXT SEGMENTATION (http://unicode.org/reports/tr29/).
+// Breaks between |run_start| and |run_end| and force break after the grapheme
+// starting at |run_break|.
 size_t FindRunBreakingCharacter(const base::string16& text,
                                 UScriptCode script,
                                 size_t run_start,
-                                size_t run_break) {
-  const size_t run_length = run_break - run_start;
+                                size_t run_break,
+                                size_t run_end) {
+  const size_t run_length = run_end - run_start;
   const base::StringPiece16 run_text(text.c_str() + run_start, run_length);
   const bool is_common_script = (script == USCRIPT_COMMON);
 
@@ -272,16 +275,22 @@ size_t FindRunBreakingCharacter(const base::string16& text,
     const GraphemeProperties current_grapheme_properties =
         RetrieveGraphemeProperties(current_grapheme_text, is_common_script);
 
+    const size_t current_breaking_position =
+        run_start + grapheme_iterator.prev();
     if (!AreGraphemePropertiesCompatible(first_grapheme_properties,
                                          current_grapheme_properties)) {
-      const size_t current_breaking_position =
-          run_start + grapheme_iterator.prev();
+      return current_breaking_position;
+    }
+
+    // Break if the beginning of this grapheme is after |run_break|.
+    if (run_start + grapheme_iterator.prev() >= run_break) {
+      DCHECK_LE(current_breaking_position, run_end);
       return current_breaking_position;
     }
   }
 
   // Do not break this run, returns end of the text.
-  return run_break;
+  return run_end;
 }
 
 // Find the longest sequence of characters from 0 and up to |length| that have
@@ -2012,22 +2021,21 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
 
       for (size_t breaking_run_start = script_run_start;
            breaking_run_start < script_run_end;) {
-        // Break runs at certain characters that need to be rendered separately
-        // to prevent either an unusual character from forcing a fallback font
-        // on the entire run. After script intersection, many codepoints end up
-        // in the script COMMON but can't be rendered together.
-        size_t breaking_char_end = FindRunBreakingCharacter(
-            text, script, breaking_run_start, script_run_end);
-
-        // Break runs at style boundaries.
+        // Find the break boundary for style. The style won't break a grapheme
+        // since the style of the first character is applied to the whole
+        // grapheme.
         style.UpdatePosition(
             GivenTextIndexToTextIndex(text, breaking_run_start));
         size_t text_style_end =
             TextIndexToGivenTextIndex(text, style.GetRange().end());
 
-        // The next break is the nearest break position.
-        const size_t breaking_run_end =
-            std::min(breaking_char_end, text_style_end);
+        // Break runs at certain characters that need to be rendered separately
+        // to prevent an unusual character from forcing a fallback font on the
+        // entire run. After script intersection, many codepoints end up in the
+        // script COMMON but can't be rendered together.
+        size_t breaking_run_end = FindRunBreakingCharacter(
+            text, script, breaking_run_start, text_style_end, script_run_end);
+
         DCHECK_LT(breaking_run_start, breaking_run_end);
         DCHECK(IsValidCodePointIndex(text, breaking_run_end));
 

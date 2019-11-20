@@ -8,12 +8,15 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
 #include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_loader_ios.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -67,16 +70,8 @@ class DeviceManagementServiceConfiguration
 
 BrowserPolicyConnectorIOS::BrowserPolicyConnectorIOS(
     const HandlerListFactory& handler_list_factory,
-    const std::string& user_agent,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : BrowserPolicyConnector(handler_list_factory),
-      user_agent_(user_agent) {
-  std::unique_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderIOS(background_task_runner));
-  std::unique_ptr<ConfigurationPolicyProvider> provider(
-      new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader)));
-  SetPlatformPolicyProvider(std::move(provider));
-}
+    const std::string& user_agent)
+    : BrowserPolicyConnector(handler_list_factory), user_agent_(user_agent) {}
 
 BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}
 
@@ -94,6 +89,54 @@ void BrowserPolicyConnectorIOS::Init(
       kServiceInitializationStartupDelay);
 
   InitInternal(local_state, std::move(device_management_service));
+}
+
+bool BrowserPolicyConnectorIOS::IsEnterpriseManaged() const {
+  NOTREACHED() << "This method is only defined for Chrome OS";
+  return false;
+}
+
+bool BrowserPolicyConnectorIOS::HasMachineLevelPolicies() {
+  const ConfigurationPolicyProvider* provider = GetPlatformProvider();
+  if (!provider) {
+    return false;
+  }
+  for (const auto& pair : provider->policies()) {
+    if (!pair.second->empty()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>
+BrowserPolicyConnectorIOS::CreatePolicyProviders() {
+  auto providers = BrowserPolicyConnector::CreatePolicyProviders();
+  std::unique_ptr<ConfigurationPolicyProvider> platform_provider =
+      CreatePlatformProvider();
+  if (platform_provider) {
+    DCHECK(!platform_provider_) << "CreatePolicyProviders was called twice.";
+    platform_provider_ = platform_provider.get();
+    // PlatformProvider should be before all other providers (highest priority).
+    providers.insert(providers.begin(), std::move(platform_provider));
+  }
+  return providers;
+}
+
+std::unique_ptr<ConfigurationPolicyProvider>
+BrowserPolicyConnectorIOS::CreatePlatformProvider() {
+  std::unique_ptr<AsyncPolicyLoader> loader(new PolicyLoaderIOS(
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT})));
+
+  return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
+                                               std::move(loader));
+}
+
+ConfigurationPolicyProvider* BrowserPolicyConnectorIOS::GetPlatformProvider() {
+  ConfigurationPolicyProvider* provider =
+      BrowserPolicyConnectorBase::GetPolicyProviderForTesting();
+  return provider ? provider : platform_provider_;
 }
 
 }  // namespace policy

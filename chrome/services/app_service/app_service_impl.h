@@ -17,11 +17,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
+class PrefRegistrySimple;
 class PrefService;
-
-namespace service_manager {
-class Connector;
-}
 
 namespace apps {
 
@@ -30,8 +27,10 @@ namespace apps {
 // See chrome/services/app_service/README.md.
 class AppServiceImpl : public apps::mojom::AppService {
  public:
-  explicit AppServiceImpl(service_manager::Connector* connector);
+  explicit AppServiceImpl(PrefService* profile_prefs);
   ~AppServiceImpl() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   void BindReceiver(mojo::PendingReceiver<apps::mojom::AppService> receiver);
 
@@ -92,10 +91,6 @@ class AppServiceImpl : public apps::mojom::AppService {
   // Initialize the preferred apps from disk.
   void InitializePreferredApps();
 
-  void ConnectToPrefService(service_manager::Connector* connector);
-
-  void OnPrefServiceConnected(std::unique_ptr<PrefService> pref_service);
-
   // publishers_ is a std::map, not a mojo::RemoteSet, since we want to
   // be able to find *the* publisher for a given apps::mojom::AppType.
   std::map<apps::mojom::AppType, mojo::Remote<apps::mojom::Publisher>>
@@ -106,7 +101,7 @@ class AppServiceImpl : public apps::mojom::AppService {
   // destroyed first, closing the connection to avoid dangling callbacks.
   mojo::ReceiverSet<apps::mojom::AppService> receivers_;
 
-  std::unique_ptr<PrefService> pref_service_;
+  PrefService* const pref_service_;
 
   PreferredApps preferred_apps_;
 

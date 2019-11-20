@@ -154,7 +154,7 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
                  base::TimeTicks delay_timestamp,
                  int prior_frames_skipped,
                  media::AudioBus* dest) override;
-  void OnError() override;
+  void OnError(ErrorType type) override;
 
   // LoopbackGroupMember implementation.
   const media::AudioParameters& GetAudioParameters() const override;

@@ -88,8 +88,6 @@ source_set("network_protocol") {
     "http_protocol_logging.mm",
     "nsurlrequest_util.h",
     "nsurlrequest_util.mm",
-    "request_tracker.h",
-    "request_tracker.mm",
   ]
 
   if (!use_platform_icu_alternatives) {

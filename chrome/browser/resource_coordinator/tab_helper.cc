@@ -44,13 +44,9 @@ ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
   }
 
 #if !defined(OS_ANDROID)
-  // Don't create the LocalSiteCharacteristicsWebContentsObserver for this tab
-  // if the feature is disabled.
-  if (base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase)) {
-    local_site_characteristics_wc_observer_ =
-        std::make_unique<LocalSiteCharacteristicsWebContentsObserver>(
-            web_contents);
-  }
+  local_site_characteristics_wc_observer_ =
+      std::make_unique<LocalSiteCharacteristicsWebContentsObserver>(
+          web_contents);
 #endif
 }
 

@@ -175,11 +175,8 @@ std::vector<TestParams> GetTestParams() {
   quic::ParsedQuicVersionVector all_supported_versions =
       quic::AllSupportedVersions();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
-    // TODO(rch): crbug.com/978745 - Make this work with TLS
-    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
-      params.push_back(TestParams{version, false});
-      params.push_back(TestParams{version, true});
-    }
+    params.push_back(TestParams{version, false});
+    params.push_back(TestParams{version, true});
   }
   return params;
 }
@@ -189,15 +186,12 @@ std::vector<PoolingTestParams> GetPoolingTestParams() {
   quic::ParsedQuicVersionVector all_supported_versions =
       quic::AllSupportedVersions();
   for (const quic::ParsedQuicVersion version : all_supported_versions) {
-    // TODO(rch): crbug.com/978745 - Make this work with TLS
-    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
-      params.push_back(PoolingTestParams{version, SAME_AS_FIRST, false});
-      params.push_back(PoolingTestParams{version, SAME_AS_FIRST, true});
-      params.push_back(PoolingTestParams{version, SAME_AS_SECOND, false});
-      params.push_back(PoolingTestParams{version, SAME_AS_SECOND, true});
-      params.push_back(PoolingTestParams{version, DIFFERENT, false});
-      params.push_back(PoolingTestParams{version, DIFFERENT, true});
-    }
+    params.push_back(PoolingTestParams{version, SAME_AS_FIRST, false});
+    params.push_back(PoolingTestParams{version, SAME_AS_FIRST, true});
+    params.push_back(PoolingTestParams{version, SAME_AS_SECOND, false});
+    params.push_back(PoolingTestParams{version, SAME_AS_SECOND, true});
+    params.push_back(PoolingTestParams{version, DIFFERENT, false});
+    params.push_back(PoolingTestParams{version, DIFFERENT, true});
   }
   return params;
 }
@@ -2617,6 +2611,10 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 // alternate network as well, QUIC is marked as broken and the brokenness will
 // not expire when default network changes.
 TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -2721,6 +2719,11 @@ TEST_P(QuicNetworkTransactionTest, QuicFailsOnBothNetworksWhileTCPSucceeds) {
 // alternate network, QUIC is marked as broken. The brokenness will expire when
 // the default network changes.
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -2836,6 +2839,11 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
 // Much like above test, but verifies NetworkIsolationKeys are respected.
 TEST_P(QuicNetworkTransactionTest,
        RetryOnAlternateNetworkWhileTCPSucceedsWithNetworkIsolationKey) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
   const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
   const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
@@ -2977,6 +2985,11 @@ TEST_P(QuicNetworkTransactionTest,
 // before handshake is confirmed. If TCP doesn't succeed but QUIC on the
 // alternative network succeeds, QUIC is not marked as broken.
 TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetUpTestForRetryConnectionOnAlternateNetwork();
 
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -3094,6 +3107,11 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
 // Verify that if a QUIC connection times out, the QuicHttpStream will
 // return QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.retry_without_alt_svc_on_quic_errors = false;
   session_params_.quic_params.idle_connection_timeout =
       base::TimeDelta::FromSeconds(5);
@@ -3214,6 +3232,11 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 // Verify that if a QUIC connection RTOs, the QuicHttpStream will
 // return QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.retry_without_alt_svc_on_quic_errors = false;
   session_params_.quic_params.connection_options.push_back(quic::k5RTO);
 
@@ -3338,6 +3361,11 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
 // QUIC will not be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        TooManyRtosAfterHandshakeConfirmedAndStreamReset) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.connection_options.push_back(quic::k5RTO);
 
   // The request will initially go out over QUIC.
@@ -3524,6 +3552,11 @@ TEST_P(QuicNetworkTransactionTest,
 // Verify that if a QUIC protocol error occurs after the handshake is confirmed
 // the request fails with QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.retry_without_alt_svc_on_quic_errors = false;
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
@@ -3595,6 +3628,11 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
 // connection times out, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.idle_connection_timeout =
       base::TimeDelta::FromSeconds(5);
 
@@ -3739,6 +3777,11 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
 // retried over TCP and the QUIC will be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBroken) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.idle_connection_timeout =
       base::TimeDelta::FromSeconds(5);
 
@@ -3834,6 +3877,11 @@ TEST_P(QuicNetworkTransactionTest,
 // Much like above test, but verifies that NetworkIsolationKey is respected.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBrokenWithNetworkIsolationKey) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
   const net::NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
   const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
@@ -3962,6 +4010,11 @@ TEST_P(QuicNetworkTransactionTest,
 // request is reset from, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   // The request will initially go out over QUIC.
   MockQuicData quic_data(version_);
   spdy::SpdyPriority priority =
@@ -5153,6 +5206,11 @@ TEST_P(QuicNetworkTransactionTest, HungAlternativeService) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_num = 1;
@@ -5195,6 +5253,11 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithHttpRace) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
@@ -5267,6 +5330,11 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5326,6 +5394,11 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   uint64_t packet_number = 1;
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5409,6 +5482,11 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   uint64_t packet_number = 1;
   MockQuicData mock_quic_data(version_);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5496,6 +5574,11 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorLocal) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
@@ -5553,6 +5636,11 @@ TEST_P(QuicNetworkTransactionTest,
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorRemote) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
@@ -5615,6 +5703,11 @@ TEST_P(QuicNetworkTransactionTest,
 }
 
 TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -5684,6 +5777,11 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
 }
 
 TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   session_params_.quic_params.retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data(version_);
   int packet_num = 1;
@@ -5870,6 +5968,11 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
 }
 
 TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   // Tests that TCP job is delayed and QUIC job does not require confirmation
   // if QUIC was recently supported on the same IP on start.
 
@@ -5936,6 +6039,11 @@ TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
 
 TEST_P(QuicNetworkTransactionTest,
        DelayTCPOnStartWithQuicSupportOnDifferentIP) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   // Tests that TCP job is delayed and QUIC job requires confirmation if QUIC
   // was recently supported on a different IP address on start.
 
@@ -6081,6 +6189,11 @@ TEST_P(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
 
 TEST_P(QuicNetworkTransactionTest,
        FailedZeroRttBrokenAlternateProtocolWithNetworkIsolationKey) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       // enabled_features
@@ -6507,11 +6620,20 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterAsyncNoBufferSpace) {
   socket_data.AddWrite(SYNCHRONOUS,
                        ConstructClientAckPacket(packet_num++, 2, 1, 1));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
-  socket_data.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeAckAndConnectionClosePacket(
-          packet_num++, false, quic::QuicTime::Delta::FromMilliseconds(0), 2, 1,
-          1, quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // TLS1.3 supports multiple packet number space, so the ack is no longer
+    // sent.
+    socket_data.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeConnectionClosePacket(
+            packet_num++, false, quic::QUIC_CONNECTION_CANCELLED, "net error"));
+  } else {
+    socket_data.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeAckAndConnectionClosePacket(
+            packet_num++, false, quic::QuicTime::Delta::FromMilliseconds(0), 2,
+            1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
+  }
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -6549,11 +6671,20 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
   socket_data.AddWrite(SYNCHRONOUS,
                        ConstructClientAckPacket(packet_num++, 2, 1, 1));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
-  socket_data.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeAckAndConnectionClosePacket(
-          packet_num++, false, quic::QuicTime::Delta::FromMilliseconds(0), 2, 1,
-          1, quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // TLS1.3 supports multiple packet number space, so the ack is no longer
+    // sent.
+    socket_data.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeConnectionClosePacket(
+            packet_num++, false, quic::QUIC_CONNECTION_CANCELLED, "net error"));
+  } else {
+    socket_data.AddWrite(
+        SYNCHRONOUS,
+        client_maker_.MakeAckAndConnectionClosePacket(
+            packet_num++, false, quic::QuicTime::Delta::FromMilliseconds(0), 2,
+            1, 1, quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
+  }
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 

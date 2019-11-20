@@ -225,7 +225,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
       views::BoxLayout::Orientation::kVertical, kMediaControlsInsets));
   contents_view_->SetBackground(views::CreateRoundedRectBackground(
       AshColorProvider::Get()->GetBaseLayerColor(
-          AshColorProvider::BaseLayerType::kTransparentWithBlur,
+          AshColorProvider::BaseLayerType::kTransparent74,
           AshColorProvider::AshColorMode::kDark),
       kMediaControlsCornerRadius));
 

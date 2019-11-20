@@ -789,6 +789,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6818926723028410516">Selectează elementele</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tradu</translation>
+<translation id="6840155290835956714">Întreabă înainte de a trimite</translation>
 <translation id="6845325883481699275">Contribuie la îmbunătățirea securității pentru Chrome</translation>
 <translation id="6846298663435243399">Se încarcă…</translation>
 <translation id="6850409657436465440">Descărcarea este încă în desfășurare</translation>
@@ -1095,7 +1096,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="9133397713400217035">Explorează offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
-<translation id="9139068048179869749">Întreabă înainte de a permite site-urilor să trimită notificări (recomandat)</translation>
 <translation id="9139318394846604261">Cumpărături</translation>
 <translation id="9155898266292537608">De asemenea, poți căuta atingând scurt un cuvânt</translation>
 <translation id="9169507124922466868">Istoricul de navigare este pe jumătate deschis</translation>

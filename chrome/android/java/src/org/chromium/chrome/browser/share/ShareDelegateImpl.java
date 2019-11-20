@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.share;
 
-import org.chromium.base.Callback;
-import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
@@ -13,36 +11,28 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
  * Implementation of share interface. Mostly a wrapper around ShareSheetCoordinator.
  */
 public class ShareDelegateImpl implements ShareDelegate {
-    private Callback<BottomSheetController> mBottomSheetControllerSupplierCallback;
     private BottomSheetController mBottomSheetController;
 
     /**
      * Construct a new {@link ShareDelegateImpl}.
-     * @param controllerSupplier The ObservableSupplier that will notify this class when the
-     *                           BottomSheetController has been initialized.
+     * @param controller The BottomSheetController for the current activity.
      */
-    public ShareDelegateImpl(ObservableSupplier<BottomSheetController> controllerSupplier) {
-        mBottomSheetControllerSupplierCallback = bottomSheetController -> {
-            mBottomSheetController = bottomSheetController;
-        };
-        controllerSupplier.addObserver(mBottomSheetControllerSupplierCallback);
+    public ShareDelegateImpl(BottomSheetController controller) {
+        mBottomSheetController = controller;
     }
 
     // ShareDelegate implementation.
     @Override
     public void share(ShareParams params) {
-        createCoordinator().share(params);
+        ShareSheetCoordinator coordinator = new ShareSheetCoordinator(mBottomSheetController);
+        coordinator.share(params);
     }
 
     // ShareDelegate implementation.
     @Override
     public void share(Tab currentTab, boolean shareDirectly) {
-        createCoordinator().onShareSelected(currentTab.getWindowAndroid().getActivity().get(),
-                currentTab, shareDirectly, currentTab.isIncognito());
-    }
-
-    private ShareSheetCoordinator createCoordinator() {
         ShareSheetCoordinator coordinator = new ShareSheetCoordinator(mBottomSheetController);
-        return coordinator;
+        coordinator.onShareSelected(currentTab.getWindowAndroid().getActivity().get(), currentTab,
+                shareDirectly, currentTab.isIncognito());
     }
 }

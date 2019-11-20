@@ -114,7 +114,7 @@ int AudioOutputStreamSink::OnMoreData(base::TimeDelta delay,
                                          prior_frames_skipped, dest);
 }
 
-void AudioOutputStreamSink::OnError() {
+void AudioOutputStreamSink::OnError(ErrorType type) {
   // Note: Runs on the audio thread created by the OS.
   base::AutoLock al(callback_lock_);
   if (active_render_callback_)

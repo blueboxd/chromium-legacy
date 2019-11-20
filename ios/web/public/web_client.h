@@ -189,6 +189,13 @@ class WebClient {
 
   // Instructs the embedder to return a container that is attached to a window.
   virtual UIView* GetWindowedContainer();
+
+  // This method is used when the user didn't express any preference for the
+  // version of |url|. Returning true allows to make sure that for |url|, the
+  // mobile version will be used, unless the user explicitly requested the
+  // desktop version. This method can be overriden to avoid having specific URL
+  // being requested in desktop mode when the default mode is desktop.
+  virtual bool ForceMobileVersionByDefault(const GURL& url);
 };
 
 }  // namespace web

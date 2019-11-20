@@ -82,7 +82,6 @@ def _show_tool_versions():
     commands.run_command(['sw_vers'])
     commands.run_command(['xcodebuild', '-version'])
     commands.run_command(['xcrun', '-show-sdk-path'])
-    commands.run_command(['xcrun', '-show-sdk-build-version'])
 
 
 def main():

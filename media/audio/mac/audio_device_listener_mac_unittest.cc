@@ -47,8 +47,8 @@ class AudioDeviceListenerMacTest : public testing::Test {
     // internals are working correctly.
     device_listener_.reset(new AudioDeviceListenerMac(
         BindToCurrentLoop(
-            base::Bind(&AudioDeviceListenerMacTest::OnDeviceChange,
-                       base::Unretained(this))),
+            base::BindRepeating(&AudioDeviceListenerMacTest::OnDeviceChange,
+                                base::Unretained(this))),
         true /* monitor_default_input */, true /* monitor_addition_removal */));
   }
 

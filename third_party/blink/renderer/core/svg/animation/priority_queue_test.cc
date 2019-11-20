@@ -13,41 +13,31 @@ namespace {
 
 class TestNode : public GarbageCollected<TestNode> {
  public:
-  explicit TestNode(int priority) : priority_(priority), handle_(kNotFound) {}
-
-  int Priority() const { return priority_; }
-  void SetPriority(int priority) { priority_ = priority; }
+  explicit TestNode() : handle_(kNotFound) {}
 
   wtf_size_t& PriorityQueueHandle() { return handle_; }
 
   void Trace(Visitor*) {}
 
  private:
-  int priority_;
   wtf_size_t handle_;
 };
 
-struct TestNodeLess {
-  bool operator()(const TestNode& a, const TestNode& b) {
-    return a.Priority() < b.Priority();
-  }
-};
-
-using TestPriorityQueue = PriorityQueue<TestNode, TestNodeLess>;
+using TestPriorityQueue = PriorityQueue<int, TestNode>;
 
 void VerifyHeap(TestPriorityQueue& queue, int round = -1) {
   for (wtf_size_t index = 0; index < queue.size(); ++index) {
-    TestNode& node = *queue[index];
+    const TestPriorityQueue::EntryType& entry = queue[index];
 
     wtf_size_t left_child_index = index * 2 + 1;
     if (left_child_index < queue.size())
-      EXPECT_FALSE(TestNodeLess()(*queue[left_child_index], node));
+      EXPECT_FALSE(queue[left_child_index].first < entry.first);
 
     wtf_size_t right_child_index = left_child_index + 1;
     if (right_child_index < queue.size())
-      EXPECT_FALSE(TestNodeLess()(*queue[right_child_index], node));
+      EXPECT_FALSE(queue[right_child_index].first < entry.first);
 
-    EXPECT_EQ(node.PriorityQueueHandle(), index);
+    EXPECT_EQ(entry.second->PriorityQueueHandle(), index);
   }
 }
 
@@ -56,10 +46,10 @@ void VerifyHeap(TestPriorityQueue& queue, int round = -1) {
 TEST(PriorityQueueTest, Insertion) {
   TestPriorityQueue queue;
   EXPECT_TRUE(queue.IsEmpty());
-  queue.Insert(MakeGarbageCollected<TestNode>(7));
+  queue.Insert(7, MakeGarbageCollected<TestNode>());
   EXPECT_FALSE(queue.IsEmpty());
   for (int n : {1, 2, 6, 4, 5, 3, 0})
-    queue.Insert(MakeGarbageCollected<TestNode>(n));
+    queue.Insert(n, MakeGarbageCollected<TestNode>());
   EXPECT_FALSE(queue.IsEmpty());
   EXPECT_EQ(queue.size(), 8u);
   VerifyHeap(queue);
@@ -69,7 +59,7 @@ TEST(PriorityQueueTest, InsertionDuplicates) {
   TestPriorityQueue queue;
   EXPECT_TRUE(queue.IsEmpty());
   for (int n : {7, 1, 5, 6, 5, 5, 1, 0})
-    queue.Insert(MakeGarbageCollected<TestNode>(n));
+    queue.Insert(n, MakeGarbageCollected<TestNode>());
   EXPECT_FALSE(queue.IsEmpty());
   EXPECT_EQ(queue.size(), 8u);
   VerifyHeap(queue);
@@ -79,13 +69,13 @@ TEST(PriorityQueueTest, RemovalMin) {
   TestPriorityQueue queue;
   EXPECT_TRUE(queue.IsEmpty());
   for (int n : {7, 1, 2, 6, 4, 5, 3, 0})
-    queue.Insert(MakeGarbageCollected<TestNode>(n));
+    queue.Insert(n, MakeGarbageCollected<TestNode>());
   EXPECT_FALSE(queue.IsEmpty());
   EXPECT_EQ(queue.size(), 8u);
   VerifyHeap(queue);
   for (int n = 0; n < 8; ++n) {
+    EXPECT_EQ(queue.Min(), n);
     TestNode* node = queue.MinElement();
-    EXPECT_EQ(node->Priority(), n);
     wtf_size_t expected_size = static_cast<wtf_size_t>(8 - n);
     EXPECT_EQ(queue.size(), expected_size);
     queue.Remove(node);
@@ -96,26 +86,25 @@ TEST(PriorityQueueTest, RemovalMin) {
 
 TEST(PriorityQueueTest, RemovalReverse) {
   TestPriorityQueue queue;
-  HeapVector<Member<TestNode>> vector;
+  using PairType = std::pair<int, Member<TestNode>>;
+  HeapVector<PairType> vector;
   EXPECT_TRUE(queue.IsEmpty());
   for (int n : {7, 1, 2, 6, 4, 5, 3, 0}) {
-    TestNode* node = MakeGarbageCollected<TestNode>(n);
-    queue.Insert(node);
-    vector.push_back(node);
+    TestNode* node = MakeGarbageCollected<TestNode>();
+    queue.Insert(n, node);
+    vector.push_back<PairType>({n, node});
   }
   EXPECT_FALSE(queue.IsEmpty());
   EXPECT_EQ(queue.size(), 8u);
   VerifyHeap(queue);
-  std::sort(vector.begin(), vector.end(),
-            [](const TestNode* a, const TestNode* b) {
-              return a->Priority() > b->Priority();
-            });
+  std::sort(
+      vector.begin(), vector.end(),
+      [](const PairType& a, const PairType& b) { return a.first > b.first; });
   for (int n = 0; n < 8; ++n) {
-    TestNode* node = vector[n];
-    EXPECT_EQ(node->Priority(), 8 - (n + 1));
+    EXPECT_EQ(vector[n].first, 8 - (n + 1));
     wtf_size_t expected_size = static_cast<wtf_size_t>(8 - n);
     EXPECT_EQ(queue.size(), expected_size);
-    queue.Remove(node);
+    queue.Remove(vector[n].second);
     EXPECT_EQ(queue.size(), expected_size - 1);
     VerifyHeap(queue);
   }
@@ -126,8 +115,8 @@ TEST(PriorityQueueTest, RemovalRandom) {
   HeapVector<Member<TestNode>> vector;
   EXPECT_TRUE(queue.IsEmpty());
   for (int n : {7, 1, 2, 6, 4, 0, 5, 3}) {
-    TestNode* node = MakeGarbageCollected<TestNode>(n);
-    queue.Insert(node);
+    TestNode* node = MakeGarbageCollected<TestNode>();
+    queue.Insert(n, node);
     vector.push_back(node);
   }
   EXPECT_FALSE(queue.IsEmpty());
@@ -144,12 +133,13 @@ TEST(PriorityQueueTest, RemovalRandom) {
 
 TEST(PriorityQueueTest, Updates) {
   TestPriorityQueue queue;
-  HeapVector<Member<TestNode>> vector;
+  using PairType = std::pair<int, Member<TestNode>>;
+  HeapVector<PairType> vector;
   EXPECT_TRUE(queue.IsEmpty());
   for (int n : {7, 1, 2, 6, 4, 0, 5, 3}) {
-    TestNode* node = MakeGarbageCollected<TestNode>(n);
-    queue.Insert(node);
-    vector.push_back(node);
+    TestNode* node = MakeGarbageCollected<TestNode>();
+    queue.Insert(n, node);
+    vector.push_back<PairType>({n, node});
   }
   EXPECT_FALSE(queue.IsEmpty());
   EXPECT_EQ(queue.size(), 8u);
@@ -157,63 +147,59 @@ TEST(PriorityQueueTest, Updates) {
 
   // Increase/decrease priority for elements from even/odd slots in |vector|.
   for (int n = 0; n < 8; ++n) {
-    TestNode* node = vector[n];
-    int old_priority = node->Priority();
+    int old_priority = vector[n].first;
     int adjust = ((n % 2) - 1) * 4;
-    node->SetPriority(old_priority + adjust);
+    int new_priority = old_priority + adjust;
     EXPECT_EQ(queue.size(), 8u);
-    queue.Update(node);
+    queue.Update(new_priority, vector[n].second);
     EXPECT_EQ(queue.size(), 8u);
     VerifyHeap(queue, n);
   }
 
   // Decrease priority for the root node.
-  TestNode* smallest = queue[0];
-  smallest->SetPriority(smallest->Priority() - 10);
-  queue.Update(smallest);
-  EXPECT_EQ(smallest, queue[0]);
+  TestNode* smallest = queue[0].second;
+  queue.Update(queue[0].first - 10, smallest);
+  EXPECT_EQ(smallest, queue[0].second);
   VerifyHeap(queue);
 
   // Increase priority for the root node.
-  smallest = queue[0];
-  smallest->SetPriority(queue[7]->Priority() + 1);
-  queue.Update(smallest);
-  EXPECT_EQ(smallest, queue[7]);
+  smallest = queue[0].second;
+  queue.Update(queue[7].first + 1, smallest);
+  EXPECT_EQ(smallest, queue[7].second);
   VerifyHeap(queue);
 
   // No-op update.
-  TestNode* node = queue[3];
-  queue.Update(node);
-  EXPECT_EQ(node, queue[3]);
+  TestNode* node = queue[3].second;
+  queue.Update(queue[3].first, node);
+  EXPECT_EQ(node, queue[3].second);
   VerifyHeap(queue);
 
   // Decrease priority for a non-root node.
-  node = queue[3];
-  node->SetPriority(queue[TestPriorityQueue::ParentIndex(3)]->Priority() - 1);
-  queue.Update(node);
+  node = queue[3].second;
+  int parent_prio = queue[TestPriorityQueue::ParentIndex(3)].first;
+  queue.Update(parent_prio - 1, node);
   VerifyHeap(queue);
 
   // Matching priority of parent doesn't move the node.
-  node = queue[3];
-  node->SetPriority(queue[TestPriorityQueue::ParentIndex(3)]->Priority());
-  queue.Update(node);
-  EXPECT_EQ(node, queue[3]);
+  node = queue[3].second;
+  parent_prio = queue[TestPriorityQueue::ParentIndex(3)].first;
+  queue.Update(parent_prio, node);
+  EXPECT_EQ(node, queue[3].second);
   VerifyHeap(queue);
 
   // Increase priority for a non-root node.
-  node = queue[3];
-  node->SetPriority(queue[TestPriorityQueue::LeftChildIndex(3)]->Priority() +
-                    1);
-  queue.Update(node);
+  node = queue[3].second;
+  int left_child_prio = queue[TestPriorityQueue::LeftChildIndex(3)].first;
+  queue.Update(left_child_prio + 1, node);
   VerifyHeap(queue);
 
   // Matching priority of smallest child doesn't move the node.
-  node = queue[1];
-  node->SetPriority(
-      std::min(queue[TestPriorityQueue::LeftChildIndex(1)]->Priority(),
-               queue[TestPriorityQueue::LeftChildIndex(1) + 1]->Priority()));
-  queue.Update(node);
-  EXPECT_EQ(node, queue[1]);
+  node = queue[1].second;
+  int left_child_index = TestPriorityQueue::LeftChildIndex(1);
+  left_child_prio = queue[left_child_index].first;
+  int right_child_prio = queue[left_child_index + 1].first;
+  queue.Update(std::min(left_child_prio, right_child_prio), node);
+  EXPECT_EQ(node, queue[1].second);
   VerifyHeap(queue);
 }
 

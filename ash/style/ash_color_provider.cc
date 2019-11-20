@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -27,6 +28,13 @@ constexpr float kDisabledColorOpacity = 0.38f;
 
 // Color of second tone is always 30% opacity of the color of first tone.
 constexpr float kSecondToneOpacity = 0.3f;
+
+// Different alpha values that can be used by Shield and Base layers.
+constexpr int kAlpha20 = 51;   // 20%
+constexpr int kAlpha40 = 102;  // 40%
+constexpr int kAlpha60 = 153;  // 60%
+constexpr int kAlpha74 = 188;  // 74%
+constexpr int kAlpha90 = 230;  // 90%
 
 // Gets the color mode value from feature flag "--ash-color-mode".
 AshColorProvider::AshColorMode GetColorModeFromCommandLine() {
@@ -155,35 +163,29 @@ AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
 SkColor AshColorProvider::GetShieldLayerColorImpl(
     ShieldLayerType type,
     AshColorMode color_mode) const {
-  SkColor light_color, dark_color;
-  switch (type) {
-    case ShieldLayerType::kAlpha20:
-      light_color = SkColorSetA(SK_ColorWHITE, 0x33);  // 20%
-      dark_color = SkColorSetA(gfx::kGoogleGrey900, 0x33);
-      break;
-    case ShieldLayerType::kAlpha40:
-      light_color = SkColorSetA(SK_ColorWHITE, 0x66);  // 40%
-      dark_color = SkColorSetA(gfx::kGoogleGrey900, 0x66);
-      break;
-    case ShieldLayerType::kAlpha60:
-      light_color = SkColorSetA(SK_ColorWHITE, 0x99);  // 60%
-      dark_color = SkColorSetA(gfx::kGoogleGrey900, 0x99);
-      break;
-  }
-  return color_mode == AshColorMode::kLight ? light_color : dark_color;
+  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha74, kAlpha90};
+  DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
+  return SkColorSetA(
+      color_mode == AshColorMode::kLight ? SK_ColorWHITE : gfx::kGoogleGrey900,
+      kAlphas[static_cast<int>(type)]);
 }
 
 SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
                                                 AshColorMode color_mode) const {
   SkColor light_color, dark_color;
+  const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha74,
+                         kAlpha90, 0xFF,     0xFF};
+  DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
+  const int transparent_alpha = kAlphas[static_cast<int>(type)];
+
   switch (type) {
-    case BaseLayerType::kTransparentWithBlur:
-      light_color = SkColorSetA(SK_ColorWHITE, 0xBC);  // 74%
-      dark_color = SkColorSetA(gfx::kGoogleGrey900, 0xBC);
-      break;
-    case BaseLayerType::kTransparentWithoutBlur:
-      light_color = SkColorSetA(SK_ColorWHITE, 0xE6);  // 90%
-      dark_color = SkColorSetA(gfx::kGoogleGrey900, 0xE6);
+    case BaseLayerType::kTransparent20:
+    case BaseLayerType::kTransparent40:
+    case BaseLayerType::kTransparent60:
+    case BaseLayerType::kTransparent74:
+    case BaseLayerType::kTransparent90:
+      light_color = SkColorSetA(SK_ColorWHITE, transparent_alpha);
+      dark_color = SkColorSetA(gfx::kGoogleGrey900, transparent_alpha);
       break;
     case BaseLayerType::kOpaque:
       light_color = SK_ColorWHITE;

@@ -11,7 +11,6 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
-#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
@@ -117,11 +116,6 @@ void ChromeTestHarnessWithLocalDB::TearDown() {
       std::move(performance_manager_));
   content::SetSystemConnectorForTesting(nullptr);
   ChromeRenderViewHostTestHarness::TearDown();
-}
-
-void ChromeTestHarnessWithLocalDB::EnableFeatures() {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kSiteCharacteristicsDatabase);
 }
 
 }  // namespace testing

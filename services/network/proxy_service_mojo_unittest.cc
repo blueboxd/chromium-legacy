@@ -118,8 +118,7 @@ class ProxyServiceMojoTest : public testing::Test {
 
     fetcher_ = new net::MockPacFileFetcher;
     proxy_resolution_service_ = CreateProxyResolutionServiceUsingMojoFactory(
-        proxy_resolver::mojom::ProxyResolverFactoryPtr(
-            test_mojo_proxy_resolver_factory_.CreateFactoryRemote()),
+        test_mojo_proxy_resolver_factory_.CreateFactoryRemote(),
         std::make_unique<net::ProxyConfigServiceFixed>(
             net::ProxyConfigWithAnnotation(
                 net::ProxyConfig::CreateFromCustomPacURL(GURL(kPacUrl)),

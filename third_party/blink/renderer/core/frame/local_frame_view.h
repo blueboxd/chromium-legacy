@@ -61,7 +61,6 @@ class AXObjectCache;
 class ChromeClient;
 class CompositorAnimationTimeline;
 class Cursor;
-class DisplayItemClient;
 class DocumentLifecycle;
 class FloatRect;
 class FloatSize;
@@ -428,21 +427,10 @@ class CORE_EXPORT LocalFrameView final
   // FIXME: Remove this method once plugin loading is decoupled from layout.
   void FlushAnyPendingPostLayoutTasks();
 
-  static void SetInitialTracksPaintInvalidationsForTesting(bool);
-
   // These methods are for testing.
-  void SetTracksPaintInvalidations(bool);
-  bool IsTrackingPaintInvalidations() const {
-    return tracked_object_paint_invalidations_.get();
-  }
-  void TrackObjectPaintInvalidation(const DisplayItemClient&,
-                                    PaintInvalidationReason);
-  struct ObjectPaintInvalidation {
-    String name;
-    PaintInvalidationReason reason;
-  };
-  Vector<ObjectPaintInvalidation>* TrackedObjectPaintInvalidations() const {
-    return tracked_object_paint_invalidations_.get();
+  void SetTracksRasterInvalidations(bool);
+  bool IsTrackingRasterInvalidations() const {
+    return is_tracking_raster_invalidations_;
   }
 
   using ScrollableAreaSet = HeapHashSet<Member<PaintLayerScrollableArea>>;
@@ -955,8 +943,7 @@ class CORE_EXPORT LocalFrameView final
   mutable std::unique_ptr<ScrollingCoordinatorContext> scrolling_context_;
 
   // For testing.
-  std::unique_ptr<Vector<ObjectPaintInvalidation>>
-      tracked_object_paint_invalidations_;
+  bool is_tracking_raster_invalidations_ = false;
 
   // Currently used in PushPaintArtifactToCompositor() to collect composited
   // layers as foreign layers. It's transient, but may live across frame updates
@@ -1022,20 +1009,6 @@ inline void LocalFrameView::IncrementVisuallyNonEmptyPixelCount(
   static const unsigned kVisualPixelThreshold = 32 * 32;
   if (visually_non_empty_pixel_count_ > kVisualPixelThreshold)
     SetIsVisuallyNonEmpty();
-}
-
-inline bool operator==(const LocalFrameView::ObjectPaintInvalidation& a,
-                       const LocalFrameView::ObjectPaintInvalidation& b) {
-  return a.name == b.name && a.reason == b.reason;
-}
-inline bool operator!=(const LocalFrameView::ObjectPaintInvalidation& a,
-                       const LocalFrameView::ObjectPaintInvalidation& b) {
-  return !(a == b);
-}
-inline std::ostream& operator<<(
-    std::ostream& os,
-    const LocalFrameView::ObjectPaintInvalidation& info) {
-  return os << info.name << " reason=" << info.reason;
 }
 
 template <>

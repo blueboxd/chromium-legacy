@@ -274,6 +274,7 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
  private:
   friend class OverviewSessionRoundedCornerTest;
   friend class OverviewSessionTest;
+  FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest, Clipping);
   FRIEND_TEST_ALL_PREFIXES(SplitViewOverviewSessionTest,
                            OverviewUnsnappableIndicatorVisibility);
 
@@ -314,9 +315,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   // Animates opacity of the |transform_window_| and its caption to |opacity|
   // using |animation_type|.
   void AnimateOpacity(float opacity, OverviewAnimationType animation_type);
-
-  // Allows a test to directly set animation state.
-  gfx::SlideAnimation* GetBackgroundViewAnimation();
 
   // Called before dragging. Scales up the window a little bit to indicate its
   // selection and stacks the window at the top of the Z order in order to keep

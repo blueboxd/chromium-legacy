@@ -1755,11 +1755,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
   for (auto& socket : sockets_) {
     socket->Close();
   }
-
-  for (auto& packet_reader : packet_readers_) {
-    packet_reader->SetShouldStopReading();
-  }
-
   DCHECK(!HasActiveRequestStreams());
   CloseAllStreams(ERR_UNEXPECTED);
   CloseAllHandles(ERR_UNEXPECTED);

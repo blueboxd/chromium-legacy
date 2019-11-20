@@ -30,7 +30,7 @@ class AdsPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver,
       public subresource_filter::SubresourceFilterObserver {
  public:
-  // Returns a new AdsPageLoadMetricObserver. If the feature is disabled it
+  // Returns a new AdsPageLoadMetricsObserver. If the feature is disabled it
   // returns nullptr.
   static std::unique_ptr<AdsPageLoadMetricsObserver> CreateIfNeeded(
       content::WebContents* web_contents);

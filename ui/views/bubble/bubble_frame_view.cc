@@ -173,8 +173,19 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
     return false;
   }
 
+  // We want to clip the client view to a rounded rect that's consistent with
+  // the bubble's rounded border. However, if there is a header, the top of the
+  // client view should be straight and flush with that. Likewise, if there is
+  // a footer, the client view should be straight and flush with that. Therefore
+  // we set the corner radii separately for top and bottom.
   const SkRect rect = SkRect::MakeIWH(size.width(), size.height());
-  path->addRoundRect(rect, radius, radius);
+  const SkScalar top_radius = header_view_ ? 0.0f : radius;
+  const SkScalar bottom_radius = footnote_container_ ? 0.0f : radius;
+  // Format is upper-left x, upper-left y, upper-right x, and so forth,
+  // clockwise around the boundary.
+  SkScalar radii[]{top_radius,    top_radius,    top_radius,    top_radius,
+                   bottom_radius, bottom_radius, bottom_radius, bottom_radius};
+  path->addRoundRect(rect, radii);
   return true;
 }
 

@@ -81,7 +81,7 @@ bool ShouldTriggerSafetyTipFromKeywordInURL(
     const GURL& url,
     const DomainInfo& navigated_domain,
     const char* const sensitive_keywords[],
-    size_t num_keywords) {
+    const size_t num_sensitive_keywords) {
   // We never want to trigger this heuristic on any non-http / https sites.
   if (!url.SchemeIsHTTPOrHTTPS()) {
     return false;
@@ -127,7 +127,7 @@ bool ShouldTriggerSafetyTipFromKeywordInURL(
     // construction of two std::strings every time two values are compared,
     // and because (char *) orders by address, not lexicographically.
     if (std::binary_search(sensitive_keywords,
-                           sensitive_keywords + num_keywords,
+                           sensitive_keywords + num_sensitive_keywords,
                            eTLD_plusminus_part.c_str(),
                            [](const char* str_one, const char* str_two) {
                              return strcmp(str_one, str_two) < 0;

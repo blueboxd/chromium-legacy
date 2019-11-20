@@ -65,8 +65,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
     public WebLayer getWebLayer() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            return WebLayer
-                    .loadSync(InstrumentationRegistry.getTargetContext().getApplicationContext());
+            return WebLayer.loadSync(
+                    InstrumentationRegistry.getTargetContext().getApplicationContext());
         });
     }
 
@@ -93,8 +93,8 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         InstrumentationActivity activity = launchShell(extras);
         Assert.assertNotNull(activity);
         try {
-            TestThreadUtils.runOnUiThreadBlocking(() ->
-                    activity.loadWebLayerSync(activity.getApplicationContext()));
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> activity.loadWebLayerSync(activity.getApplicationContext()));
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }

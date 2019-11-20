@@ -12,8 +12,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "services/preferences/public/cpp/pref_service_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -31,13 +29,19 @@ void Connect(apps::mojom::Publisher* publisher,
 
 namespace apps {
 
-AppServiceImpl::AppServiceImpl(service_manager::Connector* connector) {
-  if (connector) {
-    ConnectToPrefService(connector);
-  }
+AppServiceImpl::AppServiceImpl(PrefService* profile_prefs)
+    : pref_service_(profile_prefs) {
+  DCHECK(pref_service_);
+  InitializePreferredApps();
 }
 
 AppServiceImpl::~AppServiceImpl() = default;
+
+// static
+void AppServiceImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kAppServicePreferredApps);
+}
+
 void AppServiceImpl::BindReceiver(
     mojo::PendingReceiver<apps::mojom::AppService> receiver) {
   receivers_.Add(this, std::move(receiver));
@@ -193,19 +197,13 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
                                      const std::string& app_id,
                                      apps::mojom::IntentFilterPtr intent_filter,
                                      apps::mojom::IntentPtr intent) {
-  // TODO(crbug.com/853604): Solve the issue where user set preferred app
-  // before pref connected.
-  if (!preferred_apps_.IsInitialized()) {
-    return;
-  }
+  DCHECK(preferred_apps_.IsInitialized());
 
   preferred_apps_.AddPreferredApp(app_id, intent_filter);
 
-  if (pref_service_) {
-    DictionaryPrefUpdate update(pref_service_.get(), kAppServicePreferredApps);
-    DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
-    PreferredApps::AddPreferredApp(app_id, intent_filter, update.Get());
-  }
+  DictionaryPrefUpdate update(pref_service_, kAppServicePreferredApps);
+  DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
+  PreferredApps::AddPreferredApp(app_id, intent_filter, update.Get());
 
   for (auto& subscriber : subscribers_) {
     subscriber->OnPreferredAppSet(app_id, intent_filter->Clone());
@@ -221,19 +219,11 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
 
 void AppServiceImpl::RemovePreferredApp(apps::mojom::AppType app_type,
                                         const std::string& app_id) {
-  // TODO(crbug.com/853604): Solve the issue where user set preferred app
-  // before pref connected.
-  if (!preferred_apps_.IsInitialized()) {
-    return;
-  }
+  DCHECK(preferred_apps_.IsInitialized());
 
   preferred_apps_.DeleteAppId(app_id);
 
-  if (!pref_service_) {
-    return;
-  }
-
-  DictionaryPrefUpdate update(pref_service_.get(), kAppServicePreferredApps);
+  DictionaryPrefUpdate update(pref_service_, kAppServicePreferredApps);
   DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
   PreferredApps::DeleteAppId(app_id, update.Get());
 }
@@ -253,33 +243,6 @@ void AppServiceImpl::InitializePreferredApps() {
   for (auto& subscriber : subscribers_) {
     subscriber->InitializePreferredApps(preferred_apps_.GetValue());
   }
-}
-
-void AppServiceImpl::ConnectToPrefService(
-    service_manager::Connector* connector) {
-  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-  mojo::PendingRemote<prefs::mojom::PrefStoreConnector> remote_connector;
-
-  pref_registry->RegisterDictionaryPref(kAppServicePreferredApps);
-
-  connector->Connect(prefs::mojom::kServiceName,
-                     remote_connector.InitWithNewPipeAndPassReceiver());
-
-  prefs::ConnectToPrefService(
-      std::move(remote_connector), std::move(pref_registry),
-      base::Token::CreateRandom(),
-      base::Bind(&AppServiceImpl::OnPrefServiceConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void AppServiceImpl::OnPrefServiceConnected(
-    std::unique_ptr<PrefService> pref_service) {
-  if (!pref_service || pref_service_) {
-    // TODO(crbug.com/853604): Handle if not successfully connected.
-    return;
-  }
-  pref_service_ = std::move(pref_service);
-  InitializePreferredApps();
 }
 
 }  // namespace apps

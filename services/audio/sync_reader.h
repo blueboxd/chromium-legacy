@@ -50,6 +50,10 @@ class SyncReader : public OutputController::SyncReader {
   // called more than once.
   base::UnsafeSharedMemoryRegion TakeSharedMemoryRegion();
 
+  void set_max_wait_timeout_for_test(base::TimeDelta time) {
+    maximum_wait_time_ = time;
+  }
+
   // OutputController::SyncReader implementation.
   void RequestMoreData(base::TimeDelta delay,
                        base::TimeTicks delay_timestamp,
@@ -91,7 +95,7 @@ class SyncReader : public OutputController::SyncReader {
 
   // The maximum amount of time to wait for data from the renderer.  Calculated
   // from the parameters given at construction.
-  const base::TimeDelta maximum_wait_time_;
+  base::TimeDelta maximum_wait_time_;
 
   // The index of the audio buffer we're expecting to be sent from the renderer;
   // used to block with timeout for audio data.

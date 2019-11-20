@@ -1636,8 +1636,12 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(
     Element* new_focused_element) {
   RemoveValidationMessageObject();
 
-  if (!new_focused_element)
+  if (!new_focused_element) {
+    // When focus is cleared, implicitly focus the document by sending a blur.
+    DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout,
+                    GetDocument().documentElement());
     return;
+  }
 
   Page* page = new_focused_element->GetDocument().GetPage();
   if (!page)

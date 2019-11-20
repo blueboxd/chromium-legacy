@@ -983,6 +983,15 @@
           Etkinleştirilir veya ayarlanmadan bırakılırsa, Chrome'u başlatmak için komut satırı işaretleri kullanıldığında güvenlik uyarıları gösterilir.
 
           Windows'da bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış örneklerde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
+<translation id="2480971699591919564">Kullanıcı Oturum açmışken, kullanıcıların Chrome Masaüstü cihazlardan bir Android cihaza telefon numaraları göndermesine olanak tanıyan Tıkla ve Ara özelliğini etkinleştirin. Daha fazla bilgi edinmek için https://support.google.com/chrome/answer/9430554?hl=tr adresindeki yardım merkezi makalesine bakın.
+
+      Bu politika etkin olarak ayarlanırsa Chrome kullanıcısı için Android cihazlara telefon numaraları gönderme özelliği etkinleştirilir.
+
+      Bu politika devre dışı olarak ayarlanırsa Chrome kullanıcısı için Android cihazlara telefon numaraları gönderme özelliği devre dışı bırakılır.
+
+      Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+      Bu politika ayarlanmadan bırakılırsa Tıkla ve Ara özelliği varsayılan olarak etkindir.</translation>
 <translation id="2482676533225429905">Yerel Mesajlaşma</translation>
 <translation id="2483146640187052324">Ağ bağlantılarında ağ işlemlerini tahmin et</translation>
 <translation id="2484208301968418871">Bu politika SafeSites URL filtresinin uygulanmasını kontrol eder.
@@ -2004,6 +2013,7 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, hiçbir sertifika o
 <translation id="4075864623710596000">Bu listede belirtilen ana makine adları, istekleri http'den https'ye yükseltebilecek HSTS politika kontrolünden muaf tutulur. Bu politikada yalnızca tek etiketli ana makine adlarına izin verilir. Ana makine adları standartlaştırılmalıdır: Tüm IDN'ler, A-etiket biçimine dönüştürülmeli ve tüm ASCII harfleri küçük harf olmalıdır. Bu politika yalnızca belirtilen spesifik ana makine adları için geçerlidir; belirtilen adların alt alanları için geçerli değildir.</translation>
 <translation id="408029843066770167">Google zaman hizmetini sorgulamaya izin ver</translation>
 <translation id="408076456549153854">Tarayıcıda oturum açmayı etkinleştir</translation>
+<translation id="4082498585300984671">Tıkla ve Ara Özelliğini Etkinleştirme</translation>
 <translation id="40853027210512570"><ph name="PRODUCT_NAME" /> varsayılan yazıcı seçim kurallarını geçersiz kılar.
 
       Bu politika, <ph name="PRODUCT_NAME" /> cihazında varsayılan yazıcıyı seçmeye ilişkin kuralları belirler. Bu seçim, yazdırma işlevi bir profilde ilk kez kullanıldığında yapılır.
@@ -3600,13 +3610,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Gizli mod kullanılarak farklı bir hesapta oturum açılmasına izin verilmemesi halinde IncognitoModeAvailability politikasını kullanarak ilgili modu engelleme seçeneğini değerlendirebilirsiniz.
 
        Kullanıcıların, çerezleri engelleyerek kimlik doğrulaması yapmadan Google hizmetlerine erişebileceğini unutmayın.</translation>
-<translation id="6837480141980366278"><ph name="PRODUCT_NAME" /> ürününde dahili DNS istemcisinin kullanılıp kullanılmayacağını kontrol eder.
-
-      Bu politika true (doğru) değerine ayarlanırsa, dahili DNS istemcisi (varsa) kullanılır.
-
-      Bu politika false (yanlış) değerine ayarlanırsa, dahili DNS istemcisi hiçbir zaman kullanılmaz.
-
-      Bu politika ayarlanmadan bırakılırsa, dahili DNS istemcisi; MacOS, Android (Gizli DNS veya VPN etkinleştirilmediğinde) ve ChromeOS'de varsayılan olarak etkinleştirilir ve kullanıcılar, dahili DNS istemcisini chrome://flags sayfasını düzenleyerek mi yoksa bir komut satırı işareti belirterek mi kullanacaklarını değiştirebilirler.</translation>
 <translation id="6843296367238757293">Bu politika kullanımdan kaldırılmıştır. Kullanılması önerilmez. Daha fazla bilgiyi https://support.google.com/chrome/a/answer/7643500 adresinde bulabilirsiniz</translation>
 <translation id="684856667300805181">Bu politika <ph name="PRODUCT_NAME" /> 68 sürümünde kaldırılmış ve yerine <ph name="ARC_GLS_POLICY_NAME" /> kullanılmaya başlanmıştır.</translation>
 <translation id="6851199885688265233">İmleci vurgulama erişilebilirlik özelliğini etkinleştir</translation>
@@ -4021,13 +4024,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7373200034079131670">Android veya bir sanal makine başlatılmışsa kullanıcı oturumu kapatıldığında cihazı yeniden başlatır.</translation>
 <translation id="737655323154569539">Yazdırma sayfası boyutunu kısıtlar. Ayarlanmayan ve boş bırakılan politika kısıtlama yokmuş gibi işlenir.</translation>
 <translation id="7382191643394429934">Arka plan grafikleri ile ve bu grafikler olmadan yazdırmaya izin ver</translation>
-<translation id="7383445181072113521">DHCP isteklerinde kullanılan cihazın ana makine adını belirler.
-
-      Bu politika boş olmayan bir dizeye ayarlanırsa o dize, DHCP isteği sırasında cihazın ana makine adı olarak kullanılır.
-
-      Dize; <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> değişkenlerini içerebilir. Ana makine adı olarak kullanılmadan önce cihazda bu değişkenlerin yerine değerler getirilir. Bu işlemin sonucunda ortaya çıkan değişikliğin geçerli bir ana makine adı olması gerekir (RFC 1035, bölüm 3.1 uyarınca).
-
-      Bu politika ayarlanmazsa veya değişiklikten sonraki değer, geçerli bir ana makine adı değilse DHCP isteğinde ana makine adı ayarlanmaz. </translation>
 <translation id="7389872682701720082">Bu ayarı etkinleştirirseniz eski olmayan eklentiler her zaman çalışır.
 
       Bu ayar devre dışı bırakılır veya düzenlenmezse, yetkilendirme gerektiren eklentilerin çalışması için kullanıcıdan izin istenir. Bunlar, güvenliği ihlal edebilecek eklentilerdir.</translation>
@@ -4429,7 +4425,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8141795997560411818">Bu politika, kullanıcının Android Google Drive uygulamasını kullanmasını engellemez. Google Drive'a erişimi engellemek isterseniz Android Google Drive uygulamasının yüklenmesine de izin vermemeniz gerekir.</translation>
 <translation id="8142894094385450823">Yönetilen oturum için önerilen yerel ayarları belirtir</translation>
 <translation id="8146727383888924340">Kullanıcıların Chrome OS Kaydını kullanarak tekliflerden yararlanmasına izin ver</translation>
-<translation id="8148785525797916822"><ph name="PRODUCT_NAME" />, artık desteklenmeyen bir bilgisayarda veya işletim sisteminde çalışırken görüntülenen uyarıyı gizler.</translation>
 <translation id="8148901634826284024">Yüksek kontrast modu erişilebilirlik özelliğini etkinleştir.
 
           Bu politika true (doğru) olarak ayarlanırsa, yüksek kontrast modu her zaman etkin olur.

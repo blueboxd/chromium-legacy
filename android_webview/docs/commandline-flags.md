@@ -24,7 +24,7 @@ works regardless of which package is the WebView provider:
 
 ```sh
 # Overwrite flags (supports multiple)
-build/android/adb_system_webview_command_line --show-composited-layer-borders --webview-log-js-console-messages
+build/android/adb_system_webview_command_line --show-composited-layer-borders --force-enable-metrics-reporting
 # Clear flags
 build/android/adb_system_webview_command_line ""
 # Print flags
@@ -39,7 +39,7 @@ Generated Wrapper Script like so:
 ```sh
 autoninja -C out/Default system_webview_apk
 # Overwrite flags (supports multiple)
-out/Default/bin/system_webview_apk argv --args='--show-composited-layer-borders --webview-log-js-console-messages'
+out/Default/bin/system_webview_apk argv --args='--show-composited-layer-borders --force-enable-metrics-reporting'
 # Clear flags
 out/Default/bin/system_webview_apk argv --args=''
 # Print flags
@@ -62,7 +62,7 @@ Or, you can use the `adb` in your `$PATH` like so:
 FLAG_FILE=/data/local/tmp/webview-command-line
 # Overwrite flags (supports multiple). The first token is ignored. We use '_'
 # as a convenient placeholder, but any token is acceptable.
-adb shell "echo '_ --show-composited-layer-borders --webview-log-js-console-messages' > ${FLAG_FILE}"
+adb shell "echo '_ --show-composited-layer-borders --force-enable-metrics-reporting' > ${FLAG_FILE}"
 # Clear flags
 adb shell "rm ${FLAG_FILE}"
 # Print flags
@@ -89,8 +89,10 @@ for details.
 WebView supports any flags supported in any layer we depend on (ex. content).
 Some interesting flags and Features:
 
- * `--show-composited-layer-borders`
- * `--webview-log-js-console-messages`
+ * `--show-composited-layer-borders`: highlight rendering layers, which is
+   useful for identifying which content in the app is rendered by a WebView.
+ * `--force-enable-metrics-reporting`: enable UMA metrics reporting (does not
+   override app opt-out)
 
 WebView also defines its own flags and Features:
 

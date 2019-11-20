@@ -104,11 +104,13 @@ Status Session::GetTargetWindow(WebView** web_view) {
 
 void Session::SwitchToTopFrame() {
   frames.clear();
+  ClearNavigationState(true);
 }
 
 void Session::SwitchToParentFrame() {
   if (!frames.empty())
     frames.pop_back();
+  ClearNavigationState(false);
 }
 
 void Session::SwitchToSubFrame(const std::string& frame_id,
@@ -117,6 +119,22 @@ void Session::SwitchToSubFrame(const std::string& frame_id,
   if (!frames.empty())
     parent_frame_id = frames.back().frame_id;
   frames.push_back(FrameInfo(parent_frame_id, frame_id, chromedriver_frame_id));
+  ClearNavigationState(false);
+}
+
+void Session::ClearNavigationState(bool for_top_frame) {
+  WebView* web_view = nullptr;
+  Status status = GetTargetWindow(&web_view);
+  if (!status.IsError()) {
+    if (for_top_frame)
+      web_view->ClearNavigationState(std::string());
+    else
+      web_view->ClearNavigationState(GetCurrentFrameId());
+  } else {
+    // Do nothing; this should be very rare because callers of this function
+    // have already called GetTargetWindow.
+    // Let later code handle issues that arise from the invalid state.
+  }
 }
 
 std::string Session::GetCurrentFrameId() const {

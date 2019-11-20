@@ -12,6 +12,19 @@
 #include "ios/chrome/browser/favicon/favicon_client_impl.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 
+namespace {
+
+std::unique_ptr<KeyedService> BuildFaviconService(web::BrowserState* context) {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  return std::make_unique<favicon::FaviconServiceImpl>(
+      std::make_unique<FaviconClientImpl>(),
+      ios::HistoryServiceFactory::GetForBrowserState(
+          browser_state, ServiceAccessType::EXPLICIT_ACCESS));
+}
+
+}  // namespace
+
 namespace ios {
 
 // static
@@ -38,6 +51,12 @@ FaviconServiceFactory* FaviconServiceFactory::GetInstance() {
   return instance.get();
 }
 
+// static
+BrowserStateKeyedServiceFactory::TestingFactory
+FaviconServiceFactory::GetDefaultFactory() {
+  return base::BindRepeating(&BuildFaviconService);
+}
+
 FaviconServiceFactory::FaviconServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "FaviconService",
@@ -50,12 +69,7 @@ FaviconServiceFactory::~FaviconServiceFactory() {
 
 std::unique_ptr<KeyedService> FaviconServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<favicon::FaviconServiceImpl>(
-      std::make_unique<FaviconClientImpl>(),
-      ios::HistoryServiceFactory::GetForBrowserState(
-          browser_state, ServiceAccessType::EXPLICIT_ACCESS));
+  return BuildFaviconService(context);
 }
 
 bool FaviconServiceFactory::ServiceIsNULLWhileTesting() const {

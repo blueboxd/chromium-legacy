@@ -12,6 +12,7 @@
 <translation id="107147699690128016">கோப்பு நீட்டிப்பை மாற்றினால் இந்தக் கோப்பு வேறொரு ஆப்ஸில் திறக்கக்கூடும், இது உங்கள் சாதனத்திற்குத் தீங்கிழைக்கக்கூடும்.</translation>
 <translation id="1100066534610197918">குழுவில் புதிய தாவலில் திற</translation>
 <translation id="1105960400813249514">திரைப் படப்பிடிப்பு</translation>
+<translation id="1110022065703191351">ஐகான்கள்</translation>
 <translation id="1111673857033749125">உங்கள் பிற சாதனங்களில் சேமிக்கும் புக்மார்க்குகள் இங்கே தோன்றும்.</translation>
 <translation id="1113597929977215864">எளிதாக்கப்பட்ட காட்சியைக் காட்டு</translation>
 <translation id="1124772482545689468">பயனர்</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Chrome உங்கள் மைக்ரோஃபோனை அணுக அனுமதிப்பதற்கு <ph name="BEGIN_LINK" />Android அமைப்புகளிலும்<ph name="END_LINK" /> மைக்ரோஃபோனை இயக்கவும்.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> இல் புத்தகக்குறியிடப்பட்டது</translation>
 <translation id="3744111561329211289">பின்புல ஒத்திசைவு</translation>
+<translation id="3749259744154402564">ஆதரிக்கப்படவில்லை</translation>
 <translation id="3771001275138982843">புதுப்பிப்பைப் பதிவிறக்க முடியவில்லை</translation>
 <translation id="3771033907050503522">மறைநிலைத் தாவல்கள்</translation>
 <translation id="3773755127849930740">இணைத்தலை அனுமதிக்க, <ph name="BEGIN_LINK" />புளூடூத்தை இயக்கவும்<ph name="END_LINK" /></translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">பெயர்</translation>
 <translation id="5335288049665977812">JavaScriptஐ இயக்குவதற்கு, தளங்களை அனுமதி (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="5342314432463739672">அனுமதிக் கோரிக்கைகள்</translation>
+<translation id="534295439873310000">NFC சாதனங்கள்</translation>
 <translation id="5357811892247919462">பகிர்ந்த தாவல் பெறப்பட்டது</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> திறந்துள்ள தாவல், தாவல்களை மாற்ற, தட்டவும்}other{<ph name="OPEN_TABS_MANY" /> திறந்துள்ள தாவல்கள், தாவல்களை மாற்ற, தட்டவும்}}</translation>
 <translation id="5391532827096253100">இந்தத் தளத்திற்கான இணைப்பு பாதுகாப்பானதல்ல. தளத் தகவல்</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">கோப்பின் பெயர் நீளமாக உள்ளது</translation>
 <translation id="5689516760719285838">இருப்பிடம்</translation>
 <translation id="569536719314091526">’மேலும் விருப்பத்தேர்வுகள்’ பட்டனை அழுத்தி, இந்தப் பக்கத்தை எந்தவொரு மொழியிலும் மொழிபெயர்க்கலாம்</translation>
+<translation id="5710871682236653961">நீங்கள் NFC சாதனங்களைத் தட்டும்போது தகவல்களை அனுப்புவதற்கும் பெறுவதற்கும் தளங்களை அனுமதிப்பதற்கு முன்பு அனுமதி கோரும் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="572328651809341494">சமீபத்திய தாவல்கள்</translation>
 <translation id="5726692708398506830">பக்கத்திலுள்ள அனைத்தையும் பெரிதாக்கும்</translation>
 <translation id="5748802427693696783">இயல்பான தாவல்களுக்கு மாற்றப்பட்டது</translation>
@@ -785,6 +789,7 @@
 <translation id="6818926723028410516">பட்டியலிலிருந்து தேர்ந்தெடுக்கவும்</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">மொழிபெயர்</translation>
+<translation id="6840155290835956714">அனுப்பும் முன் கேள்</translation>
 <translation id="6845325883481699275">Chromeமின் பாதுகாப்பை மேம்படுத்த உதவுக</translation>
 <translation id="6846298663435243399">ஏற்றுகிறது…</translation>
 <translation id="6850409657436465440">பதிவிறக்கம் செயலில் உள்ளது</translation>
@@ -881,6 +886,7 @@
 <translation id="7559975015014302720">லைட் பயன்முறை முடக்கப்பட்டுள்ளது</translation>
 <translation id="7562080006725997899">உலாவிய தரவை அழிக்கிறது</translation>
 <translation id="756809126120519699">Chrome தரவு அழிக்கப்பட்டது</translation>
+<translation id="7572498721684305250">நீங்கள் NFC சாதனங்களைத் தட்டும்போது தகவல்களை அனுப்புவதிலிருந்தும் பெறுவதிலிருந்தும் தளங்களைத் தடுக்கும்</translation>
 <translation id="757524316907819857">பாதுகாக்கப்பட்ட உள்ளடக்கத்தைத் தளங்கள் இயக்குவதைத் தடுக்கும்</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> கோப்பு பதிவிறக்கப்பட்டது}other{<ph name="FILES_DOWNLOADED_MANY" /> கோப்புகள் பதிவிறக்கப்பட்டன}}</translation>
 <translation id="7588219262685291874">சாதனத்தில் பேட்டரி சேமிப்பான் இயக்கத்தில் இருக்கும்போது டார்க் தீமை இயக்கும்</translation>
@@ -1090,7 +1096,6 @@
 <translation id="9133397713400217035">ஆஃப்லைனில் கண்டறியுங்கள்</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">அசலைக் காண்பி</translation>
-<translation id="9139068048179869749">அறிவிப்புகளை அனுப்ப தளங்களை அனுமதிக்கும் முன் கேள் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="9139318394846604261">ஷாப்பிங்</translation>
 <translation id="9155898266292537608">ஒரு சொல்லைத் தட்டி உடனடியாகவும் தேடலாம்</translation>
 <translation id="9169507124922466868">வழிசெலுத்தல் வரலாறு பாதியளவு திறந்துள்ளது</translation>

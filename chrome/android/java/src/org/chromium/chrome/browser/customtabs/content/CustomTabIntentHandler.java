@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -27,7 +27,7 @@ import javax.inject.Named;
 @ActivityScope
 public class CustomTabIntentHandler {
     private final CustomTabActivityTabProvider mTabProvider;
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final CustomTabIntentHandlingStrategy mHandlingStrategy;
     private final IntentIgnoringCriterion mIntentIgnoringCriterion;
     private final Context mContext;
@@ -36,7 +36,7 @@ public class CustomTabIntentHandler {
 
     @Inject
     public CustomTabIntentHandler(CustomTabActivityTabProvider tabProvider,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabIntentHandlingStrategy handlingStrategy,
             IntentIgnoringCriterion intentIgnoringCriterion,
             @Named(ACTIVITY_CONTEXT) Context context) {
@@ -80,10 +80,10 @@ public class CustomTabIntentHandler {
      * Called from Activity#onNewIntent.
      *
      * @param intentDataProvider Data provider built from the new intent. It's different from
-     * the injectable instance of {@link CustomTabIntentDataProvider} - that one is always built
-     * from the initial intent.
+     * the injectable instance of {@link BrowserServicesIntentDataProvider} - that one is always
+     * built from the initial intent.
      */
-    public boolean onNewIntent(CustomTabIntentDataProvider intentDataProvider) {
+    public boolean onNewIntent(BrowserServicesIntentDataProvider intentDataProvider) {
         Intent intent = intentDataProvider.getIntent();
         CustomTabsSessionToken session = intentDataProvider.getSession();
         if (session == null || !session.equals(mIntentDataProvider.getSession())) {

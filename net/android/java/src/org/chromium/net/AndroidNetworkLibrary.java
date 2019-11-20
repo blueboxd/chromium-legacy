@@ -147,14 +147,6 @@ class AndroidNetworkLibrary {
     }
 
     /**
-     * Returns the ISO country code equivalent of the current MCC.
-     */
-    @CalledByNative
-    private static String getNetworkCountryIso() {
-        return AndroidTelephonyManagerBridge.getInstance().getNetworkCountryIso();
-    }
-
-    /**
      * Returns the MCC+MNC (mobile country code + mobile network code) as
      * the numeric name of the current registered operator.
      */

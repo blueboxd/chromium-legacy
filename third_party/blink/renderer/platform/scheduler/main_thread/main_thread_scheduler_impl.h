@@ -28,10 +28,10 @@
 #include "third_party/blink/renderer/platform/scheduler/common/pollable_thread_safe_flag.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_interference_recorder.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/compositor_priority_experiments.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_interference_recorder.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
@@ -836,7 +836,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
 
   QueueingTimeEstimator queueing_time_estimator_;
-  FrameInterferenceRecorder frame_interference_recorder_;
+  AgentInterferenceRecorder agent_interference_recorder_;
 
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.

@@ -789,6 +789,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6818926723028410516">Select items</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Translate</translation>
+<translation id="6840155290835956714">Ask before sending</translation>
 <translation id="6845325883481699275">Help improve Chrome security</translation>
 <translation id="6846298663435243399">Loading…</translation>
 <translation id="6850409657436465440">Your download is still in progress</translation>
@@ -1095,7 +1096,6 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="9133397713400217035">Explore offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Show original</translation>
-<translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">You can also search with a quick tap on a word</translation>
 <translation id="9169507124922466868">Navigation history is half-opened</translation>

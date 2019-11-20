@@ -116,4 +116,8 @@ UIView* WebClient::GetWindowedContainer() {
   return nullptr;
 }
 
+bool WebClient::ForceMobileVersionByDefault(const GURL&) {
+  return false;
+}
+
 }  // namespace web

@@ -212,7 +212,10 @@ if (enable_vr) {
     }
 
     if (enable_openxr) {
-      deps += [ "//third_party/openxr" ]
+      deps += [
+        "//components/version_info",
+        "//third_party/openxr",
+      ]
 
       sources += [
         "openxr/openxr_api_wrapper.cc",
@@ -359,6 +362,7 @@ if (enable_openxr) {
 
     deps = [
       "//base",
+      "//components/version_info",
       "//device/vr/public/mojom:test_mojom",
       "//third_party/openxr:openxr_headers",
     ]

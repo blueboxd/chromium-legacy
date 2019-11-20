@@ -128,7 +128,8 @@ void CmaAudioOutputStream::Start(
 
   source_callback_ = source_callback;
   if (encountered_error_) {
-    source_callback_->OnError();
+    source_callback_->OnError(
+        ::media::AudioOutputStream::AudioSourceCallback::ErrorType::kUnknown);
     return;
   }
 
@@ -286,7 +287,8 @@ void CmaAudioOutputStream::OnPushBufferComplete(BufferStatus status) {
   DCHECK_EQ(cma_backend_state_, CmaBackendState::kStarted);
 
   if (status != CmaBackend::BufferStatus::kBufferSuccess) {
-    source_callback_->OnError();
+    source_callback_->OnError(
+        ::media::AudioOutputStream::AudioSourceCallback::ErrorType::kUnknown);
     return;
   }
 
@@ -321,8 +323,10 @@ void CmaAudioOutputStream::OnDecoderError() {
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
 
   encountered_error_ = true;
-  if (source_callback_)
-    source_callback_->OnError();
+  if (source_callback_) {
+    source_callback_->OnError(
+        ::media::AudioOutputStream::AudioSourceCallback::ErrorType::kUnknown);
+  }
 }
 
 }  // namespace media

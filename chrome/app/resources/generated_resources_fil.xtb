@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Icon ng App</translation>
 <translation id="1410616244180625362">Ipagpatuloy ang pagpapahintulot sa <ph name="HOST" /> na i-access ang iyong camera</translation>
 <translation id="1414648216875402825">Iyong ina-update ang isang hindi matatag na bersyon ng <ph name="PRODUCT_NAME" /> na naglalaman ng mga tampok na kasalukuyang isinasagawa. Magkakaroon ng mga pag-crash at hindi inaasahang mga bug. Mangyaring magpatuloy nang may pag-iingat.</translation>
-<translation id="1414866280542221544">I-enable sa device na ito</translation>
 <translation id="1415708812149920388">Tinanggihan ang read access sa clipboard</translation>
 <translation id="1415990189994829608">Ang <ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") ay hindi pinapayagan sa ganitong uri ng session.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Hiwa ng pizza</translation>
 <translation id="1468571364034902819">Hindi magagamit ang profile na ito</translation>
 <translation id="1470811252759861213">Upang mailagay ang iyong mga extension sa lahat ng iyong computer, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Buburahin nito ang lahat ng data sa security key, kabilang ang PIN nito</translation>
 <translation id="1472675084647422956">Magpakita ng higit pa</translation>
 <translation id="1475502736924165259">Mayroon kang mga certificate sa file na hindi umaangkop sa alinman sa iba pang mga kategorya</translation>
 <translation id="1476088332184200792">Kopyahin sa Iyong Device</translation>
@@ -842,7 +840,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2202898655984161076">Nagkaproblema sa paglilista ng mga printer. Maaaring hindi matagumpay na nairehistro ang ilan sa iyong mga printer <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Search engine na ginagamit sa <ph name="BEGIN_LINK" />address bar<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Basahin at baguhin ang anumang tina-type mo</translation>
-<translation id="2204397710290433380">I-disable ang ADB?</translation>
 <translation id="220792432208469595">Magpadala ng data ng paggamit at diagnostic na data. Sa kasalukuyan, ang device na ito ay awtomatikong nagpapadala ng diagnostic na data, data ng device, at data ng paggamit sa app sa Google. Makakatulong ito sa stability ng system at ng app, at sa iba pang pagpapahusay. Makakatulong din ang ilang pinagsama-samang data sa mga app at partner ng Google, gaya ng mga developer ng Android. Ipinapatupad ng may-ari ang setting na ito. Kung naka-on ang iyong karagdagang setting ng Aktibidad sa Web at App, maaaring ma-save ang data na ito sa Google Account mo. <ph name="BEGIN_LINK1" />Matuto Pa<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Pakilagay ang PIN code na ito sa "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Alisin ang pagbabahagi</translation>
@@ -979,6 +976,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2396783860772170191">Ilagay ang 4 na digit na pin (0000-9999)</translation>
 <translation id="2399939490305346086">Data ng pag-sign in ng security key</translation>
 <translation id="2407481962792080328">Kapag nag-sign in ka sa iyong Google Account, mao-on ang feature na ito</translation>
+<translation id="2408018932941436077">Sine-save ang card</translation>
 <translation id="2408955596600435184">Ilagay ang iyong PIN</translation>
 <translation id="241082044617551207">Hindi kilalang plugin</translation>
 <translation id="2412593942846481727">May available na update</translation>
@@ -2007,7 +2005,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3873315167136380065">Para i-on ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /> para alisin ang iyong passphrase sa pag-sync</translation>
 <translation id="3873423927483480833">Ipakita ang Mga PIN</translation>
 <translation id="3873915545594852654">Nagkaproblema sa ARC++.</translation>
-<translation id="387924939625099872">Para i-disable ang ADB, i-restart ang iyong <ph name="DEVICE_TYPE" />. Mare-reset ito sa mga factory setting, at mabubura ang lahat ng user account at lokal na data.</translation>
 <translation id="3879748587602334249">Download manager</translation>
 <translation id="3886446263141354045">Ipinadala ang iyong kahilingang i-access ang site na ito kay <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Nagtatala gamit ang <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4501530680793980440">Kumpirmahin ang Pag-alis</translation>
 <translation id="4502423230170890588">Alisin sa device na ito</translation>
 <translation id="4504940961672722399">Gamitin ang extension na ito sa pamamagitan ng pag-click sa icon na ito o sa pamamagitan ng pagpindot sa <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Kapag nagpatuloy, mae-enable ang ADB para sa paggawa at pag-test ng mga Android app. Tandaang pinapayagan ng ADB ang pag-install ng mga pang-test na app na hindi pa nave-verify ng Google.</translation>
 <translation id="4508051413094283164">Buksan ang lahat sa incognito window</translation>
 <translation id="4508265954913339219">Nabigo ang pag-activate</translation>
 <translation id="4508765956121923607">Tingnan ang P&amp;inagmulan</translation>
@@ -3312,7 +3308,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5851868085455377790">Nagbigay</translation>
 <translation id="5852112051279473187">Oops!  May mali talagang nangyari habang itinatala ang device na ito.  Mangyaring subukang muli o makipag-ugnayan sa iyong kinatawan sa suporta.</translation>
 <translation id="5852137567692933493">I-restart at I-powerwash</translation>
-<translation id="5852360662347412211">Pumunta sa mga setting ng Linux at subukan ulit</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0.6 segundo</translation>
 <translation id="5856721540245522153">I-enable ang mga feature para sa pagde-debug</translation>
@@ -3325,7 +3320,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5860494867054883682">Ina-update ang iyong device sa <ph name="CHANNEL_NAME" /> channel (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Ipakita ang mga stylus tool sa shelf</translation>
 <translation id="5863445608433396414">I-enable ang mga feature para sa pagde-debug</translation>
-<translation id="5863471434640009253">Para i-enable ang Android Debug Bridge, i-restart muna ang iyong <ph name="DEVICE_TYPE" />. Kinakailangan ng pag-disable ng ADB ang pag-reset sa mga factory setting.</translation>
 <translation id="5864471791310927901">Nabigo ang paghanap ng DHCP</translation>
 <translation id="586567932979200359">Pinapatakbo mo ang <ph name="PRODUCT_NAME" /> mula sa larawan nito sa disk. Ang pag-install nito ay magbibigay-daan sa iyong patakbuhin ito nang walang larawan ng disk, at makakatiyak na pananatilihin itong napapanahon.</translation>
 <translation id="5865733239029070421">Awtomatikong nagpapadala sa Google ng mga istatistika ng paggamit at ulat ng pag-crash</translation>
@@ -3395,7 +3389,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5958529069007801266">Pinangangasiwaang user</translation>
 <translation id="5959471481388474538">Hindi available ang network</translation>
 <translation id="595959584676692139">I-reload ang page para magamit ang extension na ito</translation>
-<translation id="5961320084471308154">I-enable ang ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> ang pinakamataas)</translation>
 <translation id="5965661248935608907">Kinokontrol din nito kung anong pahina ang ipinapakita kapag na-click mo ang button ng Home o naghanap mula sa Omnibox.</translation>
 <translation id="5969419185858894314">Puwedeng tingnan ng <ph name="ORIGIN" /> ang mga file sa <ph name="FOLDERNAME" /></translation>
@@ -4259,7 +4252,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7254554697254365959">Hindi Maisalin Ang Page na Ito.</translation>
 <translation id="7254951428499890870">Sigurado ka bang gusto mong ilunsad ang "<ph name="APP_NAME" />" sa diagnostic mode?</translation>
 <translation id="7255002516883565667">Sa ngayon, may isa kang card na magagamit lang sa device na ito</translation>
-<translation id="7255916308560539517">Pinduting muli ang iyong security key para kumpirmahin ang pag-reset. Buburahin ang lahat ng impormasyong naka-store sa security key, kabilang ang PIN nito.</translation>
 <translation id="7255935316994522020">Ilapat</translation>
 <translation id="7256069762010468647">Ginagamit ng site ang iyong camera</translation>
 <translation id="7256405249507348194">Hindi nakikilalang error: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7968833647796919681">I-enable ang pagkolekta ng data ng pagganap</translation>
 <translation id="7968982339740310781">Tingnan ang mga detalye</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">Hindi ma-save ang card sa ngayon</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 na May RSA Encryption</translation>
 <translation id="7973962044839454485">Nabigo ang pagpapatotoo sa PPP dahil sa hindi tamang username o password</translation>
 <translation id="7974566588408714340">Subukang muli gamit ang <ph name="EXTENSIONNAME" /></translation>
@@ -5090,7 +5083,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8431909052837336408">Palitan ang PIN ng SIM</translation>
 <translation id="8434480141477525001">NaCl Debug Port</translation>
 <translation id="8435395510592618362">I-verify ang iyong pagkakakilanlan gamit ang <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">I-save ang credit card</translation>
 <translation id="8438328416656800239">Lumipat sa isang mahusay na browser</translation>
 <translation id="8438566539970814960">Mas pahusayin ang mga paghahanap at pag-browse</translation>
 <translation id="8439506636278576865">Mag-alok na magsalin ng mga page sa wikang ito
@@ -5475,6 +5467,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8965037249707889821">Ilagay ang lumang password</translation>
 <translation id="8966870118594285808">Muling magbukas ng tab kung naisara mo ito nang hindi sinasadya</translation>
 <translation id="8967866634928501045">Pindutin ang Alt Shift A upang ipakita</translation>
+<translation id="8968766641738584599">I-save ang card</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Pakisuri sa administrator ng iyong network upang matiyak na hindi bina-block ng firewall ang mga pag-download mula sa mga server ng Google.</translation>
 <translation id="8973557916016709913">Mag-alis ng antas ng zoom</translation>
@@ -5581,7 +5574,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="9116799625073598554">App sa pagsusulat ng tala</translation>
 <translation id="9117030152748022724">Pamahalaan ang iyong mga app</translation>
 <translation id="9121814364785106365">Binuksan bilang na-pin na tab</translation>
-<translation id="9122074588095746047">Hindi ma-enable ang ADB</translation>
 <translation id="9124003689441359348">Lalabas dito ang mga na-save na password</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> ang natitira)</translation>
 <translation id="9128317794749765148">Hindi makumpleto ang pag-set up</translation>

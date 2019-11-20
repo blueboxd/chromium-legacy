@@ -12,7 +12,6 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_packet.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
-#include "third_party/perfetto/protos/perfetto/common/commit_data_request.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/test_event.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
@@ -153,11 +152,7 @@ void MockProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
   // might send two commits from different threads (one always empty),
   // which causes TSan to complain.
   if (commit.chunks_to_patch_size() || commit.chunks_to_move_size()) {
-    perfetto::protos::CommitDataRequest proto;
-    commit.ToProto(&proto);
-    std::string proto_string;
-    CHECK(proto.SerializeToString(&proto_string));
-    all_client_commit_data_requests_ += proto_string;
+    all_client_commit_data_requests_.push_back(commit.SerializeAsString());
   }
   ProducerClient::CommitData(commit, callback);
 }
@@ -346,11 +341,8 @@ void MockProducerHost::OnCommit(
     return;
   }
 
-  perfetto::protos::CommitDataRequest proto;
-  commit_data_request.ToProto(&proto);
-  std::string proto_string;
-  CHECK(proto.SerializeToString(&proto_string));
-  all_host_commit_data_requests_ += proto_string;
+  all_host_commit_data_requests_.push_back(
+      commit_data_request.SerializeAsString());
 }
 
 MockProducer::MockProducer(const std::string& producer_name,

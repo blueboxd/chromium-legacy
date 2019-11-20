@@ -97,7 +97,6 @@ class ChromeTestHarnessWithLocalDB : public ChromeRenderViewHostTestHarness {
   explicit ChromeTestHarnessWithLocalDB(TaskEnvironmentTraits&&... traits)
       : ChromeRenderViewHostTestHarness(
             std::forward<TaskEnvironmentTraits>(traits)...) {
-    EnableFeatures();
   }
 
   ~ChromeTestHarnessWithLocalDB() override;
@@ -107,10 +106,6 @@ class ChromeTestHarnessWithLocalDB : public ChromeRenderViewHostTestHarness {
   void TearDown() override;
 
  private:
-  // Configures |scoped_feature_list_|.
-  void EnableFeatures();
-
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<performance_manager::PerformanceManagerImpl>
       performance_manager_;
 };

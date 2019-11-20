@@ -24,16 +24,18 @@ scoped_refptr<RootFrameSink> RootFrameSinkProxy::GetRootFrameSinkHelper(
 
 RootFrameSinkProxy::RootFrameSinkProxy(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    SetNeedsBeginFrameCallback set_needs_begin_frame_callback)
+    base::RepeatingClosure invalidate_callback)
     : ui_task_runner_(ui_task_runner),
       viz_task_runner_(
           VizCompositorThreadRunnerWebView::GetInstance()->task_runner()),
-      set_needs_begin_frame_callback_(
-          std::move(set_needs_begin_frame_callback)) {
+      invalidate_callback_(std::move(invalidate_callback)) {
   DETACH_FROM_THREAD(viz_thread_checker_);
   viz_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RootFrameSinkProxy::InitializeOnViz,
                                 base::Unretained(this)));
+
+  begin_frame_source_ = std::make_unique<viz::ExternalBeginFrameSourceAndroid>(
+      viz::ExternalBeginFrameSourceAndroid::kNotRestartableId, 60);
 }
 
 void RootFrameSinkProxy::InitializeOnViz() {
@@ -67,7 +69,10 @@ void RootFrameSinkProxy::SetNeedsBeginFramesOnViz(bool needs_begin_frames) {
 
 void RootFrameSinkProxy::SetNeedsBeginFramesOnUI(bool needs_begin_frames) {
   DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
-  set_needs_begin_frame_callback_.Run(needs_begin_frames);
+  if (needs_begin_frames)
+    begin_frame_source_->AddObserver(this);
+  else
+    begin_frame_source_->RemoveObserver(this);
 }
 
 void RootFrameSinkProxy::AddChildFrameSinkId(
@@ -118,6 +123,14 @@ void RootFrameSinkProxy::BeginFrameOnViz(const viz::BeginFrameArgs& args,
 RootFrameSinkGetter RootFrameSinkProxy::GetRootFrameSinkCallback() {
   return base::BindRepeating(&RootFrameSinkProxy::GetRootFrameSinkHelper,
                              weak_ptr_factory_on_viz_.GetWeakPtr());
+}
+
+bool RootFrameSinkProxy::OnBeginFrameDerivedImpl(
+    const viz::BeginFrameArgs& args) {
+  if (BeginFrame(args))
+    invalidate_callback_.Run();
+
+  return true;
 }
 
 }  // namespace android_webview

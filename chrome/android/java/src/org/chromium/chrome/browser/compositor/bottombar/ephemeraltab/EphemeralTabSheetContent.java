@@ -239,11 +239,6 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     }
 
     @Override
-    public boolean hideOnScroll() {
-        return false;
-    }
-
-    @Override
     public int getSheetContentDescriptionStringId() {
         return R.string.ephemeral_tab_sheet_description;
     }

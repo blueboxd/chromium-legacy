@@ -110,8 +110,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   // cleared.
   void HandleAccessibilityFindInPageTermination();
 
-  void AccessibilityFocusedElementChanged(const blink::WebElement& element);
-
   void HandleAXEvent(
       const blink::WebAXObject& obj,
       ax::mojom::Event event,

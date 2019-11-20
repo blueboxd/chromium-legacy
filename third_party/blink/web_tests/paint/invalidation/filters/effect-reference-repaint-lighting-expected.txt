@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow DIV class='before box'",
-          "rect": [78, 70, 100, 100],
-          "reason": "chunk disappeared"
-        },
-        {
           "object": "LayoutNGBlockFlow DIV class='box'",
           "rect": [78, 70, 100, 100],
           "reason": "chunk appeared"

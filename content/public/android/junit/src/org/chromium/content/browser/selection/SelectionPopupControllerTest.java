@@ -481,7 +481,7 @@ public class SelectionPopupControllerTest {
         mController.setSelectionInsertionHandleObserver(handleObserver);
 
         // Selection handles shown.
-        mController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_SHOWN, 0, 0, 0, 0);
+        mController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_SHOWN, 0, 0, 1, 1);
 
         // Selection handles drag started.
         mController.onDragUpdate(0.f, 0.f);
@@ -492,7 +492,7 @@ public class SelectionPopupControllerTest {
         order.verify(handleObserver).handleDragStartedOrMoved(5.f, 5.f);
 
         // Selection handle drag stopped.
-        mController.onSelectionEvent(SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 0, 0, 0, 0);
+        mController.onSelectionEvent(SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 0, 0, 1, 1);
         order.verify(handleObserver).handleDragStopped();
     }
 
@@ -505,7 +505,7 @@ public class SelectionPopupControllerTest {
         mController.setSelectionInsertionHandleObserver(handleObserver);
 
         // Insertion handle shown.
-        mController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_SHOWN, 0, 0, 0, 0);
+        mController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_SHOWN, 0, 0, 1, 1);
 
         // Insertion handle drag started.
         mController.onDragUpdate(0.f, 0.f);
@@ -516,7 +516,7 @@ public class SelectionPopupControllerTest {
         order.verify(handleObserver).handleDragStartedOrMoved(5.f, 5.f);
 
         // Insertion handle drag stopped.
-        mController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED, 0, 0, 0, 0);
+        mController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED, 0, 0, 1, 1);
         order.verify(handleObserver).handleDragStopped();
     }
 
@@ -524,22 +524,22 @@ public class SelectionPopupControllerTest {
     @Feature({"TextInput", "HandleHapticFeedback"})
     public void testInsertionHandleHapticFeedback() {
         SelectionPopupControllerImpl spyController = Mockito.spy(mController);
-        spyController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 0, 0);
+        spyController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 1, 1);
         // Any INSERTION_HANDLE_MOVED before INSERTION_HANDLE_DRAG_STARTED should not trigger haptic
         // feedback.
         Mockito.verify(spyController, never()).performHapticFeedback();
 
         spyController.onSelectionEvent(
-                SelectionEventType.INSERTION_HANDLE_DRAG_STARTED, 0, 0, 0, 0);
-        spyController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 0, 0);
-        spyController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 0, 0);
+                SelectionEventType.INSERTION_HANDLE_DRAG_STARTED, 0, 0, 1, 1);
+        spyController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 1, 1);
+        spyController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 1, 1);
         spyController.onSelectionEvent(
-                SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED, 0, 0, 0, 0);
+                SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED, 0, 0, 1, 1);
 
         // We called twice.
         Mockito.verify(spyController, times(2)).performHapticFeedback();
 
-        spyController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 0, 0);
+        spyController.onSelectionEvent(SelectionEventType.INSERTION_HANDLE_MOVED, 0, 0, 1, 1);
         // Any INSERTION_HANDLE_MOVED after INSERTION_HANDLE_DRAG_STOPPED should not trigger more
         // haptic feedback.
         Mockito.verify(spyController, times(2)).performHapticFeedback();
@@ -549,22 +549,22 @@ public class SelectionPopupControllerTest {
     @Feature({"TextInput", "HandleHapticFeedback"})
     public void testSelectionHandleHapticFeedback() {
         SelectionPopupControllerImpl spyController = Mockito.spy(mController);
-        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 0, 0);
+        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 1, 1);
         // Any SELECTION_HANDLES_MOVED before SELECTION_HANDLE_DRAG_STARTED should not trigger
         // haptic feedback.
         Mockito.verify(spyController, never()).performHapticFeedback();
 
         spyController.onSelectionEvent(
-                SelectionEventType.SELECTION_HANDLE_DRAG_STARTED, 0, 0, 0, 0);
-        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 0, 0);
-        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 0, 0);
+                SelectionEventType.SELECTION_HANDLE_DRAG_STARTED, 0, 0, 1, 1);
+        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 1, 1);
+        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 1, 1);
         spyController.onSelectionEvent(
-                SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 0, 0, 0, 0);
+                SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 0, 0, 1, 1);
 
         // We called twice.
         Mockito.verify(spyController, times(2)).performHapticFeedback();
 
-        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 0, 0);
+        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_MOVED, 0, 0, 1, 1);
         // Any SELECTION_HANDLES_MOVED after SELECTION_HANDLE_DRAG_STOPPED should not trigger more
         // haptic feedback.
         Mockito.verify(spyController, times(2)).performHapticFeedback();
@@ -601,7 +601,7 @@ public class SelectionPopupControllerTest {
         Mockito.verify(spyController, times(2)).finishActionMode();
 
         // SELECTION_HANDLES_CLEARED happens.
-        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_CLEARED, 0, 0, 0, 0);
+        spyController.onSelectionEvent(SelectionEventType.SELECTION_HANDLES_CLEARED, 0, 0, 1, 1);
 
         assertFalse(spyController.isSelectActionBarShowing());
         Mockito.verify(spyController, times(3)).finishActionMode();

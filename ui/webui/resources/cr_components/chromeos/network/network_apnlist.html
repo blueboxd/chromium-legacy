@@ -16,10 +16,10 @@
     <div class="property-box">
       <div class="start">[[i18n('networkAccessPoint')]]</div>
       <select id="selectApn" class="md-select" on-change="onSelectApnChange_"
-          value="[[selectedApn_]]"
           aria-label="[[i18n('networkAccessPoint')]]">
         <template is="dom-repeat" items="[[apnSelectList_]]">
-          <option value="[[item.accessPointName]]">[[apnDesc_(item)]]</option>
+          <option value="[[item.accessPointName]]"
+                  selected$="[[isApnItemSelected_(item, selectedApn_)]]">[[apnDesc_(item)]]</option>
         </template>
       </select>
     </div>

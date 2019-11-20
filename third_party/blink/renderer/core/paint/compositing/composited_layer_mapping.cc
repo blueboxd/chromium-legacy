@@ -2404,7 +2404,7 @@ bool CompositedLayerMapping::IsUnderSVGHiddenContainer() const {
 }
 
 bool CompositedLayerMapping::IsTrackingRasterInvalidations() const {
-  return GetLayoutObject().GetFrameView()->IsTrackingPaintInvalidations();
+  return GetLayoutObject().GetFrameView()->IsTrackingRasterInvalidations();
 }
 
 void CompositedLayerMapping::GraphicsLayersDidChange() {

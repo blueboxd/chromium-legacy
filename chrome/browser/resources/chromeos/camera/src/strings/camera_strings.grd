@@ -58,6 +58,7 @@
     <output filename="_locales/zh_TW/messages.json" type="chrome_messages_json" lang="zh-TW"/>
   </outputs>
   <translations>
+    <file path="camera_strings_af.xtb" lang="af" />
     <file path="camera_strings_am.xtb" lang="am" />
     <file path="camera_strings_ar.xtb" lang="ar" />
     <file path="camera_strings_bg.xtb" lang="bg" />

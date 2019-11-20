@@ -277,7 +277,6 @@
 <translation id="2248949050832152960">Tumia WebAuthn</translation>
 <translation id="2250931979407627383">Shona ncha ya kushoto</translation>
 <translation id="225207911366869382">Thamani hii inapingwa kwa sera hii.</translation>
-<translation id="2257315177824333709">Samahani, kadi yako haiwezi kuhifadhiwa sasa hivi</translation>
 <translation id="2258928405015593961">Weka tarehe ya mwisho wa matumizi katika wakati ujao kisha ujaribu tena</translation>
 <translation id="2262243747453050782">Hitilfau ya HTTP</translation>
 <translation id="2263079731045660823">Sasisha maelezo ya kujaza kiotomatiki kadi za mikopo katika mipangilio ya Chrome</translation>
@@ -659,6 +658,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Kipengee kingine <ph name="ITEM_COUNT" />}other{Vipengee vingine <ph name="ITEM_COUNT" />}}</translation>
 <translation id="4176463684765177261">Kimelemazwa</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4194250254487269611">Samahani, kadi yako haiwezi kuhifadhiwa sasa hivi</translation>
 <translation id="4196861286325780578">Rudia hatua</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kuangalia mipangilio ya kinga mtandao na kingavirusi<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Bahasha)</translation>

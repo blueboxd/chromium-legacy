@@ -47,6 +47,9 @@ const base::Feature kEnablePersistentDownloads{
 const base::Feature kUseJSForErrorPage{"UseJSForErrorPage",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDefaultToDesktopOnIPad{"DefaultToDesktopOnIPad",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // The feature kUseWKWebViewLoading will change the CPM if
 // kLogLoadStartedInDidStartNavigation is not enabled, so
 // kLogLoadStartedInDidStartNavigation is required. The feature flag

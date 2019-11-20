@@ -1340,7 +1340,7 @@ TEST_F(BrowserControlsTest,
   web_view->GetBrowserControls().SetShownRatio(1, 1);
   UpdateAllLifecyclePhases();
 
-  GetFrame()->GetDocument()->View()->SetTracksPaintInvalidations(true);
+  GetFrame()->GetDocument()->View()->SetTracksRasterInvalidations(true);
 
   // Hide the browser controls.
   VerticalScroll(-100.f);
@@ -1360,7 +1360,7 @@ TEST_F(BrowserControlsTest,
   EXPECT_EQ(PaintInvalidationReason::kIncremental,
             raster_invalidations[0].reason);
 
-  GetFrame()->GetDocument()->View()->SetTracksPaintInvalidations(false);
+  GetFrame()->GetDocument()->View()->SetTracksRasterInvalidations(false);
 }
 
 #undef MAYBE

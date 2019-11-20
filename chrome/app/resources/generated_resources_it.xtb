@@ -181,7 +181,7 @@
 <translation id="1241753985463165747">Lettura e modifica di tutti i dati sul sito web corrente (se richiamato)</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> vuole ripristinare le impostazioni.</translation>
 <translation id="1243314992276662751">Carica</translation>
-<translation id="1243398753772016127">Sites non può usare la tua attività di navigazione su diversi siti per personalizzare gli annunci</translation>
+<translation id="1243398753772016127">I siti non possono usare la tua attività di navigazione su diversi siti web per personalizzare gli annunci.</translation>
 <translation id="1244265436519979884">È in corso il ripristino di Linux</translation>
 <translation id="1244303850296295656">Errore delle estensioni</translation>
 <translation id="1246905108078336582">Rimuovere il suggerimento dagli appunti?</translation>
@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Icona dell'app</translation>
 <translation id="1410616244180625362">Continua a consentire l'accesso di <ph name="HOST" /> alla webcam</translation>
 <translation id="1414648216875402825">Stai per passare a una versione non stabile di <ph name="PRODUCT_NAME" /> che contiene funzioni ancora in fase di sviluppo. Si verificheranno arresti anomali e bug imprevisti. Procedi con cautela.</translation>
-<translation id="1414866280542221544">Attiva su questo dispositivo</translation>
 <translation id="1415708812149920388">Accesso alla lettura degli appunti negato</translation>
 <translation id="1415990189994829608">L'estensione <ph name="EXTENSION_NAME" /> (ID estensione "<ph name="EXTENSION_ID" />") non è consentita in questo tipo di sessione.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Fetta di pizza</translation>
 <translation id="1468571364034902819">Impossibile utilizzare questo profilo</translation>
 <translation id="1470811252759861213">Per trovare le tue estensioni su tutti i computer, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Questa operazione cancellerà tutti i dati sul token di sicurezza, incluso il suo PIN</translation>
 <translation id="1472675084647422956">Mostra altro</translation>
 <translation id="1475502736924165259">Hai certificati su file che non rientrano in nessuna delle altre categorie</translation>
 <translation id="1476088332184200792">Copia sul tuo dispositivo</translation>
@@ -835,14 +833,13 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2195331105963583686">Dopo tale periodo, potrai continuare a usare questo dispositivo <ph name="DEVICE_TYPE" />, che però non riceverà più automaticamente aggiornamenti software e di sicurezza.</translation>
 <translation id="2195729137168608510">Protezione email</translation>
 <translation id="2199298570273670671">Errore</translation>
-<translation id="2199719347983604670">Dati dalla Sincronizzazione Chrome</translation>
+<translation id="2199719347983604670">Dati dalla sincronizzazione Chrome</translation>
 <translation id="2200094388063410062">Email</translation>
 <translation id="2200356397587687044">Chrome ha bisogno dell'autorizzazione per continuare</translation>
 <translation id="220138918934036434">Nascondi pulsante</translation>
 <translation id="2202898655984161076">Si è verificato un problema nella visualizzazione dell'elenco di stampanti. È possibile che alcune stampanti non siano state registrate correttamente con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motore di ricerca utilizzato nella <ph name="BEGIN_LINK" />barra degli indirizzi<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lettura e modifica del testo digitato</translation>
-<translation id="2204397710290433380">Vuoi disattivare ADB?</translation>
 <translation id="220792432208469595">Invia dati diagnostici e sull'utilizzo. Questo dispositivo attualmente invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Tali dati contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Questa impostazione è applicata dal proprietario. Se hai attivato l'impostazione Attività web e app aggiuntiva, queste informazioni potrebbero essere salvate nel tuo Account Google. <ph name="BEGIN_LINK1" />Ulteriori informazioni<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Inserisci questo codice PIN su "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Rimuovi condivisione</translation>
@@ -979,6 +976,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2396783860772170191">Inserisci il PIN di 4 cifre (0000-9999)</translation>
 <translation id="2399939490305346086">Dati di accesso del token di sicurezza</translation>
 <translation id="2407481962792080328">Questa funzionalità viene attivata quando accedi al tuo Account Google</translation>
+<translation id="2408018932941436077">Salvataggio della carta</translation>
 <translation id="2408955596600435184">Inserisci il codice PIN</translation>
 <translation id="241082044617551207">Plug-in sconosciuto</translation>
 <translation id="2412593942846481727">Aggiornamento disponibile</translation>
@@ -2006,7 +2004,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3873315167136380065">Per attivare questa funzione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /> per rimuovere la passphrase di sincronizzazione</translation>
 <translation id="3873423927483480833">Mostra i codici PIN</translation>
 <translation id="3873915545594852654">Si è verificato un problema con ARC++.</translation>
-<translation id="387924939625099872">Per disattivare ADB, riavvia il tuo <ph name="DEVICE_TYPE" />. Il dispositivo verrà ripristinato alle impostazioni di fabbrica e tutti gli account utente e i dati che contiene verranno cancellati.</translation>
 <translation id="3879748587602334249">Gestione dei download</translation>
 <translation id="3886446263141354045">La tua richiesta di accesso al sito è stata inviata a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Creazione di appunti con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2408,7 +2405,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4501530680793980440">Conferma rimozione</translation>
 <translation id="4502423230170890588">Rimuovi da questo dispositivo</translation>
 <translation id="4504940961672722399">Utilizza questa estensione facendo clic su questa icona o premendo <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Se continui, verrà attivato ADB per creare e testare app Android. Tieni presente che ADB consente l'installazione di app di prova che non sono state verificate da Google.</translation>
 <translation id="4508051413094283164">Apri tutto nella finestra di navigazione in incognito</translation>
 <translation id="4508265954913339219">Attivazione non riuscita</translation>
 <translation id="4508765956121923607">Visualizza s&amp;orgente</translation>
@@ -3042,7 +3038,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5466374726908360271">I&amp;ncolla e cerca "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Ricerca condivisioni file in corso</translation>
 <translation id="5471768120198416576">Ciao! Sono la voce della sintesi locale.</translation>
-<translation id="5472133193607270166">Se questa opzione è attiva, Sites non può usare la tua attività di navigazione su diversi siti per personalizzare gli annunci. Alcuni siti potrebbero non funzionare correttamente.</translation>
+<translation id="5472133193607270166">Se questa opzione è attiva, i siti non possono usare la tua attività di navigazione su diversi siti web per personalizzare gli annunci. Alcuni siti potrebbero non funzionare correttamente.</translation>
 <translation id="5473333559083690127">Inserisci ancora il nuovo PIN</translation>
 <translation id="5481941284378890518">Aggiungi stampanti nelle vicinanze</translation>
 <translation id="5483785310822538350">Revoca accesso a file e dispositivi</translation>
@@ -3311,7 +3307,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5851868085455377790">Autorità emittente</translation>
 <translation id="5852112051279473187">Spiacenti. Si è verificato un grave problema durante la registrazione di questo dispositivo. Riprova o contatta un rappresentante dell'assistenza.</translation>
 <translation id="5852137567692933493">Riavvia ed esegui Powerwash</translation>
-<translation id="5852360662347412211">Vai alle impostazioni di Linux e riprova</translation>
 <translation id="5854912040170951372">Fetta</translation>
 <translation id="5855643921295613558">0,6 secondi</translation>
 <translation id="5856721540245522153">Attiva funzioni di debug</translation>
@@ -3324,7 +3319,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5860494867054883682">Aggiornamento del dispositivo al canale <ph name="CHANNEL_NAME" /> in corso (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Mostra strumenti stilo nello shelf</translation>
 <translation id="5863445608433396414">Attiva funzioni di debug</translation>
-<translation id="5863471434640009253">Per attivare Android Debug Bridge, devi innanzitutto riavviare il tuo <ph name="DEVICE_TYPE" />. Per disattivare ADB è necessario ripristinare le impostazioni di fabbrica.</translation>
 <translation id="5864471791310927901">Ricerca DHCP non riuscita</translation>
 <translation id="586567932979200359">Stai eseguendo <ph name="PRODUCT_NAME" /> dall'immagine disco. L'installazione sul computer permette di eseguirlo senza immagine disco e ne garantisce l'aggiornamento.</translation>
 <translation id="5865733239029070421">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali</translation>
@@ -3394,7 +3388,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5958529069007801266">Utente supervisionato</translation>
 <translation id="5959471481388474538">Rete non disponibile</translation>
 <translation id="595959584676692139">Ricarica la pagina per utilizzare questa estensione</translation>
-<translation id="5961320084471308154">Vuoi attivare ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (picco di <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Controlla anche la pagina visualizzata quando fai clic sul pulsante Pagina iniziale o quando esegui ricerche dalla Omnibox.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> può vedere i file nella cartella <ph name="FOLDERNAME" /></translation>
@@ -4258,7 +4251,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7254554697254365959">Impossibile tradurre questa pagina.</translation>
 <translation id="7254951428499890870">Avviare "<ph name="APP_NAME" />" in modalità diagnostica?</translation>
 <translation id="7255002516883565667">Al momento hai una carta che può essere utilizzata solo su questo dispositivo.</translation>
-<translation id="7255916308560539517">Tocca nuovamente il token di sicurezza per confermare la reimpostazione. Tutte le credenziali memorizzate sul token di sicurezza, nonché il suo PIN, verranno resettate.</translation>
 <translation id="7255935316994522020">Applica</translation>
 <translation id="7256069762010468647">Il sito sta usando la videocamera</translation>
 <translation id="7256405249507348194">Errore non riconosciuto: <ph name="DESC" /></translation>
@@ -4768,6 +4760,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7968833647796919681">Attiva raccolta di dati sul rendimento</translation>
 <translation id="7968982339740310781">Mostra dettagli</translation>
 <translation id="7969046989155602842">Comando</translation>
+<translation id="7970882136539140748">Impossibile salvare la carta al momento</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 con crittografia RSA</translation>
 <translation id="7973962044839454485">Autenticazione PPP non riuscita a causa di un nome utente o una password sbagliati</translation>
 <translation id="7974566588408714340">Riprova utilizzando <ph name="EXTENSIONNAME" /></translation>
@@ -5088,7 +5081,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8431909052837336408">Cambia il PIN della SIM</translation>
 <translation id="8434480141477525001">Porta di debug NaCl</translation>
 <translation id="8435395510592618362">Verifica la tua identità con <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Salva la carta di credito</translation>
 <translation id="8438328416656800239">Passa a un browser intelligente</translation>
 <translation id="8438566539970814960">Migliora le ricerche e le attività di navigazione</translation>
 <translation id="8439506636278576865">Proponi di tradurre pagine in questa lingua</translation>
@@ -5471,6 +5463,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8965037249707889821">Inserisci vecchia password</translation>
 <translation id="8966870118594285808">Riapri una scheda chiusa accidentalmente</translation>
 <translation id="8967866634928501045">Premi ALT + MAIUSC + A per mostrare</translation>
+<translation id="8968766641738584599">Salva carta</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">Rivolgiti al tuo amministratore di rete per verificare che il firewall non blocchi i download dai server di Google.</translation>
 <translation id="8973557916016709913">Rimuovi livello di zoom</translation>
@@ -5577,7 +5570,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9116799625073598554">App per creare note</translation>
 <translation id="9117030152748022724">Gestisci le tue applicazioni</translation>
 <translation id="9121814364785106365">Apri in una scheda bloccata</translation>
-<translation id="9122074588095746047">Impossibile attivare ADB</translation>
 <translation id="9124003689441359348">Le password salvate verranno visualizzate qui</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rimanenti)</translation>
 <translation id="9128317794749765148">Impossibile completare la configurazione</translation>

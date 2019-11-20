@@ -116,6 +116,14 @@ void BrowserDMTokenStorage::StoreDMToken(const std::string& dm_token,
   }
 }
 
+void BrowserDMTokenStorage::InvalidateDMToken(StoreCallback callback) {
+  StoreDMToken(kInvalidTokenValue, std::move(callback));
+}
+
+void BrowserDMTokenStorage::ClearDMToken(StoreCallback callback) {
+  StoreDMToken("", std::move(callback));
+}
+
 std::string BrowserDMTokenStorage::RetrieveDMToken() {
   return RetrieveBrowserDMToken().value();
 }

@@ -9,7 +9,6 @@
 #include "base/callback.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -54,23 +53,10 @@ using WebContentsTester = content::WebContentsTester;
 constexpr char kTestPage[] =
     "/resource_coordinator/site_characteristics_test_page.html";
 
-// Returns the longest feature observation window.
-base::TimeDelta GetLongestObservationWindow() {
-  const SiteCharacteristicsDatabaseParams& params =
-      GetStaticSiteCharacteristicsDatabaseParams();
-  return std::max({params.favicon_update_observation_window,
-                   params.title_update_observation_window,
-                   params.audio_usage_observation_window,
-                   params.notifications_usage_observation_window});
-}
-
-// Returns the longest grace period.
-base::TimeDelta GetLongestGracePeriod() {
-  const SiteCharacteristicsDatabaseParams& params =
-      GetStaticSiteCharacteristicsDatabaseParams();
-  return std::max({params.title_or_favicon_change_post_load_grace_period,
-                   params.feature_usage_post_background_grace_period});
-}
+constexpr base::TimeDelta kObservationWindowLength =
+    base::TimeDelta::FromHours(2);
+constexpr base::TimeDelta kLongestGracePeriod =
+    base::TimeDelta::FromSeconds(20);
 
 // Returns the LocalSiteCharacteristicsDataImpl that backs |reader|.
 internal::LocalSiteCharacteristicsDataImpl* GetImplFromReader(
@@ -96,8 +82,6 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
 
   void SetUp() override {
     test_clock_.Advance(base::TimeDelta::FromSeconds(1));
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteCharacteristicsDatabase);
     InProcessBrowserTest::SetUp();
   }
 
@@ -226,8 +210,7 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
     // Background the tab and reload it so the audio will stop playing if it's
     // still playing.
     GetActiveWebContents()->WasHidden();
-    test_clock_.Advance(GetStaticSiteCharacteristicsDatabaseParams()
-                            .feature_usage_post_background_grace_period);
+    test_clock_.Advance(kLongestGracePeriod);
   }
 
   // Ensure that the current tab is allowed to display non-persistent
@@ -242,8 +225,7 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
   }
 
   void ExpireTitleOrFaviconGracePeriod() {
-    test_clock_.Advance(GetStaticSiteCharacteristicsDatabaseParams()
-                            .title_or_favicon_change_post_load_grace_period);
+    test_clock_.Advance(kLongestGracePeriod);
   }
 
   base::SimpleTestTickClock& test_clock() { return test_clock_; }
@@ -296,7 +278,7 @@ void LocalSiteCharacteristicsDatabaseTest::TestFeatureUsageDetectionImpl(
 
   // If needed, wait for all feature observation windows to expire.
   if (wait_for_observation_window_to_expire) {
-    test_clock_.Advance(GetLongestObservationWindow());
+    test_clock_.Advance(kObservationWindowLength);
     EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
               (reader.get()->*feature_detection_method)());
   }
@@ -329,7 +311,7 @@ void LocalSiteCharacteristicsDatabaseTest::TestFeatureUsageDetectionImpl(
 
   // Advance the clock, make sure that the feature usage status doesn't
   // change.
-  test_clock_.Advance(GetLongestObservationWindow());
+  test_clock_.Advance(kObservationWindowLength);
 
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             (reader.get()->*feature_detection_method)());
@@ -359,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, NoFeatureUsed) {
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UsesNotificationsInBackground());
 
-  test_clock().Advance(GetLongestObservationWindow());
+  test_clock().Advance(kObservationWindowLength);
 
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             reader->UpdatesFaviconInBackground());
@@ -396,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
 
   // Advance the clock while the tab is still in foreground and make sure that
   // the state hasn't changed.
-  test_clock().Advance(GetLongestObservationWindow());
+  test_clock().Advance(kObservationWindowLength);
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
             reader->UpdatesFaviconInBackground());
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureUsageUnknown,
@@ -549,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
   WaitForTransitionToLoaded(GetActiveWebContents());
   GetActiveWebContents()->WasHidden();
 
-  test_clock().Advance(GetLongestGracePeriod());
+  test_clock().Advance(kLongestGracePeriod);
 
   base::RunLoop run_loop;
   GetImplFromReader(reader.get())
@@ -596,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest, PRE_ClearHistory) {
   WaitForTransitionToLoaded(GetActiveWebContents());
   GetActiveWebContents()->WasHidden();
 
-  test_clock().Advance(GetLongestGracePeriod());
+  test_clock().Advance(kLongestGracePeriod);
 
   base::RunLoop run_loop;
   GetImplFromReader(reader.get())

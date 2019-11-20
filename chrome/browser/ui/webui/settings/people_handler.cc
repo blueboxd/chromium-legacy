@@ -884,17 +884,16 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
           !service->GetUserSettings()->IsFirstSetupComplete() &&
           identity_manager->HasPrimaryAccount());
 
-  base::string16 status_label;
-  base::string16 link_label;
-  sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
-
-  bool status_has_error =
-      sync_ui_util::GetStatusLabels(profile_, &status_label, &link_label,
-                                    &action_type) == sync_ui_util::SYNC_ERROR;
-  sync_status->SetString("statusText", status_label);
-  sync_status->SetString("statusActionText", link_label);
-  sync_status->SetBoolean("hasError", status_has_error);
-  sync_status->SetString("statusAction", GetSyncErrorAction(action_type));
+  const sync_ui_util::StatusLabels status_labels =
+      sync_ui_util::GetStatusLabels(profile_);
+  sync_status->SetString("statusText",
+                         GetStringUTF16(status_labels.status_label_string_id));
+  sync_status->SetString("statusActionText",
+                         GetStringUTF16(status_labels.link_label_string_id));
+  sync_status->SetBoolean(
+      "hasError", status_labels.message_type == sync_ui_util::SYNC_ERROR);
+  sync_status->SetString("statusAction",
+                         GetSyncErrorAction(status_labels.action_type));
 
   sync_status->SetBoolean("managed", disallowed_by_policy);
   sync_status->SetBoolean(

@@ -15,8 +15,8 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 
 #if !defined(OS_IOS)
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/core/browser/configuration_policy_pref_store.h"
+#include "components/policy/core/browser/browser_policy_connector.h"  // nogncheck
+#include "components/policy/core/browser/configuration_policy_pref_store.h"  // nogncheck
 #include "components/policy/core/common/policy_service.h"  // nogncheck
 #include "components/policy/core/common/policy_types.h"    // nogncheck
 #endif

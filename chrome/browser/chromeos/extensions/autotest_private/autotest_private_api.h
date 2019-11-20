@@ -816,22 +816,6 @@ class AutotestPrivateShowVirtualKeyboardIfEnabledFunction
   ResponseAction Run() override;
 };
 
-class AutotestPrivateSetArcAppWindowStateFunction : public ExtensionFunction {
- public:
-  AutotestPrivateSetArcAppWindowStateFunction();
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setArcAppWindowState",
-                             AUTOTESTPRIVATE_SETARCAPPWINDOWSTATE)
-
- private:
-  ~AutotestPrivateSetArcAppWindowStateFunction() override;
-  ResponseAction Run() override;
-
-  // Callback function to be called after window state is changed.
-  void WindowStateChanged(ash::WindowStateType expected_type, bool success);
-
-  std::unique_ptr<WindowStateChangeObserver> window_state_observer_;
-};
-
 class AutotestPrivateSetArcAppWindowFocusFunction : public ExtensionFunction {
  public:
   AutotestPrivateSetArcAppWindowFocusFunction();
@@ -840,29 +824,6 @@ class AutotestPrivateSetArcAppWindowFocusFunction : public ExtensionFunction {
 
  private:
   ~AutotestPrivateSetArcAppWindowFocusFunction() override;
-  ResponseAction Run() override;
-};
-
-class AutotestPrivateGetArcAppWindowStateFunction : public ExtensionFunction {
- public:
-  AutotestPrivateGetArcAppWindowStateFunction();
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcAppWindowState",
-                             AUTOTESTPRIVATE_GETARCAPPWINDOWSTATE)
-
- private:
-  ~AutotestPrivateGetArcAppWindowStateFunction() override;
-  ResponseAction Run() override;
-};
-
-// Gets various window properties of an ARC window.
-class AutotestPrivateGetArcAppWindowInfoFunction : public ExtensionFunction {
- public:
-  AutotestPrivateGetArcAppWindowInfoFunction();
-  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcAppWindowInfo",
-                             AUTOTESTPRIVATE_GETARCAPPWINDOWINFO)
-
- private:
-  ~AutotestPrivateGetArcAppWindowInfoFunction() override;
   ResponseAction Run() override;
 };
 

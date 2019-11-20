@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Appikon</translation>
 <translation id="1410616244180625362">Fortsett å tillate <ph name="HOST" /> å bruke kameraet ditt</translation>
 <translation id="1414648216875402825">Du er i ferd med å oppdatere en ustabil versjon av <ph name="PRODUCT_NAME" />, som inneholder funksjoner som er under utvikling. Kræsjing og uventede feil kan oppstå. Fortsett med forsiktighet.</translation>
-<translation id="1414866280542221544">Slå på på denne enheten</translation>
 <translation id="1415708812149920388">Lesetilgang til utklippstavlen er avvist</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (utvidelses-ID «<ph name="EXTENSION_ID" />») tillates ikke i denne typen økt.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizzastykke</translation>
 <translation id="1468571364034902819">Du kan ikke bruke denne profilen</translation>
 <translation id="1470811252759861213">For å få utvidelsene dine på alle datamaskinene du bruker, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Dette fører til at alle dataene på sikkerhetsnøkkelen, inkludert PIN-koden, blir slettet</translation>
 <translation id="1472675084647422956">Vis mer</translation>
 <translation id="1475502736924165259">Du har en fil med sertifikater som ikke passer inn i noen av de andre kategoriene</translation>
 <translation id="1476088332184200792">Kopiér til enheten din</translation>
@@ -839,7 +837,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2202898655984161076">Det oppstod et problem med oppføring av skrivere. Enkelte av skriverne dine er ikke registrert på <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Søkemotoren som brukes i <ph name="BEGIN_LINK" />adressefeltet<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">lese og endre alt du skriver</translation>
-<translation id="2204397710290433380">Vil du slå av ADB?</translation>
 <translation id="220792432208469595">Send bruks- og diagnostikkdata. Denne enheten sender for øyeblikket diagnostikk-, enhets- og appbruksdata til Google automatisk. Dette bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Denne innstillingen håndheves av eieren. Hvis du har slått på innstillingen for annen nett- og appaktivitet, kan disse dataene bli lagret i Google-kontoen din. <ph name="BEGIN_LINK1" />Finn ut mer<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Skriv inn denne PIN-koden på «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="2213140827792212876">Slutt å dele</translation>
@@ -976,6 +973,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2396783860772170191">Skriv inn firesifret PIN-kode (0000–9999)</translation>
 <translation id="2399939490305346086">Påloggingsdata på sikkerhetsnøkkelen</translation>
 <translation id="2407481962792080328">Når du logger på Google-kontoen din, blir denne funksjonen slått på</translation>
+<translation id="2408018932941436077">Lagrer kortet</translation>
 <translation id="2408955596600435184">Skriv inn PIN-koden din</translation>
 <translation id="241082044617551207">Ukjent programtillegg</translation>
 <translation id="2412593942846481727">En oppdatering er tilgjengelig</translation>
@@ -2004,7 +2002,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3873315167136380065">For å slå dette på, <ph name="BEGIN_LINK" />tilbakestill synkroniseringen<ph name="END_LINK" /> for å fjerne passordfrasen din for synkronisering</translation>
 <translation id="3873423927483480833">Vis PIN-koder</translation>
 <translation id="3873915545594852654">Det oppsto et problem med ARC++.</translation>
-<translation id="387924939625099872">For å slå av ADB, start <ph name="DEVICE_TYPE" /> på nytt. Enheten blir tilbakestilt til fabrikkinnstillingene, og alle brukerkontoer og lokale data slettes.</translation>
 <translation id="3879748587602334249">Nedlastingsbehandling</translation>
 <translation id="3886446263141354045">Forespørselen din om å få tilgang til dette nettstedet er sendt til <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Tar notater med <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2404,7 +2401,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4501530680793980440">Bekreftelse av fjerning</translation>
 <translation id="4502423230170890588">Fjern fra denne enheten</translation>
 <translation id="4504940961672722399">Bruk denne utvidelsen ved å klikke på ikonet eller trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Hvis du fortsetter, blir ADB slått på for utvikling og testing av Android-apper. Merk at ADB gjør det mulig å installere test-apper som ikke er verifisert av Google.</translation>
 <translation id="4508051413094283164">Åpne alt i et inkognitovindu</translation>
 <translation id="4508265954913339219">Aktiveringen mislyktes</translation>
 <translation id="4508765956121923607">Vis &amp;kilde</translation>
@@ -3307,7 +3303,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5851868085455377790">Utsteder </translation>
 <translation id="5852112051279473187">Beklager!  Det oppstod et problem under registrering av enheten din.  Prøv på nytt eller kontakt din brukerstøtterepresentant.</translation>
 <translation id="5852137567692933493">Omstart og Powerwash</translation>
-<translation id="5852360662347412211">Gå til Linux-innstillingene og prøv på nytt</translation>
 <translation id="5854912040170951372">Pizzaelsker</translation>
 <translation id="5855643921295613558">0,6 sekunder</translation>
 <translation id="5856721540245522153">Slå på feilsøkingsfunksjoner</translation>
@@ -3320,7 +3315,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5860494867054883682">Oppdaterer enheten din til <ph name="CHANNEL_NAME" />-kanalen (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Vis pekepennverktøyet på hyllen</translation>
 <translation id="5863445608433396414">Slå på feilsøkingsfunksjoner</translation>
-<translation id="5863471434640009253">For å slå på Android Debug Bridge, start <ph name="DEVICE_TYPE" /> på nytt først. Enheten må tilbakestilles til fabrikkinnstillingene hvis du vil slå av ADB igjen.</translation>
 <translation id="5864471791310927901">DHCP-oppslag mislyktes</translation>
 <translation id="586567932979200359">Du kjører <ph name="PRODUCT_NAME" /> fra diskavbildningen. Hvis du installer produktet på datamaskinen, kan du kjøre det uten diskavbildningen og sikre at det holdes oppdatert.</translation>
 <translation id="5865733239029070421">Sender automatisk brukerstatistikk og programstopprapporter til Google</translation>
@@ -3390,7 +3384,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5958529069007801266">Administrert bruker</translation>
 <translation id="5959471481388474538">Nettverket er utilgjengelig</translation>
 <translation id="595959584676692139">Last inn siden på nytt for å bruke denne utvidelsen</translation>
-<translation id="5961320084471308154">Vil du slå på ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> toppverdi)</translation>
 <translation id="5965661248935608907">Den styrer også hvilken side som vises når du klikker på Startside-knappen eller søker fra multifunksjonsfeltet.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> kan se filer i <ph name="FOLDERNAME" /></translation>
@@ -4254,7 +4247,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7254554697254365959">Siden kunne ikke oversettes.</translation>
 <translation id="7254951428499890870">Er du sikker på at du ønsker å starte <ph name="APP_NAME" /> i diagnostikkmodus?</translation>
 <translation id="7255002516883565667">Akkurat nå har du ett kort som bare kan brukes på denne enheten</translation>
-<translation id="7255916308560539517">Berør sikkerhetsnøkkelen en gang til for å bekrefte tilbakestillingen. All informasjon som er lagret på sikkerhetsnøkkelen, inkludert PIN-koden, blir slettet.</translation>
 <translation id="7255935316994522020">Bruk</translation>
 <translation id="7256069762010468647">Nettstedet bruker kameraet ditt</translation>
 <translation id="7256405249507348194">Ukjent feil: <ph name="DESC" /></translation>
@@ -4764,6 +4756,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7968833647796919681">Aktiverer innsamling av ytelsesdata</translation>
 <translation id="7968982339740310781">Se detaljer</translation>
 <translation id="7969046989155602842">Kommando</translation>
+<translation id="7970882136539140748">Kan ikke lagre kortet akkurat nå</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 med RSA-kryptering</translation>
 <translation id="7973962044839454485">PPP-autentiseringen mislyktes på grunn av feil brukernavn eller passord</translation>
 <translation id="7974566588408714340">Prøv på nytt med <ph name="EXTENSIONNAME" /></translation>
@@ -5085,7 +5078,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8431909052837336408">Endre PIN-koden for SIM-kortet</translation>
 <translation id="8434480141477525001">Feilsøkingsport for NaCl</translation>
 <translation id="8435395510592618362">Bekreft identiteten din med <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Lagre kredittkortet</translation>
 <translation id="8438328416656800239">Bytt til en smart nettleser</translation>
 <translation id="8438566539970814960">Gjør søking og surfing bedre</translation>
 <translation id="8439506636278576865">Tilby å oversette nettsider på dette språket</translation>
@@ -5468,6 +5460,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8965037249707889821">Skriv inn det gamle passordet</translation>
 <translation id="8966870118594285808">Åpne faner på nytt hvis du lukket dem ved et uhell</translation>
 <translation id="8967866634928501045">Trykk på Alt + Shift + A for å vise</translation>
+<translation id="8968766641738584599">Lagre kortet</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Kontakt nettverksadministratoren din for å sjekke at brannmuren ikke blokkerer nedlastinger fra Google-tjenere.</translation>
 <translation id="8973557916016709913">Fjern zoomnivået</translation>
@@ -5574,7 +5567,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9116799625073598554">Notatapper</translation>
 <translation id="9117030152748022724">Administrer appene dine</translation>
 <translation id="9121814364785106365">Åpne som festet fane</translation>
-<translation id="9122074588095746047">Kunne ikke slå på ADB</translation>
 <translation id="9124003689441359348">Lagrede passord vises her</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> gjenstår)</translation>
 <translation id="9128317794749765148">Kunne ikke fullføre konfigureringen</translation>

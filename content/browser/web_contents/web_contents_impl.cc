@@ -6456,8 +6456,10 @@ void WebContentsImpl::FocusOwningWebContents(
   if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_)
     return;
 
+  RenderWidgetHostImpl* main_frame_widget_host =
+      GetMainFrame()->GetRenderWidgetHost();
   RenderWidgetHostImpl* focused_widget =
-      GetFocusedRenderWidgetHost(render_widget_host);
+      GetFocusedRenderWidgetHost(main_frame_widget_host);
 
   if (focused_widget != render_widget_host &&
       (!focused_widget ||

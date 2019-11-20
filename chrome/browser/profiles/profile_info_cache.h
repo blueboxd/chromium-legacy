@@ -74,13 +74,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // directly referring to this implementation.
   size_t GetIndexOfProfileWithPath(
       const base::FilePath& profile_path) const override;
-  // Deprecated 10/2019, Do not use!
-  // Use GetNameToDisplayOfProfileAtIndex instead.
-  base::string16 GetNameOfProfileAtIndex(size_t index) const override;
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   base::FilePath GetPathOfProfileAtIndex(size_t index) const override;
-  base::string16 GetGAIANameOfProfileAtIndex(size_t index) const override;
-  base::string16 GetGAIAGivenNameOfProfileAtIndex(size_t index) const override;
   std::string GetGAIAIdOfProfileAtIndex(size_t index) const override;
   // Returns the GAIA picture for the given profile. This may return NULL
   // if the profile does not have a GAIA picture or if the picture must be
@@ -93,7 +88,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   bool IsOmittedProfileAtIndex(size_t index) const override;
   bool ProfileIsSigninRequiredAtIndex(size_t index) const override;
   std::string GetSupervisedUserIdOfProfileAtIndex(size_t index) const override;
-  bool ProfileIsUsingDefaultNameAtIndex(size_t index) const override;
   bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const override;
 
   // Returns true if a GAIA picture has been loaded or has failed to load for
@@ -102,21 +96,13 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
-  void SetLocalProfileNameOfProfileAtIndex(size_t index,
-                                           const base::string16& name);
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetIsOmittedProfileAtIndex(size_t index, bool is_omitted);
   void SetSupervisedUserIdOfProfileAtIndex(size_t index, const std::string& id);
-  // Warning: This will re-sort profiles and thus may change indices!
-  void SetGAIANameOfProfileAtIndex(size_t index, const base::string16& name);
-  // Warning: This will re-sort profiles and thus may change indices!
-  void SetGAIAGivenNameOfProfileAtIndex(size_t index,
-                                        const base::string16& name);
   void SetGAIAPictureOfProfileAtIndex(size_t index, gfx::Image image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
   void SetProfileSigninRequiredAtIndex(size_t index, bool value);
-  void SetProfileIsUsingDefaultNameAtIndex(size_t index, bool value);
   void SetProfileIsUsingDefaultAvatarAtIndex(size_t index, bool value);
 
   // Notify IsSignedInRequired to all observer
@@ -146,10 +132,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
                                     ProfileAttributesEntry** entry) override;
 
   void NotifyProfileAuthInfoChanged(const base::FilePath& profile_path);
+  void NotifyIfProfileNamesHaveChanged();
 
   static const char kNameKey[];
-  static const char kGAIANameKey[];
-  static const char kGAIAGivenNameKey[];
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
@@ -177,7 +162,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   // Download and high-res avatars used by the profiles.
   void DownloadAvatars();
-  void NotifyIfProfileNamesHaveChanged();
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   void LoadGAIAPictureIfNeeded();

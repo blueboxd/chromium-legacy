@@ -75,7 +75,7 @@ class PCMWaveOutAudioOutputStream : public AudioOutputStream {
   static void NTAPI BufferCallback(PVOID lpParameter, BOOLEAN timer_fired);
 
   // If windows reports an error this function handles it and passes it to
-  // the attached AudioSourceCallback::OnError().
+  // the attached AudioSourceCallback::OnError(ErrorType type).
   void HandleError(MMRESULT error);
 
   // Allocates and prepares the memory that will be used for playback.

@@ -52,7 +52,8 @@ class AUHALStreamTest : public testing::Test {
   AudioOutputStream* Create() {
     return manager_->MakeAudioOutputStream(
         manager_device_info_.GetDefaultOutputStreamParameters(), "",
-        base::Bind(&AUHALStreamTest::OnLogMessage, base::Unretained(this)));
+        base::BindRepeating(&AUHALStreamTest::OnLogMessage,
+                            base::Unretained(this)));
   }
 
   bool OutputDevicesAvailable() {
@@ -109,7 +110,7 @@ TEST_F(AUHALStreamTest, CreateOpenStartStopClose) {
           ZeroBuffer(),
           MaybeSignalEvent(&callback_counter, number_of_callbacks, &event),
           Return(0)));
-  EXPECT_CALL(source_, OnError()).Times(0);
+  EXPECT_CALL(source_, OnError(_)).Times(0);
   stream->Start(&source_);
   event.Wait();
 

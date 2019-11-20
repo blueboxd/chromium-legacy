@@ -155,6 +155,7 @@ std::unique_ptr<base::DictionaryValue> GenerateTouchPoint(
 
 WebViewImpl::WebViewImpl(const std::string& id,
                          const bool w3c_compliant,
+                         const WebViewImpl* parent,
                          const BrowserInfo* browser_info,
                          std::unique_ptr<DevToolsClient> client,
                          const DeviceMetrics* device_metrics,
@@ -164,15 +165,11 @@ WebViewImpl::WebViewImpl(const std::string& id,
       browser_info_(browser_info),
       is_locked_(false),
       is_detached_(false),
-      parent_(nullptr),
+      parent_(parent),
       client_(std::move(client)),
       dom_tracker_(new DomTracker(client_.get())),
       frame_tracker_(new FrameTracker(client_.get(), this, browser_info)),
       dialog_manager_(new JavaScriptDialogManager(client_.get(), browser_info)),
-      navigation_tracker_(PageLoadStrategy::Create(page_load_strategy,
-                                                   client_.get(),
-                                                   browser_info,
-                                                   dialog_manager_.get())),
       mobile_emulation_override_manager_(
           new MobileEmulationOverrideManager(client_.get(), device_metrics)),
       geolocation_override_manager_(
@@ -188,6 +185,13 @@ WebViewImpl::WebViewImpl(const std::string& id,
   if (browser_info->is_headless)
     download_directory_override_manager_ =
         std::make_unique<DownloadDirectoryOverrideManager>(client_.get());
+  // Child WebViews should not have their own navigation_tracker, but defer
+  // all related calls to their parent. All WebViews must have either parent_
+  // or navigation_tracker_
+  if (!parent_)
+    navigation_tracker_ = std::unique_ptr<PageLoadStrategy>(
+        PageLoadStrategy::Create(page_load_strategy, client_.get(), this,
+                                 browser_info, dialog_manager_.get()));
   client_->SetOwner(this);
 }
 
@@ -203,12 +207,16 @@ WebViewImpl* WebViewImpl::CreateChild(const std::string& session_id,
       static_cast<DevToolsClientImpl*>(client_.get())->GetRootClient();
   std::unique_ptr<DevToolsClient> child_client(
       std::make_unique<DevToolsClientImpl>(root_client, session_id));
-  WebViewImpl* child = new WebViewImpl(target_id, w3c_compliant_, browser_info_,
-                                       std::move(child_client), nullptr,
-                                       navigation_tracker_->IsNonBlocking()
-                                           ? PageLoadStrategy::kNone
+  WebViewImpl* child = new WebViewImpl(
+      target_id, w3c_compliant_, this, browser_info_, std::move(child_client),
+      nullptr,
+      navigation_tracker_->IsNonBlocking() ? PageLoadStrategy::kNone
                                            : PageLoadStrategy::kNormal);
-  child->parent_ = this;
+  if (!navigation_tracker_->IsNonBlocking()) {
+    PageLoadStrategy* pls = navigation_tracker_.get();
+    NavigationTracker* nt = static_cast<NavigationTracker*>(pls);
+    child->client_->AddListener(static_cast<DevToolsEventListener*>(nt));
+  }
   return child;
 }
 
@@ -257,7 +265,7 @@ Status WebViewImpl::Load(const std::string& url, const Timeout* timeout) {
     return Status(kUnknownError, "unsupported protocol");
   base::DictionaryValue params;
   params.SetString("url", url);
-  if (navigation_tracker_->IsNonBlocking()) {
+  if (IsNonBlocking()) {
     // With non-bloakcing navigation tracker, the previous navigation might
     // still be in progress, and this can cause the new navigate command to be
     // ignored on Chrome v63 and above. Stop previous navigation first.
@@ -748,6 +756,10 @@ Status WebViewImpl::AddCookie(const std::string& name,
 Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
                                               const Timeout& timeout,
                                               bool stop_load_on_timeout) {
+  // This function should not be called for child WebViews
+  if (parent_ != nullptr)
+    return Status(kUnsupportedOperation,
+                  "Call WaitForPendingNavigations only on the parent WebView");
   VLOG(0) << "Waiting for pending navigations...";
   const auto not_pending_navigation =
       base::Bind(&WebViewImpl::IsNotPendingNavigation, base::Unretained(this),
@@ -775,9 +787,12 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
 
 Status WebViewImpl::IsPendingNavigation(const std::string& frame_id,
                                         const Timeout* timeout,
-                                        bool* is_pending) {
-  return
-      navigation_tracker_->IsPendingNavigation(frame_id, timeout, is_pending);
+                                        bool* is_pending) const {
+  if (navigation_tracker_)
+    return navigation_tracker_->IsPendingNavigation(frame_id, timeout,
+                                                    is_pending);
+  else
+    return parent_->IsPendingNavigation(frame_id, timeout, is_pending);
 }
 
 JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {
@@ -1105,6 +1120,10 @@ Status WebViewImpl::CallAsyncFunctionInternal(
   }
 }
 
+void WebViewImpl::ClearNavigationState(const std::string& new_frame_id) {
+  navigation_tracker_->ClearState(new_frame_id);
+}
+
 Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
                                            const Timeout* timeout,
                                            bool* is_not_pending) {
@@ -1126,8 +1145,11 @@ Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
   return Status(kOk);
 }
 
-bool WebViewImpl::IsNonBlocking() {
-  return navigation_tracker_->IsNonBlocking();
+bool WebViewImpl::IsNonBlocking() const {
+  if (navigation_tracker_)
+    return navigation_tracker_->IsNonBlocking();
+  else
+    return parent_->IsNonBlocking();
 }
 
 bool WebViewImpl::IsOOPIF(const std::string& frame_id) {

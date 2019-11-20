@@ -48,7 +48,8 @@ class TestPrintViewManager : public PrintViewManagerBase {
 
     mojo::AssociatedRemote<mojom::PrintRenderFrame> print_render_frame;
     rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame);
-    print_render_frame->InitiatePrintPreview(nullptr, has_selection);
+    print_render_frame->InitiatePrintPreview(mojo::NullAssociatedRemote(),
+                                             has_selection);
     return true;
   }
 

@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
 #include "base/strings/string_number_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
-#import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
+#import "ios/chrome/browser/ui/find_bar/find_in_page_controller_app_interface.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -23,6 +22,15 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+// TODO(crbug.com/1015113): The EG2 macro is breaking indexing for some reason
+// without the trailing semicolon.  For now, disable the extra semi warning
+// so Xcode indexing works for the egtest.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(FindInPageControllerAppInterface);
+#endif  // defined(CHROME_EARL_GREY_2)
 
 namespace {
 
@@ -66,8 +74,9 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 // bar is opened.
 - (void)setUp {
   [super setUp];
-  // Clear saved search term
-  [FindInPageController setSearchTerm:nil];
+
+  // Clear saved search term.
+  [FindInPageControllerAppInterface clearSearchTerm];
 
   // Setup find in page test URL.
   std::map<GURL, std::string> responses;
@@ -178,8 +187,21 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 }
 
 - (void)typeFindInPageText:(NSString*)text {
+#if defined(CHROME_EARL_GREY_1)
   [[EarlGrey selectElementWithMatcher:[self findInPageInputField]]
       performAction:grey_replaceText(text)];
+#elif defined(CHROME_EARL_GREY_2)
+  // There are two elements in the DOM (UITextField and
+  // UIAccessibilityTextFieldElement) that match the acessibilityID of
+  // kFindInPageInputFieldId. Choose the accessibility element.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kFindInPageInputFieldId),
+                                          grey_accessibilityElement(), nil)]
+      performAction:grey_replaceText(text)];
+#else
+#error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.
+#endif
 }
 
 - (id<GREYMatcher>)findInPageInputField {

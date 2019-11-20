@@ -1242,7 +1242,7 @@ void PrintRenderFrameHelper::PrintForSystemDialog() {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintRenderFrameHelper::InitiatePrintPreview(
-    mojom::PrintRendererAssociatedPtrInfo print_renderer,
+    mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
     bool has_selection) {
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
   if (ipc_nesting_level_ > 1)

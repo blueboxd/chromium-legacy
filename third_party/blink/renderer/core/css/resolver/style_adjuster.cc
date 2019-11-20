@@ -87,6 +87,7 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
     case EDisplay::kWebkitBox:
     case EDisplay::kFlex:
     case EDisplay::kGrid:
+    case EDisplay::kMath:
     case EDisplay::kListItem:
     case EDisplay::kFlowRoot:
     case EDisplay::kLayoutCustom:
@@ -99,6 +100,8 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
       return EDisplay::kFlex;
     case EDisplay::kInlineGrid:
       return EDisplay::kGrid;
+    case EDisplay::kInlineMath:
+      return EDisplay::kMath;
     case EDisplay::kInlineLayoutCustom:
       return EDisplay::kLayoutCustom;
 

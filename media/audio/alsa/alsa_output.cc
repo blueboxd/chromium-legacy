@@ -795,8 +795,9 @@ int AlsaPcmOutputStream::RunDataCallback(base::TimeDelta delay,
 }
 
 void AlsaPcmOutputStream::RunErrorCallback(int code) {
+  // TODO(dalecurtis): Consider sending a translated |code| value.
   if (source_callback_)
-    source_callback_->OnError();
+    source_callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
 }
 
 // Changes the AudioSourceCallback to proxy calls to.  Pass in NULL to

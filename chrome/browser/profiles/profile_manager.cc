@@ -1270,7 +1270,6 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
   // Create the Previews Service and begin loading opt out history from
   // persistent memory.
   PreviewsServiceFactory::GetForProfile(profile)->Initialize(
-      g_browser_process->optimization_guide_service(), proto_db_provider,
       base::CreateSingleThreadTaskRunner({BrowserThread::UI}),
       profile->GetPath());
 

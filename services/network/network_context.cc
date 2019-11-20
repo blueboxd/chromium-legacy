@@ -1776,8 +1776,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   if (params_->proxy_resolver_factory) {
     builder.SetMojoProxyResolverFactory(
-        proxy_resolver::mojom::ProxyResolverFactoryPtr(
-            std::move(params_->proxy_resolver_factory)));
+        std::move(params_->proxy_resolver_factory));
   }
 
 #if defined(OS_CHROMEOS)

@@ -331,7 +331,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::RendererPreferences)
   IPC_STRUCT_TRAITS_MEMBER(accept_languages)
   IPC_STRUCT_TRAITS_MEMBER(disable_client_blocked_error_page)
   IPC_STRUCT_TRAITS_MEMBER(plugin_fullscreen_allowed)
-  IPC_STRUCT_TRAITS_MEMBER(network_contry_iso)
 #if defined(OS_LINUX)
   IPC_STRUCT_TRAITS_MEMBER(system_font_family_name)
 #endif

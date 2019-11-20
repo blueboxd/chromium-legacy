@@ -74,8 +74,7 @@ TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {
                   test_server_.GetURL(kPacPath)),
               TRAFFIC_ANNOTATION_FOR_TESTS)));
   builder_.SetMojoProxyResolverFactory(
-      proxy_resolver::mojom::ProxyResolverFactoryPtr(
-          test_mojo_proxy_resolver_factory_.CreateFactoryRemote()));
+      test_mojo_proxy_resolver_factory_.CreateFactoryRemote());
 
 #if defined(OS_CHROMEOS)
   builder_.SetDhcpWpadUrlClient(mojom::DhcpWpadUrlClientPtr(
@@ -111,8 +110,7 @@ TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
                   test_server_.GetURL("/hung")),
               TRAFFIC_ANNOTATION_FOR_TESTS)));
   builder_.SetMojoProxyResolverFactory(
-      proxy_resolver::mojom::ProxyResolverFactoryPtr(
-          test_mojo_proxy_resolver_factory_.CreateFactoryRemote()));
+      test_mojo_proxy_resolver_factory_.CreateFactoryRemote());
 
 #if defined(OS_CHROMEOS)
   builder_.SetDhcpWpadUrlClient(mojom::DhcpWpadUrlClientPtr(

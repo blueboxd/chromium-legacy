@@ -10,7 +10,6 @@
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/render_frame_impl.h"
-#include "media/audio/audio_output_controller.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/ppb_audio.h"
 #include "ppapi/c/ppb_audio_config.h"

@@ -85,17 +85,16 @@ class MockProducerClient : public ProducerClient {
 
   void SetAgentDisabledCallback(base::OnceClosure client_disabled_callback);
 
-  const std::string& all_client_commit_data_requests() const {
+  const std::vector<std::string>& all_client_commit_data_requests() const {
     return all_client_commit_data_requests_;
   }
-
 
  private:
   uint32_t num_data_sources_active_ = 0;
   uint32_t num_data_sources_expected_;
   base::OnceClosure client_enabled_callback_;
   base::OnceClosure client_disabled_callback_;
-  std::string all_client_commit_data_requests_;
+  std::vector<std::string> all_client_commit_data_requests_;
   std::unique_ptr<ProducerClient> old_producer_;
 };
 
@@ -174,14 +173,14 @@ class MockProducerHost : public ProducerHost {
 
   void OnCommit(const perfetto::CommitDataRequest& commit_data_request);
 
-  const std::string& all_host_commit_data_requests() const {
+  const std::vector<std::string>& all_host_commit_data_requests() const {
     return all_host_commit_data_requests_;
   }
 
  protected:
   const std::string producer_name_;
   base::OnceClosure datasource_registered_callback_;
-  std::string all_host_commit_data_requests_;
+  std::vector<std::string> all_host_commit_data_requests_;
   mojo::Receiver<mojom::ProducerHost> receiver_{this};
 };
 

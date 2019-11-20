@@ -234,11 +234,11 @@ class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
 SkColor UnifiedSystemTrayView::GetBackgroundColor() {
   if (features::IsBackgroundBlurEnabled()) {
     return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparentWithBlur,
+        AshColorProvider::BaseLayerType::kTransparent74,
         kUnifiedMenuBackgroundColorWithBlur);
   }
   return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+      AshColorProvider::BaseLayerType::kTransparent90,
       kUnifiedMenuBackgroundColor);
 }
 

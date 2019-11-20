@@ -945,6 +945,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Se attivato o non impostato, gli avvisi sulla sicurezza vengono visualizzati quando vengono utilizzati determinati flag della linea di comando per avviare Chrome.
 
           Su Windows, questo criterio è disponibile solo per le istanze che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
+<translation id="2480971699591919564">Consente di attivare la funzionalità Click-to-call che permette agli utenti di inviare numeri di telefono dai computer desktop Chrome ai dispositivi Android se eseguono l'accesso. Per ulteriori informazioni, leggi l'articolo del Centro assistenza all'indirizzo https://support.google.com/chrome/answer/9430554?hl=it.
+
+      Se questo criterio viene attivato, la funzionalità di invio di numeri di telefono ai dispositivi Android verrà attivata per gli utenti di Chrome.
+
+      Se questo criterio viene disattivato, la funzionalità di invio di numeri di telefono ai dispositivi Android verrà disattivata per gli utenti di Chrome.
+
+      Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+      Se questo criterio non viene impostato, la funzionalità Click-to-call sarà attiva per impostazione predefinita.</translation>
 <translation id="2482676533225429905">Messaggi nativi</translation>
 <translation id="2483146640187052324">Prevedi le azioni di rete su qualsiasi connessione di rete</translation>
 <translation id="2484208301968418871">Questa norma consente di gestire l'applicazione del filtro di URL di SafeSites.
@@ -1939,6 +1948,7 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4075864623710596000">I nomi host specificati in questo elenco saranno esenti dalla verifica dei criteri HSTS che potrebbero eseguire l'upgrade delle richieste da http a https. Solo i nomi host con etichetta singola sono consentiti in questo criterio. I nomi host devono essere canonicalizzati: ogni IDN deve essere convertito nel relativo formato A-label e tutte le lettere ASCII devono essere minuscole. Questo criterio si applica soltanto ai nomi host specificati e non ai relativi sottodomini.</translation>
 <translation id="408029843066770167">Consenti query a un servizio orario di Google</translation>
 <translation id="408076456549153854">Attiva accesso al browser</translation>
+<translation id="4082498585300984671">Attiva la funzionalità Click-to-call</translation>
 <translation id="40853027210512570">Consente di sostituire le regole di selezione della stampante predefinita di <ph name="PRODUCT_NAME" />.
 
       Questo criterio determina le regole di selezione della stampante predefinita in <ph name="PRODUCT_NAME" />, che viene effettuata al primo utilizzo della funzione di stampa con un profilo.
@@ -3499,13 +3509,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Qualora l'accesso a un altro account non debba essere consentito tramite la modalità di navigazione in incognito, potresti bloccare tale modalità usando il criterio IncognitoModeAvailability.
 
       Tieni presente che gli utenti potranno accedere ai servizi Google in uno stato non autenticato bloccando i loro cookie.</translation>
-<translation id="6837480141980366278">Consente di specificare se il client DNS integrato viene utilizzato in <ph name="PRODUCT_NAME" />.
-
-      Se la norma è impostata su true, verrà utilizzato il client DNS integrato, se disponibile.
-
-      Se la norma è impostata su false, il client DNS integrato non verrà mai utilizzato.
-
-      Se la norma non viene impostata, per impostazione predefinita il client DNS integrato verrà attivato su macOS, Android (nel caso in cui non siano attivi il DNS privato né la VPN) e ChromeOS. Gli utenti saranno in grado di scegliere se il client DNS integrato è utilizzato modificando chrome://flags o specificando un flag della riga di comando.</translation>
 <translation id="6843296367238757293">Questa norma è obsoleta. Ne sconsigliamo l'utilizzo. Leggi ulteriori informazioni all'indirizzo https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Questa norma è stata rimossa in <ph name="PRODUCT_NAME" /> 68 e sostituita da <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Attiva la funzione di accessibilità di evidenziazione del cursore</translation>
@@ -3905,13 +3908,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7373200034079131670">Riavvia all'uscita dell'utente se si avvia Android o una VM.</translation>
 <translation id="737655323154569539">Consente di limitare le dimensioni delle pagine di stampa. Se la norma non viene impostata o viene lasciata vuota non vengono applicate limitazioni.</translation>
 <translation id="7382191643394429934">Consenti la stampa con e senza immagini di sfondo</translation>
-<translation id="7383445181072113521">Determina il nome host del dispositivo usato nelle richieste DHCP.
-
-      Se questo criterio è impostato su una stringa non vuota, tale stringa verrà usata come nome host del dispositivo durante la richiesta DHCP.
-
-      La stringa può contenere variabili <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> che verrebbero sostituite con valori sul dispositivo prima di usare la stringa come nome host. La sostituzione finale dovrebbe essere eseguita con un nome host valido (come da RFC 1035, sezione 3.1).
-
-      Se questo criterio non è impostato o se il valore ottenuto in seguito alla sostituzione non è un nome host valido, non verrà impostato alcun nome host nella richiesta DHCP. </translation>
 <translation id="7389872682701720082">Se attivi questa impostazione, i plug-in non obsoleti verranno sempre eseguiti.
 
       Se questa impostazione è disattivata o non è configurata, agli utenti verrà chiesta l'autorizzazione di eseguire i plug-in per i quali è necessaria. Questi sono plug-in che possono compromettere la sicurezza.</translation>
@@ -4299,7 +4295,6 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 <translation id="8141795997560411818">Questa norma non impedisce all'utente di utilizzare l'app Google Drive per Android. Se vuoi impedire l'accesso a Google Drive, non devi consentire l'installazione dell'app Google Drive per Android.</translation>
 <translation id="8142894094385450823">Questa norma consente di impostare le impostazioni internazionali consigliate per una sessione gestita</translation>
 <translation id="8146727383888924340">Consenti agli utenti di utilizzare le offerte tramite la registrazione a Chrome OS</translation>
-<translation id="8148785525797916822">Elimina l'avviso che viene mostrato quando <ph name="PRODUCT_NAME" /> è in esecuzione su un computer o l'avviso di sistema operativo non più supportato.</translation>
 <translation id="8148901634826284024">Consente di attivare la funzione di accessibilità della modalità ad alto contrasto.
 
 Se la norma viene impostata su true, la modalità ad alto contrasto sarà sempre attiva.

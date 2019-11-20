@@ -1163,14 +1163,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                            const HitTestRecursionData& recursion_data,
                            bool applied_transform,
                            HitTestingTransformState* = nullptr,
-                           double* z_offset = nullptr);
+                           double* z_offset = nullptr,
+                           bool check_resizer_only = false);
   PaintLayer* HitTestLayerByApplyingTransform(
       PaintLayer* root_layer,
       PaintLayer* container_layer,
       HitTestResult&,
       const HitTestRecursionData& recursion_data,
-      HitTestingTransformState* = nullptr,
-      double* z_offset = nullptr,
+      HitTestingTransformState*,
+      double* z_offset,
+      bool check_resizer_only,
       const PhysicalOffset& translation_offset = PhysicalOffset());
   PaintLayer* HitTestChildren(
       PaintLayerIteration,
@@ -1206,6 +1208,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                                                  const HitTestRecursionData&,
                                                  HitTestingTransformState*,
                                                  double* z_offset,
+                                                 bool check_resizer_only,
                                                  ShouldRespectOverflowClipType);
   bool HitTestClippedOutByClipPath(PaintLayer* root_layer,
                                    const HitTestLocation&) const;

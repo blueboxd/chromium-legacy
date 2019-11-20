@@ -36,6 +36,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -218,7 +219,7 @@ class PrintBrowserTest : public InProcessBrowserTest {
     PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-               /*print_renderer=*/nullptr,
+               /*print_renderer=*/mojo::NullAssociatedRemote(),
                /*print_preview_disabled=*/false, print_only_selection);
 
     print_preview_observer.WaitUntilPreviewIsReady();
@@ -228,7 +229,7 @@ class PrintBrowserTest : public InProcessBrowserTest {
     PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-               /*print_renderer=*/nullptr,
+               /*print_renderer=*/mojo::NullAssociatedRemote(),
                /*print_preview_disabled=*/false, print_only_selection);
 
     print_preview_observer.WaitUntilPreviewIsReady();
@@ -315,7 +316,7 @@ class PrintExtensionBrowserTest : public extensions::ExtensionBrowserTest {
     PrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/false);
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
-               /*print_renderer=*/nullptr,
+               /*print_renderer=*/mojo::NullAssociatedRemote(),
                /*print_preview_disabled=*/false, print_only_selection);
 
     print_preview_observer.WaitUntilPreviewIsReady();

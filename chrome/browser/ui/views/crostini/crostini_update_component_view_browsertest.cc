@@ -18,7 +18,6 @@
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/window/dialog_client_view.h"
 
 class CrostiniUpdateComponentViewBrowserTest
     : public CrostiniDialogBrowserTest {
@@ -36,13 +35,9 @@ class CrostiniUpdateComponentViewBrowserTest
     return CrostiniUpdateComponentView::GetActiveViewForTesting();
   }
 
-  bool HasAcceptButton() {
-    return ActiveView()->GetDialogClientView()->ok_button() != nullptr;
-  }
+  bool HasAcceptButton() { return ActiveView()->GetOkButton() != nullptr; }
 
-  bool HasCancelButton() {
-    return ActiveView()->GetDialogClientView()->cancel_button() != nullptr;
-  }
+  bool HasCancelButton() { return ActiveView()->GetCancelButton() != nullptr; }
 
   void WaitForViewDestroyed() {
     base::RunLoop().RunUntilIdle();
@@ -83,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest, HitOK) {
   EXPECT_TRUE(HasAcceptButton());
   EXPECT_FALSE(HasCancelButton());
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
 
   WaitForViewDestroyed();
@@ -123,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpdateComponentViewBrowserTest,
                               crostini::kCrostiniTerminalId, 0);
   ExpectView();
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
 
   WaitForViewDestroyed();

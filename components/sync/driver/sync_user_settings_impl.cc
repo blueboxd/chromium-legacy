@@ -231,28 +231,12 @@ void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
 }
 
 ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
-  ModelTypeSet types;
+  ModelTypeSet types = ResolvePreferredTypes(GetSelectedTypes());
+  types.PutAll(AlwaysPreferredUserTypes());
 #if defined(OS_CHROMEOS)
-  bool sync_everything = IsSyncAllOsTypesEnabled() && IsSyncEverythingEnabled();
-#else
-  bool sync_everything = IsSyncEverythingEnabled();
+  types.PutAll(ResolvePreferredOsTypes(GetSelectedOsTypes()));
 #endif
-  if (sync_everything) {
-    // TODO(crbug.com/950874): it's possible to remove this case if we accept
-    // behavioral change. When one of UserSelectableTypes() isn't registered,
-    // but one of its corresponding UserTypes() is registered, current
-    // implementation treats that corresponding type as preferred while
-    // implementation without processing of this case won't treat that type
-    // as preferred.
-    types = registered_model_types_;
-  } else {
-    types = ResolvePreferredTypes(GetSelectedTypes());
-    types.PutAll(AlwaysPreferredUserTypes());
-#if defined(OS_CHROMEOS)
-    types.PutAll(ResolvePreferredOsTypes(GetSelectedOsTypes()));
-#endif
-    types.RetainAll(registered_model_types_);
-  }
+  types.RetainAll(registered_model_types_);
 
   static_assert(40 == ModelType::NUM_ENTRIES,
                 "If adding a new sync data type, update the list below below if"

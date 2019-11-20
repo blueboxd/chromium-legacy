@@ -17,6 +17,8 @@
 #include "base/trace_event/traced_value.h"
 #include "content/browser/android/synchronous_compositor_sync_call_bridge.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/compositor_dependencies_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/android/sync_compositor_statics.h"
@@ -27,6 +29,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -37,6 +40,29 @@
 #include "ui/gfx/skia_util.h"
 
 namespace content {
+
+namespace {
+
+bool g_viz_established = false;
+
+// TODO(vasilyt): Create BrowserCompositor for webview and move it there?
+void EstablishVizConnection(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
+  content::CompositorDependenciesAndroid::Get()
+      .TryEstablishVizConnectionIfNeeded();
+  g_viz_established = true;
+}
+
+void EstablishGpuChannelToEstablishVizConnection() {
+  if (g_viz_established)
+    return;
+
+  content::BrowserMainLoop::GetInstance()
+      ->gpu_channel_establish_factory()
+      ->EstablishGpuChannel(base::BindOnce(&EstablishVizConnection));
+}
+
+}  // namespace
 
 // This class runs on the IO thread and is destroyed when the renderer
 // side closes the mojo channel.
@@ -125,6 +151,7 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       need_invalidate_count_(0u),
       invalidate_needs_draw_(false),
       did_activate_pending_tree_count_(0u) {
+  EstablishGpuChannelToEstablishVizConnection();
   client_->DidInitializeCompositor(this, frame_sink_id_);
   bridge_ = new SynchronousCompositorSyncCallBridge(this);
 }

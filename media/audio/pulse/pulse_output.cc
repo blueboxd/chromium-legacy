@@ -28,7 +28,7 @@ void PulseAudioOutputStream::StreamNotifyCallback(pa_stream* s, void* p_this) {
   // should be thread safe.
   if (s && stream->source_callback_ &&
       pa_stream_get_state(s) == PA_STREAM_FAILED) {
-    stream->source_callback_->OnError();
+    stream->source_callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   pa_threaded_mainloop_signal(stream->pa_mainloop_, 0);
@@ -174,7 +174,7 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
 
       if (pa_stream_write(pa_stream_, pa_buffer, pa_buffer_size, NULL, 0LL,
                           PA_SEEK_RELATIVE) < 0) {
-        source_callback_->OnError();
+        source_callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
         return;
       }
       bytes_remaining -= pa_buffer_size;
@@ -206,7 +206,7 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
   // Ensure the context and stream are ready.
   if (pa_context_get_state(pa_context_) != PA_CONTEXT_READY &&
       pa_stream_get_state(pa_stream_) != PA_STREAM_READY) {
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
     return;
   }
 
@@ -217,7 +217,7 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
       pa_stream_, 0, &pulse::StreamSuccessCallback, pa_mainloop_);
   if (!WaitForOperationCompletion(pa_mainloop_, operation, pa_context_,
                                   pa_stream_)) {
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 }
 
@@ -240,14 +240,14 @@ void PulseAudioOutputStream::Stop() {
       pa_stream_flush(pa_stream_, &pulse::StreamSuccessCallback, pa_mainloop_);
   if (!WaitForOperationCompletion(pa_mainloop_, operation, pa_context_,
                                   pa_stream_)) {
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   operation = pa_stream_cork(pa_stream_, 1, &pulse::StreamSuccessCallback,
                              pa_mainloop_);
   if (!WaitForOperationCompletion(pa_mainloop_, operation, pa_context_,
                                   pa_stream_)) {
-    callback->OnError();
+    callback->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 }
 

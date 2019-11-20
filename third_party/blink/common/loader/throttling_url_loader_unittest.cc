@@ -173,14 +173,13 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
     on_received_redirect_callback_ = callback;
   }
 
-  void set_on_received_response_callback(
-      const base::RepeatingClosure& callback) {
-    on_received_response_callback_ = callback;
+  void set_on_received_response_callback(base::OnceClosure callback) {
+    on_received_response_callback_ = std::move(callback);
   }
 
-  using OnCompleteCallback = base::Callback<void(int error_code)>;
-  void set_on_complete_callback(const OnCompleteCallback& callback) {
-    on_complete_callback_ = callback;
+  using OnCompleteCallback = base::OnceCallback<void(int error_code)>;
+  void set_on_complete_callback(OnCompleteCallback callback) {
+    on_complete_callback_ = std::move(callback);
   }
 
  private:
@@ -189,7 +188,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
       network::mojom::URLResponseHeadPtr response_head) override {
     on_received_response_called_++;
     if (on_received_response_callback_)
-      on_received_response_callback_.Run();
+      std::move(on_received_response_callback_).Run();
   }
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
@@ -208,7 +207,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   void OnComplete(const network::URLLoaderCompletionStatus& status) override {
     on_complete_called_++;
     if (on_complete_callback_)
-      on_complete_callback_.Run(status.error_code);
+      std::move(on_complete_callback_).Run(status.error_code);
   }
 
   size_t on_received_response_called_ = 0;
@@ -216,7 +215,7 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   size_t on_complete_called_ = 0;
 
   base::RepeatingClosure on_received_redirect_callback_;
-  base::RepeatingClosure on_received_response_callback_;
+  base::OnceClosure on_received_response_callback_;
   OnCompleteCallback on_complete_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderClient);
@@ -237,10 +236,10 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
       base::RepeatingCallback<void(URLLoaderThrottle::Delegate* delegate,
                                    bool* defer)>;
   using ThrottleRedirectCallback =
-      base::RepeatingCallback<void(blink::URLLoaderThrottle::Delegate* delegate,
-                                   bool* defer,
-                                   std::vector<std::string>* removed_headers,
-                                   net::HttpRequestHeaders* modified_headers)>;
+      base::OnceCallback<void(blink::URLLoaderThrottle::Delegate* delegate,
+                              bool* defer,
+                              std::vector<std::string>* removed_headers,
+                              net::HttpRequestHeaders* modified_headers)>;
 
   size_t will_start_request_called() const {
     return will_start_request_called_;
@@ -261,9 +260,8 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
     will_start_request_callback_ = callback;
   }
 
-  void set_will_redirect_request_callback(
-      const ThrottleRedirectCallback& callback) {
-    will_redirect_request_callback_ = callback;
+  void set_will_redirect_request_callback(ThrottleRedirectCallback callback) {
+    will_redirect_request_callback_ = std::move(callback);
   }
 
   void set_will_process_response_callback(const ThrottleCallback& callback) {
@@ -300,8 +298,8 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
                            net::HttpRequestHeaders* modified_headers) override {
     will_redirect_request_called_++;
     if (will_redirect_request_callback_) {
-      will_redirect_request_callback_.Run(delegate_, defer, removed_headers,
-                                          modified_headers);
+      std::move(will_redirect_request_callback_)
+          .Run(delegate_, defer, removed_headers, modified_headers);
     }
   }
 
@@ -394,18 +392,17 @@ class ThrottlingURLLoaderTest : public testing::Test {
 };
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeStart) {
-  throttle_->set_will_start_request_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle_->set_will_start_request_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
       }));
 
   base::RunLoop run_loop;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop](int error) {
         EXPECT_EQ(net::ERR_ACCESS_DENIED, error);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
   CreateLoaderAndStart();
   run_loop.Run();
@@ -423,18 +420,17 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeStart) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, DeferBeforeStart) {
-  throttle_->set_will_start_request_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle_->set_will_start_request_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
       }));
 
   base::RunLoop run_loop;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
   CreateLoaderAndStart();
 
@@ -517,7 +513,7 @@ TEST_F(ThrottlingURLLoaderTest, ModifyURLAndDeferRedirect) {
   throttle_->set_will_start_request_callback(
       base::BindRepeating([](blink::URLLoaderThrottle::Delegate* /* delegate */,
                              bool* defer) { *defer = true; }));
-  throttle_->set_will_redirect_request_callback(base::BindRepeating(
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* /* delegate */, bool* defer,
          std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) { *defer = true; }));
@@ -546,7 +542,7 @@ TEST_F(ThrottlingURLLoaderTest, ModifyURLAndDeferRedirect) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
-  throttle_->set_will_redirect_request_callback(base::BindRepeating(
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
@@ -578,23 +574,20 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
 
 TEST_F(ThrottlingURLLoaderTest, DeferBeforeRedirect) {
   base::RunLoop run_loop1;
-  throttle_->set_will_redirect_request_callback(base::Bind(
-      [](const base::Closure& quit_closure,
-         blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
-         std::vector<std::string>* /* removed_headers */,
-         net::HttpRequestHeaders* /* modified_headers */) {
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
+      [&run_loop1](blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
+                   std::vector<std::string>* /* removed_headers */,
+                   net::HttpRequestHeaders* /* modified_headers */) {
         *defer = true;
-        quit_closure.Run();
-      },
-      run_loop1.QuitClosure()));
+        run_loop1.Quit();
+      }));
 
   base::RunLoop run_loop2;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop2](int error) {
         EXPECT_EQ(net::ERR_UNEXPECTED, error);
-        quit_closure.Run();
-      },
-      run_loop2.QuitClosure()));
+        run_loop2.Quit();
+      }));
 
   CreateLoaderAndStart();
 
@@ -630,7 +623,7 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeRedirect) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
-  throttle_->set_will_redirect_request_callback(base::BindRepeating(
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
@@ -664,15 +657,13 @@ TEST_F(ThrottlingURLLoaderTest, ModifyHeadersBeforeRedirect) {
 
 TEST_F(ThrottlingURLLoaderTest, ModifyHeaderInResumeBeforeRedirect) {
   base::RunLoop run_loop1;
-  throttle_->set_will_redirect_request_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure,
-         blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
-         std::vector<std::string>* removed_headers,
-         net::HttpRequestHeaders* modified_headers) {
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
+      [&run_loop1](blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
+                   std::vector<std::string>* removed_headers,
+                   net::HttpRequestHeaders* modified_headers) {
         *defer = true;
-        quit_closure.Run();
-      },
-      run_loop1.QuitClosure()));
+        run_loop1.Quit();
+      }));
 
   CreateLoaderAndStart();
   factory_.NotifyClientOnReceiveRedirect();
@@ -701,7 +692,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
   auto* throttle2 = new TestURLLoaderThrottle();
   throttles_.push_back(base::WrapUnique(throttle2));
 
-  throttle_->set_will_redirect_request_callback(base::BindRepeating(
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
@@ -711,7 +702,7 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
         modified_headers->SetHeader("X-Test-Header-4", "Throttle1");
       }));
 
-  throttle2->set_will_redirect_request_callback(base::BindRepeating(
+  throttle2->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* removed_headers,
          net::HttpRequestHeaders* modified_headers) {
@@ -739,18 +730,17 @@ TEST_F(ThrottlingURLLoaderTest, MultipleThrottlesModifyHeadersBeforeRedirect) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeResponse) {
-  throttle_->set_will_process_response_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle_->set_will_process_response_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
       }));
 
   base::RunLoop run_loop;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop](int error) {
         EXPECT_EQ(net::ERR_ACCESS_DENIED, error);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
   CreateLoaderAndStart();
 
@@ -773,8 +763,8 @@ TEST_F(ThrottlingURLLoaderTest, CancelBeforeResponse) {
 
 TEST_F(ThrottlingURLLoaderTest, DeferBeforeResponse) {
   base::RunLoop run_loop1;
-  throttle_->set_will_process_response_callback(base::Bind(
-      [](const base::Closure& quit_closure,
+  throttle_->set_will_process_response_callback(base::BindRepeating(
+      [](const base::RepeatingClosure& quit_closure,
          blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
         quit_closure.Run();
@@ -782,12 +772,11 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeResponse) {
       run_loop1.QuitClosure()));
 
   base::RunLoop run_loop2;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop2](int error) {
         EXPECT_EQ(net::ERR_UNEXPECTED, error);
-        quit_closure.Run();
-      },
-      run_loop2.QuitClosure()));
+        run_loop2.Quit();
+      }));
 
   CreateLoaderAndStart();
 
@@ -830,12 +819,11 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeResponse) {
 
 TEST_F(ThrottlingURLLoaderTest, PipeClosure) {
   base::RunLoop run_loop;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop](int error) {
         EXPECT_EQ(net::ERR_ABORTED, error);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
   CreateLoaderAndStart();
 
@@ -861,7 +849,7 @@ TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfNotDeferred) {
       });
   throttle_->set_will_start_request_callback(resume_callback);
   throttle_->set_will_process_response_callback(std::move(resume_callback));
-  throttle_->set_will_redirect_request_callback(base::BindRepeating(
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,
          std::vector<std::string>* /* removed_headers */,
          net::HttpRequestHeaders* /* modified_headers */) {
@@ -897,19 +885,18 @@ TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfNotDeferred) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, CancelNoOpIfAlreadyCanceled) {
-  throttle_->set_will_start_request_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle_->set_will_start_request_callback(base::BindRepeating(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
         delegate->CancelWithError(net::ERR_UNEXPECTED);
       }));
 
   base::RunLoop run_loop;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop](int error) {
         EXPECT_EQ(net::ERR_ACCESS_DENIED, error);
-        quit_closure.Run();
-      },
-      run_loop.QuitClosure()));
+        run_loop.Quit();
+      }));
 
   CreateLoaderAndStart();
   throttle_->delegate()->CancelWithError(net::ERR_INVALID_ARGUMENT);
@@ -928,19 +915,18 @@ TEST_F(ThrottlingURLLoaderTest, CancelNoOpIfAlreadyCanceled) {
 }
 
 TEST_F(ThrottlingURLLoaderTest, ResumeNoOpIfAlreadyCanceled) {
-  throttle_->set_will_process_response_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle_->set_will_process_response_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->CancelWithError(net::ERR_ACCESS_DENIED);
         delegate->Resume();
       }));
 
   base::RunLoop run_loop1;
-  client_.set_on_complete_callback(base::Bind(
-      [](const base::Closure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop1](int error) {
         EXPECT_EQ(net::ERR_ACCESS_DENIED, error);
-        quit_closure.Run();
-      },
-      run_loop1.QuitClosure()));
+        run_loop1.Quit();
+      }));
 
   CreateLoaderAndStart();
 
@@ -981,18 +967,17 @@ TEST_F(ThrottlingURLLoaderTest, BlockWithOneOfMultipleThrottles) {
   throttles_.emplace_back(std::make_unique<TestURLLoaderThrottle>());
   auto* throttle2 =
       static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
-  throttle2->set_will_start_request_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle2->set_will_start_request_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
       }));
 
   base::RunLoop loop;
-  client_.set_on_complete_callback(base::Bind(
-      [](base::RunLoop* loop, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&loop](int error) {
         EXPECT_EQ(net::OK, error);
-        loop->Quit();
-      },
-      &loop));
+        loop.Quit();
+      }));
 
   CreateLoaderAndStart();
 
@@ -1046,22 +1031,21 @@ TEST_F(ThrottlingURLLoaderTest, BlockWithMultipleThrottles) {
       static_cast<TestURLLoaderThrottle*>(throttles_.back().get());
 
   // Defers a request on both throttles.
-  throttle_->set_will_start_request_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle_->set_will_start_request_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
       }));
-  throttle2->set_will_start_request_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle2->set_will_start_request_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
       }));
 
   base::RunLoop loop;
-  client_.set_on_complete_callback(base::Bind(
-      [](base::RunLoop* loop, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&loop](int error) {
         EXPECT_EQ(net::OK, error);
-        loop->Quit();
-      },
-      &loop));
+        loop.Quit();
+      }));
 
   CreateLoaderAndStart();
 
@@ -1124,13 +1108,13 @@ TEST_F(ThrottlingURLLoaderTest, PauseResumeReadingBodyFromNet) {
 
   // Test that it is okay to call delegate->PauseReadingBodyFromNet() even
   // before the loader is created.
-  throttle_->set_will_start_request_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle_->set_will_start_request_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->PauseReadingBodyFromNet();
         *defer = true;
       }));
-  throttle2->set_will_start_request_callback(
-      base::Bind([](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle2->set_will_start_request_callback(base::BindLambdaForTesting(
+      [](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         delegate->PauseReadingBodyFromNet();
       }));
 
@@ -1172,27 +1156,23 @@ TEST_F(ThrottlingURLLoaderTest, PauseResumeReadingBodyFromNet) {
 TEST_F(ThrottlingURLLoaderTest,
        DestroyingThrottlingURLLoaderInDelegateCall_Response) {
   base::RunLoop run_loop1;
-  throttle_->set_will_process_response_callback(base::Bind(
-      [](const base::Closure& quit_closure,
-         blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
+  throttle_->set_will_process_response_callback(base::BindLambdaForTesting(
+      [&run_loop1](blink::URLLoaderThrottle::Delegate* delegate, bool* defer) {
         *defer = true;
-        quit_closure.Run();
-      },
-      run_loop1.QuitClosure()));
+        run_loop1.Quit();
+      }));
 
   base::RunLoop run_loop2;
-  client_.set_on_received_response_callback(base::Bind(
-      [](ThrottlingURLLoaderTest* test, const base::Closure& quit_closure) {
-        // Destroy the ThrottlingURLLoader while inside a delegate call from a
-        // throttle.
-        test->loader().reset();
+  client_.set_on_received_response_callback(base::BindLambdaForTesting([&]() {
+    // Destroy the ThrottlingURLLoader while inside a delegate call from a
+    // throttle.
+    loader().reset();
 
-        // The throttle should stay alive.
-        EXPECT_NE(nullptr, test->throttle());
+    // The throttle should stay alive.
+    EXPECT_NE(nullptr, throttle());
 
-        quit_closure.Run();
-      },
-      base::Unretained(this), run_loop2.QuitClosure()));
+    run_loop2.Quit();
+  }));
 
   CreateLoaderAndStart();
 
@@ -1224,15 +1204,13 @@ TEST_F(ThrottlingURLLoaderTest,
 TEST_F(ThrottlingURLLoaderTest,
        DestroyingThrottlingURLLoaderInDelegateCall_Redirect) {
   base::RunLoop run_loop1;
-  throttle_->set_will_redirect_request_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure,
-         blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
-         std::vector<std::string>* /* removed_headers */,
-         net::HttpRequestHeaders* /* modified_headers */) {
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
+      [&run_loop1](blink::URLLoaderThrottle::Delegate* delegate, bool* defer,
+                   std::vector<std::string>* /* removed_headers */,
+                   net::HttpRequestHeaders* /* modified_headers */) {
         *defer = true;
-        quit_closure.Run();
-      },
-      run_loop1.QuitClosure()));
+        run_loop1.Quit();
+      }));
 
   base::RunLoop run_loop2;
   client_.set_on_received_redirect_callback(base::BindRepeating(
@@ -1323,12 +1301,11 @@ TEST_F(ThrottlingURLLoaderTest, RestartWithFlags) {
   throttle_->set_before_will_process_response_callback(
       TestURLLoaderThrottle::ThrottleCallback());
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop3](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop3.QuitClosure()));
+        run_loop3.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -1409,12 +1386,11 @@ TEST_F(ThrottlingURLLoaderTest, DeferThenRestartWithFlags) {
   throttle_->set_before_will_process_response_callback(
       TestURLLoaderThrottle::ThrottleCallback());
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop4](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop4.QuitClosure()));
+        run_loop4.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -1502,12 +1478,11 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartWithFlags) {
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop3](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop3.QuitClosure()));
+        run_loop3.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -1620,12 +1595,11 @@ TEST_F(ThrottlingURLLoaderTest, MultipleDeferThenRestartWithFlags) {
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop4](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop4.QuitClosure()));
+        run_loop4.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -1747,12 +1721,11 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartWithFlagsDeferAndSync) {
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop4](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop4.QuitClosure()));
+        run_loop4.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -1835,12 +1808,11 @@ TEST_F(ThrottlingURLLoaderTest, RestartWithURLResetAndFlags) {
   throttle_->set_before_will_process_response_callback(
       TestURLLoaderThrottle::ThrottleCallback());
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop3](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop3.QuitClosure()));
+        run_loop3.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -1935,12 +1907,11 @@ TEST_F(ThrottlingURLLoaderTest, DeferThenRestartWithURLResetAndFlags) {
   throttle_->set_before_will_process_response_callback(
       TestURLLoaderThrottle::ThrottleCallback());
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop4](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop4.QuitClosure()));
+        run_loop4.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -2045,12 +2016,11 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartWithURLResetAndFlags) {
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop3](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop3.QuitClosure()));
+        run_loop3.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -2178,12 +2148,11 @@ TEST_F(ThrottlingURLLoaderTest, MultipleDeferThenRestartWithURLResetAndFlags) {
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop4](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop4.QuitClosure()));
+        run_loop4.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -2321,12 +2290,11 @@ TEST_F(ThrottlingURLLoaderTest,
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop4](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop4.QuitClosure()));
+        run_loop4.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -2432,12 +2400,11 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartsOfMultipleTypes) {
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop3](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop3.QuitClosure()));
+        run_loop3.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -2571,12 +2538,11 @@ TEST_F(ThrottlingURLLoaderTest, MultipleDeferThenRestartsOfMultipleTypes) {
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop4](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop4.QuitClosure()));
+        run_loop4.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();
@@ -2714,12 +2680,11 @@ TEST_F(ThrottlingURLLoaderTest, MultipleRestartOfMultipleTypesDeferAndSync) {
         TestURLLoaderThrottle::ThrottleCallback());
   }
 
-  client_.set_on_complete_callback(base::BindRepeating(
-      [](const base::RepeatingClosure& quit_closure, int error) {
+  client_.set_on_complete_callback(
+      base::BindLambdaForTesting([&run_loop4](int error) {
         EXPECT_EQ(net::OK, error);
-        quit_closure.Run();
-      },
-      run_loop4.QuitClosure()));
+        run_loop4.Quit();
+      }));
 
   // Complete the response.
   factory_.NotifyClientOnReceiveResponse();

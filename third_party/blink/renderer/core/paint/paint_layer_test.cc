@@ -2364,6 +2364,91 @@ TEST_P(PaintLayerTest, HitTestFirstLetterPseudoElementDisplayContents) {
             result.InnerPossiblyPseudoNode());
 }
 
+TEST_P(PaintLayerTest, HitTestOverlayResizer) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      * {
+        margin: 0;
+      }
+      div {
+        width: 200px;
+        height: 200px;
+      }
+      body > div {
+        overflow: hidden;
+        resize: both;
+        display: none;
+      }
+      #target_0 {
+        position: relative;
+        z-index: -1;
+      }
+      #target_2 {
+        position: relative;
+      }
+      #target_3 {
+        position: relative;
+        z-index: 1;
+      }
+    </style>
+    <!--
+      Definitions: Nor(Normal flow paint layer), Pos(Positive paint layer),
+      Neg(Negative paint layer)
+    -->
+    <!--0. Neg+Pos-->
+    <div id="target_0" class="resize">
+      <div style="position: relative"></div>
+    </div>
+
+    <!--1. Nor+Pos-->
+    <div id="target_1" class="resize">
+      <div style="position: relative"></div>
+    </div>
+
+    <!--2. Pos+Pos(siblings)-->
+    <div id="target_2" class="resize">
+      <div style="position: relative"></div>
+    </div>
+
+    <!--3. Pos+Pos(parent-child)-->
+    <div id="target_3" class="resize">
+      <div style="position: relative"></div>
+    </div>
+
+    <!--4. Nor+Pos+Nor-->
+    <div id="target_4" class="resize">
+      <div style="position: relative; z-index: 1">
+        <div style="position: relative"></div>
+      </div>
+    </div>
+
+    <!--5. Nor+Pos+Neg-->
+    <div id="target_5" class="resize">
+      <div style="position: relative; z-index: -1">
+        <div style="position: relative"></div>
+      </div>
+    </div>
+  )HTML");
+
+  for (int i = 0; i < 6; i++) {
+    Element* target_element = GetDocument().getElementById(
+        AtomicString(String::Format("target_%d", i)));
+    target_element->setAttribute(html_names::kStyleAttr, "display: block");
+    UpdateAllLifecyclePhasesForTest();
+
+    HitTestRequest request(HitTestRequest::kIgnoreClipping);
+    HitTestLocation location((IntPoint(198, 198)));
+    HitTestResult result(request, location);
+    GetDocument().GetLayoutView()->HitTest(location, result);
+    if (i == 0)
+      EXPECT_NE(target_element, result.InnerNode());
+    else
+      EXPECT_EQ(target_element, result.InnerNode());
+
+    target_element->setAttribute(html_names::kStyleAttr, "display: none");
+  }
+}
+
 TEST_P(PaintLayerTest, BackgroundIsKnownToBeOpaqueInRectChildren) {
   SetBodyInnerHTML(R"HTML(
     <style>

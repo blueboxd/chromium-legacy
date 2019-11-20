@@ -983,6 +983,15 @@
           Als dit beleid is ingeschakeld of niet is ingesteld, worden waarschuwingen uitgeschakeld wanneer bepaalde opdrachtregelmarkeringen worden gebruikt om Chrome te starten.
 
           In Windows is dit beleid alleen beschikbaar op instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein of op Windows 10 Pro- of Enterprise-instanties die zijn ingeschreven voor apparaatbeheer.</translation>
+<translation id="2480971699591919564">De functie 'Klik om te bellen' inschakelen, waarmee gebruikers telefoonnummers van Chrome-desktops naar een Android-apparaat kunnen sturen als de gebruiker is ingelogd. Bekijk het volgende Helpcentrum-artikel voor meer informatie: https://support.google.com/chrome/answer/9430554?hl=nl.
+
+      Als dit beleid is ingeschakeld, wordt de mogelijkheid om telefoonnummers naar Android-apparaten te sturen ingeschakeld voor de Chrome-gebruiker.
+
+      Als dit beleid is uitgeschakeld, wordt de mogelijkheid om telefoonnummers naar Android-apparaten te sturen uitgeschakeld voor de Chrome-gebruiker.
+
+      Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
+
+      Als je dit beleid niet instelt, is de functie 'Klik om te bellen' standaard ingeschakeld.</translation>
 <translation id="2482676533225429905">Systeemeigen berichten</translation>
 <translation id="2483146640187052324">Netwerkacties voorspellen voor elke netwerkverbinding</translation>
 <translation id="2484208301968418871">Met dit beleid wordt de toepassing van het SafeSites URL-filter beheerd.
@@ -1999,6 +2008,7 @@
 <translation id="4075864623710596000">De op deze lijst vermelde hostnamen zijn vrijgesteld van controle van het HSTS-beleid die verzoeken kan upgraden van HTTP naar HTTPS. In dit beleid zijn alleen hostnamen met één label toegestaan. Hostnamen moeten een canonieke URL hebben. Eventuele IDN's moeten worden geconverteerd naar de A-labelindeling en alle ASCII-letters moeten kleine letters zijn. Dit beleid is alleen van toepassing op de vermelde specifieke hostnamen en niet op de subdomeinen van de vermelde namen.</translation>
 <translation id="408029843066770167">Query's naar een Google-tijdservice toestaan</translation>
 <translation id="408076456549153854">Inloggen bij browser inschakelen</translation>
+<translation id="4082498585300984671">De functie 'Klik om te bellen' inschakelen</translation>
 <translation id="40853027210512570">Hiermee negeer je de regels van <ph name="PRODUCT_NAME" /> voor selectie van de standaardprinter.
 
       Met dit beleid kun je bepalen welke regels je wilt gebruiken om de standaardprinter in <ph name="PRODUCT_NAME" /> te selecteren. Je kunt dit instellen wanneer de afdrukfunctie voor het eerst in een profiel wordt gebruikt.
@@ -3596,13 +3606,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Als je niet wilt dat er in de incognitomodus kan worden ingelogd op een ander account, kun je deze modus eventueel blokkeren met het beleid IncognitoModeAvailability.
 
       Gebruikers met een niet-bevoegde status kunnen toegang krijgen tot Google-services door cookies te blokkeren.</translation>
-<translation id="6837480141980366278">Hiermee wordt bepaald of de ingebouwde DNS-client wordt gebruikt in <ph name="PRODUCT_NAME" />.
-
-      Als dit beleid is ingesteld op true, wordt de ingebouwde DNS-client gebruikt (indien beschikbaar).
-
-      Als dit beleid is ingesteld op false, wordt de ingebouwde DNS-client nooit gebruikt.
-
-      Als dit beleid niet wordt ingesteld, wordt de ingebouwde DNS-client standaard ingeschakeld op Mac OS, Android (wanneer Privé-DNS en VPN niet zijn ingeschakeld) en Chrome OS en kunnen de gebruikers bepalen of de ingebouwde DNS-client wordt gebruikt door chrome://flags te bewerken of een opdrachtregelmarkering op te geven.</translation>
 <translation id="6843296367238757293">Dit beleid is beëindigd. Het gebruik ervan wordt afgeraden. Ga naar https://support.google.com/chrome/a/answer/7643500 voor meer informatie</translation>
 <translation id="684856667300805181">Dit beleid is in <ph name="PRODUCT_NAME" /> 68 verwijderd en vervangen door <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">De toegankelijkheidsfunctie voor cursormarkering inschakelen</translation>
@@ -4014,13 +4017,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7373200034079131670">Opnieuw opstarten bij uitloggen gebruiker als Android of een VM is gestart.</translation>
 <translation id="737655323154569539">Hiermee beperk je de grootte van de afdrukpagina. Als er geen beleid is ingesteld of de instelling leeg is, gelden er geen beperkingen.</translation>
 <translation id="7382191643394429934">Afdrukken zowel met als zonder achtergrondbeelden toestaan</translation>
-<translation id="7383445181072113521">Hiermee bepaal je de hostnaam van het apparaat die wordt gebruikt in DHCP-verzoeken.
-
-      Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt deze tekenreeks tijdens het DHCP-verzoek gebruikt als hostnaam van het apparaat.
-
-      De tekenreeks kan de variabelen <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> bevatten, die worden vervangen door waarden op het apparaat voordat deze hostnaam wordt gebruikt. Deze vervanging moet een geldige hostnaam opleveren (volgens RFC 1035, artikel 3.1).
-
-      Als dit beleid niet is ingesteld of als de vervanging geen geldige hostnaam oplevert, wordt er geen hostnaam ingesteld in het DHCP-verzoek. </translation>
 <translation id="7389872682701720082">Als je deze instelling inschakelt, worden plug-ins altijd uitgevoerd als ze niet verouderd zijn.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, wordt gebruikers om toestemming gevraagd voordat plug-ins worden uitgevoerd waarvoor toestemming is vereist. Dit zijn de plug-ins die een beveiligingsrisico kunnen vormen.</translation>
@@ -4419,7 +4415,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8141795997560411818">Met dit beleid wordt niet voorkomen dat gebruiker de Google Drive-app voor Android gebruikt. Als je de toegang tot Google Drive wilt blokkeren, moet je ook de installatie van de Google Drive-app voor Android blokkeren.</translation>
 <translation id="8142894094385450823">Instellen van de aanbevolen landinstellingen voor een beheerde sessie</translation>
 <translation id="8146727383888924340">Gebruikers toestaan aanbiedingen in te wisselen via registratie van Chrome OS</translation>
-<translation id="8148785525797916822">Hiermee wordt de waarschuwing genegeerd die wordt weergegeven wanneer <ph name="PRODUCT_NAME" /> wordt uitgevoerd op een computer die of besturingssysteem dat niet meer wordt ondersteund.</translation>
 <translation id="8148901634826284024">De toegankelijkheidsfunctie Modus voor hoog contrast inschakelen.
 
           Als dit beleid op 'True' is ingesteld, is de modus voor hoog contrast altijd ingeschakeld.

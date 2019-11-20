@@ -2389,8 +2389,6 @@ enum WebFeature {
   kThirdPartyServiceWorker = 3007,
   kJSSelfProfiling = 3008,
   kHTMLFrameSetElement = 3009,
-  kMediaCapabilitiesFramerateRatio = 3010,
-  kMediaCapabilitiesFramerateNumber = 3011,
   kFetchRedirectError = 3012,
   kFetchRedirectManual = 3013,
   kFetchCacheReload = 3014,
@@ -2472,6 +2470,7 @@ enum WebFeature {
   kGetComputedStyleOutsideFlatTree = 3088,
   kARIADescriptionAttribute = 3089,
   kStrictMimeTypeChecksWouldBlockWorker = 3090,
+  kResourceTimingTaintedOriginFlagFail = 3091,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -15,7 +15,6 @@ namespace features {
 
 extern const base::Feature kCustomizedTabLoadTimeout;
 extern const base::Feature kProactiveTabFreezeAndDiscard;
-extern const base::Feature kSiteCharacteristicsDatabase;
 extern const base::Feature kStaggeredBackgroundTabOpening;
 extern const base::Feature kStaggeredBackgroundTabOpeningExperiment;
 extern const base::Feature kTabRanker;
@@ -177,78 +176,6 @@ struct ProactiveTabFreezeAndDiscardParams {
   bool disable_heuristics_protections;
 };
 
-// Parameters used by the site characteristics database.
-//
-// The site characteristics database tracks tab usage of a some features, a tab,
-// a feature is considered as unused if it hasn't been used for a sufficiently
-// long period of time while the tab was backgrounded. There's currently 4
-// features we're interested in:
-//
-// - Favicon update
-// - Title update
-// - Audio usage
-// - Notifications usage
-struct SiteCharacteristicsDatabaseParams {
-  SiteCharacteristicsDatabaseParams();
-  SiteCharacteristicsDatabaseParams(
-      const SiteCharacteristicsDatabaseParams& rhs);
-
-  // Static definition of the different parameters that can be used by this
-  // feature.
-
-  // Observations windows have a default value of 2 hours, 95% of backgrounded
-  // tabs don't use any of these features in this time window.
-  static constexpr base::FeatureParam<int> kFaviconUpdateObservationWindow{
-      &features::kSiteCharacteristicsDatabase, "FaviconUpdateObservationWindow",
-      2 * base::Time::kSecondsPerHour};
-  static constexpr base::FeatureParam<int> kTitleUpdateObservationWindow{
-      &features::kSiteCharacteristicsDatabase, "TitleUpdateObservationWindow",
-      2 * base::Time::kSecondsPerHour};
-  static constexpr base::FeatureParam<int> kAudioUsageObservationWindow{
-      &features::kSiteCharacteristicsDatabase, "AudioUsageObservationWindow",
-      2 * base::Time::kSecondsPerHour};
-  static constexpr base::FeatureParam<int> kNotificationsUsageObservationWindow{
-      &features::kSiteCharacteristicsDatabase,
-      "NotificationsUsageObservationWindow", 2 * base::Time::kSecondsPerHour};
-  static constexpr base::FeatureParam<int>
-      kTitleOrFaviconChangePostLoadGracePeriod{
-          &features::kSiteCharacteristicsDatabase,
-          "TitleOrFaviconChangePostLoadGracePeriod", 20 /* 20 seconds */};
-  static constexpr base::FeatureParam<int>
-      kFeatureUsagePostBackgroundGracePeriod{
-          &features::kSiteCharacteristicsDatabase,
-          "FeatureUsagePostBackgroundGracePeriod", 10 /* 10 seconds */};
-
-  // Minimum observation window before considering that this website doesn't
-  // update its favicon while in background.
-  base::TimeDelta favicon_update_observation_window;
-  // Minimum observation window before considering that this website doesn't
-  // update its title while in background.
-  base::TimeDelta title_update_observation_window;
-  // Minimum observation window before considering that this website doesn't
-  // use audio while in background.
-  base::TimeDelta audio_usage_observation_window;
-  // Minimum observation window before considering that this website doesn't
-  // use notifications while in background.
-  base::TimeDelta notifications_usage_observation_window;
-  // The period of time after loading during which we ignore title/favicon
-  // change events. It's possible for some site that are loaded in background to
-  // use some of these features without this being an attempt to communicate
-  // with the user (e.g. the tab is just really finishing to load).
-  base::TimeDelta title_or_favicon_change_post_load_grace_period;
-  // The period of time during which we ignore events after a tab gets
-  // backgrounded. It's necessary because some events might happen shortly after
-  // backgrounding a tab without this being an attempt to communicate with the
-  // user:
-  //    - There might be a delay between a media request gets initiated and the
-  //      time the audio actually starts.
-  //    - Same-document navigation can cause the title or favicon to change, if
-  //      the user switch tab before this completes this will be recorded as a
-  //      background communication event while in reality it's just a navigation
-  //      event.
-  base::TimeDelta feature_usage_post_background_grace_period;
-};
-
 // Gets parameters for the proactive tab discarding feature. This does no
 // parameter validation, and sets the default values if the feature is not
 // enabled.
@@ -264,16 +191,6 @@ ProactiveTabFreezeAndDiscardParams*
 GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting();
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout);
-
-// Gets parameters for the site characteristics database feature. This does no
-// parameter validation, and sets the default values if the feature is not
-// enabled.
-SiteCharacteristicsDatabaseParams GetSiteCharacteristicsDatabaseParams();
-
-// Return a static SiteCharacteristicsDatabaseParams object that can be used by
-// all the classes that need one.
-const SiteCharacteristicsDatabaseParams&
-GetStaticSiteCharacteristicsDatabaseParams();
 
 // Gets number of oldest tab that should be scored by TabRanker.
 int GetNumOldestTabsToScoreWithTabRanker();

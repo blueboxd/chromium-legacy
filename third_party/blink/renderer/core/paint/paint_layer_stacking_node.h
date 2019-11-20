@@ -124,6 +124,11 @@ class CORE_EXPORT PaintLayerStackingNode {
                : &it->value;
   }
 
+  const PaintLayers& OverlayOverflowControlsReorderedList() const {
+    DCHECK(!z_order_lists_dirty_);
+    return overlay_overflow_controls_reordered_list_;
+  }
+
   void ClearNeedsReorderOverlayOverflowControls();
 
  private:
@@ -188,6 +193,11 @@ class CORE_EXPORT PaintLayerStackingNode {
   // context with overlay overflow controls.
   HashMap<const PaintLayer*, PaintLayers>
       layer_to_overlay_overflow_controls_painting_after_;
+
+  // All PaintLayers (just in current stacking context, child stacking contexts
+  // will have their own list) that have overlay overflow controls which should
+  // paint reordered.
+  PaintLayers overlay_overflow_controls_reordered_list_;
 
   // Indicates whether the z-order lists above are dirty.
   bool z_order_lists_dirty_ : 1;

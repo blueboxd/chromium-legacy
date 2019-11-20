@@ -22,6 +22,7 @@ import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ITabClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -224,6 +225,7 @@ public final class Tab {
     private final class TabClientImpl extends ITabClient.Stub {
         @Override
         public void visibleUrlChanged(String url) {
+            StrictModeWorkaround.apply();
             Uri uri = Uri.parse(url);
             for (TabCallback callback : mCallbacks) {
                 callback.onVisibleUrlChanged(uri);
@@ -232,6 +234,7 @@ public final class Tab {
 
         @Override
         public void onNewTab(int tabId, int mode) {
+            StrictModeWorkaround.apply();
             // This should only be hit if setNewTabCallback() has been called with a non-null
             // value.
             assert mNewTabCallback != null;
@@ -244,6 +247,7 @@ public final class Tab {
 
         @Override
         public void onCloseTab() {
+            StrictModeWorkaround.apply();
             // This should only be hit if setNewTabCallback() has been called with a non-null
             // value.
             assert mNewTabCallback != null;
@@ -252,6 +256,7 @@ public final class Tab {
 
         @Override
         public void onRenderProcessGone() {
+            StrictModeWorkaround.apply();
             for (TabCallback callback : mCallbacks) {
                 callback.onRenderProcessGone();
             }
@@ -272,6 +277,7 @@ public final class Tab {
         @Override
         public void downloadRequested(String url, String userAgent, String contentDisposition,
                 String mimetype, long contentLength) {
+            StrictModeWorkaround.apply();
             mCallback.onDownloadRequested(
                     url, userAgent, contentDisposition, mimetype, contentLength);
         }
@@ -290,6 +296,7 @@ public final class Tab {
 
         @Override
         public boolean onBackToSafety() {
+            StrictModeWorkaround.apply();
             return mCallback.onBackToSafety();
         }
     }
@@ -307,6 +314,7 @@ public final class Tab {
 
         @Override
         public void enterFullscreen(IObjectWrapper exitFullscreenWrapper) {
+            StrictModeWorkaround.apply();
             ValueCallback<Void> exitFullscreenCallback = (ValueCallback<Void>) ObjectWrapper.unwrap(
                     exitFullscreenWrapper, ValueCallback.class);
             mCallback.onEnterFullscreen(() -> exitFullscreenCallback.onReceiveValue(null));
@@ -314,6 +322,7 @@ public final class Tab {
 
         @Override
         public void exitFullscreen() {
+            StrictModeWorkaround.apply();
             mCallback.onExitFullscreen();
         }
     }

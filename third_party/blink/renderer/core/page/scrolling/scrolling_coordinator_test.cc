@@ -889,7 +889,7 @@ TEST_P(ScrollingCoordinatorTest, PluginBecomesLayoutInline) {
         height: 3000px;
       }
     </style>
-    <object id="plugin" type="appilcation/x-webkit-test-plugin"></object>
+    <object id="plugin" type="application/x-webkit-test-plugin"></object>
     <script>
       document.getElementById("plugin")
               .appendChild(document.createElement("label"))

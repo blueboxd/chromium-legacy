@@ -15,7 +15,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_class_properties.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 

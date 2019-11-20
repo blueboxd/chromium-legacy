@@ -67,6 +67,8 @@ cr.define('history', function() {
       },
     },
 
+    hostAttributes: {'role': 'row'},
+
     /** @private {boolean} */
     mouseDown_: false,
 

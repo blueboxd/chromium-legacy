@@ -23,6 +23,9 @@ namespace {
 constexpr base::TimeDelta kInitialTimeSinceEpoch =
     base::TimeDelta::FromSeconds(1);
 
+constexpr base::TimeDelta kObservationWindowLength =
+    base::TimeDelta::FromHours(2);
+
 class TestLocalSiteCharacteristicsDataImpl
     : public LocalSiteCharacteristicsDataImpl {
  public:
@@ -164,8 +167,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
 
   // Advance the clock by a time lower than the miniumum observation time for
   // the audio feature.
-  test_clock_.Advance(GetStaticSiteCharacteristicsDatabaseParams()
-                          .audio_usage_observation_window -
+  test_clock_.Advance(kObservationWindowLength -
                       base::TimeDelta::FromSeconds(1));
 
   // The audio feature usage is still unknown as the observation window hasn't
@@ -192,8 +194,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
 
   // Advance the clock and make sure that notifications feature gets
   // reported as unused.
-  test_clock_.Advance(GetStaticSiteCharacteristicsDatabaseParams()
-                          .notifications_usage_observation_window);
+  test_clock_.Advance(kObservationWindowLength);
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureNotInUse,
             local_site_data->UsesNotificationsInBackground());
 
@@ -249,8 +250,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   local_site_data->NotifyLoadedSiteBackgrounded();
   local_site_data->NotifyUsesAudioInBackground();
 
-  test_clock_.Advance(GetStaticSiteCharacteristicsDatabaseParams()
-                          .notifications_usage_observation_window -
+  test_clock_.Advance(kObservationWindowLength -
                       base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(performance_manager::SiteFeatureUsage::kSiteFeatureInUse,
             local_site_data->UsesAudioInBackground());

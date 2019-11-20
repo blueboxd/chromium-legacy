@@ -5,35 +5,15 @@
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 
 #include <jni.h>
-#include <stddef.h>
 
-#include <memory>
-#include <set>
 #include <string>
-#include <vector>
 
-#include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/android/jni_weak_ref.h"
-#include "base/feature_list.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
-#include "base/values.h"
+#include "base/android/scoped_java_ref.h"
 #include "chrome/android/chrome_jni_headers/PrefServiceBridge_jni.h"
 #include "chrome/browser/android/preferences/prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/chrome_features.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/browser_thread.h"
-
-using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF8ToJavaString;
-using base::android::JavaParamRef;
-using base::android::ScopedJavaLocalRef;
 
 namespace {
 
@@ -44,6 +24,12 @@ PrefService* GetPrefService() {
 }
 
 }  // namespace
+
+const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
+  DCHECK_GE(pref_index, 0);
+  DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);
+  return kPrefsExposedToJava[pref_index];
+}
 
 // ----------------------------------------------------------------------------
 // Native JNI methods
@@ -76,10 +62,9 @@ static void JNI_PrefServiceBridge_SetInteger(JNIEnv* env,
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index), j_value);
 }
 
-static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetString(
-    JNIEnv* env,
-    const jint j_pref_index) {
-  return ConvertUTF8ToJavaString(
+static base::android::ScopedJavaLocalRef<jstring>
+JNI_PrefServiceBridge_GetString(JNIEnv* env, const jint j_pref_index) {
+  return base::android::ConvertUTF8ToJavaString(
       env, GetPrefService()->GetString(
                PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index)));
 }
@@ -87,10 +72,10 @@ static ScopedJavaLocalRef<jstring> JNI_PrefServiceBridge_GetString(
 static void JNI_PrefServiceBridge_SetString(
     JNIEnv* env,
     const jint j_pref_index,
-    const JavaParamRef<jstring>& j_value) {
+    const base::android::JavaParamRef<jstring>& j_value) {
   GetPrefService()->SetString(
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index),
-      ConvertJavaStringToUTF8(env, j_value));
+      base::android::ConvertJavaStringToUTF8(env, j_value));
 }
 
 static jboolean JNI_PrefServiceBridge_IsManagedPreference(
@@ -98,10 +83,4 @@ static jboolean JNI_PrefServiceBridge_IsManagedPreference(
     const jint j_pref_index) {
   return GetPrefService()->IsManagedPreference(
       PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
-}
-
-const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
-  DCHECK_GE(pref_index, 0);
-  DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);
-  return kPrefsExposedToJava[pref_index];
 }

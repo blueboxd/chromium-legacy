@@ -256,9 +256,11 @@ std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>
 ChannelMojo::CreateThreadSafeChannel() {
   return std::make_unique<mojo::ThreadSafeForwarder<mojom::Channel>>(
       task_runner_,
-      base::Bind(&ChannelMojo::ForwardMessageFromThreadSafePtr, weak_ptr_),
-      base::Bind(&ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr,
-                 weak_ptr_),
+      base::BindRepeating(&ChannelMojo::ForwardMessageFromThreadSafePtr,
+                          weak_ptr_),
+      base::BindRepeating(
+          &ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr,
+          weak_ptr_),
       *bootstrap_->GetAssociatedGroup());
 }
 

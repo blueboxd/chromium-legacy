@@ -119,7 +119,7 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
     if (!url.SchemeIs(kChromeUIScheme))
       return WebUI::kNoWebUI;
 
-    return reinterpret_cast<WebUI::TypeID>(base::Hash(url.host()));
+    return reinterpret_cast<WebUI::TypeID>(base::FastHash(url.host()));
   }
 
   bool UseWebUIForURL(BrowserContext* browser_context,

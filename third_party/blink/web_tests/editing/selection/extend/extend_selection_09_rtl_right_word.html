@@ -162,13 +162,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">Lorem <div  dir="ltr">ipsum dolor sit</div>| amet</div>',
   selection => selection.modify('extend', 'right', 'word'),
-  '<div contenteditable dir="rtl">Lorem <div dir="ltr">ipsum dolor |sit</div>^ amet</div>',
+  '<div contenteditable dir="rtl">Lorem <div dir="ltr">ipsum dolor sit|</div>^ amet</div>',
   `${behavior} 9-21 rtl right word`);
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem <div  dir="ltr">ipsum dolor sit</div> |amet</div>',
   selection => selection.modify('extend', 'right', 'word'),
-  '<div contenteditable dir="rtl">Lorem <div dir="ltr">ipsum dolor |sit</div>^ amet</div>',
+  '<div contenteditable dir="rtl">Lorem <div dir="ltr">ipsum dolor sit|</div>^ amet</div>',
   `${behavior} 9-22 rtl right word`);
 
 selection_test(

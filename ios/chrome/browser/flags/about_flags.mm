@@ -572,6 +572,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDownloadInfobarMessagesUIName,
      flag_descriptions::kDownloadInfobarMessagesUIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDownloadInfobarMessagesUI)},
+    {"desktop-version-default", flag_descriptions::kDefaultToDesktopOnIPadName,
+     flag_descriptions::kDefaultToDesktopOnIPadDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kDefaultToDesktopOnIPad)},
+    {"mobile-google-srp", flag_descriptions::kMobileGoogleSRPName,
+     flag_descriptions::kMobileGoogleSRPDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::kMobileGoogleSRP)},
 };
 
 // Add all switches from experimental flags to |command_line|.

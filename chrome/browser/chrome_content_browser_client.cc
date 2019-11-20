@@ -5050,7 +5050,6 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           previews::switches::kForceEnablePreviews)) {
-    previews_decider_impl->LoadPageHints(navigation_handle);
     return content::ALL_SUPPORTED_PREVIEWS;
   }
 
@@ -5077,7 +5076,7 @@ ChromeContentBrowserClient::DetermineAllowedPreviewsWithoutHoldback(
     }
   }
 
-  // Evaluate Offline, NoScript, and ResourceBlocking previews.
+  // Evaluate client-side previews.
   previews_state |= previews::DetermineAllowedClientPreviewsState(
       previews_data, previews_triggering_logic_already_ran,
       data_reduction_proxy_settings->IsDataReductionProxyEnabled(),

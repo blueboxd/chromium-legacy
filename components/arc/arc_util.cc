@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -288,6 +289,15 @@ bool IsArcPlayAutoInstallDisabled() {
 
 // static
 int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kArcScale)) {
+    const std::string dpi_str =
+        command_line->GetSwitchValueASCII(chromeos::switches::kArcScale);
+    int dpi;
+    if (base::StringToInt(dpi_str, &dpi))
+      return dpi;
+    VLOG(1) << "Invalid Arc scale set. Using default.";
+  }
   // TODO(b/131884992): Remove the logic to update default lcd density once
   // per-display-density is supported.
   constexpr float kEpsilon = 0.001;

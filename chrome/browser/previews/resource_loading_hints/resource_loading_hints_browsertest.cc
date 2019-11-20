@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,29 +48,6 @@
 namespace {
 
 constexpr char kMockHost[] = "mock.host";
-
-// Retries fetching |histogram_name| until it contains at least |count| samples.
-void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
-                                        const std::string& histogram_name,
-                                        size_t count) {
-  while (true) {
-    base::ThreadPoolInstance::Get()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-    const std::vector<base::Bucket> buckets =
-        histogram_tester->GetAllSamples(histogram_name);
-    size_t total_count = 0;
-    for (const auto& bucket : buckets) {
-      total_count += bucket.count;
-    }
-    if (total_count >= count) {
-      break;
-    }
-  }
-}
 
 }  // namespace
 
@@ -215,6 +193,19 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
             optimization_guide::proto::RESOURCE_LOADING,
             {hint_setup_url.host(), kMockHost}, page_pattern,
             resource_patterns));
+    LoadHintsForUrl(hint_setup_url);
+  }
+
+  // Sets the resource loading hints in optimization guide service. No patterns
+  // are specified for resources.
+  void SetEmptyResourceLoadingHintsWithPagePattern(
+      const GURL& hint_setup_url,
+      const std::string& page_pattern) {
+    ProcessHintsComponent(
+        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
+            optimization_guide::proto::RESOURCE_LOADING,
+            {hint_setup_url.host(), kMockHost}, page_pattern,
+            std::vector<std::string>{} /* resource_patterns */));
     LoadHintsForUrl(hint_setup_url);
   }
 
@@ -389,16 +380,25 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingNoFeaturesBrowserTest);
 };
 
+// Page type to use when running the test.
+enum PageToUse {
+  // Use test page that loads blocked resources in body.
+  REGULAR_PAGE = 0,
+
+  // Use test page that loads blocked resources using link-rel preload in
+  // <head>.
+  PRELOAD_PAGE = 1,
+};
+
 // This test class enables ResourceLoadingHints with OptimizationHints.
 // First parameter is true if the test should be run with a webpage that
 // preloads resources in the HTML head using link-rel preload.
 // All tests should pass in the same way for all cases.
 class ResourceLoadingHintsBrowserTest
-    : public ::testing::WithParamInterface<bool>,
+    : public ::testing::WithParamInterface<PageToUse>,
       public ResourceLoadingNoFeaturesBrowserTest {
  public:
-  ResourceLoadingHintsBrowserTest()
-      : use_preload_resources_webpage_(GetParam()) {}
+  ResourceLoadingHintsBrowserTest() : test_page_to_use_(GetParam()) {}
 
   ~ResourceLoadingHintsBrowserTest() override = default;
 
@@ -415,21 +415,29 @@ class ResourceLoadingHintsBrowserTest
     ResourceLoadingNoFeaturesBrowserTest::SetUp();
   }
 
+  PageToUse test_page_to_use() const { return test_page_to_use_; }
+
   GURL GetURLWithMockHost(const net::EmbeddedTestServer& server,
                           const std::string& relative_url) const {
     return server.GetURL(kMockHost, relative_url);
   }
 
   const GURL& https_url() const override {
-    if (use_preload_resources_webpage_)
-      return ResourceLoadingNoFeaturesBrowserTest::https_url_preload();
-    return ResourceLoadingNoFeaturesBrowserTest::https_url();
+    switch (test_page_to_use_) {
+      case REGULAR_PAGE:
+        return ResourceLoadingNoFeaturesBrowserTest::https_url();
+      case PRELOAD_PAGE:
+        return ResourceLoadingNoFeaturesBrowserTest::https_url_preload();
+    }
   }
 
   const GURL& https_url_iframe() const override {
-    if (use_preload_resources_webpage_)
-      return ResourceLoadingNoFeaturesBrowserTest::https_url_iframe_preload();
-    return ResourceLoadingNoFeaturesBrowserTest::https_url_iframe();
+    switch (test_page_to_use_) {
+      case REGULAR_PAGE:
+        return ResourceLoadingNoFeaturesBrowserTest::https_url_iframe();
+      case PRELOAD_PAGE:
+        return ResourceLoadingNoFeaturesBrowserTest::https_url_iframe_preload();
+    }
   }
 
  protected:
@@ -437,23 +445,15 @@ class ResourceLoadingHintsBrowserTest
   base::test::ScopedFeatureList ogks_feature_list_;
 
  private:
-  const bool use_preload_resources_webpage_;
+  const PageToUse test_page_to_use_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsBrowserTest);
 };
 
-// First parameter is true if the test should be run with a webpage that
-// preloads resources in the HTML head using link-rel preload.
-INSTANTIATE_TEST_SUITE_P(, ResourceLoadingHintsBrowserTest, ::testing::Bool());
-
-// Previews InfoBar (which these tests triggers) does not work on Mac.
-// See https://crbug.com/782322 for details. Also occasional flakes on win7
-// (https://crbug.com/789542).
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
-#endif
+// First parameter determines the test webpage that should be used.
+INSTANTIATE_TEST_SUITE_P(,
+                         ResourceLoadingHintsBrowserTest,
+                         ::testing::Values(REGULAR_PAGE, PRELOAD_PAGE));
 
 IN_PROC_BROWSER_TEST_P(
     ResourceLoadingHintsBrowserTest,
@@ -533,6 +533,22 @@ IN_PROC_BROWSER_TEST_P(
         &histogram_tester_2,
         "ResourceLoadingHints.CountBlockedSubresourcePatterns", 1);
   }
+}
+
+// Enable resource loading hints without any subresource patterns. Verify that
+// all subresources are loaded.
+IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(
+                           EmptyHints_ResourceLoadingHintsHttpsWhitelisted)) {
+  // Whitelist resource loading hints for https_hint_setup_url()'s' host.
+  SetEmptyResourceLoadingHintsWithPagePattern(https_hint_setup_url(), "*");
+
+  SetExpectedFooJpgRequest(true);
+  SetExpectedBarJpgRequest(true);
+
+  const GURL url = https_url();
+  ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 }
 
 // The test loads https_url_iframe() which is whitelisted for resource blocking.

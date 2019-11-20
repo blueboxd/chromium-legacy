@@ -17,6 +17,7 @@ import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IRemoteFragment;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Base for the classes controlling a Fragment that exists in another ClassLoader. Extending this
@@ -176,72 +177,86 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
 
     @Override
     public final IObjectWrapper handleOnCreateView() {
+        StrictModeWorkaround.apply();
         return ObjectWrapper.wrap(onCreateView());
     }
 
     @Override
     public final void handleOnStart() {
+        StrictModeWorkaround.apply();
         onStart();
     }
 
     @Override
     public final void handleOnCreate(IObjectWrapper savedInstanceState) {
+        StrictModeWorkaround.apply();
         onCreate(ObjectWrapper.unwrap(savedInstanceState, Bundle.class));
     }
 
     @Override
     public final void handleOnAttach(IObjectWrapper context) {
+        StrictModeWorkaround.apply();
         onAttach(ObjectWrapper.unwrap(context, Context.class));
     }
 
     @Override
     public final void handleOnActivityCreated(IObjectWrapper savedInstanceState) {
+        StrictModeWorkaround.apply();
         onActivityCreated(ObjectWrapper.unwrap(savedInstanceState, Bundle.class));
     }
 
     @Override
     public final void handleOnResume() {
+        StrictModeWorkaround.apply();
         onResume();
     }
 
     @Override
     public final void handleOnPause() {
+        StrictModeWorkaround.apply();
         onPause();
     }
 
     @Override
     public final void handleOnStop() {
+        StrictModeWorkaround.apply();
         onStop();
     }
 
     @Override
     public final void handleOnDestroyView() {
+        StrictModeWorkaround.apply();
         onDestroyView();
     }
 
     @Override
     public final void handleOnDetach() {
+        StrictModeWorkaround.apply();
         onDetach();
     }
 
     @Override
     public final void handleOnDestroy() {
+        StrictModeWorkaround.apply();
         onDestroy();
     }
 
     @Override
     public final void handleOnSaveInstanceState(IObjectWrapper outState) {
+        StrictModeWorkaround.apply();
         onSaveInstaceState(ObjectWrapper.unwrap(outState, Bundle.class));
     }
 
     @Override
     public final void handleOnActivityResult(int requestCode, int resultCode, IObjectWrapper data) {
+        StrictModeWorkaround.apply();
         onActivityResult(requestCode, resultCode, ObjectWrapper.unwrap(data, Intent.class));
     }
 
     @Override
     public final void handleOnRequestPermissionsResult(
             int requestCode, String[] permissions, int[] grantResults) {
+        StrictModeWorkaround.apply();
         onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

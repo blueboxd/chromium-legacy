@@ -187,7 +187,6 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       is_scheduled_(false),
       interval_(SMILInterval::Unresolved()),
       previous_interval_(SMILInterval::Unresolved()),
-      next_interval_time_(SMILTime::Unresolved()),
       active_state_(kInactive),
       restart_(kRestartAlways),
       fill_(kFillRemove),
@@ -257,7 +256,6 @@ void SVGSMILElement::Reset() {
   is_waiting_for_first_interval_ = true;
   interval_ = SMILInterval::Unresolved();
   previous_interval_ = SMILInterval::Unresolved();
-  next_interval_time_ = SMILTime::Earliest();
   last_progress_ = {0.0f, 0};
 }
 
@@ -835,14 +833,15 @@ void SVGSMILElement::InstanceListChanged() {
   DCHECK(!previous_presentation_time.IsUnresolved());
   const bool was_active = GetActiveState() == kActive;
   UpdateInterval(previous_presentation_time);
-  UpdateNextIntervalTime(previous_presentation_time);
   if (was_active && interval_.BeginsAfter(previous_presentation_time)) {
     active_state_ = DetermineActiveState(previous_presentation_time);
     if (GetActiveState() != kActive)
       EndedActiveInterval();
   }
-  if (time_container_)
-    time_container_->Reschedule(this);
+  if (time_container_) {
+    time_container_->Reschedule(
+        this, ComputeNextIntervalTime(previous_presentation_time));
+  }
 }
 
 void SVGSMILElement::DiscardOrRevalidateCurrentInterval(
@@ -916,10 +915,6 @@ void SVGSMILElement::UpdateInterval(SMILTime presentation_time) {
   SetNewInterval(next_interval);
 }
 
-void SVGSMILElement::UpdateNextIntervalTime(SMILTime presentation_time) {
-  next_interval_time_ = ComputeNextIntervalTime(presentation_time);
-}
-
 void SVGSMILElement::AddedToTimeContainer() {
   DCHECK(time_container_);
   // Update the interval to the time just before the current presentation
@@ -928,9 +923,9 @@ void SVGSMILElement::AddedToTimeContainer() {
   SMILTime previous_presentation_time =
       time_container_->CurrentDocumentTime() - SMILTime::Epsilon();
   UpdateInterval(previous_presentation_time);
-  UpdateNextIntervalTime(previous_presentation_time);
   active_state_ = DetermineActiveState(previous_presentation_time);
-  time_container_->Reschedule(this);
+  time_container_->Reschedule(
+      this, ComputeNextIntervalTime(previous_presentation_time));
 
   // If there's an active interval, then revalidate the animation value.
   if (GetActiveState() != kInactive)

@@ -434,37 +434,6 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         return false;
     }
 
-    /**
-     * @return Whether the Custom Tab should attempt to load a dynamic module, i.e.
-     * if the feature is enabled, the package is provided and package is Google-signed.
-     *
-     * Will return false if native is not initialized.
-     */
-    public boolean isDynamicModuleEnabled() {
-        if (!ChromeFeatureList.isInitialized()) return false;
-
-        ComponentName componentName = getModuleComponentName();
-        // Return early if no component name was provided. It's important to do this before checking
-        // the feature experiment group, to avoid entering users into the experiment that do not
-        // even receive the extras for using the feature.
-        if (componentName == null) return false;
-
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
-            Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.FEATURE_DISABLED);
-            return false;
-        }
-
-        ExternalAuthUtils authUtils = ChromeApplication.getComponent().resolveExternalAuthUtils();
-        if (!authUtils.isGoogleSigned(componentName.getPackageName())) {
-            Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
-            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.NOT_GOOGLE_SIGNED);
-            return false;
-        }
-
-        return true;
-    }
-
     @NonNull
     private CustomTabColorSchemeParams getColorSchemeParams(Intent intent, int colorScheme) {
         if (colorScheme == COLOR_SCHEME_SYSTEM) {
@@ -798,6 +767,32 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     @Override
+    public boolean isDynamicModuleEnabled() {
+        if (!ChromeFeatureList.isInitialized()) return false;
+
+        ComponentName componentName = getModuleComponentName();
+        // Return early if no component name was provided. It's important to do this before checking
+        // the feature experiment group, to avoid entering users into the experiment that do not
+        // even receive the extras for using the feature.
+        if (componentName == null) return false;
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
+            Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.FEATURE_DISABLED);
+            return false;
+        }
+
+        ExternalAuthUtils authUtils = ChromeApplication.getComponent().resolveExternalAuthUtils();
+        if (!authUtils.isGoogleSigned(componentName.getPackageName())) {
+            Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.NOT_GOOGLE_SIGNED);
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
     @Nullable
     public ComponentName getModuleComponentName() {
         return mModuleComponentName;
@@ -868,6 +863,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
     }
 
+    @Override
     @Nullable
     public PendingIntent getFocusIntent() {
         return mFocusIntent;

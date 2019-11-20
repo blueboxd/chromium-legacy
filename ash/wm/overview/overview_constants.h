@@ -6,6 +6,7 @@
 #define ASH_WM_OVERVIEW_OVERVIEW_CONSTANTS_H_
 
 #include "ash/ash_export.h"
+#include "ash/wm/window_mini_view.h"
 #include "base/time/time.h"
 
 namespace ash {
@@ -24,7 +25,7 @@ constexpr int kWindowMargin = 5;
 ASH_EXPORT constexpr int kOverviewMargin = kWindowMargin * 2;
 
 // Height of an item header.
-constexpr int kHeaderHeightDp = 40;
+constexpr int kHeaderHeightDp = WindowMiniView::kHeaderHeightDp;
 
 // The opacity of the shield widget that is used to darken the background of
 // the grid.

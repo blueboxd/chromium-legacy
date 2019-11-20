@@ -278,21 +278,12 @@ namespace autotestPrivate {
     double height;
   };
 
-  dictionary ArcAppWindowInfo {
-    Bounds bounds;
-    DOMString displayId;
-    boolean isAnimating;
-    boolean isVisible;
-  };
-
   dictionary ArcAppTracingInfo {
     boolean success;
     double fps;
     double commitDeviation;
     double renderQuality;
   };
-
-  callback GetArcAppWindowInfoCallback = void (ArcAppWindowInfo info);
 
   callback LaunchArcAppCallback = void (boolean appLaunched);
 
@@ -729,28 +720,6 @@ namespace autotestPrivate {
 
     // Show virtual keyboard of the current input method if it's available.
     static void showVirtualKeyboardIfEnabled();
-
-    // Send WM event to change the ARC app window's window state.
-    // |packageName|: the package name of the ARC app window.
-    // |change|: WM event type to send to the ARC app window.
-    // |callback|: called when the window state is changed.
-    [deprecated="Use setAppWindowState"] static void setArcAppWindowState(
-        DOMString packageName,
-        WindowStateChangeDict change,
-        WindowStateCallback callback);
-
-    // Get ARC app window's window state.
-    // |packageName|: the package name of the ARC app window.
-    // |callback| is invoked with the window state.
-    static void getArcAppWindowState(DOMString packageName,
-                                     WindowStateCallback callback);
-
-    // Get various information on an ARC window.
-    // |packageName|: the package name of the ARC app window.
-    // |callback|: called when the operation has completed.
-    [deprecated="Use getAppWindowList"] static void getArcAppWindowInfo(
-        DOMString packageName,
-        GetArcAppWindowInfoCallback callback);
 
     // Start ARC performance tracing for the active ARC app window.
     // |callback|: Called when the operation has completed.

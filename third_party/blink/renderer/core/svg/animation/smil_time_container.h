@@ -55,7 +55,7 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   ~SMILTimeContainer();
 
   void Schedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
-  void Reschedule(SVGSMILElement*);
+  void Reschedule(SVGSMILElement*, SMILTime interval_time);
   void Unschedule(SVGSMILElement*, SVGElement*, const QualifiedName&);
 
   // Returns the time we are currently updating.
@@ -117,7 +117,6 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   void UpdateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed);
   void RemoveUnusedKeys();
   void ResetIntervals();
-  SVGSMILElement* GetNextReady(SMILTime presentation_time) const;
   void UpdateIntervals(SMILTime presentation_time);
   void UpdateAnimationTimings(SMILTime elapsed);
   void ApplyAnimationValues(SMILTime elapsed);
@@ -150,9 +149,7 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   TaskRunnerTimer<SMILTimeContainer> animation_policy_once_timer_;
 
   AnimationsMap scheduled_animations_;
-
-  struct NextIntervalTimeLess;
-  PriorityQueue<SVGSMILElement, NextIntervalTimeLess> priority_queue_;
+  PriorityQueue<SMILTime, SVGSMILElement> priority_queue_;
 
   Member<SVGSVGElement> owner_svg_element_;
 

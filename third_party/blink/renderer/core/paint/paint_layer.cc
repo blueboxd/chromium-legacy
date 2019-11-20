@@ -47,6 +47,7 @@
 #include <limits>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/containers/adapters.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -1941,7 +1942,8 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
                                      const HitTestRecursionData& recursion_data,
                                      bool applied_transform,
                                      HitTestingTransformState* transform_state,
-                                     double* z_offset) {
+                                     double* z_offset,
+                                     bool check_resizer_only) {
   const LayoutObject& layout_object = GetLayoutObject();
   DCHECK_GE(layout_object.GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kCompositingClean);
@@ -1970,7 +1972,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     if (EnclosingPaginationLayer()) {
       return HitTestTransformedLayerInFragments(
           root_layer, container_layer, result, recursion_data, transform_state,
-          z_offset, clip_behavior);
+          z_offset, check_resizer_only, clip_behavior);
     }
 
     // Make sure the parent's clip rects have been calculated.
@@ -1990,7 +1992,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
 
     return HitTestLayerByApplyingTransform(root_layer, container_layer, result,
                                            recursion_data, transform_state,
-                                           z_offset);
+                                           z_offset, check_resizer_only);
   }
 
   // Don't hit test the clip-path area when checking for occlusion. This is
@@ -2064,6 +2066,51 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     z_offset_for_contents_ptr = z_offset;
   }
 
+  // Collect the fragments. This will compute the clip rectangles for each
+  // layer fragment.
+  base::Optional<PaintLayerFragments> layer_fragments;
+  if (recursion_data.intersects_location) {
+    layer_fragments.emplace();
+    if (applied_transform) {
+      DCHECK(root_layer == this);
+      PhysicalOffset ignored;
+      AppendSingleFragmentIgnoringPagination(
+          *layer_fragments, root_layer, nullptr,
+          kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior, &ignored);
+    } else {
+      CollectFragments(*layer_fragments, root_layer, nullptr,
+                       kExcludeOverlayScrollbarSizeForHitTesting,
+                       clip_behavior);
+    }
+
+    // See if the hit test pos is inside the resizer of current layer. This
+    // should be done before walking child layers to avoid that the resizer
+    // clickable area is obscured by the positive child layers.
+    if (scrollable_area_ && scrollable_area_->HitTestResizerInFragments(
+                                *layer_fragments, recursion_data.location)) {
+      if (Node* node_for_resizer = layout_object.NodeForHitTest())
+        result.SetInnerNode(node_for_resizer);
+      return this;
+    }
+  }
+
+  if (check_resizer_only)
+    return nullptr;
+
+  // See if the hit test pos is inside the resizer of the child layers which
+  // has reordered the painting of the overlay overflow controls.
+  if (stacking_node_) {
+    for (auto* layer : base::Reversed(
+             stacking_node_->OverlayOverflowControlsReorderedList())) {
+      if (layer->HitTestLayer(
+              root_layer, nullptr, result, recursion_data,
+              false /*applied_transform*/, local_transform_state,
+              z_offset_for_descendants_ptr, true /*check_resizer_only*/)) {
+        return layer;
+      }
+    }
+  }
+
   // This variable tracks which layer the mouse ends up being inside.
   PaintLayer* candidate_layer = nullptr;
 
@@ -2090,31 +2137,8 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     candidate_layer = hit_layer;
   }
 
-  // Collect the fragments. This will compute the clip rectangles for each
-  // layer fragment.
-  base::Optional<PaintLayerFragments> layer_fragments;
   PhysicalOffset offset;
   if (recursion_data.intersects_location) {
-    layer_fragments.emplace();
-    if (applied_transform) {
-      DCHECK(root_layer == this);
-      PhysicalOffset ignored;
-      AppendSingleFragmentIgnoringPagination(
-          *layer_fragments, root_layer, nullptr,
-          kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior, &ignored);
-    } else {
-      CollectFragments(*layer_fragments, root_layer, nullptr,
-                       kExcludeOverlayScrollbarSizeForHitTesting,
-                       clip_behavior);
-    }
-
-    if (scrollable_area_ && scrollable_area_->HitTestResizerInFragments(
-                                *layer_fragments, recursion_data.location)) {
-      layout_object.UpdateHitTestResult(result,
-                                        recursion_data.location.Point());
-      return this;
-    }
-
     // Next we want to see if the mouse pos is inside the child LayoutObjects of
     // the layer. Check every fragment in reverse order.
     if (IsSelfPaintingLayer() && !layout_object.PaintBlockedByDisplayLock(
@@ -2226,6 +2250,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
     const HitTestRecursionData& recursion_data,
     HitTestingTransformState* transform_state,
     double* z_offset,
+    bool check_resizer_only,
     ShouldRespectOverflowClipType clip_behavior) {
   PaintLayerFragments enclosing_pagination_fragments;
   // FIXME: We're missing a sub-pixel offset here crbug.com/348728
@@ -2244,7 +2269,8 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
 
     PaintLayer* hit_layer = HitTestLayerByApplyingTransform(
         root_layer, container_layer, result, recursion_data, transform_state,
-        z_offset, fragment.fragment_data->PaginationOffset());
+        z_offset, check_resizer_only,
+        fragment.fragment_data->PaginationOffset());
     if (hit_layer)
       return hit_layer;
   }
@@ -2259,6 +2285,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
     const HitTestRecursionData& recursion_data,
     HitTestingTransformState* transform_state,
     double* z_offset,
+    bool check_resizer_only,
     const PhysicalOffset& translation_offset) {
   // Create a transform state to accumulate this transform.
   HitTestingTransformState new_transform_state =
@@ -2288,7 +2315,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
 
   // Now do a hit test with the root layer shifted to be us.
   return HitTestLayer(this, container_layer, result, new_recursion_data, true,
-                      &new_transform_state, z_offset);
+                      &new_transform_state, z_offset, check_resizer_only);
 }
 
 bool PaintLayer::HitTestContents(HitTestResult& result,

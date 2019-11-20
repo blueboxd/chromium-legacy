@@ -109,15 +109,19 @@
 {%-     set name = pf.field.name %}
 {%-     set kind = pf.field.kind %}
 {%-     if kind|is_object_kind or kind|is_enum_kind %}
-  if (!{{input}}.Read{{name|under_to_camel}}(&{{output_field}}))
+  if ({{success}} && !{{input}}.Read{{name|under_to_camel}}(&{{output_field}}))
     {{success}} = false;
 {%-     elif kind|is_any_handle_kind %}
-  {{output_field}} = {{input}}.Take{{name|under_to_camel}}();
+  if ({{success}})
+    {{output_field}} = {{input}}.Take{{name|under_to_camel}}();
 {%-     elif kind|is_any_interface_kind %}
-  {{output_field}} =
-      {{input}}.Take{{name|under_to_camel}}<decltype({{output_field}})>();
+  if ({{success}}) {
+    {{output_field}} =
+        {{input}}.Take{{name|under_to_camel}}<decltype({{output_field}})>();
+  }
 {%-     else %}
-  {{output_field}} = {{input}}.{{name}}();
+  if ({{success}})
+    {{output_field}} = {{input}}.{{name}}();
 {%-     endif %}
 {%-   endfor %}
 {%- endmacro %}

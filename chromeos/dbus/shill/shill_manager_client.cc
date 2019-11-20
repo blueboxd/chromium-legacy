@@ -119,39 +119,39 @@ class ShillManagerClientImpl : public ShillManagerClient {
   }
 
   void ConfigureService(const base::DictionaryValue& properties,
-                        const ObjectPathCallback& callback,
+                        ObjectPathCallback callback,
                         const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kConfigureServiceFunction);
     dbus::MessageWriter writer(&method_call);
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
-    helper_->CallObjectPathMethodWithErrorCallback(&method_call, callback,
-                                                   error_callback);
+    helper_->CallObjectPathMethodWithErrorCallback(
+        &method_call, std::move(callback), error_callback);
   }
 
   void ConfigureServiceForProfile(
       const dbus::ObjectPath& profile_path,
       const base::DictionaryValue& properties,
-      const ObjectPathCallback& callback,
+      ObjectPathCallback callback,
       const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kConfigureServiceForProfileFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(dbus::ObjectPath(profile_path));
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
-    helper_->CallObjectPathMethodWithErrorCallback(&method_call, callback,
-                                                   error_callback);
+    helper_->CallObjectPathMethodWithErrorCallback(
+        &method_call, std::move(callback), error_callback);
   }
 
   void GetService(const base::DictionaryValue& properties,
-                  const ObjectPathCallback& callback,
+                  ObjectPathCallback callback,
                   const ErrorCallback& error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kGetServiceFunction);
     dbus::MessageWriter writer(&method_call);
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
-    helper_->CallObjectPathMethodWithErrorCallback(&method_call, callback,
-                                                   error_callback);
+    helper_->CallObjectPathMethodWithErrorCallback(
+        &method_call, std::move(callback), error_callback);
   }
 
   void ConnectToBestServices(const base::Closure& callback,

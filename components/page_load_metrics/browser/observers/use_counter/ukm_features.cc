@@ -128,7 +128,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kRequestedFileSystemPersistent,
           WebFeature::kSMSReceiverStart,
           WebFeature::kRequestFileSystem,
-          WebFeature::kMediaCapabilitiesFramerateRatio,
           WebFeature::kBaseElement,
           WebFeature::kBaseWithCrossOriginHref,
           WebFeature::kWakeLockAcquireScreenLock,

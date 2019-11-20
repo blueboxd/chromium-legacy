@@ -536,8 +536,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     if (url.host_piece() == chromeos::kChromeUIMediaAppGuestHost)
       return &NewWebUI<chromeos::MediaAppGuestUI>;
   }
-  if (url.host_piece() == chromeos::multidevice::kChromeUIProximityAuthHost)
+  if (url.host_piece() == chromeos::multidevice::kChromeUIProximityAuthHost &&
+      profile->IsRegularProfile()) {
     return &NewWebUI<chromeos::multidevice::ProximityAuthUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIInternetConfigDialogHost)
     return &NewWebUI<chromeos::InternetConfigDialogUI>;
   if (url.host_piece() == chrome::kChromeUIInternetDetailDialogHost)

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "components/viz/service/frame_sinks/external_begin_frame_source_android.h"
 
 namespace viz {
 struct BeginFrameArgs;
@@ -19,17 +20,15 @@ namespace android_webview {
 // Per-AwContents object. Straddles UI and Viz thread. Public methods should be
 // called on the UI thread unless otherwise specified. Mostly used for creating
 // RootFrameSink and routing calls to it.
-class RootFrameSinkProxy {
+class RootFrameSinkProxy : public viz::BeginFrameObserverBase {
  public:
-  using SetNeedsBeginFrameCallback = RootFrameSink::SetNeedsBeginFrameCallback;
   RootFrameSinkProxy(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-      SetNeedsBeginFrameCallback set_needs_begin_frame_callback);
-  ~RootFrameSinkProxy();
+      base::RepeatingClosure invalidate_callback);
+  ~RootFrameSinkProxy() override;
 
   void AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
-  bool BeginFrame(const viz::BeginFrameArgs& args);
   // The returned callback can only be called on viz thread.
   RootFrameSinkGetter GetRootFrameSinkCallback();
 
@@ -44,11 +43,16 @@ class RootFrameSinkProxy {
   void BeginFrameOnViz(const viz::BeginFrameArgs& args, bool* invalidate);
   void SetNeedsBeginFramesOnViz(bool needs_begin_frames);
   void SetNeedsBeginFramesOnUI(bool needs_begin_frames);
+  bool BeginFrame(const viz::BeginFrameArgs& args);
+
+  bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
+  void OnBeginFrameSourcePausedChanged(bool) override {}
 
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> viz_task_runner_;
-  SetNeedsBeginFrameCallback set_needs_begin_frame_callback_;
+  base::RepeatingClosure invalidate_callback_;
   scoped_refptr<RootFrameSink> without_gpu_;
+  std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
 
   THREAD_CHECKER(ui_thread_checker_);
   THREAD_CHECKER(viz_thread_checker_);

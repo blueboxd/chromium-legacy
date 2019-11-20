@@ -435,7 +435,10 @@ void OutputController::LogAudioPowerLevel(const char* call_name) {
                          call_name, power_and_clip.first));
 }
 
-void OutputController::OnError() {
+void OutputController::OnError(ErrorType type) {
+  // TODO(dalecurtis): Handle type == ErrorType::kDeviceChange errors without
+  // delay.
+  //
   // Handle error on the audio controller thread.  We defer errors for one
   // second in case they are the result of a device change; delay chosen to
   // exceed duration of device changes which take a few hundred milliseconds.

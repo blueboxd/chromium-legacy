@@ -194,18 +194,6 @@
   // no-op.
 }
 
-- (void)didRecieveAuthChallenge:(const net::AuthChallengeInfo&)authInfo
-                  nativeRequest:(const net::URLRequest&)nativeRequest
-                       callback:(const network_client::AuthCallback&)callback {
-  // If we get this far, authentication has failed.
-  base::string16 empty;
-  callback.Run(false, empty, empty);
-}
-
-- (void)cancelAuthRequest {
-  // no-op.
-}
-
 #pragma mark Proxy methods called from the client thread.
 
 - (void)didFailWithErrorOnClientThread:(NSError*)error {

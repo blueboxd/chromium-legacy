@@ -40,8 +40,9 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_SameTitle) {
   std::string expected_title = "Some Game!";
   std::string result_title = "not the same";
 
-  games_service_->GetHighlightedGame(
-      base::BindLambdaForTesting([&](std::unique_ptr<Game> given_game) {
+  games_service_->GetHighlightedGame(base::BindLambdaForTesting(
+      [&](ResponseCode code, std::unique_ptr<Game> given_game) {
+        ASSERT_EQ(ResponseCode::kSuccess, code);
         ASSERT_NE(nullptr, given_game);
         result_title = given_game->title();
       }));
@@ -49,14 +50,16 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_SameTitle) {
   ASSERT_EQ(expected_title, result_title);
 }
 
-TEST_F(GamesServiceImplTest, MissingFilePaths_DoesNothing) {
-  games_service_->GetHighlightedGame(
-      base::BindLambdaForTesting([&](std::unique_ptr<Game> given_game) {
-        // Previous test proved this code gets invoked if we have file paths.
-        // We're now testing that the callback shouldn't be called if we don't
-        // have the highlighted games' data files path in our pref.
-        FAIL();
+TEST_F(GamesServiceImplTest, MissingFilePaths_FileNotFoundError) {
+  bool callback_called = false;
+
+  games_service_->GetHighlightedGame(base::BindLambdaForTesting(
+      [&](ResponseCode code, std::unique_ptr<Game> given_game) {
+        ASSERT_EQ(ResponseCode::kFileNotFound, code);
+        callback_called = true;
       }));
+
+  ASSERT_TRUE(callback_called);
 }
 
 }  // namespace games

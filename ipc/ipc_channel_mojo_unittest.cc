@@ -996,7 +996,7 @@ class ListenerWithIndirectProxyAssociatedInterface
       public IPC::mojom::IndirectTestDriver,
       public IPC::mojom::PingReceiver {
  public:
-  ListenerWithIndirectProxyAssociatedInterface() : driver_binding_(this) {}
+  ListenerWithIndirectProxyAssociatedInterface() = default;
   ~ListenerWithIndirectProxyAssociatedInterface() override = default;
 
   // IPC::Listener:
@@ -1005,9 +1005,9 @@ class ListenerWithIndirectProxyAssociatedInterface
   void OnAssociatedInterfaceRequest(
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override {
-    DCHECK(!driver_binding_.is_bound());
+    DCHECK(!driver_receiver_.is_bound());
     DCHECK_EQ(interface_name, IPC::mojom::IndirectTestDriver::Name_);
-    driver_binding_.Bind(
+    driver_receiver_.Bind(
         mojo::PendingAssociatedReceiver<IPC::mojom::IndirectTestDriver>(
             std::move(handle)));
   }
@@ -1029,7 +1029,8 @@ class ListenerWithIndirectProxyAssociatedInterface
     ping_handler_.Run();
   }
 
-  mojo::AssociatedBinding<IPC::mojom::IndirectTestDriver> driver_binding_;
+  mojo::AssociatedReceiver<IPC::mojom::IndirectTestDriver> driver_receiver_{
+      this};
   mojo::AssociatedReceiver<IPC::mojom::PingReceiver> ping_receiver_receiver_{
       this};
 

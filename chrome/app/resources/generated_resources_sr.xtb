@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Икона апликације</translation>
 <translation id="1410616244180625362">И даље дозвољавај да <ph name="HOST" /> приступа камери</translation>
 <translation id="1414648216875402825">Ажурирате на нестабилну верзију <ph name="PRODUCT_NAME" />-а која садржи функције које су у фази развоја. Доћи ће до отказивања и неочекиваних грешака. Наставите опрезно.</translation>
-<translation id="1414866280542221544">Омогући на овом уређају</translation>
 <translation id="1415708812149920388">Приступ за читање привремене меморије је одбијен</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ИД додатка „<ph name="EXTENSION_ID" />“) није дозвољен у овом типу сесије.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Парче пице</translation>
 <translation id="1468571364034902819">Овај профил не може да се користи</translation>
 <translation id="1470811252759861213">Да би вам додаци били доступни на свим рачунарима, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Тиме ћете обрисати све податке са безбедносног кључа, укључујући његов PIN</translation>
 <translation id="1472675084647422956">Прикажи више</translation>
 <translation id="1475502736924165259">На датотеци има сертификата који се не уклапају ни у једну другу категорију</translation>
 <translation id="1476088332184200792">Копирајте на свој уређај</translation>
@@ -839,7 +837,6 @@
 <translation id="2202898655984161076">Дошло је до проблема приликом пописа штампача. Неки од штампача можда нису регистровани са <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Претраживач који се користи из <ph name="BEGIN_LINK" />траке за адресу<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Читање и мењање свега што уносите</translation>
-<translation id="2204397710290433380">Желите да онемогућите ADB?</translation>
 <translation id="220792432208469595">Шаљите податке о коришћењу и дијагностичке податке. Овај уређај тренутно аутоматски шаље податке о дијагностици, уређају и коришћењу апликација Google-у. То ће помоћи у одржавању стабилности система и апликације и другим подешавањима. Неки обједињени подаци ће такође помоћи Google апликацијама и партнерима, попут Android програмера. То подешавање примењује власник. Ако укључите подешавање додатне активности на вебу и у апликацијама, ти подаци ће се можда чувати на Google налогу. <ph name="BEGIN_LINK1" />Сазнајте више<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Унесите овај PIN кôд на уређају „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2213140827792212876">Уклоните дељење</translation>
@@ -976,6 +973,7 @@
 <translation id="2396783860772170191">Унесите 4-цифрени PIN (0000–9999)</translation>
 <translation id="2399939490305346086">Подаци за пријављивање са безбедносног кључа</translation>
 <translation id="2407481962792080328">Ова функција се укључује када се пријавите на Google налог</translation>
+<translation id="2408018932941436077">Картица се чува</translation>
 <translation id="2408955596600435184">Унесите PIN</translation>
 <translation id="241082044617551207">Непозната додатна компонента</translation>
 <translation id="2412593942846481727">Доступно је ажурирање</translation>
@@ -2004,7 +2002,6 @@
 <translation id="3873315167136380065">Да бисте укључили ово, <ph name="BEGIN_LINK" />ресетујте синхронизацију<ph name="END_LINK" /> да бисте уклонили приступну фразу за синхронизацију</translation>
 <translation id="3873423927483480833">Приказује PIN-ове</translation>
 <translation id="3873915545594852654">Дошло је до проблема који се односи на ARC++.</translation>
-<translation id="387924939625099872">Да бисте онемогућили ADB, рестартујте <ph name="DEVICE_TYPE" />. Ресетоваће се на фабричка подешавања и обрисаће се сви налози корисника и локални подаци.</translation>
 <translation id="3879748587602334249">Менаџер преузимања</translation>
 <translation id="3886446263141354045">Захтев за приступ овом сајту је послат кориснику <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Прављење бележака помоћу апликације <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2406,7 +2403,6 @@
 <translation id="4501530680793980440">Потврда уклањања</translation>
 <translation id="4502423230170890588">Уклони са овог уређаја</translation>
 <translation id="4504940961672722399">Користите овај додатак кликом на ову икону или притиском на <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Ако наставите, омогућићете ADB за прављење и тестирање Android апликација. Имајте у виду да ће ADB дозволити инсталирање апликација за тестирање које Google није верификовао.</translation>
 <translation id="4508051413094283164">Отвори све у прозору без архивирања</translation>
 <translation id="4508265954913339219">Активација није успела</translation>
 <translation id="4508765956121923607">Прикажи и&amp;звор</translation>
@@ -3311,7 +3307,6 @@
 <translation id="5851868085455377790">Издавалац</translation>
 <translation id="5852112051279473187">Упс! Дошло је до озбиљног проблема док смо пријављивали овај уређај. Пробајте поново или контактирајте представника подршке.</translation>
 <translation id="5852137567692933493">Рестартуј и обави Powerwash</translation>
-<translation id="5852360662347412211">Идите у подешавања Linux-а и пробајте поново</translation>
 <translation id="5854912040170951372">Парче</translation>
 <translation id="5855643921295613558">0,6 секунди</translation>
 <translation id="5856721540245522153">Омогућавање функција за отклањање грешака</translation>
@@ -3324,7 +3319,6 @@
 <translation id="5860494867054883682">Ажурирање уређаја на канал <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Приказуј алатке за писаљку у полици</translation>
 <translation id="5863445608433396414">Омогући функције за отклањање грешака</translation>
-<translation id="5863471434640009253">Да бисте омогућили Android Debug Bridge, прво рестартујте <ph name="DEVICE_TYPE" />. Онемогућавање ADB-а захтева ресетовање на фабричка подешавања.</translation>
 <translation id="5864471791310927901">Проналажење DHCP-а није успело</translation>
 <translation id="586567932979200359">Покрећете <ph name="PRODUCT_NAME" /> са диска. Инсталација на рачунар омогућава покретање без диска и редовно ажурирање.</translation>
 <translation id="5865733239029070421">Аутоматски шаље Google-у статистику коришћења и извештаје о отказивању</translation>
@@ -3394,7 +3388,6 @@
 <translation id="5958529069007801266">Корисник под надзором</translation>
 <translation id="5959471481388474538">Мрежа није доступна</translation>
 <translation id="595959584676692139">Поново учитајте ову страницу да бисте користили овај додатак</translation>
-<translation id="5961320084471308154">Желите да омогућите ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (највише <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Контролише и страницу која се приказује када кликнете на дугме Почетна или претражујете из омнибокса.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> може да прегледа датотеке у директоријуму <ph name="FOLDERNAME" /></translation>
@@ -4258,7 +4251,6 @@
 <translation id="7254554697254365959">Превођење ове странице није успело.</translation>
 <translation id="7254951428499890870">Да ли стварно желите да покренете „<ph name="APP_NAME" />“ у режиму дијагностике?</translation>
 <translation id="7255002516883565667">Тренутно имате једну картицу која може да се користи само на овом уређају</translation>
-<translation id="7255916308560539517">Додирните поново безбедносни кључ да бисте потврдили ресетовање. Све информације сачуване на безбедносном кључу, укључујући његов PIN, биће избрисане.</translation>
 <translation id="7255935316994522020">Примени</translation>
 <translation id="7256069762010468647">Сајт користи камеру</translation>
 <translation id="7256405249507348194">Непозната грешка: <ph name="DESC" /></translation>
@@ -4768,6 +4760,7 @@
 <translation id="7968833647796919681">Омогући прикупљање података о учинку</translation>
 <translation id="7968982339740310781">Прикажи детаље</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">Тренутно не можемо да сачувамо картицу</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 са RSA шифровањем</translation>
 <translation id="7973962044839454485">Провера аутентичности преко протокола PPP није успела због нетачног корисничког имена или лозинке</translation>
 <translation id="7974566588408714340">Пробај поново помоћу <ph name="EXTENSIONNAME" /></translation>
@@ -5089,7 +5082,6 @@
 <translation id="8431909052837336408">Промените PIN SIM картице</translation>
 <translation id="8434480141477525001">NaCl порт за отклањање грешака</translation>
 <translation id="8435395510592618362">Потврдите идентитет помоћу <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Сачувајте кредитну картицу</translation>
 <translation id="8438328416656800239">Пређите на паметан прегледач</translation>
 <translation id="8438566539970814960">Побољшај претраге и прегледање</translation>
 <translation id="8439506636278576865">Понуди превод страница на овом језику</translation>
@@ -5472,6 +5464,7 @@
 <translation id="8965037249707889821">Унесите стару лозинку</translation>
 <translation id="8966870118594285808">Поново отворите картицу ако сте је случајно затворили</translation>
 <translation id="8967866634928501045">За приказивање притисните Alt + Shift + A</translation>
+<translation id="8968766641738584599">Сачувај картицу</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Проверите са администратором мреже да бисте се уверили да заштитни зид не блокира преузимања са Google сервера.</translation>
 <translation id="8973557916016709913">Уклони ниво зумирања</translation>
@@ -5578,7 +5571,6 @@
 <translation id="9116799625073598554">Апликација за прављење белешки</translation>
 <translation id="9117030152748022724">Управљајте апликацијама</translation>
 <translation id="9121814364785106365">Отвори као закачену картицу</translation>
-<translation id="9122074588095746047">Омогућавање ADB-а није успело</translation>
 <translation id="9124003689441359348">Сачуване лозинке ће се појавити овде</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (преосталих: <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Подешавање није довршено</translation>

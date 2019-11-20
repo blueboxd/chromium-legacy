@@ -10,9 +10,6 @@
 @protocol BrowserCommands;
 @class FindInPageModel;
 
-// The a11y ID of the find-in-page bar.
-extern NSString* const kFindInPageContainerViewId;
-
 @interface FindBarControllerIOS : NSObject
 
 // The main view, for both iPhone or iPad.

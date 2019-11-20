@@ -12,8 +12,6 @@ source_set("lib") {
     "//base",
     "//components/prefs",
     "//mojo/public/cpp/bindings",
-    "//services/preferences/public/cpp",
-    "//services/service_manager/public/cpp",
   ]
 
   public_deps = [

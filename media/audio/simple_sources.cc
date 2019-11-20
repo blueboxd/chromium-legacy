@@ -141,7 +141,7 @@ int SineWaveAudioSource::OnMoreData(base::TimeDelta /* delay */,
   return max_frames;
 }
 
-void SineWaveAudioSource::OnError() {
+void SineWaveAudioSource::OnError(ErrorType type) {
   errors_++;
 }
 
@@ -244,7 +244,7 @@ double FileSource::ProvideInput(AudioBus* audio_bus_into_converter,
   return 1.0;
 }
 
-void FileSource::OnError() {}
+void FileSource::OnError(ErrorType type) {}
 
 BeepingSource::BeepingSource(const AudioParameters& params)
     : buffer_size_(params.GetBytesPerBuffer(kSampleFormatU8)),
@@ -310,7 +310,7 @@ int BeepingSource::OnMoreData(base::TimeDelta /* delay */,
   return dest->frames();
 }
 
-void BeepingSource::OnError() {}
+void BeepingSource::OnError(ErrorType type) {}
 
 void BeepingSource::BeepOnce() {
   GetBeepContext()->SetBeepOnce(true);

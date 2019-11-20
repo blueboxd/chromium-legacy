@@ -15,6 +15,7 @@
 void InitializeSafetyTipConfig();
 
 // Sets the patterns included in component with the given flag type for tests.
+// This will replace any flag patterns currently in the proto.
 void SetSafetyTipPatternsWithFlagType(
     std::vector<std::string> pattern,
     chrome_browser_safety_tips::FlaggedPage::FlagType type);
@@ -23,7 +24,8 @@ void SetSafetyTipPatternsWithFlagType(
 // calls SetSafetyTipPatternsWithFlagType with BAD_REPUTATION as the type.
 void SetSafetyTipBadRepPatterns(std::vector<std::string> pattern);
 
-// Sets allowlist patterns in the given proto for testing.
+// Sets allowlist patterns in the given proto for testing. This will replace any
+// allowlist patterns currently in the proto.
 void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns);
 
 #endif  // CHROME_BROWSER_REPUTATION_SAFETY_TIP_TEST_UTILS_H_

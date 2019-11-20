@@ -120,6 +120,7 @@
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/printing/print_view_manager_common.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -1062,7 +1063,7 @@ void Print(Browser* browser) {
 #if BUILDFLAG(ENABLE_PRINTING)
   auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
   printing::StartPrint(
-      web_contents, nullptr /* print_renderer */,
+      web_contents, mojo::NullAssociatedRemote() /* print_renderer */,
       browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled),
       false /* has_selection? */);
 #endif

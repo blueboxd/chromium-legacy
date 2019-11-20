@@ -19,7 +19,6 @@
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/url_data_source.h"
 #include "url/url_constants.h"
 
@@ -85,6 +84,11 @@ AppServiceProxy::AppServiceProxy(Profile* profile)
 
 AppServiceProxy::~AppServiceProxy() = default;
 
+// static
+void AppServiceProxy::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  AppServiceImpl::RegisterProfilePrefs(registry);
+}
+
 void AppServiceProxy::ReInitializeForTesting(Profile* profile) {
   // Some test code creates a profile and profile-linked services, like the App
   // Service, before the profile is fully initialized. Such tests can call this
@@ -106,8 +110,8 @@ void AppServiceProxy::Initialize() {
     return;
   }
 
-  app_service_impl_ = std::make_unique<apps::AppServiceImpl>(
-      content::BrowserContext::GetConnectorFor(profile_));
+  app_service_impl_ =
+      std::make_unique<apps::AppServiceImpl>(profile_->GetPrefs());
   app_service_impl_->BindReceiver(app_service_.BindNewPipeAndPassReceiver());
 
   if (app_service_.is_connected()) {

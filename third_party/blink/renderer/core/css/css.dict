@@ -337,6 +337,8 @@
 "inline-flex"
 "grid"
 "inline-grid"
+"math"
+"inline-math"
 "contents"
 "-webkit-flex"
 "-webkit-inline-flex"

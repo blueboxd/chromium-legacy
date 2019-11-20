@@ -307,16 +307,13 @@ Background.prototype = {
     }
 
     o.withRichSpeechAndBraille(
-        selectedRange || range, prevRange, Output.EventType.NAVIGATE);
-
-    o.withQueueMode(QueueMode.FLUSH);
+         selectedRange || range, prevRange, Output.EventType.NAVIGATE)
+        .withQueueMode(QueueMode.FLUSH)
+        .withInitialSpeechProperties(opt_speechProps);
 
     if (msg) {
       o.format(msg);
     }
-
-    for (var prop in opt_speechProps)
-      o.format('!' + prop);
 
     if (!skipOutput) {
       o.go();

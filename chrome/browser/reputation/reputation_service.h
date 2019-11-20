@@ -13,6 +13,7 @@
 #include "chrome/browser/reputation/safety_tip_ui.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/security_state/core/security_state.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -26,12 +27,20 @@ struct TriggeredHeuristics {
   bool blocklist_heuristic_triggered = false;
   bool lookalike_heuristic_triggered = false;
   bool keywords_heuristic_triggered = false;
+
+  inline bool triggered_any() const {
+    return blocklist_heuristic_triggered || lookalike_heuristic_triggered ||
+           keywords_heuristic_triggered;
+  }
 };
 
 // Wrapper used to store the results of a reputation check. Specifically, this
 // is passed to the callback given to GetReputationStatus.  |url| is the URL
 // applicable for this result.
 struct ReputationCheckResult {
+  ReputationCheckResult() = default;
+  ReputationCheckResult(const ReputationCheckResult& other) = default;
+
   security_state::SafetyTipStatus safety_tip_status =
       security_state::SafetyTipStatus::kNone;
   GURL url;
@@ -67,6 +76,12 @@ class ReputationService : public KeyedService {
                      const GURL& url,
                      SafetyTipInteraction interaction);
 
+  // Used to help mock the generated keywords for the sensitive keywords
+  // heuristic for testing. The keywords passed to this function MUST be in
+  // sorted order, and must have a lifetime at least as long as this service.
+  void SetSensitiveKeywordsForTesting(const char* const* new_keywords,
+                                      size_t num_new_keywords);
+
  private:
   // Returns whether the warning should be shown on the given URL. This is
   // mostly just a helper function to ensure that we always query the allowlist
@@ -76,8 +91,8 @@ class ReputationService : public KeyedService {
   // Callback once we have up-to-date |engaged_sites|. Performs checks on the
   // navigated |url|. Displays the warning when needed.
   void GetReputationStatusWithEngagedSites(
-      ReputationCheckCallback callback,
       const GURL& url,
+      ReputationCheckCallback callback,
       const std::vector<DomainInfo>& engaged_sites);
 
   // Set of origins that we've warned about, and the user has explicitly
@@ -86,12 +101,17 @@ class ReputationService : public KeyedService {
 
   Profile* profile_;
 
+  const char* const* sensitive_keywords_;
+  size_t num_sensitive_keywords_;
+
   base::WeakPtrFactory<ReputationService> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ReputationService);
 };
 
 // Checks SafeBrowsing-style permutations of |url| against the component updater
 // blocklist and returns the match type. kNone means the URL is not blocked.
+// This method assumes that the flagged pages in the safety tip config proto are
+// in sorted order.
 security_state::SafetyTipStatus GetSafetyTipUrlBlockType(const GURL& url);
 
 #endif  // CHROME_BROWSER_REPUTATION_REPUTATION_SERVICE_H_

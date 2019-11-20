@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -37,33 +38,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/features.h"
-
-namespace {
-
-// Retries fetching |histogram_name| until it contains at least |count| samples.
-void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
-                                        const std::string& histogram_name,
-                                        size_t count) {
-  while (true) {
-    base::ThreadPoolInstance::Get()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-    const std::vector<base::Bucket> buckets =
-        histogram_tester->GetAllSamples(histogram_name);
-    size_t total_count = 0;
-    for (const auto& bucket : buckets) {
-      total_count += bucket.count;
-    }
-    if (total_count >= count) {
-      break;
-    }
-  }
-}
-
-}  // namespace
 
 // The first parameter selects whether the DeferAllScript optimization type is
 // enabled, and the second parameter selects whether
@@ -262,13 +236,6 @@ class DeferAllScriptPriorityBrowserTest
 INSTANTIATE_TEST_SUITE_P(,
                          DeferAllScriptPriorityBrowserTest,
                          ::testing::Bool());
-
-// Avoid flakes and issues on non-applicable platforms.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
-#endif
 
 // Fetches an HTML weboage that fetches CSS files followed by an external
 // JavaScript file. Verifies that the fetching of the JavaScript files is

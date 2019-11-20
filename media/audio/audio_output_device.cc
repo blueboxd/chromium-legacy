@@ -21,7 +21,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_output_controller.h"
 #include "media/audio/audio_output_device_thread_callback.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/limits.h"

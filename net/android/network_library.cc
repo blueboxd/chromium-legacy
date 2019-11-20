@@ -90,12 +90,6 @@ bool GetMimeTypeFromExtension(const std::string& extension,
   return true;
 }
 
-std::string GetTelephonyNetworkCountryIso() {
-  return base::android::ConvertJavaStringToUTF8(
-      Java_AndroidNetworkLibrary_getNetworkCountryIso(
-          base::android::AttachCurrentThread()));
-}
-
 std::string GetTelephonyNetworkOperator() {
   return base::android::ConvertJavaStringToUTF8(
       Java_AndroidNetworkLibrary_getNetworkOperator(

@@ -655,9 +655,7 @@ ScriptPromise XR::InternalIsSessionSupported(ScriptState* script_state,
 
   if (session_mode == XRSession::kModeImmersiveAR &&
       !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
-    query->RejectWithTypeError(
-        String::Format(kImmersiveArModeNotValid, "supportsSession"),
-        &exception_state);
+    query->Resolve(false);
     return promise;
   }
 

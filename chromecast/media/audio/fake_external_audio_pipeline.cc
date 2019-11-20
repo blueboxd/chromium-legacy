@@ -82,6 +82,7 @@ class TestLoopBack {
     if (it != observers_.end()) {
       observers_.erase(it);
     }
+    observer->OnRemoved();
   }
 
  protected:

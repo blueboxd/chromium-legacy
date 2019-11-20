@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">ઍપ આઇકન</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> ને તમારા કૅમેરાને ઍક્સેસ કરવા દેવાનું ચાલુ રાખો</translation>
 <translation id="1414648216875402825">તમે <ph name="PRODUCT_NAME" />ના કામચલાઉ વર્ઝનમાં અપડેટ કરી રહ્યા છો, જે હજી વિકસી રહેલી સુવિધાઓ ધરાવે છે. ક્રેશ અને અનપેક્ષિત બગ આવશે. કૃપા કરીને સાવધાનીથી આગળ વધો.</translation>
-<translation id="1414866280542221544">આ ડિવાઇસ પર ચાલુ કરો</translation>
 <translation id="1415708812149920388">ક્લિપબોર્ડ વાંચવાનો ઍક્સેસ નકારેલ છે</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (એક્સ્ટેન્શન ID "<ph name="EXTENSION_ID" />") ને આ પ્રકારના સત્રમાં મંજૂરી નથી.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">પીઝા સ્લાઇસ</translation>
 <translation id="1468571364034902819">આ પ્રોફાઇલનો ઉપયોગ કરી શકતાં નથી</translation>
 <translation id="1470811252759861213">તમારા તમામ કમ્પ્યુટર્સ પર તમારા એક્સ્ટેન્શન્સ મેળવવા માટે, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">પિન સહિત સુરક્ષા કોડ પર રહેલા બધા ડેટાને આ કાઢી નાખશે</translation>
 <translation id="1472675084647422956">વધુ બતાવો</translation>
 <translation id="1475502736924165259">તમારી પાસે ફાઇલ પર પ્રમાણપત્રો છે જે અન્ય કોઈપણ કૅટેગરીઝમાં ફિટ થતાં નથી</translation>
 <translation id="1476088332184200792">તમારા ડિવાઇસ પર કૉપિ કરો</translation>
@@ -838,7 +836,6 @@
 <translation id="2202898655984161076">પિંટર્સની સૂચિ બનાવવામાં સમસ્યા આવી. તમારા કેટલાક પ્રિંટર્સ<ph name="CLOUD_PRINT_NAME" /> સાથે સફળતાપૂર્વક નોંધાઈ શક્યા નથી.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />સરનામાં બાર<ph name="END_LINK" />માં ઉપયોગમાં લેવામાં આવેલ શોધ એંજિન</translation>
 <translation id="2204034823255629767">તમે જે કંઈ લખો છો તેને વાંચો અને બદલો</translation>
-<translation id="2204397710290433380">ADB બંધ કરીએ?</translation>
 <translation id="220792432208469595">વપરાશ અને નિદાનનો ડેટા મોકલો. આ ડિવાઇસ હાલમાં Googleને નિદાન, ડિવાઇસ અને ઍપ વપરાશનો ડેટા ઑટોમૅટિક રીતે મોકલી રહ્યું છે. આ સિસ્ટમ અને ઍપની સ્થિરતા અને અન્ય સુધારણાઓમાં સહાય કરશે. એકત્રીકરણ કરેલો કેટલોક ડેટા Google ઍપ અને ભાગીદારોને પણ મદદ કરશે, જેમ કે Android ડેવલપર. આ સેટિંગ માલિક દ્વારા લાગુ કરવામાં આવેલ છે. જો તમારી વધારાની વેબ અને ઍપ પ્રવૃત્તિ સેટિંગ ચાલુ હોય, તો આ ડેટા તમારા Google એકાઉન્ટમાં સાચવવામાં આવી શકે છે. <ph name="BEGIN_LINK1" />વધુ જાણો<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">કૃપા કરીને "<ph name="DEVICE_NAME" />" પર આ પિન કોડ દાખલ કરો:</translation>
 <translation id="2213140827792212876">શેરિંગ કાઢી નાખો</translation>
@@ -975,6 +972,7 @@
 <translation id="2396783860772170191">4 અંકનો પિન (0000-9999) દાખલ કરો</translation>
 <translation id="2399939490305346086">સુરક્ષા કોડનો સાઇન ઇન ડેટા</translation>
 <translation id="2407481962792080328">જ્યારે તમે તમારા Google એકાઉન્ટમાં સાઇન ઇન કરો છો, ત્યારે આ સુવિધા ચાલુ કરવામાં આવે છે</translation>
+<translation id="2408018932941436077">કાર્ડ સાચવી રહ્યાં છીએ</translation>
 <translation id="2408955596600435184">તમારો PIN દાખલ કરો</translation>
 <translation id="241082044617551207">અજ્ઞાત પ્લગિન</translation>
 <translation id="2412593942846481727">અપડેટ ઉપલબ્ધ છે</translation>
@@ -2003,7 +2001,6 @@
 <translation id="3873315167136380065">આ ચાલુ કરવા માટે, તમારો સિંક પાસફ્રેઝ કાઢી નાખવા માટે <ph name="BEGIN_LINK" />સિંકને રીસેટ કરો<ph name="END_LINK" /></translation>
 <translation id="3873423927483480833">પિન બતાવો</translation>
 <translation id="3873915545594852654">ARC++માં સમસ્યા આવી.</translation>
-<translation id="387924939625099872">ADB બંધ કરવા માટે, તમારું <ph name="DEVICE_TYPE" /> ફરી શરૂ કરો. તેને ફેક્ટરી સેટિંગ પર રીસેટ કરવામાં આવશે અને તમામ વપરાશકર્તા એકાઉન્ટ અને સ્થાનિક ડેટા કાઢી નાખવામાં આવશે.</translation>
 <translation id="3879748587602334249">ડાઉનલોડ મેનેજર</translation>
 <translation id="3886446263141354045">આ સાઇટને ઍક્સેસ કરવાની તમારી વિનંતી <ph name="NAME" /> ને મોકલવામાં આવી છે</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> વડે નોંધ લેવી</translation>
@@ -2405,7 +2402,6 @@
 <translation id="4501530680793980440">રીમૂવલની પુષ્ટિ કરો</translation>
 <translation id="4502423230170890588">આ ડિવાઇસમાંથી કાઢી નાખો</translation>
 <translation id="4504940961672722399">આ આયકન પર ક્લિક કરીને અથવા <ph name="EXTENSION_SHORTCUT" /> દબાવીને આ એક્સ્ટેંશનનો ઉપયોગ કરો.</translation>
-<translation id="4506379069541445709">ચાલુ રાખવાથી, તે Android ઍપ બનાવવા અને તેનું પરીક્ષણ કરવા માટે ADBને ચાલુ કરશે. ધ્યાનમાં રાખો કે ADB, Google દ્વારા ચકાસણી થઈ ન હોય એવી પરીક્ષણ ઍપના ઇન્સ્ટૉલેશનની મંજૂરી આપે છે.</translation>
 <translation id="4508051413094283164">બધુ છુપી વિંડોમાં ખોલો</translation>
 <translation id="4508265954913339219">સક્રિયતા નિષ્ફળ</translation>
 <translation id="4508765956121923607">&amp;સ્રોત જુઓ</translation>
@@ -3309,7 +3305,6 @@
 <translation id="5851868085455377790">રજૂકર્તા </translation>
 <translation id="5852112051279473187">અરે! આ ડિવાઇસની નોંધણી કરતી વખતે ખરેખર કંઈક ખોટું થયું હતું. કૃપા કરીને ફરી પ્રયાસ કરો અથવા તમારા સપોર્ટ પ્રતિનિધિનો સંપર્ક કરો.</translation>
 <translation id="5852137567692933493">પુનઃપ્રારંભ કરો અને પાવરવૉશ કરો</translation>
-<translation id="5852360662347412211">Linux સેટિંગમાં જાઓ અને ફરી પ્રયાસ કરો</translation>
 <translation id="5854912040170951372">સ્લાઇસ</translation>
 <translation id="5855643921295613558">0.6 સેકન્ડ</translation>
 <translation id="5856721540245522153">ડિબગિંગ સુવિધાઓ ચાલુ કરો</translation>
@@ -3322,7 +3317,6 @@
 <translation id="5860494867054883682">તમારા ઉપકરણને <ph name="CHANNEL_NAME" /> ચેનલ પર અપડેટ કરી રહ્યાં છે (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">શેલ્ફમાં સ્ટાઇલસનાં સાધનો બતાવો</translation>
 <translation id="5863445608433396414">ડિબગીંગ સુવિધાઓ ચાલુ કરો</translation>
-<translation id="5863471434640009253">Android ડીબગ બ્રિજ ચાલુ કરવા માટે, પહેલાં તમારું <ph name="DEVICE_TYPE" /> ફરી શરૂ કરો. ADB બંધ કરવા ફેક્ટરી સેટિંગ પર રીસેટ કરવું જરૂરી છે.</translation>
 <translation id="5864471791310927901">DHCP લુકઅપ નિષ્ફળ</translation>
 <translation id="586567932979200359">તમે <ph name="PRODUCT_NAME" /> ને તેની ડિસ્ક છબીથી ચલાવી રહ્યા છો. તેને તમારા કમ્પ્યુટર પર ઇન્સ્ટોલ કરવાથી તમે તેને ડિસ્ક છબી વગર ચલાવી શકો છો, અને તે અપ-ટુ-ડેટ રાખવામાં આવશે તેની ખાતરી થાય છે.</translation>
 <translation id="5865733239029070421">Googleને વપરાશના આંકડા અને ક્રૅશ રિપોર્ટ ઑટોમૅટિક રીતે મોકલે છે</translation>
@@ -3393,7 +3387,6 @@ USB ડિવાઇસ</translation>
 <translation id="5958529069007801266">નિરીક્ષણ કરેલ વપરાશકર્તા</translation>
 <translation id="5959471481388474538">નેટવર્ક ઉપલબ્ધ નથી</translation>
 <translation id="595959584676692139">આ એક્સ્ટેંશનનો ઉપયોગ કરવા માટે પેજ ફરીથી લોડ કરો</translation>
-<translation id="5961320084471308154">ADBને બંધ કરીએ?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> પિક)</translation>
 <translation id="5965661248935608907">જ્યારે તમે હોમ બટન ક્લિક કરો અથવા ઑમ્નિબૉક્સ પરથી શોધ કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> <ph name="FOLDERNAME" />માં સાચવેલી ફાઇલોને જોઈ શકે છે</translation>
@@ -4257,7 +4250,6 @@ USB ડિવાઇસ</translation>
 <translation id="7254554697254365959">આ પૃષ્ઠનો અનુવાદ કરી શકાયો નથી.</translation>
 <translation id="7254951428499890870">શું તમે ખરેખર "<ph name="APP_NAME" />" ને ડાયગ્નોસ્ટિક મોડમાં લોંચ કરવા માગો છો?</translation>
 <translation id="7255002516883565667">હમણાં, તમારી પાસે એક કાર્ડ છે જેનો માત્ર આ ડિવાઇસ પર ઉપયોગ કરી શકાય છે</translation>
-<translation id="7255916308560539517">રીસેટ કન્ફર્મ કરવા માટે તમારા સુરક્ષા કોડને ટચ કરો. સુરક્ષા કોડ પરની, તેના પિન સહિતની તેમાં સ્ટોર કરેલી બધી માહિતી કાઢી નાખવામાં આવશે.</translation>
 <translation id="7255935316994522020">લાગુ કરો</translation>
 <translation id="7256069762010468647">સાઇટ તમારા કૅમેરાનો ઉપયોગ કરી રહી છે</translation>
 <translation id="7256405249507348194">અજ્ઞાત ભૂલ: <ph name="DESC" /></translation>
@@ -4766,6 +4758,7 @@ USB ડિવાઇસ</translation>
 <translation id="7968833647796919681">પ્રદર્શન ડેટા સંગ્રહ ચાલુ કરો</translation>
 <translation id="7968982339740310781">વિગતો જુઓ</translation>
 <translation id="7969046989155602842">આદેશ</translation>
+<translation id="7970882136539140748">હમણાં જ કાર્ડ સાચવી શકાતું નથી</translation>
 <translation id="7972714317346275248">RSA એન્ક્રિપ્શનવાળું PKCS #1 SHA-384</translation>
 <translation id="7973962044839454485">ખોટા વપરાશકર્તાનામ અથવા પાસવર્ડને કારણે PPP પ્રમાણીકરણ નિષ્ફળ થયું</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> નો ઉપયોગ કરીને ફરીથી પ્રયાસ કરો</translation>
@@ -5082,7 +5075,6 @@ USB ડિવાઇસ</translation>
 <translation id="8431909052837336408">SIM નો PIN બદલો</translation>
 <translation id="8434480141477525001">NaCl ડિબગ પોર્ટ</translation>
 <translation id="8435395510592618362"><ph name="APP_NAME" />ને તમારી ઓળખની ચકાસણી કરાવો</translation>
-<translation id="843760761634048214">ક્રેડિટ કાર્ડ સાચવો</translation>
 <translation id="8438328416656800239">એક સ્માર્ટ બ્રાઉઝર પર સ્વિચ કરો</translation>
 <translation id="8438566539970814960">શોધ અને બ્રાઉઝિંગ વધુ સારું બનાવો</translation>
 <translation id="8439506636278576865">આ ભાષામાં પૃષ્ઠોનું અનુવાદ કરવાની ઓફર આપે છે</translation>
@@ -5465,6 +5457,7 @@ USB ડિવાઇસ</translation>
 <translation id="8965037249707889821">જૂનો પાસવર્ડ દાખલ કરો</translation>
 <translation id="8966870118594285808">જો તમે ટૅબ અકસ્માતે બંધ કર્યું હોય, તો તે ફરી ખોલો</translation>
 <translation id="8967866634928501045">બતાવવા માટે Alt Shift A દબાવો</translation>
+<translation id="8968766641738584599">કાર્ડ સાચવો</translation>
 <translation id="89720367119469899">બહાર નીકળો</translation>
 <translation id="8972513834460200407">ફાયરવોલ Google સર્વર્સથી ડાઉનલોડ્સ અવરોધિત તો નથી કરતું તેની ખાતરી કરવા માટે કૃપા કરીને તમારા નેટવર્ક વ્યવસ્થાપક સાથે તપાસ કરો.</translation>
 <translation id="8973557916016709913">ઝૂમ સ્તર દૂર કરો</translation>
@@ -5571,7 +5564,6 @@ USB ડિવાઇસ</translation>
 <translation id="9116799625073598554">નોંધ લેતી અ‍ૅપ્લિકેશન</translation>
 <translation id="9117030152748022724">તમારી ઍપને મેનેજ કરો</translation>
 <translation id="9121814364785106365">પિન કરેલા ટૅબ તરીકે ખોલો</translation>
-<translation id="9122074588095746047">ADB ચાલુ કરી શક્યાં નથી</translation>
 <translation id="9124003689441359348">સાચવેલા પાસવર્ડ અહીં દેખાશે</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> બાકી)</translation>
 <translation id="9128317794749765148">સેટઅપ પૂર્ણ ન થઈ શક્યું</translation>

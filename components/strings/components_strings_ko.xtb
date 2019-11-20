@@ -277,7 +277,6 @@
 <translation id="2248949050832152960">WebAuthn 사용</translation>
 <translation id="2250931979407627383">왼쪽 에지 스티치</translation>
 <translation id="225207911366869382">이 값은 이 정책에 사용되지 않습니다.</translation>
-<translation id="2257315177824333709">죄송합니다. 지금은 카드를 저장할 수 없습니다.</translation>
 <translation id="2258928405015593961">만료일을 오늘 이후로 입력하고 다시 시도해 보세요.</translation>
 <translation id="2262243747453050782">HTTP 오류</translation>
 <translation id="2263079731045660823">Chrome 설정에서 신용카드 자동 완성 정보를 업데이트하세요.</translation>
@@ -662,6 +661,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{그 외 <ph name="ITEM_COUNT" />개 항목}other{그 외 <ph name="ITEM_COUNT" />개 항목}}</translation>
 <translation id="4176463684765177261">사용 중지됨</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4194250254487269611">지금은 카드를 저장할 수 없습니다.</translation>
 <translation id="4196861286325780578">이동 다시 실행(&amp;R)</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />방화벽 및 바이러스 백신 소프트웨어 설정 확인<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9(봉투)</translation>

@@ -59,13 +59,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div>|<br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
+  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0|<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-8 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<div><br>|</div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
+  '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0|<div><br></div><div><br></div><div><br></div>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '4-9 rtl right word');
 
 selection_test(

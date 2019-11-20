@@ -4710,6 +4710,9 @@ crbug.com/813704 http/tests/images/png-partial-load-as-document.html [ Failure P
 crbug.com/806645 [ Win7 ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 crbug.com/806645 [ Mac ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 
+crbug.com/1022816 external/wpt/resource-timing/crossorigin-sandwich-TAO.sub.html [ Failure ]
+crbug.com/1022816 virtual/omt-worker-fetch/external/wpt/resource-timing/crossorigin-sandwich-TAO.sub.html [ Failure ]
+
 # MHT works only when loaded from local FS (file://..).
 crbug.com/778467 [ Fuchsia ] mhtml/mhtml_in_iframe.html [ Failure ]
 
@@ -5868,8 +5871,3 @@ crbug.com/1025437 virtual/not-site-per-process/http/tests/devtools/debugger/fetc
 
 # Sheriff 2019-11-18
 crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]
-
-# Sheriff 2019-11-19
-crbug.com/1025582 external/wpt/webdriver/tests/perform_actions/validity.py>>test_pause_positive_integer[pointer] [ Failure Pass ]
-crbug.com/1025582 external/wpt/webdriver/tests/perform_actions/validity.py>>test_pause_positive_integer[key] [ Failure Pass ]
-crbug.com/1025582 external/wpt/webdriver/tests/perform_actions/validity.py>>test_pause_positive_integer[none] [ Failure Pass ]

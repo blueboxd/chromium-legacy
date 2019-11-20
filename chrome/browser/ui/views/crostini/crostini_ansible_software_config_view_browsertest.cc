@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/window/dialog_client_view.h"
 
 class CrostiniAnsibleSoftwareConfigViewBrowserTest
     : public CrostiniDialogBrowserTest {
@@ -59,9 +58,7 @@ class CrostiniAnsibleSoftwareConfigViewBrowserTest
   crostini::ContainerId container_id_;
 
  private:
-  bool HasAcceptButton() {
-    return ActiveView()->GetDialogClientView()->ok_button() != nullptr;
-  }
+  bool HasAcceptButton() { return ActiveView()->GetOkButton() != nullptr; }
 
   bool HasDefaultStrings() {
     return (ActiveView()->GetWindowTitle().compare(l10n_util::GetStringUTF16(

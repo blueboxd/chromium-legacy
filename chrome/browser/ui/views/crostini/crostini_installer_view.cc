@@ -39,7 +39,6 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using crostini::CrostiniResult;
 using crostini::mojom::InstallerError;
@@ -144,8 +143,9 @@ void CrostiniInstallerView::Show(
     views::DialogDelegate::CreateDialogWidget(g_crostini_installer_view,
                                               nullptr, nullptr);
 
-    g_crostini_installer_view->GetDialogClientView()->SetButtonRowInsets(
-        kOOBEButtonRowInsets);
+    // TODO(ellyjones): Why is this necessary? Why can't we use the default
+    // button row insets?
+    g_crostini_installer_view->SetButtonRowInsets(kOOBEButtonRowInsets);
     // We do our layout when the big message is at its biggest. Then we can
     // set it to the desired value.
     g_crostini_installer_view->big_message_label_->SetText(
@@ -404,8 +404,10 @@ void CrostiniInstallerView::OnInstallFinished(InstallerError error) {
   // Remove the buttons so they get recreated with correct color and
   // highlighting. Without this it is possible for both buttons to be styled
   // as default buttons.
-  delete GetDialogClientView()->ok_button();
-  delete GetDialogClientView()->cancel_button();
+  // TODO(ellyjones): This shouldn't be necessary - DialogModelChanged() should
+  // handle this case. Investigate.
+  delete GetOkButton();
+  delete GetCancelButton();
 
   DialogModelChanged();
   GetWidget()->GetRootView()->Layout();

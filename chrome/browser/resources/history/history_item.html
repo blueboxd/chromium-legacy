@@ -171,7 +171,7 @@
     </style>
 
     <div id="main-container">
-      <div id="background-clip">
+      <div id="background-clip" aria-hidden="true">
         <div id="background"></div>
       </div>
       <div id="date-accessed" class="card-title" role="heading" aria-level="2">
@@ -180,17 +180,21 @@
       <div id="item-container" focus-row-container
           on-mousedown="onItemMousedown_"
           on-click="onItemClick_">
-        <cr-checkbox id="checkbox" checked="[[selected]]" unresolved
-            focus-row-control focus-type="cr-checkbox"
-            on-mousedown="onCheckboxClick_" on-keydown="onCheckboxClick_"
-            on-change="onCheckboxChange_" class="no-label"
-            hidden="[[selectionNotAllowed_]]"
-            disabled="[[selectionNotAllowed_]]"
-            aria-label$="[[getEntrySummary_(item)]]"></cr-checkbox>
-        <span id="time-accessed">
+        <div role="gridcell">
+          <cr-checkbox id="checkbox" checked="[[selected]]" unresolved
+              focus-row-control focus-type="cr-checkbox"
+              on-mousedown="onCheckboxClick_" on-keydown="onCheckboxClick_"
+              on-change="onCheckboxChange_" class="no-label"
+              hidden="[[selectionNotAllowed_]]"
+              disabled="[[selectionNotAllowed_]]"
+              aria-label$="[[getEntrySummary_(item)]]"></cr-checkbox>
+        </div>
+        <!-- ARIA hidden to avoid redundancy since timestamp is already part of
+             |getEntrySummary_|. -->
+        <span id="time-accessed" aria-hidden="true">
           [[item.readableTimestamp]]
         </span>
-        <div id="title-and-domain">
+        <div id="title-and-domain" role="gridcell">
           <a href="[[item.url]]" id="link" class="website-link"
               focus-row-control focus-type="link"
               title="[[item.title]]" on-click="onLinkClick_"
@@ -203,16 +207,21 @@
         </div>
         <div id="star-container">
           <template is="dom-if" if="[[item.starred]]">
-            <cr-icon-button id="bookmark-star" iron-icon="cr:star"
-                focus-row-control focus-type="star"
-                title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">
-            </cr-icon-button>
+            <div role="gridcell">
+              <cr-icon-button id="bookmark-star" iron-icon="cr:star"
+                  focus-row-control focus-type="star"
+                  title="$i18n{removeBookmark}"
+                  on-click="onRemoveBookmarkTap_">
+              </cr-icon-button>
+            </div>
           </template>
         </div>
-        <cr-icon-button id="menu-button" iron-icon="cr:more-vert"
-            focus-row-control focus-type="cr-menu-button"
-            title="$i18n{actionMenuDescription}" on-click="onMenuButtonTap_"
-            aria-haspopup="menu"></cr-icon-button>
+        <div role="gridcell">
+          <cr-icon-button id="menu-button" iron-icon="cr:more-vert"
+              focus-row-control focus-type="cr-menu-button"
+              title="$i18n{actionMenuDescription}" on-click="onMenuButtonTap_"
+              aria-haspopup="menu"></cr-icon-button>
+        </div>
       </div>
       <div id="time-gap-separator" hidden="[[!hasTimeGap]]"></div>
     </div>

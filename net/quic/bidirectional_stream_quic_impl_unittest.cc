@@ -99,11 +99,8 @@ std::vector<TestParams> GetTestParams() {
   quic::ParsedQuicVersionVector all_supported_versions =
       quic::AllSupportedVersions();
   for (const auto& version : all_supported_versions) {
-    // TODO(rch): crbug.com/978745 - Make this work with TLS
-    if (version.handshake_protocol != quic::PROTOCOL_TLS1_3) {
-      params.push_back(TestParams{version, false});
-      params.push_back(TestParams{version, true});
-    }
+    params.push_back(TestParams{version, false});
+    params.push_back(TestParams{version, true});
   }
   return params;
 }
@@ -473,16 +470,21 @@ class BidirectionalStreamQuicImplTest
   }
 
   ~BidirectionalStreamQuicImplTest() {
-    session_->CloseSessionOnError(ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
-                                  quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    if (session_) {
+      session_->CloseSessionOnError(
+          ERR_ABORTED, quic::QUIC_INTERNAL_ERROR,
+          quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    }
     for (size_t i = 0; i < writes_.size(); i++) {
       delete writes_[i].packet;
     }
   }
 
   void TearDown() override {
-    EXPECT_TRUE(socket_data_->AllReadDataConsumed());
-    EXPECT_TRUE(socket_data_->AllWriteDataConsumed());
+    if (socket_data_) {
+      EXPECT_TRUE(socket_data_->AllReadDataConsumed());
+      EXPECT_TRUE(socket_data_->AllWriteDataConsumed());
+    }
   }
 
   // Adds a packet to the list of expected writes.
@@ -875,6 +877,11 @@ INSTANTIATE_TEST_SUITE_P(Version,
                          ::testing::PrintToStringParamName());
 
 TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -979,6 +986,11 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version))
@@ -1053,6 +1065,10 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
 // Tests that when request headers are not delayed, only data buffers are
 // coalesced.
 TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -1195,6 +1211,11 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
 // request headers with data buffers.
 TEST_P(BidirectionalStreamQuicImplTest,
        SendDataCoalesceDataBufferAndHeaderFrame) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -1312,6 +1333,11 @@ TEST_P(BidirectionalStreamQuicImplTest,
 // request headers with data buffers.
 TEST_P(BidirectionalStreamQuicImplTest,
        SendvDataCoalesceDataBuffersAndHeaderFrame) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -1448,6 +1474,11 @@ TEST_P(BidirectionalStreamQuicImplTest,
 // headers to be sent, if that write fails the stream does not crash.
 TEST_P(BidirectionalStreamQuicImplTest,
        SendDataWriteErrorCoalesceDataBufferAndHeaderFrame) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
@@ -1485,6 +1516,10 @@ TEST_P(BidirectionalStreamQuicImplTest,
 // headers to be sent, if that write fails the stream does not crash.
 TEST_P(BidirectionalStreamQuicImplTest,
        SendvDataWriteErrorCoalesceDataBufferAndHeaderFrame) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version))
     AddWrite(ConstructInitialSettingsPacket());
@@ -1523,6 +1558,11 @@ TEST_P(BidirectionalStreamQuicImplTest,
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -1619,6 +1659,11 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("PUT", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -1716,6 +1761,11 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -1824,6 +1874,11 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -1870,6 +1925,11 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -1934,6 +1994,11 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -2046,6 +2111,11 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeStartNotConfirmed) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, SessionCloseDuringOnStreamReady) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   if (VersionUsesHttp3(version_.transport_version))
@@ -2074,6 +2144,11 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionCloseDuringOnStreamReady) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnStreamReady) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -2108,6 +2183,11 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnStreamReady) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -2166,6 +2246,11 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -2216,6 +2301,11 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
@@ -2277,6 +2367,11 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   const char kBody[] = "here is some data";
   SetRequest("POST", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
@@ -2356,6 +2451,11 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // QUIC with TLS1.3 handshake doesn't support 0-rtt.
+    return;
+  }
+
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   size_t spdy_request_headers_frame_length;
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);

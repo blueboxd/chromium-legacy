@@ -169,17 +169,8 @@ MockFeedback.prototype = {
    * @return {MockFeedback} |this| for chaining
    */
   expectSpeechWithQueueMode: function(text, queueMode) {
-    assertFalse(this.replaying_);
-    this.pendingActions_.push({
-      perform: function() {
-        return !!MockFeedback.matchAndConsume_(
-            text, {queueMode: queueMode}, this.pendingUtterances_);
-      }.bind(this),
-      toString: function() {
-        return 'Speak \'' + text + '\' with mode ' + queueMode;
-      }
-    });
-    return this;
+    return this.expectSpeechWithProperties.apply(
+        this, [{queueMode: queueMode}, text]);
   },
 
   /**
@@ -217,15 +208,27 @@ MockFeedback.prototype = {
    * @return {MockFeedback} |this| for chaining
    */
   expectSpeechWithLanguage: function(language, ...rest) {
+    return this.expectSpeechWithProperties.apply(
+        this, [{lang: language}].concat(rest));
+  },
+
+  /**
+   * Adds expectations for spoken utterances with properties.
+   * @param {!Object} expectedProps
+   * @param {...(string)} rest One or more utterances to add as expectations.
+   * @return {MockFeedback} |this| for chaining
+   */
+  expectSpeechWithProperties: function(expectedProps, ...rest) {
     assertFalse(this.replaying_);
     Array.prototype.forEach.call(rest, function(text) {
       this.pendingActions_.push({
         perform: function() {
           return !!MockFeedback.matchAndConsume_(
-              text, {lang: language}, this.pendingUtterances_);
+              text, expectedProps, this.pendingUtterances_);
         }.bind(this),
         toString: function() {
-          return 'Speak \'' + text + '\' with language ' + language;
+          return 'Speak \'' + text + '\' with props ' +
+              JSON.stringify(expectedProps);
         }
       });
     }.bind(this));
@@ -389,12 +392,15 @@ MockFeedback.prototype = {
         endCallback && endCallback();
       };
     }
-    this.pendingUtterances_.push({
+    // Make a copy of all properties in a single object to be used in
+    // matchAndConsume.
+    var allProperties = {
       text: textString,
       queueMode: queueMode,
-      lang: properties ? properties['lang'] : undefined,
+      properties: properties,
       callback: callback
-    });
+    };
+    this.pendingUtterances_.push(allProperties);
     this.process_();
   },
 
@@ -458,6 +464,9 @@ MockFeedback.prototype = {
             'Pending ' + desc + ':\n  ' +
             list.map(function(i) {
                   var ret = '\'' + i.text + '\'';
+                  if ('properties' in i) {
+                    ret += ' properties=' + JSON.stringify(i.properties);
+                  }
                   if ('startIndex' in i) {
                     ret += ' startIndex=' + i.startIndex;
                   }
@@ -497,7 +506,9 @@ MockFeedback.matchAndConsume_ = function(text, props, pending) {
         (typeof (text) == 'function' && text(candidate))) {
       var matched = true;
       for (prop in props) {
-        if (candidate[prop] !== props[prop]) {
+        if (candidate[prop] !== props[prop] &&
+            (!candidate.properties ||
+             candidate.properties[prop] != props[prop])) {
           matched = false;
           break;
         }

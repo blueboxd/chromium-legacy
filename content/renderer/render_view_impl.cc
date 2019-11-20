@@ -1676,10 +1676,6 @@ void RenderViewImpl::FocusedElementChanged(const WebElement& from_element,
     previous_frame->FocusedElementChanged(WebElement());
   if (new_frame)
     new_frame->FocusedElementChanged(to_element);
-
-  // TODO(dmazzoni): remove once there's a separate a11y tree per frame.
-  if (main_render_frame_)
-    main_render_frame_->FocusedElementChangedForAccessibility(to_element);
 }
 
 void RenderViewImpl::DidUpdateMainFrameLayout() {

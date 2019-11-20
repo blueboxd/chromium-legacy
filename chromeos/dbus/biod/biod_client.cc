@@ -54,12 +54,12 @@ class BiodClientImpl : public BiodClient {
 
   void StartEnrollSession(const std::string& user_id,
                           const std::string& label,
-                          const ObjectPathCallback& callback) override {
+                          ObjectPathCallback callback) override {
     // If we are already in enroll session, just return an invalid ObjectPath.
     // The one who initially start the enroll session will have control
     // over the life cycle of the session.
     if (current_enroll_session_path_) {
-      callback.Run(dbus::ObjectPath());
+      std::move(callback).Run(dbus::ObjectPath());
       return;
     }
 
@@ -73,7 +73,7 @@ class BiodClientImpl : public BiodClient {
     biod_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BiodClientImpl::OnStartEnrollSession,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetRecordsForUser(const std::string& user_id,
@@ -100,12 +100,12 @@ class BiodClientImpl : public BiodClient {
         base::BindOnce(&OnVoidResponse, std::move(callback)));
   }
 
-  void StartAuthSession(const ObjectPathCallback& callback) override {
+  void StartAuthSession(ObjectPathCallback callback) override {
     // If we are already in auth session, just return an invalid ObjectPath.
     // The one who initially start the auth session will have control
     // over the life cycle of the session.
     if (current_auth_session_path_) {
-      callback.Run(dbus::ObjectPath(std::string()));
+      std::move(callback).Run(dbus::ObjectPath(std::string()));
       return;
     }
 
@@ -116,7 +116,7 @@ class BiodClientImpl : public BiodClient {
     biod_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&BiodClientImpl::OnStartAuthSession,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void RequestType(BiometricTypeCallback callback) override {
@@ -243,7 +243,7 @@ class BiodClientImpl : public BiodClient {
   }
 
  private:
-  void OnStartEnrollSession(const ObjectPathCallback& callback,
+  void OnStartEnrollSession(ObjectPathCallback callback,
                             dbus::Response* response) {
     dbus::ObjectPath result;
     if (response) {
@@ -256,7 +256,7 @@ class BiodClientImpl : public BiodClient {
 
     if (result.IsValid())
       current_enroll_session_path_ = std::make_unique<dbus::ObjectPath>(result);
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   void OnGetRecordsForUser(UserRecordsCallback callback,
@@ -273,7 +273,7 @@ class BiodClientImpl : public BiodClient {
     std::move(callback).Run(result);
   }
 
-  void OnStartAuthSession(const ObjectPathCallback& callback,
+  void OnStartAuthSession(ObjectPathCallback callback,
                           dbus::Response* response) {
     dbus::ObjectPath result;
     if (response) {
@@ -286,7 +286,7 @@ class BiodClientImpl : public BiodClient {
 
     if (result.IsValid())
       current_auth_session_path_ = std::make_unique<dbus::ObjectPath>(result);
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   void OnRequestType(BiometricTypeCallback callback, dbus::Response* response) {

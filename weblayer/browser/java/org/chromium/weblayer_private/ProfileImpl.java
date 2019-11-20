@@ -13,6 +13,7 @@ import org.chromium.weblayer_private.interfaces.BrowsingDataType;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ public final class ProfileImpl extends IProfile.Stub {
 
     @Override
     public void destroy() {
+        StrictModeWorkaround.apply();
         ProfileImplJni.get().deleteProfile(mNativeProfile);
         mNativeProfile = 0;
         mOnDestroyCallback.run();
@@ -42,12 +44,14 @@ public final class ProfileImpl extends IProfile.Stub {
 
     @Override
     public String getPath() {
+        StrictModeWorkaround.apply();
         return mPath;
     }
 
     @Override
     public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes, long fromMillis,
             long toMillis, @NonNull IObjectWrapper completionCallback) {
+        StrictModeWorkaround.apply();
         Runnable callback = ObjectWrapper.unwrap(completionCallback, Runnable.class);
         ProfileImplJni.get().clearBrowsingData(
                 mNativeProfile, mapBrowsingDataTypes(dataTypes), fromMillis, toMillis, callback);

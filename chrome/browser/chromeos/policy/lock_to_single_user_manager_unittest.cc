@@ -59,13 +59,14 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
+    lock_to_single_user_manager_.reset();
+
     arc_session_manager_->Shutdown();
     arc_service_manager_->set_browser_context(nullptr);
 
     BrowserWithTestWindowTest::TearDown();
     arc_session_manager_.reset();
     arc_service_manager_.reset();
-    lock_to_single_user_manager_.reset();
 
     chromeos::CryptohomeClient::Shutdown();
     chromeos::LoginState::Shutdown();
@@ -159,20 +160,7 @@ TEST_F(LockToSingleUserManagerTest, ArcSessionLockTest) {
   EXPECT_TRUE(is_device_locked());
 }
 
-// Crashes on Linux. http://crbug.com/1025918
-#if defined(OS_LINUX)
-#define MAYBE_ConciergeStartLockTest DISABLED_ConciergeStartLockTest
-#define MAYBE_PluginVmStartLockTest DISABLED_PluginVmStartLockTest
-#define MAYBE_UnexpectedVmStartLockTest DISABLED_UnexpectedVmStartLockTest
-#define MAYBE_DbusVmStartLockTest DISABLED_DbusVmStartLockTest
-#else
-#define MAYBE_ConciergeStartLockTest ConciergeStartLockTest
-#define MAYBE_PluginVmStartLockTest PluginVmStartLockTest
-#define MAYBE_UnexpectedVmStartLockTest UnexpectedVmStartLockTest
-#define MAYBE_DbusVmStartLockTest DbusVmStartLockTest
-#endif
-
-TEST_F(LockToSingleUserManagerTest, MAYBE_ConciergeStartLockTest) {
+TEST_F(LockToSingleUserManagerTest, ConciergeStartLockTest) {
   SetPolicyValue(enterprise_management::DeviceRebootOnUserSignoutProto::
                      VM_STARTED_OR_ARC_SESSION);
   LogInUser(false /* is_affiliated */);
@@ -182,7 +170,7 @@ TEST_F(LockToSingleUserManagerTest, MAYBE_ConciergeStartLockTest) {
   EXPECT_TRUE(is_device_locked());
 }
 
-TEST_F(LockToSingleUserManagerTest, MAYBE_PluginVmStartLockTest) {
+TEST_F(LockToSingleUserManagerTest, PluginVmStartLockTest) {
   SetPolicyValue(enterprise_management::DeviceRebootOnUserSignoutProto::
                      VM_STARTED_OR_ARC_SESSION);
   LogInUser(false /* is_affiliated */);
@@ -192,7 +180,7 @@ TEST_F(LockToSingleUserManagerTest, MAYBE_PluginVmStartLockTest) {
   EXPECT_TRUE(is_device_locked());
 }
 
-TEST_F(LockToSingleUserManagerTest, MAYBE_DbusVmStartLockTest) {
+TEST_F(LockToSingleUserManagerTest, DbusVmStartLockTest) {
   SetPolicyValue(enterprise_management::DeviceRebootOnUserSignoutProto::
                      VM_STARTED_OR_ARC_SESSION);
   LogInUser(false /* is_affiliated */);
@@ -202,7 +190,7 @@ TEST_F(LockToSingleUserManagerTest, MAYBE_DbusVmStartLockTest) {
   EXPECT_TRUE(is_device_locked());
 }
 
-TEST_F(LockToSingleUserManagerTest, MAYBE_UnexpectedVmStartLockTest) {
+TEST_F(LockToSingleUserManagerTest, UnexpectedVmStartLockTest) {
   SetPolicyValue(enterprise_management::DeviceRebootOnUserSignoutProto::
                      VM_STARTED_OR_ARC_SESSION);
   LogInUser(false /* is_affiliated */);

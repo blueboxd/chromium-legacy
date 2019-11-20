@@ -687,7 +687,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="6108923351542677676">Konfigurasjon pågår …</translation>
 <translation id="6111020039983847643">data brukt</translation>
 <translation id="6112702117600201073">Oppdaterer siden.</translation>
-<translation id="6127379762771434464">Elementet ble fjernet</translation>
+<translation id="6127379762771434464">Elementet er fjernet</translation>
 <translation id="6140912465461743537">Land/område</translation>
 <translation id="614940544461990577">Prøv dette:</translation>
 <translation id="6154478581116148741">Slå på skjermlåsen i Innstillinger for å eksportere passordene dine fra denne enheten</translation>
@@ -789,6 +789,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6818926723028410516">Velg elementer</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Oversett</translation>
+<translation id="6840155290835956714">Spør før noe sendes</translation>
 <translation id="6845325883481699275">Bidra til å gjøre Chrome sikrere</translation>
 <translation id="6846298663435243399">Laster inn …</translation>
 <translation id="6850409657436465440">Nedlastingen din pågår fremdeles</translation>
@@ -1095,7 +1096,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="9133397713400217035">Utforsk uten nett</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis original</translation>
-<translation id="9139068048179869749">Spør før nettsteder får sende varsler (anbefales)</translation>
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Du kan også søke med et kjapt trykk på et ord</translation>
 <translation id="9169507124922466868">Navigasjonshistorikken er halvveis åpnet</translation>

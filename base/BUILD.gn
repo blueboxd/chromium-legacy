@@ -2931,7 +2931,7 @@ test("base_unittests") {
       "files/file_descriptor_watcher_posix_unittest.cc",
       "memory/madv_free_discardable_memory_allocator_posix_unittest.cc",
       "memory/madv_free_discardable_memory_posix_unittest.cc",
-      "message_loop/message_loop_io_posix_unittest.cc",
+      "message_loop/fd_watch_controller_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
       "posix/unix_domain_socket_unittest.cc",
       "task/thread_pool/task_tracker_posix_unittest.cc",
@@ -3098,7 +3098,7 @@ test("base_unittests") {
       "fuchsia/service_directory_test_base.cc",
       "fuchsia/service_directory_test_base.h",
       "fuchsia/service_provider_impl_unittest.cc",
-      "message_loop/message_loop_io_posix_unittest.cc",
+      "message_loop/fd_watch_controller_posix_unittest.cc",
       "posix/file_descriptor_shuffle_unittest.cc",
       "task/thread_pool/task_tracker_posix_unittest.cc",
     ]

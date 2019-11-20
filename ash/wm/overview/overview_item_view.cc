@@ -244,17 +244,18 @@ int OverviewItemView::GetMargin() const {
 }
 
 gfx::Rect OverviewItemView::GetHeaderBounds() const {
-  // The size of the close button resource, |image_width| is scaled up to
-  // |close_button_width| when laid out. The resource itself contains some
-  // padding, which is the distance from the edges of the image to the edges of
-  // the vector icon. We want to align the edges of the image as shown below in
-  // the diagram. The resource padding, like the rest of the resource is scaled
-  // up, so calculate the scaled up resource padding.
+  // We want to align the edges of the image as shown below in the diagram. The
+  // resource itself contains some padding, which is the distance from the edges
+  // of the image to the edges of the vector icon. The icon keeps its size in
+  // dips and is centered in the middle of the preferred width, so the
+  // additional padding would be equal to half the difference in width between
+  // the preferred width and the image size. The resulting padding would be that
+  // number plus the padding in the resource, in dips.
   const int image_width =
       close_button_->GetImage(views::ImageButton::STATE_NORMAL).width();
-  const int close_button_width = close_button_->width();
-  const int right_padding = gfx::ToRoundedInt(
-      kCloseButtonIconMarginDp * float{close_button_width} / image_width);
+  const int close_button_width = close_button_->GetPreferredSize().width();
+  const int right_padding =
+      (close_button_width - image_width) / 2 + kCloseButtonIconMarginDp;
   const int margin = GetMargin();
 
   // Positions the header in a way so that the right aligned close button is
@@ -269,7 +270,13 @@ gfx::Rect OverviewItemView::GetHeaderBounds() const {
   // ---------------------------+---------+
   //                                   c
   //                                   |
-  return gfx::Rect(margin, margin, GetLocalBounds().width() - right_padding,
+
+  // The size of this view is larger than that of the visible elements. Position
+  // the header so that the margin is accounted for, then shift the right bounds
+  // by a bit so that the close button resource lines up with the right edge of
+  // the visible region.
+  return gfx::Rect(margin, margin,
+                   GetLocalBounds().width() - (2 * margin) + right_padding,
                    kHeaderHeightDp);
 }
 

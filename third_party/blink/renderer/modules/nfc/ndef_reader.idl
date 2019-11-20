@@ -15,5 +15,5 @@
     attribute EventHandler onreading;
     attribute EventHandler onerror;
 
-    void scan(optional NDEFScanOptions options);
+    void scan(optional NDEFScanOptions options={});
 };

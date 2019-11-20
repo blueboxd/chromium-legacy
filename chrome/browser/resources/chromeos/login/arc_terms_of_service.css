@@ -72,9 +72,6 @@ p {
   font-weight: 600;
 }
 
-#arc-tos-container {
-  box-shadow: 0 -2px 2px -2px rgba(0, 0, 0, 0.14);
-}
 
 #arc-tos-container::-webkit-scrollbar {
   display: none;
@@ -90,7 +87,6 @@ p {
 }
 
 #arc-tos-view-container {
-  border: 1px solid #d9d9d9;
   box-sizing: border-box;
   margin: 0;
   padding: 0;

@@ -85,15 +85,10 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   void UpdateInterval(SMILTime presentation_time);
   void UpdateActiveState(SMILTime elapsed);
-  // Updates the next interval time for this element. After calling this,
-  // SMILTimeContainer::Reschedule() should be called in close proximity to
-  // make sure the priority queue is up-to-date/correctly sorted.
-  void UpdateNextIntervalTime(SMILTime presentation_time);
   void UpdateProgressState(SMILTime presentation_time);
   bool IsHigherPriorityThan(const SVGSMILElement* other,
                             SMILTime presentation_time) const;
 
-  SMILTime NextIntervalTime() const { return next_interval_time_; }
   SMILTime ComputeNextIntervalTime(SMILTime presentation_time) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;
   void UpdateAnimatedValue(SVGSMILElement* result_element) {
@@ -275,7 +270,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   // This is the previous interval. It should always be non-overlapping and
   // "before" |interval_|.
   SMILInterval previous_interval_;
-  SMILTime next_interval_time_;
 
   unsigned active_state_ : 2;
   unsigned restart_ : 2;

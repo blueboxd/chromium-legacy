@@ -805,10 +805,6 @@ class GFX_EXPORT RenderText {
   // range. Maintains directionality of |range|.
   Range ExpandRangeToWordBoundary(const Range& range) const;
 
-  // Expands |range| to its nearest grapheme boundaries and returns the
-  // resulting range.
-  Range ExpandRangeToGraphemeBoundary(const Range& range);
-
   // Returns an implementation-specific run list, if implemented.
   virtual internal::TextRunList* GetRunList();
   virtual const internal::TextRunList* GetRunList() const;

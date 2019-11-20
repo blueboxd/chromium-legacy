@@ -11209,7 +11209,7 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
   EXPECT_EQ(kViewportHeight - kBrowserControlsHeight,
             compositor->RootLayer()->BoundingBoxForCompositing().Height());
 
-  document->View()->SetTracksPaintInvalidations(true);
+  document->View()->SetTracksRasterInvalidations(true);
 
   web_view->ResizeWithBrowserControls(WebSize(kViewportWidth, kViewportHeight),
                                       kBrowserControlsHeight, 0, false);
@@ -11232,7 +11232,7 @@ TEST_F(WebFrameTest, RootLayerMinimumHeight) {
   // scrolling contents layer whose size hasn't changed.
   EXPECT_TRUE(raster_invalidations.IsEmpty());
 
-  document->View()->SetTracksPaintInvalidations(false);
+  document->View()->SetTracksRasterInvalidations(false);
 }
 
 // Load a page with display:none set and try to scroll it. It shouldn't crash

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import static org.chromium.chrome.browser.ui.system.StatusBarColorController.UNDEFINED_STATUS_BAR_COLOR;
 
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 
@@ -17,14 +18,14 @@ import javax.inject.Inject;
  */
 @ActivityScope
 public class CustomTabStatusBarColorProvider {
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final ActivityTabProvider mActivityTabProvider;
     private final StatusBarColorController mStatusBarColorController;
 
     private boolean mUseTabThemeColor;
 
     @Inject
-    public CustomTabStatusBarColorProvider(CustomTabIntentDataProvider intentDataProvider,
+    public CustomTabStatusBarColorProvider(BrowserServicesIntentDataProvider intentDataProvider,
             ActivityTabProvider activityTabProvider,
             StatusBarColorController statusBarColorController) {
         mIntentDataProvider = intentDataProvider;

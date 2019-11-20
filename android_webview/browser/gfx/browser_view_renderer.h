@@ -182,7 +182,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
       CompositorFrameConsumer* compositor_frame_consumer);
   void ReleaseHardware();
   bool DoUpdateParentDrawData();
-  void SetNeedsBeginFrames(bool needs_begin_frames);
+  void Invalidate();
 
   gfx::Vector2d max_scroll_offset() const;
 

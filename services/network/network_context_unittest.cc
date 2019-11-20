@@ -4454,12 +4454,13 @@ class MockMojoProxyResolverFactory
 
   // Binds and returns a mock ProxyResolverFactory whose lifetime is bound to
   // the message pipe.
-  static proxy_resolver::mojom::ProxyResolverFactoryPtrInfo Create() {
+  static mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+  Create() {
     mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory> remote;
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<MockMojoProxyResolverFactory>(),
         remote.InitWithNewPipeAndPassReceiver());
-    return std::move(remote);
+    return remote;
   }
 
  private:

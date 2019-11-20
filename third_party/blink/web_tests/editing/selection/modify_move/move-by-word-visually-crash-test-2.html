@@ -9,7 +9,7 @@ if (window.internals)
 selection_test(
   '<div contenteditable><vkern></vkern><marquee><div>|abc def</div></marquee></div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable><vkern></vkern><marquee><div>abc |def</div></marquee></div>',
+  '<div contenteditable><vkern></vkern><marquee><div>abc def|</div></marquee></div>',
   '1-0 left word');
 
 selection_test(

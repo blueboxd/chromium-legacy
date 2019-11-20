@@ -62,8 +62,10 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   void DidActivatePendingTree() final;
   void Invalidate(bool needs_draw) final;
   void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
-                             viz::CompositorFrame frame) final;
+                             base::Optional<viz::CompositorFrame> frame) final;
   void SetNeedsBeginFrames(bool needs_begin_frames) final;
+  void OnBeginFrameForAnimateInput(
+      const viz::BeginFrameArgs& begin_frame_args) final;
   void SinkDestroyed() final;
 
   void SetLayerTreeFrameSink(
@@ -124,6 +126,8 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   mojo::AssociatedRemote<mojom::SynchronousCompositorHost> host_;
   mojo::AssociatedReceiver<mojom::SynchronousCompositor> receiver_{this};
   const bool use_in_process_zero_copy_software_draw_;
+
+  const bool using_viz_for_webview_;
 
   bool compute_scroll_called_via_ipc_ = false;
   bool browser_needs_begin_frame_state_ = false;

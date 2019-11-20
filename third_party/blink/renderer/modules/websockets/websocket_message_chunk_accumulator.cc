@@ -81,6 +81,14 @@ void WebSocketMessageChunkAccumulator::Clear() {
   }
 }
 
+void WebSocketMessageChunkAccumulator::Reset() {
+  segments_.clear();
+  pool_.clear();
+  size_ = 0;
+  num_pooled_segments_to_be_removed_ = 0;
+  timer_.Stop();
+}
+
 void WebSocketMessageChunkAccumulator::OnTimerFired(TimerBase*) {
   DCHECK(!timer_.IsActive());
   const auto to_be_removed =

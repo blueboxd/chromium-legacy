@@ -12,11 +12,6 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 500, 200],
-          "reason": "chunk disappeared"
-        },
-        {
           "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 300, 64, 22],
           "reason": "chunk appeared"

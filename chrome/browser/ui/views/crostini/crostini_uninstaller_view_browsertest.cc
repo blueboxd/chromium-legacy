@@ -22,7 +22,6 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/window/dialog_client_view.h"
 
 class CrostiniUninstallerViewBrowserTest : public CrostiniDialogBrowserTest {
  public:
@@ -70,13 +69,9 @@ class CrostiniUninstallerViewBrowserTest : public CrostiniDialogBrowserTest {
     return CrostiniUninstallerView::GetActiveViewForTesting();
   }
 
-  bool HasAcceptButton() {
-    return ActiveView()->GetDialogClientView()->ok_button() != nullptr;
-  }
+  bool HasAcceptButton() { return ActiveView()->GetOkButton() != nullptr; }
 
-  bool HasCancelButton() {
-    return ActiveView()->GetDialogClientView()->cancel_button() != nullptr;
-  }
+  bool HasCancelButton() { return ActiveView()->GetCancelButton() != nullptr; }
 
   void WaitForViewDestroyed() {
     base::RunLoop().RunUntilIdle();
@@ -117,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstallerViewBrowserTest, UninstallFlow) {
   EXPECT_TRUE(HasAcceptButton());
   EXPECT_TRUE(HasCancelButton());
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_FALSE(HasAcceptButton());
   EXPECT_FALSE(HasCancelButton());
@@ -146,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstalledUninstallerViewBrowserTest,
   EXPECT_TRUE(HasAcceptButton());
   EXPECT_TRUE(HasCancelButton());
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
 
   WaitForViewDestroyed();
 
@@ -162,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstallerViewBrowserTest, Cancel) {
 
   ShowUi("default");
   EXPECT_NE(nullptr, ActiveView());
-  ActiveView()->GetDialogClientView()->CancelWindow();
+  ActiveView()->CancelDialog();
   EXPECT_TRUE(ActiveView()->GetWidget()->IsClosed());
   WaitForViewDestroyed();
 
@@ -181,11 +176,11 @@ IN_PROC_BROWSER_TEST_F(CrostiniUninstallerViewBrowserTest, ErrorThenCancel) {
   response.set_success(false);
   waiting_fake_concierge_client_->set_stop_vm_response(std::move(response));
 
-  ActiveView()->GetDialogClientView()->AcceptWindow();
+  ActiveView()->AcceptDialog();
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   waiting_fake_concierge_client_->WaitForStopVmCalled();
   EXPECT_TRUE(HasCancelButton());
-  ActiveView()->GetDialogClientView()->CancelWindow();
+  ActiveView()->CancelDialog();
   WaitForViewDestroyed();
 
   histogram_tester.ExpectUniqueSample(

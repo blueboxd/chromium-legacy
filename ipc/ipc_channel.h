@@ -90,7 +90,7 @@ class COMPONENT_EXPORT(IPC) Channel : public Sender {
   class COMPONENT_EXPORT(IPC) AssociatedInterfaceSupport {
    public:
     using GenericAssociatedInterfaceFactory =
-        base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>;
+        base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>;
 
     virtual ~AssociatedInterfaceSupport() {}
 
@@ -114,26 +114,28 @@ class COMPONENT_EXPORT(IPC) Channel : public Sender {
     // AsscoiatedRemote.
     // Template helper to add an interface factory to this channel.
     template <typename Interface>
-    using AssociatedInterfaceFactory =
-        base::Callback<void(mojo::AssociatedInterfaceRequest<Interface>)>;
+    using AssociatedInterfaceFactory = base::RepeatingCallback<void(
+        mojo::AssociatedInterfaceRequest<Interface>)>;
     template <typename Interface>
     void AddAssociatedInterface(
         const AssociatedInterfaceFactory<Interface>& factory) {
       AddGenericAssociatedInterface(
           Interface::Name_,
-          base::Bind(&BindAssociatedInterfaceRequest<Interface>, factory));
+          base::BindRepeating(&BindAssociatedInterfaceRequest<Interface>,
+                              factory));
     }
 
     // Template helper to add an interface factory to this channel.
     template <typename Interface>
-    using AssociatedReceiverFactory =
-        base::Callback<void(mojo::PendingAssociatedReceiver<Interface>)>;
+    using AssociatedReceiverFactory = base::RepeatingCallback<void(
+        mojo::PendingAssociatedReceiver<Interface>)>;
     template <typename Interface>
     void AddAssociatedInterface(
         const AssociatedReceiverFactory<Interface>& factory) {
       AddGenericAssociatedInterface(
           Interface::Name_,
-          base::Bind(&BindPendingAssociatedReceiver<Interface>, factory));
+          base::BindRepeating(&BindPendingAssociatedReceiver<Interface>,
+                              factory));
     }
 
     // Remove this after done with migrating all AsscoiatedInterfacePtr to

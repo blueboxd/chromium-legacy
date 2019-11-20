@@ -125,11 +125,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterAndroid final
 
   void PurgeTimedOutDevices();
 
+  // Utility function used to create a Java object that represents the filter.
+  base::android::ScopedJavaLocalRef<jobject> CreateAndroidFilter(
+      const BluetoothDiscoveryFilter* discovery_filter);
+
   // Java object org.chromium.device.bluetooth.ChromeBluetoothAdapter.
   base::android::ScopedJavaGlobalRef<jobject> j_adapter_;
 
  private:
-
+  FRIEND_TEST_ALL_PREFIXES(BluetoothAdapterAndroidTest, ScanFilterTest);
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<BluetoothAdapterAndroid> weak_ptr_factory_{this};

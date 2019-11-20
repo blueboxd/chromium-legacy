@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Hello'",
+          "object": "LayoutSVGContainer g",
           "rect": [9, 12, 48, 30],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

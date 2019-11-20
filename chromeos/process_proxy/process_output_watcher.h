@@ -24,9 +24,8 @@ enum ProcessOutputType {
   PROCESS_OUTPUT_TYPE_EXIT
 };
 
-typedef base::Callback<void(ProcessOutputType,
-                            const std::string&,
-                            const base::Closure&)> ProcessOutputCallback;
+using ProcessOutputCallback = base::RepeatingCallback<
+    void(ProcessOutputType, const std::string&, base::OnceClosure)>;
 
 // Observes output on |out_fd| and invokes |callback| when some output is
 // detected. It assumes UTF8 output.
@@ -55,7 +54,7 @@ class CHROMEOS_EXPORT ProcessOutputWatcher {
   // output.
   void ReportOutput(ProcessOutputType type,
                     size_t new_bytes_count,
-                    const base::Closure& callback);
+                    base::OnceClosure callback);
 
   char read_buffer_[4096];
   // Maximum read buffer content size.

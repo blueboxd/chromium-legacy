@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Ícono de la app</translation>
 <translation id="1410616244180625362">Seguir permitiendo que <ph name="HOST" /> acceda a la cámara</translation>
 <translation id="1414648216875402825">Estás por actualizar a una versión inestable de <ph name="PRODUCT_NAME" /> en la que se incluyen funciones que aún se están desarrollando. Se producirán bloqueos y errores inesperados. Continúa con precaución.</translation>
-<translation id="1414866280542221544">Habilitar en este dispositivo</translation>
 <translation id="1415708812149920388">Se denegó el acceso de lectura al portapapeles</translation>
 <translation id="1415990189994829608">No se permite <ph name="EXTENSION_NAME" /> (ID de extensión "<ph name="EXTENSION_ID" />") en este tipo de sesión.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Porción de pizza</translation>
 <translation id="1468571364034902819">No se puede usar este perfil</translation>
 <translation id="1470811252759861213">Para usar tus extensiones en todas tus computadoras, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Esta acción borrará todos los datos de la llave de seguridad, incluido su PIN</translation>
 <translation id="1472675084647422956">Mostrar más</translation>
 <translation id="1475502736924165259">Tienes certificados archivados que no coinciden con ninguna de las demás categorías</translation>
 <translation id="1476088332184200792">Copiar a tu dispositivo</translation>
@@ -839,7 +837,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2202898655984161076">Hubo un problema al enumerar las impresoras. Algunas de tus impresoras pueden no haberse registrado con éxito con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">El motor de búsqueda que se usa en la <ph name="BEGIN_LINK" />barra de direcciones<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Leer y cambiar todo lo que escribas</translation>
-<translation id="2204397710290433380">¿Quieres inhabilitar ADB?</translation>
 <translation id="220792432208469595">Envía datos de uso y diagnóstico. De forma automática, este dispositivo está enviando a Google datos de diagnóstico y sobre el uso del dispositivo y las apps. Esta información ayudará a lograr la estabilidad de las apps y el sistema, entre otras mejoras. Algunos datos agregados también ayudarán a las apps y los socios de Google, como los desarrolladores de Android. El propietario controla esta configuración. Si habilitaste la "Actividad de web y de aplicaciones adicional", es posible que se almacenen estos datos en tu Cuenta de Google. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Ingresa este código PIN en "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Dejar de compartir</translation>
@@ -976,6 +973,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2396783860772170191">Ingresa un PIN de 4 dígitos (0000-9999)</translation>
 <translation id="2399939490305346086">Datos de acceso de la llave de seguridad</translation>
 <translation id="2407481962792080328">Esta función se activa cuando accedes a tu Cuenta de Google</translation>
+<translation id="2408018932941436077">Guardando la tarjeta</translation>
 <translation id="2408955596600435184">Ingresa tu PIN</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2412593942846481727">Actualización disponible</translation>
@@ -2004,7 +2002,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3873315167136380065">A fin de activar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /> para quitar la frase de contraseña de sincronización</translation>
 <translation id="3873423927483480833">Muestra los PIN</translation>
 <translation id="3873915545594852654">Hubo un problema con ARC++.</translation>
-<translation id="387924939625099872">Para inhabilitar ADB, reinicia tu <ph name="DEVICE_TYPE" />. Se restablecerá la configuración de fábrica del dispositivo y se borrarán todos los datos locales y Cuentas de usuarios.</translation>
 <translation id="3879748587602334249">Administrador de descargas</translation>
 <translation id="3886446263141354045">Tu solicitud de acceso a este sitio se envió a <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Tomar notas con <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2406,7 +2403,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4501530680793980440">Confirmar eliminación</translation>
 <translation id="4502423230170890588">Quitar de este dispositivo</translation>
 <translation id="4504940961672722399">Para usar esta extensión, haz clic en este ícono o presiona <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Si continúas, se habilitará ADB para crear y probar apps para Android. Ten en cuenta que ADB permite la instalación de apps de prueba que Google no verificó.</translation>
 <translation id="4508051413094283164">Abrir todo en una ventana de incógnito</translation>
 <translation id="4508265954913339219">Falló la activación</translation>
 <translation id="4508765956121923607">Ver códig&amp;o fuente</translation>
@@ -3309,7 +3305,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5851868085455377790">Emisor</translation>
 <translation id="5852112051279473187">¡Vaya! Se produjo un gran error mientras inscribíamos este dispositivo. Inténtalo de nuevo o comunícate con tu representante de asistencia.</translation>
 <translation id="5852137567692933493">Reiniciar y aplicar Powerwash</translation>
-<translation id="5852360662347412211">Ve a la configuración de Linux y vuelve a intentarlo</translation>
 <translation id="5854912040170951372">Porción</translation>
 <translation id="5855643921295613558">0.6 segundos</translation>
 <translation id="5856721540245522153">Habilitar funciones de depuración</translation>
@@ -3322,7 +3317,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5860494867054883682">Actualizando tu dispositivo al canal <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Mostrar herramientas de la pluma stylus en la biblioteca</translation>
 <translation id="5863445608433396414">Habilitar funciones de depuración</translation>
-<translation id="5863471434640009253">Para habilitar Android Debug Bridge, primero reinicia tu <ph name="DEVICE_TYPE" />. Si quieres inhabilitar ADB, deberás restablecer la configuración de fábrica.</translation>
 <translation id="5864471791310927901">Falló la búsqueda de DHCP</translation>
 <translation id="586567932979200359">Estás ejecutando <ph name="PRODUCT_NAME" /> desde la imagen de disco. Instalarlo en tu computadora te permite ejecutarlo sin la imagen de disco y garantiza que se mantenga actualizado.</translation>
 <translation id="5865733239029070421">Envía automáticamente informes de fallos y estadísticas de uso a Google</translation>
@@ -3392,7 +3386,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5958529069007801266">Usuario supervisado</translation>
 <translation id="5959471481388474538">Red no disponible</translation>
 <translation id="595959584676692139">Vuelve a cargar la página para usar esta extensión</translation>
-<translation id="5961320084471308154">¿Quieres habilitar ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> máximo)</translation>
 <translation id="5965661248935608907">También controla qué página se muestra al hacer clic en el botón de página principal o al realizar búsquedas desde el cuadro multifunción.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> puede ver archivos en <ph name="FOLDERNAME" /></translation>
@@ -4256,7 +4249,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7254554697254365959">No se pudo traducir esta página.</translation>
 <translation id="7254951428499890870">¿Confirmas que quieres iniciar "<ph name="APP_NAME" />" en modo de diagnóstico?</translation>
 <translation id="7255002516883565667">En este momento, tienes una tarjeta que puede usarse solo en este dispositivo</translation>
-<translation id="7255916308560539517">Vuelve a tocar tu llave de seguridad para confirmar el restablecimiento. Se borrará toda la información almacenada en la llave de seguridad, incluido su PIN.</translation>
 <translation id="7255935316994522020">Aplicar</translation>
 <translation id="7256069762010468647">El sitio está usando la cámara</translation>
 <translation id="7256405249507348194">Error desconocido: <ph name="DESC" /></translation>
@@ -4766,6 +4758,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7968833647796919681">Habilitar recopilación de datos de rendimiento</translation>
 <translation id="7968982339740310781">Ver los detalles</translation>
 <translation id="7969046989155602842">Comando</translation>
+<translation id="7970882136539140748">No se puede guardar la tarjeta en este momento</translation>
 <translation id="7972714317346275248">PKCS N. º 1, SHA-384 con encriptación RSA</translation>
 <translation id="7973962044839454485">Falló la autenticación de PPP debido a un nombre de usuario o una contraseña incorrectos.</translation>
 <translation id="7974566588408714340">Volver a intentarlo con <ph name="EXTENSIONNAME" /></translation>
@@ -5087,7 +5080,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8431909052837336408">Cambiar el PIN de la tarjeta SIM</translation>
 <translation id="8434480141477525001">Puerto de depuración NaCl</translation>
 <translation id="8435395510592618362">Verificar tu identidad con <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Guardar la tarjeta de crédito</translation>
 <translation id="8438328416656800239">Cambia a un navegador inteligente</translation>
 <translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8439506636278576865">Ofrecer la traducción de páginas en este idioma</translation>
@@ -5470,6 +5462,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8965037249707889821">Ingresa la contraseña anterior.</translation>
 <translation id="8966870118594285808">Volver a abrir una pestaña si la cerraste por accidente</translation>
 <translation id="8967866634928501045">Presiona Alt+mayúscula+A para mostrar</translation>
+<translation id="8968766641738584599">Guardar la tarjeta</translation>
 <translation id="89720367119469899">Esc</translation>
 <translation id="8972513834460200407">Consulta con tu administrador de red para asegurarte de que el firewall no esté bloqueando las descargas de los servidores de Google.</translation>
 <translation id="8973557916016709913">Quitar el nivel de zoom</translation>
@@ -5576,7 +5569,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9116799625073598554">App para tomar notas</translation>
 <translation id="9117030152748022724">Administra tus apps</translation>
 <translation id="9121814364785106365">Abrir como pestaña anclada</translation>
-<translation id="9122074588095746047">No se pudo habilitar ADB</translation>
 <translation id="9124003689441359348">Las contraseñas guardadas aparecerán aquí</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (quedan <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">No se completó la configuración</translation>

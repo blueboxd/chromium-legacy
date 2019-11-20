@@ -118,11 +118,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, LauncherStateTransition) {
 
   // Press space on the launcher button in shelf, this opens peeking launcher.
   SendKeyPressWithSearch(ui::VKEY_SPACE);
-  EXPECT_EQ("Search your device,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("apps,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("and web.", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Use the arrow keys to navigate your apps.",
-            speech_monitor_.GetNextUtterance());
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
+                                 "Search your device,*"));
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
   EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
 
@@ -141,11 +138,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, LauncherStateTransition) {
 
   // Press space on expand arrow to go to fullscreen launcher.
   SendKeyPressWithSearch(ui::VKEY_SPACE);
-  EXPECT_EQ("Search your device,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("apps,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("and web.", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Use the arrow keys to navigate your apps.",
-            speech_monitor_.GetNextUtterance());
+  EXPECT_EQ(
+      "Search your device, apps, and web."
+      " Use the arrow keys to navigate your apps.",
+      speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
 
   // Check that Launcher, all apps state is announced.
@@ -242,11 +238,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   // Move focus to search box;
   SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Search your device,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("apps,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("and web.", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Use the arrow keys to navigate your apps.",
-            speech_monitor_.GetNextUtterance());
+  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
+                                 "Search your device,*"));
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
 }
 
@@ -317,11 +310,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
 
   // Move focus to search box;
   SendKeyPressWithSearch(ui::VKEY_RIGHT);
-  EXPECT_EQ("Search your device,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("apps,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("and web.", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("Use the arrow keys to navigate your apps.",
-            speech_monitor_.GetNextUtterance());
+  EXPECT_EQ(
+      "Search your device, apps, and web."
+      " Use the arrow keys to navigate your apps.",
+      speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
 }
 

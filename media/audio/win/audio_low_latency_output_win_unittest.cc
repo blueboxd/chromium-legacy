@@ -133,7 +133,7 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
     return frames;
   }
 
-  void OnError() override {}
+  void OnError(ErrorType type) override {}
 
   int file_size() { return file_->data_size(); }
 
@@ -266,7 +266,7 @@ TEST_F(WASAPIAudioOutputStreamTest, OpenStartAndClose) {
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager_.get());
   EXPECT_TRUE(aos->Open());
   MockAudioSourceCallback source;
-  EXPECT_CALL(source, OnError()).Times(0);
+  EXPECT_CALL(source, OnError(_)).Times(0);
   aos->Start(&source);
   aos->Close();
 }
@@ -277,7 +277,7 @@ TEST_F(WASAPIAudioOutputStreamTest, OpenStartStopAndClose) {
   AudioOutputStream* aos = CreateDefaultAudioOutputStream(audio_manager_.get());
   EXPECT_TRUE(aos->Open());
   MockAudioSourceCallback source;
-  EXPECT_CALL(source, OnError()).Times(0);
+  EXPECT_CALL(source, OnError(_)).Times(0);
   aos->Start(&source);
   aos->Stop();
   aos->Close();

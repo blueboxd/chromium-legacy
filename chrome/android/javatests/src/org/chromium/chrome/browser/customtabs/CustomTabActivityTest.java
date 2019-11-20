@@ -86,6 +86,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
@@ -726,7 +727,7 @@ public class CustomTabActivityTest {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(customTabIntent);
 
         final OnFinishedForTest onFinished = new OnFinishedForTest(pi);
-        getActivity().getIntentDataProvider().setPendingIntentOnFinishedForTesting(onFinished);
+        getCustomTabIntentDataProvider().setPendingIntentOnFinishedForTesting(onFinished);
 
         openAppMenuAndAssertMenuShown();
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
@@ -1077,7 +1078,7 @@ public class CustomTabActivityTest {
 
         Assert.assertNull("Action button should not be shown", actionButton);
 
-        CustomTabIntentDataProvider dataProvider = getActivity().getIntentDataProvider();
+        BrowserServicesIntentDataProvider dataProvider = getActivity().getIntentDataProvider();
         Assert.assertThat(dataProvider.getCustomButtonsOnToolbar(), is(empty()));
     }
 
@@ -2927,5 +2928,9 @@ public class CustomTabActivityTest {
 
     private SessionDataHolder getSessionDataHolder() {
         return ChromeApplication.getComponent().resolveSessionDataHolder();
+    }
+
+    private CustomTabIntentDataProvider getCustomTabIntentDataProvider() {
+        return (CustomTabIntentDataProvider) getActivity().getIntentDataProvider();
     }
 }

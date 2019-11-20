@@ -119,15 +119,6 @@ void LogPassiveEventListenersUma(WebInputEventResult result,
 
   UMA_HISTOGRAM_ENUMERATION("Event.PassiveListeners", enum_value,
                             PASSIVE_LISTENER_UMA_ENUM_COUNT);
-
-  if (base::TimeTicks::IsHighResolution()) {
-    if (enum_value == PASSIVE_LISTENER_UMA_ENUM_CANCELABLE) {
-      base::TimeTicks now = base::TimeTicks::Now();
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.PassiveListeners.Latency",
-                                  GetEventLatencyMicros(event_timestamp, now),
-                                  1, 10000000, 100);
-    }
-  }
 }
 
 void LogAllPassiveEventListenersUma(const WebInputEvent& input_event,

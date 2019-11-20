@@ -10,6 +10,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
+import android.os.Build;
 import android.provider.Settings;
 import android.widget.LinearLayout;
 
@@ -107,9 +108,13 @@ public class WebViewPackageError {
             mContext.finishAndRemoveTask();
         });
 
-        builder.setNeutralButton("Change WebView provider",
-                (dialog, id)
-                        -> mContext.startActivity(new Intent(Settings.ACTION_WEBVIEW_SETTINGS)));
+        // Switching WebView providers is possible from API >= 24.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            builder.setPositiveButton("Change WebView provider",
+                    (dialog, id)
+                            -> mContext.startActivity(
+                                    new Intent(Settings.ACTION_WEBVIEW_SETTINGS)));
+        }
 
         return builder.create();
     }
@@ -133,9 +138,14 @@ public class WebViewPackageError {
                                 + "Please update to a newer version or select a different WebView "
                                 + "provider.",
                         sytemWebViewPackageName));
-        builder.setPositiveButton("Change WebView provider",
-                (dialog, id)
-                        -> mContext.startActivity(new Intent(Settings.ACTION_WEBVIEW_SETTINGS)));
+
+        // Switching WebView providers is possible from API >= 24.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            builder.setPositiveButton("Change WebView provider",
+                    (dialog, id)
+                            -> mContext.startActivity(
+                                    new Intent(Settings.ACTION_WEBVIEW_SETTINGS)));
+        }
 
         return builder.create();
     }

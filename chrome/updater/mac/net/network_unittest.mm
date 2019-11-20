@@ -55,7 +55,7 @@ class ChromeUpdaterNetworkMacTest : public ::testing::Test {
                                    int net_error,
                                    const std::string& header_etag,
                                    int64_t xheader_retry_after_sec) {
-    EXPECT_EQ(net_error, 200);
+    EXPECT_EQ(net_error, 0);
     EXPECT_GT(header_etag.length(), 0u);
     EXPECT_EQ(xheader_retry_after_sec, 67);
     PostRequestCompleted();

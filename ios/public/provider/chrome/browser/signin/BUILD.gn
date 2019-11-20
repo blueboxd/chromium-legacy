@@ -27,8 +27,6 @@ source_set("test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "fake_chrome_identity.h",
-    "fake_chrome_identity.mm",
     "fake_chrome_identity_interaction_manager.h",
     "fake_chrome_identity_interaction_manager.mm",
     "fake_chrome_identity_service.h",
@@ -45,6 +43,20 @@ source_set("test_support") {
     "//ui/base:test_support",
   ]
   public_deps = [
+    ":fake_chrome_identity",
     "//testing/gmock",
+  ]
+}
+
+source_set("fake_chrome_identity") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "fake_chrome_identity.h",
+    "fake_chrome_identity.mm",
+  ]
+  deps = [
+    ":signin",
+    "//base",
   ]
 }

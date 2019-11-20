@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Uygulama Simgesi</translation>
 <translation id="1410616244180625362">Kameranıza <ph name="HOST" /> tarafından erişilmesine izin vermeye devam edin</translation>
 <translation id="1414648216875402825"><ph name="PRODUCT_NAME" /> ürününün kararsız bir sürümüne güncelleme yapıyorsunuz. Bu sürüm geliştirilmekte olan özellikler içerir. Kilitlenmeler ve beklenmeyen hatalar olacaktır. Lütfen dikkatle ilerleyin.</translation>
-<translation id="1414866280542221544">Bu cihazda etkinleştir</translation>
 <translation id="1415708812149920388">Pano okuma erişimi reddedildi</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (uzantı kimliği: "<ph name="EXTENSION_ID" />") bu tür bir oturum için izinli değil.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizza dilimi</translation>
 <translation id="1468571364034902819">Bu profil kullanılamaz</translation>
 <translation id="1470811252759861213">Uzantılarınızı tüm bilgisayarlarınızda kullanmak için <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Bu işlem, PIN'i de dahil olmak üzere güvenlik anahtarındaki tüm verileri silecek.</translation>
 <translation id="1472675084647422956">Daha fazla göster</translation>
 <translation id="1475502736924165259">Dosyanızda diğer kategorilerin hiçbirine uymayan sertifikalar var</translation>
 <translation id="1476088332184200792">Cihazıma Kopyala</translation>
@@ -842,7 +840,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2202898655984161076">Yazıcılar listelenirken sorun oluştu. Yazıcılarınızın bazıları <ph name="CLOUD_PRINT_NAME" /> üzerinde başarılı olarak kayıt edilmemiş olabilir.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />Adres çubuğunda<ph name="END_LINK" /> kullanılan arama motoru</translation>
 <translation id="2204034823255629767">Yazdığınız her şeyi okuma ve değiştirme</translation>
-<translation id="2204397710290433380">ADB devre dışı bırakılsın mı?</translation>
 <translation id="220792432208469595">Kullanım ve teşhis verilerini gönder. Bu cihaz şu anda teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a gönderiyor. Bu veriler, sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Bu ayar, cihazın sahibi tarafından zorunlu kılınmıştır. Ek Web ve Uygulama Etkinliği açıksa bu veriler Google Hesabınıza kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Lütfen "<ph name="DEVICE_NAME" />" cihazında bu PIN kodunu girin:</translation>
 <translation id="2213140827792212876">Paylaşımı kaldır</translation>
@@ -979,6 +976,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2396783860772170191">4 basamaklı PIN'i girin (0000-9999)</translation>
 <translation id="2399939490305346086">Güvenlik anahtarı oturum açma verileri</translation>
 <translation id="2407481962792080328">Google Hesabınızda oturum açtığınızda bu özellik devreye girer</translation>
+<translation id="2408018932941436077">Kart kaydediliyor</translation>
 <translation id="2408955596600435184">PIN'inizi girin</translation>
 <translation id="241082044617551207">Bilinmeyen eklenti</translation>
 <translation id="2412593942846481727">Güncelleme var</translation>
@@ -2007,7 +2005,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3873315167136380065">Bu özelliği açmak için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayarak<ph name="END_LINK" /> senkronizasyon parolanızı kaldırın</translation>
 <translation id="3873423927483480833">PIN numaralarını göster</translation>
 <translation id="3873915545594852654">ARC++ ile ilgili bir sorun oluştu.</translation>
-<translation id="387924939625099872">ADB'yi devre dışı bırakmak için <ph name="DEVICE_TYPE" /> cihazınızı yeniden başlatın. Cihazınız fabrika ayarlarına sıfırlanacak, tüm kullanıcı hesapları ile yerel veriler silinecek.</translation>
 <translation id="3879748587602334249">İndirme yöneticisi</translation>
 <translation id="3886446263141354045">Bu siteye erişim isteğiniz şu kişiye gönderildi: <ph name="NAME" /></translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> ile not alınıyor</translation>
@@ -2409,7 +2406,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4501530680793980440">Kaldırmayı Onaylayın</translation>
 <translation id="4502423230170890588">Bu cihazdan kaldır</translation>
 <translation id="4504940961672722399">Bu simgeyi tıklayarak veya <ph name="EXTENSION_SHORTCUT" /> tuşuna basarak bu uzantıyı kullanın.</translation>
-<translation id="4506379069541445709">Devam edilirse ADB, Android uygulaması oluşturmak ve test etmek için etkinleştirilir. ADB'nin Google tarafından doğrulanmayan test uygulamalarının yüklenmesine izin verdiğini unutmayın.</translation>
 <translation id="4508051413094283164">Tümünü gizli pencerede aç</translation>
 <translation id="4508265954913339219">Etkinleştirme başarısız oldu</translation>
 <translation id="4508765956121923607">Ka&amp;ynağı Görüntüle</translation>
@@ -3313,7 +3309,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5851868085455377790">Sertifikayı Veren</translation>
 <translation id="5852112051279473187">Hata! Bu cihaz kaydettirilirken bir sorun oluştu. Lütfen tekrar deneyin veya destek temsilcinizle iletişim kurun.</translation>
 <translation id="5852137567692933493">Tekrar başlat ve Powerwash uygula</translation>
-<translation id="5852360662347412211">Linux ayarlarına geri gidip tekrar deneyin</translation>
 <translation id="5854912040170951372">Dilim</translation>
 <translation id="5855643921295613558">0,6 saniye</translation>
 <translation id="5856721540245522153">Hata ayıklama özelliklerini etkinleştirin</translation>
@@ -3326,7 +3321,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5860494867054883682">Cihazınız <ph name="CHANNEL_NAME" /> kanalına güncelleniyor (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Ekran kalemi araçlarını rafta göster</translation>
 <translation id="5863445608433396414">Hata ayıklama özelliklerini etkinleştir</translation>
-<translation id="5863471434640009253">Android Debug Bridge'i etkinleştirmek için öncelikle <ph name="DEVICE_TYPE" /> cihazınızı yeniden başlatın. ADB'yi devre dışı bırakmak fabrika ayarlarına sıfırlama gerektirir.</translation>
 <translation id="5864471791310927901">DHCP araması başarısız oldu</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> programını disk görüntüsünden çalıştırıyorsunuz. Bu ürünü bilgisayarınıza kurduğunuzda, disk görüntüsü olmadan çalıştırabilir ve her zaman güncel olacağından emin olabilirsiniz.</translation>
 <translation id="5865733239029070421">Kullanım istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak gönderir</translation>
@@ -3396,7 +3390,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5958529069007801266">Denetlenen kullanıcı</translation>
 <translation id="5959471481388474538">Ağ kullanılamıyor</translation>
 <translation id="595959584676692139">Bu uzantıyı kullanmak için sayfayı yeniden yükleyin</translation>
-<translation id="5961320084471308154">ADB etkinleştirilsin mi?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (en yüksek <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Ayrıca Ana Sayfa düğmesini tıkladığınızda veya Çok Amaçlı Adres Çubuğu'ndan arama yaptığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> sitesi <ph name="FOLDERNAME" /> klasöründeki dosyaları görüntüleyebilir</translation>
@@ -4260,7 +4253,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7254554697254365959">Bu Sayfa Çevrilemedi.</translation>
 <translation id="7254951428499890870">"<ph name="APP_NAME" />" uygulamasını teşhis modunda başlatmak istediğinizden emin misiniz?</translation>
 <translation id="7255002516883565667">Şu anda, yalnızca bu cihazda kullanılabilen bir kartınız var</translation>
-<translation id="7255916308560539517">Sıfırlamayı onaylamak için güvenlik anahtarınıza tekrar dokunun. PIN'i de dahil olmak üzere güvenlik anahtarında depolanan tüm bilgiler silinecek.</translation>
 <translation id="7255935316994522020">Uygula</translation>
 <translation id="7256069762010468647">Site, kameranızı kullanıyor</translation>
 <translation id="7256405249507348194">Tanınmayan hata: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7968833647796919681">Performans verisi toplamayı etkinleştir</translation>
 <translation id="7968982339740310781">Ayrıntıları görüntüle</translation>
 <translation id="7969046989155602842">Komut</translation>
+<translation id="7970882136539140748">Kart şu anda kaydedilemiyor</translation>
 <translation id="7972714317346275248">PKCS #1 RSA Şifrelemeli SHA-384</translation>
 <translation id="7973962044839454485">Yanlış kullanıcı adı veya şifreden dolayı PPP kimlik doğrulaması başarısız oldu</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> uzantısını kullanmayı yeniden dene</translation>
@@ -5090,7 +5083,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8431909052837336408">SIM PIN Kodunu Değiştir</translation>
 <translation id="8434480141477525001">NaCl Hata Ayıklama Bağlantı Noktası</translation>
 <translation id="8435395510592618362"><ph name="APP_NAME" /> ile kimliğinizi doğrulayın</translation>
-<translation id="843760761634048214">Kredi kartını kaydedin</translation>
 <translation id="8438328416656800239">Akıllı bir tarayıcıya geç</translation>
 <translation id="8438566539970814960">Aramaları ve göz atmayı daha iyi yap</translation>
 <translation id="8439506636278576865">Bu dildeki sayfaları çevirmeyi öner</translation>
@@ -5473,6 +5465,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8965037249707889821">Eski şifreyi girin</translation>
 <translation id="8966870118594285808">Bir sekmeyi yanlışlıkla kapattıysanız yeniden açın</translation>
 <translation id="8967866634928501045">Göstermek için Alt+Üst Karakter+A tuşlarına basın</translation>
+<translation id="8968766641738584599">Kartı kaydet</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Güvenlik duvarının, Google sunucularından yapılan indirme işlemlerini engellemediğinden emin olmak için lütfen ağ yöneticinizle görüşün.</translation>
 <translation id="8973557916016709913">Yakınlaştırma seviyesini kaldır</translation>
@@ -5579,7 +5572,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9116799625073598554">Not alma uygulaması</translation>
 <translation id="9117030152748022724">Uygulamalarınızı yönetin</translation>
 <translation id="9121814364785106365">İğnelenmiş sekme olarak aç</translation>
-<translation id="9122074588095746047">ADB etkinleştirilemedi</translation>
 <translation id="9124003689441359348">Kayıtlı şifreleriniz burada görünür</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> tane kaldı)</translation>
 <translation id="9128317794749765148">Kurulum tamamlanamadı</translation>

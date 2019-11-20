@@ -58,6 +58,7 @@
     <output filename="values-zh-rTW/web_contents_delegate_android_strings.xml" lang="zh-TW" type="android" />
   </outputs>
   <translations>
+    <file lang="af" path="translations/web_contents_delegate_android_strings_af.xtb" />
     <file lang="am" path="translations/web_contents_delegate_android_strings_am.xtb" />
     <file lang="ar" path="translations/web_contents_delegate_android_strings_ar.xtb" />
     <file lang="bg" path="translations/web_contents_delegate_android_strings_bg.xtb" />

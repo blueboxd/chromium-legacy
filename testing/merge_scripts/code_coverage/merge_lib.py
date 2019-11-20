@@ -9,6 +9,12 @@ import os
 import shutil
 import subprocess
 
+_DIR_SOURCE_ROOT = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', '..', '..'))
+
+_JAVA_PATH = os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'jdk', 'current',
+                          'bin', 'java')
+
 logging.basicConfig(
     format='[%(asctime)s %(levelname)s] %(message)s', level=logging.DEBUG)
 
@@ -209,7 +215,7 @@ def merge_java_exec_files(input_dir, output_path, jacococli_path):
     logging.info('No exec file found under %s', input_dir)
     return
 
-  cmd = ['java', '-jar', jacococli_path, 'merge']
+  cmd = [_JAVA_PATH, '-jar', jacococli_path, 'merge']
   cmd.extend(exec_input_file_paths)
   cmd.extend(['--destfile', output_path])
   output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)

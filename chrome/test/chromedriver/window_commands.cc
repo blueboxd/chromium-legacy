@@ -368,12 +368,13 @@ Status WindowViewportSize(Session* session,
 
 Status ProcessPauseAction(const base::DictionaryValue* action_item,
                           base::DictionaryValue* action) {
-  if (action_item->HasKey("duration")) {
-    int duration;
-    if (!action_item->GetInteger("duration", &duration) || duration < 0)
-      return Status(kInvalidArgument, "'duration' must be a non-negative int");
+  int duration = 0;
+  bool has_value = false;
+  if (!GetOptionalInt(action_item, "duration", &duration, &has_value) ||
+      duration < 0)
+    return Status(kInvalidArgument, "'duration' must be a non-negative int");
+  if (has_value)
     action->SetInteger("duration", duration);
-  }
   return Status(kOk);
 }
 

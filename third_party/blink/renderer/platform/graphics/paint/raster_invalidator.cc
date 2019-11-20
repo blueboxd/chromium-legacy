@@ -149,6 +149,16 @@ PaintInvalidationReason RasterInvalidator::ChunkPropertiesChanged(
   return PaintInvalidationReason::kNone;
 }
 
+// Skip the chunk for raster invalidation if it contains only one non-drawing
+// display item. We could also skip chunks containing all non-drawing display
+// items, but single non-drawing item is more common, e.g. scroll hit test.
+bool ShouldSkipForRasterInvalidation(const PaintArtifact& paint_artifact,
+                                     const PaintChunk& paint_chunk) {
+  return paint_chunk.size() == 1 &&
+         !paint_artifact.GetDisplayItemList()[paint_chunk.begin_index]
+              .DrawsContent();
+}
+
 // Generates raster invalidations by checking changes (appearing, disappearing,
 // reordering, property changes) of chunks. The logic is similar to
 // PaintController::GenerateRasterInvalidations(). The complexity is between
@@ -173,6 +183,9 @@ void RasterInvalidator::GenerateRasterInvalidations(
   size_t max_matched_old_index = 0;
   for (auto it = new_chunks.begin(); it != new_chunks.end(); ++it) {
     const auto& new_chunk = *it;
+    if (ShouldSkipForRasterInvalidation(new_paint_artifact, new_chunk))
+      continue;
+
     mapper.SwitchToChunk(new_chunk);
     auto& new_chunk_info = new_chunks_info.emplace_back(*this, mapper, it);
 
@@ -327,6 +340,8 @@ void RasterInvalidator::Generate(
     ChunkToLayerMapper mapper(layer_state, layer_bounds.OffsetFromOrigin(),
                               visual_rect_subpixel_offset);
     for (auto it = paint_chunks.begin(); it != paint_chunks.end(); ++it) {
+      if (ShouldSkipForRasterInvalidation(*new_paint_artifact, *it))
+        continue;
       mapper.SwitchToChunk(*it);
       new_chunks_info.emplace_back(*this, mapper, it);
     }

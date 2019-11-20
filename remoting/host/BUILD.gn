@@ -62,6 +62,8 @@ source_set("base") {
     "logging_linux.cc",
     "logging_mac.cc",
     "logging_win.cc",
+    "switches.cc",
+    "switches.h",
     "username.cc",
     "username.h",
   ]
@@ -284,8 +286,6 @@ static_library("common") {
     "single_window_input_injector_linux.cc",
     "single_window_input_injector_mac.cc",
     "single_window_input_injector_win.cc",
-    "switches.cc",
-    "switches.h",
     "test_echo_extension.cc",
     "test_echo_extension.h",
     "test_echo_extension_session.cc",

@@ -66,8 +66,7 @@ TEST(PDFiumPermissionTest, Revision2SecurityHandler) {
   uint32_t permissions = GeneratePermissions2(0);
   auto no_perms = PDFiumPermissions::CreateForTesting(2, permissions);
   EXPECT_FALSE(no_perms.HasPermission(kPermCopy));
-  // TODO(crbug.com/989408) Should be the same as |PERMISSION_COPY|.
-  EXPECT_TRUE(no_perms.HasPermission(kPermCopya11y));
+  EXPECT_FALSE(no_perms.HasPermission(kPermCopya11y));
   EXPECT_FALSE(no_perms.HasPermission(kPermPrintLow));
   EXPECT_FALSE(no_perms.HasPermission(kPermPrintHigh));
 
@@ -89,8 +88,7 @@ TEST(PDFiumPermissionTest, Revision2SecurityHandler) {
   permissions = GeneratePermissions2(kPDFPermissionPrintMask);
   auto no_copy_perms = PDFiumPermissions::CreateForTesting(2, permissions);
   EXPECT_FALSE(no_copy_perms.HasPermission(kPermCopy));
-  // TODO(crbug.com/989408) Should be the same as |PERMISSION_COPY|.
-  EXPECT_TRUE(no_copy_perms.HasPermission(kPermCopya11y));
+  EXPECT_FALSE(no_copy_perms.HasPermission(kPermCopya11y));
   EXPECT_TRUE(no_copy_perms.HasPermission(kPermPrintLow));
   EXPECT_TRUE(no_copy_perms.HasPermission(kPermPrintHigh));
 }

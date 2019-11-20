@@ -1346,6 +1346,15 @@ TEST_F(ScreenWinTestTwoDisplays2x, GetPrimaryDisplay) {
   EXPECT_EQ(gfx::Point(0, 0), screen->GetPrimaryDisplay().bounds().origin());
 }
 
+TEST_F(ScreenWinTestTwoDisplays2x, CheckIdStability) {
+  // Callers may use the display ID as a way to persist data like window
+  // coordinates across runs. As a result, the IDs must remain stable.
+  Screen* screen = GetScreen();
+  ASSERT_EQ(2, screen->GetNumDisplays());
+  EXPECT_EQ(711638480, screen->GetAllDisplays()[0].id());
+  EXPECT_EQ(1158792510, screen->GetAllDisplays()[1].id());
+}
+
 namespace {
 
 // Five 1x displays laid out as follows (not to scale):

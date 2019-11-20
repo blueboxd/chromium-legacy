@@ -985,17 +985,22 @@ TEST_F(CollectUserDataActionTest, SortsProfilesByCompleteness) {
 
   autofill::AutofillProfile profile_complete;
   autofill::test::SetProfileInfo(
-      &profile_complete, "Berta", "", "West", "berta.west@gmail.com", "",
+      &profile_complete, "Charlie", "", "West", "charlie.west@gmail.com", "",
       "Baker Street 221b", "", "London", "", "WC2N 5DU", "UK", "+44");
+
+  autofill::AutofillProfile profile_no_phone;
+  autofill::test::SetProfileInfo(
+      &profile_no_phone, "Berta", "", "West", "berta.west@gmail.com", "",
+      "Baker Street 221b", "", "London", "", "WC2N 5DU", "UK", "");
 
   autofill::AutofillProfile profile_incomplete;
   autofill::test::SetProfileInfo(&profile_incomplete, "Adam", "", "West",
                                  "adam.west@gmail.com", "", "", "", "", "", "",
-                                 "", "+41");
+                                 "", "");
 
   // Specify profiles in reverse order to force sorting.
   std::vector<autofill::AutofillProfile*> profiles(
-      {&profile_incomplete, &profile_complete});
+      {&profile_incomplete, &profile_no_phone, &profile_complete});
   ON_CALL(mock_personal_data_manager_, GetProfiles)
       .WillByDefault(Return(profiles));
 
@@ -1010,11 +1015,13 @@ TEST_F(CollectUserDataActionTest, SortsProfilesByCompleteness) {
             user_data->shipping_address =
                 std::make_unique<autofill::AutofillProfile>(profile_complete);
 
-            EXPECT_THAT(user_data->available_profiles, SizeIs(2));
+            EXPECT_THAT(user_data->available_profiles, SizeIs(profiles.size()));
             EXPECT_EQ(
                 user_data->available_profiles[0]->Compare(profile_complete), 0);
             EXPECT_EQ(
-                user_data->available_profiles[1]->Compare(profile_incomplete),
+                user_data->available_profiles[1]->Compare(profile_no_phone), 0);
+            EXPECT_EQ(
+                user_data->available_profiles[2]->Compare(profile_incomplete),
                 0);
 
             std::move(collect_user_data_options->confirm_callback)

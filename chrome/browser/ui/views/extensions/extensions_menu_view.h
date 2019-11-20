@@ -10,6 +10,7 @@
 
 #include "base/auto_reset.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -28,6 +29,7 @@ class ExtensionsMenuItemView;
 // managing the user's extensions (chrome://extensions).
 // This class is only used with the kExtensionsToolbarMenu feature.
 class ExtensionsMenuView : public views::BubbleDialogDelegateView,
+                           public TabStripModelObserver,
                            public ToolbarActionsModel::Observer {
  public:
   static constexpr gfx::Size kExtensionsMenuIconSize = gfx::Size(28, 28);
@@ -61,6 +63,15 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
   // contrain the width. It would be nice to have a unified way of getting the
   // preferred size to not duplicate the code.
   gfx::Size CalculatePreferredSize() const override;
+
+  // TabStripModelObserver:
+  void TabChangedAt(content::WebContents* contents,
+                    int index,
+                    TabChangeType change_type) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& item,
@@ -109,9 +120,9 @@ class ExtensionsMenuView : public views::BubbleDialogDelegateView,
 
   Browser* const browser_;
   ExtensionsContainer* const extensions_container_;
-  ToolbarActionsModel* const model_;
+  ToolbarActionsModel* const toolbar_model_;
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
-      model_observer_;
+      toolbar_model_observer_;
   ButtonListener button_listener_;
   std::vector<ExtensionsMenuItemView*> extensions_menu_items_;
 

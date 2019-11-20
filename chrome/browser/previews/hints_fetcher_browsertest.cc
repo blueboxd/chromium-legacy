@@ -41,7 +41,6 @@
 #include "components/optimization_guide/test_hints_component_creator.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -193,10 +192,6 @@ class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
 
     cmd->AppendSwitch("enable-spdy-proxy-auth");
 
-    // Due to race conditions, it's possible that blacklist data is not loaded
-    // at the time of first navigation. That may prevent Preview from
-    // triggering, and causing the test to flake.
-    cmd->AppendSwitch(previews::switches::kIgnorePreviewsBlacklist);
     cmd->AppendSwitch("purge_hint_cache_store");
 
     // Set up OptimizationGuideServiceURL, this does not enable HintsFetching,

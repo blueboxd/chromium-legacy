@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/sync_ui_util.h"
 
+#include <utility>
+
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -18,90 +20,63 @@
 #include "components/sync/driver/sync_user_settings.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace sync_ui_util {
 
 namespace {
 
-void GetStatusForUnrecoverableError(bool is_user_signout_allowed,
-                                    base::string16* status_label,
-                                    base::string16* link_label,
-                                    ActionType* action_type) {
-  if (status_label) {
+StatusLabels GetStatusForUnrecoverableError(bool is_user_signout_allowed) {
 #if !defined(OS_CHROMEOS)
-    if (is_user_signout_allowed) {
-      *status_label =
-          l10n_util::GetStringUTF16(IDS_SYNC_STATUS_UNRECOVERABLE_ERROR);
-    } else {
-      // The message for managed accounts is the same as that on ChromeOS.
-      *status_label = l10n_util::GetStringUTF16(
-          IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT);
-    }
+  int status_label_string_id =
+      is_user_signout_allowed
+          ? IDS_SYNC_STATUS_UNRECOVERABLE_ERROR
+          :
+          // The message for managed accounts is the same as that on ChromeOS.
+          IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT;
 #else
-    *status_label = l10n_util::GetStringUTF16(
-        IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT);
+  int status_label_string_id =
+      IDS_SYNC_STATUS_UNRECOVERABLE_ERROR_NEEDS_SIGNOUT;
 #endif
-  }
-  if (link_label) {
-    *link_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL);
-  }
-  if (action_type) {
-    *action_type = REAUTHENTICATE;
-  }
+
+  return {SYNC_ERROR, status_label_string_id, IDS_SYNC_RELOGIN_LINK_LABEL,
+          REAUTHENTICATE};
 }
 
 // Depending on the authentication state, returns labels to be used to display
 // information about the sync status.
-void GetStatusForAuthError(const GoogleServiceAuthError& auth_error,
-                           base::string16* status_label,
-                           base::string16* link_label,
-                           ActionType* action_type) {
+StatusLabels GetStatusForAuthError(const GoogleServiceAuthError& auth_error) {
   switch (auth_error.state()) {
     case GoogleServiceAuthError::NONE:
       NOTREACHED();
       break;
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      if (status_label) {
-        *status_label = l10n_util::GetStringUTF16(IDS_SYNC_SERVICE_UNAVAILABLE);
-      }
-      break;
+      return {SYNC_ERROR, IDS_SYNC_SERVICE_UNAVAILABLE,
+              IDS_SETTINGS_EMPTY_STRING, NO_ACTION};
     case GoogleServiceAuthError::CONNECTION_FAILED:
-      if (status_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SYNC_SERVER_IS_UNREACHABLE);
-      }
       // Note that there is little the user can do if the server is not
       // reachable. Since attempting to re-connect is done automatically by
       // the Syncer, we do not show the (re)login link.
-      break;
+      return {SYNC_ERROR, IDS_SYNC_SERVER_IS_UNREACHABLE,
+              IDS_SETTINGS_EMPTY_STRING, NO_ACTION};
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:
     default:
-      if (status_label) {
-        *status_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_ERROR);
-      }
-      if (link_label) {
-        *link_label = l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL);
-      }
-      if (action_type) {
-        *action_type = REAUTHENTICATE;
-      }
-      break;
+      return {SYNC_ERROR, IDS_SYNC_RELOGIN_ERROR, IDS_SYNC_RELOGIN_LINK_LABEL,
+              REAUTHENTICATE};
   }
+
+  NOTREACHED();
+  return StatusLabels();
 }
 
-MessageType GetStatusLabelsImpl(
-    const syncer::SyncService* service,
-    bool is_user_signout_allowed,
-    const GoogleServiceAuthError& auth_error,
-    base::string16* status_label,
-    base::string16* link_label,
-    ActionType* action_type) {
+StatusLabels GetStatusLabelsImpl(const syncer::SyncService* service,
+                                 bool is_user_signout_allowed,
+                                 const GoogleServiceAuthError& auth_error) {
   DCHECK(service);
 
   if (!service->IsAuthenticatedAccountPrimary()) {
-    return PRE_SYNCED;
+    return {PRE_SYNCED, IDS_SETTINGS_EMPTY_STRING, IDS_SETTINGS_EMPTY_STRING,
+            NO_ACTION};
   }
 
   // If local Sync were enabled, then the SyncService shouldn't report having a
@@ -110,109 +85,69 @@ MessageType GetStatusLabelsImpl(
 
   // First check if Chrome needs to be updated.
   if (service->RequiresClientUpgrade()) {
-    if (status_label) {
-      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT);
-    }
-    if (link_label) {
-      *link_label =
-          l10n_util::GetStringUTF16(IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL);
-    }
-    if (action_type) {
-      *action_type = UPGRADE_CLIENT;
-    }
-    return SYNC_ERROR;
+    return {SYNC_ERROR, IDS_SYNC_UPGRADE_CLIENT,
+            IDS_SYNC_UPGRADE_CLIENT_LINK_LABEL, UPGRADE_CLIENT};
   }
 
   // Then check for an unrecoverable error.
   if (service->HasUnrecoverableError()) {
-    GetStatusForUnrecoverableError(is_user_signout_allowed, status_label,
-                                   link_label, action_type);
-    return SYNC_ERROR;
+    return GetStatusForUnrecoverableError(is_user_signout_allowed);
   }
 
   // Then check for an auth error.
   if (auth_error.state() != GoogleServiceAuthError::NONE) {
-    GetStatusForAuthError(auth_error, status_label, link_label, action_type);
-    return SYNC_ERROR;
+    return GetStatusForAuthError(auth_error);
   }
 
   // Check if Sync is disabled by policy.
   if (service->HasDisableReason(
           syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
-    if (status_label) {
-      *status_label =
-          l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED_BY_POLICY);
-    }
     // TODO(crbug.com/911153): Is SYNCED correct for this case?
-    return SYNCED;
+    return {SYNCED, IDS_SIGNED_IN_WITH_SYNC_DISABLED_BY_POLICY,
+            IDS_SETTINGS_EMPTY_STRING, NO_ACTION};
   }
 
   // Check to see if sync has been disabled via the dashboard and needs to be
   // set up once again.
   if (!service->GetUserSettings()->IsSyncRequested()) {
-    if (status_label) {
-      *status_label = l10n_util::GetStringUTF16(
-          IDS_SIGNED_IN_WITH_SYNC_STOPPED_VIA_DASHBOARD);
-    }
-
-    return SYNC_ERROR;
+    return {SYNC_ERROR, IDS_SIGNED_IN_WITH_SYNC_STOPPED_VIA_DASHBOARD,
+            IDS_SETTINGS_EMPTY_STRING, NO_ACTION};
   }
 
   if (service->GetUserSettings()->IsFirstSetupComplete()) {
     // Check for a passphrase error.
     if (service->GetUserSettings()
             ->IsPassphraseRequiredForPreferredDataTypes()) {
-      if (status_label) {
-        *status_label =
-            l10n_util::GetStringUTF16(IDS_SYNC_STATUS_NEEDS_PASSWORD);
-      }
-      if (link_label) {
-        *link_label = l10n_util::GetStringUTF16(
-            IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL);
-      }
-      if (action_type) {
-        *action_type = ENTER_PASSPHRASE;
-      }
-      return SYNC_ERROR;
+      return {SYNC_ERROR, IDS_SYNC_STATUS_NEEDS_PASSWORD,
+              IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL, ENTER_PASSPHRASE};
     }
 
     // At this point, there is no Sync error.
-    if (status_label) {
-      if (service->IsSyncFeatureActive()) {
-        *status_label = l10n_util::GetStringUTF16(
-            service->GetUserSettings()->IsSyncEverythingEnabled()
-                ? IDS_SYNC_ACCOUNT_SYNCING
-                : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES);
-      } else {
-        // Sync is still initializing.
-        *status_label = base::string16();
-      }
+    if (service->IsSyncFeatureActive()) {
+      return {SYNCED,
+              service->GetUserSettings()->IsSyncEverythingEnabled()
+                  ? IDS_SYNC_ACCOUNT_SYNCING
+                  : IDS_SYNC_ACCOUNT_SYNCING_CUSTOM_DATA_TYPES,
+              IDS_SETTINGS_EMPTY_STRING, NO_ACTION};
+    } else {
+      // Sync is still initializing.
+      return {SYNCED, IDS_SETTINGS_EMPTY_STRING, IDS_SETTINGS_EMPTY_STRING,
+              NO_ACTION};
     }
-    return SYNCED;
   }
 
   // If first setup is in progress, show an "in progress" message.
   if (service->IsSetupInProgress()) {
-    if (status_label) {
-      *status_label = l10n_util::GetStringUTF16(IDS_SYNC_SETUP_IN_PROGRESS);
-    }
-    return PRE_SYNCED;
+    return {PRE_SYNCED, IDS_SYNC_SETUP_IN_PROGRESS, IDS_SETTINGS_EMPTY_STRING,
+            NO_ACTION};
   }
 
   // At this point we've ruled out all other cases - all that's left is a
   // missing Sync confirmation.
   DCHECK(ShouldRequestSyncConfirmation(service));
-  if (status_label) {
-    *status_label = l10n_util::GetStringUTF16(IDS_SYNC_SETTINGS_NOT_CONFIRMED);
-  }
-  if (link_label) {
-    *link_label = l10n_util::GetStringUTF16(
-        IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON);
-  }
-  if (action_type) {
-    *action_type = CONFIRM_SYNC_SETTINGS;
-  }
-  return SYNC_ERROR;
+  return {SYNC_ERROR, IDS_SYNC_SETTINGS_NOT_CONFIRMED,
+          IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON,
+          CONFIRM_SYNC_SETTINGS};
 }
 
 void FocusWebContents(Browser* browser) {
@@ -232,39 +167,31 @@ void OpenTabForSyncKeyRetrievalWithURL(Browser* browser, const GURL& url) {
 
 }  // namespace
 
-MessageType GetStatusLabels(syncer::SyncService* sync_service,
-                            signin::IdentityManager* identity_manager,
-                            bool is_user_signout_allowed,
-                            base::string16* status_label,
-                            base::string16* link_label,
-                            ActionType* action_type) {
+StatusLabels GetStatusLabels(syncer::SyncService* sync_service,
+                             signin::IdentityManager* identity_manager,
+                             bool is_user_signout_allowed) {
   if (!sync_service) {
     // This can happen if Sync is disabled via the command line.
-    return PRE_SYNCED;
+    return {PRE_SYNCED, IDS_SETTINGS_EMPTY_STRING, IDS_SETTINGS_EMPTY_STRING,
+            NO_ACTION};
   }
   DCHECK(identity_manager);
   CoreAccountInfo account_info = sync_service->GetAuthenticatedAccountInfo();
   GoogleServiceAuthError auth_error =
       identity_manager->GetErrorStateOfRefreshTokenForAccount(
           account_info.account_id);
-  return GetStatusLabelsImpl(sync_service, is_user_signout_allowed, auth_error,
-                             status_label, link_label, action_type);
+  return GetStatusLabelsImpl(sync_service, is_user_signout_allowed, auth_error);
 }
 
-MessageType GetStatusLabels(Profile* profile,
-                            base::string16* status_label,
-                            base::string16* link_label,
-                            ActionType* action_type) {
+StatusLabels GetStatusLabels(Profile* profile) {
   DCHECK(profile);
   return GetStatusLabels(ProfileSyncServiceFactory::GetForProfile(profile),
                          IdentityManagerFactory::GetForProfile(profile),
-                         signin_util::IsUserSignoutAllowedForProfile(profile),
-                         status_label, link_label, action_type);
+                         signin_util::IsUserSignoutAllowedForProfile(profile));
 }
 
 MessageType GetStatus(Profile* profile) {
-  return GetStatusLabels(profile, /*status_label=*/nullptr,
-                         /*link_label=*/nullptr, /*action_type=*/nullptr);
+  return GetStatusLabels(profile).message_type;
 }
 
 #if !defined(OS_CHROMEOS)

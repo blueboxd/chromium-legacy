@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Ikona aplikace</translation>
 <translation id="1410616244180625362">Povolit webu <ph name="HOST" /> přístup ke kameře i nadále</translation>
 <translation id="1414648216875402825">Provádíte upgrade na nestabilní verzi systému <ph name="PRODUCT_NAME" />, která obsahuje funkce ve fázi vývoje. Bude docházet k selháním a neočekávaným chybám. Pokračujte s nejvyšší opatrností.</translation>
-<translation id="1414866280542221544">Zapnout na tomto zařízení</translation>
 <translation id="1415708812149920388">Byl odmítnut přístup ke čtení obsahu schránky</translation>
 <translation id="1415990189994829608">Rozšíření <ph name="EXTENSION_NAME" /> (ID <ph name="EXTENSION_ID" />) není pro tento typ návštěvy povoleno.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Kousek pizzy</translation>
 <translation id="1468571364034902819">Tento profil nelze použít</translation>
 <translation id="1470811252759861213">Chcete-li rozšíření přenést do všech počítačů, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Touto akcí vymažete veškerá data na bezpečnostním klíči, včetně jeho kódu PIN</translation>
 <translation id="1472675084647422956">Zobrazit více</translation>
 <translation id="1475502736924165259">Máte založené certifikáty, které se nehodí do žádné z ostatních kategorií</translation>
 <translation id="1476088332184200792">Kopírovat do zařízení</translation>
@@ -842,7 +840,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2202898655984161076">Při vytváření seznamu tiskáren se vyskytla chyba. Některé vaše tiskárny možná nebyly ve službě <ph name="CLOUD_PRINT_NAME" /> úspěšně zaregistrovány.</translation>
 <translation id="2203682048752833055">Vyhledávač používaný v <ph name="BEGIN_LINK" />adresním řádku<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Číst a upravovat vše, co napíšete</translation>
-<translation id="2204397710290433380">Deaktivovat ADB?</translation>
 <translation id="220792432208469595">Odesílat údaje o využití a diagnostice. Toto zařízení aktuálně automaticky odesílá do Googlu diagnostické údaje a údaje o zařízení a využití. Tyto údaje nám pomohou se zvyšováním stability systému a aplikací a dalšími vylepšeními. Některá souhrnná data budou moci využít také naši partneři, např. vývojáři aplikací pro Android. Toto nastavení je vyžadováno vlastníkem. Pokud máte zapnuté dodatečné nastavení Aktivita na webu a v aplikacích, mohou se tato data ukládat do vašeho účtu Google. <ph name="BEGIN_LINK1" />Další informace<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Zadejte prosím v zařízení <ph name="DEVICE_NAME" /> tento kód PIN:</translation>
 <translation id="2213140827792212876">Odstranit sdílení</translation>
@@ -979,6 +976,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2396783860772170191">Zadejte čtyřmístný kód PIN (0000–9999)</translation>
 <translation id="2399939490305346086">Přihlašovací údaje na bezpečnostním klíči</translation>
 <translation id="2407481962792080328">Když se přihlásíte k účtu Google, je tato funkce zapnutá</translation>
+<translation id="2408018932941436077">Ukládání karty</translation>
 <translation id="2408955596600435184">Zadejte PIN</translation>
 <translation id="241082044617551207">Neznámý plugin</translation>
 <translation id="2412593942846481727">K dispozici je aktualizace</translation>
@@ -2006,7 +2004,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3873315167136380065">Chcete-li tuto funkci zapnout, <ph name="BEGIN_LINK" />resetováním synchronizace<ph name="END_LINK" /> odstraňte svou heslovou frázi pro synchronizaci</translation>
 <translation id="3873423927483480833">Zobrazit kódy PIN</translation>
 <translation id="3873915545594852654">Došlo k problému s ARC++.</translation>
-<translation id="387924939625099872">Chcete-li ADB zakázat, restartujte zařízení <ph name="DEVICE_TYPE" />. Resetuje se do továrního nastavení a budou vymazány všechny uživatelské účty a místní data.</translation>
 <translation id="3879748587602334249">Správce stahování</translation>
 <translation id="3886446263141354045">Vaše žádost o přístup k tomuto webu byla odeslána uživateli <ph name="NAME" />.</translation>
 <translation id="3888550877729210209">Pořizování poznámek pomocí aplikace <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2407,7 +2404,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4501530680793980440">Potvrdit odstranění</translation>
 <translation id="4502423230170890588">Odstranit z tohoto zařízení</translation>
 <translation id="4504940961672722399">Toto rozšíření aktivujete kliknutím na tuto ikonu nebo klávesovou zkratkou <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Pokračováním aktivujete ADB k vytváření a testování aplikací pro Android. Upozorňujeme, že ADB povoluje instalaci testovacích aplikací, které nebyly ověřeny Googlem.</translation>
 <translation id="4508051413094283164">Otevřít vše v anonymním okně</translation>
 <translation id="4508265954913339219">Aktivace se nezdařila</translation>
 <translation id="4508765956121923607">Z&amp;obrazit zdrojový kód</translation>
@@ -3310,7 +3306,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5851868085455377790">Vydavatel</translation>
 <translation id="5852112051279473187">Při registraci zařízení došlo k závažnému problému. Zkuste to prosím znovu nebo kontaktujte zástupce podpory.</translation>
 <translation id="5852137567692933493">Restartovat a použít funkci Powerwash</translation>
-<translation id="5852360662347412211">Přejděte do nastavení Linuxu a zkuste to znovu</translation>
 <translation id="5854912040170951372">Svačinka</translation>
 <translation id="5855643921295613558">0,6 sekundy</translation>
 <translation id="5856721540245522153">Aktivovat funkce ladění</translation>
@@ -3323,7 +3318,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5860494867054883682">Aktualizace zařízení na verzi <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Zobrazovat na poličce nástroje pro dotykové pero</translation>
 <translation id="5863445608433396414">Aktivovat funkce ladění</translation>
-<translation id="5863471434640009253">Chcete-li aktivovat Android Debug Bridge, nejdříve restartujte zařízení <ph name="DEVICE_TYPE" />. K deaktivaci ADB je potřeba resetovat tovární nastavení.</translation>
 <translation id="5864471791310927901">Vyhledávání serveru DHCP selhalo.</translation>
 <translation id="586567932979200359">Aplikaci <ph name="PRODUCT_NAME" /> spouštíte z bitové kopie disku. Pokud ji nainstalujte do svého počítače, můžete ji spouštět bez bitové kopie disku a umožníte její aktualizace.</translation>
 <translation id="5865733239029070421">Automaticky odesílá statistiky o využívání a zprávy o selhání do Googlu</translation>
@@ -3393,7 +3387,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5958529069007801266">Dozorovaný uživatel</translation>
 <translation id="5959471481388474538">Síť není k dispozici</translation>
 <translation id="595959584676692139">Chcete-li použít toto rozšíření, znovu načtěte stránku</translation>
-<translation id="5961320084471308154">Zapnout ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maximum: <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Také řídí, která stránka se zobrazí, když kliknete na tlačítko Domovská stránka nebo budete vyhledávat v omniboxu.</translation>
 <translation id="5969419185858894314">Web <ph name="ORIGIN" /> může zobrazovat soubory ve složce <ph name="FOLDERNAME" /></translation>
@@ -4257,7 +4250,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7254554697254365959">Tuto stránku se nepodařilo přeložit.</translation>
 <translation id="7254951428499890870">Opravdu chcete aplikaci <ph name="APP_NAME" /> spustit v diagnostickém režimu?</translation>
 <translation id="7255002516883565667">V současné době máte jednu kartu, kterou lze používat jen na tomto zařízení.</translation>
-<translation id="7255916308560539517">Potvrďte reset tím, že se znovu dotknete bezpečnostního klíče. Všechny informace uložené na bezpečnostním klíči, včetně kódu PIN, se vymažou.</translation>
 <translation id="7255935316994522020">Použít</translation>
 <translation id="7256069762010468647">Web používá kameru</translation>
 <translation id="7256405249507348194">Neznámá chyba: <ph name="DESC" /></translation>
@@ -4767,6 +4759,7 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7968833647796919681">Aktivovat shromažďování údajů o výkonu</translation>
 <translation id="7968982339740310781">Zobrazit podrobnosti</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">Kartu v tuto chvíli nelze uložit</translation>
 <translation id="7972714317346275248">Šifrování PKCS #1 SHA-384 s RSA</translation>
 <translation id="7973962044839454485">Ověření PPP se nezdařilo kvůli nesprávnému uživatelskému jménu nebo heslu</translation>
 <translation id="7974566588408714340">Zkusit znovu pomocí rozšíření <ph name="EXTENSIONNAME" /></translation>
@@ -5087,7 +5080,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8431909052837336408">Změnit PIN SIM karty</translation>
 <translation id="8434480141477525001">Port ladění klientu NaCl</translation>
 <translation id="8435395510592618362">Ověření identity pomocí domény <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Uložit platební kartu</translation>
 <translation id="8438328416656800239">Přejděte na chytrý prohlížeč</translation>
 <translation id="8438566539970814960">Vylepšit vyhledávání a procházení</translation>
 <translation id="8439506636278576865">Nabízet překlad stránek v tomto jazyce</translation>
@@ -5470,6 +5462,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8965037249707889821">Zadat staré heslo</translation>
 <translation id="8966870118594285808">Pokud jste nějakou kartu zavřeli omylem, můžete ji znovu otevřít</translation>
 <translation id="8967866634928501045">Zobrazíte stisknutím Alt + Shift + A</translation>
+<translation id="8968766641738584599">Uložit kartu</translation>
 <translation id="89720367119469899">Escapovat</translation>
 <translation id="8972513834460200407">Obraťte se na svého správce sítě a ověřte, že stahování ze serverů Google neblokuje firewall.</translation>
 <translation id="8973557916016709913">Odstranit úroveň přiblížení</translation>
@@ -5576,7 +5569,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9116799625073598554">Aplikace na psaní poznámek</translation>
 <translation id="9117030152748022724">Správa aplikací</translation>
 <translation id="9121814364785106365">Otevřít jako připnutou kartu</translation>
-<translation id="9122074588095746047">Aktivace ADB se nezdařila</translation>
 <translation id="9124003689441359348">Zde se zobrazí uložená hesla</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (zbývá <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Instalaci nebylo možné dokončit</translation>

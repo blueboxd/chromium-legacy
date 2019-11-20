@@ -48,6 +48,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcForceShowOptInUi[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcPackagesCacheMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcPlayStoreAutoUpdate[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcScale[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kArcStartMode[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kArcTransitionMigrationRequired[];

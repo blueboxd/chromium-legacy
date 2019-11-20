@@ -69,9 +69,7 @@ class VectorIterator
     unsigned size;
     HRESULT hr = view_->get_Size(&size);
     if (SUCCEEDED(hr)) {
-      if (current_index_ >= size) {
-        hr = E_BOUNDS;
-      } else {
+      if (current_index_ < size) {
         *has_current = TRUE;
       }
     }
@@ -80,7 +78,13 @@ class VectorIterator
 
   IFACEMETHODIMP MoveNext(boolean* has_current) override {
     ++current_index_;
-    return get_HasCurrent(has_current);
+    *has_current = FALSE;
+
+    HRESULT hr = get_HasCurrent(has_current);
+    if (FAILED(hr))
+      return hr;
+
+    return *has_current ? hr : E_BOUNDS;
   }
 
   IFACEMETHODIMP GetMany(unsigned capacity,

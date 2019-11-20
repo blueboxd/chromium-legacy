@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "media/audio/audio_output_controller.h"
 
 namespace base {
 class TickClock;

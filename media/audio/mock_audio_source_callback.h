@@ -21,7 +21,7 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
 
   MOCK_METHOD4(OnMoreData,
                int(base::TimeDelta, base::TimeTicks, int, AudioBus*));
-  MOCK_METHOD0(OnError, void());
+  MOCK_METHOD1(OnError, void(ErrorType));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioSourceCallback);

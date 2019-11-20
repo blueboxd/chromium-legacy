@@ -217,8 +217,6 @@ base::TimeDelta GetCommitDelayForPaintHolding() {
 // returning.
 static const unsigned kMaxUpdatePluginsIterations = 2;
 
-static bool g_initial_track_all_paint_invalidations = false;
-
 LocalFrameView::LocalFrameView(LocalFrame& frame)
     : LocalFrameView(frame, IntRect()) {
   Show();
@@ -269,10 +267,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_forced_compositing_update_(false),
       needs_focus_on_fragment_(false),
       in_lifecycle_update_(false),
-      tracked_object_paint_invalidations_(
-          base::WrapUnique(g_initial_track_all_paint_invalidations
-                               ? new Vector<ObjectPaintInvalidation>
-                               : nullptr)),
       main_thread_scrolling_reasons_(0),
       forced_layout_stack_depth_(0),
       forced_layout_start_time_(base::TimeTicks()),
@@ -3333,14 +3327,9 @@ IntPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
       ConvertToContainingEmbeddedContentView(PhysicalOffset(local_point)));
 }
 
-void LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(
-    bool track_paint_invalidations) {
-  g_initial_track_all_paint_invalidations = track_paint_invalidations;
-}
-
-void LocalFrameView::SetTracksPaintInvalidations(
-    bool track_paint_invalidations) {
-  if (track_paint_invalidations == IsTrackingPaintInvalidations())
+void LocalFrameView::SetTracksRasterInvalidations(
+    bool track_raster_invalidations) {
+  if (track_raster_invalidations == is_tracking_raster_invalidations_)
     return;
 
   // Ensure the document is up-to-date before tracking invalidations.
@@ -3352,14 +3341,11 @@ void LocalFrameView::SetTracksPaintInvalidations(
     if (!local_frame)
       continue;
     if (auto* layout_view = local_frame->ContentLayoutObject()) {
-      layout_view->GetFrameView()->tracked_object_paint_invalidations_ =
-          base::WrapUnique(track_paint_invalidations
-                               ? new Vector<ObjectPaintInvalidation>
-                               : nullptr);
+      is_tracking_raster_invalidations_ = track_raster_invalidations;
       if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
         if (paint_artifact_compositor_) {
           paint_artifact_compositor_->SetTracksRasterInvalidations(
-              track_paint_invalidations);
+              track_raster_invalidations);
         }
       } else {
         layout_view->Compositor()->UpdateTrackingRasterInvalidations();
@@ -3370,21 +3356,7 @@ void LocalFrameView::SetTracksPaintInvalidations(
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
                        "LocalFrameView::setTracksPaintInvalidations",
                        TRACE_EVENT_SCOPE_GLOBAL, "enabled",
-                       track_paint_invalidations);
-}
-
-void LocalFrameView::TrackObjectPaintInvalidation(
-    const DisplayItemClient& client,
-    PaintInvalidationReason reason) {
-  TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
-                       "InvalidateDisplayItemClient", TRACE_EVENT_SCOPE_GLOBAL,
-                       "client", client.DebugName().Utf8(), "reason",
-                       PaintInvalidationReasonToString(reason));
-  if (!tracked_object_paint_invalidations_)
-    return;
-
-  ObjectPaintInvalidation invalidation = {client.DebugName(), reason};
-  tracked_object_paint_invalidations_->push_back(invalidation);
+                       track_raster_invalidations);
 }
 
 void LocalFrameView::ScheduleAnimation(base::TimeDelta delay) {

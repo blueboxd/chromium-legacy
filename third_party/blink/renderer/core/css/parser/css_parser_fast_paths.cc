@@ -605,7 +605,10 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kWebkitInlineFlex ||
              value_id == CSSValueID::kNone || value_id == CSSValueID::kGrid ||
              value_id == CSSValueID::kInlineGrid ||
-             value_id == CSSValueID::kContents;
+             value_id == CSSValueID::kContents ||
+             (RuntimeEnabledFeatures::MathMLCoreEnabled() &&
+              (value_id == CSSValueID::kMath ||
+               value_id == CSSValueID::kInlineMath));
     case CSSPropertyID::kDominantBaseline:
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kAlphabetic ||

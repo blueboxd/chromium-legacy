@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
@@ -135,7 +136,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return new RootUiCoordinator(this, (toolbarManager) -> {
             mToolbarCoordinator.onToolbarInitialized(toolbarManager);
             mNavigationController.onToolbarInitialized(toolbarManager);
-        }, null, getShareDelegate());
+        }, null, getShareDelegateSupplier());
     }
 
     @Override
@@ -493,10 +494,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public void onUpdateStateChanged() {}
 
     /**
-     * @return The {@link CustomTabIntentDataProvider} for this {@link CustomTabActivity}.
+     * @return The {@link BrowserServicesIntentDataProvider} for this {@link CustomTabActivity}.
      */
     @VisibleForTesting
-    public CustomTabIntentDataProvider getIntentDataProvider() {
+    public BrowserServicesIntentDataProvider getIntentDataProvider() {
         return mIntentDataProvider;
     }
 

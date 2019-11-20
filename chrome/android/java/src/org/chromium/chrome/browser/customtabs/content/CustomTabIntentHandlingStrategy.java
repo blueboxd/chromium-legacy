@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs.content;
 
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 
 /**
  * Strategy of handling incoming intents.
@@ -17,7 +17,7 @@ public interface CustomTabIntentHandlingStrategy {
      *
      * @param intentDataProvider Provides the parameters sent with the initial intent.
      */
-    void handleInitialIntent(CustomTabIntentDataProvider intentDataProvider);
+    void handleInitialIntent(BrowserServicesIntentDataProvider intentDataProvider);
 
     /**
      * Called when a valid new intent is delivered to the running Custom Tab. Initialization
@@ -25,5 +25,5 @@ public interface CustomTabIntentHandlingStrategy {
      *
      * @param intentDataProvider Provides the parameters sent with the new intent.
      */
-    void handleNewIntent(CustomTabIntentDataProvider intentDataProvider);
+    void handleNewIntent(BrowserServicesIntentDataProvider intentDataProvider);
 }

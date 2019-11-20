@@ -37,6 +37,7 @@
     </div>
 
     <iron-list items="[[historyData_]]" as="item" id="infinite-list"
+        role="grid" aria-rowcount$="[[historyData_.length]]"
         hidden$="[[!hasResults_(historyData_.length)]]" preserve-focus>
       <template>
         <history-item tabindex$="[[tabIndex]]"

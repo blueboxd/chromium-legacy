@@ -67,6 +67,7 @@ chromium_strings.grd. -->
     <output filename="google_chrome_strings_fake-bidi.pak" type="data_package" lang="fake-bidi" />
   </outputs>
   <translations>
+    <file path="resources/google_chrome_strings_af.xtb" lang="af" />
     <file path="resources/google_chrome_strings_am.xtb" lang="am" />
     <file path="resources/google_chrome_strings_ar.xtb" lang="ar" />
     <file path="resources/google_chrome_strings_bg.xtb" lang="bg" />

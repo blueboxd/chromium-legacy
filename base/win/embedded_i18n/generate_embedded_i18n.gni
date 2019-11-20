@@ -52,7 +52,15 @@ import("//build/config/locales.gni")
 # Some locales exist in |locales| but don't generally have an xtb file on disk
 # and some translations don't exist in |locales| but do generally have an xtb
 # file on disk.
-default_embedded_i18_locales = locales - ["en-US", "he", "nb"] + ["iw", "no"]
+default_embedded_i18_locales = locales - [
+                                 "en-US",
+                                 "he",
+                                 "nb",
+                               ] +
+                               [
+                                 "iw",
+                                 "no",
+                               ] + xtb_only_locales
 
 template("generate_embedded_i18n") {
   assert(defined(invoker.grd_files_info),
@@ -116,7 +124,7 @@ template("generate_embedded_i18n") {
 
       xtb_locales = grd_file_info[3]
 
-      foreach (locale, xtb_locales) {
+      foreach(locale, xtb_locales) {
         expected_xtb_input = "${resource_path}/${grdfile_name}_${locale}.xtb"
         args += [
           "-x",

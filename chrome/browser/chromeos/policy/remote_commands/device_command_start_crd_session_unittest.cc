@@ -38,7 +38,6 @@ constexpr RemoteCommandJob::UniqueIDType kUniqueID = 123456789;
 constexpr char kTestOAuthToken[] = "test-oauth-token";
 constexpr char kTestAccessCode[] = "111122223333";
 constexpr char kTestNoOAuthTokenReason[] = "oops-no-oauth-token";
-constexpr char kTestNoICEConfigReason[] = "oops-no-ice-config";
 
 constexpr char kIdlenessCutoffFieldName[] = "idlenessCutoffSec";
 constexpr char kTerminateUponInputFieldName[] = "terminateUponInput";
@@ -71,7 +70,6 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
                       bool is_running_kiosk,
                       base::TimeDelta idleness_period,
                       bool oauth_token_success,
-                      bool ice_config_success,
                       bool access_code_success);
   ~StubCRDHostDelegate() override;
 
@@ -86,14 +84,8 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
       DeviceCommandStartCRDSessionJob::OAuthTokenCallback success_callback,
       DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
 
-  void FetchICEConfig(
-      const std::string& oauth_token,
-      DeviceCommandStartCRDSessionJob::ICEConfigCallback success_callback,
-      DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
-
   void StartCRDHostAndGetCode(
       const std::string& oauth_token,
-      base::Value ice_config,
       bool terminate_upon_input,
       DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
       DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) override;
@@ -104,7 +96,6 @@ class StubCRDHostDelegate : public DeviceCommandStartCRDSessionJob::Delegate {
   bool is_running_kiosk_;
   base::TimeDelta idleness_period_;
   bool oauth_token_success_;
-  bool ice_config_success_;
   bool access_code_success_;
 
   DISALLOW_COPY_AND_ASSIGN(StubCRDHostDelegate);
@@ -115,14 +106,12 @@ StubCRDHostDelegate::StubCRDHostDelegate(bool has_active_session,
                                          bool is_running_kiosk,
                                          base::TimeDelta idleness_period,
                                          bool oauth_token_success,
-                                         bool ice_config_success,
                                          bool access_code_success)
     : has_active_session_(has_active_session),
       are_services_ready_(are_services_ready),
       is_running_kiosk_(is_running_kiosk),
       idleness_period_(idleness_period),
       oauth_token_success_(oauth_token_success),
-      ice_config_success_(ice_config_success),
       access_code_success_(access_code_success) {}
 
 StubCRDHostDelegate::~StubCRDHostDelegate() {}
@@ -160,23 +149,8 @@ void StubCRDHostDelegate::FetchOAuthToken(
   }
 }
 
-void StubCRDHostDelegate::FetchICEConfig(
-    const std::string& oauth_token,
-    DeviceCommandStartCRDSessionJob::ICEConfigCallback success_callback,
-    DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
-  if (ice_config_success_) {
-    base::Value ice_config(base::Value::Type::DICTIONARY);
-    std::move(success_callback).Run(std::move(ice_config));
-  } else {
-    std::move(error_callback)
-        .Run(DeviceCommandStartCRDSessionJob::FAILURE_NO_ICE_CONFIG,
-             kTestNoICEConfigReason);
-  }
-}
-
 void StubCRDHostDelegate::StartCRDHostAndGetCode(
     const std::string& oauth_token,
-    base::Value ice_config,
     bool terminate_upon_input,
     DeviceCommandStartCRDSessionJob::AccessCodeCallback success_callback,
     DeviceCommandStartCRDSessionJob::ErrorCallback error_callback) {
@@ -297,8 +271,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, Success) {
       false /* has_active_session */, true /* are_services_ready */,
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* ice_config_success */,
-      true /* access_code_success */);
+      true /* oauth_token_success */, true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
@@ -320,8 +293,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, SuccessOldSessionWasRunning) {
       true /* has_active_session */, true /* are_services_ready */,
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* ice_config_success */,
-      true /* access_code_success */);
+      true /* oauth_token_success */, true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
@@ -343,8 +315,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureServicesAreNotReady) {
       false /* has_active_session */, false /* are_services_ready */,
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* ice_config_success */,
-      true /* access_code_success */);
+      true /* oauth_token_success */, true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
@@ -369,8 +340,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotAKiosk) {
       false /* has_active_session */, true /* are_services_ready */,
       false /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* ice_config_success */,
-      true /* access_code_success */);
+      true /* oauth_token_success */, true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
@@ -394,8 +364,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotIdle) {
       false /* has_active_session */, true /* are_services_ready */,
       true /* is_running_kiosk */,
       base::TimeDelta::FromSeconds(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* ice_config_success */,
-      true /* access_code_success */);
+      true /* oauth_token_success */, true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
@@ -417,8 +386,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoOauthToken) {
       false /* has_active_session */, true /* are_services_ready */,
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
-      false /* oauth_token_success */, true /* ice_config_success */,
-      true /* access_code_success */);
+      false /* oauth_token_success */, true /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);
@@ -443,8 +411,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestErrorRunningCRDHost) {
       false /* has_active_session */, true /* are_services_ready */,
       true /* is_running_kiosk */,
       base::TimeDelta::FromHours(1) /* idleness_period */,
-      true /* oauth_token_success */, true /* ice_config_success */,
-      false /* access_code_success */);
+      true /* oauth_token_success */, false /* access_code_success */);
 
   std::unique_ptr<RemoteCommandJob> job =
       std::make_unique<DeviceCommandStartCRDSessionJob>(&delegate);

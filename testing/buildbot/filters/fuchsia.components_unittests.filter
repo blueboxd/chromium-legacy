@@ -32,8 +32,7 @@
 -DownloadFile/DownloadFileTestWithRename.*
 -DownloadPathReservationTrackerTest.UnwriteableDirectory
 -FaviconCacheTest.*
--FileManagerTest.TestDeleteAllOlderThan
--FileManagerTest.TestStats
+-FileManagerTest.*
 -GoogleNewLogoApiTest.ParsesCapturedApiResult
 -HistoryBackendDBTest.*
 -HistoryBackendTest.MigrationVisitDuration

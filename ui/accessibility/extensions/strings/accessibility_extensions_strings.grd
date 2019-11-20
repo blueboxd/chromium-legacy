@@ -61,6 +61,7 @@
     <output filename="_locales/zh_TW/messages.json" type="chrome_messages_json" lang="zh-TW"/>
   </outputs>
   <translations>
+    <file path="accessibility_extensions_strings_af.xtb" lang="af" />
     <file path="accessibility_extensions_strings_am.xtb" lang="am" />
     <file path="accessibility_extensions_strings_ar.xtb" lang="ar" />
     <file path="accessibility_extensions_strings_bg.xtb" lang="bg" />

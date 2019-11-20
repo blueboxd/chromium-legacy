@@ -40,7 +40,7 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
   EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
                const EmitBufferCB& emit_buffer_cb,
                const GetDecryptConfigCB& get_decrypt_config_cb,
-               bool use_hls_sample_aes,
+               EncryptionScheme init_encryption_scheme,
                bool sbr_in_mimetype);
 #endif
 
@@ -82,9 +82,9 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
   NewAudioConfigCB new_audio_config_cb_;
   EmitBufferCB emit_buffer_cb_;
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  // - to obtain the current decrypt_config. Only called if use_hls_sample_aes_.
+  // - to obtain the current decrypt_config.
   GetDecryptConfigCB get_decrypt_config_cb_;
-  bool use_hls_sample_aes_;
+  const EncryptionScheme init_encryption_scheme_;
 #endif
 
   // True when AAC SBR extension is signalled in the mimetype

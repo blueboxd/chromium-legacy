@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   if (std::string_view(argv[1]) == "diff") {
     Diff(argv[2], argv[3]);
   } else if (std::string_view(argv[1]) == "validate") {
-    Validate(argv[1]);
+    Validate(argv[2]);
   } else {
     PrintUsageAndExit();
   }

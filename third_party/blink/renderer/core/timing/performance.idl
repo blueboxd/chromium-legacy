@@ -43,7 +43,7 @@ interface Performance : EventTarget {
     // TODO(foolip): getEntries() should take an optional FilterOptions argument.
     [MeasureAs=PerformanceTimeline] PerformanceEntryList getEntries();
     [MeasureAs=PerformanceTimeline] PerformanceEntryList getEntriesByType(DOMString entryType);
-    [MeasureAs=PerformanceTimeline] PerformanceEntryList getEntriesByName(DOMString name, optional DOMString entryType = null);
+    [MeasureAs=PerformanceTimeline] PerformanceEntryList getEntriesByName(DOMString name, optional DOMString entryType);
 
     // Resource Timing
     // https://w3c.github.io/resource-timing/#extensions-performance-interface

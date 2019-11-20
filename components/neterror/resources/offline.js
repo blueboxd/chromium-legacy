@@ -405,6 +405,14 @@ Runner.prototype = {
 
     window.addEventListener(Runner.events.RESIZE,
         this.debounceResize.bind(this));
+
+    // Handle dark mode
+    const darkModeMediaQuery =
+        window.matchMedia('(prefers-color-scheme: dark)');
+    this.isDarkMode = darkModeMediaQuery && darkModeMediaQuery.matches;
+    darkModeMediaQuery.addListener((e) => {
+      this.isDarkMode = e.matches;
+    });
   },
 
   /**
@@ -576,9 +584,10 @@ Runner.prototype = {
       if (this.playingIntro) {
         this.horizon.update(0, this.currentSpeed, hasObstacles);
       } else {
+        const showNightMode = this.isDarkMode ^ this.inverted;
         deltaTime = !this.activated ? 0 : deltaTime;
-        this.horizon.update(deltaTime, this.currentSpeed, hasObstacles,
-            this.inverted);
+        this.horizon.update(
+            deltaTime, this.currentSpeed, hasObstacles, showNightMode);
       }
 
       // Check for collisions.

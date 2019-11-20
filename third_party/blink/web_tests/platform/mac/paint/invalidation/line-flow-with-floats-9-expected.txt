@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 500, 600],
-          "reason": "chunk appeared"
-        },
-        {
           "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 572, 440, 18],
           "reason": "incremental"

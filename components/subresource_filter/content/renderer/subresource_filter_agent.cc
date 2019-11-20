@@ -118,6 +118,11 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted(
   UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.DocumentLoad.ActivationState",
                             activation_level);
 
+  if (IsMainFrame()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "SubresourceFilter.MainFrameLoad.RulesetIsAvailableAnyActivationLevel",
+        ruleset_dealer_->IsRulesetFileAvailable());
+  }
   if (activation_level != mojom::ActivationLevel::kDisabled) {
     UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.DocumentLoad.RulesetIsAvailable",
                           ruleset_dealer_->IsRulesetFileAvailable());

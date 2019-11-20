@@ -1,0 +1,4 @@
+file://chrome/browser/component_updater/OWNERS
+
+# COMPONENT: Internals>Installer>Components
+# TEAM: chrome-updates-dev@chromium.org

@@ -65,7 +65,7 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
       : show_animation_done_(show_animation_done) {
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     layer()->SetColor(AshColorProvider::Get()->DeprecatedGetShieldLayerColor(
-        AshColorProvider::ShieldLayerType::kAlpha60,
+        AshColorProvider::ShieldLayerType::kShield60,
         kPowerButtonMenuFullscreenShieldColor));
   }
 

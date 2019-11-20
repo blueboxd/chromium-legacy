@@ -24,14 +24,6 @@ class TabManagerFeaturesTest : public testing::Test {
         features::kProactiveTabFreezeAndDiscard, params_);
   }
 
-  // Enables the site characteristics database feature, and sets up the
-  // associated variations parameter values.
-  void EnableSiteCharacteristicsDatabase() {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kSiteCharacteristicsDatabase, params_);
-  }
-
   void SetParam(base::StringPiece key, base::StringPiece value) {
     params_[key.as_string()] = value.as_string();
   }
@@ -80,30 +72,6 @@ class TabManagerFeaturesTest : public testing::Test {
               params.disable_heuristics_protections);
   }
 
-  void ExpectSiteCharacteristicsDatabaseParams(
-      base::TimeDelta favicon_update_observation_window,
-      base::TimeDelta title_update_observation_window,
-      base::TimeDelta audio_usage_observation_window,
-      base::TimeDelta notifications_usage_observation_window,
-      base::TimeDelta title_or_favicon_change_post_load_grace_period,
-      base::TimeDelta feature_usage_post_background_grace_period) {
-    SiteCharacteristicsDatabaseParams params =
-        GetSiteCharacteristicsDatabaseParams();
-
-    EXPECT_EQ(favicon_update_observation_window,
-              params.favicon_update_observation_window);
-    EXPECT_EQ(title_update_observation_window,
-              params.title_update_observation_window);
-    EXPECT_EQ(audio_usage_observation_window,
-              params.audio_usage_observation_window);
-    EXPECT_EQ(notifications_usage_observation_window,
-              params.notifications_usage_observation_window);
-    EXPECT_EQ(title_or_favicon_change_post_load_grace_period,
-              params.title_or_favicon_change_post_load_grace_period);
-    EXPECT_EQ(feature_usage_post_background_grace_period,
-              params.feature_usage_post_background_grace_period);
-  }
-
   void ExpectDefaultProactiveTabFreezeAndDiscardParams() {
     int memory_in_gb = 4;
     ExpectProactiveTabFreezeAndDiscardParams(
@@ -136,28 +104,6 @@ class TabManagerFeaturesTest : public testing::Test {
             ProactiveTabFreezeAndDiscardParams::kRefreezeTimeout.default_value),
         ProactiveTabFreezeAndDiscardParams::kDisableHeuristicsProtections
             .default_value);
-  }
-
-  void ExpectDefaultSiteCharacteristicsDatabaseParams() {
-    ExpectSiteCharacteristicsDatabaseParams(
-        base::TimeDelta::FromSeconds(
-            SiteCharacteristicsDatabaseParams::kFaviconUpdateObservationWindow
-                .default_value),
-        base::TimeDelta::FromSeconds(
-            SiteCharacteristicsDatabaseParams::kTitleUpdateObservationWindow
-                .default_value),
-        base::TimeDelta::FromSeconds(
-            SiteCharacteristicsDatabaseParams::kAudioUsageObservationWindow
-                .default_value),
-        base::TimeDelta::FromSeconds(
-            SiteCharacteristicsDatabaseParams::
-                kNotificationsUsageObservationWindow.default_value),
-        base::TimeDelta::FromSeconds(
-            SiteCharacteristicsDatabaseParams::
-                kTitleOrFaviconChangePostLoadGracePeriod.default_value),
-        base::TimeDelta::FromSeconds(
-            SiteCharacteristicsDatabaseParams::
-                kFeatureUsagePostBackgroundGracePeriod.default_value));
   }
 
  private:
@@ -260,72 +206,6 @@ TEST_F(TabManagerFeaturesTest, GetProactiveTabFreezeAndDiscardParams) {
       base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(120),
       base::TimeDelta::FromSeconds(247), base::TimeDelta::FromSeconds(10),
       base::TimeDelta::FromSeconds(20), base::TimeDelta::FromSeconds(30), true);
-}
-
-TEST_F(TabManagerFeaturesTest,
-       GetSiteCharacteristicsDatabaseParamsDisabledFeatureGoesToDefault) {
-  // Do not enable the site characteristics database.
-  ExpectDefaultSiteCharacteristicsDatabaseParams();
-}
-
-TEST_F(TabManagerFeaturesTest,
-       GetSiteCharacteristicsDatabaseParamsParamsNoneGoesToDefault) {
-  ExpectDefaultSiteCharacteristicsDatabaseParams();
-}
-
-TEST_F(TabManagerFeaturesTest,
-       GetSiteCharacteristicsDatabaseParamsInvalidGoesToDefault) {
-  SetParam(
-      SiteCharacteristicsDatabaseParams::kFaviconUpdateObservationWindow.name,
-      "    ");
-  SetParam(
-      SiteCharacteristicsDatabaseParams::kTitleUpdateObservationWindow.name,
-      "foo");
-  SetParam(SiteCharacteristicsDatabaseParams::kAudioUsageObservationWindow.name,
-           ".");
-  SetParam(
-      SiteCharacteristicsDatabaseParams::kNotificationsUsageObservationWindow
-          .name,
-      "abc");
-  SetParam(SiteCharacteristicsDatabaseParams::
-               kTitleOrFaviconChangePostLoadGracePeriod.name,
-           "bleh");
-  SetParam(
-      SiteCharacteristicsDatabaseParams::kFeatureUsagePostBackgroundGracePeriod
-          .name,
-      "!!!");
-  EnableSiteCharacteristicsDatabase();
-  ExpectDefaultSiteCharacteristicsDatabaseParams();
-}
-
-TEST_F(TabManagerFeaturesTest, GetSiteCharacteristicsDatabaseParams) {
-  SetParam(
-      SiteCharacteristicsDatabaseParams::kFaviconUpdateObservationWindow.name,
-      "3600");
-  SetParam(
-      SiteCharacteristicsDatabaseParams::kTitleUpdateObservationWindow.name,
-      "36000");
-  SetParam(SiteCharacteristicsDatabaseParams::kAudioUsageObservationWindow.name,
-           "360000");
-  SetParam(
-      SiteCharacteristicsDatabaseParams::kNotificationsUsageObservationWindow
-          .name,
-      "3600000");
-  SetParam(SiteCharacteristicsDatabaseParams::
-               kTitleOrFaviconChangePostLoadGracePeriod.name,
-           "42");
-  SetParam(
-      SiteCharacteristicsDatabaseParams::kFeatureUsagePostBackgroundGracePeriod
-          .name,
-      "43");
-
-  EnableSiteCharacteristicsDatabase();
-
-  ExpectSiteCharacteristicsDatabaseParams(
-      base::TimeDelta::FromSeconds(3600), base::TimeDelta::FromSeconds(36000),
-      base::TimeDelta::FromSeconds(360000),
-      base::TimeDelta::FromSeconds(3600000), base::TimeDelta::FromSeconds(42),
-      base::TimeDelta::FromSeconds(43));
 }
 
 }  // namespace resource_coordinator

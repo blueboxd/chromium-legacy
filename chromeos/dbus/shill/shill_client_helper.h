@@ -98,7 +98,7 @@ class ShillClientHelper {
   // Calls a method with an object path result where there is an error callback.
   void CallObjectPathMethodWithErrorCallback(
       dbus::MethodCall* method_call,
-      const ObjectPathCallback& callback,
+      ObjectPathCallback callback,
       const ErrorCallback& error_callback);
 
   // Calls a method with a dictionary value result.

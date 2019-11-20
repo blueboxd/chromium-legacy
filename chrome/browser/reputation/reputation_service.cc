@@ -4,6 +4,7 @@
 
 #include "chrome/browser/reputation/reputation_service.h"
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -23,6 +24,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/security_state/core/security_state.h"
 #include "components/url_formatter/spoof_checks/top_domains/top500_domains.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -154,7 +156,10 @@ bool ShouldSuppressWarning(const GURL& url) {
 
 }  // namespace
 
-ReputationService::ReputationService(Profile* profile) : profile_(profile) {}
+ReputationService::ReputationService(Profile* profile)
+    : profile_(profile),
+      sensitive_keywords_(top500_domains::kTop500Keywords),
+      num_sensitive_keywords_(base::size(top500_domains::kTop500Keywords)) {}
 
 ReputationService::~ReputationService() = default;
 
@@ -171,12 +176,12 @@ void ReputationService::GetReputationStatus(const GURL& url,
   if (service->EngagedSitesNeedUpdating()) {
     service->ForceUpdateEngagedSites(
         base::BindOnce(&ReputationService::GetReputationStatusWithEngagedSites,
-                       weak_factory_.GetWeakPtr(), std::move(callback), url));
+                       weak_factory_.GetWeakPtr(), url, std::move(callback)));
     // If the engaged sites need updating, there's nothing to do until callback.
     return;
   }
 
-  GetReputationStatusWithEngagedSites(std::move(callback), url,
+  GetReputationStatusWithEngagedSites(url, std::move(callback),
                                       service->GetLatestEngagedSites());
 }
 
@@ -197,13 +202,20 @@ void ReputationService::SetUserIgnore(content::WebContents* web_contents,
   warning_dismissed_origins_.insert(url::Origin::Create(url));
 }
 
+void ReputationService::SetSensitiveKeywordsForTesting(
+    const char* const* new_keywords,
+    size_t num_new_keywords) {
+  sensitive_keywords_ = new_keywords;
+  num_sensitive_keywords_ = num_new_keywords;
+}
+
 bool ReputationService::IsIgnored(const GURL& url) const {
   return warning_dismissed_origins_.count(url::Origin::Create(url)) > 0;
 }
 
 void ReputationService::GetReputationStatusWithEngagedSites(
-    ReputationCheckCallback callback,
     const GURL& url,
+    ReputationCheckCallback callback,
     const std::vector<DomainInfo>& engaged_sites) {
   const DomainInfo navigated_domain = GetDomainInfo(url);
 
@@ -269,8 +281,9 @@ void ReputationService::GetReputationStatusWithEngagedSites(
   }
 
   // 5. Keyword heuristics.
-  if (ShouldTriggerSafetyTipFromKeywordInURL(
-          url, navigated_domain, top500_domains::kTop500Keywords, 500)) {
+  if (ShouldTriggerSafetyTipFromKeywordInURL(url, navigated_domain,
+                                             sensitive_keywords_,
+                                             num_sensitive_keywords_)) {
     if (!done_checking_reputation_status) {
       result.safety_tip_status = security_state::SafetyTipStatus::kBadKeyword;
     }
@@ -290,6 +303,9 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     }
   }
   result.url = url;
+
+  DCHECK(done_checking_reputation_status ||
+         !result.triggered_heuristics.triggered_any());
   std::move(callback).Run(result);
 }
 

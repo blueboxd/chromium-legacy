@@ -1,8 +1,5 @@
-cpu@chromium.org
-sorin@chromium.org
-waffles@chromium.org
+file://components/update_client/OWNERS
 
 # COMPONENT: Internals>Installer>Components
-
-# TEAM: ios-directory-owners@chromium.org
+# TEAM: chrome-updates-dev@chromium.org
 # OS: iOS

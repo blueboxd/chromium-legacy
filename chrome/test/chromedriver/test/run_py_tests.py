@@ -89,6 +89,8 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeLogPathCapabilityTest.testChromeLogPath',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=946704
     'ChromeDownloadDirTest.testFileDownloadWithClick',
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1025981
+    'ChromeDriverSiteIsolation.testCanClickOOPIF',
     'ChromeDriverTest.testBackNavigationAfterClickElement',
     'ChromeDriverTest.testCanClickInIframes',
     'ChromeDriverTest.testClickElementAfterNavigation',
@@ -2009,6 +2011,56 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self._http_server.GetUrl('localhost')
                       + '/chromedriver/empty.html')
 
+  def testWaitForCurrentFrameToLoad(self):
+    """Verify ChromeDriver waits for loading events of current frame
+    Regression test for bug
+    https://bugs.chromium.org/p/chromedriver/issues/detail?id=3164
+    Clicking element in frame triggers reload of that frame, click should not
+    return until loading is complete.
+    """
+    def waitAndRespond():
+      # test may not detect regression without small sleep.
+      # locally, .2 didn't fail before code change, .3 did
+      time.sleep(.5)
+      self._sync_server.RespondWithContent(
+          """
+          <html>
+            <body>
+              <p id='valueToRead'>11</p>
+            </body>
+          </html>
+          """)
+
+    self._http_server.SetDataForPath('/page10.html',
+      """
+      <html>
+        <head>
+          <title>
+            Frame
+          </title>
+          <script>
+            function reloadWith(i) {
+              window.location.assign('%s');
+            }
+          </script>
+        </head>
+        <body>
+          <button id='prev' onclick="reloadWith(9)">-1</button>
+          <button id='next' onclick="reloadWith(11)">+1</button>
+          <p id='valueToRead'>10</p>
+        </body>
+      </html>
+      """ % self._sync_server.GetUrl())
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/page_for_next_iframe.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame);
+    thread = threading.Thread(target=waitAndRespond)
+    thread.start()
+    self._driver.FindElement('css selector', '#next').Click()
+    value_display = self._driver.FindElement('css selector', '#valueToRead')
+    self.assertEquals('11', value_display.GetText())
+
   def testSlowIFrame(self):
     """Verify ChromeDriver does not wait for slow frames to load.
     Regression test for bugs
@@ -2018,7 +2070,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     def waitAndRespond():
       # Send iframe contents slowly
       time.sleep(2)
-      self._sync_server.RespondWithContent('<html>IFrame contents</html>')
+      self._sync_server.RespondWithContent(
+        '<html><div id=iframediv>IFrame contents</div></html>')
 
     self._http_server.SetDataForPath('/top.html',
         """
@@ -2038,15 +2091,18 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self._http_server.GetUrl() + '/top.html')
     thread = threading.Thread(target=waitAndRespond)
     thread.start()
+    start = time.time()
+    # Click should not wait for frame to load, so elapsed time from this
+    # command should be < 2 seconds.
     self._driver.FindElement('css selector', '#button').Click()
-    # Correct ChromeDriver behavior should not wait for iframe to
-    # load. Therefore, SwitchToFrame should fail, we remain in the top
-    # frame, and FindElement should succeed. If ChromeDriver incorrectly
-    # waits for slow iframe to load, then SwitchToFrame succeeds,
-    # and element with id='top' won't be found.
+    self.assertLess(time.time() - start, 2.0)
     frame = self._driver.FindElement('css selector', '#iframe')
+    # WaitForPendingNavigations examines the load state of the current frame
+    # so ChromeDriver will wait for frame to load after SwitchToFrame
+    # start is reused because that began the pause for the frame load
     self._driver.SwitchToFrame(frame)
-    self._driver.FindElement('css selector', '#top')
+    self.assertGreaterEqual(time.time() - start, 2.0)
+    self._driver.FindElement('css selector', '#iframediv')
     thread.join()
 
   @staticmethod

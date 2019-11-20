@@ -20,6 +20,7 @@ is_linux_without_udev = is_linux && !use_udev
 test("device_unittests") {
   sources = [
     "base/synchronization/one_writer_seqlock_unittest.cc",
+    "bluetooth/bluetooth_adapter_android_unittest.cc",
     "bluetooth/bluetooth_adapter_mac_metrics_unittest.mm",
     "bluetooth/bluetooth_adapter_mac_unittest.mm",
     "bluetooth/bluetooth_adapter_unittest.cc",
@@ -363,6 +364,7 @@ test("device_unittests") {
 if (is_android) {
   bluetooth_java_sources_needing_jni = [
     "bluetooth/test/android/java/src/org/chromium/device/bluetooth/Fakes.java",
+    "bluetooth/test/android/java/src/org/chromium/device/bluetooth/ChromeBluetoothScanFilter.java",
   ]
 
   generate_jni("bluetooth_test_jni_headers") {

@@ -2954,7 +2954,7 @@ void RenderViewContextMenu::ExecPrint() {
   }
 
   printing::StartPrint(
-      source_web_contents_, nullptr,
+      source_web_contents_, mojo::NullAssociatedRemote(),
       GetPrefs(browser_context_)->GetBoolean(prefs::kPrintPreviewDisabled),
       !params_.selection_text.empty());
 #endif  // BUILDFLAG(ENABLE_PRINTING)

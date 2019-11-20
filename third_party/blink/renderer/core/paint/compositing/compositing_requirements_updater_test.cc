@@ -110,7 +110,7 @@ TEST_F(CompositingRequirementsUpdaterTest,
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
 
-  GetDocument().View()->SetTracksPaintInvalidations(true);
+  GetDocument().View()->SetTracksRasterInvalidations(true);
 
   GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
                                                        "display: none");

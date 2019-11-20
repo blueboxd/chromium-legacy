@@ -78,6 +78,7 @@ struct Session {
   void SwitchToParentFrame();
   void SwitchToSubFrame(const std::string& frame_id,
                         const std::string& chromedriver_frame_id);
+  void ClearNavigationState(bool for_top_frame);
   std::string GetCurrentFrameId() const;
   std::vector<WebDriverLog*> GetAllLogs() const;
 

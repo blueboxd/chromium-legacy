@@ -220,7 +220,7 @@ class MockAudioOutputStream : public AudioOutputStream,
     return res;
   }
 
-  void OnError() override {
+  void OnError(ErrorType type) override {
     // Fake stream doesn't send errors.
     NOTREACHED();
   }
@@ -478,7 +478,8 @@ class OutputControllerTest : public ::testing::Test {
 
     // Errors should be deferred; the device change should ensure it's dropped.
     EXPECT_CALL(mock_event_handler_, OnControllerError()).Times(0);
-    controller_->OnError();
+    controller_->OnError(
+        media::AudioOutputStream::AudioSourceCallback::ErrorType::kUnknown);
 
     EXPECT_CALL(mock_event_handler_, OnControllerPlaying());
     EXPECT_CALL(mock_event_handler_, OnControllerPaused()).Times(0);

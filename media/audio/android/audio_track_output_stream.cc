@@ -173,7 +173,7 @@ ScopedJavaLocalRef<jobject> AudioTrackOutputStream::OnMoreData(
 
 void AudioTrackOutputStream::OnError(JNIEnv* env, jobject obj) {
   DCHECK(callback_);
-  callback_->OnError();
+  callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
 }
 
 jlong AudioTrackOutputStream::GetAddress(JNIEnv* env,

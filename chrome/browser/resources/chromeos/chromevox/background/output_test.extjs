@@ -1151,3 +1151,32 @@ TEST_F('ChromeVoxOutputE2ETest', 'NoTooltipWithNameTitle', function() {
         o.speechOutputForTest);
   });
 });
+
+TEST_F('ChromeVoxOutputE2ETest', 'InitialSpeechProperties', function() {
+  this.runWithLoadedTree(function() {/*!
+    <p>test</p>  */},
+  function(root) {
+    // Capture speech properties sent to tts.
+    this.currentProperties = [];
+    ChromeVox.tts.speak = (textString, queueMode, properties) => {
+      this.currentProperties.push(properties);
+    }
+
+    var o = new Output().withSpeech(cursors.Range.fromNode(root.firstChild));
+    o.go();
+    assertEqualsJSON([{category: TtsCategory.NAV}],
+                     this.currentProperties);
+    this.currentProperties = [];
+
+    o.withInitialSpeechProperties({
+      phoneticCharacters: true,
+      // This should not override existing value.
+      category: TtsCategory.LIVE
+    });
+    o.go();
+    assertEqualsJSON([
+      {phoneticCharacters: true, category: TtsCategory.NAV}
+    ],
+                     this.currentProperties);
+  });
+});

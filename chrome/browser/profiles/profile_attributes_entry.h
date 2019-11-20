@@ -157,6 +157,8 @@ class ProfileAttributesEntry {
   static const char kUserNameKey[];
   static const char kGAIAIdKey[];
   static const char kIsConsentedPrimaryAccountKey[];
+  static const char kNameKey[];
+  static const char kIsUsingDefaultNameKey[];
 
  private:
   friend class ProfileInfoCache;

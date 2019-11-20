@@ -484,6 +484,10 @@ java_group("chrome_all_java") {
   if (use_chime_android_sdk) {
     deps += [ "//chrome/android/modules/chime/public:java" ]
   }
+
+  if (enable_image_editor) {
+    deps += [ "//chrome/android/modules/image_editor/public:java" ]
+  }
 }
 
 # This is a list of all base module jni headers. New features should add their

@@ -151,12 +151,8 @@ Polymer({
     apnList.push(otherApn);
 
     this.apnSelectList_ = apnList;
-
-    // Set selectedApn_ after dom-repeat has been stamped.
-    this.async(() => {
-      this.selectedApn_ =
-          (activeApn && activeApn.accessPointName) || otherApn.accessPointName;
-    });
+    this.selectedApn_ =
+        (activeApn && activeApn.accessPointName) || otherApn.accessPointName;
   },
 
   /**
@@ -287,6 +283,16 @@ Polymer({
     return apnList.find(function(a) {
       return a.accessPointName == accessPointName;
     });
+  },
+
+  /**
+   * @param {chromeos.networkConfig.mojom.ApnProperties} item
+   * @return {boolean} Boolean indicating whether |item| is the current selected
+   *     apn item.
+   * @private
+   */
+  isApnItemSelected_: function(item) {
+    return item.accessPointName == this.selectedApn_;
   }
 });
 })();

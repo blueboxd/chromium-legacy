@@ -18,22 +18,59 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.components.minidump_uploader.MinidumpUploaderDelegate;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
+import org.chromium.components.version_info.Channel;
+import org.chromium.components.version_info.VersionConstants;
 
 import java.io.File;
+import java.util.Random;
 
 /**
  * Android Webview-specific implementations for minidump uploading logic.
  */
 public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
+    // Sample 1% of crashes for stable WebView channel.
+    public static final int CRASH_DUMP_PERCENTAGE_FOR_STABLE = 1;
+
     private final ConnectivityManager mConnectivityManager;
 
     private boolean mPermittedByUser;
 
+    private SamplingDelegate mSamplingDelegate;
+
+    /**
+     * A delegate to provide the required information to decide whether a crash is sampled or not.
+     * This is to allow injecting delegates for testing.
+     */
     @VisibleForTesting
-    public AwMinidumpUploaderDelegate() {
+    public static interface SamplingDelegate {
+        public int getChannel();
+        public int getRandomSample();
+    }
+
+    @VisibleForTesting
+    public AwMinidumpUploaderDelegate(SamplingDelegate samplingDelegate) {
         mConnectivityManager =
                 (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
+
+        mSamplingDelegate = samplingDelegate;
+    }
+
+    @VisibleForTesting
+    public AwMinidumpUploaderDelegate() {
+        this(new SamplingDelegate() {
+            private Random mRandom = new Random();
+
+            @Override
+            public int getChannel() {
+                return VersionConstants.CHANNEL;
+            }
+
+            @Override
+            public int getRandomSample() {
+                return mRandom.nextInt(100);
+            }
+        });
     }
 
     @Override
@@ -46,13 +83,14 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
         return new CrashReportingPermissionManager() {
             @Override
             public boolean isClientInMetricsSample() {
-                // We will check whether the client is in the metrics sample before
-                // generating a minidump - so if no minidump is generated this code will
-                // never run and we don't need to check whether we are in the sample.
-                // TODO(gsennton): when we switch to using Finch for this value we should use the
-                // Finch value here as well.
+                if (mSamplingDelegate.getChannel() == Channel.STABLE
+                        || mSamplingDelegate.getChannel() == Channel.DEFAULT) {
+                    return mSamplingDelegate.getRandomSample() < CRASH_DUMP_PERCENTAGE_FOR_STABLE;
+                }
+
                 return true;
             }
+
             @Override
             public boolean isNetworkAvailableForCrashUploads() {
                 // Note that this is the same critierion that the JobScheduler uses to schedule the

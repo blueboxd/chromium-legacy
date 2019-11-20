@@ -12,6 +12,7 @@
 <translation id="107147699690128016">שינוי של סיומת הקובץ עשוי לגרום לכך שהקובץ ייפתח באפליקציה אחרת. מצב זה עלול לסכן את המכשיר.</translation>
 <translation id="1100066534610197918">פתיחה בכרטיסייה חדשה בקבוצה</translation>
 <translation id="1105960400813249514">צילום מסך</translation>
+<translation id="1110022065703191351">סמלים</translation>
 <translation id="1111673857033749125">סימניות שנשמרו במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="1113597929977215864">צפייה בתצוגה נקייה</translation>
 <translation id="1124772482545689468">משתמש</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">‏כדי לאפשר ל-Chrome לגשת אל המיקרופון, צריך להפעיל אותו גם ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">נוסף לסימניות ב-<ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">סינכרון ברקע</translation>
+<translation id="3749259744154402564">הפעולה לא נתמכת</translation>
 <translation id="3771001275138982843">לא ניתן היה להוריד את העדכון</translation>
 <translation id="3771033907050503522">כרטיסיות גלישה בסתר</translation>
 <translation id="3773755127849930740">‏<ph name="BEGIN_LINK" />הפעל את Bluetooth<ph name="END_LINK" /> כדי לאפשר התאמה</translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">שם</translation>
 <translation id="5335288049665977812">‏אפשר לאתרים להריץ JavaScript (מומלץ)</translation>
 <translation id="5342314432463739672">בקשות הרשאה</translation>
+<translation id="534295439873310000">‏מכשירי NFC</translation>
 <translation id="5357811892247919462">התקבלה כרטיסייה</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{כרטיסייה פתוחה אחת (<ph name="OPEN_TABS_ONE" />), יש להקיש כדי להחליף כרטיסיות}two{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}many{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}other{<ph name="OPEN_TABS_MANY" /> כרטיסיות פתוחות, יש להקיש כדי להחליף כרטיסיות}}</translation>
 <translation id="5391532827096253100">החיבור שלך לאתר הזה לא מאובטח. פרטי האתר</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5689516760719285838">מיקום</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
+<translation id="5710871682236653961">‏הצגת שאלה לפני מתן הרשאה לאתרים לשלוח ולקבל מידע בעת הקשה על מכשירי NFC (מומלץ)</translation>
 <translation id="572328651809341494">כרטיסיות אחרונות</translation>
 <translation id="5726692708398506830">הגדל את כל מה שמופיע בדף</translation>
 <translation id="5748802427693696783">הוחלף לכרטיסיות רגילות</translation>
@@ -785,6 +789,7 @@
 <translation id="6818926723028410516">בחירת פריטים</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">תרגום</translation>
+<translation id="6840155290835956714">שאל לפני שליחה</translation>
 <translation id="6845325883481699275">‏עזרה בשיפור האבטחה של Chrome</translation>
 <translation id="6846298663435243399">טוען…</translation>
 <translation id="6850409657436465440">ההורדה עדיין מתבצעת</translation>
@@ -881,6 +886,7 @@
 <translation id="7559975015014302720">מצב הטעינה המהירה מושבת</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
+<translation id="7572498721684305250">‏חסימת האפשרות של אתרים לשלוח ולקבל מידע בעת הקשה על מכשירי NFC</translation>
 <translation id="757524316907819857">חסימה של הפעלת תוכן מוגן על-ידי אתרים</translation>
 <translation id="757855969265046257">{FILES,plural, =1{הורדת קובץ אחד (<ph name="FILES_DOWNLOADED_ONE" />)}two{הורדת <ph name="FILES_DOWNLOADED_MANY" /> קבצים}many{הורדת <ph name="FILES_DOWNLOADED_MANY" /> קבצים}other{הורדת <ph name="FILES_DOWNLOADED_MANY" /> קבצים}}</translation>
 <translation id="7588219262685291874">עיצוב כהה מופעל כשהמכשיר עובר לחיסכון בסוללה</translation>
@@ -1090,7 +1096,6 @@
 <translation id="9133397713400217035">הצעות לתוכן במצב לא מקוון</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
-<translation id="9139068048179869749">יש לשאול לפני שמאפשרים לאתרים לשלוח הודעות (מומלץ)</translation>
 <translation id="9139318394846604261">קניות</translation>
 <translation id="9155898266292537608">אפשר גם להתחיל חיפוש על-ידי הקשה קצרה על מילה</translation>
 <translation id="9169507124922466868">היסטוריית הניווט פתוחה למחצה</translation>

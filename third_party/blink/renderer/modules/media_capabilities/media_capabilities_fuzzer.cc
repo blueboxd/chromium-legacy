@@ -66,7 +66,7 @@ MediaDecodingConfiguration* MakeConfiguration(
     config->video()->setWidth(proto.video().width());
     config->video()->setHeight(proto.video().height());
     config->video()->setBitrate(proto.video().bitrate());
-    config->video()->setFramerate(proto.video().framerate().c_str());
+    config->video()->setFramerate(proto.video().framerate());
   }
 
   if (proto.has_audio()) {

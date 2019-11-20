@@ -988,6 +988,15 @@
           Nếu bạn bật hoặc không đặt chính sách này, thì các cảnh báo bảo mật sẽ hiện ra khi một số cờ dòng lệnh được dùng để chạy Chrome.
 
           Trên Windows, chính sách này chỉ có trên các phiên bản liên kết với một miền <ph name="MS_AD_NAME" /> hoặc các phiên bản Windows 10 Pro hoặc Enterprise đã đăng ký quản lý thiết bị.</translation>
+<translation id="2480971699591919564">Bật tính năng Nhấp để gọi. Tính năng này cho phép người dùng gửi số điện thoại từ Máy tính đang mở Chrome sang thiết bị Android khi người dùng đã đăng nhập. Để biết thêm thông tin, hãy xem bài viết trong trung tâm trợ giúp: https://support.google.com/chrome/answer/9430554?hl=vi.
+
+      Nếu bạn đặt chính sách này thành bật, thì người dùng Chrome có thể gửi số điện thoại tới thiết bị Android.
+
+      Nếu bạn đặt chính sách này thành tắt, thì người dùng Chrome sẽ không thể gửi số điện thoại tới thiết bị Android.
+
+      Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách này.
+
+      Nếu bạn không đặt chính sách này, thì tính năng Nhấp để gọi sẽ bật theo mặc định.</translation>
 <translation id="2482676533225429905">Nhắn tin gốc</translation>
 <translation id="2483146640187052324">Dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
 <translation id="2484208301968418871">Chính sách này kiểm soát việc áp dụng bộ lọc URL SafeSites.
@@ -2015,6 +2024,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4075864623710596000">Các tên máy chủ đã chỉ định trong danh sách này sẽ được miễn kiểm tra chính sách HSTS mà có thể nâng cấp yêu cầu từ http lên https. Chính sách này chỉ cho phép tên máy chủ một nhãn. Cần phải chuẩn hóa tên máy chủ: mọi IDN phải được chuyển sang định dạng nhãn A và tất cả chữ cái ASCII phải là chữ thường. Chính sách này chỉ áp dụng với các tên máy chủ cụ thể đã chỉ định, chứ không áp dụng với các miền con của tên máy chủ đã chỉ định.</translation>
 <translation id="408029843066770167">Cho phép gửi truy vấn tới dịch vụ thời gian của Google</translation>
 <translation id="408076456549153854">Cho phép đăng nhập vào trình duyệt</translation>
+<translation id="4082498585300984671">Bật tính năng Nhấp để gọi</translation>
 <translation id="40853027210512570">Ghi đè các quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />.
 
       Chính sách này xác định các quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />. Quá trình này diễn ra vào lần đầu tiên sử dụng chức năng in với một cấu hình.
@@ -3625,13 +3635,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Trong trường hợp không được phép đăng nhập vào một tài khoản khác qua chế độ Ẩn danh, hãy cân nhắc chặn chế độ đó bằng chính sách IncognitoModeAvailability.
 
       Xin lưu ý rằng người dùng có thể truy cập vào các dịch vụ của Google ở trạng thái chưa xác thực bằng cách chặn cookie của các dịch vụ đó.</translation>
-<translation id="6837480141980366278">Kiểm soát xem ứng dụng DNS tích hợp có được dùng trong <ph name="PRODUCT_NAME" /> hay không.
-
-      Nếu bạn đặt chính sách này thành true, thì ứng dụng DNS tích hợp sẽ được sử dụng, nếu có.
-
-      Nếu bạn đặt chính sách này thành false, thì ứng dụng DNS tích hợp sẽ không bao giờ được sử dụng.
-
-      Nếu bạn không đặt chính sách này, thì ứng dụng DNS tích hợp sẽ được bật theo mặc định trên MacOS, Android (khi cả VPN lẫn DNS riêng đều không được bật) và ChromeOS, đồng thời người dùng sẽ có thể thay đổi tùy chọn có sử dụng ứng dụng DNS tích hợp hay không bằng cách chỉnh sửa chrome://flags hoặc chỉ định một cờ dòng lệnh.</translation>
 <translation id="6843296367238757293">Chính sách này không còn dùng nữa. Bạn không nên sử dụng chính sách này. Đọc thêm tại https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Chính sách này đã bị xóa trong <ph name="PRODUCT_NAME" /> 68 và thay thế bằng <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Bật tính năng hỗ trợ tiếp cận về làm nổi bật con trỏ</translation>
@@ -4046,13 +4049,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="7373200034079131670">Khởi động lại khi đăng xuất người dùng nếu Android hoặc một máy chủ ảo (VM) đã khởi động.</translation>
 <translation id="737655323154569539">Hạn chế kích thước trang in. Nếu bạn không đặt hoặc để trống chính sách, thì hệ thống sẽ coi là không có hạn chế.</translation>
 <translation id="7382191643394429934">Cho phép in cả khi có và không có đồ họa nền</translation>
-<translation id="7383445181072113521">Xác định tên máy chủ của thiết bị dùng trong các yêu cầu DHCP.
-
-      Nếu bạn đặt chính sách này thành một chuỗi có nội dung, thì chuỗi đó sẽ được dùng làm tên máy chủ của thiết bị trong quá trình yêu cầu DHCP.
-
-      Chuỗi này có thể chứa các biến <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> mà sẽ được thay thế bằng các giá trị trên thiết bị trước khi dùng làm tên máy chủ. Giá trị thay thế thu được sẽ là tên máy chủ hợp lệ (theo RFC 1035, mục 3.1).
-
-      Nếu bạn không đặt chính sách này hoặc giá trị sau khi thay thế không phải là tên máy chủ hợp lệ, thì tên máy chủ sẽ không được đặt trong yêu cầu DHCP. </translation>
 <translation id="7389872682701720082">Nếu bạn bật tùy chọn cài đặt này, các plugin không bị lỗi thời sẽ luôn chạy.
 
       Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, người dùng sẽ được yêu cầu cho phép chạy các plugin đòi hỏi ủy quyền. Đây là những plugin có thể ảnh hưởng đến tính bảo mật.</translation>
@@ -4447,7 +4443,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="8141795997560411818">Chính sách này không ngăn người dùng sử dụng ứng dụng Google Drive trên Android. Nếu muốn ngăn việc truy cập vào Google Drive, bạn cũng phải không cho phép cài đặt ứng dụng Google Drive trên Android.</translation>
 <translation id="8142894094385450823">Đặt ngôn ngữ đề xuất cho phiên được quản lý</translation>
 <translation id="8146727383888924340">Cho phép người dùng đổi phiếu mua hàng thông qua Đăng ký Chrome OS</translation>
-<translation id="8148785525797916822">Ẩn cảnh báo xuất hiện khi <ph name="PRODUCT_NAME" /> đang chạy trên máy tính hoặc hệ điều hành không được hỗ trợ nữa.</translation>
 <translation id="8148901634826284024">Bật tính năng trợ năng chế độ tương phản cao.
 
           Nếu chính sách này được đặt thành true, chế độ tương phản cao sẽ luôn được bật.

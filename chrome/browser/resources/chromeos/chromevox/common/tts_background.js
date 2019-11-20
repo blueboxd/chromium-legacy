@@ -215,33 +215,6 @@ TtsBackground.prototype.speak = function(textString, queueMode, properties) {
     properties = {};
   }
 
-  // Chunk to improve responsiveness. Use a replace/split pattern in order to
-  // retain the original punctuation.
-  var splitTextString = textString.replace(/([-\n\r.,!?;])(\s)/g, '$1$2|');
-  splitTextString = splitTextString.split('|');
-  // Since we are substituting the chunk delimiters back into the string, only
-  // recurse when there are more than 2 split items. This should result in only
-  // one recursive call.
-  if (splitTextString.length > 2) {
-    var startCallback = properties['startCallback'];
-    var endCallback = properties['endCallback'];
-    var onEvent = properties['onEvent'];
-    for (var i = 0; i < splitTextString.length; i++) {
-      var propertiesCopy = {};
-      for (var p in properties) {
-        propertiesCopy[p] = properties[p];
-      }
-      propertiesCopy['startCallback'] = i == 0 ? startCallback : null;
-      propertiesCopy['endCallback'] =
-          i == (splitTextString.length - 1) ? endCallback : null;
-      propertiesCopy['onEvent'] =
-          i == (splitTextString.length - 1) ? onEvent : null;
-      this.speak(splitTextString[i], queueMode, propertiesCopy);
-      queueMode = QueueMode.QUEUE;
-    }
-    return this;
-  }
-
   textString = this.preprocess(textString, properties);
 
   // TODO(dtseng): Google TTS has bad performance when speaking numbers. This
@@ -681,6 +654,11 @@ TtsBackground.prototype.createPunctuationReplace_ = function(clear) {
 TtsBackground.prototype.pronouncePhonetically_ = function(text, properties) {
   // Math should never be pronounced phonetically.
   if (properties.math) {
+    return;
+  }
+
+  // Only pronounce phonetic hints when explicitly requested.
+  if (!properties.phoneticCharacters) {
     return;
   }
 

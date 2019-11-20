@@ -130,15 +130,15 @@ public class InputTypesTest {
         InstrumentationActivity activity = mActivityTestRule.launchShell(extras);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             activity.loadWebLayerSync(
-                            new InMemorySharedPreferencesContext(activity.getApplication()) {
-                                @Override
-                                public int checkPermission(String permission, int pid, int uid) {
-                                    if (permission.equals(Manifest.permission.CAMERA)) {
-                                        return mCameraPermission;
-                                    }
-                                    return getBaseContext().checkPermission(permission, pid, uid);
-                                }
-                            });
+                    new InMemorySharedPreferencesContext(activity.getApplication()) {
+                        @Override
+                        public int checkPermission(String permission, int pid, int uid) {
+                            if (permission.equals(Manifest.permission.CAMERA)) {
+                                return mCameraPermission;
+                            }
+                            return getBaseContext().checkPermission(permission, pid, uid);
+                        }
+                    });
         });
         mActivityTestRule.navigateAndWait(mActivityTestRule.getTestDataURL("input_types.html"));
         mTempFile = File.createTempFile("file", null);

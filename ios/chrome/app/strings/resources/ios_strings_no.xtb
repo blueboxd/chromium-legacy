@@ -279,6 +279,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4854345657858711387">Angi en adgangskode</translation>
 <translation id="4860895144060829044">Ring</translation>
 <translation id="4881695831933465202">Åpne</translation>
+<translation id="4901778704868714008">Lagre</translation>
 <translation id="4904877109095351937">Merk som lest</translation>
 <translation id="4930268273022498155">Slett eksisterende data. Du kan hente ut dataene ved å bytte tilbake til <ph name="USER_EMAIL1" />.</translation>
 <translation id="4941089862236492464">Det oppsto et problem under delingen av artikkelen.</translation>
@@ -363,7 +364,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6108923351542677676">Konfigurasjon pågår …</translation>
 <translation id="6119050551270742952">Den gjeldende nettsiden er på inkognito</translation>
 <translation id="6122191549521593678">Pålogget</translation>
-<translation id="6127379762771434464">Elementet ble fjernet</translation>
+<translation id="6127379762771434464">Elementet er fjernet</translation>
 <translation id="6136914049981179737">For noen sekunder siden</translation>
 <translation id="616831107264507309">Les senere</translation>
 <translation id="6177442314419606057">Søk i Chrome</translation>

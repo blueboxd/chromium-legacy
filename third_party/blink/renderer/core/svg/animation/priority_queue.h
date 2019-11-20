@@ -19,38 +19,41 @@ namespace blink {
 // PriorityQueueHandle() accessor.
 //
 // While it appears to be generic, it's currently only to make testing easier.
-template <typename T, typename Compare>
+template <typename PriorityType, typename ElementType>
 class PriorityQueue {
   DISALLOW_NEW();
 
  public:
-  using EntryType = Member<T>;
+  using EntryType = std::pair<PriorityType, Member<ElementType>>;
   using StorageType = HeapVector<EntryType>;
   using iterator = typename StorageType::iterator;
   using const_iterator = typename StorageType::const_iterator;
 
   PriorityQueue() = default;
 
-  bool Contains(T* element) const {
+  bool Contains(ElementType* element) const {
     return element->PriorityQueueHandle() != kNotFound;
   }
-  void Insert(T* element);
-  void Remove(T* element);
-  // Updates the position of the specified object in the queue. Should be
-  // called after changing the sort key since otherwise the priority order
-  // could be incorrect.
-  void Update(T* element);
+  void Insert(PriorityType priority, ElementType* element);
+  // Updates the position of the specified object in the queue to the new
+  // priority |priority|.
+  void Update(PriorityType priority, ElementType* element);
+  void Remove(ElementType* element);
+
+  // Set the priority of all entries to |priority|.
+  void ResetAllPriorities(PriorityType priority);
 
   wtf_size_t size() const { return heap_.size(); }
   bool IsEmpty() const { return heap_.IsEmpty(); }
-  T* MinElement() const { return heap_.front(); }
+  const PriorityType& Min() const { return heap_.front().first; }
+  ElementType* MinElement() const { return heap_.front().second; }
 
   iterator begin() { return heap_.begin(); }
   iterator end() { return heap_.end(); }
   const_iterator begin() const { return heap_.begin(); }
   const_iterator end() const { return heap_.end(); }
 
-  EntryType& operator[](wtf_size_t index) { return heap_[index]; }
+  const EntryType& operator[](wtf_size_t index) const { return heap_[index]; }
 
   void Trace(Visitor* visitor) { visitor->Trace(heap_); }
 
@@ -68,10 +71,10 @@ class PriorityQueue {
   }
   static wtf_size_t LeftChildIndex(wtf_size_t index) { return 2 * index + 1; }
   static bool CompareLess(const EntryType& a, const EntryType& b) {
-    return Compare()(*a, *b);
+    return a.first < b.first;
   }
   static void Swap(EntryType& a, EntryType& b) {
-    std::swap(a->PriorityQueueHandle(), b->PriorityQueueHandle());
+    std::swap(a.second->PriorityQueueHandle(), b.second->PriorityQueueHandle());
     std::swap(a, b);
   }
 
@@ -80,8 +83,9 @@ class PriorityQueue {
   DISALLOW_COPY_AND_ASSIGN(PriorityQueue);
 };
 
-template <typename T, typename Compare>
-inline wtf_size_t PriorityQueue<T, Compare>::PercolateUp(wtf_size_t index) {
+template <typename PriorityType, typename ElementType>
+inline wtf_size_t PriorityQueue<PriorityType, ElementType>::PercolateUp(
+    wtf_size_t index) {
   while (!IsRoot(index)) {
     wtf_size_t parent_index = ParentIndex(index);
     if (!CompareLess(heap_[index], heap_[parent_index]))
@@ -92,8 +96,8 @@ inline wtf_size_t PriorityQueue<T, Compare>::PercolateUp(wtf_size_t index) {
   return index;
 }
 
-template <typename T, typename Compare>
-inline wtf_size_t PriorityQueue<T, Compare>::SmallestChildIndex(
+template <typename PriorityType, typename ElementType>
+inline wtf_size_t PriorityQueue<PriorityType, ElementType>::SmallestChildIndex(
     wtf_size_t index) const {
   wtf_size_t left_child_index = LeftChildIndex(index);
   if (left_child_index >= heap_.size())
@@ -105,8 +109,9 @@ inline wtf_size_t PriorityQueue<T, Compare>::SmallestChildIndex(
   return left_child_index;
 }
 
-template <typename T, typename Compare>
-inline void PriorityQueue<T, Compare>::PercolateDown(wtf_size_t index) {
+template <typename PriorityType, typename ElementType>
+inline void PriorityQueue<PriorityType, ElementType>::PercolateDown(
+    wtf_size_t index) {
   while (true) {
     wtf_size_t smallest_child_index = SmallestChildIndex(index);
     if (smallest_child_index >= heap_.size())
@@ -118,17 +123,20 @@ inline void PriorityQueue<T, Compare>::PercolateDown(wtf_size_t index) {
   }
 }
 
-template <typename T, typename Compare>
-inline void PriorityQueue<T, Compare>::Insert(T* element) {
+template <typename PriorityType, typename ElementType>
+inline void PriorityQueue<PriorityType, ElementType>::Insert(
+    PriorityType priority,
+    ElementType* element) {
   DCHECK(!Contains(element));
-  heap_.push_back(element);
+  heap_.push_back(EntryType{priority, element});
   wtf_size_t new_index = heap_.size() - 1;
   element->PriorityQueueHandle() = new_index;
   PercolateUp(new_index);
 }
 
-template <typename T, typename Compare>
-inline void PriorityQueue<T, Compare>::Remove(T* element) {
+template <typename PriorityType, typename ElementType>
+inline void PriorityQueue<PriorityType, ElementType>::Remove(
+    ElementType* element) {
   DCHECK(Contains(element));
   wtf_size_t index = element->PriorityQueueHandle();
   Swap(heap_[index], heap_.back());
@@ -137,13 +145,23 @@ inline void PriorityQueue<T, Compare>::Remove(T* element) {
   PercolateDown(index);
 }
 
-template <typename T, typename Compare>
-inline void PriorityQueue<T, Compare>::Update(T* element) {
+template <typename PriorityType, typename ElementType>
+inline void PriorityQueue<PriorityType, ElementType>::Update(
+    PriorityType priority,
+    ElementType* element) {
   DCHECK(Contains(element));
   wtf_size_t index = element->PriorityQueueHandle();
+  heap_[index].first = priority;
   if (PercolateUp(index) != index)
     return;
   PercolateDown(index);
+}
+
+template <typename PriorityType, typename ElementType>
+inline void PriorityQueue<PriorityType, ElementType>::ResetAllPriorities(
+    PriorityType priority) {
+  for (auto& entry : heap_)
+    entry.first = priority;
 }
 
 }  // namespace blink

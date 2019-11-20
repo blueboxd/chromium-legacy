@@ -353,17 +353,21 @@ void Performance::setResourceTimingBufferSize(unsigned size) {
 
 bool Performance::PassesTimingAllowCheck(
     const ResourceResponse& response,
+    const ResourceResponse& next_response,
     const SecurityOrigin& initiator_security_origin,
     ExecutionContext* context,
-    bool* tainted) {
-  DCHECK(tainted);
+    bool* response_tainting_not_basic,
+    bool* tainted_origin_flag) {
+  DCHECK(response_tainting_not_basic);
+  DCHECK(tainted_origin_flag);
   const KURL& response_url = response.ResponseUrl();
   scoped_refptr<const SecurityOrigin> resource_origin =
       SecurityOrigin::Create(response_url);
-  if (!*tainted &&
-      resource_origin->IsSameSchemeHostPort(&initiator_security_origin))
+  bool is_same_origin =
+      resource_origin->IsSameSchemeHostPort(&initiator_security_origin);
+  if (!*response_tainting_not_basic && is_same_origin)
     return true;
-  *tainted = true;
+  *response_tainting_not_basic = true;
 
   const AtomicString& timing_allow_origin_string =
       response.HttpHeaderField(http_names::kTimingAllowOrigin);
@@ -383,12 +387,34 @@ bool Performance::PassesTimingAllowCheck(
   } else if (tao_headers.size() > 1u) {
     UseCounter::Count(context, WebFeature::kMultipleOriginsInTimingAllowOrigin);
   }
+  bool is_next_resource_same_origin = true;
+  // Only do the origin check if |next_response| is not equal to |response|.
+  if (&next_response != &response) {
+    is_next_resource_same_origin =
+        SecurityOrigin::Create(next_response.ResponseUrl())
+            ->IsSameSchemeHostPort(resource_origin.get());
+  }
+  if (!is_same_origin && !is_next_resource_same_origin)
+    *tainted_origin_flag = true;
+  bool contains_security_origin = false;
   for (const String& header : tao_headers) {
-    if (header == "*" || header == security_origin)
+    if (header == "*")
       return true;
+
+    if (header == security_origin)
+      contains_security_origin = true;
   }
 
-  return false;
+  // If the tainted origin flag is set and the header contains the origin, this
+  // means that this method currently passes the check but once we implement the
+  // tainted origin flag properly then it will fail the check. Record this in a
+  // UseCounter to track how many webpages contain resources where the new check
+  // would fail.
+  if (*tainted_origin_flag && contains_security_origin) {
+    UseCounter::Count(context,
+                      WebFeature::kResourceTimingTaintedOriginFlagFail);
+  }
+  return contains_security_origin;
 }
 
 bool Performance::AllowsTimingRedirect(
@@ -396,15 +422,21 @@ bool Performance::AllowsTimingRedirect(
     const ResourceResponse& final_response,
     const SecurityOrigin& initiator_security_origin,
     ExecutionContext* context) {
-  bool tainted = false;
+  bool response_tainting_not_basic = false;
+  bool tainted_origin_flag = false;
 
-  for (const ResourceResponse& response : redirect_chain) {
-    if (!PassesTimingAllowCheck(response, initiator_security_origin, context,
-                                &tainted))
+  for (unsigned i = 0; i < redirect_chain.size(); ++i) {
+    const ResourceResponse& response = redirect_chain[i];
+    const ResourceResponse& next_response =
+        i + 1 < redirect_chain.size() ? redirect_chain[i + 1] : final_response;
+    if (!PassesTimingAllowCheck(
+            response, next_response, initiator_security_origin, context,
+            &response_tainting_not_basic, &tainted_origin_flag))
       return false;
   }
-  if (!PassesTimingAllowCheck(final_response, initiator_security_origin,
-                              context, &tainted)) {
+  if (!PassesTimingAllowCheck(
+          final_response, final_response, initiator_security_origin, context,
+          &response_tainting_not_basic, &tainted_origin_flag)) {
     return false;
   }
 
@@ -438,9 +470,12 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
   result.timing = final_response.GetResourceLoadTiming();
   result.response_end = info.LoadResponseEnd();
 
-  bool tainted = false;
+  bool response_tainting_not_basic = false;
+  bool tainted_origin_flag = false;
   result.allow_timing_details = PassesTimingAllowCheck(
-      final_response, destination_origin, &context_for_use_counter, &tainted);
+      final_response, final_response, destination_origin,
+      &context_for_use_counter, &response_tainting_not_basic,
+      &tainted_origin_flag);
 
   const Vector<ResourceResponse>& redirect_chain = info.RedirectChain();
   if (!redirect_chain.IsEmpty()) {

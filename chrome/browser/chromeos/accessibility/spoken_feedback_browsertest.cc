@@ -455,12 +455,10 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   EXPECT_TRUE(PerformAcceleratorAction(ash::TOGGLE_SYSTEM_TRAY_BUBBLE));
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Status tray*"))
+    if (base::MatchPattern(utterance, "Status tray*time*Battery*"))
       break;
   }
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "time *"));
-  EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Battery at * percent."));
+
   EXPECT_EQ("Dialog", speech_monitor_.GetNextUtterance());
   EXPECT_TRUE(
       base::MatchPattern(speech_monitor_.GetNextUtterance(), "*window"));
@@ -570,11 +568,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
     // repeatedly until the window is selected.
     SendKeyPress(ui::VKEY_TAB);
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Chrom*"))
+    if (base::MatchPattern(utterance, "Chrom*about:blank, window"))
       break;
   }
-  EXPECT_EQ("about:blank,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("window", speech_monitor_.GetNextUtterance());
 }
 
 #if defined(MEMORY_SANITIZER) || defined(OS_CHROMEOS)

@@ -21,5 +21,5 @@ typedef (DOMString or ArrayBuffer or ArrayBufferView or NDEFMessageInit)
 ] interface NDEFWriter {
     [CallWith=ScriptState, RaisesException] Promise<void> push(
         NDEFMessageSource message,
-        optional NDEFPushOptions options);
+        optional NDEFPushOptions options={});
 };

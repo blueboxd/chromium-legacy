@@ -13,6 +13,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -32,7 +33,7 @@ public class CustomTabActivityLifecycleUmaTracker implements PauseResumeWithNati
         NativeInitObserver {
     private static final String LAST_URL_PREF = "pref_last_custom_tab_url";
 
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final ChromeActivity mActivity;
     private final CustomTabsConnection mConnection;
 
@@ -41,7 +42,7 @@ public class CustomTabActivityLifecycleUmaTracker implements PauseResumeWithNati
 
     @Inject
     public CustomTabActivityLifecycleUmaTracker(ActivityLifecycleDispatcher lifecycleDispatcher,
-            ChromeActivity activity, CustomTabIntentDataProvider intentDataProvider,
+            ChromeActivity activity, BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabsConnection customTabsConnection) {
         mIntentDataProvider = intentDataProvider;
         mActivity = activity;

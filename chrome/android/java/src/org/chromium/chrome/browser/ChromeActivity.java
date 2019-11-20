@@ -280,7 +280,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private CompositorViewHolder mCompositorViewHolder;
     private ObservableSupplierImpl<LayoutManager> mLayoutManagerSupplier =
             new ObservableSupplierImpl<>();
-    private ObservableSupplierImpl<BottomSheetController> mBottomSheetControllerSupplier =
+    private ObservableSupplierImpl<ShareDelegate> mShareDelegateSupplier =
             new ObservableSupplierImpl<>();
     private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
@@ -359,7 +359,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         super.performPreInflationStartup();
 
-        mShareDelegate = new ShareDelegateImpl(getBottomSheetControllerSupplier());
         mRootUiCoordinator = createRootUiCoordinator();
 
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
@@ -389,7 +388,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // to the RootUiCoordinator, passing the activity is an easy way to get access to a
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
         // a recommended pattern.
-        return new RootUiCoordinator(this, null, null, mShareDelegate);
+        return new RootUiCoordinator(this, null, null, getShareDelegateSupplier());
     }
 
     private C createComponent() {
@@ -434,6 +433,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     this, getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
 
             initializeBottomSheetController();
+            mShareDelegate = new ShareDelegateImpl(mBottomSheetController);
+            mShareDelegateSupplier.set(mShareDelegate);
 
             Intent intent = getIntent();
             if (intent != null && getSavedInstanceState() == null) {
@@ -1528,8 +1529,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 mBottomSheetSnackbarManager.dismissAllSnackbars();
             }
         });
-
-        mBottomSheetControllerSupplier.set(mBottomSheetController);
     }
 
     /**
@@ -1926,11 +1925,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return An {@link ObservableSupplier} that will supply the {@link BottomSheetController} when
+     * @return An {@link ObservableSupplier} that will supply the {@link ShareDelegate} when
      *         it is ready.
      */
-    public ObservableSupplier<BottomSheetController> getBottomSheetControllerSupplier() {
-        return mBottomSheetControllerSupplier;
+    protected ObservableSupplier<ShareDelegate> getShareDelegateSupplier() {
+        return mShareDelegateSupplier;
     }
 
     /**

@@ -68,24 +68,24 @@ selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0|<br><br><br>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'left', 'word'),
   isMac
-      ? '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br><br>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br><br>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br>|<br><br>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br>|<br><br>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '3-7 rtl left word');
 
 selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br>|<br><br>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'left', 'word'),
   isMac
-      ? '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br><br>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br><br>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br>|<br>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br>|<br>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '3-8 rtl left word');
 
 selection_test(
   '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br>|<br>\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'left', 'word'),
   isMac
-      ? '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br><br>\u05D0\u05D0\u05D0| \u05D0\u05D0\u05D0</div>'
-      : '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br><br>\u05D0\u05D0\u05D0 |\u05D0\u05D0\u05D0</div>',
+      ? '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br><br>|\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>'
+      : '<div contenteditable dir="rtl">\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0<br><br><br>|\u05D0\u05D0\u05D0 \u05D0\u05D0\u05D0</div>',
   '3-9 rtl left word');
 
 selection_test(

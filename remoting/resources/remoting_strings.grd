@@ -206,6 +206,7 @@
 
   </outputs>
   <translations>
+    <file lang="af" path="remoting_strings_af.xtb"/>
     <file lang="am" path="remoting_strings_am.xtb"/>
     <file lang="ar" path="remoting_strings_ar.xtb"/>
     <file lang="bg" path="remoting_strings_bg.xtb"/>

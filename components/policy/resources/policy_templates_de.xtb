@@ -975,6 +975,15 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Sollte sie aktiviert oder nicht konfiguriert sein, werden Sicherheitswarnungen angezeigt, wenn Chrome mit einigen Befehlszeilen-Flags gestartet wird.
 
           Unter Windows steht diese Richtlinie nur bei Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Windows 10 Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
+<translation id="2480971699591919564">Hiermit wird die Funktion "Zum Anrufen klicken" aktiviert. Mit ihr können Telefonnummern von Chrome-Computern an Android-Geräte gesendet werden, wenn der Nutzer angemeldet ist. Weitere Informationen finden Sie in diesem Hilfeartikel: https://support.google.com/chrome/answer/9430554?.
+
+      Wenn diese Richtlinie aktiviert ist, können Chrome-Nutzer Telefonnummern an Android-Geräte senden.
+
+      Ist sie deaktiviert, geht dies nicht.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+      Wird sie nicht konfiguriert, ist die Funktion "Zum Anrufen klicken" standardmäßig aktiviert.</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
 <translation id="2483146640187052324">Netzwerkaktionen über alle Netzwerkverbindungen vervollständigen</translation>
 <translation id="2484208301968418871">Mit dieser Richtlinie wird die Anwendung des URL-Filters "SafeSites" konfiguriert.
@@ -1968,6 +1977,7 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4075864623710596000">In dieser Liste aufgeführte Hostnamen sind vom HSTS-Richtliniencheck ausgenommen, der Anfragen von http auf https upgraden kann. Für diese Richtlinie sind nur Single-Label-Hostnamen zulässig. Hostnamen müssen kanonisiert werden: Alle IDNs müssen in ihr A-Label-Format konvertiert und alle ASCII-Buchstaben kleingeschrieben werden. Diese Richtlinie gilt nur für die angegebenen Hostnamen, aber nicht für Subdomains der angegebenen Namen.</translation>
 <translation id="408029843066770167">Abfragen an einen Google-Dienst für die Zeiteinstellung zulassen</translation>
 <translation id="408076456549153854">Browseranmeldung aktivieren</translation>
+<translation id="4082498585300984671">Funktion "Zum Anrufen klicken" aktivieren</translation>
 <translation id="40853027210512570">Diese Richtlinie überschreibt die Regeln zur Auswahl des <ph name="PRODUCT_NAME" />-Standarddruckers.
 
       Über sie werden die Regeln zur Auswahl des Standarddruckers in <ph name="PRODUCT_NAME" /> festgelegt. Diese Auswahl erfolgt, wenn die Druckfunktion das erste Mal mit einem Profil verwendet wird.
@@ -3525,13 +3535,6 @@ Ist sie nicht konfiguriert oder auf "true" gesetzt, wird das Standardverhalten v
 Falls die Anmeldung in einem anderen Konto über den Inkognitomodus nicht erlaubt sein soll, können Sie diesen Modus mithilfe der Richtlinie "IncognitoModeAvailability" blockieren.
 
 Hinweis: Nutzer können Cookies blockieren und so auf Google-Dienste zugreifen, die nicht authentifiziert sind.</translation>
-<translation id="6837480141980366278">Legt fest, ob der integrierte DNS-Client von  <ph name="PRODUCT_NAME" /> verwendet werden soll.
-
-Wenn diese Richtlinie auf "True" gesetzt wurde, wird, falls verfügbar, der integrierte DNS-Client verwendet.
-
-      Wenn diese Richtlinie auf "False" gesetzt wurde, wird der integrierte DNS-Client nie verwendet.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, ist der integrierte DNS-Client unter MacOS, Android – sofern weder ein privates DNS noch ein VPN aktiviert ist – und ChromeOS standardmäßig aktiviert. Der Nutzer kann dann über die Bearbeitung von chrome://flags oder die Festlegung eines Befehlszeilen-Flags entscheiden, ob der integrierte DNS-Client verwendet wird oder nicht.</translation>
 <translation id="6843296367238757293">Diese Richtlinie ist veraltet. Von ihrer Verwendung wird abgeraten. Weitere Informationen dazu finden Sie unter https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Diese Richtlinie wurde in Version 68 von <ph name="PRODUCT_NAME" /> entfernt und durch "<ph name="ARC_GLS_POLICY_NAME" />" ersetzt.</translation>
 <translation id="6851199885688265233">Bedienungshilfe "Mauszeiger hervorheben" aktivieren</translation>
@@ -3928,13 +3931,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="7373200034079131670">Nach Nutzerabmeldung neu starten, wenn Android oder eine VM gestartet wurde.</translation>
 <translation id="737655323154569539">Dadurch wird die Druckseitengröße eingeschränkt. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
 <translation id="7382191643394429934">Drucken mit und ohne Hintergrundgrafiken zulassen</translation>
-<translation id="7383445181072113521">Damit kann der Hostname des in DHCP-Anfragen verwendeten Geräts festgelegt werden.
-
-      Wird für diese Richtlinie ein String definiert, der nicht leer ist, dann wird er während der DHCP-Anfrage als Gerätehostname verwendet.
-
-      Der String kann die Variablen <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" /> und <ph name="MACHINE_NAME_PLACEHOLDER" /> enthalten, die im Gerät durch Werte ersetzt werden, bevor sie als Hostname zum Einsatz kommen. Das Ergebnis muss ein gültiger Hostname gemäß RFC 1035, Abschnitt 3.1 sein.
-
-      Wenn diese Richtlinie nicht konfiguriert oder der Wert nach dem Ersetzen kein gültiger Hostname ist, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
 <translation id="7389872682701720082">Wenn Sie diese Einstellung aktivieren, werden nicht veraltete Plug-ins immer ausgeführt.
 
       Ist diese Einstellung deaktiviert oder nicht konfiguriert, müssen die Nutzer der Ausführung von Plug-ins zustimmen, die eine Autorisierung erfordern. Diese Plug-ins können ein Sicherheitsrisiko darstellen.</translation>
@@ -4324,7 +4320,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
 <translation id="8141795997560411818">Diese Richtlinie verhindert nicht, dass der Nutzer die Android Google Drive App verwendet. Wenn Sie den Zugriff auf Google Drive verhindern möchten, sollten Sie auch das Installieren der Android Google Drive App nicht zulassen.</translation>
 <translation id="8142894094385450823">Empfohlene Sprachen für eine verwaltete Sitzung festlegen</translation>
 <translation id="8146727383888924340">Nutzern das Einlösen von Angeboten über die Chrome OS-Registrierung gestatten</translation>
-<translation id="8148785525797916822">Unterdrückt die Anzeige einer Warnung, wenn <ph name="PRODUCT_NAME" /> auf einem nicht mehr unterstützten Computer oder unter einem nicht mehr unterstützten Betriebssystem ausgeführt wird.</translation>
 <translation id="8148901634826284024">Hiermit wird die Bedienungshilfefunktion für den Modus mit hohem Kontrast aktiviert.
 
           Ist diese Richtlinie auf "true" gesetzt, ist der Modus mit hohem Kontrast immer aktiviert.

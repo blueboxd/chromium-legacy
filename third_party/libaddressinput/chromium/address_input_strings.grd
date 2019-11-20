@@ -95,6 +95,7 @@ third_party/libaddressinput/BUILD.gn.
 
   <!-- Chromium translations. -->
   <translations>
+    <file path="resources/address_input_strings_af.xtb" lang="af" />
     <file path="resources/address_input_strings_am.xtb" lang="am" />
     <file path="resources/address_input_strings_ar.xtb" lang="ar" />
     <file path="resources/address_input_strings_bg.xtb" lang="bg" />

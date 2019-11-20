@@ -65,12 +65,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ButtonEnabledColor:
       case NativeTheme::kColorId_ProminentButtonColor:
         return gfx::kGoogleBlue300;
-      case NativeTheme::kColorId_ProminentButtonDisabledColor:
-        return gfx::kGoogleGrey800;
       case NativeTheme::kColorId_TextOnProminentButtonColor:
         return gfx::kGoogleGrey900;
-      case NativeTheme::kColorId_ButtonBorderColor:
-        return gfx::kGoogleGrey700;
 
       // MenuItem
       case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
@@ -89,16 +85,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Label
       case NativeTheme::kColorId_LabelEnabledColor:
-        return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_LabelTextSelectionColor:
-        return color_utils::AlphaBlend(
-            SK_ColorWHITE,
-            GetAuraColor(
-                NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
-                base_theme, color_scheme),
-            SkAlpha{0xDD});
+        return gfx::kGoogleGrey200;
       case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-        return SkColorSetA(gfx::kGoogleBlue700, 0xCC);
+        return gfx::kGoogleBlue800;
 
       // Link
       case NativeTheme::kColorId_LinkEnabled:
@@ -124,18 +114,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Textfield
       case NativeTheme::kColorId_TextfieldDefaultColor:
-        return gfx::kGoogleGrey200;
-      case NativeTheme::kColorId_TextfieldDefaultBackground:
-        return SkColorSetA(SK_ColorBLACK, 0x4D);
       case NativeTheme::kColorId_TextfieldSelectionColor:
-        return color_utils::AlphaBlend(
-            SK_ColorWHITE,
-            GetAuraColor(
-                NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
-                base_theme, color_scheme),
-            SkAlpha{0xDD});
+        return gfx::kGoogleGrey200;
+      case NativeTheme::kColorId_TextfieldReadOnlyBackground: {
+        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
+                                       0.04f);
+      }
       case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-        return SkColorSetA(gfx::kGoogleBlue700, 0xCC);
+        return gfx::kGoogleBlue800;
 
       // Tree
       case NativeTheme::kColorId_TreeBackground:
@@ -167,11 +153,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
   constexpr SkColor kPrimaryTextColor = gfx::kGoogleGrey900;
 
-  // Text selection colors:
-  constexpr SkColor kTextSelectionBackgroundFocused =
-      SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
-  static const SkColor kTextSelectionColor = color_utils::AlphaBlend(
-      SK_ColorBLACK, kTextSelectionBackgroundFocused, SkAlpha{0xDD});
 
   switch (color_id) {
     // Dialogs
@@ -187,10 +168,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     // Buttons
     case NativeTheme::kColorId_ButtonEnabledColor:
       return gfx::kGoogleBlue600;
-    case NativeTheme::kColorId_ProminentButtonFocusedColor:
-      return gfx::kGoogleBlue400;
+    case NativeTheme::kColorId_ProminentButtonFocusedColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_ProminentButtonColor, color_scheme);
+      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.3f)
+          .color;
+    }
     case NativeTheme::kColorId_ProminentButtonColor:
-      return gfx::kGoogleBlue500;
+      return gfx::kGoogleBlue600;
     case NativeTheme::kColorId_TextOnProminentButtonColor:
       return SK_ColorWHITE;
     case NativeTheme::kColorId_ButtonPressedShade:
@@ -203,10 +188,19 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
           .color;
     }
-    case NativeTheme::kColorId_ProminentButtonDisabledColor:
-      return gfx::kGoogleGrey100;
-    case NativeTheme::kColorId_ButtonBorderColor:
-      return gfx::kGoogleGrey300;
+    case NativeTheme::kColorId_ProminentButtonDisabledColor: {
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_ButtonBorderColor, color_scheme);
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      return color_utils::AlphaBlend(fg, bg, gfx::kDisabledControlAlpha);
+    }
+    case NativeTheme::kColorId_ButtonBorderColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
+          .color;
+    }
 
     // MenuItem
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
@@ -240,22 +234,28 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:
-      return kPrimaryTextColor;
-    case NativeTheme::kColorId_LabelDisabledColor:
-      return SkColorSetA(
-          base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor,
-                                     color_scheme),
-          gfx::kDisabledControlAlpha);
     case NativeTheme::kColorId_LabelTextSelectionColor:
-      return kTextSelectionColor;
+      return kPrimaryTextColor;
+    case NativeTheme::kColorId_LabelDisabledColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_LabelEnabledColor, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
+          .color;
+    }
     case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
-      return kTextSelectionBackgroundFocused;
+      return gfx::kGoogleBlue200;
 
     // Link
-    // TODO(estade): where, if anywhere, do we use disabled links in Chrome?
-    case NativeTheme::kColorId_LinkDisabled:
-      return SK_ColorBLACK;
-
+    case NativeTheme::kColorId_LinkDisabled: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_LabelEnabledColor, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
+          .color;
+    }
     case NativeTheme::kColorId_LinkEnabled:
     case NativeTheme::kColorId_LinkPressed:
       return gfx::kGoogleBlue700;
@@ -284,22 +284,22 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Textfield
     case NativeTheme::kColorId_TextfieldDefaultColor:
+    case NativeTheme::kColorId_TextfieldSelectionColor:
       return kPrimaryTextColor;
-    case NativeTheme::kColorId_TextfieldDefaultBackground:
-      return base_theme->GetSystemColor(NativeTheme::kColorId_DialogBackground,
-                                        color_scheme);
+    case NativeTheme::kColorId_TextfieldDefaultBackground: {
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_TextfieldDefaultColor, color_scheme);
+      return color_utils::GetColorWithMaxContrast(fg);
+    }
     case NativeTheme::kColorId_TextfieldReadOnlyBackground:
       return SK_ColorWHITE;
-    case NativeTheme::kColorId_TextfieldReadOnlyColor:
-      return SkColorSetA(
-          base_theme->GetSystemColor(
-              NativeTheme::kColorId_TextfieldDefaultColor, color_scheme),
-          gfx::kDisabledControlAlpha);
-
-    case NativeTheme::kColorId_TextfieldSelectionColor:
-      return kTextSelectionColor;
+    case NativeTheme::kColorId_TextfieldReadOnlyColor: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_TextfieldReadOnlyBackground, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg).color;
+    }
     case NativeTheme::kColorId_TextfieldSelectionBackgroundFocused:
-      return kTextSelectionBackgroundFocused;
+      return gfx::kGoogleBlue200;
 
     // Tooltip
     case NativeTheme::kColorId_TooltipBackground: {

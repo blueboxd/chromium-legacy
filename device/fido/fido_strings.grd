@@ -68,6 +68,7 @@ This file contains the strings for //device/fido.
     <output filename="fido_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
+    <file path="strings/fido_strings_af.xtb" lang="af" />
     <file path="strings/fido_strings_am.xtb" lang="am" />
     <file path="strings/fido_strings_ar.xtb" lang="ar" />
     <file path="strings/fido_strings_bg.xtb" lang="bg" />

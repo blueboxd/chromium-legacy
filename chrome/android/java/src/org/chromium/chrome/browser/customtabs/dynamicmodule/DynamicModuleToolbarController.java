@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -27,14 +27,14 @@ import dagger.Lazy;
 public class DynamicModuleToolbarController implements InflationObserver, NativeInitObserver {
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
     private final CustomTabToolbarCoordinator mToolbarCoordinator;
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
 
     private int mControlsHidingToken = TokenHolder.INVALID_TOKEN;
     private boolean mHasReleasedToken;
 
     @Inject
     public DynamicModuleToolbarController(Lazy<ChromeFullscreenManager> fullscreenManager,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
             CustomTabToolbarCoordinator toolbarCoordinator) {
         mFullscreenManager = fullscreenManager;

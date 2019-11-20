@@ -16,6 +16,7 @@ import org.chromium.content_public.app.ChildProcessServiceFactory;
 import org.chromium.weblayer_private.interfaces.IChildProcessService;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Implementation of IChildProcessService.
@@ -33,17 +34,20 @@ public final class ChildProcessServiceImpl extends IChildProcessService.Stub {
 
     @Override
     public void onCreate() {
+        StrictModeWorkaround.apply();
         mService.onCreate();
     }
 
     @Override
     public void onDestroy() {
+        StrictModeWorkaround.apply();
         mService.onDestroy();
         mService = null;
     }
 
     @Override
     public IObjectWrapper onBind(IObjectWrapper intent) {
+        StrictModeWorkaround.apply();
         return ObjectWrapper.wrap(mService.onBind(ObjectWrapper.unwrap(intent, Intent.class)));
     }
 

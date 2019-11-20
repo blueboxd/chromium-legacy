@@ -146,12 +146,14 @@ void ImageElementTiming::NotifyImagePaintedInternal(
   DCHECK(layout_object.GetDocument().GetSecurityOrigin());
   // It's ok to expose rendering timestamp for data URIs so exclude those from
   // the Timing-Allow-Origin check.
-  bool tainted = false;
+  bool response_tainting_not_basic = false;
+  bool tainted_origin_flag = false;
   if (!url.ProtocolIsData() &&
       !Performance::PassesTimingAllowCheck(
-          cached_image.GetResponse(),
+          cached_image.GetResponse(), cached_image.GetResponse(),
           *layout_object.GetDocument().GetSecurityOrigin(),
-          &layout_object.GetDocument(), &tainted)) {
+          &layout_object.GetDocument(), &response_tainting_not_basic,
+          &tainted_origin_flag)) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*GetSupplementable());
     if (performance) {

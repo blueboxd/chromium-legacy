@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ObservableSupplier;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -55,7 +56,7 @@ public class RootUiCoordinator
     protected @Nullable AppMenuCoordinator mAppMenuCoordinator;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
     private ActivityTabProvider mActivityTabProvider;
-    private ShareDelegate mShareDelegate;
+    private ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
 
     protected @Nullable FindToolbarManager mFindToolbarManager;
     private @Nullable FindToolbarObserver mFindToolbarObserver;
@@ -91,12 +92,11 @@ public class RootUiCoordinator
     public RootUiCoordinator(ChromeActivity activity,
             @Nullable Callback<ToolbarManager> toolbarManagerCallback,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
-            ShareDelegate shareDelegate) {
+            ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
         mActivity = activity;
         mOnOmniboxFocusChangedListener = onOmniboxFocusChangedListener;
         mToolbarManagerCallback = toolbarManagerCallback;
         mActivity.getLifecycleDispatcher().register(this);
-        mShareDelegate = shareDelegate;
 
         mMenuOrKeyboardActionController = mActivity.getMenuOrKeyboardActionController();
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(this);
@@ -104,6 +104,8 @@ public class RootUiCoordinator
 
         mLayoutManagerSupplierCallback = this::onLayoutManagerAvailable;
         mActivity.getLayoutManagerSupplier().addObserver(mLayoutManagerSupplierCallback);
+
+        mShareDelegateSupplier = shareDelegateSupplier;
 
         initOverviewModeSupplierObserver();
     }
@@ -199,7 +201,9 @@ public class RootUiCoordinator
      */
     @VisibleForTesting
     public void onShareMenuItemSelected(final boolean shareDirectly, final boolean isIncognito) {
-        mShareDelegate.share(mActivityTabProvider.get(), shareDirectly);
+        if (mShareDelegateSupplier.get() == null) return;
+
+        mShareDelegateSupplier.get().share(mActivityTabProvider.get(), shareDirectly);
     }
 
     // MenuOrKeyboardActionHandler implementation
@@ -298,7 +302,7 @@ public class RootUiCoordinator
             };
             mToolbarManager = new ToolbarManager(mActivity, toolbarContainer,
                     mActivity.getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
-                    mTabThemeColorProvider, mShareDelegate);
+                    mTabThemeColorProvider, mShareDelegateSupplier);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }

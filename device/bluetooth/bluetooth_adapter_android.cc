@@ -21,6 +21,8 @@
 #include "device/bluetooth/bluetooth_device_android.h"
 #include "device/bluetooth/bluetooth_discovery_session_outcome.h"
 #include "device/bluetooth/jni_headers/ChromeBluetoothAdapter_jni.h"
+#include "device/bluetooth/jni_headers/ChromeBluetoothScanFilterBuilder_jni.h"
+#include "device/bluetooth/jni_headers/ChromeBluetoothScanFilterList_jni.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -322,6 +324,43 @@ void BluetoothAdapterAndroid::UpdateFilter(
   }
 }
 
+base::android::ScopedJavaLocalRef<jobject>
+BluetoothAdapterAndroid::CreateAndroidFilter(
+    const BluetoothDiscoveryFilter* discovery_filter) {
+  base::android::ScopedJavaLocalRef<jobject> android_filters =
+      Java_ChromeBluetoothScanFilterList_create(AttachCurrentThread());
+  const base::flat_set<device::BluetoothDiscoveryFilter::DeviceInfoFilter>*
+      device_filters = discovery_filter->GetDeviceFilters();
+  for (const auto& device_filter : *device_filters) {
+    base::android::ScopedJavaLocalRef<jobject> filter_builder =
+        Java_ChromeBluetoothScanFilterBuilder_create(AttachCurrentThread());
+    if (!device_filter.uuids.empty()) {
+      // Set the service UUID to the first UUID in the list because Android does
+      // not support filtering for multiple UUIDs. This will return a superset
+      // of the devices that advertise all UUIDs in the list and it will be
+      // filtered internally when returned.
+      Java_ChromeBluetoothScanFilterBuilder_setServiceUuid(
+          AttachCurrentThread(), filter_builder,
+          base::android::ConvertUTF8ToJavaString(
+              AttachCurrentThread(), device_filter.uuids.begin()->value()));
+    }
+    if (!device_filter.name.empty()) {
+      Java_ChromeBluetoothScanFilterBuilder_setDeviceName(
+          AttachCurrentThread(), filter_builder,
+          base::android::ConvertUTF8ToJavaString(AttachCurrentThread(),
+                                                 device_filter.name));
+    }
+    base::android::ScopedJavaLocalRef<jobject> scan_filter =
+        Java_ChromeBluetoothScanFilterBuilder_build(AttachCurrentThread(),
+                                                    filter_builder);
+    Java_ChromeBluetoothScanFilterList_addFilter(AttachCurrentThread(),
+                                                 android_filters, scan_filter);
+  }
+
+  return Java_ChromeBluetoothScanFilterList_getList(AttachCurrentThread(),
+                                                    android_filters);
+}
+
 void BluetoothAdapterAndroid::StartScanWithFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     DiscoverySessionResultCallback callback) {
@@ -330,10 +369,9 @@ void BluetoothAdapterAndroid::StartScanWithFilter(
   DCHECK_EQ(NumDiscoverySessions(), 1);
   bool session_added = false;
   if (IsPowered()) {
-    // TODO(jameshollyer): convert discovery filter into java scan filter and
-    // add to start scan call
-    if (Java_ChromeBluetoothAdapter_startScan(AttachCurrentThread(),
-                                              j_adapter_)) {
+    auto android_scan_filter = CreateAndroidFilter(discovery_filter.get());
+    if (Java_ChromeBluetoothAdapter_startScan(AttachCurrentThread(), j_adapter_,
+                                              android_scan_filter)) {
       session_added = true;
 
       // Using a delayed task in order to give the adapter some time

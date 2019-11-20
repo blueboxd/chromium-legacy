@@ -34,7 +34,7 @@ public class HeapProfilingTest {
     @Test
     @MediumTest
     @DisableIf
-            .Build(sdk_is_less_than = Build.VERSION_CODES.N)
+            .Build(sdk_is_less_than = Build.VERSION_CODES.O)
             @CommandLineFlags.Add({"memlog=browser",
                     "memlog-stack-mode=native-include-thread-names", "memlog-sampling-rate=1"})
             public void

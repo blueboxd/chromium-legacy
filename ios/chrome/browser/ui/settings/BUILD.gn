@@ -282,6 +282,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/browsing_data",
     "//ios/chrome/browser/browsing_data:counters",
     "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/history",
     "//ios/chrome/browser/mailto:feature_flags",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/passwords",

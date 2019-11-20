@@ -45,8 +45,8 @@ selection_test(
   '<div contenteditable dir="rtl">Lorem| <div  dir="ltr">ipsum dolor sit</div> amet</div>',
   selection => selection.modify('extend', 'forward', 'word'),
   behavior === 'mac'
-      ? '<div contenteditable dir="rtl">Lorem ^<div dir="ltr">ipsum| dolor sit</div> amet</div>'
-      : '<div contenteditable dir="rtl">Lorem ^<div dir="ltr">ipsum |dolor sit</div> amet</div>',
+      ? '<div contenteditable dir="rtl">Lorem ^<div dir="ltr">|ipsum dolor sit</div> amet</div>'
+      : '<div contenteditable dir="rtl">Lorem ^<div dir="ltr">|ipsum dolor sit</div> amet</div>',
   `${behavior} 9-5 rtl forward word`);
 
 selection_test(

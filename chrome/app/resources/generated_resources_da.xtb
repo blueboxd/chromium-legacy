@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Appikon</translation>
 <translation id="1410616244180625362">Tillad fortsat, at <ph name="HOST" /> har adgang til dit kamera</translation>
 <translation id="1414648216875402825">Du er ved at opdatere til en ustabil version af <ph name="PRODUCT_NAME" />, der indeholder ufærdige funktioner. Nedbrud og uventede fejl kan forekomme. Vær forsigtig, hvis du fortsætter.</translation>
-<translation id="1414866280542221544">Aktivér på denne enhed</translation>
 <translation id="1415708812149920388">Læseadgang til udklipsholderen blev afvist</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (udvidelses-id'et "<ph name="EXTENSION_ID" />") er ikke tilladt i denne sessionstype.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizzastykke</translation>
 <translation id="1468571364034902819">Du kan ikke bruge denne profil</translation>
 <translation id="1470811252759861213"><ph name="SIGN_IN_LINK" /> for at få dine udvidelser på alle dine computere.</translation>
-<translation id="1470967055429794975">Dette sletter alle data på sikkerhedsnøglen, herunder pinkoden</translation>
 <translation id="1472675084647422956">Vis mere</translation>
 <translation id="1475502736924165259">Du har lagrede certifikater, som ikke passer i nogen af de andre kategorier</translation>
 <translation id="1476088332184200792">Kopiér til din enhed</translation>
@@ -842,7 +840,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2202898655984161076">Der opstod et problem under fortegnelsen af printere. Nogle af dine printere er muligvis ikke registreret korrekt hos <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Den søgemaskine, der bruges i <ph name="BEGIN_LINK" />adresselinjen<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Læs og rediger alt, hvad du indtaster</translation>
-<translation id="2204397710290433380">Vil du deaktivere ADB?</translation>
 <translation id="220792432208469595">Send brugs- og diagnosticeringsdata. Denne enhed sender i øjeblikket automatisk diagnosticerings- og enhedsdata samt data om brug af apps til Google. Dataene bruges til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Denne indstilling håndhæves af ejeren. Hvis indstillingen til yderligere web- og appaktivitet er aktiveret, gemmes disse data muligvis på din Google-konto. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Angiv denne pinkode på "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Fjern deling</translation>
@@ -979,6 +976,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2396783860772170191">Angiv den firecifrede pinkode (0000-9999)</translation>
 <translation id="2399939490305346086">Logindata på sikkerhedsnøglen</translation>
 <translation id="2407481962792080328">Når du logger ind på din Google-konto, er denne funktion aktiveret</translation>
+<translation id="2408018932941436077">Gemmer kort</translation>
 <translation id="2408955596600435184">Angiv din pinkode</translation>
 <translation id="241082044617551207">Ukendt plugin</translation>
 <translation id="2412593942846481727">Der er en tilgængelig opdatering</translation>
@@ -2007,7 +2005,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3873315167136380065">Du kan aktivere indstillingen ved at <ph name="BEGIN_LINK" />nulstille synkronisering<ph name="END_LINK" /> for at fjerne din adgangssætning til synkronisering</translation>
 <translation id="3873423927483480833">Vis pinkoder</translation>
 <translation id="3873915545594852654">Der opstod et problem med ARC++.</translation>
-<translation id="387924939625099872">Genstart din <ph name="DEVICE_TYPE" /> for at deaktivere ADB. Enhedens fabriksindstillinger gendannes, og alle brugerkonti og lokale data ryddes.</translation>
 <translation id="3879748587602334249">Downloadadministrator</translation>
 <translation id="3886446263141354045">Din anmodning om adgang til dette website er blevet sendt til <ph name="NAME" />.</translation>
 <translation id="3888550877729210209">Notetagning med <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4501530680793980440">Bekræft fjernelse</translation>
 <translation id="4502423230170890588">Fjern fra denne enhed</translation>
 <translation id="4504940961672722399">Brug denne udvidelse ved at klikke på dette ikon eller ved at trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Hvis du fortsætter, aktiveres ADB, så der kan oprettes og testes Android-apps. Bemærk! ADB tillader installation af testapps, der ikke er blevet bekræftet af Google.</translation>
 <translation id="4508051413094283164">Åbn alle i et inkognitovindue</translation>
 <translation id="4508265954913339219">Aktiveringen mislykkedes</translation>
 <translation id="4508765956121923607">Vis k&amp;ilde</translation>
@@ -3312,7 +3308,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5851868085455377790">Udsteder</translation>
 <translation id="5852112051279473187">Ups!  Noget gik galt under tilmeldingen af denne enhed.  Prøv igen, eller kontakt din supportrepræsentant.</translation>
 <translation id="5852137567692933493">Genstart og Powerwash</translation>
-<translation id="5852360662347412211">Gå til indstillingerne for Linux, og prøv igen</translation>
 <translation id="5854912040170951372">Pepperoni</translation>
 <translation id="5855643921295613558">0,6 sekunder</translation>
 <translation id="5856721540245522153">Aktivér fejlretningsfunktioner</translation>
@@ -3325,7 +3320,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5860494867054883682">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Vis styluspenværktøjer på hylden</translation>
 <translation id="5863445608433396414">Aktivér fejlretningsfunktioner</translation>
-<translation id="5863471434640009253">Hvis du vil aktivere Android Debug Bridge, skal du starte med at genstarte din <ph name="DEVICE_TYPE" />. Hvis du vil deaktivere ADB, skal enhedens fabriksindstillinger gendannes.</translation>
 <translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
 <translation id="586567932979200359">Du kører <ph name="PRODUCT_NAME" /> fra dets diskbillede. Hvis du installerer det på din computer, kan du køre det uden diskbilledet, og det vil blive opdateret løbende.</translation>
 <translation id="5865733239029070421">Sender automatisk brugsstatistikker og nedbrudsrapporter til Google</translation>
@@ -3395,7 +3389,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5958529069007801266">Overvåget bruger</translation>
 <translation id="5959471481388474538">Netværket er ikke tilgængeligt</translation>
 <translation id="595959584676692139">Genindlæs siden for at bruge denne udvidelse</translation>
-<translation id="5961320084471308154">Vil du aktivere ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maks. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Den styrer også, hvilken side der vises, når du klikker på knappen Startside eller søger via omnifeltet.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> kan se filer i <ph name="FOLDERNAME" /></translation>
@@ -4260,7 +4253,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7254554697254365959">Denne side kunne ikke oversættes.</translation>
 <translation id="7254951428499890870">Er du sikker på, du vil åbne "<ph name="APP_NAME" />" i diagnosticeringstilstand?</translation>
 <translation id="7255002516883565667">Lige nu har du ét kort, som kun kan bruges på denne enhed</translation>
-<translation id="7255916308560539517">Tryk på din sikkerhedsnøgle igen for at bekræfte nulstillingen. Alle oplysninger, der er gemt på sikkerhedsnøglen, bl.a. pinkoden, slettes.</translation>
 <translation id="7255935316994522020">Anvend</translation>
 <translation id="7256069762010468647">Websitet anvender dit kamera</translation>
 <translation id="7256405249507348194">Ukendt fejl: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7968833647796919681">Aktivér registrering af data om ydeevne</translation>
 <translation id="7968982339740310781">Se info</translation>
 <translation id="7969046989155602842">Kommando</translation>
+<translation id="7970882136539140748">Kortet kan ikke gemmes lige nu</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 med RSA-kryptering</translation>
 <translation id="7973962044839454485">PPP-godkendelsen mislykkedes på grund af forkert brugernavn eller adgangskode</translation>
 <translation id="7974566588408714340">Prøv igen ved hjælp af <ph name="EXTENSIONNAME" /></translation>
@@ -5090,7 +5083,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8431909052837336408">Skift pinkode til SIM-kort</translation>
 <translation id="8434480141477525001">NaCl-fejlretningsport</translation>
 <translation id="8435395510592618362">Bekræft din identitet med <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Gem kreditkort</translation>
 <translation id="8438328416656800239">Skift til en smart browser</translation>
 <translation id="8438566539970814960">Gør søgninger og browsing endnu bedre</translation>
 <translation id="8439506636278576865">Tilbyd at oversætte sider på dette sprog</translation>
@@ -5474,6 +5466,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8965037249707889821">Angiv den gamle adgangskode</translation>
 <translation id="8966870118594285808">Åbn en fane igen, hvis du lukkede den ved et uheld</translation>
 <translation id="8967866634928501045">Tryk på Alt+Shift+A for at vise</translation>
+<translation id="8968766641738584599">Gem kort</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Kontakt din netværksadministrator for at sikre, at firewallen ikke blokerer downloads fra Google-servere.</translation>
 <translation id="8973557916016709913">Fjern zoomniveau</translation>
@@ -5580,7 +5573,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9116799625073598554">App til notatskrivning</translation>
 <translation id="9117030152748022724">Administrer dine apps</translation>
 <translation id="9121814364785106365">Åbn som fastgjort fane</translation>
-<translation id="9122074588095746047">ADB kunne ikke aktiveres</translation>
 <translation id="9124003689441359348">Dine gemte adgangskoder vises her</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> tilbage)</translation>
 <translation id="9128317794749765148">Konfigurationen kunne ikke gennemføres</translation>

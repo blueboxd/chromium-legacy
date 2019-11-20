@@ -197,27 +197,6 @@ class BASE_EXPORT MessageLoop {
   DISALLOW_COPY_AND_ASSIGN(MessageLoop);
 };
 
-//-----------------------------------------------------------------------------
-// MessageLoopForIO extends MessageLoop with methods that are particular to a
-// MessageLoop instantiated with TYPE_IO.
-//
-// By instantiating a MessageLoopForIO on the current thread, the owner enables
-// native async IO message pumping.
-//
-// MessageLoopCurrentForIO is exposed statically on its thread via
-// MessageLoopCurrentForIO::Get() to provide additional functionality.
-//
-class BASE_EXPORT MessageLoopForIO : public MessageLoop {
- public:
-  MessageLoopForIO() : MessageLoop(MessagePumpType::IO) {}
-};
-
-// Do not add any member variables to MessageLoopForIO!  This is important b/c
-// MessageLoopForIO is often allocated via MessageLoop(TYPE_IO).  Any extra
-// data that you need should be stored on the MessageLoop's pump_ instance.
-static_assert(sizeof(MessageLoop) == sizeof(MessageLoopForIO),
-              "MessageLoopForIO should not have extra member variables");
-
 }  // namespace base
 
 #endif  // BASE_MESSAGE_LOOP_MESSAGE_LOOP_H_

@@ -15,7 +15,7 @@ selection_test(
 selection_test(
   '<div contenteditable><div>foo|</div>bar</div>',
   selection => selection.modify('move', 'forward', 'word'),
-  '<div contenteditable><div>foo</div>bar|</div>',
+  '<div contenteditable><div>foo</div>|bar</div>',
   'Move forward word 2');
 
 selection_test(

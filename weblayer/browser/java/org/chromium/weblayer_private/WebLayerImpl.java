@@ -39,6 +39,7 @@ import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
 import java.io.File;
@@ -91,8 +92,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public void loadAsync(
-            IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {
+    public void loadAsync(IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {
+        StrictModeWorkaround.apply();
         init(appContextWrapper);
 
         final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(
@@ -114,6 +115,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     @Override
     public void loadSync(IObjectWrapper appContextWrapper) {
+        StrictModeWorkaround.apply();
         init(appContextWrapper);
 
         BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
@@ -169,6 +171,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     @Override
     public IBrowserFragment createBrowserFragmentImpl(
             IRemoteFragmentClient fragmentClient, IObjectWrapper fragmentArgs) {
+        StrictModeWorkaround.apply();
         Bundle unwrappedArgs = ObjectWrapper.unwrap(fragmentArgs, Bundle.class);
         BrowserFragmentImpl fragment =
                 new BrowserFragmentImpl(mProfileManager, fragmentClient, unwrappedArgs);
@@ -177,6 +180,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     @Override
     public IProfile getProfile(String profilePath) {
+        StrictModeWorkaround.apply();
         return mProfileManager.getProfile(profilePath);
     }
 

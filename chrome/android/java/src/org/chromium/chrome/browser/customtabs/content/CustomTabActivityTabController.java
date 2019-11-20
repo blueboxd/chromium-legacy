@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -87,7 +88,7 @@ public class CustomTabActivityTabController
     private final Lazy<CustomTabDelegateFactory> mCustomTabDelegateFactory;
     private final ChromeActivity mActivity;
     private final CustomTabsConnection mConnection;
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final Lazy<CompositorViewHolder> mCompositorViewHolder;
     private final WarmupManager mWarmupManager;
@@ -116,7 +117,7 @@ public class CustomTabActivityTabController
     @Inject
     public CustomTabActivityTabController(ChromeActivity activity,
             Lazy<CustomTabDelegateFactory> customTabDelegateFactory,
-            CustomTabsConnection connection, CustomTabIntentDataProvider intentDataProvider,
+            CustomTabsConnection connection, BrowserServicesIntentDataProvider intentDataProvider,
             ActivityTabProvider activityTabProvider, TabObserverRegistrar tabObserverRegistrar,
             Lazy<CompositorViewHolder> compositorViewHolder,
             ActivityLifecycleDispatcher lifecycleDispatcher, WarmupManager warmupManager,

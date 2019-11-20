@@ -19,11 +19,6 @@
       "bounds": [300, 655],
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 500, 300, 150],
-          "reason": "chunk appeared"
-        },
-        {
           "object": "NGPhysicalTextFragment 'test1'",
           "rect": [8, 508, 29, 19],
           "reason": "geometry"

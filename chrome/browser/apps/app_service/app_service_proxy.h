@@ -30,6 +30,7 @@
 #include "chrome/browser/apps/app_service/extension_apps.h"
 #endif  // OS_CHROMEOS
 
+class PrefRegistrySimple;
 class Profile;
 
 namespace apps {
@@ -58,6 +59,8 @@ class AppServiceProxy : public KeyedService,
 
   explicit AppServiceProxy(Profile* profile);
   ~AppServiceProxy() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   void ReInitializeForTesting(Profile* profile);
 

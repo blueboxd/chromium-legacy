@@ -33,7 +33,9 @@ enum class SafetyTipInteraction {
   kDismissWithIgnore = 5,
   // The user clicked the 'learn more' button.
   kLearnMore = 6,
-  kMaxValue = kLearnMore,
+  // No safety tip was shown to the user.
+  kNotShown = 7,
+  kMaxValue = kNotShown,
 };
 
 // Shows Safety Tip UI using the specified information if it is not already

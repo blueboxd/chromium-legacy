@@ -90,6 +90,11 @@ void BluetoothDiscoveryFilter::AddDeviceFilter(
   device_filters_.insert(device_filter);
 }
 
+const base::flat_set<BluetoothDiscoveryFilter::DeviceInfoFilter>*
+BluetoothDiscoveryFilter::GetDeviceFilters() const {
+  return &device_filters_;
+}
+
 void BluetoothDiscoveryFilter::CopyFrom(
     const BluetoothDiscoveryFilter& filter) {
   transport_ = filter.transport_;

@@ -708,9 +708,20 @@ void SVGUseElement::NotifyFinished(Resource* resource) {
 }
 
 bool SVGUseElement::ResourceIsValid() const {
-  return GetResource() && GetResource()->IsLoaded() &&
-         !GetResource()->ErrorOccurred() &&
-         ToDocumentResource(GetResource())->GetDocument();
+  Resource* resource = GetResource();
+  if (!resource || resource->ErrorOccurred())
+    return false;
+  // If the resource has not yet finished loading but is revalidating, consider
+  // it to be valid if it actually carries a document. <use> elements that are
+  // in the process of "loading" the revalidated resource (performing the
+  // revalidation) will get a NotifyFinished() callback and invalidate as
+  // needed. <use> elements that have already finished loading (a potentially
+  // older version of the resource) will keep showing that until its shadow
+  // tree is invalidated.
+  // TODO(fs): Handle revalidations that return a new/different resource.
+  if (!resource->IsLoaded() && !resource->IsCacheValidator())
+    return false;
+  return ToDocumentResource(resource)->GetDocument();
 }
 
 }  // namespace blink

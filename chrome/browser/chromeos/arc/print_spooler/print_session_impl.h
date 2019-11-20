@@ -16,7 +16,7 @@
 #include "components/arc/mojom/print_spooler.mojom.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -82,9 +82,9 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
   // Used to send messages to ARC and request a new print document.
   mojom::PrintSessionInstancePtr instance_;
 
-  // Binding for PrintRenderer.
-  mojo::AssociatedBinding<printing::mojom::PrintRenderer>
-      print_renderer_binding_;
+  // Receiver for PrintRenderer.
+  mojo::AssociatedReceiver<printing::mojom::PrintRenderer>
+      print_renderer_receiver_{this};
 
   // Used to bind the PrintSessionHost interface implementation to a message
   // pipe.

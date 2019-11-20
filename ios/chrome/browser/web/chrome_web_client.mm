@@ -10,6 +10,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
@@ -24,11 +25,13 @@
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/elements/windowed_container_view.h"
 #import "ios/chrome/browser/web/error_page_util.h"
+#include "ios/chrome/browser/web/features.h"
 #include "ios/public/provider/chrome/browser/browser_url_rewriter_provider.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/voice/audio_session_controller.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
+#include "ios/web/common/features.h"
 #include "ios/web/common/user_agent.h"
 #include "ios/web/public/navigation/browser_url_rewriter.h"
 #include "net/http/http_util.h"
@@ -271,4 +274,12 @@ std::string ChromeWebClient::GetProduct() const {
   std::string product("CriOS/");
   product += version_info::GetVersionNumber();
   return product;
+}
+
+bool ChromeWebClient::ForceMobileVersionByDefault(const GURL& url) {
+  DCHECK(base::FeatureList::IsEnabled(web::features::kDefaultToDesktopOnIPad));
+  if (base::FeatureList::IsEnabled(web::kMobileGoogleSRP)) {
+    return google_util::IsGoogleSearchUrl(url);
+  }
+  return false;
 }

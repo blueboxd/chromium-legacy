@@ -159,7 +159,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   blink::MockMediaStreamVideoSink sink;
   track->AddSink(&sink, sink.GetDeliverFrameCB(), false);
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
   EXPECT_CALL(sink, OnVideoFrame())
       .WillOnce(RunClosure(std::move(quit_closure)));
   rtc::scoped_refptr<webrtc::I420Buffer> buffer(

@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
 import org.chromium.android_webview.services.AwMinidumpUploaderDelegate;
+import org.chromium.android_webview.services.AwMinidumpUploaderDelegate.SamplingDelegate;
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
@@ -32,6 +33,7 @@ import org.chromium.components.minidump_uploader.MinidumpUploaderDelegate;
 import org.chromium.components.minidump_uploader.MinidumpUploaderImpl;
 import org.chromium.components.minidump_uploader.TestMinidumpUploaderImpl;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
+import org.chromium.components.version_info.Channel;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -74,6 +76,30 @@ public class MinidumpUploaderTest {
         }
     }
 
+    private static class TestSamplingDelegate implements SamplingDelegate {
+        private final int mChannel;
+        private final int mRandomSampling;
+
+        TestSamplingDelegate(int channel, int randomSampling) {
+            mChannel = channel;
+            mRandomSampling = randomSampling;
+        }
+
+        @Override
+        public int getChannel() {
+            return mChannel;
+        }
+
+        @Override
+        public int getRandomSample() {
+            return mRandomSampling;
+        }
+    }
+
+    // randomSampl < CRASH_DUMP_PERCENTAGE_FOR_STABLE to always sample-in crashes.
+    private static final SamplingDelegate TEST_SAMPLING_DELEGATE =
+            new TestSamplingDelegate(Channel.UNKNOWN, 0);
+
     /**
      * Ensure MinidumpUploaderImpl doesn't crash even if the WebView Crash dir doesn't exist (could
      * happen e.g. if a Job persists across WebView-updates?
@@ -96,7 +122,8 @@ public class MinidumpUploaderTest {
         MinidumpUploader minidumpUploader =
                 // Use AwMinidumpUploaderDelegate instead of TestMinidumpUploaderDelegate here
                 // since AwMinidumpUploaderDelegate defines the WebView crash directory.
-                new TestMinidumpUploaderImpl(new AwMinidumpUploaderDelegate() {
+                new TestMinidumpUploaderImpl(new AwMinidumpUploaderDelegate(
+                        TEST_SAMPLING_DELEGATE) {
                     @Override
                     public CrashReportingPermissionManager createCrashReportingPermissionManager() {
                         return permManager;
@@ -139,6 +166,137 @@ public class MinidumpUploaderTest {
     }
 
     /**
+     * Ensure that crash files are sampled-out for STABLE channel.
+     */
+    @Test
+    @MediumTest
+    public void testSampledOutCrashesForStableChannel() throws IOException {
+        // samplingPercentage >= CRASH_DUMP_PERCENTAGE_FOR_STABLE so crashes are never sampled-in.
+        testSampleCrashesByChannel(Channel.STABLE, 1, false);
+    }
+
+    /**
+     * Ensure that crash files are sampled-in for STABLE channel.
+     */
+    @Test
+    @MediumTest
+    public void testSampledInCrashesForStableChannel() throws IOException {
+        // samplingPercentage < CRASH_DUMP_PERCENTAGE_FOR_STABLE so crashes are always sampled-in.
+        testSampleCrashesByChannel(Channel.STABLE, 0, true);
+    }
+
+    /**
+     * Ensure that crash files are sampled-out for STABLE channel.
+     */
+    @Test
+    @MediumTest
+    public void testSampledOutCrashesForDefaultChannel() throws IOException {
+        // samplingPercentage >= CRASH_DUMP_PERCENTAGE_FOR_STABLE so crashes are never sampled-in.
+        testSampleCrashesByChannel(Channel.DEFAULT, 1, false);
+    }
+
+    /**
+     * Ensure that crash files are sampled-in for STABLE channel.
+     */
+    @Test
+    @MediumTest
+    public void testSampledInCrashesForDefaultChannel() throws IOException {
+        // samplingPercentage < CRASH_DUMP_PERCENTAGE_FOR_STABLE so crashes are always sampled-in.
+        testSampleCrashesByChannel(Channel.DEFAULT, 0, true);
+    }
+
+    /**
+     * Ensure that crash files are sampled-out for UNKNOWN channel.
+     */
+    @Test
+    @MediumTest
+    public void testSampledOutCrashesForUnknownChannel() throws IOException {
+        testSampleCrashesByChannel(Channel.UNKNOWN, 1, false);
+    }
+
+    /**
+     * Ensure that crash files are sampled-in for BETA channel.
+     */
+    @Test
+    @MediumTest
+    public void testSampledInCrashesForBetaChannel() throws IOException {
+        // samplingPercentage >= CRASH_DUMP_PERCENTAGE_FOR_STABLE so crashes should never be
+        // sampled-in.
+        testSampleCrashesByChannel(Channel.BETA, 1, true);
+    }
+
+    /**
+     * Ensure that crash files are sampled-in for CANARY channel.
+     */
+    @Test
+    @MediumTest
+    public void testSampledInCrashesForCanaryChannel() throws IOException {
+        // samplingPercentage >= CRASH_DUMP_PERCENTAGE_FOR_STABLE so crashes should never be
+        // sampled-in.
+        testSampleCrashesByChannel(Channel.CANARY, 1, true);
+    }
+
+    /**
+     * MinidumpUploaderDelegate sub-class that uses MinidumpUploaderDelegate's implementation of
+     * CrashReportingPermissionManager.isUsageAndCrashReportingPermittedByUser().
+     */
+    private static class TestCrashSamplingMinidumpUploaderDelegate
+            extends AwMinidumpUploaderDelegate {
+        private final boolean mIsSampled;
+        TestCrashSamplingMinidumpUploaderDelegate(
+                SamplingDelegate samplingDelegate, boolean isSampled) {
+            super(samplingDelegate);
+            mIsSampled = isSampled;
+        }
+
+        @Override
+        public CrashReportingPermissionManager createCrashReportingPermissionManager() {
+            final CrashReportingPermissionManager realPermissionManager =
+                    super.createCrashReportingPermissionManager();
+
+            return new MockCrashReportingPermissionManager() {
+                {
+                    // This setup ensures we depend on isClientInMetricsSample().
+                    mIsUserPermitted = true;
+                    mIsNetworkAvailable = true;
+                    mIsEnabledForTests = false;
+                }
+
+                @Override
+                public boolean isClientInMetricsSample() {
+                    // Ensure that we use the real implementation of isClientInMetricsSample.
+                    boolean isSampled = realPermissionManager.isClientInMetricsSample();
+                    Assert.assertEquals(mIsSampled, isSampled);
+                    return isSampled;
+                }
+            };
+        }
+    }
+
+    private void testSampleCrashesByChannel(int channel, int samplePercentage, boolean isSampled)
+            throws IOException {
+        PlatformServiceBridge.injectInstance(new TestPlatformServiceBridge(/* userConsent */ true));
+        MinidumpUploaderDelegate delegate = new TestCrashSamplingMinidumpUploaderDelegate(
+                new TestSamplingDelegate(channel, samplePercentage), isSampled);
+        MinidumpUploader minidumpUploader = new TestMinidumpUploaderImpl(delegate);
+
+        File firstFile = createMinidumpFileInCrashDir("1_abc.dmp0.try0");
+        File secondFile = createMinidumpFileInCrashDir("12_abcd.dmp0.try0");
+        File expectedFirstFile = new File(mTestRule.getCrashDir(),
+                firstFile.getName().replace(".dmp", isSampled ? ".up" : ".skipped"));
+        File expectedSecondFile = new File(mTestRule.getCrashDir(),
+                secondFile.getName().replace(".dmp", isSampled ? ".up" : ".skipped"));
+
+        MinidumpUploadTestUtility.uploadMinidumpsSync(
+                minidumpUploader, false /* expectReschedule */);
+
+        Assert.assertFalse(firstFile.exists());
+        Assert.assertTrue(expectedFirstFile.exists());
+        Assert.assertFalse(secondFile.exists());
+        Assert.assertTrue(expectedSecondFile.exists());
+    }
+
+    /**
      * Ensure that when PlatformServiceBridge returns true we do upload minidumps.
      */
     @Test
@@ -164,7 +322,7 @@ public class MinidumpUploaderTest {
             extends AwMinidumpUploaderDelegate {
         private final boolean mUserConsent;
         WebViewUserConsentMinidumpUploaderDelegate(boolean userConsent) {
-            super();
+            super(TEST_SAMPLING_DELEGATE);
             mUserConsent = userConsent;
         }
         @Override
@@ -305,7 +463,8 @@ public class MinidumpUploaderTest {
                 // Use AwMinidumpUploaderDelegate instead of TestMinidumpUploaderDelegate to ensure
                 // AwMinidumpUploaderDelegate works well together with the minidump-copying methods
                 // of CrashReceiverService.
-                new TestMinidumpUploaderImpl(new AwMinidumpUploaderDelegate() {
+                new TestMinidumpUploaderImpl(new AwMinidumpUploaderDelegate(
+                        TEST_SAMPLING_DELEGATE) {
                     @Override
                     public CrashReportingPermissionManager createCrashReportingPermissionManager() {
                         return permManager;

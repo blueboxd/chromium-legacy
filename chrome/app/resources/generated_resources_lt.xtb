@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Programos piktograma</translation>
 <translation id="1410616244180625362">Toliau leisti <ph name="HOST" /> pasiekti fotoaparatą</translation>
 <translation id="1414648216875402825">Atnaujinate į nestabilią „<ph name="PRODUCT_NAME" />“ versiją, kuri apima vis dar kuriamas funkcijas. Bus strigčių ir netikėtų trikčių. Būkite atsargūs.</translation>
-<translation id="1414866280542221544">Įgalinti šiame įrenginyje</translation>
 <translation id="1415708812149920388">Iškarpinės skaitymo prieiga atmesta</translation>
 <translation id="1415990189994829608">„<ph name="EXTENSION_NAME" />“ (plėtinio ID „<ph name="EXTENSION_ID" />“) neleidžiamas vykstant šio tipo seansui.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Picos gabalėlis</translation>
 <translation id="1468571364034902819">Negalima naudoti šio profilio</translation>
 <translation id="1470811252759861213">Kad pasiektumėte plėtinius visuose įrenginiuose, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Taip bus ištrinti visi saugos rakte išsaugoti duomenys, įskaitant jo PIN kodą</translation>
 <translation id="1472675084647422956">Rodyti daugiau</translation>
 <translation id="1475502736924165259">Turite pateiktų sertifikatų, kurie neatitinka jokių kitų kategorijų</translation>
 <translation id="1476088332184200792">Kopijuoti į įrenginį</translation>
@@ -842,7 +840,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2202898655984161076">Sudarant spausdintuvų sąrašą iškilo problema. Kai kurie spausdintuvai galėjo nebūti sėkmingai užregistruoti „<ph name="CLOUD_PRINT_NAME" />“.</translation>
 <translation id="2203682048752833055">Paieškos variklis, naudojamas <ph name="BEGIN_LINK" />adreso juostoje<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Skaityti ir keisti viską, ką įvedate</translation>
-<translation id="2204397710290433380">Išjungti ADB?</translation>
 <translation id="220792432208469595">Siųskite naudojimo ir diagnostikos duomenis. Šiuo metu šis įrenginys automatiškai siunčia „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Šį nustatymą taiko savininkas. Jei papildomas „Žiniatinklio ir programų veiklos“ nustatymas įjungtas, šie duomenys gali būti išsaugoti „Google“ paskyroje. <ph name="BEGIN_LINK1" />Sužinokite daugiau<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Įveskite šį PIN kodą „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="2213140827792212876">Pašalinti bendrinimą</translation>
@@ -979,6 +976,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2396783860772170191">Įveskite 4 skaitmenų PIN kodą (0000–9999)</translation>
 <translation id="2399939490305346086">Saugos rakto prisijungimo duomenys</translation>
 <translation id="2407481962792080328">Prisijungus prie „Google“ paskyros, ši funkcija yra įjungta</translation>
+<translation id="2408018932941436077">Išsaugoma kortelė</translation>
 <translation id="2408955596600435184">Įveskite PIN kodą</translation>
 <translation id="241082044617551207">Nežinomas papildinys</translation>
 <translation id="2412593942846481727">Pasiekiamas naujinys</translation>
@@ -2007,7 +2005,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3873315167136380065">Norėdami tai įjungti <ph name="BEGIN_LINK" />nustatykite sinchronizavimą iš naujo<ph name="END_LINK" />, kad pašalintumėte sinchronizavimo slaptafrazę</translation>
 <translation id="3873423927483480833">Rodyti PIN kodus</translation>
 <translation id="3873915545594852654">Iškilo su ARC++ susijusi problema.</translation>
-<translation id="387924939625099872">Kad išjungtumėte ADB, paleiskite „<ph name="DEVICE_TYPE" />“ iš naujo. Bus atkurti gamykliniai nustatymai ir visos naudotojų paskyros bei vietiniai duomenys bus pašalinti.</translation>
 <translation id="3879748587602334249">Atsisiuntimų tvarkytuvė</translation>
 <translation id="3886446263141354045">Jūsų užklausa pasiekti šią svetainę išsiųsta <ph name="NAME" />.</translation>
 <translation id="3888550877729210209">Užrašų kūrimas naudojant „<ph name="LOCK_SCREEN_APP_NAME" />“</translation>
@@ -2409,7 +2406,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4501530680793980440">Patvirtinti pašalinimą</translation>
 <translation id="4502423230170890588">Pašalinti iš šio įrenginio</translation>
 <translation id="4504940961672722399">Naudokite šį plėtinį spustelėję šią piktogramą arba paspaudę <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Tęsdami įgalinsite ADB kurti ir testuoti „Android“ programas. Atminkite, kad ADB leis įdiegti bandomąsias programas, kurios nebuvo patvirtintos „Google“.</translation>
 <translation id="4508051413094283164">Atidaryti viską inkognito lange</translation>
 <translation id="4508265954913339219">Nepavyko suaktyvinti</translation>
 <translation id="4508765956121923607">Žiūrėti ša&amp;ltinį</translation>
@@ -3313,7 +3309,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5851868085455377790">Išdavėjas</translation>
 <translation id="5852112051279473187">Oi! Bandant užregistruoti šį įrenginį iškilo rimtų problemų. Bandykite dar kartą arba susisiekite su palaikymo atstovu.</translation>
 <translation id="5852137567692933493">Paleisti iš naujo ir naudoti „Powerwash“</translation>
-<translation id="5852360662347412211">Eikite į „Linux“ nustatymus ir bandykite dar kartą</translation>
 <translation id="5854912040170951372">Gabaliukas</translation>
 <translation id="5855643921295613558">0,6 sek.</translation>
 <translation id="5856721540245522153">Įgalinti derinimo funkcijas</translation>
@@ -3326,7 +3321,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5860494867054883682">Įrenginys atnaujinamas į kanalą „<ph name="CHANNEL_NAME" />“ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Rodyti rašiklio įrankius lentynoje</translation>
 <translation id="5863445608433396414">Įgalinti derinimo funkcijas</translation>
-<translation id="5863471434640009253">Kad galėtumėte įgalinti „Android“ derinimo tiltą, pirmiausia paleiskite „<ph name="DEVICE_TYPE" />“ iš naujo. Išjungus ADB reikia atkurti gamyklinius nustatymus.</translation>
 <translation id="5864471791310927901">DHCP paieška nepavyko</translation>
 <translation id="586567932979200359">„<ph name="PRODUCT_NAME" />“ paleista iš disko vaizdo. Įdiegę ją kompiuteryje, galėsite paleisti be disko vaizdo ir būti tikri, kad ji bus atnaujinama.</translation>
 <translation id="5865733239029070421">Automatiškai siunčia naudojimo statistiką ir strigčių ataskaitas „Google“</translation>
@@ -3396,7 +3390,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5958529069007801266">Prižiūrimas naudotojas</translation>
 <translation id="5959471481388474538">Tinklas negalimas</translation>
 <translation id="595959584676692139">Norėdami naudoti šį plėtinį įkelkite puslapį iš naujo</translation>
-<translation id="5961320084471308154">Įgalinti ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maks. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Ji taip pat kontroliuoja, koks puslapis rodomas, kai spustelėjate pagrindinio puslapio mygtuką ar ieškote „Omnibox“.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> gali peržiūrėti aplanko „<ph name="FOLDERNAME" />“ failus</translation>
@@ -4260,7 +4253,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7254554697254365959">Nepavyko išversti šio puslapio.</translation>
 <translation id="7254951428499890870">Ar tikrai norite paleisti „<ph name="APP_NAME" />“ diagnostikos režimu?</translation>
 <translation id="7255002516883565667">Šiuo metu turite vieną kortelę, kurią galima naudoti tik šiuo įrenginiu</translation>
-<translation id="7255916308560539517">Palieskite saugos raktą dar kartą patvirtindami nustatymą iš naujo. Visa saugos rakte saugoma informacija, įskaitant jo PIN kodą, bus ištrinta.</translation>
 <translation id="7255935316994522020">Taikyti</translation>
 <translation id="7256069762010468647">Svetainė naudoja jūsų fotoaparatą</translation>
 <translation id="7256405249507348194">Neatpažinta klaida: <ph name="DESC" /></translation>
@@ -4770,6 +4762,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7968833647796919681">Įgalinti našumo duomenų rinkimą</translation>
 <translation id="7968982339740310781">Žiūrėti išsamią informaciją</translation>
 <translation id="7969046989155602842">Komanda</translation>
+<translation id="7970882136539140748">Šiuo metu kortelės išsaugoti negalima</translation>
 <translation id="7972714317346275248">PKCS Nr. 1 SHA-384 su RSA šifruote</translation>
 <translation id="7973962044839454485">Nepavyko autentifikuoti PGP dėl netinkamo naudotojo vardo ar slaptažodžio</translation>
 <translation id="7974566588408714340">Dar kartą bandyti naudoti „<ph name="EXTENSIONNAME" />“</translation>
@@ -5091,7 +5084,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8431909052837336408">SIM kortelės PIN kodo pakeitimas</translation>
 <translation id="8434480141477525001">„Native Client“ derinimo prievadas</translation>
 <translation id="8435395510592618362">Patvirtinkite savo tapatybę naudodami „<ph name="APP_NAME" />“</translation>
-<translation id="843760761634048214">Išsaugoti kredito kortelės informaciją</translation>
 <translation id="8438328416656800239">Perjunkite į išmanią naršyklę</translation>
 <translation id="8438566539970814960">Tobulinti paieškas ir naršymą</translation>
 <translation id="8439506636278576865">Siūlyti versti puslapius šia kalba</translation>
@@ -5474,6 +5466,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8965037249707889821">Įveskite seną slaptažodį</translation>
 <translation id="8966870118594285808">Atidaryti netyčia uždarytą skirtuką</translation>
 <translation id="8967866634928501045">Kad būtų parodyta, paspauskite „Alt“ + „Shift“ + A</translation>
+<translation id="8968766641738584599">Išsaugoti kortelę</translation>
 <translation id="89720367119469899">Grįžimo klavišas</translation>
 <translation id="8972513834460200407">Paklauskite tinklo administratoriaus, kad įsitikintumėte, jog užkarda neblokuoja atsisiuntimų iš „Google“ serverių.</translation>
 <translation id="8973557916016709913">Pašalinti mastelio keitimo lygį</translation>
@@ -5580,7 +5573,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9116799625073598554">Užrašų programa</translation>
 <translation id="9117030152748022724">Tvarkykite programas</translation>
 <translation id="9121814364785106365">Atidaryti kaip susegtą skirtuką</translation>
-<translation id="9122074588095746047">Nepavyko įgalinti ADB</translation>
 <translation id="9124003689441359348">Išsaugoti slaptažodžiai bus rodomi čia</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (liko <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Nepavyko užbaigti nustatymo proceso</translation>

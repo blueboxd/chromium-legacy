@@ -16,7 +16,6 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
-#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -61,8 +60,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 
 + (void)signinWithIdentity:(ChromeIdentity*)identity
           isManagedAccount:(BOOL)isManagedAccount {
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
+  [SigninEarlGreyUtils addIdentity:identity];
 
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI

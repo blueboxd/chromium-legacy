@@ -35,8 +35,9 @@ namespace chromeos {
 // must be destroyed. This is done in Close.
 class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
  public:
-  using OutputCallback = base::Callback<void(ProcessOutputType output_type,
-                                             const std::string& output_data)>;
+  using OutputCallback =
+      base::RepeatingCallback<void(ProcessOutputType output_type,
+                                   const std::string& output_data)>;
 
   ProcessProxy();
 
@@ -91,10 +92,10 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   // handled.
   void OnProcessOutput(ProcessOutputType type,
                        const std::string& output,
-                       const base::Closure& callback);
+                       base::OnceClosure callback);
   void CallOnProcessOutputCallback(ProcessOutputType type,
                                    const std::string& output,
-                                   const base::Closure& callback);
+                                   base::OnceClosure callback);
 
   void StopWatching();
 
@@ -112,7 +113,7 @@ class ProcessProxy : public base::RefCountedThreadSafe<ProcessProxy> {
   OutputCallback callback_;
   // Callback received by process output watcher in |OnProcessOutput|.
   // Process output watcher will be paused until this is run.
-  base::Closure output_ack_callback_;
+  base::OnceClosure output_ack_callback_;
   scoped_refptr<base::TaskRunner> callback_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> watcher_runner_;
 

@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Ikon Aplikasi</translation>
 <translation id="1410616244180625362">Terus izinkan <ph name="HOST" /> mengakses kamera Anda</translation>
 <translation id="1414648216875402825">Anda memperbarui ke versi tidak stabil dari <ph name="PRODUCT_NAME" /> yang berisi fitur yang sedang dalam proses. Akan terjadi mogok dan bug tidak terduga. Lanjutkan dengan hati-hati.</translation>
-<translation id="1414866280542221544">Aktifkan di perangkat ini</translation>
 <translation id="1415708812149920388">Akses baca papan klip ditolak</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID ekstensi "<ph name="EXTENSION_ID" />") tidak diizinkan dalam jenis sesi ini.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Irisan pizza</translation>
 <translation id="1468571364034902819">Tidak dapat menggunakan profil ini</translation>
 <translation id="1470811252759861213">Untuk mendapatkan ekstensi di semua komputer, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Tindakan ini akan menghapus semua data di kunci keamanan, termasuk PIN-nya</translation>
 <translation id="1472675084647422956">Tampilkan lainnya</translation>
 <translation id="1475502736924165259">Anda memiliki sertifikat pada file yang tidak sesuai dengan kategori lain mana pun</translation>
 <translation id="1476088332184200792">Salin ke Perangkat Anda</translation>
@@ -842,7 +840,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2202898655984161076">Ada masalah dengan pencantuman printer. Beberapa printer Anda mungkin tidak berhasil didaftarkan ke <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Mesin telusur yang digunakan di <ph name="BEGIN_LINK" />kolom URL<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Membaca dan mengubah apa saja yang Anda ketik</translation>
-<translation id="2204397710290433380">Nonaktifkan ADB?</translation>
 <translation id="220792432208469595">Kirim data penggunaan dan diagnostik. Perangkat ini saat ini otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini akan membantu sistem dan stabilitas aplikasi serta peningkatan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Setelan ini diterapkan oleh pemilik. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan, data ini mungkin akan disimpan ke Akun Google Anda. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Masukkan kode PIN ini ke "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Hapus folder bersama</translation>
@@ -979,6 +976,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2396783860772170191">Masukkan PIN 4 digit (0000-9999)</translation>
 <translation id="2399939490305346086">Data login kunci keamanan</translation>
 <translation id="2407481962792080328">Saat login ke Akun Google Anda, fitur ini akan diaktifkan</translation>
+<translation id="2408018932941436077">Menyimpan kartu</translation>
 <translation id="2408955596600435184">Masukkan PIN</translation>
 <translation id="241082044617551207">Plugin tidak dikenal</translation>
 <translation id="2412593942846481727">Update tersedia</translation>
@@ -2005,7 +2003,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3873315167136380065">Untuk mengaktifkannya, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /> untuk menghapus frasa sandi sinkronisasi</translation>
 <translation id="3873423927483480833">Tampilkan PIN</translation>
 <translation id="3873915545594852654">Terjadi masalah dengan ARC++.</translation>
-<translation id="387924939625099872">Untuk menonaktifkan ADB, mulai ulang <ph name="DEVICE_TYPE" /> Anda. Perangkat akan disetel ulang ke setelan pabrik, lalu semua akun pengguna dan data lokal akan dihapus.</translation>
 <translation id="3879748587602334249">Pengelola download</translation>
 <translation id="3886446263141354045">Permintaan Anda untuk mengakses situs ini telah dikirim ke <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Mencatat dengan <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2407,7 +2404,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4501530680793980440">Konfirmasi Penghapusan</translation>
 <translation id="4502423230170890588">Hapus dari perangkat ini</translation>
 <translation id="4504940961672722399">Gunakan ekstensi ini dengan mengeklik ikon ini atau menekan <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Dengan melanjutkan, ADB akan diaktifkan untuk membuat dan menguji aplikasi Android. Perlu diperhatikan bahwa ADB memungkinkan penginstalan aplikasi pengujian yang belum diverifikasi oleh Google.</translation>
 <translation id="4508051413094283164">Buka semua di jendela samaran</translation>
 <translation id="4508265954913339219">Aktivasi gagal</translation>
 <translation id="4508765956121923607">Lihat S&amp;umber</translation>
@@ -3310,7 +3306,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5851868085455377790">Penerbit</translation>
 <translation id="5852112051279473187">Ups!  Benar-benar terjadi masalah saat mendaftarkan perangkat ini. Harap coba lagi atau hubungi perwakilan dukungan Anda.</translation>
 <translation id="5852137567692933493">Mulai Ulang dan Powerwash</translation>
-<translation id="5852360662347412211">Buka setelan Linux, lalu coba lagi</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0,6 detik</translation>
 <translation id="5856721540245522153">Aktifkan fitur debug</translation>
@@ -3323,7 +3318,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5860494867054883682">Memperbarui perangkat ke saluran <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Tampilkan alat stilus di rak</translation>
 <translation id="5863445608433396414">Aktifkan fitur debug</translation>
-<translation id="5863471434640009253">Untuk mengaktifkan Android Debug Bridge, mulai ulang <ph name="DEVICE_TYPE" /> Anda terlebih dulu. Perlu penyetelan ulang ke setelan pabrik untuk menonaktifkan ADB.</translation>
 <translation id="5864471791310927901">Pencarian DHCP gagal</translation>
 <translation id="586567932979200359">Anda menjalankan <ph name="PRODUCT_NAME" /> dari citra disknya. Dengan memasangnya di komputer, Anda dapat menjalankannya tanpa citra disk, dan memastikannya tetap mutakhir.</translation>
 <translation id="5865733239029070421">Secara otomatis mengirimkan statistik penggunaan dan laporan kerusakan ke Google</translation>
@@ -3393,7 +3387,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5958529069007801266">Pengguna yang diawasi</translation>
 <translation id="5959471481388474538">Jaringan tidak tersedia</translation>
 <translation id="595959584676692139">Muat ulang halaman untuk menggunakan ekstensi ini</translation>
-<translation id="5961320084471308154">Aktifkan ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> maksimal)</translation>
 <translation id="5965661248935608907">Juga mengontrol apa yang ditampilkan halaman saat Anda mengeklik tombol Beranda atau menelusuri dari Omnibox.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> dapat melihat file dalam <ph name="FOLDERNAME" /></translation>
@@ -4257,7 +4250,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7254554697254365959">Halaman Ini Tidak Dapat Diterjemahkan.</translation>
 <translation id="7254951428499890870">Yakin ingin meluncurkan "<ph name="APP_NAME" />" dalam mode diagnosis?</translation>
 <translation id="7255002516883565667">Sekarang, Anda memiliki satu kartu yang hanya dapat digunakan di perangkat ini</translation>
-<translation id="7255916308560539517">Sentuh kunci keamanan Anda sekali lagi untuk mengonfirmasi penyetelan ulang. Semua informasi yang tersimpan di kunci keamanan, termasuk PIN-nya, akan dihapus.</translation>
 <translation id="7255935316994522020">Terapkan</translation>
 <translation id="7256069762010468647">Situs sedang menggunakan kamera Anda</translation>
 <translation id="7256405249507348194">Kesalahan tidak dikenal: <ph name="DESC" /></translation>
@@ -4767,6 +4759,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7968833647796919681">Mengaktifkan koleksi data kinerja</translation>
 <translation id="7968982339740310781">Lihat detail</translation>
 <translation id="7969046989155602842">Tombol Perintah</translation>
+<translation id="7970882136539140748">Saat ini tidak dapat menyimpan kartu</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 Dengan Enkripsi RSA</translation>
 <translation id="7973962044839454485">Autentifikasi PDB gagal karena nama pengguna dan sandi salah</translation>
 <translation id="7974566588408714340">Coba lagi menggunakan <ph name="EXTENSIONNAME" /></translation>
@@ -5088,7 +5081,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8431909052837336408">Ubah PIN SIM</translation>
 <translation id="8434480141477525001">Port Debug NaCl</translation>
 <translation id="8435395510592618362">Verifikasi identitas Anda dengan <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Simpan kartu kredit</translation>
 <translation id="8438328416656800239">Beralih ke browser cerdas</translation>
 <translation id="8438566539970814960">Jadikan penelusuran dan penjelajahan lebih baik</translation>
 <translation id="8439506636278576865">Tawarkan penerjemahan halaman ke dalam bahasa ini</translation>
@@ -5471,6 +5463,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8965037249707889821">Masukkan sandi lama</translation>
 <translation id="8966870118594285808">Membuka kembali tab jika Anda menutupnya secara tidak sengaja</translation>
 <translation id="8967866634928501045">Tekan Alt Shift A untuk menampilkan</translation>
+<translation id="8968766641738584599">Simpan kartu</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Hubungi administrator jaringan Anda untuk memastikan bahwa firewall tidak memblokir download dari server Google.</translation>
 <translation id="8973557916016709913">Menghapus tingkat zoom</translation>
@@ -5577,7 +5570,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9116799625073598554">Aplikasi pencatat</translation>
 <translation id="9117030152748022724">Kelola aplikasi Anda</translation>
 <translation id="9121814364785106365">Buka sebagai tab terpasang</translation>
-<translation id="9122074588095746047">Tidak dapat mengaktifkan ADB</translation>
 <translation id="9124003689441359348">Sandi yang disimpan akan muncul di sini</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> tersisa)</translation>
 <translation id="9128317794749765148">Tidak dapat menyelesaikan penyiapan</translation>

@@ -10,14 +10,13 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/previews/previews_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -40,42 +39,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
-
-namespace {
-
-// Expected console output when defer preview is not applied to the test
-// webpage.
-static const char kNonDeferredPageExpectedOutput[] =
-    "ScriptLog:_InlineScript_SyncScript_BodyEnd_DeveloperDeferScript_OnLoad";
-
-// Expected console output when defer preview is applied to the test webpage.
-static const char kDeferredPageExpectedOutput[] =
-    "ScriptLog:_BodyEnd_InlineScript_SyncScript_DeveloperDeferScript_OnLoad";
-
-// Retries fetching |histogram_name| until it contains at least |count| samples.
-void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
-                                        const std::string& histogram_name,
-                                        size_t count) {
-  while (true) {
-    base::ThreadPoolInstance::Get()->FlushForTesting();
-    base::RunLoop().RunUntilIdle();
-
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-    const std::vector<base::Bucket> buckets =
-        histogram_tester->GetAllSamples(histogram_name);
-    size_t total_count = 0;
-    for (const auto& bucket : buckets) {
-      total_count += bucket.count;
-    }
-    if (total_count >= count) {
-      break;
-    }
-  }
-}
-
-}  // namespace
 
 class DeferAllScriptBrowserTest : public InProcessBrowserTest {
  public:
@@ -182,22 +145,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
 
   const GURL& server_denylist_url() const { return server_denylist_url_; }
 
-  std::string GetScriptLog() {
-    std::string script_log;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents(), "sendLogToTest()",
-        &script_log));
-    return script_log;
-  }
-
-  std::string GetScriptLogForBrowser(Browser* browser) {
-    std::string script_log;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        browser->tab_strip_model()->GetActiveWebContents(), "sendLogToTest()",
-        &script_log));
-    return script_log;
-  }
-
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedFeatureList param_feature_list_;
@@ -224,13 +171,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(DeferAllScriptBrowserTest);
 };
 
-// Avoid flakes and issues on non-applicable platforms.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
-#else
-#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
-#endif
-
 IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelisted)) {
@@ -248,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(kDeferredPageExpectedOutput, GetScriptLog());
+  EXPECT_EQ(kDeferredPageExpectedOutput, GetScriptLog(browser()));
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
@@ -294,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLogForBrowser(incognito));
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog(incognito));
 }
 
 // Defer should not be used on a webpage whose URL matches the denylist regex.
@@ -325,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(
       entry, UkmEntry::kdefer_all_script_eligibility_reasonName,
       static_cast<int>(previews::PreviewsEligibilityReason::DENY_LIST_MATCHED));
 
-  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog(browser()));
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -346,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog(browser()));
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",
@@ -391,7 +331,7 @@ IN_PROC_BROWSER_TEST_F(
       &histogram_tester, "PageLoad.DocumentTiming.NavigationToLoadEventFired",
       1);
 
-  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
+  EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog(browser()));
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.DeferAllScript",

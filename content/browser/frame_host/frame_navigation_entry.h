@@ -203,8 +203,6 @@ class CONTENT_EXPORT FrameNavigationEntry
   // and verified when receiving the DidCommit IPC.
   base::Optional<url::Origin> committed_origin_;
   Referrer referrer_;
-  // TODO(lukasza): https://crbug.com/976055: |initiator_origin| should be
-  // persisted across session restore.
   base::Optional<url::Origin> initiator_origin_;
   // This is used when transferring a pending entry from one process to another.
   // We also send the main frame's redirect chain through session sync for

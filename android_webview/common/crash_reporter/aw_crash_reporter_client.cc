@@ -33,8 +33,6 @@ using base::android::AttachCurrentThread;
 
 namespace android_webview {
 
-constexpr unsigned int kCrashDumpPercentageForStable = 1;
-
 namespace {
 
 class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
@@ -78,23 +76,7 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
     *sanitize_stacks = true;
   }
 
-  unsigned int GetCrashDumpPercentage() override {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableCrashReporterForTesting) ||
-        base::android::BuildInfo::GetInstance()->is_debug_android()) {
-      return 100;
-    }
-
-    version_info::Channel channel = version_info::android::GetChannel();
-    // Downsample unknown channel as a precaution in case it ends up being
-    // shipped.
-    if (channel == version_info::Channel::STABLE ||
-        channel == version_info::Channel::UNKNOWN) {
-      return kCrashDumpPercentageForStable;
-    }
-
-    return 100;
-  }
+  unsigned int GetCrashDumpPercentage() override { return 100; }
 
   bool GetBrowserProcessType(std::string* ptype) override {
     if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

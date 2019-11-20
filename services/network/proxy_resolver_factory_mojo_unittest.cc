@@ -18,7 +18,6 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
@@ -515,11 +514,13 @@ void CheckCapturedNetLogEntries(const std::string& expected_string,
 class ProxyResolverFactoryMojoTest : public testing::Test {
  public:
   void SetUp() override {
-    proxy_resolver::mojom::ProxyResolverFactoryPtr factory_ptr;
+    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+        factory_remote;
     mock_proxy_resolver_factory_.reset(new MockMojoProxyResolverFactory(
-        &mock_proxy_resolver_, mojo::MakeRequest(&factory_ptr)));
+        &mock_proxy_resolver_,
+        factory_remote.InitWithNewPipeAndPassReceiver()));
     proxy_resolver_factory_mojo_.reset(new ProxyResolverFactoryMojo(
-        std::move(factory_ptr), &host_resolver_,
+        std::move(factory_remote), &host_resolver_,
         base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>(),
         &net_log_));
   }

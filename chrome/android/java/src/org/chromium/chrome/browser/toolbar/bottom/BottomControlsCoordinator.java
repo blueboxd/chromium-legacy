@@ -12,6 +12,7 @@ import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -70,7 +71,8 @@ public class BottomControlsCoordinator {
      */
     public BottomControlsCoordinator(ChromeFullscreenManager fullscreenManager, ViewStub stub,
             ActivityTabProvider tabProvider, OnClickListener homeButtonListener,
-            OnClickListener searchAcceleratorListener, OnClickListener shareButtonListener,
+            OnClickListener searchAcceleratorListener,
+            ObservableSupplier<OnClickListener> shareButtonListenerSupplier,
             OnLongClickListener tabSwitcherLongclickListener,
             ThemeColorProvider themeColorProvider) {
         final ScrollingBottomViewResourceFrameLayout root =
@@ -104,10 +106,10 @@ public class BottomControlsCoordinator {
             mTabGroupUi = TabManagementModuleProvider.getDelegate().createTabGroupUi(
                     root.findViewById(R.id.bottom_container_slot), themeColorProvider);
         } else {
-            mBottomToolbarCoordinator =
-                    new BottomToolbarCoordinator(root.findViewById(R.id.bottom_toolbar_stub),
-                            tabProvider, homeButtonListener, searchAcceleratorListener,
-                            shareButtonListener, tabSwitcherLongclickListener, themeColorProvider);
+            mBottomToolbarCoordinator = new BottomToolbarCoordinator(
+                    root.findViewById(R.id.bottom_toolbar_stub), tabProvider, homeButtonListener,
+                    searchAcceleratorListener, shareButtonListenerSupplier,
+                    tabSwitcherLongclickListener, themeColorProvider);
         }
     }
 

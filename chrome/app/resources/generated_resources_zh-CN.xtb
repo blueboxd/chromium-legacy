@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">应用图标</translation>
 <translation id="1410616244180625362">继续允许 <ph name="HOST" /> 使用您的摄像头</translation>
 <translation id="1414648216875402825">您即将更新到 <ph name="PRODUCT_NAME" />的不稳定版本，其中含有尚处于开发阶段的功能。系统可能会出现崩溃和意外错误。继续操作前，请三思。</translation>
-<translation id="1414866280542221544">在此设备上启用</translation>
 <translation id="1415708812149920388">已被禁止读取剪贴板</translation>
 <translation id="1415990189994829608">这类会话不允许使用“<ph name="EXTENSION_NAME" />”（扩展程序 ID 为“<ph name="EXTENSION_ID" />”）。</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">披萨片</translation>
 <translation id="1468571364034902819">无法使用这份个人资料</translation>
 <translation id="1470811252759861213">要将您的扩展程序同步到您所有的设备上，请<ph name="SIGN_IN_LINK" />。</translation>
-<translation id="1470967055429794975">这会清空该安全密钥上的所有数据，包括它的 PIN 码</translation>
 <translation id="1472675084647422956">显示更多</translation>
 <translation id="1475502736924165259">您有一些证书不属于前面的任何类别</translation>
 <translation id="1476088332184200792">复制到您的设备</translation>
@@ -839,7 +837,6 @@
 <translation id="2202898655984161076">列出打印机时发生问题。您的某些打印机可能尚未成功使用“<ph name="CLOUD_PRINT_NAME" />”进行注册。</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />地址栏<ph name="END_LINK" />中使用的搜索引擎</translation>
 <translation id="2204034823255629767">读取和更改您输入的任何内容</translation>
-<translation id="2204397710290433380">停用 ADB？</translation>
 <translation id="220792432208469595">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">请在“<ph name="DEVICE_NAME" />”上输入此 PIN 码：</translation>
 <translation id="2213140827792212876">停止共享</translation>
@@ -976,6 +973,7 @@
 <translation id="2396783860772170191">输入 4 位数的 PIN 码 (0000-9999)</translation>
 <translation id="2399939490305346086">安全密钥登录数据</translation>
 <translation id="2407481962792080328">当您登录自己的 Google 帐号后，系统即会启用此功能</translation>
+<translation id="2408018932941436077">正在保存信用卡信息</translation>
 <translation id="2408955596600435184">输入您的 PIN 码</translation>
 <translation id="241082044617551207">未知插件</translation>
 <translation id="2412593942846481727">有可用的更新</translation>
@@ -2003,7 +2001,6 @@
 <translation id="3873315167136380065">要启用此功能，请<ph name="BEGIN_LINK" />重置同步功能<ph name="END_LINK" />以移除同步密码</translation>
 <translation id="3873423927483480833">显示 PIN 码</translation>
 <translation id="3873915545594852654">ARC++ 出问题了。</translation>
-<translation id="387924939625099872">要停用 ADB，请重启您的 <ph name="DEVICE_TYPE" />。该设备会恢复出厂设置，且所有用户帐号和本地数据都会清空。</translation>
 <translation id="3879748587602334249">下载管理器</translation>
 <translation id="3886446263141354045">系统已将您想访问此网站的请求发送给<ph name="NAME" /></translation>
 <translation id="3888550877729210209">使用“<ph name="LOCK_SCREEN_APP_NAME" />”创建记事</translation>
@@ -2404,7 +2401,6 @@
 <translation id="4501530680793980440">确认删除</translation>
 <translation id="4502423230170890588">从此设备中移除</translation>
 <translation id="4504940961672722399">点击该图标或按 <ph name="EXTENSION_SHORTCUT" />，即可使用此扩展程序。</translation>
-<translation id="4506379069541445709">继续操作会启用 ADB，以创建和测试 Android 应用。请注意，ADB 允许安装未经 Google 验证的测试应用。</translation>
 <translation id="4508051413094283164">在无痕式窗口中打开所有网址</translation>
 <translation id="4508265954913339219">激活失败</translation>
 <translation id="4508765956121923607">显示源代码(&amp;O)</translation>
@@ -3307,7 +3303,6 @@
 <translation id="5851868085455377790">颁发者</translation>
 <translation id="5852112051279473187">糟糕！系统在注册此设备时遇到了一些严重的问题。请重试或与您的技术支持代表联系。</translation>
 <translation id="5852137567692933493">重新启动，然后执行 Powerwash</translation>
-<translation id="5852360662347412211">请转到 Linux 设置，然后重试</translation>
 <translation id="5854912040170951372">比萨</translation>
 <translation id="5855643921295613558">0.6 秒</translation>
 <translation id="5856721540245522153">启用调试功能</translation>
@@ -3320,7 +3315,6 @@
 <translation id="5860494867054883682">正在将您的设备更新至<ph name="CHANNEL_NAME" />版本 (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">在任务栏中显示触控笔工具</translation>
 <translation id="5863445608433396414">启用调试功能</translation>
-<translation id="5863471434640009253">要启用 Android 调试桥 (ADB)，请先重启您的 <ph name="DEVICE_TYPE" />。停用 ADB 需要将设备恢复出厂设置。</translation>
 <translation id="5864471791310927901">DHCP 查找失败</translation>
 <translation id="586567932979200359">您正在通过磁盘映像运行 <ph name="PRODUCT_NAME" />。您只需在计算机上安装该软件，即可在没有磁盘映像的情况下运行它，并可确保使用最新版本。</translation>
 <translation id="5865733239029070421">自动将使用情况统计信息和崩溃报告发送至 Google</translation>
@@ -3390,7 +3384,6 @@
 <translation id="5958529069007801266">受监管用户</translation>
 <translation id="5959471481388474538">网络不可用</translation>
 <translation id="595959584676692139">如果您想使用该扩展程序，请先重新加载网页</translation>
-<translation id="5961320084471308154">启用 ADB？</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> 个（峰值：<ph name="NUM_KILOBYTES_LIVE" />）</translation>
 <translation id="5965661248935608907">它还能够控制您点击“主页”按钮后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> 可查看“<ph name="FOLDERNAME" />”内的文件</translation>
@@ -4254,7 +4247,6 @@
 <translation id="7254554697254365959">无法翻译此网页。</translation>
 <translation id="7254951428499890870">确定要以诊断模式启动“<ph name="APP_NAME" />”吗？</translation>
 <translation id="7255002516883565667">此刻，您有 1 张卡只能在这部设备上使用</translation>
-<translation id="7255916308560539517">请再次轻触安全密钥以确认重置。安全密钥上存储的所有信息都会清空，包括它的 PIN 码。</translation>
 <translation id="7255935316994522020">应用</translation>
 <translation id="7256069762010468647">该网站正在使用您的摄像头</translation>
 <translation id="7256405249507348194">无法识别的错误：<ph name="DESC" /></translation>
@@ -4764,6 +4756,7 @@
 <translation id="7968833647796919681">启用性能数据收集</translation>
 <translation id="7968982339740310781">查看详情</translation>
 <translation id="7969046989155602842">Cmd 键</translation>
+<translation id="7970882136539140748">此刻无法保存信用卡信息</translation>
 <translation id="7972714317346275248">PKCS #1，带有 RSA 加密的 SHA-384</translation>
 <translation id="7973962044839454485">用户名或密码不正确，导致 PPP 身份验证失败</translation>
 <translation id="7974566588408714340">使用“<ph name="EXTENSIONNAME" />”重试</translation>
@@ -5084,7 +5077,6 @@
 <translation id="8431909052837336408">更改 SIM 卡 PIN 码</translation>
 <translation id="8434480141477525001">NaCl调试端口</translation>
 <translation id="8435395510592618362">通过“<ph name="APP_NAME" />”验证您的身份</translation>
-<translation id="843760761634048214">保存信用卡</translation>
 <translation id="8438328416656800239">改用智能浏览器</translation>
 <translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8439506636278576865">询问是否翻译此语言的网页</translation>
@@ -5467,6 +5459,7 @@
 <translation id="8965037249707889821">输入旧密码</translation>
 <translation id="8966870118594285808">如果您无意中关闭了某个标签页，可将其重新打开</translation>
 <translation id="8967866634928501045">同时按 Alt+Shift+A 即可显示</translation>
+<translation id="8968766641738584599">保存卡片</translation>
 <translation id="89720367119469899">转义</translation>
 <translation id="8972513834460200407">请与您的网络管理员联系，确保防火墙没有阻止系统从 Google 服务器下载内容。</translation>
 <translation id="8973557916016709913">移除缩放级别</translation>
@@ -5573,7 +5566,6 @@
 <translation id="9116799625073598554">记事应用</translation>
 <translation id="9117030152748022724">管理应用</translation>
 <translation id="9121814364785106365">在固定标签页中打开</translation>
-<translation id="9122074588095746047">无法启用 ADB</translation>
 <translation id="9124003689441359348">已保存的密码将显示在这里</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" />（剩余 <ph name="LICENSE_COUNT" /> 项）</translation>
 <translation id="9128317794749765148">无法完成设置</translation>

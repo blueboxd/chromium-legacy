@@ -168,6 +168,10 @@ inline EDisplay CssValueIDToPlatformEnum(CSSValueID v) {
     return EDisplay::kFlex;
   if (v == CSSValueID::kWebkitInlineFlex)
     return EDisplay::kInlineFlex;
+  if (v == CSSValueID::kMath)
+    return EDisplay::kMath;
+  if (v == CSSValueID::kInlineMath)
+    return EDisplay::kInlineMath;
 
   NOTREACHED();
   return EDisplay::kInline;

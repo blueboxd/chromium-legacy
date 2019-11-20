@@ -960,6 +960,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Jika diaktifkan atau tidak ditetapkan, peringatan keamanan akan ditampilkan saat beberapa tanda command line digunakan untuk meluncurkan Chrome.
 
           Di Windows, kebijakan ini hanya tersedia pada instance yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
+<translation id="2480971699591919564">Aktifkan fitur Click to Call yang memungkinkan pengguna mengirim nomor ponsel dari Desktop Chrome ke perangkat Android saat pengguna Login. Untuk informasi lebih lanjut, lihat artikel pusat bantuan: https://support.google.com/chrome/answer/9430554?hl=id.
+
+      Jika kebijakan ini ditetapkan ke aktif, kemampuan untuk mengirim nomor ponsel ke perangkat Android akan diaktifkan bagi pengguna Chrome.
+
+      Jika kebijakan ini ditetapkan ke nonaktif, kemampuan untuk mengirim nomor ponsel ke perangkat Android akan dinonaktifkan bagi pengguna Chrome.
+
+      Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
+
+      Jika kebijakan ini tidak ditetapkan, fitur Click to Call akan diaktifkan secara default.</translation>
 <translation id="2482676533225429905">Perpesanan Asli</translation>
 <translation id="2483146640187052324">Prediksi tindakan jaringan di sambungan jaringan apa pun</translation>
 <translation id="2484208301968418871">Kebijakan ini mengontrol penerapan filter URL SafeSites.
@@ -1967,6 +1976,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="4075864623710596000">Hostname yang ditentukan dalam daftar ini akan dikecualikan dari pemeriksaan kebijakan HSTS yang berpotensi mengupgrade permintaan dari http ke https. Hanya hostname berlabel tunggal yang diizinkan dalam kebijakan ini. Hostname harus dikanonikalisasi: semua IDN harus dikonversi ke format berlabel A, dan semua huruf ASCII harus berupa huruf kecil. Kebijakan ini hanya berlaku untuk hostname tertentu yang sudah ditentukan; tidak berlaku untuk subdomain dari nama yang ditentukan.</translation>
 <translation id="408029843066770167">Izinkan kueri ke layanan waktu Google</translation>
 <translation id="408076456549153854">Aktifkan login browser</translation>
+<translation id="4082498585300984671">Mengaktifkan Fitur Click to Call</translation>
 <translation id="40853027210512570">Mengganti aturan pemilihan printer default <ph name="PRODUCT_NAME" />.
 
       Kebijakan ini menentukan aturan untuk memilih printer default di <ph name="PRODUCT_NAME" /> yang terjadi saat fungsi cetak digunakan dengan profil untuk pertama kalinya.
@@ -3518,13 +3528,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika tidak diizinkan untuk login ke akun lain melalui Mode penyamaran, sebaiknya blokir mode tersebut menggunakan kebijakan IncognitoModeAvailability.
 
       Perlu diketahui bahwa pengguna akan dapat mengakses layanan Google dalam kondisi tidak terautentikasi dengan memblokir cookienya.</translation>
-<translation id="6837480141980366278">Mengontrol apakah klien DNS built-in digunakan di <ph name="PRODUCT_NAME" /> atau tidak.
-
-      Jika kebijakan ini disetel ke true, klien DNS built-in akan digunakan, jika tersedia.
-
-      Jika kebijakan ini disetel ke false, klien DNS built-in tidak akan pernah digunakan.
-
-      Jika kebijakan ini dibiarkan tidak disetel, klien DNS built-in akan diaktifkan secara default di MacOS, Android (saat DNS Pribadi atau VPN tidak diaktifkan), serta ChromeOS, dan pengguna akan dapat mengubah apakah klien DNS built-in digunakan atau tidak dengan mengedit chrome://flags atau menentukan tanda baris perintah.</translation>
 <translation id="6843296367238757293">Kebijakan ini tidak digunakan lagi. Penggunaannya tidak disarankan. Baca selengkapnya di https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Kebijakan ini dihapus dalam <ph name="PRODUCT_NAME" /> 68 dan digantikan oleh <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Mengaktifkan fitur aksesibilitas sorotan kursor</translation>
@@ -3921,13 +3924,6 @@ Jika kebijakan ini tidak disetel atau kosong, pengguna dapat menyetel akun Googl
 <translation id="7373200034079131670">Reboot saat pengguna logout jika Android atau VM telah dimulai.</translation>
 <translation id="737655323154569539">Membatasi ukuran halaman pencetakan. Kebijakan yang tidak disetel dan setelan kosong diperlakukan sebagai tidak ada batasan.</translation>
 <translation id="7382191643394429934">Izinkan pencetakan dengan dan tanpa grafis latar belakang</translation>
-<translation id="7383445181072113521">Menentukan hostname perangkat yang digunakan dalam permintaan DHCP.
-
-      Jika kebijakan ini ditetapkan ke string yang tidak kosong, string tersebut akan digunakan sebagai hostname perangkat selama proses permintaan DHCP.
-
-      String tersebut dapat berisi variabel <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> yang akan diganti dengan nilai pada perangkat sebelum digunakan sebagai hostname. Substitusi yang dihasilkan harus berupa hostname valid (sesuai dengan RFC 1035, bagian 3.1).
-
-      Jika kebijakan ini tidak ditetapkan, atau nilai setelah substitusi bukan merupakan hostname yang valid, tidak ada hostname yang akan disetel dalam permintaan DHCP. </translation>
 <translation id="7389872682701720082">Jika setelan ini diaktifkan, plugin yang masih berlaku selalu berjalan.
 
       Jika setelan ini dinonaktifkan atau tidak ditetapkan, pengguna akan dimintai izin untuk menjalankan plugin yang memerlukan otorisasi. Ini adalah plugin yang dapat membahayakan keamanan.</translation>
@@ -4313,7 +4309,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 <translation id="8141795997560411818">Kebijakan ini tidak mencegah pengguna menggunakan aplikasi Google Drive Android. Jika ingin mencegah akses ke Google Drive, sebaiknya Anda tidak mengizinkan pemasangan aplikasi Google Drive Android.</translation>
 <translation id="8142894094385450823">Menetapkan lokal yang direkomendasikan untuk sesi terkelola</translation>
 <translation id="8146727383888924340">Memungkinkan pengguna menukarkan penawaran melalui Pendaftaran Chrome OS</translation>
-<translation id="8148785525797916822">Menyembunyikan peringatan yang muncul saat <ph name="PRODUCT_NAME" /> dijalankan di komputer atau sistem operasi yang tidak didukung.</translation>
 <translation id="8148901634826284024">Mengaktifkan fitur aksesibilitas mode kontras tinggi.
 
           Jika kebijakan ini disetel ke true, mode kontras tinggi akan selalu diaktifkan.

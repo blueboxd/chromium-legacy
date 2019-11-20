@@ -187,16 +187,15 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
                             base::Unretained(this)));
   }
 
-  const double input_frames_required = playback_rate * requested_frames;
+  const int num_chunks = static_cast<int>(std::ceil(
+      static_cast<float>(requested_frames) / resampler_->ChunkSize()));
 
-  // |resampler_| can request more than |input_frames_required|, due to the
+  // |resampler_| can request more than |requested_frames|, due to the
   // requests size not being aligned. To prevent having to fill it with silence,
   // we find the max number of reads it could request, and make sure we have
   // enough data to satisfy all of those reads.
   const int min_frames_required =
-      static_cast<int>(std::ceil(input_frames_required /
-                                 SincResampler::kDefaultRequestSize)) *
-      SincResampler::kDefaultRequestSize;
+      num_chunks * SincResampler::kDefaultRequestSize;
 
   if (!reached_end_of_stream_ && audio_buffer_.frames() < min_frames_required) {
     // Exit early, forgoing at most a total of |audio_buffer_.frames()| +
@@ -205,7 +204,6 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
     // after running out of frames, which is ok.
     return 0;
   }
-
   resampler_->SetRatio(playback_rate);
 
   // Directly use |dest| for the most common case of having 0 offset.

@@ -181,7 +181,7 @@
 <translation id="1241753985463165747">čitati i mijenjati sve vaše podatke na trenutačnoj web-lokaciji pri pozivanju</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> želi vratiti vaše postavke na zadano.</translation>
 <translation id="1243314992276662751">Prenesi</translation>
-<translation id="1243398753772016127">Web-lokacije ne mogu koristiti vašu aktivnost pregledavanja na različitim web-lokacijama za prilagođavanje oglasa</translation>
+<translation id="1243398753772016127">Web-lokacije ne mogu prilagođavati oglase na temelju vaše aktivnosti pregledavanja na različitim web-lokacijama</translation>
 <translation id="1244265436519979884">U tijeku je vraćanje Linuxa</translation>
 <translation id="1244303850296295656">Pogreška proširenja</translation>
 <translation id="1246905108078336582">Želite li ukloniti prijedlog iz međuspremnika?</translation>
@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Ikona aplikacije</translation>
 <translation id="1410616244180625362">Nastavi dopuštati hostu <ph name="HOST" /> pristup kameri</translation>
 <translation id="1414648216875402825">Ažurirate na nestabilnu verziju usluge <ph name="PRODUCT_NAME" /> koja sadrži značajke na kojima se još radi. Dolazit će do rušenja i neočekivanih programskih pogrešaka. Budite oprezni.</translation>
-<translation id="1414866280542221544">Omogući na ovom uređaju</translation>
 <translation id="1415708812149920388">Odbijen pristup za čitanje međuspreminka</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID proširenja "<ph name="EXTENSION_ID" />") nije dopušten u ovoj vrsti sesije.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Komad pizze</translation>
 <translation id="1468571364034902819">Taj se profil ne može upotrijebiti</translation>
 <translation id="1470811252759861213">Da biste imali svoja proširenja na svim svojim računalima, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Time će se izbrisati svi podaci na sigurnosnom ključu, uključujući njegov PIN</translation>
 <translation id="1472675084647422956">Prikaži više</translation>
 <translation id="1475502736924165259">U arhivi imate certifikate koji ne odgovaraju nijednoj od ostalih kategorija</translation>
 <translation id="1476088332184200792">Kopiraj na svoj uređaj</translation>
@@ -842,7 +840,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2202898655984161076">Postojao je problem s navođenjem pisača. Neki od pisača možda se nisu uspješno prijavili na <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Tražilica koja se upotrebljava na <ph name="BEGIN_LINK" />adresnoj traci<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">čitati i mijenjati sve što pišete</translation>
-<translation id="2204397710290433380">Onemogućiti ADB?</translation>
 <translation id="220792432208469595">Slanje podataka o upotrebi i dijagnostici. Ovaj uređaj trenutačno Googleu automatski šalje dijagnostičke podatke te podatke o upotrebi uređaja i aplikacija. Ti podaci pomoći će poboljšati stabilnost sustava, aplikacija i drugo. Neki skupni podaci pomoći će i Googleovim aplikacijama i partnerima, na primjer razvojnim programerima za Android. Ovu postavku zadao je vlasnik. Ako je uključena dodatna postavka Aktivnost na webu i u aplikacijama, ti se podaci mogu spremati na vaš Google račun. <ph name="BEGIN_LINK1" />Saznajte više<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Unesite ovaj PIN kôd na uređaj "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Ukloni dijeljenje</translation>
@@ -979,6 +976,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2396783860772170191">Unesite četveroznamenkasti PIN (0000 – 9999)</translation>
 <translation id="2399939490305346086">Podaci za prijavu na sigurnosnom ključu</translation>
 <translation id="2407481962792080328">Kad se prijavite na svoj Google račun, ta je značajka uključena</translation>
+<translation id="2408018932941436077">Spremanje kartice</translation>
 <translation id="2408955596600435184">Unesite PIN</translation>
 <translation id="241082044617551207">Nepoznati dodatak</translation>
 <translation id="2412593942846481727">Dostupno je ažuriranje</translation>
@@ -2007,7 +2005,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="3873315167136380065">Da biste uključili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /> radi uklanjanja vaše šifre za sinkronizaciju</translation>
 <translation id="3873423927483480833">Prikaz PIN-ova</translation>
 <translation id="3873915545594852654">Pojavio se problem koji se odnosi na ARC++.</translation>
-<translation id="387924939625099872">Da biste onemogućili ADB, ponovo pokrenite uređaj <ph name="DEVICE_TYPE" />. Uređaj će se vratiti na tvorničke postavke i svi će se korisnički računi i lokalni podaci izbrisati.</translation>
 <translation id="3879748587602334249">Upravitelj preuzimanja</translation>
 <translation id="3886446263141354045">Zahtjev za pristup toj web-lokaciji poslan je korisniku <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Izrada bilježaka pomoću aplikacije <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4501530680793980440">Potvrda uklanjanja</translation>
 <translation id="4502423230170890588">Ukloni s ovog uređaja</translation>
 <translation id="4504940961672722399">Upotrijebite to proširenje tako što ćete kliknuti ovu ikonu ili pritisnuti prečac <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Nastavak će omogućiti ADB za izradu i testiranje Android aplikacija. Napominjemo da će ADB dopustiti instalaciju testnih aplikacija koje Google nije potvrdio.</translation>
 <translation id="4508051413094283164">Otvori sve u anonimnom prozoru</translation>
 <translation id="4508265954913339219">Aktivacija nije uspjela</translation>
 <translation id="4508765956121923607">Pogledaj i&amp;zvor</translation>
@@ -3043,7 +3039,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5466374726908360271">Za&amp;lijepi i traži pojam "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Traže se dijeljenja datoteka</translation>
 <translation id="5471768120198416576">Bok! Ja sam vaš glas alata za pretvaranje teksta u govor.</translation>
-<translation id="5472133193607270166">Kad je ta značajka uključena, web-lokacije ne mogu koristiti vašu aktivnost pregledavanja na različitim web-lokacijama za prilagođavanje oglasa. Neke web-lokacije možda neće raditi ispravno.</translation>
+<translation id="5472133193607270166">Kad je ta značajka uključena, web-lokacije ne mogu prilagođavati oglase na temelju vaše aktivnosti pregledavanja na različitim web-lokacijama. Neke web-lokacije možda neće raditi ispravno.</translation>
 <translation id="5473333559083690127">Ponovo unesite novi PIN</translation>
 <translation id="5481941284378890518">Dodaj pisače u blizini</translation>
 <translation id="5483785310822538350">Opozovi pristup datotekama i uređaju</translation>
@@ -3312,7 +3308,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5851868085455377790">Izdavač</translation>
 <translation id="5852112051279473187">Ups!  Došlo je do problema prilikom prijavljivanja ovog uređaja.  Pokušajte ponovo ili kontaktirajte svog predstavnika podrške.</translation>
 <translation id="5852137567692933493">Pokreni ponovo i izvrši Powerwash</translation>
-<translation id="5852360662347412211">Otvorite postavke Linuxa i pokušajte ponovno</translation>
 <translation id="5854912040170951372">Kriška</translation>
 <translation id="5855643921295613558">0,6 sekundi</translation>
 <translation id="5856721540245522153">Omogućivanje značajki za otklanjanje pogrešaka</translation>
@@ -3325,7 +3320,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5860494867054883682">Ažuriranje uređaja na <ph name="CHANNEL_NAME" /> kanal (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Prikaži alate pisaljke na polici</translation>
 <translation id="5863445608433396414">Omogući značajke za otklanjanje pogrešaka</translation>
-<translation id="5863471434640009253">Da biste omogućili Android Debug Bridge (ADB), najprije ponovo pokrenite uređaj <ph name="DEVICE_TYPE" />. Onemogućivanje ADB-a zahtijeva vraćanje na tvorničke postavke.</translation>
 <translation id="5864471791310927901">DHCP pretraživanje nije uspjelo</translation>
 <translation id="586567932979200359">Pokrećete program <ph name="PRODUCT_NAME" /> iz diskovne slike. Instaliranjem na računalu moći ćete ga pokrenuti u bilo kojem trenutku i uvijek će biti ažuran.</translation>
 <translation id="5865733239029070421">Automatski šalje Googleu statistiku upotrebe i izvješća o rušenju</translation>
@@ -3395,7 +3389,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5958529069007801266">Nadzirani korisnik</translation>
 <translation id="5959471481388474538">Mreža nije dostupna</translation>
 <translation id="595959584676692139">Za upotrebu proširenja ponovo učitajte stranicu</translation>
-<translation id="5961320084471308154">Omogućiti ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (najviše <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Upravlja i time koja se stranica prikazuje kada se klikne gumb Početna ili prilikom pretraživanja putem višenamjenskog okvira.</translation>
 <translation id="5969419185858894314">Web-lokacija <ph name="ORIGIN" /> može pregledavati datoteke u mapi <ph name="FOLDERNAME" /></translation>
@@ -4259,7 +4252,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7254554697254365959">Stranica se nije mogla prevesti.</translation>
 <translation id="7254951428499890870">jeste li sigurni da želite pokrenuti "<ph name="APP_NAME" />" u načinu dijagnostike?</translation>
 <translation id="7255002516883565667">Trenutačno imate jednu karticu kojom se može plaćati samo na ovom uređaju</translation>
-<translation id="7255916308560539517">Još jednom dodirnite sigurnosni ključ da biste potvrdili vraćanje na zadano. Sve informacije pohranjene na sigurnosnom ključu, uključujući njegov PIN, izbrisat će se.</translation>
 <translation id="7255935316994522020">Primijeni</translation>
 <translation id="7256069762010468647">Web-lokacija upotrebljava vašu kameru</translation>
 <translation id="7256405249507348194">Neprepoznata pogreška: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7968833647796919681">Omogući prikupljanje podataka o izvedbi</translation>
 <translation id="7968982339740310781">Prikaži pojedinosti</translation>
 <translation id="7969046989155602842">Tipka Command</translation>
+<translation id="7970882136539140748">Kartica se trenutačno ne može spremiti</translation>
 <translation id="7972714317346275248">PKCS br. 1 SHA-384 s RSA enkripcijom</translation>
 <translation id="7973962044839454485">PPP autentifikacija nije uspjela zbog netočnog korisničkog imena ili zaporke</translation>
 <translation id="7974566588408714340">Pokušaj ponovo pomoću proširenja <ph name="EXTENSIONNAME" /></translation>
@@ -5090,7 +5083,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8431909052837336408">Promjena PIN-a za SIM</translation>
 <translation id="8434480141477525001">Priključak za otklanjanje pogrešaka lokalnog klijenta</translation>
 <translation id="8435395510592618362">Potvrdite svoj identitet pomoću aplikacije <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Spremanje kreditne kartice</translation>
 <translation id="8438328416656800239">Prijeđite na pametan preglednik</translation>
 <translation id="8438566539970814960">Poboljšajte pretraživanje i pregledavanje</translation>
 <translation id="8439506636278576865">Ponudi prevođenje stranica na tom jeziku</translation>
@@ -5473,6 +5465,7 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8965037249707889821">Unesite staru zaporku</translation>
 <translation id="8966870118594285808">Ponovo otvorite karticu ako ste je slučajno zatvorili</translation>
 <translation id="8967866634928501045">Pritisnite Alt + Shift + A za prikaz</translation>
+<translation id="8968766641738584599">Spremanje kartice</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Obratite se administratoru mreže i provjerite blokira li vatrozid preuzimanja s Googleovih poslužitelja.</translation>
 <translation id="8973557916016709913">Ukloni razinu zuma</translation>
@@ -5579,7 +5572,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="9116799625073598554">Aplikacija za zapisivanje bilješki</translation>
 <translation id="9117030152748022724">Upravljanje aplikacijama</translation>
 <translation id="9121814364785106365">Otvori kao pričvršćenu karticu</translation>
-<translation id="9122074588095746047">Nije moguće omogućiti ADB</translation>
 <translation id="9124003689441359348">Ovdje će se pojaviti spremljene zaporke</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rem.)</translation>
 <translation id="9128317794749765148">Postavljanje nije dovršeno</translation>

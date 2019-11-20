@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/component_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
@@ -38,7 +39,8 @@ namespace network {
 COMPONENT_EXPORT(NETWORK_SERVICE)
 std::unique_ptr<net::ProxyResolutionService>
 CreateProxyResolutionServiceUsingMojoFactory(
-    proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
+    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+        mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     std::unique_ptr<net::PacFileFetcher> pac_file_fetcher,
     std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher,

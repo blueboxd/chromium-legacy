@@ -338,7 +338,7 @@ void FakeShillManagerClient::DisableTechnology(
 
 void FakeShillManagerClient::ConfigureService(
     const base::DictionaryValue& properties,
-    const ObjectPathCallback& callback,
+    ObjectPathCallback callback,
     const ErrorCallback& error_callback) {
   switch (simulate_configuration_result_) {
     case FakeShillSimulatedResult::kSuccess:
@@ -365,7 +365,7 @@ void FakeShillManagerClient::ConfigureService(
     // If the properties aren't filled out completely, then just return an empty
     // object path.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, dbus::ObjectPath()));
+        FROM_HERE, base::BindOnce(std::move(callback), dbus::ObjectPath()));
     return;
   }
 
@@ -429,26 +429,27 @@ void FakeShillManagerClient::ConfigureService(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, dbus::ObjectPath(service_path)));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), dbus::ObjectPath(service_path)));
 }
 
 void FakeShillManagerClient::ConfigureServiceForProfile(
     const dbus::ObjectPath& profile_path,
     const base::DictionaryValue& properties,
-    const ObjectPathCallback& callback,
+    ObjectPathCallback callback,
     const ErrorCallback& error_callback) {
   std::string profile_property;
   properties.GetStringWithoutPathExpansion(shill::kProfileProperty,
                                            &profile_property);
   CHECK(profile_property == profile_path.value());
-  ConfigureService(properties, callback, error_callback);
+  ConfigureService(properties, std::move(callback), error_callback);
 }
 
 void FakeShillManagerClient::GetService(const base::DictionaryValue& properties,
-                                        const ObjectPathCallback& callback,
+                                        ObjectPathCallback callback,
                                         const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, dbus::ObjectPath()));
+      FROM_HERE, base::BindOnce(std::move(callback), dbus::ObjectPath()));
 }
 
 void FakeShillManagerClient::ConnectToBestServices(

@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Gradient on fill'",
+          "object": "LayoutSVGContainer g id='content'",
           "rect": [33, 22, 697, 196],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

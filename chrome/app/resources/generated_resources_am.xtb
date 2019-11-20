@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">የመተግበሪያ አዶ</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> የካሜራዎ መዳረሻ መስጠቱን ይቀጥሉ</translation>
 <translation id="1414648216875402825">በሂደት ላይ ያሉ ባህሪያትን የያዘ ያልተረጋጋ ወደሆነ የ<ph name="PRODUCT_NAME" /> ስሪት እያዘመኑ ነው። ብልሽቶች እና ያልተጠበቁ ሳንካዎች ያጋጥማሉ። እባክዎ በጥንቃቄ ይቀጥሉ።</translation>
-<translation id="1414866280542221544">በዚህ መሣሪያ ላይ አንቃ</translation>
 <translation id="1415708812149920388">የቅንጥብ ሰሌዳ መዳረሻ ተከልክሏል</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (የቅጥያ መታወቂያ «<ph name="EXTENSION_ID" />») በዚህ የክፍለ-ጊዜ አይነት ላይ አይፈቀድም።</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">የፒዛ ቁራጭ</translation>
 <translation id="1468571364034902819">ይህን መገለጫ መጠቀም አይቻልም</translation>
 <translation id="1470811252759861213">በሁሉም ኮምፒውተሮችዎ ላይ ቅጥያዎችዎን ለማግኘት <ph name="SIGN_IN_LINK" />።</translation>
-<translation id="1470967055429794975">ይህ ፒኑን ጨምሮ በደህንነቱ ቁልፉ ላይ ያለው ሁሉምን ውሂብ ይደመስሳል</translation>
 <translation id="1472675084647422956">ተጨማሪ አሳይ</translation>
 <translation id="1475502736924165259">ከሌሎች ማንኛቸውም መደቦች ጋር የማይገጣጠሙ የእውቅና ማረጋገጫዎች በፋይል ላይ አለዎት</translation>
 <translation id="1476088332184200792">ወደ መሣሪያዎ ይቅዱ</translation>
@@ -842,7 +840,6 @@
 <translation id="2202898655984161076">አታሚዎችን መዘርዘር ላይ ችግር ነበር። አንዳንድ አታሚዎችዎ በተሳካ ሁኔታ <ph name="CLOUD_PRINT_NAME" /> ላይ አልተመዘገቡም።</translation>
 <translation id="2203682048752833055">በ<ph name="BEGIN_LINK" />አድራሻ አሞሌው<ph name="END_LINK" /> ላይ ሥራ ላይ የዋለው የፍለጋ ፕሮግራም</translation>
 <translation id="2204034823255629767">የሚተይቡትን ማንኛውም ነገር ያነብባል እና ይቀይራል</translation>
-<translation id="2204397710290433380">ADB ይሰናከል?</translation>
 <translation id="220792432208469595">የአጠቃቀም እና የምርመራ ውሂብ ይላኩ። ይህ መሣሪያ በአሁኑ ጊዜ በራስ-ሰር የምርመራ፣ የመሣሪያ እና የመተግበሪያ አጠቃቀም ውሂብ ወደ Google እየላከ ነው። ይህ የስርዓት እና የመተግበሪያ እርጋታን እና ሌሎች ማሻሻያዎችን ያግዛል። አንዳንድ ውሑድ ውሂብ እንዲሁም የGoogle መተግበሪያዎችን እና እንደ የAndroid ገንቢዎች ያሉ አጋሮችን ያግዛሉ። ይህ ቅንብር በባለቤቱ ተፈጻሚ ይደረጋል። የእርስዎ የተጨማሪ ድር እና መተግበሪያ እንቅስቃሴ ቅንብር በርቶ ከሆነ ይህ ውሂብ በGoogle መለያዎ ላይ ሊቀመጥ ይችላል። <ph name="BEGIN_LINK1" />የበለጠ ለመረዳት<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">እባክዎ ይህን የፒን ኮድ በ«<ph name="DEVICE_NAME" />» ላይ ያስገቡት፦</translation>
 <translation id="2213140827792212876">ማጋራትን አስወግድ</translation>
@@ -979,6 +976,7 @@
 <translation id="2396783860772170191">ባለ4 አኃዝ ፒን (0000-9999) ያስገቡ</translation>
 <translation id="2399939490305346086">የደህንነት ቁልፍ በመለያ መግቢያ ውሂብ</translation>
 <translation id="2407481962792080328">ወደ የእርስዎ የ Google መለያ ሲገቡ፣ ይህ ባህሪ ይበራል</translation>
+<translation id="2408018932941436077">ካርድን በማስቀመጥ ላይ</translation>
 <translation id="2408955596600435184">የእርስዎን ፒን ያስገቡ</translation>
 <translation id="241082044617551207">ያልታወቀ ተሰኪ</translation>
 <translation id="2412593942846481727">ዝማኔ ይገኛል</translation>
@@ -2006,7 +2004,6 @@
 <translation id="3873315167136380065">ይህን ለማብራት፣ የእርስዎን የስምረት ግዢ ለማስወገድ <ph name="BEGIN_LINK" />ስምረትን ዳግም ያቀናብሩ<ph name="END_LINK" /></translation>
 <translation id="3873423927483480833">ፒኖችን አሳይ</translation>
 <translation id="3873915545594852654">በARC++ ላይ ችግር አጋጥሟል።</translation>
-<translation id="387924939625099872">ADBን ለማሰናከል የእርስዎን <ph name="DEVICE_TYPE" /> ዳግም ያስነሱት። ወደ የፋብሪካ ቅንብሮች ዳግም ይጀመራል፣ እና ሁሉም የተጠቃሚ መለያዎች እና አካባቢያዊ ውሂብ ይደመሰሳል።</translation>
 <translation id="3879748587602334249">የማውረድ አቀናባሪ</translation>
 <translation id="3886446263141354045">ይህን ጣቢያ የመድረስ ጥያቄዎ ለ<ph name="NAME" /> ተልኳል</translation>
 <translation id="3888550877729210209">ማስታወሻዎችን በ<ph name="LOCK_SCREEN_APP_NAME" /> በመውሰድ ላይ</translation>
@@ -2406,7 +2403,6 @@
 <translation id="4501530680793980440">ማስወገድ ያረጋግጡ</translation>
 <translation id="4502423230170890588">ከዚህ መሣሪያ አስወግድ</translation>
 <translation id="4504940961672722399">እዚህ አዶ ላይ ጠቅ በማድረግ ወይም <ph name="EXTENSION_SHORTCUT" />ን በመጫን ይህንን ቅጥያ ይጠቀሙበት።</translation>
-<translation id="4506379069541445709">መቀጠል ADB የ Android መተግበሪያዎችን ለመፍጠር እና ለመሞከር ያነቃዋል። ADB በ Google ያልተረጋገጡ የሙከራ መተግበሪያዎችን ጭነት ይፈቅዳል።</translation>
 <translation id="4508051413094283164">ሁሉንም ማንነት በማያሳውቅ መስኮት ውስጥ ክፈት</translation>
 <translation id="4508265954913339219">ማግበር አልተሳካም</translation>
 <translation id="4508765956121923607">ም&amp;ንጭ አሳይ</translation>
@@ -3309,7 +3305,6 @@
 <translation id="5851868085455377790">ሰጪው</translation>
 <translation id="5852112051279473187">ውይ!  ይህን መሣሪያ በመመዝገብ ላይ ሳለ የሆነ ስህተት ተፈጥሯል።  እባክዎ እንደገና ይሞክሩ ወይም የድጋፍ ተወካይዎን ያግኙ።</translation>
 <translation id="5852137567692933493">ዳግም አስጀምር እና ፓወርዋሽ አድርግ</translation>
-<translation id="5852360662347412211">ወደ Linux ቅንብሮች ይሂዱ እና እንደገና ይሞክሩ</translation>
 <translation id="5854912040170951372">Slice</translation>
 <translation id="5855643921295613558">0.6 ሰከንዶች</translation>
 <translation id="5856721540245522153">የማረሚያ ባህሪያትን ያንቁ</translation>
@@ -3322,7 +3317,6 @@
 <translation id="5860494867054883682">የእርስዎን መሣሪያ ወደ <ph name="CHANNEL_NAME" /> ሰርጥ በማዘመን ላይ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">በመደርደሪያው ውስጥ የስቲለስ መሣሪያዎችን አሳይ</translation>
 <translation id="5863445608433396414">የማረሚያ ባህሪያትን ያንቁ</translation>
-<translation id="5863471434640009253">የAndroid ማረሚያ ድልድዩን ለማንቃት መጀመሪያ የእርስዎን <ph name="DEVICE_TYPE" /> ዳግም ያስነሱት። ADBን ማሰናከል ወደ የፋብሪካ ቅንብሮች ዳምግ ማስጀመር ያስፈልገዋል።</translation>
 <translation id="5864471791310927901">የDHCP ፍለጋ አልተሳካም</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" />ን ከዲስክ ምስሉ እያሄዱ ነው። ኮምፒውተርዎ ላይ መጫን ያለ ዲስክ ምስሉ እንዲያሂዱት ያስችልዎታል፣ እና እንደተዘመነ መቆየቱን ያረጋግጣል።</translation>
 <translation id="5865733239029070421">የአጠቃቀም ስታስቲክስን እና የብልሽት ሪፖርቶችን በራስ-ሰር ወደ Google ይልካል</translation>
@@ -3392,7 +3386,6 @@
 <translation id="5958529069007801266">ክትትል የሚደረግበት ተጠቃሚ</translation>
 <translation id="5959471481388474538">አውታረ መረብ አይገኝም</translation>
 <translation id="595959584676692139">ይህን ቅጥያ ለመጠቀም ገጹን ዳግም ይጫኑ</translation>
-<translation id="5961320084471308154">ADB ይንቃ?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> ጫፍ)</translation>
 <translation id="5965661248935608907">እንዲሁም የመነሻ አዝራሩን ጠቅ ሲያደርጉ ወይም ከኦምኒቦክሱ ሆነው ሲፈልጉ ምን ገጽ እንደሚታይ ይቆጣጠራል።</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> በ<ph name="FOLDERNAME" /> ውስጥ ያሉ ፋይሎችን መመልከት ይችላል</translation>
@@ -4256,7 +4249,6 @@
 <translation id="7254554697254365959">ይህ ገጽ ሊተረጎም አይችልም።</translation>
 <translation id="7254951428499890870">እርግጠኛ ነዎት «<ph name="APP_NAME" />»ን በምርመራ ሁነታ ማስጀመር ይፈልጋሉ?</translation>
 <translation id="7255002516883565667">አሁን ላይ በዚህ መሣሪያ ላይ ጥቅም ላይ ሊውል የሚችል አንድ መሣሪያ ብቻ አልዎት</translation>
-<translation id="7255916308560539517">ዳግም ማስጀመርን ለማረጋገጥ የደህንነት ቁልፍዎን ይንኩ። ፒን ጨምሮ በደህንነት ቁልፉ ላይ የተከማቸው ሁሉም መረጃ ይደመሰሳል።</translation>
 <translation id="7255935316994522020">ተግብር</translation>
 <translation id="7256069762010468647">ጣቢያ የእርስዎን ካሜራ እየተጠቀመ ነው</translation>
 <translation id="7256405249507348194">ያልታወቀ ስህተት፦ <ph name="DESC" /></translation>
@@ -4766,6 +4758,7 @@
 <translation id="7968833647796919681">የአፈጻጸም የውሂብ መሰብሰብ አንቃ</translation>
 <translation id="7968982339740310781">ዝርዝሮችን ይመልከቱ</translation>
 <translation id="7969046989155602842">ትእዛዝ</translation>
+<translation id="7970882136539140748">ካርድ አሁን ላይ ማስቀመጥ አይቻልም</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 ከRSA ምስጠራ ጋር</translation>
 <translation id="7973962044839454485">PPP ማረጋገጫ በተሳሳተ የተጠቃሚ ስም ወይም የይለፍ ቃል ምክንያት አልተሳካም</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" />ን መጠቀም እንደገና ይሞክሩ</translation>
@@ -5091,7 +5084,6 @@ nil</translation>
 <translation id="8431909052837336408">የሲም ፒን ይለውጡ</translation>
 <translation id="8434480141477525001">NaCl ስህተት ማረሚያ ወደብ</translation>
 <translation id="8435395510592618362">የእርስዎን ማንነት በ<ph name="APP_NAME" /> ያረጋግጡ</translation>
-<translation id="843760761634048214">ክሬዲት ካርድ አስቀምጥ</translation>
 <translation id="8438328416656800239">ወደ ዘመናዊ አሳሽ ቀይር</translation>
 <translation id="8438566539970814960">ፍለጋዎችን እና አሰሳን የተሻለ አድርግ</translation>
 <translation id="8439506636278576865">በዚህ ቋንቋ ውስጥ ያሉ ገጾችን ለመተርጎም ያቅርቡ</translation>
@@ -5474,6 +5466,7 @@ nil</translation>
 <translation id="8965037249707889821">የድሮ ይለፍ ቃል ያስገቡ</translation>
 <translation id="8966870118594285808">በድንገት ከዘጉት ትርን እንደገና ይክፈቱት</translation>
 <translation id="8967866634928501045">ለማሳየት Alt Shift A ይጫኑ</translation>
+<translation id="8968766641738584599">ካርድ አስቀምጥ</translation>
 <translation id="89720367119469899">አምልጥ</translation>
 <translation id="8972513834460200407">ኬላው ከGoogle አገልጋዩች የሚመጡ ውርዶችን እያገደ አለመሆኑን ለማረጋገጥ እባክዎ የአውታረ መረብ አስተዳዳሪዎን ያግኙ።</translation>
 <translation id="8973557916016709913">የማጉላት ደረጃውን ያስወግዱ</translation>
@@ -5580,7 +5573,6 @@ nil</translation>
 <translation id="9116799625073598554">ማስታወሻ የሚወስድ መተግበሪያ</translation>
 <translation id="9117030152748022724">መተግበሪያዎችዎን ያቀናብሩ</translation>
 <translation id="9121814364785106365">እንደተሰካ ትር ክፈት</translation>
-<translation id="9122074588095746047">ADB ማንቃት አልተቻለም</translation>
 <translation id="9124003689441359348">የተቀመጡ የይለፍ ቃላትዎ እዚህ ይታያሉ</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> ይቀራሉ)</translation>
 <translation id="9128317794749765148">ቅንብርን ማጠናቀቅ አልተቻለም</translation>

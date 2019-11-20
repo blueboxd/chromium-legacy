@@ -116,9 +116,8 @@ BrowserViewRenderer::BrowserViewRenderer(
       offscreen_pre_raster_(false) {
   if (::features::IsUsingVizForWebView()) {
     root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
-        ui_task_runner_,
-        base::BindRepeating(&BrowserViewRenderer::SetNeedsBeginFrames,
-                            base::Unretained(this)));
+        ui_task_runner_, base::BindRepeating(&BrowserViewRenderer::Invalidate,
+                                             base::Unretained(this)));
   }
 }
 
@@ -839,8 +838,8 @@ void BrowserViewRenderer::CopyOutput(
   PostInvalidate(compositor_);
 }
 
-void BrowserViewRenderer::SetNeedsBeginFrames(bool needs_begin_frames) {
-  NOTIMPLEMENTED();
+void BrowserViewRenderer::Invalidate() {
+  PostInvalidate(compositor_);
 }
 
 void BrowserViewRenderer::PostInvalidate(

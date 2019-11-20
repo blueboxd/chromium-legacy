@@ -5,8 +5,7 @@
   LICENSE file.
 -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group android:id="@+id/nav_menu_group">
         <!--suppress HardcodedText -->
         <item
@@ -22,6 +21,13 @@
         <item
              android:id="@+id/nav_menu_main_ui"
              android:title="Home"
+             android:showAsAction="never"/>
+    </group>
+    <group>
+        <!--suppress HardcodedText -->
+        <item
+             android:id="@+id/nav_menu_switch_provider"
+             android:title="Change WebView Provider"
              android:showAsAction="never"/>
     </group>
 </menu>

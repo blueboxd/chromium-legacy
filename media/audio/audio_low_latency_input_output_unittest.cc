@@ -154,6 +154,7 @@ class FullDuplexAudioSinkSource
   }
 
   // AudioInputStream::AudioInputCallback.
+  void OnError() override {}
   void OnData(const AudioBus* src,
               base::TimeTicks capture_time,
               double volume) override {
@@ -184,9 +185,8 @@ class FullDuplexAudioSinkSource
     // }
   }
 
-  void OnError() override {}
-
   // AudioOutputStream::AudioSourceCallback.
+  void OnError(ErrorType type) override {}
   int OnMoreData(base::TimeDelta delay,
                  base::TimeTicks /* delay_timestamp */,
                  int /* prior_frames_skipped */,

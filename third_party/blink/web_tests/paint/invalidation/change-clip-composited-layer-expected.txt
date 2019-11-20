@@ -11,11 +11,6 @@
       "bounds": [100, 10],
       "paintInvalidations": [
         {
-          "object": "LayoutNGBlockFlow DIV id='target'",
-          "rect": [0, 0, 100, 10],
-          "reason": "chunk appeared"
-        },
-        {
           "object": "LayoutNGBlockFlow DIV",
           "rect": [0, 0, 50, 10],
           "reason": "chunk disappeared"

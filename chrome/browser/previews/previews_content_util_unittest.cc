@@ -83,7 +83,8 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     return IsEnabled(type);
   }
 
-  bool LoadPageHints(content::NavigationHandle* navigation_handle) override {
+  bool AreCommitTimePreviewsAvailable(
+      content::NavigationHandle* navigation_handle) override {
     return navigation_handle->GetURL().host_piece().ends_with(
         "hintcachedhost.com");
   }

@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Sovelluskuvake</translation>
 <translation id="1410616244180625362">Anna sivuston <ph name="HOST" /> käyttää edelleen kameraasi</translation>
 <translation id="1414648216875402825">Olet päivittämässä tuotteen <ph name="PRODUCT_NAME" /> epävakaaseen versioon, jossa on vasta kehitysvaiheessa olevia ominaisuuksia. Ohjelman kaatumisia ja odottamattomia virheitä on odotettavissa. Jatka omalla vastuullasi.</translation>
-<translation id="1414866280542221544">Ota käyttöön tällä laitteella</translation>
 <translation id="1415708812149920388">Leikepöydän lukuoikeus evätty</translation>
 <translation id="1415990189994829608">Laajennusta <ph name="EXTENSION_NAME" /> (laajennustunnus <ph name="EXTENSION_ID" />) ei sallita tämäntyyppisessä ístunnossa.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizzapala</translation>
 <translation id="1468571364034902819">Profiilia ei voi käyttää</translation>
 <translation id="1470811252759861213"><ph name="SIGN_IN_LINK" />, niin voit käyttää laajennuksia kaikilla tietokoneillasi.</translation>
-<translation id="1470967055429794975">Tämä poistaa kaiken suojausavaimen datan, mukaan lukien sen PIN-koodin</translation>
 <translation id="1472675084647422956">Näytä enemmän</translation>
 <translation id="1475502736924165259">Sinulla on tallennettuja varmenteita, jotka eivät sovi muihin luokkiin.</translation>
 <translation id="1476088332184200792">Kopioi laitteelle</translation>
@@ -842,7 +840,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2202898655984161076">Tulostimien luetteloinnissa tapahtui virhe. Kaikkia tulostimiasi ei ole välttämättä rekisteröity palveluun <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Hakukone, jota käytetään <ph name="BEGIN_LINK" />osoitepalkissa<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lukea ja muuttaa kaikkea kirjoittamaasi</translation>
-<translation id="2204397710290433380">Poistetaanko ADB käytöstä?</translation>
 <translation id="220792432208469595">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän asetuksen käyttöön. Jos olet ottanut käyttöön muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Syötä tämä PIN-koodi laitteella <ph name="DEVICE_NAME" />:</translation>
 <translation id="2213140827792212876">Poista jakaminen</translation>
@@ -979,6 +976,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2396783860772170191">Lisää nelinumeroinen PIN-koodi (0000–9999)</translation>
 <translation id="2399939490305346086">Suojausavaimen kirjautumisdata</translation>
 <translation id="2407481962792080328">Tämä ominaisuus otetaan käyttöön, kun kirjaudut Google-tilillesi</translation>
+<translation id="2408018932941436077">Tallennetaan korttia</translation>
 <translation id="2408955596600435184">Anna PIN-koodi</translation>
 <translation id="241082044617551207">Tuntematon laajennus</translation>
 <translation id="2412593942846481727">Päivitys saatavilla</translation>
@@ -2007,7 +2005,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="3873315167136380065">Jos haluat ottaa tämän käyttöön, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" /> poistaaksesi synkronoinnin tunnuslauseen</translation>
 <translation id="3873423927483480833">Näytä PIN-koodit</translation>
 <translation id="3873915545594852654">ARC++:n kanssa tapahtui ongelma.</translation>
-<translation id="387924939625099872">Jos haluat poistaa ADB:n käytöstä, käynnistä <ph name="DEVICE_TYPE" /> uudelleen. Laitteen tehdasasetukset palautetaan ja siltä poistetaan kaikki käyttäjätilit sekä paikallinen data.</translation>
 <translation id="3879748587602334249">Latausten hallinta</translation>
 <translation id="3886446263141354045">Pyyntösi päästä tälle sivustolle on lähetetty henkilölle <ph name="NAME" />.</translation>
 <translation id="3888550877729210209">Muistiinpanojen kirjoittaminen sovelluksella <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2406,7 +2403,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4501530680793980440">Vahvista poisto</translation>
 <translation id="4502423230170890588">Poista tältä laitteelta</translation>
 <translation id="4504940961672722399">Käytä laajennusta klikkaamalla tätä kuvaketta tai painamalla <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Jatkamalla otat ADB:n käyttöön Android-sovellusten luomista ja testausta varten. Huomaa, että ADB sallii sellaisten testisovellusten asentamisen, joita Google ei ole vahvistanut.</translation>
 <translation id="4508051413094283164">Avaa kaikki incognito-ikkunassa</translation>
 <translation id="4508265954913339219">Aktivointi epäonnistui</translation>
 <translation id="4508765956121923607">Näytä lähdek&amp;oodi</translation>
@@ -3309,7 +3305,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5851868085455377790">Myöntäjä</translation>
 <translation id="5852112051279473187">Hups! Jotakin meni vikaan laitteen käyttöönoton yhteydessä. Yritä uudelleen tai ota yhteyttä tukipalveluun.</translation>
 <translation id="5852137567692933493">Käynnistä uudelleen ja suorita Powerwash</translation>
-<translation id="5852360662347412211">Avaa Linux-asetukset ja yritä uudelleen</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0,6 sekuntia</translation>
 <translation id="5856721540245522153">Ota käyttöön virheenkorjausominaisuudet</translation>
@@ -3322,7 +3317,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5860494867054883682">Päivitetään laitetta versioon <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Näytä näyttökynätyökalut hyllyssä</translation>
 <translation id="5863445608433396414">Ota käyttöön virheenkorjausominaisuudet</translation>
-<translation id="5863471434640009253">Jos haluat ottaa käyttöön Android Debug Bridgen, käynnistä ensin <ph name="DEVICE_TYPE" /> uudelleen. ADB:n poistaminen käytöstä edellyttää tehdasasetusten palautusta.</translation>
 <translation id="5864471791310927901">DHCP-haku epäonnistui</translation>
 <translation id="586567932979200359">Käytät tuotetta <ph name="PRODUCT_NAME" /> sen levyvedoksen kautta. Asentamalla tuotteen tietokoneellesi voit käyttää sitä ilman levyvedosta ja varmistat, että tuote pysyy päivitettynä.</translation>
 <translation id="5865733239029070421">Lähettää automaattisesti käyttötilastoja ja virheraportteja Googlelle</translation>
@@ -3392,7 +3386,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="5958529069007801266">Valvottu käyttäjä</translation>
 <translation id="5959471481388474538">Verkko ei käytettävissä</translation>
 <translation id="595959584676692139">Lataa sivu uudelleen käyttääksesi tätä laajennusta</translation>
-<translation id="5961320084471308154">Otetaanko ADB käyttöön?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (huippu: <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Määrittää myös Etusivu-painikkeella avattavan sivun ja omnibox-hakujen aloitussivun.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> saa nähdä kansion <ph name="FOLDERNAME" /> tiedostot</translation>
@@ -4258,7 +4251,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7254554697254365959">Sivua ei voi kääntää.</translation>
 <translation id="7254951428499890870">Haluatko varmasti käynnistää sovelluksen <ph name="APP_NAME" /> diagnostiikkatilassa?</translation>
 <translation id="7255002516883565667">Yhtä korteistasi voi juuri nyt käyttää vain tällä laitteella</translation>
-<translation id="7255916308560539517">Vahvista nollaus koskettamalla suojausavainta uudelleen. Tällöin kaikki suojausavaimeen tallennetut tiedot, kuten sen PIN-koodi, poistetaan.</translation>
 <translation id="7255935316994522020">Ota käyttöön</translation>
 <translation id="7256069762010468647">Sivusto käyttää kameraasi</translation>
 <translation id="7256405249507348194">Tunnistamaton virhe: <ph name="DESC" /></translation>
@@ -4767,6 +4759,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7968833647796919681">Ota käyttöön tehokkuustietojen kerääminen</translation>
 <translation id="7968982339740310781">Näytä tiedot</translation>
 <translation id="7969046989155602842">Komento</translation>
+<translation id="7970882136539140748">Ei voi tallentaa korttia juuri nyt</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 ja RSA-salaus</translation>
 <translation id="7973962044839454485">PPP-todennus epäonnistui virheellisen käyttäjänimen tai salasanan vuoksi</translation>
 <translation id="7974566588408714340">Yritä uudelleen laajennuksella <ph name="EXTENSIONNAME" /></translation>
@@ -5088,7 +5081,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8431909052837336408">Vaihda SIM-kortin PIN-koodi</translation>
 <translation id="8434480141477525001">NaCl-vianetsintäportti</translation>
 <translation id="8435395510592618362">Henkilöllisyyden vahvistaminen: <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Tallenna luottokortti.</translation>
 <translation id="8438328416656800239">Siirry käyttämään älykästä selainta.</translation>
 <translation id="8438566539970814960">Paranna hakuja ja selausta</translation>
 <translation id="8439506636278576865">Tarjoudu kääntämään sivuja tälle kielelle</translation>
@@ -5471,6 +5463,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8965037249707889821">Syötä vanha salasana</translation>
 <translation id="8966870118594285808">Avaa välilehti uudelleen, jos suljit sen vahingossa</translation>
 <translation id="8967866634928501045">Näytä painamalla Alt Vaihto A</translation>
+<translation id="8968766641738584599">Tallenna kortti</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Ota yhteyttä verkon järjestelmänvalvojaan ja varmista, ettei palomuuri estä latauksia Googlen palvelimilta.</translation>
 <translation id="8973557916016709913">Poista zoomaustaso</translation>
@@ -5577,7 +5570,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9116799625073598554">Muistiinpanosovellus</translation>
 <translation id="9117030152748022724">Sovellusvalinnat</translation>
 <translation id="9121814364785106365">Avaa kiinnitetyllä välilehdellä</translation>
-<translation id="9122074588095746047">ADB:n käyttöönotto ei onnistunut</translation>
 <translation id="9124003689441359348">Tässä näytetään tallennetut salasanasi.</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> jäljellä)</translation>
 <translation id="9128317794749765148">Määritystä ei voitu suorittaa loppuun</translation>

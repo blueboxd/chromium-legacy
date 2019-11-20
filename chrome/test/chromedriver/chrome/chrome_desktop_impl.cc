@@ -153,10 +153,10 @@ Status ChromeDesktopImpl::WaitForPageToLoad(
     // https://code.google.com/p/chromedriver/issues/detail?id=1205
     device_metrics = nullptr;
   }
-  std::unique_ptr<WebView> web_view_tmp(
-      new WebViewImpl(id, w3c_compliant, devtools_http_client_->browser_info(),
-                      devtools_http_client_->CreateClient(id), device_metrics,
-                      page_load_strategy()));
+  std::unique_ptr<WebView> web_view_tmp(new WebViewImpl(
+      id, w3c_compliant, nullptr, devtools_http_client_->browser_info(),
+      devtools_http_client_->CreateClient(id), device_metrics,
+      page_load_strategy()));
   Status status = web_view_tmp->ConnectIfNecessary();
   if (status.IsError())
     return status;

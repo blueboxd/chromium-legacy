@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">O <ph name="BEGIN_LINK" />navegador é gerido<ph name="END_LINK" /> por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Execute ferramentas, editores e IDEs de Linux no seu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Selecione um ficheiro</translation>
+<translation id="1369149969991017342">Acesso por comutador (controlar o computador com apenas um ou dois comutadores)</translation>
 <translation id="1372841398847029212">Sincronizar com a sua conta</translation>
 <translation id="1374844444528092021">O certificado requerido pela rede "<ph name="NETWORK_NAME" />" não está instalado ou já não é válido. Obtenha um novo certificado e tente ligar novamente.</translation>
 <translation id="1375321115329958930">Palavras-passe guardadas</translation>
@@ -282,7 +283,6 @@
 <translation id="1410197035576869800">Ícone da aplicação</translation>
 <translation id="1410616244180625362">Continuar a permitir que <ph name="HOST" /> aceda à sua câmara</translation>
 <translation id="1414648216875402825">Está a atualizar para uma versão instável do <ph name="PRODUCT_NAME" /> que contém funcionalidades que estão em curso. Ocorrerão falhas e erros inesperados. Prossiga com cuidado.</translation>
-<translation id="1414866280542221544">Ativar neste dispositivo</translation>
 <translation id="1415708812149920388">Acesso de leitura à área de transferência negado</translation>
 <translation id="1415990189994829608">A extensão <ph name="EXTENSION_NAME" /> (ID da extensão "<ph name="EXTENSION_ID" />") não é permitida neste tipo de sessão.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -325,7 +325,6 @@
 <translation id="1465827627707997754">Fatia de piza</translation>
 <translation id="1468571364034902819">Não é possível utilizar este perfil</translation>
 <translation id="1470811252759861213">Para obter as suas extensões em todos os computadores, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Isto apaga todos os dados na chave de segurança, incluindo o respetivo PIN</translation>
 <translation id="1472675084647422956">Mostrar mais</translation>
 <translation id="1475502736924165259">Tem certificados em arquivo que não encaixam em nenhuma das restantes categorias</translation>
 <translation id="1476088332184200792">Copiar para o dispositivo</translation>
@@ -565,6 +564,7 @@
 <translation id="1794791083288629568">Envie-nos comentários para nos ajudar a corrigir este problema.</translation>
 <translation id="1795214765651529549">Utilizar tema clássico</translation>
 <translation id="1799071797295057738">A extensão "<ph name="EXTENSION_NAME" />" foi desativada automaticamente.</translation>
+<translation id="1802624026913571222">Suspender quando a tampa for fechada</translation>
 <translation id="1802687198411089702">A página não responde. Pode esperar pela resposta ou sair.</translation>
 <translation id="1802931390041703523">O Flash foi bloqueado nesta página.</translation>
 <translation id="1803531841600994172">Idioma de destino da tradução</translation>
@@ -666,6 +666,7 @@
 <translation id="1937774647013465102">Não é possível importar o tipo de arquitetura de contentor <ph name="ARCHITECTURE_CONTAINER" /> com este dispositivo cuja arquitetura é <ph name="ARCHITECTURE_DEVICE" />. Pode tentar restaurar este contentor para um dispositivo diferente ou pode aceder aos ficheiros contidos na imagem deste contentor através da aplicação Ficheiros.</translation>
 <translation id="1938351510777341717">Comando externo</translation>
 <translation id="1940546824932169984">Dispositivos associados</translation>
+<translation id="1942600407708803723">Encerrar quando a tampa for fechada</translation>
 <translation id="1944921356641260203">Atualização encontrada</translation>
 <translation id="1946577776959096882">Ver contas</translation>
 <translation id="1951012854035635156">Assistente</translation>
@@ -839,7 +840,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2202898655984161076">Ocorreu um problema ao listar as impressoras. Algumas impressoras podem não ter sido registadas com êxito no <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Motor de pesquisa utilizado na <ph name="BEGIN_LINK" />barra de endereço<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Ler e alterar tudo o que introduzir</translation>
-<translation id="2204397710290433380">Pretende desativar o adb?</translation>
 <translation id="220792432208469595">Envie dados de utilização e diagnóstico. Agora, este dispositivo está a enviar automaticamente dados de diagnóstico, de utilização de aplicações e do dispositivo para a Google. Deste modo, ajudará a melhorar a estabilidade das aplicações e do sistema, entre outras melhorias. Alguns dados agregados também ajudarão as aplicações e os parceiros Google, como os programadores Android. Esta definição é aplicada pelo proprietário. Se a definição Atividade da Web e de aplicações adicional estiver ativada, estes dados podem ser guardados na sua Conta Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Introduza este código PIN no "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">Remover a partilha</translation>
@@ -976,6 +976,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2396783860772170191">Introduza o PIN de 4 dígitos (0000-9999)</translation>
 <translation id="2399939490305346086">Dados de início de sessão da chave de segurança</translation>
 <translation id="2407481962792080328">Quando inicia sessão na sua Conta Google, esta funcionalidade está ativada.</translation>
+<translation id="2408018932941436077">A guardar o cartão…</translation>
 <translation id="2408955596600435184">Introduza o PIN</translation>
 <translation id="241082044617551207">Plug-in desconhecido</translation>
 <translation id="2412593942846481727">Atualização disponível</translation>
@@ -2004,7 +2005,6 @@ Pretende pará-lo?</translation>
 <translation id="3873315167136380065">Para ativar isto, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /> para remover a frase de acesso de sincronização.</translation>
 <translation id="3873423927483480833">Mostrar PINs</translation>
 <translation id="3873915545594852654">Ocorreu um problema com o ARC++.</translation>
-<translation id="387924939625099872">Para desativar o adb, reinicie o <ph name="DEVICE_TYPE" />. Esta ação repõe as definições de fábrica do dispositivo, além de apagar todos os dados locais e contas de utilizador.</translation>
 <translation id="3879748587602334249">Gestor de transferências</translation>
 <translation id="3886446263141354045">O seu pedido para aceder a este site foi enviado para <ph name="NAME" />.</translation>
 <translation id="3888550877729210209">Tirar notas com a aplicação <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2406,7 +2406,6 @@ Pretende pará-lo?</translation>
 <translation id="4501530680793980440">Confirmar Remoção</translation>
 <translation id="4502423230170890588">Remover deste dispositivo</translation>
 <translation id="4504940961672722399">Clique no ícone ou prima <ph name="EXTENSION_SHORTCUT" /> para utilizar esta extensão.</translation>
-<translation id="4506379069541445709">Se continuar, vai ativar o adb para criar e testar aplicações para Android. Tenha em atenção que o adb permite a instalação de aplicações de teste que não foram validadas pela Google.</translation>
 <translation id="4508051413094283164">Abrir tudo numa janela de navegação anónima</translation>
 <translation id="4508265954913339219">A activação falhou</translation>
 <translation id="4508765956121923607">Ver &amp;Origem</translation>
@@ -2439,6 +2438,7 @@ Pretende pará-lo?</translation>
 <translation id="4546308221697447294">Navegue mais depressa com o Google Chrome</translation>
 <translation id="4547659257713117923">Sem separadores de outros dispositivos</translation>
 <translation id="4547672827276975204">Definir automaticamente</translation>
+<translation id="4549791035683739768">A sua chave de segurança não tem impressões digitais armazenadas.</translation>
 <translation id="4551763574344810652">Prima <ph name="MODIFIER_KEY_DESCRIPTION" /> para anular</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">A extensão externa tem a mesma versão ou uma versão inferior à existente.</translation>
@@ -2618,6 +2618,7 @@ Pretende pará-lo?</translation>
 <translation id="4839303808932127586">Guardar &amp;vídeo como...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Mais 1}other{Mais #}}</translation>
 <translation id="4842976633412754305">Esta página está a tentar carregar scripts de origens não autenticadas.</translation>
+<translation id="4843488774506045600">Início de sessão fornecido por <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Outros teclados</translation>
 <translation id="4846680374085650406">Está a seguir a recomendação do gestor para esta definição.</translation>
 <translation id="4848518990323155912">Ativar o bloqueio do cartão SIM (requer o PIN para utilizar dados móveis)</translation>
@@ -3070,6 +3071,7 @@ Pretende pará-lo?</translation>
 <translation id="5511823366942919280">Tem a certeza de que pretende configurar este dispositivo como um "Tubarão"?</translation>
 <translation id="5512653252560939721">O certificado de utilizador tem de ter uma garantia de hardware.</translation>
 <translation id="5517304475148761050">Esta aplicação precisa de acesso à Play Store</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">A adicionar a impressora à sua conta – poderá demorar um momento…</translation>
 <translation id="5518219166343146486">Perguntar quando um site pretender ver o texto e as imagens copiados para a área de transferência</translation>
 <translation id="5518584115117143805">Certificado de encriptação de email</translation>
@@ -3189,6 +3191,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="567643736130151854">Inicie sessão e ative a sincronização para obter os seus marcadores, palavras-passe e muito mais em todos os dispositivos.</translation>
 <translation id="5677503058916217575">Idioma da página:</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
+<translation id="5678293144564424498">Aplicação em pausa</translation>
 <translation id="5678550637669481956">Autorização para ler e escrever em <ph name="VOLUME_NAME" /> concedidas.</translation>
 <translation id="5678955352098267522">Ler os seus dados em <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identificador de recursos</translation>
@@ -3306,7 +3309,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5851868085455377790">Emissor</translation>
 <translation id="5852112051279473187">Ups! Ocorreu um problema sério ao tentar inscrever este dispositivo. Tente novamente ou contacte o seu técnico de suporte.</translation>
 <translation id="5852137567692933493">Reiniciar e executar o Powerwash</translation>
-<translation id="5852360662347412211">Aceda às definições do Linux e tente novamente.</translation>
 <translation id="5854912040170951372">Fatia</translation>
 <translation id="5855643921295613558">0,6 segundos</translation>
 <translation id="5856721540245522153">Ativar funcionalidades de depuração</translation>
@@ -3319,7 +3321,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5860494867054883682">A atualizar o dispositivo para o canal <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="5862109781435984885">Mostrar ferramentas da caneta stylus na prateleira</translation>
 <translation id="5863445608433396414">Ativar funcionalidades de depuração</translation>
-<translation id="5863471434640009253">Para ativar o Bridge de depuração do Android, reinicie primeiro o <ph name="DEVICE_TYPE" />. A desativação do adb requer a reposição das definições de fábrica.</translation>
 <translation id="5864471791310927901">A procura DHCP falhou</translation>
 <translation id="586567932979200359">Está a executar o <ph name="PRODUCT_NAME" /> a partir da respectiva imagem de disco. Instalá-lo no computador permite executá-lo sem a imagem de disco e assegura que o mesmo é mantido atualizado.</translation>
 <translation id="5865733239029070421">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
@@ -3389,7 +3390,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5958529069007801266">Utilizador supervisionado</translation>
 <translation id="5959471481388474538">Rede não disponível</translation>
 <translation id="595959584676692139">Atualizar a página para utilizar esta extensão</translation>
-<translation id="5961320084471308154">Pretende ativar o adb?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (pico de <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Também controla a página apresentada quando clica no botão Página Inicial ou pesquisa a partir da Caixa geral.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> pode ver ficheiros em <ph name="FOLDERNAME" /></translation>
@@ -3455,6 +3455,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 Com encriptação RSA</translation>
 <translation id="6056710589053485679">Atualização Normal</translation>
 <translation id="6057381398996433816">Este site foi impedido de utilizar os sensores de movimento e de luz.</translation>
+<translation id="6058567592298841668">Plugin VM: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hierarquia de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6061882183774845124">Enviar link para os dispositivos</translation>
@@ -4252,7 +4253,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7254554697254365959">Não foi possível traduzir esta página.</translation>
 <translation id="7254951428499890870">Tem a certeza de que pretende iniciar o "<ph name="APP_NAME" />" no modo de diagnóstico?</translation>
 <translation id="7255002516883565667">De momento, tem um cartão que apenas pode ser utilizado neste dispositivo.</translation>
-<translation id="7255916308560539517">Toque novamente na chave de segurança para confirmar a reposição. Todas as informações armazenadas na chave de segurança, incluindo o respetivo PIN, serão apagadas.</translation>
 <translation id="7255935316994522020">Candidatar-se</translation>
 <translation id="7256069762010468647">O site está a utilizar a câmara.</translation>
 <translation id="7256405249507348194">Erro não reconhecido: <ph name="DESC" /></translation>
@@ -4403,6 +4403,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7476454130948140105">Bateria demasiado fraca para atualizar (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Controle a sua música, vídeos e muito mais.</translation>
 <translation id="7478485216301680444">Não foi possível instalar a aplicação de quiosque.</translation>
+<translation id="7479221278376295180">Vista geral da utilização do armazenamento</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="748138892655239008">Restrições básicas do certificado</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
@@ -4761,6 +4762,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7968833647796919681">Ativar a recolha de dados de desempenho</translation>
 <translation id="7968982339740310781">Ver detalhes</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">Não é possível guardar o cartão neste momento.</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 Com encriptação RSA</translation>
 <translation id="7973962044839454485">Falha na autenticação PPP devido a um nome de utilizador ou palavra-passe incorretos</translation>
 <translation id="7974566588408714340">Tente novamente com <ph name="EXTENSIONNAME" /></translation>
@@ -5081,7 +5083,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8431909052837336408">Alterar o PIN do cartão SIM</translation>
 <translation id="8434480141477525001">Porta de depuração de NaCl</translation>
 <translation id="8435395510592618362">Validar a sua identidade com a aplicação <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Guardar cartão de crédito</translation>
 <translation id="8438328416656800239">Mude para um navegador inteligente</translation>
 <translation id="8438566539970814960">Melhorar as pesquisas e a navegação</translation>
 <translation id="8439506636278576865">Oferecer para traduzir páginas neste idioma</translation>
@@ -5378,6 +5379,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8845001906332463065">Obter ajuda</translation>
 <translation id="8846132060409673887">Consultar o fabricante e modelo deste computador</translation>
 <translation id="8846141544112579928">A pesquisar teclado...</translation>
+<translation id="8847523528195140327">Terminar sessão quando a tampa for fechada</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Veja mais…</translation>
 <translation id="885246833287407341">Argumentos de função da API</translation>
@@ -5440,6 +5442,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8930351635855238750">As novas definições de cookies terão efeito depois de atualizar a página.</translation>
 <translation id="8931394284949551895">Novos dispositivos</translation>
 <translation id="893254996965966411">Guarde as impressoras detetadas no seu perfil ou adicione uma nova impressora.</translation>
+<translation id="8932894639908691771">Opções do acesso por comutador</translation>
 <translation id="8933960630081805351">Mo&amp;strar no Finder</translation>
 <translation id="8934732568177537184">Continuar</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
@@ -5462,6 +5465,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8965037249707889821">Introduzir palavra-passe antiga</translation>
 <translation id="8966870118594285808">Reabra um separador caso o feche acidentalmente.</translation>
 <translation id="8967866634928501045">Prima Alt + Shift + A para mostrar.</translation>
+<translation id="8968766641738584599">Guardar cartão</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Consulte o seu gestor de rede para ter a certeza de que a firewall não está a bloquear as transferências dos servidores da Google.</translation>
 <translation id="8973557916016709913">Remover nível de zoom</translation>
@@ -5503,6 +5507,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9023015617655685412">Adicionar este separador aos marcadores…</translation>
 <translation id="9024127637873500333">&amp;Abrir num novo separador</translation>
 <translation id="9024158959543687197">Erro ao montar a partilha. Verifique o URL de partilha de ficheiros e tente novamente.</translation>
+<translation id="9024885274934357065">O seu dispositivo é desbloqueado com o Smart Lock. Prima Enter para desbloquear.</translation>
 <translation id="9026731007018893674">transferir</translation>
 <translation id="9026852570893462412">Este processo pode demorar alguns minutos. A transferir a máquina virtual…</translation>
 <translation id="9027459031423301635">Abrir Link num Novo &amp;Separador</translation>
@@ -5567,7 +5572,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9116799625073598554">Aplicação para tirar notas</translation>
 <translation id="9117030152748022724">Efetue a gestão das suas aplicações</translation>
 <translation id="9121814364785106365">Abrir como separador fixo</translation>
-<translation id="9122074588095746047">Não foi possível ativar o adb</translation>
 <translation id="9124003689441359348">As palavras-passe guardadas aparecem aqui</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> rest.)</translation>
 <translation id="9128317794749765148">Não foi possível concluir a configuração</translation>

@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import org.chromium.base.Promise;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -31,7 +31,7 @@ public class TwaVerifier implements Verifier, Destroyable {
     /** The Digital Asset Link relationship used for Trusted Web Activities. */
     private static final int RELATIONSHIP = CustomTabsService.RELATION_HANDLE_ALL_URLS;
 
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final OriginVerifier mOriginVerifier;
 
     /**
@@ -48,9 +48,8 @@ public class TwaVerifier implements Verifier, Destroyable {
     private Set<Origin> mVerifiedOrigins = new HashSet<>();
 
     @Inject
-    public TwaVerifier(
-            ActivityLifecycleDispatcher lifecycleDispatcher,
-            CustomTabIntentDataProvider intentDataProvider,
+    public TwaVerifier(ActivityLifecycleDispatcher lifecycleDispatcher,
+            BrowserServicesIntentDataProvider intentDataProvider,
             OriginVerifier.Factory originVerifierFactory,
             CustomTabActivityTabProvider tabProvider,
             ClientPackageNameProvider clientPackageNameProvider) {

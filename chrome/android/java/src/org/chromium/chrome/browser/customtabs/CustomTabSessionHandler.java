@@ -13,7 +13,12 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
 
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
@@ -29,9 +34,6 @@ import org.chromium.content_public.browser.NavigationEntry;
 
 import javax.inject.Inject;
 
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsSessionToken;
 import dagger.Lazy;
 
 /**
@@ -43,7 +45,7 @@ public class CustomTabSessionHandler implements SessionHandler, StartStopWithNat
 
     private static final String TAG = "CctSessionHandler";
 
-    private final CustomTabIntentDataProvider mIntentDataProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final CustomTabActivityTabProvider mTabProvider;
     private final Lazy<CustomTabToolbarCoordinator> mToolbarCoordinator;
     private final Lazy<CustomTabBottomBarDelegate> mBottomBarDelegate;
@@ -53,7 +55,7 @@ public class CustomTabSessionHandler implements SessionHandler, StartStopWithNat
     private final Activity mActivity;
 
     @Inject
-    public CustomTabSessionHandler(CustomTabIntentDataProvider intentDataProvider,
+    public CustomTabSessionHandler(BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabActivityTabProvider tabProvider,
             Lazy<CustomTabToolbarCoordinator> toolbarCoordinator,
             Lazy<CustomTabBottomBarDelegate> bottomBarDelegate,

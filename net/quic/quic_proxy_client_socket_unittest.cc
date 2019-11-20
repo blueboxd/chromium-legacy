@@ -99,11 +99,8 @@ std::vector<TestParams> GetTestParams() {
   quic::ParsedQuicVersionVector all_supported_versions =
       quic::AllSupportedVersions();
   for (const auto& version : all_supported_versions) {
-    // TODO(rch): crbug.com/978745 - Make this work with v99.
-    if (version.transport_version != quic::QUIC_VERSION_99) {
-      params.push_back(TestParams{version, false});
-      params.push_back(TestParams{version, true});
-    }
+    params.push_back(TestParams{version, false});
+    params.push_back(TestParams{version, true});
   }
   return params;
 }
@@ -151,8 +148,15 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
   QuicProxyClientSocketTest()
       : version_(GetParam().version),
         client_data_stream_id1_(
-            quic::QuicUtils::GetHeadersStreamId(version_.transport_version) +
-            quic::QuicUtils::StreamIdDelta(version_.transport_version)),
+            quic::VersionUsesHttp3(version_.transport_version)
+                ? quic::QuicUtils::GetFirstBidirectionalStreamId(
+                      version_.transport_version,
+                      quic::Perspective::IS_CLIENT)
+                : quic::QuicUtils::GetFirstBidirectionalStreamId(
+                      version_.transport_version,
+                      quic::Perspective::IS_CLIENT) +
+                      quic::QuicUtils::StreamIdDelta(
+                          version_.transport_version)),
         client_headers_include_h2_stream_dependency_(
             GetParam().client_headers_include_h2_stream_dependency),
         mock_quic_data_(version_),
@@ -444,13 +448,14 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
 
   std::unique_ptr<quic::QuicReceivedPacket> ConstructServerConnectReplyPacket(
       uint64_t packet_number,
-      bool fin) {
+      bool fin,
+      size_t* header_length = nullptr) {
     spdy::SpdyHeaderBlock block;
     block[":status"] = "200";
 
     return server_maker_.MakeResponseHeadersPacket(
         packet_number, client_data_stream_id1_, !kIncludeVersion, fin,
-        std::move(block), nullptr);
+        std::move(block), header_length);
   }
 
   std::unique_ptr<quic::QuicReceivedPacket>
@@ -845,15 +850,17 @@ TEST_P(QuicProxyClientSocketTest, GetTotalReceivedBytes) {
     mock_quic_data_.AddWrite(SYNCHRONOUS,
                              ConstructSettingsPacket(packet_number++));
   }
+  size_t header_length;
   mock_quic_data_.AddWrite(SYNCHRONOUS,
                            ConstructConnectRequestPacket(packet_number++));
-  mock_quic_data_.AddRead(ASYNC, ConstructServerConnectReplyPacket(1, !kFin));
+  mock_quic_data_.AddRead(
+      ASYNC, ConstructServerConnectReplyPacket(1, !kFin, &header_length));
   mock_quic_data_.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
 
-  std::string header = ConstructDataHeader(kLen333);
-  mock_quic_data_.AddRead(
-      ASYNC,
-      ConstructServerDataPacket(2, header + std::string(kMsg333, kLen333)));
+  std::string data_header = ConstructDataHeader(kLen333);
+  mock_quic_data_.AddRead(ASYNC,
+                          ConstructServerDataPacket(
+                              2, data_header + std::string(kMsg333, kLen333)));
   mock_quic_data_.AddWrite(SYNCHRONOUS,
                            ConstructAckPacket(packet_number++, 2, 1, 1));
   mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -867,30 +874,43 @@ TEST_P(QuicProxyClientSocketTest, GetTotalReceivedBytes) {
 
   AssertConnectSucceeds();
 
-  EXPECT_EQ(0, sock_->GetTotalReceivedBytes());
+  if (!VersionUsesHttp3(version_.transport_version)) {
+    header_length = 0;
+    EXPECT_EQ(0, sock_->GetTotalReceivedBytes());
+  } else {
+    // HTTP/3 sends and receives HTTP headers on the request stream.
+    EXPECT_EQ((int64_t)(header_length), sock_->GetTotalReceivedBytes());
+  }
 
   // The next read is consumed and buffered.
   ResumeAndRun();
 
-  EXPECT_EQ(0, sock_->GetTotalReceivedBytes());
+  if (!VersionUsesHttp3(version_.transport_version)) {
+    EXPECT_EQ(0, sock_->GetTotalReceivedBytes());
+  } else {
+    // HTTP/3 encodes data with DATA frame. The header is consumed.
+    EXPECT_EQ((int64_t)(header_length + data_header.length()),
+              sock_->GetTotalReceivedBytes());
+  }
 
   // The payload from the single large data frame will be read across
   // two different reads.
   AssertSyncReadEquals(kMsg33, kLen33);
 
-  EXPECT_EQ((int64_t)(kLen33 + header.length()),
+  EXPECT_EQ((int64_t)(header_length + data_header.length() + kLen33),
             sock_->GetTotalReceivedBytes());
 
   AssertSyncReadEquals(kMsg3, kLen3);
 
-  EXPECT_EQ((int64_t)(kLen333 + header.length()),
+  EXPECT_EQ((int64_t)(header_length + kLen333 + data_header.length()),
             sock_->GetTotalReceivedBytes());
 }
 
 TEST_P(QuicProxyClientSocketTest, SetStreamPriority) {
   int packet_number = 1;
   if (VersionUsesHttp3(version_.transport_version)) {
-    mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));
+    mock_quic_data_.AddWrite(SYNCHRONOUS,
+                             ConstructSettingsPacket(packet_number++));
   }
   // Despite setting the priority to HIGHEST, the requets initial priority of
   // LOWEST is used.

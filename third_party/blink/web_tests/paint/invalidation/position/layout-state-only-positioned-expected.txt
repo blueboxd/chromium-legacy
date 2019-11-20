@@ -17,11 +17,6 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow (positioned) DIV",
-          "rect": [0, 50, 106, 106],
-          "reason": "chunk appeared"
-        },
-        {
           "object": "VerticalScrollbar",
           "rect": [88, 53, 15, 100],
           "reason": "chunk appeared"

@@ -109,6 +109,11 @@ extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
+// Title and description for the flag to request the desktop version of web site
+// by default on iPad
+extern const char kDefaultToDesktopOnIPadName[];
+extern const char kDefaultToDesktopOnIPadDescription[];
+
 // Title and description for the flag to control if a crash report is generated
 // on main thread freeze.
 extern const char kDetectMainThreadFreezeName[];
@@ -205,6 +210,11 @@ extern const char kLockBottomToolbarDescription[];
 // display of omnibox warnings about non-secure pages.
 extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];
+
+// Title and description for the flag where the Google SRP is requested in
+// mobile mode by default.
+extern const char kMobileGoogleSRPName[];
+extern const char kMobileGoogleSRPDescription[];
 
 // Title and description for the flag to enable new Clear Browsing Data UI.
 extern const char kNewClearBrowsingDataUIName[];

@@ -179,7 +179,7 @@ template("webapk_tmpl") {
     android_manifest = _manifest_output
     android_manifest_dep = ":$_manifest_target_name"
     min_sdk_version = 19
-    target_sdk_version = 28
+    target_sdk_version = 29
     never_incremental = true
     enable_multidex = false
 

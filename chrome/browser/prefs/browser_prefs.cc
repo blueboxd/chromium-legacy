@@ -216,6 +216,7 @@
 #include "components/feed/core/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else   // defined(OS_ANDROID)
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/enterprise_reporting/prefs.h"
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/metrics/tab_stats_tracker.h"
@@ -892,6 +893,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   feed::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else
+  apps::AppServiceProxy::RegisterProfilePrefs(registry);
   AppShortcutManager::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);

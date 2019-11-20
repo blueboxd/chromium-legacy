@@ -137,19 +137,19 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 xyz <br>|<br><br>\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 |xyz <br><br><br>\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
+  '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 xyz |<br><br><br>\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
   '5-21 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 xyz <br><br>|<br>\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 |xyz <br><br><br>\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
+  '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 xyz <br>|<br><br>\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
   '5-22 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 xyz <br><br><br>|\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 |xyz <br><br><br>\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
+  '<div contenteditable dir="rtl">abc \u05D0\u05D0\u05D0 hij \u05D0\u05D0\u05D0 xyz <br><br>|<br>\u05D0\u05D0\u05D0 kj \u05D0\u05D0\u05D0 opq \u05D0\u05D0\u05D0</div>',
   '5-23 rtl right word');
 
 selection_test(

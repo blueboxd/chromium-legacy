@@ -12,6 +12,7 @@
 <translation id="107147699690128016">Se alterar a extensão do ficheiro, este pode ser aberto numa aplicação diferente e representar um risco para o seu dispositivo.</translation>
 <translation id="1100066534610197918">Abrir num novo sep. no grupo</translation>
 <translation id="1105960400813249514">Ecrã a ser capturado...</translation>
+<translation id="1110022065703191351">Ícones</translation>
 <translation id="1111673857033749125">Os marcadores guardados nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="1113597929977215864">Mostrar vista simplificada</translation>
 <translation id="1124772482545689468">Utilizador</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Para permitir que o Chrome aceda ao microfone, ative também o microfone nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Adicionado aos marcadores no <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronização em segundo plano</translation>
+<translation id="3749259744154402564">Não suportado</translation>
 <translation id="3771001275138982843">Não foi possível transferir a atualização.</translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ative o Bluetooth<ph name="END_LINK" /> para permitir a sincronização</translation>
@@ -576,6 +578,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="5342314432463739672">Pedidos de autorização</translation>
+<translation id="534295439873310000">Dispositivos NFC</translation>
 <translation id="5357811892247919462">Separador recebido</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> separador aberto, toque para alternar entre separadores}other{<ph name="OPEN_TABS_MANY" /> separadores abertos, toque para alternar entre separadores}}</translation>
 <translation id="5391532827096253100">A sua ligação a este site não é segura. Informações do site</translation>
@@ -632,6 +635,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="569536719314091526">Traduzir esta página para qualquer idioma a partir do botão Mais opções</translation>
+<translation id="5710871682236653961">Perguntar antes de permitir que os sites enviem e recebam informações quando toca em dispositivos NFC (recomendado)</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5726692708398506830">Aumentar o tamanho de todos os itens na página</translation>
 <translation id="5748802427693696783">Mudado para separadores padrão</translation>
@@ -785,6 +789,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6818926723028410516">Selecionar itens</translation>
 <translation id="6820686453637990663">Código de segurança</translation>
 <translation id="6831043979455480757">Traduzir</translation>
+<translation id="6840155290835956714">Perguntar antes de enviar</translation>
 <translation id="6845325883481699275">Ajudar a melhorar a segurança do Chrome</translation>
 <translation id="6846298663435243399">A carregar…</translation>
 <translation id="6850409657436465440">A transferência ainda está em curso.</translation>
@@ -881,6 +886,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="7559975015014302720">O Modo Lite está desativado.</translation>
 <translation id="7562080006725997899">A limpar dados de navegação</translation>
 <translation id="756809126120519699">Dados do Chrome limpos</translation>
+<translation id="7572498721684305250">Impedir que os sites enviem e recebam informações quando toca em dispositivos NFC</translation>
 <translation id="757524316907819857">Impedir que os sites reproduzam conteúdos protegidos</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ficheiro transferido}other{<ph name="FILES_DOWNLOADED_MANY" /> ficheiros transferidos}}</translation>
 <translation id="7588219262685291874">Ativar o tema escuro quando a Poupança de bateria do dispositivo estiver ativada.</translation>
@@ -1090,7 +1096,6 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="9133397713400217035">Explorar offline</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
-<translation id="9139068048179869749">Perguntar antes de permitir que os sites enviem notificações (recomendado)</translation>
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">Também pode pesquisar ao tocar rapidamente numa palavra.</translation>
 <translation id="9169507124922466868">O histórico de navegação está aberto até meio.</translation>

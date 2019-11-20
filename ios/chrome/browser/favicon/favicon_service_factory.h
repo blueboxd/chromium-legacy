@@ -29,6 +29,9 @@ class FaviconServiceFactory : public BrowserStateKeyedServiceFactory {
       ios::ChromeBrowserState* browser_state,
       ServiceAccessType access_type);
   static FaviconServiceFactory* GetInstance();
+  // Returns the default factory used to build FaviconService. Can be
+  // registered with SetTestingFactory to use real instances during testing.
+  static TestingFactory GetDefaultFactory();
 
  private:
   friend class base::NoDestructor<FaviconServiceFactory>;

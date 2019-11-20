@@ -207,43 +207,43 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח|    ופק    </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl" style="white-space:pre">    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    abc   def   \u05D7\u05D9\u05D7    \u05D5\u05E4\u05E7    |</div>',
+  '<div contenteditable dir="rtl" style="white-space:pre">    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    abc   def   \u05D7\u05D9\u05D7    \u05D5\u05E4\u05E7|    </div>',
   '41-33 left word');
 
 selection_test(
   '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח |   ופק    </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl" style="white-space:pre">    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    abc   def   \u05D7\u05D9\u05D7    \u05D5\u05E4\u05E7    |</div>',
+  '<div contenteditable dir="rtl" style="white-space:pre">    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    abc   def   \u05D7\u05D9\u05D7    \u05D5\u05E4\u05E7|    </div>',
   '41-34 left word');
 
 selection_test(
   '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח  |  ופק    </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl" style="white-space:pre">    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    abc   def   \u05D7\u05D9\u05D7    \u05D5\u05E4\u05E7    |</div>',
+  '<div contenteditable dir="rtl" style="white-space:pre">    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    abc   def   \u05D7\u05D9\u05D7    \u05D5\u05E4\u05E7|    </div>',
   '41-35 left word');
 
 selection_test(
   '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח   | ופק    </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl" style="white-space:pre">    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    abc   def   \u05D7\u05D9\u05D7    \u05D5\u05E4\u05E7    |</div>',
+  '<div contenteditable dir="rtl" style="white-space:pre">    \u05D0\u05D1\u05E6    \u05D3\u05E2\u05E4    abc   def   \u05D7\u05D9\u05D7    \u05D5\u05E4\u05E7|    </div>',
   '41-36 left word');
 
 selection_test(
   '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    |ופק    </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    ופק    |</div>',
+  '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    ופק|    </div>',
   '41-37 left word');
 
 selection_test(
   '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    ו|פק    </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    ופק    |</div>',
+  '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    ופק|    </div>',
   '41-38 left word');
 
 selection_test(
   '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    ופ|ק    </div>',
   selection => selection.modify('move', 'left', 'word'),
-  '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    ופק    |</div>',
+  '<div contenteditable dir="rtl" style="white-space:pre">    אבצ    דעפ    abc   def   חיח    ופק|    </div>',
   '41-39 left word');
 
 selection_test(

@@ -34,7 +34,7 @@ interface PrintRenderFrame {
   // Tells the RenderFrame to initiate print preview for the entire document.
   // Optionally provides a |print_renderer| to render print documents.
   [EnableIf=enable_print_preview]
-  InitiatePrintPreview(associated PrintRenderer? print_renderer,
+  InitiatePrintPreview(pending_associated_remote<PrintRenderer>? print_renderer,
                        bool has_selection);
 
   // Tells the RenderFrame that the print preview dialog was closed.

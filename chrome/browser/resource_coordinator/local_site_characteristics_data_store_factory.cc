@@ -26,11 +26,8 @@ bool g_enable_for_testing = false;
 // static
 SiteCharacteristicsDataStore*
 LocalSiteCharacteristicsDataStoreFactory::GetForProfile(Profile* profile) {
-  if (base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase)) {
-    return static_cast<SiteCharacteristicsDataStore*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
-  }
-  return nullptr;
+  return static_cast<SiteCharacteristicsDataStore*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 LocalSiteCharacteristicsDataStoreFactory*
@@ -113,7 +110,7 @@ bool LocalSiteCharacteristicsDataStoreFactory::
 
   // Otherwise it's fine to initialize this service when the browser context
   // gets created so the database will be ready when we need it.
-  return base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase);
+  return true;
 }
 
 bool LocalSiteCharacteristicsDataStoreFactory::ServiceIsNULLWhileTesting()

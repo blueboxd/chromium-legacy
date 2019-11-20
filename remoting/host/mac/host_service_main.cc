@@ -27,7 +27,9 @@
 #include "remoting/host/host_exit_codes.h"
 #include "remoting/host/logging.h"
 #include "remoting/host/mac/constants_mac.h"
+#include "remoting/host/switches.h"
 #include "remoting/host/username.h"
+#include "remoting/host/version.h"
 
 namespace remoting {
 namespace {
@@ -39,6 +41,8 @@ constexpr char kSwitchHostVersion[] = "host-version";
 constexpr char kSwitchHostRunFromLaunchd[] = "run-from-launchd";
 
 constexpr char kHostExeFileName[] = "remoting_me2me_host";
+constexpr char kNativeMessagingHostPath[] =
+    "Contents/MacOS/native_messaging_host";
 
 // The exit code returned by 'wait' when a process is terminated by SIGTERM.
 constexpr int kSigtermExitCode = 128 + SIGTERM;
@@ -111,10 +115,16 @@ class HostService {
  private:
   int RunHostFromOldScript();
 
+  // Runs the permission-checker built into the native-messaging host. Returns
+  // true if all permissions were granted (or no permission check is needed for
+  // the version of MacOS).
+  bool CheckPermission();
+
   base::FilePath old_host_helper_file_;
   base::FilePath enabled_file_;
   base::FilePath config_file_;
   base::FilePath host_exe_file_;
+  base::FilePath native_messaging_host_exe_file_;
 };
 
 HostService::HostService() {
@@ -125,6 +135,9 @@ HostService::HostService() {
   base::FilePath host_service_dir;
   base::PathService::Get(base::DIR_EXE, &host_service_dir);
   host_exe_file_ = host_service_dir.AppendASCII(kHostExeFileName);
+  native_messaging_host_exe_file_ =
+      host_service_dir.AppendASCII(NATIVE_MESSAGING_HOST_BUNDLE_NAME)
+          .AppendASCII(kNativeMessagingHostPath);
 }
 
 HostService::~HostService() = default;
@@ -149,6 +162,12 @@ int HostService::RunHost() {
     base::GetAppOutputAndError(cmdline, &output);
     if (!output.empty()) {
       HOST_LOG << "Message from host --upgrade-token: " << output;
+    }
+  } else {
+    // Only check for non-root users, as the permission wizard is not actionable
+    // at the login screen.
+    if (!CheckPermission()) {
+      return 1;
     }
   }
 
@@ -315,6 +334,29 @@ int HostService::RunHostFromOldScript() {
   process.WaitForExit(&exit_code);
   g_host_pid = 0;
   return exit_code;
+}
+
+bool HostService::CheckPermission() {
+  LOG(INFO) << "Checking for host permissions.";
+
+  base::CommandLine cmdLine(native_messaging_host_exe_file_);
+  cmdLine.AppendSwitch(kCheckPermissionSwitchName);
+
+  // No need to disclaim responsibility here - the native-messaging host already
+  // takes care of that.
+  base::Process process = base::LaunchProcess(cmdLine, base::LaunchOptions());
+  if (!process.IsValid()) {
+    LOG(ERROR) << "Unable to launch native-messaging host process";
+    return false;
+  }
+  int exit_code;
+  process.WaitForExit(&exit_code);
+  if (exit_code != 0) {
+    LOG(ERROR) << "A required permission was not granted.";
+    return false;
+  }
+  LOG(INFO) << "All permissions granted!";
+  return true;
 }
 
 }  // namespace

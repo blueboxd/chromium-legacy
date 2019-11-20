@@ -131,7 +131,8 @@ void WebAppBrowserController::OnReadIcon(SkBitmap bitmap) {
   }
 
   app_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  if (auto* contents = web_contents())
+    contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   if (callback_for_testing_)
     std::move(callback_for_testing_).Run();
 }

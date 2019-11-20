@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'Pattern on fill'",
+          "object": "LayoutSVGContainer g id='content'",
           "rect": [33, 22, 622, 196],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

@@ -47,6 +47,14 @@ class BrowserDMTokenStorage {
   // indicate success or failure. It is an error to attempt concurrent store
   // operations.
   void StoreDMToken(const std::string& dm_token, StoreCallback callback);
+  // Asynchronously invalidates |dm_token_| and calls |callback| with a boolean
+  // to indicate success or failure. It is an error to attempt concurrent store
+  // operations.
+  void InvalidateDMToken(StoreCallback callback);
+  // Asynchronously clears |dm_token_| and calls |callback| with a boolean to
+  // indicate success or failure. It is an error to attempt concurrent store
+  // operations.
+  void ClearDMToken(StoreCallback callback);
   // Returns an already stored DM token. An empty token is returned if no DM
   // token exists on the system or an error is encountered.
   // TODO(domfc): Remove overload after updating callers. Note that the names

@@ -183,7 +183,7 @@ void AudioOutputStreamFuchsia::ReportError() {
   reference_time_ = base::TimeTicks();
   timer_.Stop();
   if (callback_)
-    callback_->OnError();
+    callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
 }
 
 void AudioOutputStreamFuchsia::PumpSamples() {

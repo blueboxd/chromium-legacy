@@ -103,9 +103,6 @@ struct RendererPreferences {
   // Determines whether plugins are allowed to enter fullscreen mode.
   bool plugin_fullscreen_allowed = true;
 
-  // Country iso of the mobile network for content detection purpose.
-  string network_contry_iso;
-
   [EnableIf=renderer_pref_system_font_family_name]
   string system_font_family_name;
 

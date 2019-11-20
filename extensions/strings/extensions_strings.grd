@@ -82,6 +82,7 @@
     <output filename="extensions_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
+    <file path="extensions_strings_af.xtb" lang="af" />
     <file path="extensions_strings_am.xtb" lang="am" />
     <file path="extensions_strings_ar.xtb" lang="ar" />
     <file path="extensions_strings_bg.xtb" lang="bg" />

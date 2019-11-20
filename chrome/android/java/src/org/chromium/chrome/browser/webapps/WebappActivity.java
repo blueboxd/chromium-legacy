@@ -182,7 +182,7 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
         return new RootUiCoordinator(this, (toolbarManager) -> {
             mToolbarCoordinator.onToolbarInitialized(toolbarManager);
             mNavigationController.onToolbarInitialized(toolbarManager);
-        }, null, getShareDelegate());
+        }, null, getShareDelegateSupplier());
     }
 
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {

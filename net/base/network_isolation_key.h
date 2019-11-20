@@ -35,6 +35,12 @@ class NET_EXPORT NetworkIsolationKey {
       const NetworkIsolationKey& network_isolation_key);
   NetworkIsolationKey& operator=(NetworkIsolationKey&& network_isolation_key);
 
+  // Creates a transient non-empty NetworkIsolationKey by creating an opaque
+  // origin. This prevents the NetworkIsolationKey from sharing data with other
+  // NetworkIsolationKeys. Data for transient NetworkIsolationKeys is not
+  // persisted to disk.
+  static NetworkIsolationKey CreateTransient();
+
   // Intended for temporary use in locations that should be using a non-empty
   // NetworkIsolationKey(), but are not yet. This both reduces the chance of
   // accidentally copying the lack of a NIK where one should be used, and

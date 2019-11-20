@@ -15,6 +15,7 @@ import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
 import org.chromium.weblayer_private.interfaces.IRemoteFragment;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Implementation of RemoteFragmentImpl which forwards logic to BrowserImpl.
@@ -34,6 +35,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
 
     @Override
     public void onAttach(Context context) {
+        StrictModeWorkaround.apply();
         super.onAttach(context);
         mContext = ClassLoaderContextWrapperFactory.get(context);
         if (mBrowser != null) { // On first creation, onAttach is called before onCreate
@@ -43,6 +45,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        StrictModeWorkaround.apply();
         super.onCreate(savedInstanceState);
         mBrowser = new BrowserImpl(mProfile, savedInstanceState);
         if (mContext != null) {
@@ -52,22 +55,26 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
 
     @Override
     public View onCreateView() {
+        StrictModeWorkaround.apply();
         return mBrowser.getFragmentView();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        StrictModeWorkaround.apply();
         mBrowser.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
     public void onRequestPermissionsResult(
             int requestCode, String[] permissions, int[] grantResults) {
+        StrictModeWorkaround.apply();
         mBrowser.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
     public void onDestroy() {
+        StrictModeWorkaround.apply();
         super.onDestroy();
         mBrowser.destroy();
         mBrowser = null;
@@ -75,6 +82,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
 
     @Override
     public void onDetach() {
+        StrictModeWorkaround.apply();
         super.onDetach();
         // mBrowser != null if fragment is retained, otherwise onDestroy is called first.
         if (mBrowser != null) {
@@ -87,11 +95,13 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         return new IBrowserFragment.Stub() {
             @Override
             public IRemoteFragment asRemoteFragment() {
+                StrictModeWorkaround.apply();
                 return BrowserFragmentImpl.this;
             }
 
             @Override
             public IBrowser getBrowser() {
+                StrictModeWorkaround.apply();
                 if (mBrowser == null) {
                     throw new RuntimeException("Browser is available only between"
                             + " BrowserFragment's onCreate() and onDestroy().");

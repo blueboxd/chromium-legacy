@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Appikon</translation>
 <translation id="1410616244180625362">Fortsätt tillåta att <ph name="HOST" /> använder kameran</translation>
 <translation id="1414648216875402825">Du uppdaterar till en instabil version av <ph name="PRODUCT_NAME" /> som innehåller funktioner som inte är klara. Du kommer att råka ut för kraschar och oväntade buggar. Var försiktig.</translation>
-<translation id="1414866280542221544">Aktivera på enheten</translation>
 <translation id="1415708812149920388">Läsbehörighet till Urklipp nekades</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (tilläggs-id <ph name="EXTENSION_ID" />) får inte användas i den här typen av session.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizzabit</translation>
 <translation id="1468571364034902819">Profilen kan inte användas</translation>
 <translation id="1470811252759861213"><ph name="SIGN_IN_LINK" /> om du vill få tillgång till samma tillägg på alla dina datorer.</translation>
-<translation id="1470967055429794975">All data på säkerhetsnyckeln raderas, inklusive pinkoden</translation>
 <translation id="1472675084647422956">Visa fler</translation>
 <translation id="1475502736924165259">Du har certifikat i din dator som inte passar i några av de andra kategorierna</translation>
 <translation id="1476088332184200792">Kopiera till din enhet</translation>
@@ -842,7 +840,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2202898655984161076">Ett problem uppstod när skrivare skulle listas. Vissa av dina skrivare kanske inte har registrerats med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Sökmotorn som används i <ph name="BEGIN_LINK" />adressfältet<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Läsa och ändra allt som du skriver</translation>
-<translation id="2204397710290433380">Vill du inaktivera ADB?</translation>
 <translation id="220792432208469595">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Ägaren har gjort denna inställning obligatorisk. Om ytterligare webb- och appaktivitet har aktiverats kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Ange den här PIN-koden på <ph name="DEVICE_NAME" />:</translation>
 <translation id="2213140827792212876">Ta bort delning</translation>
@@ -979,6 +976,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2396783860772170191">Ange den fyrsiffriga pinkoden (0000–9999)</translation>
 <translation id="2399939490305346086">Säkerhetsnyckelns inloggningsdata</translation>
 <translation id="2407481962792080328">Den här funktionen är aktiverad när du loggar in på Google-kontot</translation>
+<translation id="2408018932941436077">Kortet sparas</translation>
 <translation id="2408955596600435184">Ange din pinkod</translation>
 <translation id="241082044617551207">Okänt pluginprogram</translation>
 <translation id="2412593942846481727">Det finns en uppdatering</translation>
@@ -2007,7 +2005,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3873315167136380065"><ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> så att lösenfrasen för synkronisering tas bort om du vill aktivera detta</translation>
 <translation id="3873423927483480833">Visa pinkoder</translation>
 <translation id="3873915545594852654">Ett problem med ARC++ uppstod.</translation>
-<translation id="387924939625099872">Starta om <ph name="DEVICE_TYPE" /> om du vill inaktivera ADB. Enheten återställs till standardinställningarna och användarkonton och lokal data raderas.</translation>
 <translation id="3879748587602334249">Nedladdningshanterare</translation>
 <translation id="3886446263141354045">Din begäran om att få tillgång till denna webbplats har skickats till <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Antecknar med <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4501530680793980440">Bekräfta borttagning</translation>
 <translation id="4502423230170890588">Ta bort från den här enheten</translation>
 <translation id="4504940961672722399">Använd tillägget genom att klicka på den här ikonen eller genom att trycka på <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Om du fortsätter kan adb skapa och testa Android-appar. Observera att adb gör det möjligt för testappar som inte har verifierats av Google att installeras.</translation>
 <translation id="4508051413094283164">Öppna alla i ett inkognitofönster</translation>
 <translation id="4508265954913339219">Aktiveringen misslyckades</translation>
 <translation id="4508765956121923607">Visa &amp;källa</translation>
@@ -3312,7 +3308,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5851868085455377790">Utfärdare</translation>
 <translation id="5852112051279473187">Hoppsan! Något gick verkligen fel när enheten skulle registreras. Försök igen eller kontakta support.</translation>
 <translation id="5852137567692933493">Starta om och gör en Powerwash</translation>
-<translation id="5852360662347412211">Öppna Linux-inställningarna och försök igen</translation>
 <translation id="5854912040170951372">Pizzaslajs</translation>
 <translation id="5855643921295613558">0,6 sekunder</translation>
 <translation id="5856721540245522153">Aktivera felsökningsfunktioner</translation>
@@ -3325,7 +3320,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5860494867054883682">Enheten uppdateras till kanalen <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Visa verktyg för e-penna i hyllan</translation>
 <translation id="5863445608433396414">Aktivera felsökningsfunktioner</translation>
-<translation id="5863471434640009253">Starta först om <ph name="DEVICE_TYPE" /> om du vill aktivera Androids felsökningsbrygga. Du måste återställa enheten till standardinställningarna om du vill inaktivera ADB.</translation>
 <translation id="5864471791310927901">DHCP-förfrågan misslyckades</translation>
 <translation id="586567932979200359">Du kör <ph name="PRODUCT_NAME" /> från diskavbildningen. Om du installerar programmet på din dator kan du köra det utan diskavbildningen och du kan vara säker på att det alltid är uppdaterat.</translation>
 <translation id="5865733239029070421">Skickar användningsstatistik och felrapporter till Google automatiskt</translation>
@@ -3395,7 +3389,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5958529069007801266">Kontrollerad användare</translation>
 <translation id="5959471481388474538">Nätverket är inte tillgängligt</translation>
 <translation id="595959584676692139">Läs in sidan igen om du vill använda det här tillägget</translation>
-<translation id="5961320084471308154">Vill du aktivera ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> som mest)</translation>
 <translation id="5965661248935608907">Det styr också vilken sida som visas när du klickar på hemknappen eller söker i adressfältet.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> har läsbehörighet till filer i <ph name="FOLDERNAME" /></translation>
@@ -4259,7 +4252,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7254554697254365959">Det gick inte att översätta sidan.</translation>
 <translation id="7254951428499890870">Vill du starta <ph name="APP_NAME" /> i diagnosläge?</translation>
 <translation id="7255002516883565667">Du har för närvarande ett kort som bara kan användas på den här enheten</translation>
-<translation id="7255916308560539517">Tryck på säkerhetsnyckeln igen för att bekräfta återställningen. All information som lagras på säkerhetsnyckeln, inklusive dess pinkod, raderas.</translation>
 <translation id="7255935316994522020">Verkställ</translation>
 <translation id="7256069762010468647">Webbplatsen använder kameran</translation>
 <translation id="7256405249507348194">Okänt fel: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7968833647796919681">Aktivera insamling av resultatdata</translation>
 <translation id="7968982339740310781">Visa information</translation>
 <translation id="7969046989155602842">Kommando</translation>
+<translation id="7970882136539140748">Det går inte att spara kortet just nu</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 med RSA-kryptering</translation>
 <translation id="7973962044839454485">PPP-autentisering misslyckades på grund av felaktigt användarnamn eller lösenord</translation>
 <translation id="7974566588408714340">Försök igen med <ph name="EXTENSIONNAME" /></translation>
@@ -5090,7 +5083,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8431909052837336408">Ändra SIM-kortets pinkod</translation>
 <translation id="8434480141477525001">Felsökningsport för Native Client</translation>
 <translation id="8435395510592618362">Verifiera din identitet med <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Spara kreditkort</translation>
 <translation id="8438328416656800239">Byt till en smart webbläsare</translation>
 <translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8439506636278576865">Erbjud att översätta sidor på detta språk</translation>
@@ -5473,6 +5465,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8965037249707889821">Ange det gamla lösenordet</translation>
 <translation id="8966870118594285808">Öppna en flik på nytt om du stängde den av misstag</translation>
 <translation id="8967866634928501045">Visa med alt+skift+A</translation>
+<translation id="8968766641738584599">Spara kortet</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Kontrollera med nätverksadministratören att brandväggen inte blockerar nedladdning från Googles servrar.</translation>
 <translation id="8973557916016709913">Ta bort zoomnivå</translation>
@@ -5579,7 +5572,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9116799625073598554">App för anteckningar</translation>
 <translation id="9117030152748022724">Hantera dina appar</translation>
 <translation id="9121814364785106365">Öppna som en fast flik</translation>
-<translation id="9122074588095746047">Det gick inte att aktivera adb</translation>
 <translation id="9124003689441359348">Sparade lösenord visas här</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> återstår)</translation>
 <translation id="9128317794749765148">Det gick inte att slutföra konfigurationen</translation>

@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTableSection TBODY",
+          "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 26, 186, 134],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     },

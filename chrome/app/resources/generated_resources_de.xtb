@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">App-Symbol</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> weiterhin Zugriff auf Ihre Kamera gestatten</translation>
 <translation id="1414648216875402825">Sie aktualisieren auf eine instabile Version von <ph name="PRODUCT_NAME" />. Diese enthält Funktionen, die sich noch in der Entwicklung befinden. Es können Abstürze und unerwartete Fehler auftreten. Gehen Sie daher bitte vorsichtig vor.</translation>
-<translation id="1414866280542221544">Auf diesem Gerät aktivieren</translation>
 <translation id="1415708812149920388">Lesezugriff auf Zwischenablage verweigert</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (Erweiterungs-ID "<ph name="EXTENSION_ID" />") ist bei diesem Sitzungstyp nicht zulässig.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizzascheibe</translation>
 <translation id="1468571364034902819">Dieses Profil kann nicht verwendet werden</translation>
 <translation id="1470811252759861213">Um die Erweiterungen auf allen Ihren Computern zu nutzen, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Damit werden alle Daten auf dem Sicherheitsschlüssel einschließlich seiner PIN gelöscht.</translation>
 <translation id="1472675084647422956">Mehr anzeigen</translation>
 <translation id="1475502736924165259">Einige Ihrer gespeicherten Zertifikate passen zu keiner der anderen Kategorien</translation>
 <translation id="1476088332184200792">Auf mein Gerät kopieren</translation>
@@ -839,7 +837,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2202898655984161076">Problem beim Erstellen der Druckerliste. Einige Ihrer Drucker wurden möglicherweise nicht richtig bei <ph name="CLOUD_PRINT_NAME" /> registriert.</translation>
 <translation id="2203682048752833055">In der <ph name="BEGIN_LINK" />Adressleiste<ph name="END_LINK" /> verwendete Suchmaschine</translation>
 <translation id="2204034823255629767">Ihre Eingaben lesen und ändern</translation>
-<translation id="2204397710290433380">ADB deaktivieren?</translation>
 <translation id="220792432208469595">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Dieses Gerät sendet momentan automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Die Daten helfen unter anderem dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese Einstellung wird vom Inhaber erzwungen. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten eventuell in Ihrem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Geben Sie diesen PIN-Code bitte auf "<ph name="DEVICE_NAME" /> " ein:</translation>
 <translation id="2213140827792212876">Freigabe beenden</translation>
@@ -976,6 +973,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2396783860772170191">Geben Sie die 4-stellige PIN ein (0000–9999)</translation>
 <translation id="2399939490305346086">Anmeldedaten auf Sicherheitsschlüssel</translation>
 <translation id="2407481962792080328">Wenn Sie sich in Ihrem Google-Konto anmelden, ist diese Funktion eingeschaltet</translation>
+<translation id="2408018932941436077">Karte wird gespeichert</translation>
 <translation id="2408955596600435184">PIN eingeben</translation>
 <translation id="241082044617551207">Unbekanntes Plug-in</translation>
 <translation id="2412593942846481727">Update verfügbar</translation>
@@ -2003,7 +2001,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3873315167136380065">Wenn Sie diese Funktion aktivieren möchten, müssen Sie die <ph name="BEGIN_LINK" />Synchronisierung zurücksetzen<ph name="END_LINK" />, um die Synchronisierungspassphrase zu entfernen</translation>
 <translation id="3873423927483480833">PINs anzeigen</translation>
 <translation id="3873915545594852654">Ein Problem mit ARC++ ist aufgetreten.</translation>
-<translation id="387924939625099872">Starten Sie Ihr <ph name="DEVICE_TYPE" /> neu, um ADB zu deaktivieren. Es wird auf die Werkseinstellungen zurückgesetzt und alle Nutzerkonten sowie lokalen Daten werden gelöscht.</translation>
 <translation id="3879748587602334249">Download-Manager</translation>
 <translation id="3886446263141354045">Deine Anfrage zum Zugriff auf diese Website wurde an <ph name="NAME" /> gesendet</translation>
 <translation id="3888550877729210209">Notizerstellung mit <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2405,7 +2402,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4501530680793980440">Entfernen bestätigen</translation>
 <translation id="4502423230170890588">Von diesem Gerät entfernen</translation>
 <translation id="4504940961672722399">Klicken Sie auf dieses Symbol oder drücken Sie <ph name="EXTENSION_SHORTCUT" />, um diese Erweiterung zu verwenden.</translation>
-<translation id="4506379069541445709">Wenn Sie fortfahren, erlauben Sie ADB, Android-Apps zu erstellen und zu testen. Bitte beachten Sie, dass ADB die Installation von Test-Apps zulässt, die nicht von Google geprüft wurden.</translation>
 <translation id="4508051413094283164">Alle in Inkognitofenster öffnen</translation>
 <translation id="4508265954913339219">Aktivierung fehlgeschlagen</translation>
 <translation id="4508765956121923607">Q&amp;uelle anzeigen</translation>
@@ -3308,7 +3304,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5851868085455377790">Aussteller</translation>
 <translation id="5852112051279473187">Hoppla! Bei der Anmeldung dieses Geräts ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder wenden Sie sich an einen Support-Mitarbeiter.</translation>
 <translation id="5852137567692933493">Neu starten und Powerwash durchführen</translation>
-<translation id="5852360662347412211">Öffnen Sie die Linux-Einstellungen und versuchen Sie es noch einmal</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0,6 Sekunden</translation>
 <translation id="5856721540245522153">Debugging-Funktionen aktivieren</translation>
@@ -3321,7 +3316,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5860494867054883682">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Neue Eingabestift-Tools in der Ablage einblenden</translation>
 <translation id="5863445608433396414">Debugging-Funktionen aktivieren</translation>
-<translation id="5863471434640009253">Sie müssen zuerst Ihr <ph name="DEVICE_TYPE" /> neu starten, um Android Debug Bridge zu aktivieren. Wenn ADB deaktiviert werden soll, ist das Zurücksetzen auf die Werkseinstellungen erforderlich.</translation>
 <translation id="5864471791310927901">DHCP-Suche fehlgeschlagen</translation>
 <translation id="586567932979200359">Sie führen <ph name="PRODUCT_NAME" /> vom Datenträgerabbild aus. Wenn Sie den Browser auf Ihrem Computer installieren, wird er ohne Datenträgerabbild ausgeführt und immer automatisch aktualisiert.</translation>
 <translation id="5865733239029070421">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
@@ -3391,7 +3385,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5958529069007801266">Betreuter Nutzer</translation>
 <translation id="5959471481388474538">Netzwerk nicht verfügbar</translation>
 <translation id="595959584676692139">Seite neu laden, um diese Erweiterung zu nutzen</translation>
-<translation id="5961320084471308154">ADB aktivieren?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (Spitzenwert <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Die Erweiterung legt auch fest, welche Seite bei der Suche über die Omnibox angezeigt wird oder wenn Sie auf die Schaltfläche "Startseite" klicken.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> kann Dateien in "<ph name="FOLDERNAME" />" lesen</translation>
@@ -4255,7 +4248,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7254554697254365959">Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="7254951428499890870">Soll "<ph name="APP_NAME" />" wirklich im Diagnosemodus gestartet werden?</translation>
 <translation id="7255002516883565667">Derzeit kann eine Ihrer Karten nur auf diesem Gerät verwendet werden</translation>
-<translation id="7255916308560539517">Tippen Sie noch einmal auf Ihren Sicherheitsschlüssel, um das Zurücksetzen zu bestätigen. Damit werden alle auf dem Sicherheitsschlüssel gespeicherten Informationen und die zugehörige PIN gelöscht.</translation>
 <translation id="7255935316994522020">Übernehmen</translation>
 <translation id="7256069762010468647">Die Website verwendet Ihre Kamera</translation>
 <translation id="7256405249507348194">Unbekannter Fehler: <ph name="DESC" /></translation>
@@ -4765,6 +4757,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7968833647796919681">Erfassung von Leistungsdaten aktivieren</translation>
 <translation id="7968982339740310781">Details ansehen</translation>
 <translation id="7969046989155602842">Befehl</translation>
+<translation id="7970882136539140748">Karte kann momentan nicht gespeichert werden</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 mit RSA-Verschlüsselung</translation>
 <translation id="7973962044839454485">Fehler bei PPP-Authentifizierung aufgrund eines falschen Nutzernamens oder Passworts</translation>
 <translation id="7974566588408714340">Über <ph name="EXTENSIONNAME" /> erneut versuchen</translation>
@@ -5085,7 +5078,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8431909052837336408">PIN für SIM-Karte ändern</translation>
 <translation id="8434480141477525001">NaCl-Debug-Port</translation>
 <translation id="8435395510592618362">Ihre Identität mit <ph name="APP_NAME" /> bestätigen</translation>
-<translation id="843760761634048214">Kreditkarte speichern</translation>
 <translation id="8438328416656800239">Steigen Sie auf einen intelligenten Browser um</translation>
 <translation id="8438566539970814960">Suchanfragen und das Surfen verbessern</translation>
 <translation id="8439506636278576865">Übersetzung für Seiten in dieser Sprache anbieten</translation>
@@ -5468,6 +5460,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8965037249707889821">Altes Passwort eingeben</translation>
 <translation id="8966870118594285808">Versehentlich geschlossenen Tab wieder öffnen</translation>
 <translation id="8967866634928501045">Zum Anzeigen drücken Sie Alt + Umschalttaste + A</translation>
+<translation id="8968766641738584599">Karte speichern</translation>
 <translation id="89720367119469899">Esc-Taste</translation>
 <translation id="8972513834460200407">Bitten Sie Ihren Netzwerkadministrator, zu überprüfen, ob Downloads von Google-Servern von der Firewall blockiert werden.</translation>
 <translation id="8973557916016709913">Zoomstufe entfernen</translation>
@@ -5574,7 +5567,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9116799625073598554">Notizen-App</translation>
 <translation id="9117030152748022724">Apps verwalten</translation>
 <translation id="9121814364785106365">In angepinntem Tab öffnen</translation>
-<translation id="9122074588095746047">ADB konnte nicht aktiviert werden</translation>
 <translation id="9124003689441359348">Hier werden gespeicherte Passwörter angezeigt</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> verbleibend)</translation>
 <translation id="9128317794749765148">Einrichtung nicht abgeschlossen</translation>

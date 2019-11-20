@@ -20,8 +20,6 @@
 #include "base/task_runner.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
@@ -417,7 +415,8 @@ class ProxyResolverFactoryMojo::Job
 };
 
 ProxyResolverFactoryMojo::ProxyResolverFactoryMojo(
-    proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
+    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+        mojo_proxy_factory,
     net::HostResolver* host_resolver,
     const base::Callback<std::unique_ptr<net::ProxyResolverErrorObserver>()>&
         error_observer_factory,

@@ -256,7 +256,7 @@ TEST_P(AudioTrackRecorderTest, OnDataOpus) {
 
   testing::InSequence s;
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
 
   // Give ATR initial audio parameters.
   audio_track_recorder_->OnSetFormat(first_params_);
@@ -315,7 +315,7 @@ TEST_P(AudioTrackRecorderTest, OnDataPcm) {
 
   testing::InSequence s;
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
 
   audio_track_recorder_->OnSetFormat(first_params_);
 
@@ -340,7 +340,7 @@ TEST_P(AudioTrackRecorderTest, PauseResume) {
 
   testing::InSequence s;
   base::RunLoop run_loop;
-  base::Closure quit_closure = run_loop.QuitClosure();
+  base::RepeatingClosure quit_closure = run_loop.QuitClosure();
 
   // Give ATR initial audio parameters.
   audio_track_recorder_->OnSetFormat(first_params_);

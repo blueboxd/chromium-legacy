@@ -43,6 +43,9 @@ class MODULES_EXPORT WebSocketMessageChunkAccumulator final {
   // uses for certain amount of time.
   void Clear();
 
+  // Clear all stored data and cancel timers.
+  void Reset();
+
   // The regions will be available until Clear() is called.
   Vector<base::span<const char>> GetView() const;
 

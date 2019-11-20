@@ -5401,11 +5401,9 @@ void Document::ClearFocusedElement() {
 
 void Document::NotifyFocusedElementChanged(Element* old_focused_element,
                                            Element* new_focused_element) {
-  if (new_focused_element) {
-    if (AXObjectCache* cache = ExistingAXObjectCache()) {
-      cache->HandleFocusedUIElementChanged(old_focused_element,
-                                           new_focused_element);
-    }
+  if (AXObjectCache* cache = ExistingAXObjectCache()) {
+    cache->HandleFocusedUIElementChanged(old_focused_element,
+                                         new_focused_element);
   }
 
   if (GetPage()) {
@@ -8521,8 +8519,10 @@ IntersectionObserver& Document::EnsureDisplayLockActivationObserver() {
   if (!display_lock_activation_observer_) {
     // Use kPostTaskToDeliver method, since a commit can dirty layout, and we
     // want to avoid dirtying layout during post-lifecycle steps.
+    // Note that we use 50% margin (on the viewport) so that we get the
+    // observation before the element enters the viewport.
     display_lock_activation_observer_ = IntersectionObserver::Create(
-        {}, {std::numeric_limits<float>::min()}, this,
+        {Length::Percent(50.f)}, {std::numeric_limits<float>::min()}, this,
         WTF::BindRepeating(&Document::ProcessDisplayLockActivationObservation,
                            WrapWeakPersistent(this)),
         IntersectionObserver::kPostTaskToDeliver);

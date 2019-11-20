@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">अ‍ॅप आयकन</translation>
 <translation id="1410616244180625362">तुमचा कॅमेरा ॲक्सेस करण्यासाठी <ph name="HOST" /> ला परवानगी  देणे सुरू ठेवा</translation>
 <translation id="1414648216875402825">तुम्ही <ph name="PRODUCT_NAME" /> च्या अस्थिर आवृत्तीवर अपडेट करत आहात ज्यात प्रगतीपथावर असलेली वैशिष्ट्ये आहेत. क्रॅश आणि अनपेक्षित दोष आढळतील. कृपया सावधगिरीसह पुढे जा.</translation>
-<translation id="1414866280542221544">या डिव्हाइसवर सुरू करा</translation>
 <translation id="1415708812149920388">क्लिपबोर्डचा रीड अ‍ॅक्सेस नाकारला</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> ("<ph name="EXTENSION_ID" />" एक्स्टेंशन ID) या प्रकारच्या सेशनमध्ये अनुमती नाही.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">पिझ्झा स्लाइस</translation>
 <translation id="1468571364034902819">ही प्रोफाइल वापरू शकत नाही</translation>
 <translation id="1470811252759861213">आपल्या सर्व संगणकांवर तुमचे विस्तार प्राप्त करण्यासाठी, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">हे सिक्युरिटी कीच्या पिनसह, तिच्यावरील सर्व डेटा मिटवेल</translation>
 <translation id="1472675084647422956">अधिक दर्शवा</translation>
 <translation id="1475502736924165259">आपल्याकडे फाईलवर प्रमाणपत्रे आहेत जी अन्य कोणत्याही श्रेणींसाठी योग्य नाहीत</translation>
 <translation id="1476088332184200792">तुमच्या डिव्हाइसवर कॉपी करा</translation>
@@ -841,7 +839,6 @@
 <translation id="2202898655984161076">प्रिंटर सूचीबद्ध करताना समस्या आली. तुमचे काही प्रिंटर <ph name="CLOUD_PRINT_NAME" /> सह यशस्वीरित्या नोंदणीकृत नाहीत.</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />अ‍ॅड्रेस बार<ph name="END_LINK" /> मध्ये शोध इंजिन वापरले</translation>
 <translation id="2204034823255629767">तुम्ही टाइप करता ती कोणतीहीगोष्ट वाचा आणि बदला</translation>
-<translation id="2204397710290433380">ADB बंद करायचे आहे का?</translation>
 <translation id="220792432208469595">वापर आणि निदान डेटा पाठवा. हे डिव्हाइस सध्या Google ला आपोआप निदान, डिव्हाइस आणि अ‍ॅप वापर डेटा पाठवत आहे. हे सिस्ट्म आणि अ‍ॅप स्थिरता आणि इतर सुधारणा करण्यात मदत करेल. काही एकत्रित केलेला डेटा Google अ‍ॅप्स आणि Android डेव्हलपर सारख्या भागीदारांना देखील मदत करेल. या सेटिंगची मालकाद्वारे अंमलबजावणी केली जाते. जर तुमची अतिरिक्त वेब आणि अ‍ॅप अ‍ॅक्टिव्हिटी सेटिंग सुरू केलेली असल्यास, हा डेटा तुमच्या Google खाते वर सेव्ह केला जाऊ शकतो. <ph name="BEGIN_LINK1" />अधिक जाणून घ्या<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">कृपया यावर हा पिन कोड प्रविष्‍ट करा "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">शेअरिंग काढा</translation>
@@ -978,6 +975,7 @@
 <translation id="2396783860772170191">चार अंकी पिन एंटर करा (००००-९९९९)</translation>
 <translation id="2399939490305346086">सिक्युरिटी की साइन इन डेटा</translation>
 <translation id="2407481962792080328">तुम्ही तुमच्या Google खात्यामध्ये साइन इन केल्यावर, हे वैशिष्ट्य सुरू केले जाते</translation>
+<translation id="2408018932941436077">कार्ड सेव्ह करत आहे</translation>
 <translation id="2408955596600435184">तुमचा पिन प्रविष्‍ट करा</translation>
 <translation id="241082044617551207">अज्ञात प्लग-इन</translation>
 <translation id="2412593942846481727">अपडेट उपलब्ध आहे</translation>
@@ -1650,7 +1648,7 @@
 <translation id="3405664148539009465">फॉन्ट कस्टमाइझ करा</translation>
 <translation id="3405763860805964263">...</translation>
 <translation id="3406605057700382950">बुकमार्क बार &amp;दर्शवा</translation>
-<translation id="3409785640040772790">नकाशे</translation>
+<translation id="3409785640040772790">Maps</translation>
 <translation id="3410832398355316179">हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबंधित सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल. <ph name="USER_EMAIL" /> नंतरही साइन इन करू शकतो.</translation>
 <translation id="3412265149091626468">निवड वर जा</translation>
 <translation id="3413122095806433232">CA जारीकर्ता: <ph name="LOCATION" /></translation>
@@ -2006,7 +2004,6 @@
 <translation id="3873315167136380065">हे सुरू करण्यासाठी, तुमची सिंक पासफ्रेझ काढून टाकण्यासाठी <ph name="BEGIN_LINK" />सिंक रीसेट करा<ph name="END_LINK" /></translation>
 <translation id="3873423927483480833">पिन दाखवा</translation>
 <translation id="3873915545594852654">ARC++ ला समस्या आली.</translation>
-<translation id="387924939625099872">ADB बंद करण्यासाठी, तुमचे <ph name="DEVICE_TYPE" /> रीस्टार्ट करा. ते फॅक्टरी सेटिंग्जवर रीसेट केले जाईल आणि सर्व वापरकर्ता खाती आणि स्थानिक डेटा मिटवला जाईल.</translation>
 <translation id="3879748587602334249">डाउनलोड व्यवस्थापक</translation>
 <translation id="3886446263141354045">या साइट ॲक्सेस करण्याची तुमची विनंती <ph name="NAME" /> कडे पाठवली गेली आहे</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> सोबत टिपा घेणे</translation>
@@ -2407,7 +2404,6 @@
 <translation id="4501530680793980440">काढून टाकण्याची पुष्टी करा</translation>
 <translation id="4502423230170890588">या डिव्हाइसवरून काढून टाका</translation>
 <translation id="4504940961672722399">या आयकनवर क्लिक करुन किंवा <ph name="EXTENSION_SHORTCUT" /> दाबून हे एक्स्टेंशन वापरा.</translation>
-<translation id="4506379069541445709">सुरू ठेवल्याने Android अ‍ॅप्स तयार करण्यासाठी आणि त्यांची चाचणी घेण्यासाठी ADB सुरू केले जाईल. लक्षात घ्या की, Google ने पडताळणी न केलेल्या चाचणी अ‍ॅप्सच्या इंस्टॉलेशनला ADB अनुमती देते.</translation>
 <translation id="4508051413094283164">सर्व गुप्त विंडोमध्ये उघडा</translation>
 <translation id="4508265954913339219">सक्रियन अयशस्वी</translation>
 <translation id="4508765956121923607">स्त्रो&amp;त पाहा</translation>
@@ -3310,7 +3306,6 @@
 <translation id="5851868085455377790">जारीकर्ता</translation>
 <translation id="5852112051279473187">अरेरे! या डिव्हाइसची नावनोंदणी करताना खरोखर काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा आणि तुमच्या सपोर्ट प्रतिनिधीशी संपर्क साधा.</translation>
 <translation id="5852137567692933493">रीस्टार्ट करा आणि पॉवरवॉश करा</translation>
-<translation id="5852360662347412211">Linux सेटिंग्जवर जा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="5854912040170951372">तुकडा</translation>
 <translation id="5855643921295613558">०.६ सेकंद</translation>
 <translation id="5856721540245522153">डीबगिंग वैशिष्ट्ये सुरू करा</translation>
@@ -3323,7 +3318,6 @@
 <translation id="5860494867054883682">तुमचे डिव्हाइस <ph name="CHANNEL_NAME" /> चॅनेलवर (<ph name="PROGRESS_PERCENT" />) अपडेट करीत आहे</translation>
 <translation id="5862109781435984885">शेल्फमधील स्टायलस टूल दर्शवा</translation>
 <translation id="5863445608433396414">डीबगिंग वैशिष्ट्ये सुरू करा</translation>
-<translation id="5863471434640009253">Android डीबग ब्रिज सुरू करण्यासाठी, प्रथम तुमचे <ph name="DEVICE_TYPE" /> रीस्टार्ट करा. ADB बंद करण्यासाठी फॅक्टरी सेटिंग्ज रीसेट करण्याची आवश्यकता आहे.</translation>
 <translation id="5864471791310927901">DHCP लुकअप अयशस्वी</translation>
 <translation id="586567932979200359">तुम्ही <ph name="PRODUCT_NAME" /> त्याच्या डिस्क प्रतिमेवरून चालवत आहात. तुमच्या कॉंप्युटरवर ते इंस्टॉल केल्यामुळे तुम्हाला ते डिस्क प्रतिमेशिवाय चालवू देते आणि ते अपडेट ठेवले जाईल हे निश्चित करते.</translation>
 <translation id="5865733239029070421">Google ला वापर आकडेवारी आणि क्रॅश अहवाल आपोआप पाठवते</translation>
@@ -3394,7 +3388,6 @@
 <translation id="5958529069007801266">पर्यवेक्षित वापरकर्ता</translation>
 <translation id="5959471481388474538">नेटवर्क उपलब्ध नाही</translation>
 <translation id="595959584676692139">हे एक्स्टेंशन वापरण्यासाठी पेज रीलोड करा</translation>
-<translation id="5961320084471308154">ADB सुरू करायचे आहे का?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> सर्वोच्च)</translation>
 <translation id="5965661248935608907">तुम्ही होम बटण क्लिक करता किंवा ओम्निबॉक्समधून शोध घेता तेव्हा कोणते पेज दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> <ph name="FOLDERNAME" /> मधील फाइल पाहू शकते</translation>
@@ -4258,7 +4251,6 @@
 <translation id="7254554697254365959">हे पृष्‍ठ भाषांतरित केले जाऊ शकले नाही.</translation>
 <translation id="7254951428499890870">तुम्ही निदान मोडमध्ये "<ph name="APP_NAME" />" लाँच करू इच्छिता याची तुम्हाला खात्री आहे?</translation>
 <translation id="7255002516883565667">सध्या तुमच्याकडे एक कार्ड आहे जे फक्त या डिव्हाइसवर वापरले जाऊ शकते</translation>
-<translation id="7255916308560539517">रीसेटची खात्री करण्यासाठी तुमच्या सिक्युरिटी कीला पुन्हा स्पर्श करा. सिक्युरिटी कीवर स्टोअर केलेली सर्व माहिती, त्याच्या पिनच्या समावेशासह मिटवली जाईल.</translation>
 <translation id="7255935316994522020">लागू करा</translation>
 <translation id="7256069762010468647">साइट तुमचा कॅमेरा वापरत आहे</translation>
 <translation id="7256405249507348194">अपरिचित एरर: <ph name="DESC" /></translation>
@@ -4766,6 +4758,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="7968833647796919681">कामप्रदर्शन डेटा संकलन सुरू करा</translation>
 <translation id="7968982339740310781">तपशील पहा</translation>
 <translation id="7969046989155602842">कमांड</translation>
+<translation id="7970882136539140748">आता कार्ड सेव्ह केले जाऊ शकत नाही</translation>
 <translation id="7972714317346275248">PKCS #1 RSA एंक्रिप्शनसह SHA-384</translation>
 <translation id="7973962044839454485">अयोग्य वापरकर्तानावामुळे किंवा पासवर्डमुळे PPP ऑथेंटिकेशन अयशस्वी झाले</translation>
 <translation id="7974566588408714340"><ph name="EXTENSIONNAME" /> वापरून पुन्हा प्रयत्न करून पहा</translation>
@@ -5087,7 +5080,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8431909052837336408">सिम पिन बदला</translation>
 <translation id="8434480141477525001">NaCl डीबग पोर्ट</translation>
 <translation id="8435395510592618362"><ph name="APP_NAME" /> सह तुमची ओळख पडताळा</translation>
-<translation id="843760761634048214">क्रेडिट कार्ड सेव्ह करा</translation>
 <translation id="8438328416656800239">स्मार्ट ब्राउझरवर बदला</translation>
 <translation id="8438566539970814960">शोध आणि ब्राउझ करणे चांगले करा</translation>
 <translation id="8439506636278576865">या भाषेमध्ये पेज भाषांतरीत करण्यासाठी ऑफर</translation>
@@ -5471,6 +5463,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8965037249707889821">जुना पासवर्ड एंटर करा</translation>
 <translation id="8966870118594285808">तुम्ही एखादा टॅब चुकून बंद केल्यास, तो पुन्हा उघडा</translation>
 <translation id="8967866634928501045">दाखवण्यासाठी Alt Shift A दाबा</translation>
+<translation id="8968766641738584599">कार्ड सेव्ह करा</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">कृपया फायरवॉल Google सर्व्हरवरून डाउनलोड ब्लॉक करत नसल्याची खात्री करण्यासाठी तुमच्या नेटवर्क ॲडमिनिस्ट्रेटरच्या साहाय्याने तपासा.</translation>
 <translation id="8973557916016709913">झूम स्तर काढून टाका</translation>
@@ -5577,7 +5570,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="9116799625073598554">टीप-घेणारा ॲप</translation>
 <translation id="9117030152748022724">तुमची ॲप्स व्यवस्थापित करा</translation>
 <translation id="9121814364785106365">पिन केलेला टॅब म्हणून उघडा</translation>
-<translation id="9122074588095746047">ADB सुरू करता आले नाही</translation>
 <translation id="9124003689441359348">सेव्ह केलेले पासवर्ड येथे दिसून येतील</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> शि.)</translation>
 <translation id="9128317794749765148">सेट करणे पूर्ण करू शकलो नाही</translation>

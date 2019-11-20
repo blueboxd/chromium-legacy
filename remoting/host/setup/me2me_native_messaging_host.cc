@@ -48,9 +48,12 @@ const char* kServiceAccountRedirectUri = "oob";
 
 // Features supported in addition to the base protocol.
 const char* kSupportedFeatures[] = {
-  "pairingRegistry",
-  "oauthClient",
-  "getRefreshTokenFromAuthCode",
+    "pairingRegistry",
+    "oauthClient",
+    "getRefreshTokenFromAuthCode",
+#if defined(OS_MACOSX)
+    "it2mePermissionCheck",
+#endif  // defined(OS_MACOSX)
 };
 
 // Helper to extract the "config" part of a message as a DictionaryValue.
@@ -178,10 +181,10 @@ void Me2MeNativeMessagingHost::ProcessHello(
   DCHECK(task_runner()->BelongsToCurrentThread());
 
   response->SetString("version", STRINGIZE(VERSION));
-  std::unique_ptr<base::ListValue> supported_features_list(
-      new base::ListValue());
-  supported_features_list->AppendStrings(std::vector<std::string>(
-      kSupportedFeatures, kSupportedFeatures + base::size(kSupportedFeatures)));
+  auto supported_features_list = std::make_unique<base::ListValue>();
+  for (const char* feature : kSupportedFeatures) {
+    supported_features_list->Append(feature);
+  }
   response->Set("supportedFeatures", std::move(supported_features_list));
   SendMessageToClient(std::move(response));
 }

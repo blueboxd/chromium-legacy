@@ -129,6 +129,7 @@ are declared in tools/grit/grit_rule.gni.
     </if>
   </outputs>
   <translations>
+    <file path="resources/generated_resources_af.xtb" lang="af" />
     <file path="resources/generated_resources_am.xtb" lang="am" />
     <file path="resources/generated_resources_ar.xtb" lang="ar" />
     <file path="resources/generated_resources_bg.xtb" lang="bg" />

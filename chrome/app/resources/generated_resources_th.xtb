@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">ไอคอนของแอป</translation>
 <translation id="1410616244180625362">อนุญาตให้ <ph name="HOST" /> เข้าถึงกล้องต่อไป</translation>
 <translation id="1414648216875402825">คุณกำลังอัปเดตไปเป็น <ph name="PRODUCT_NAME" /> ในเวอร์ชันที่ไม่เสถียร ซึ่งมีฟีเจอร์ที่ยังอยู่ระหว่างดำเนินการ จะมีข้อขัดข้องและข้อบกพร่องที่ไม่คาดคิดเกิดขึ้น โปรดดำเนินการต่อด้วยความระมัดระวัง</translation>
-<translation id="1414866280542221544">เปิดใช้ในอุปกรณ์นี้</translation>
 <translation id="1415708812149920388">การเข้าถึงการอ่านคลิปบอร์ดถูกปฏิเสธ</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (รหัสส่วนขยาย "<ph name="EXTENSION_ID" />") ไม่ได้รับอนุญาตในเซสชันประเภทนี้</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">พิซซ่า 1 ชิ้น</translation>
 <translation id="1468571364034902819">ใช้โปรไฟล์นี้ไม่ได้</translation>
 <translation id="1470811252759861213">หากต้องการรับส่วนขยายในคอมพิวเตอร์ทุกเครื่องของคุณ ให้<ph name="SIGN_IN_LINK" /></translation>
-<translation id="1470967055429794975">การดำเนินการนี้จะลบข้อมูลทั้งหมดในคีย์ความปลอดภัย รวมถึง PIN ของคีย์ด้วย</translation>
 <translation id="1472675084647422956">แสดงเพิ่มเติม</translation>
 <translation id="1475502736924165259">คุณมีใบรับรองของไฟล์ที่ไม่เข้ากับหมวดหมู่อื่นๆ</translation>
 <translation id="1476088332184200792">คัดลอกไปยังอุปกรณ์ของคุณ</translation>
@@ -842,7 +840,6 @@
 <translation id="2202898655984161076">เกิดปัญหาในการแสดงรายการเครื่องพิมพ์ คุณอาจยังลงทะเบียนเครื่องพิมพ์บางเครื่องกับ <ph name="CLOUD_PRINT_NAME" /> ไม่เรียบร้อย</translation>
 <translation id="2203682048752833055">เครื่องมือค้นหาที่ใช้ใน<ph name="BEGIN_LINK" />แถบที่อยู่เว็บ<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">อ่านและเปลี่ยนแปลงสิ่งที่คุณพิมพ์</translation>
-<translation id="2204397710290433380">ปิดใช้ ADB ใช่ไหม</translation>
 <translation id="220792432208469595">ส่งข้อมูลการใช้งานและการวินิจฉัย ปัจจุบันอุปกรณ์นี้ส่งข้อมูลการวินิจฉัย อุปกรณ์ และการใช้งานแอปไปยัง Google โดยอัตโนมัติ ซึ่งจะช่วยปรับปรุงความเสถียรของแอปและระบบ และอื่นๆ ข้อมูลที่รวบรวมมาบางส่วนจะมีประโยชน์ต่อแอปและพาร์ทเนอร์ของ Google ด้วย เช่น นักพัฒนาซอฟต์แวร์ Android เจ้าของเป็นผู้บังคับใช้การตั้งค่านี้ หากเปิดการตั้งค่ากิจกรรมเพิ่มเติมบนเว็บและแอปไว้ ระบบอาจบันทึกข้อมูลนี้ไว้ในบัญชี Google ของคุณ <ph name="BEGIN_LINK1" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">โปรดป้อนรหัส PIN นี้บน "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">นำการแชร์ออก</translation>
@@ -979,6 +976,7 @@
 <translation id="2396783860772170191">ป้อน PIN 4 หลัก (0000-9999)</translation>
 <translation id="2399939490305346086">ข้อมูลการลงชื่อเข้าใช้ในคีย์ความปลอดภัย</translation>
 <translation id="2407481962792080328">ฟีเจอร์นี้จะเปิดเมื่อคุณลงชื่อเข้าใช้บัญชี Google</translation>
+<translation id="2408018932941436077">กำลังบันทึกบัตร</translation>
 <translation id="2408955596600435184">ป้อน PIN ของคุณ</translation>
 <translation id="241082044617551207">ปลั๊กอินที่ไม่รู้จัก</translation>
 <translation id="2412593942846481727">มีเวอร์ชันอัปเดต</translation>
@@ -2007,7 +2005,6 @@
 <translation id="3873315167136380065">หากต้องการเปิดการตั้งค่า ให้<ph name="BEGIN_LINK" />รีเซ็ตการซิงค์<ph name="END_LINK" />เพื่อนำรหัสผ่านการซิงค์ออก</translation>
 <translation id="3873423927483480833">แสดง PIN</translation>
 <translation id="3873915545594852654">เกิดปัญหาเกี่ยวกับ ARC++</translation>
-<translation id="387924939625099872">หากต้องการปิดใช้ ADB ให้รีสตาร์ท <ph name="DEVICE_TYPE" /> ระบบจะรีเซ็ตอุปกรณ์เป็นค่าเริ่มต้น บัญชีผู้ใช้และข้อมูลทั้งหมดในเครื่องจะถูกลบ</translation>
 <translation id="3879748587602334249">Download Manager</translation>
 <translation id="3886446263141354045">ระบบส่งคำขอเข้าถึงเว็บไซต์นี้ของคุณให้ <ph name="NAME" /> แล้ว</translation>
 <translation id="3888550877729210209">จดโน้ตด้วย <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@
 <translation id="4501530680793980440">ยืนยันการนำออก</translation>
 <translation id="4502423230170890588">นำออกจากอุปกรณ์นี้</translation>
 <translation id="4504940961672722399">ใช้ส่วนขยายนี้โดยคลิกที่ไอคอนนี้ หรือกด <ph name="EXTENSION_SHORTCUT" /></translation>
-<translation id="4506379069541445709">การดำเนินการต่อจะเป็นการเปิดใช้ ADB สำหรับการสร้างและทดสอบแอป Android โปรดทราบว่า ADB จะอนุญาตให้ติดตั้งแอปทดสอบที่ไม่ได้รับการยืนยันจาก Google</translation>
 <translation id="4508051413094283164">เปิดทั้งหมดในหน้าต่างที่ไม่ระบุตัวตน</translation>
 <translation id="4508265954913339219">การเปิดใช้งานล้มเหลว</translation>
 <translation id="4508765956121923607">ดู&amp;ต้นฉบับ</translation>
@@ -3312,7 +3308,6 @@
 <translation id="5851868085455377790">ผู้ออกใบรับรอง</translation>
 <translation id="5852112051279473187">อ๊ะ! เกิดข้อผิดพลาดขึ้นในขณะลงทะเบียนอุปกรณ์นี้ โปรดลองอีกครั้งหรือติดต่อตัวแทนการสนับสนุนของคุณ</translation>
 <translation id="5852137567692933493">รีสตาร์ทและ Powerwash</translation>
-<translation id="5852360662347412211">ไปที่การตั้งค่า Linux แล้วลองอีกครั้ง</translation>
 <translation id="5854912040170951372">สไลซ์</translation>
 <translation id="5855643921295613558">0.6 วินาที</translation>
 <translation id="5856721540245522153">เปิดใช้ฟีเจอร์การแก้ไขข้อบกพร่อง</translation>
@@ -3325,7 +3320,6 @@
 <translation id="5860494867054883682">กำลังอัปเดตอุปกรณ์เป็นเวอร์ชัน <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">แสดงเครื่องมือสไตลัสในชั้นวาง</translation>
 <translation id="5863445608433396414">เปิดใช้ฟีเจอร์การแก้ไขข้อบกพร่อง</translation>
-<translation id="5863471434640009253">คุณต้องรีสตาร์ท <ph name="DEVICE_TYPE" /> ก่อนจึงจะเปิดใช้ Android Debug Bridge ได้ และต้องรีเซ็ตเป็นค่าเริ่มต้นจึงจะปิดใช้ ADB ได้</translation>
 <translation id="5864471791310927901">การค้นหา DHCP ล้มเหลว</translation>
 <translation id="586567932979200359">คุณกำลังเรียกใช้ <ph name="PRODUCT_NAME" /> จากดิสก์อิมเมจ การติดตั้งผลิตภัณฑ์นี้บนคอมพิวเตอร์จะทำให้คุณเรียกใช้ได้โดยไม่ต้องใช้ดิสก์อิมเมจและคุณมั่นใจได้ว่าผลิตภัณฑ์จะอัปเดตตลอดเวลา</translation>
 <translation id="5865733239029070421">ส่งสถิติการใช้งานและรายงานข้อขัดข้องให้กับ Google โดยอัตโนมัติ</translation>
@@ -3395,7 +3389,6 @@
 <translation id="5958529069007801266">ผู้ใช้ภายใต้การดูแล</translation>
 <translation id="5959471481388474538">เครือข่ายไม่สามารถใช้งานได้</translation>
 <translation id="595959584676692139">โหลดหน้าซ้ำเพื่อใช้ส่วนขยายนี้</translation>
-<translation id="5961320084471308154">เปิดใช้ ADB ใช่ไหม</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (สูงสุด <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณคลิกปุ่ม "หน้าแรก" หรือทำการค้นหาจากแถบอเนกประสงค์</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> ดูไฟล์ใน <ph name="FOLDERNAME" /> ได้</translation>
@@ -4259,7 +4252,6 @@
 <translation id="7254554697254365959">หน้านี้ไม่สามารถแปลได้</translation>
 <translation id="7254951428499890870">คุณแน่ใจไหมว่าต้องการเปิด "<ph name="APP_NAME" />" ในโหมดการวินิจฉัย</translation>
 <translation id="7255002516883565667">ขณะนี้คุณมีบัตรใบเดียวที่ใช้ได้ในอุปกรณ์นี้เท่านั้น</translation>
-<translation id="7255916308560539517">แตะคีย์ความปลอดภัยอีกครั้งเพื่อยืนยันการรีเซ็ต ระบบจะลบข้อมูลทั้งหมดที่เก็บไว้ในคีย์ความปลอดภัย รวมถึง PIN ของคีย์ด้วย</translation>
 <translation id="7255935316994522020">นำไปใช้</translation>
 <translation id="7256069762010468647">เว็บไซต์กำลังใช้กล้องของคุณ</translation>
 <translation id="7256405249507348194">ข้อผิดพลาดที่ไม่รู้จัก: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@
 <translation id="7968833647796919681">เปิดใช้งานการเก็บรวบรวมข้อมูลผลการปฏิบัติงาน</translation>
 <translation id="7968982339740310781">ดูรายละเอียด</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">บันทึกบัตรไม่ได้ในตอนนี้</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 พร้อมการเข้ารหัส RSA</translation>
 <translation id="7973962044839454485">การตรวจสอบสิทธิ์ PPP ล้มเหลวเนื่องจากชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</translation>
 <translation id="7974566588408714340">ลองอีกครั้งโดยใช้ <ph name="EXTENSIONNAME" /></translation>
@@ -5090,7 +5083,6 @@
 <translation id="8431909052837336408">เปลี่ยน PIN ของซิม</translation>
 <translation id="8434480141477525001">พอร์ตแก้ปัญหา NaCl</translation>
 <translation id="8435395510592618362">ยืนยันตัวตนของคุณกับ <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">บันทึกบัตรเครดิต</translation>
 <translation id="8438328416656800239">เปลี่ยนเป็นเบราว์เซอร์ที่มีประสิทธิภาพ</translation>
 <translation id="8438566539970814960">ปรับปรุงการค้นหาและการท่องเว็บให้ดียิ่งขึ้น</translation>
 <translation id="8439506636278576865">เสนอที่จะแปลหน้าต่างๆ ที่เป็นภาษานี้</translation>
@@ -5473,6 +5465,7 @@
 <translation id="8965037249707889821">ป้อนรหัสผ่านเก่า</translation>
 <translation id="8966870118594285808">เปิดแท็บอีกครั้งหากปิดไปโดยไม่ได้ตั้งใจ</translation>
 <translation id="8967866634928501045">กด Alt Shift A เพื่อแสดง</translation>
+<translation id="8968766641738584599">บันทึกบัตร</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">โปรดตรวจสอบกับผู้ดูแลระบบเครือข่ายของคุณเพื่อให้แน่ใจว่าไฟร์วอลล์ไม่ได้บล็อกการดาวน์โหลดจากเซิร์ฟเวอร์ของ Google</translation>
 <translation id="8973557916016709913">นำระดับการซูมออก</translation>
@@ -5579,7 +5572,6 @@
 <translation id="9116799625073598554">แอปสำหรับจดโน้ต</translation>
 <translation id="9117030152748022724">จัดการแอปของคุณ</translation>
 <translation id="9121814364785106365">เปิดเป็นแท็บที่ปักหมุดไว้</translation>
-<translation id="9122074588095746047">เปิดใช้ ADB ไม่ได้</translation>
 <translation id="9124003689441359348">รหัสผ่านที่บันทึกไว้จะแสดงที่นี่</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (เหลือ <ph name="LICENSE_COUNT" /> รายการ)</translation>
 <translation id="9128317794749765148">ตั้งค่าไม่สำเร็จ</translation>

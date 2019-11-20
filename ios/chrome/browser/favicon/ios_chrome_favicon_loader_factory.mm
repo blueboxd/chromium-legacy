@@ -16,6 +16,17 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+std::unique_ptr<KeyedService> BuildFaviconLoader(web::BrowserState* context) {
+  ios::ChromeBrowserState* browser_state =
+      ios::ChromeBrowserState::FromBrowserState(context);
+  return std::make_unique<FaviconLoader>(
+      IOSChromeLargeIconServiceFactory::GetForBrowserState(browser_state));
+}
+
+}  // namespace
+
 FaviconLoader* IOSChromeFaviconLoaderFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<FaviconLoader*>(
@@ -33,6 +44,12 @@ IOSChromeFaviconLoaderFactory* IOSChromeFaviconLoaderFactory::GetInstance() {
   return instance.get();
 }
 
+// static
+BrowserStateKeyedServiceFactory::TestingFactory
+IOSChromeFaviconLoaderFactory::GetDefaultFactory() {
+  return base::BindRepeating(&BuildFaviconLoader);
+}
+
 IOSChromeFaviconLoaderFactory::IOSChromeFaviconLoaderFactory()
     : BrowserStateKeyedServiceFactory(
           "FaviconLoader",
@@ -45,10 +62,7 @@ IOSChromeFaviconLoaderFactory::~IOSChromeFaviconLoaderFactory() {}
 std::unique_ptr<KeyedService>
 IOSChromeFaviconLoaderFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
-  return std::make_unique<FaviconLoader>(
-      IOSChromeLargeIconServiceFactory::GetForBrowserState(browser_state));
+  return BuildFaviconLoader(context);
 }
 
 web::BrowserState* IOSChromeFaviconLoaderFactory::GetBrowserStateToUse(

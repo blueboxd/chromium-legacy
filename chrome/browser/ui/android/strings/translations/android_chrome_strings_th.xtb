@@ -789,6 +789,7 @@
 <translation id="6818926723028410516">เลือกรายการ</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
+<translation id="6840155290835956714">ถามก่อนที่จะส่ง</translation>
 <translation id="6845325883481699275">ช่วยปรับปรุงความปลอดภัยของ Chrome</translation>
 <translation id="6846298663435243399">กำลังโหลด…</translation>
 <translation id="6850409657436465440">ระบบยังดาวน์โหลดอยู่</translation>
@@ -1095,7 +1096,6 @@
 <translation id="9133397713400217035">สำรวจแบบออฟไลน์</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
-<translation id="9139068048179869749">ถามก่อนอนุญาตให้เว็บไซต์ส่งการแจ้งเตือน (แนะนำ)</translation>
 <translation id="9139318394846604261">ช็อปปิ้ง</translation>
 <translation id="9155898266292537608">หรือคุณจะค้นหาด้วยการแตะอย่างรวดเร็วที่คำๆ หนึ่งก็ได้เช่นกัน</translation>
 <translation id="9169507124922466868">ประวัติการนำทางเปิดอยู่ครึ่งเดียว</translation>

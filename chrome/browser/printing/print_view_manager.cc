@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "printing/buildflags/buildflags.h"
 
 using content::BrowserThread;
@@ -112,12 +113,12 @@ bool PrintViewManager::BasicPrint(content::RenderFrameHost* rfh) {
 
 bool PrintViewManager::PrintPreviewNow(content::RenderFrameHost* rfh,
                                        bool has_selection) {
-  return PrintPreview(rfh, nullptr, has_selection);
+  return PrintPreview(rfh, mojo::NullAssociatedRemote(), has_selection);
 }
 
 bool PrintViewManager::PrintPreviewWithPrintRenderer(
     content::RenderFrameHost* rfh,
-    mojom::PrintRendererAssociatedPtrInfo print_renderer) {
+    mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer) {
   return PrintPreview(rfh, std::move(print_renderer), false);
 }
 
@@ -194,7 +195,7 @@ void PrintViewManager::RenderFrameDeleted(
 
 bool PrintViewManager::PrintPreview(
     content::RenderFrameHost* rfh,
-    mojom::PrintRendererAssociatedPtrInfo print_renderer,
+    mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
     bool has_selection) {
   // Users can send print commands all they want and it is beyond
   // PrintViewManager's control. Just ignore the extra commands.

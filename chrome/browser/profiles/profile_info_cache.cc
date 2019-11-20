@@ -40,7 +40,6 @@
 
 namespace {
 
-const char kIsUsingDefaultNameKey[] = "is_using_default_name";
 const char kIsUsingDefaultAvatarKey[] = "is_using_default_avatar";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
@@ -60,9 +59,6 @@ void DeleteBitmap(const base::FilePath& image_path) {
 }
 
 }  // namespace
-const char ProfileInfoCache::kNameKey[] = "name";
-const char ProfileInfoCache::kGAIANameKey[] = "gaia_name";
-const char ProfileInfoCache::kGAIAGivenNameKey[] = "gaia_given_name";
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
                                    const base::FilePath& user_data_dir)
@@ -85,20 +81,22 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
     }
 #endif
     base::string16 name;
-    info->GetString(kNameKey, &name);
+    info->GetString(ProfileAttributesEntry::kNameKey, &name);
     keys_.push_back(it.key());
     profile_attributes_entries_[user_data_dir_.AppendASCII(it.key()).value()] =
         std::unique_ptr<ProfileAttributesEntry>(nullptr);
 
     bool using_default_name;
-    if (!info->GetBoolean(kIsUsingDefaultNameKey, &using_default_name)) {
+    if (!info->GetBoolean(ProfileAttributesEntry::kIsUsingDefaultNameKey,
+                          &using_default_name)) {
       // If the preference hasn't been set, and the name is default, assume
       // that the user hasn't done this on purpose.
       // |include_check_for_legacy_profile_name| is true as this is an old
       // pre-existing profile and might have a legacy default profile name.
       using_default_name = IsDefaultProfileName(
           name, /*include_check_for_legacy_profile_name=*/true);
-      info->SetBoolean(kIsUsingDefaultNameKey, using_default_name);
+      info->SetBoolean(ProfileAttributesEntry::kIsUsingDefaultNameKey,
+                       using_default_name);
     }
 
     // For profiles that don't have the "using default avatar" state set yet,
@@ -151,7 +149,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   base::DictionaryValue* cache = update.Get();
 
   std::unique_ptr<base::DictionaryValue> info(new base::DictionaryValue);
-  info->SetString(kNameKey, name);
+  info->SetString(ProfileAttributesEntry::kNameKey, name);
   info->SetString(ProfileAttributesEntry::kGAIAIdKey, gaia_id);
   info->SetString(ProfileAttributesEntry::kUserNameKey, user_name);
   DCHECK(!is_consented_primary_account || !gaia_id.empty() ||
@@ -168,7 +166,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   // Either the user has provided a name manually on purpose, and in this case
   // we should not check for legacy profile names or this a new profile but then
   // it is not a legacy name, so we dont need to check for legacy names.
-  info->SetBoolean(kIsUsingDefaultNameKey,
+  info->SetBoolean(ProfileAttributesEntry::kIsUsingDefaultNameKey,
                    IsDefaultProfileName(
                        name, /*include_check_for_legacy_profile_name*/ false));
   // Assume newly created profiles use a default avatar.
@@ -254,36 +252,8 @@ base::string16 ProfileInfoCache::GetNameToDisplayOfProfileAtIndex(
   return entry->GetName();
 }
 
-base::string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
-  DCHECK(!ProfileAttributesEntry::ShouldConcatenateGaiaAndProfileName());
-  base::string16 name;
-  // Unless the user has customized the profile name, we should use the
-  // profile's Gaia given name, if it's available.
-  if (ProfileIsUsingDefaultNameAtIndex(index)) {
-    base::string16 given_name = GetGAIAGivenNameOfProfileAtIndex(index);
-    name = given_name.empty() ? GetGAIANameOfProfileAtIndex(index) : given_name;
-  }
-  if (name.empty())
-    GetInfoForProfileAtIndex(index)->GetString(kNameKey, &name);
-  return name;
-}
-
 base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.AppendASCII(keys_[index]);
-}
-
-base::string16 ProfileInfoCache::GetGAIANameOfProfileAtIndex(
-    size_t index) const {
-  base::string16 name;
-  GetInfoForProfileAtIndex(index)->GetString(kGAIANameKey, &name);
-  return name;
-}
-
-base::string16 ProfileInfoCache::GetGAIAGivenNameOfProfileAtIndex(
-    size_t index) const {
-  base::string16 name;
-  GetInfoForProfileAtIndex(index)->GetString(kGAIAGivenNameKey, &name);
-  return name;
 }
 
 std::string ProfileInfoCache::GetGAIAIdOfProfileAtIndex(
@@ -360,12 +330,6 @@ std::string ProfileInfoCache::GetSupervisedUserIdOfProfileAtIndex(
   return supervised_user_id;
 }
 
-bool ProfileInfoCache::ProfileIsUsingDefaultNameAtIndex(size_t index) const {
-  bool value = false;
-  GetInfoForProfileAtIndex(index)->GetBoolean(kIsUsingDefaultNameKey, &value);
-  return value;
-}
-
 bool ProfileInfoCache::ProfileIsUsingDefaultAvatarAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kIsUsingDefaultAvatarKey, &value);
@@ -387,21 +351,6 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
     DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
 
   return icon_index;
-}
-
-void ProfileInfoCache::SetLocalProfileNameOfProfileAtIndex(
-    size_t index,
-    const base::string16& name) {
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  base::string16 current_name;
-  info->GetString(kNameKey, &current_name);
-  if (name == current_name)
-    return;
-
-  info->SetString(kNameKey, name);
-  SetInfoForProfileAtIndex(index, std::move(info));
-  NotifyIfProfileNamesHaveChanged();
 }
 
 void ProfileInfoCache::NotifyProfileAuthInfoChanged(
@@ -459,31 +408,6 @@ void ProfileInfoCache::SetSupervisedUserIdOfProfileAtIndex(
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
   for (auto& observer : observer_list_)
     observer.OnProfileSupervisedUserIdChanged(profile_path);
-}
-
-void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,
-                                                   const base::string16& name) {
-  if (name == GetGAIANameOfProfileAtIndex(index))
-    return;
-
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetString(kGAIANameKey, name);
-  SetInfoForProfileAtIndex(index, std::move(info));
-  NotifyIfProfileNamesHaveChanged();
-}
-
-void ProfileInfoCache::SetGAIAGivenNameOfProfileAtIndex(
-    size_t index,
-    const base::string16& name) {
-  if (name == GetGAIAGivenNameOfProfileAtIndex(index))
-    return;
-
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetString(kGAIAGivenNameKey, name);
-  SetInfoForProfileAtIndex(index, std::move(info));
-  NotifyIfProfileNamesHaveChanged();
 }
 
 void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
@@ -553,19 +477,6 @@ void ProfileInfoCache::SetProfileSigninRequiredAtIndex(size_t index,
   info->SetBoolean(kSigninRequiredKey, value);
   SetInfoForProfileAtIndex(index, std::move(info));
   NotifyIsSigninRequiredChanged(GetPathOfProfileAtIndex(index));
-}
-
-void ProfileInfoCache::SetProfileIsUsingDefaultNameAtIndex(
-    size_t index, bool value) {
-  if (value == ProfileIsUsingDefaultNameAtIndex(index))
-    return;
-
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(kIsUsingDefaultNameKey, value);
-  SetInfoForProfileAtIndex(index, std::move(info));
-
-  NotifyIfProfileNamesHaveChanged();
 }
 
 void ProfileInfoCache::SetProfileIsUsingDefaultAvatarAtIndex(

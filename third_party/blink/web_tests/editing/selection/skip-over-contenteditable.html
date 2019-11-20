@@ -32,8 +32,8 @@ selection_test(
     '<p>^Before the contenteditable</p>',
     '<div contenteditable></div>',
     isMac
-      ? '<p>After| the contenteditable</p>'
-      : '<p>After |the contenteditable</p>',
+      ? '<p>|After the contenteditable</p>'
+      : '<p>|After the contenteditable</p>',
   ],
   'Extend by word before editable');
 
@@ -74,7 +74,7 @@ selection_test(
   ],
   selection => selection.modify('extend', 'backward', 'word'),
   [
-    '<p>Before the |contenteditable</p>',
+    '<p>Before the contenteditable|</p>',
     '<div contenteditable></div>',
     '<p>After the contenteditable^</p>',
   ],

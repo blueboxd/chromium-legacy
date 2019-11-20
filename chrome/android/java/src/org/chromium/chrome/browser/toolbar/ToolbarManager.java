@@ -189,7 +189,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private OverviewModeBehavior mOverviewModeBehavior;
     private LayoutManager mLayoutManager;
     private IdentityDiscController mIdentityDiscController;
-    private final ShareDelegate mShareDelegate;
+    private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
+    private final Callback<ShareDelegate> mShareDelegateSupplierCallback;
+    private ObservableSupplierImpl<OnClickListener> mShareButtonListenerSupplier =
+            new ObservableSupplierImpl<>();
 
     private TabObserver mTabObserver;
     private BookmarkBridge.BookmarkModelObserver mBookmarksObserver;
@@ -242,10 +245,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public ToolbarManager(ChromeActivity activity, ToolbarControlContainer controlContainer,
             Invalidator invalidator, Callback<Boolean> urlFocusChangedCallback,
-            ThemeColorProvider themeColorProvider, ShareDelegate shareDelegate) {
+            ThemeColorProvider themeColorProvider,
+            ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
-        mShareDelegate = shareDelegate;
+        mShareDelegateSupplier = shareDelegateSupplier;
+        mShareDelegateSupplierCallback = this::onShareDelegateAvailable;
+        mShareDelegateSupplier.addObserver(mShareDelegateSupplierCallback);
 
         mLocationBarModel = new LocationBarModel(activity);
         mControlContainer = controlContainer;
@@ -759,7 +765,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * Enable the bottom toolbar.
      */
     public void enableBottomToolbar() {
-        // TODO(amaralp): Move creation of these listeners to bottom toolbar component.
+        // TODO(crbug.com/1026020): Move creation of these listeners to bottom toolbar component.
         final OnClickListener homeButtonListener = v -> {
             recordBottomToolbarUseForIPH();
             openHomepage();
@@ -771,24 +777,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             setUrlBarFocus(true, LocationBar.OmniboxFocusReason.ACCELERATOR_TAP);
         };
 
-        final OnClickListener shareButtonListener = v -> {
-            recordBottomToolbarUseForIPH();
-            RecordUserAction.record("MobileBottomToolbarShareButton");
-            Tab tab = null;
-            Activity activity = null;
-            boolean isIncognito = false;
-            if (mTabModelSelector != null) {
-                tab = mTabModelSelector.getCurrentTab();
-                activity = tab.getActivity();
-                isIncognito = tab.isIncognito();
-            }
-            mShareDelegate.share(tab, /*shareDirectly=*/false);
-        };
-
         mBottomControlsCoordinator = new BottomControlsCoordinator(mActivity.getFullscreenManager(),
                 mActivity.findViewById(R.id.bottom_controls_stub),
                 mActivity.getActivityTabProvider(), homeButtonListener, searchAcceleratorListener,
-                shareButtonListener,
+                mShareButtonListenerSupplier,
                 BottomTabSwitcherActionMenuCoordinator.createOnLongClickListener(
                         id -> mActivity.onOptionsItemSelected(id, null)),
                 mAppThemeColorProvider);
@@ -804,6 +796,24 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 FeatureUtilities.isLabeledBottomToolbarEnabled()
                         ? R.dimen.labeled_bottom_toolbar_height
                         : R.dimen.bottom_toolbar_height));
+    }
+
+    // TODO(crbug.com/1026020): Move this logic to BottomToolbar class.
+    private void onShareDelegateAvailable(ShareDelegate shareDelegate) {
+        final OnClickListener shareButtonListener = v -> {
+            recordBottomToolbarUseForIPH();
+            RecordUserAction.record("MobileBottomToolbarShareButton");
+            Tab tab = null;
+            Activity activity = null;
+            boolean isIncognito = false;
+            if (mTabModelSelector != null) {
+                tab = mTabModelSelector.getCurrentTab();
+                activity = tab.getActivity();
+                isIncognito = tab.isIncognito();
+            }
+            shareDelegate.share(tab, /*shareDirectly=*/false);
+        };
+        mShareButtonListenerSupplier.set(shareButtonListener);
     }
 
     /** Record that homepage button was used for IPH reasons */
@@ -1258,6 +1268,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (mAppThemeColorProvider != null) mAppThemeColorProvider.destroy();
         mOrientationEventListener.disable();
         mOrientationEventListener = null;
+
+        mShareDelegateSupplier.removeObserver(mShareDelegateSupplierCallback);
     }
 
     /**

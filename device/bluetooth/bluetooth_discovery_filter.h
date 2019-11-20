@@ -82,7 +82,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDiscoveryFilter {
   void AddDeviceFilter(const DeviceInfoFilter& device_filter);
 
   // Returns a const pointer of our list of DeviceInfoFilters, device_filters_.
-  const base::flat_set<DeviceInfoFilter>* GetDeviceFilters();
+  const base::flat_set<DeviceInfoFilter>* GetDeviceFilters() const;
 
   // Copy content of |filter| and assigns it to this filter.
   void CopyFrom(const BluetoothDiscoveryFilter& filter);

@@ -25,6 +25,7 @@ import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ITabClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Implementation of ITab.
@@ -126,6 +127,7 @@ public final class TabImpl extends ITab.Stub {
 
     @Override
     public void setNewTabsEnabled(boolean enable) {
+        StrictModeWorkaround.apply();
         if (enable && mNewTabCallbackProxy == null) {
             mNewTabCallbackProxy = new NewTabCallbackProxy(this);
         } else if (!enable && mNewTabCallbackProxy != null) {
@@ -136,6 +138,7 @@ public final class TabImpl extends ITab.Stub {
 
     @Override
     public int getId() {
+        StrictModeWorkaround.apply();
         return mId;
     }
 
@@ -167,6 +170,7 @@ public final class TabImpl extends ITab.Stub {
 
     @Override
     public NavigationControllerImpl createNavigationController(INavigationControllerClient client) {
+        StrictModeWorkaround.apply();
         // This should only be called once.
         assert mNavigationController == null;
         mNavigationController = new NavigationControllerImpl(this, client);
@@ -175,12 +179,14 @@ public final class TabImpl extends ITab.Stub {
 
     @Override
     public void setClient(ITabClient client) {
+        StrictModeWorkaround.apply();
         mClient = client;
         mTabCallbackProxy = new TabCallbackProxy(mNativeTab, client);
     }
 
     @Override
     public void setDownloadCallbackClient(IDownloadCallbackClient client) {
+        StrictModeWorkaround.apply();
         if (client != null) {
             if (mDownloadCallbackProxy == null) {
                 mDownloadCallbackProxy = new DownloadCallbackProxy(mNativeTab, client);
@@ -195,6 +201,7 @@ public final class TabImpl extends ITab.Stub {
 
     @Override
     public void setErrorPageCallbackClient(IErrorPageCallbackClient client) {
+        StrictModeWorkaround.apply();
         if (client != null) {
             if (mErrorPageCallbackProxy == null) {
                 mErrorPageCallbackProxy = new ErrorPageCallbackProxy(mNativeTab, client);
@@ -209,6 +216,7 @@ public final class TabImpl extends ITab.Stub {
 
     @Override
     public void setFullscreenCallbackClient(IFullscreenCallbackClient client) {
+        StrictModeWorkaround.apply();
         if (client != null) {
             if (mFullscreenCallbackProxy == null) {
                 mFullscreenCallbackProxy = new FullscreenCallbackProxy(mNativeTab, client);
@@ -223,6 +231,7 @@ public final class TabImpl extends ITab.Stub {
 
     @Override
     public void executeScript(String script, boolean useSeparateIsolate, IObjectWrapper callback) {
+        StrictModeWorkaround.apply();
         Callback<String> nativeCallback = new Callback<String>() {
             @Override
             public void onResult(String result) {

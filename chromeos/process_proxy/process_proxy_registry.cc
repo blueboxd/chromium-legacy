@@ -100,8 +100,8 @@ bool ProcessProxyRegistry::OpenProcess(const base::CommandLine& cmdline,
   // closed, which is done before this object goes away.
   if (!proxy->StartWatchingOutput(
           watcher_thread_->task_runner(), GetTaskRunner(),
-          base::Bind(&ProcessProxyRegistry::OnProcessOutput,
-                     base::Unretained(this), *id))) {
+          base::BindRepeating(&ProcessProxyRegistry::OnProcessOutput,
+                              base::Unretained(this), *id))) {
     proxy->Close();
     return false;
   }

@@ -2262,3 +2262,32 @@ TEST_F('ChromeVoxBackgroundTest', 'NoParagraphTest', function() {
     mockFeedback.replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'PhoneticsAndCommands', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <p>some sample text</p>
+    <button>ok</button>
+    <p>A</p>
+  */}, function(root) {
+    var noPhonetics = {phoneticCharacters: undefined};
+    var phonetics = {phoneticCharacters: true};
+    mockFeedback.call(doCmd('nextObject'))
+        .expectSpeechWithProperties(noPhonetics, 'ok')
+        .call(doCmd('previousObject'))
+        .expectSpeechWithProperties(noPhonetics, 'some sample text')
+        .call(doCmd('nextWord'))
+        .expectSpeechWithProperties(noPhonetics, 'sample')
+        .call(doCmd('previousWord'))
+        .expectSpeechWithProperties(noPhonetics, 'some')
+        .call(doCmd('nextCharacter'))
+        .expectSpeechWithProperties(phonetics, 'o')
+        .call(doCmd('nextCharacter'))
+        .expectSpeechWithProperties(phonetics, 'm')
+        .call(doCmd('previousCharacter'))
+        .expectSpeechWithProperties(phonetics, 'o')
+        .call(doCmd('jumpToBottom'))
+        .expectSpeechWithProperties(noPhonetics, 'A')
+    mockFeedback.replay();
+  });
+});

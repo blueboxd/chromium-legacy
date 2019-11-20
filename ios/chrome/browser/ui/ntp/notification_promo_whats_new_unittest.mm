@@ -34,8 +34,7 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
       : promo_(&local_state_),
         action_callback_(
             base::Bind(&NotificationPromoWhatsNewTest::OnUserAction,
-                       base::Unretained(this))),
-        field_trial_list_(new base::FieldTrialList(NULL)) {
+                       base::Unretained(this))) {
     ios::NotificationPromo::RegisterPrefs(local_state_.registry());
     local_state_.registry()->RegisterInt64Pref(metrics::prefs::kInstallDate, 0);
     base::AddActionCallback(action_callback_);
@@ -120,9 +119,6 @@ class NotificationPromoWhatsNewTest : public PlatformTest {
   NotificationPromoWhatsNew promo_;
   base::ActionCallback action_callback_;
   std::map<std::string, int> user_action_count_map_;
-
- private:
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 // Test that a command-based, valid promo is shown with the correct text.

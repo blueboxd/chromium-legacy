@@ -1447,6 +1447,11 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
 }
 
 void AssistantManagerServiceImpl::OnDeviceAppsEnabled(bool enabled) {
+  // The device apps state sync should only be sent after service is running.
+  // Check state here to prevent timing issue when the service is restarting.
+  if (GetState() != State::RUNNING)
+    return;
+
   display_connection_->SetDeviceAppsEnabled(enabled);
   action_module_->SetAppSupportEnabled(
       assistant::features::IsAppSupportEnabled() && enabled);

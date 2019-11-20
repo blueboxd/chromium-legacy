@@ -294,11 +294,9 @@ function setSubmitListener(form, fetchDataUrl) {
 
   function getDataUrl() {
     if (channelIsMilestone()) {
-      let ret = `milestones/${apk.value}/`;
-      if (selVersion2.value === DO_NOT_DIFF) {
-        ret += `report_${selVersion1.value}.ndjson`;
-      } else {
-        ret += `report_${selVersion2.value}_${selVersion1.value}.ndjson`;
+      let ret = `milestones/${selVersion1.value}/${apk.value}.size`;
+      if (selVersion2.value !== DO_NOT_DIFF) {
+        ret += `&before_url=milestones/${selVersion2.value}/${apk.value}.size`;
       }
       return ret;
     } else {

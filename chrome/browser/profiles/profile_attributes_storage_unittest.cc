@@ -588,13 +588,9 @@ TEST_F(ProfileAttributesStorageTest, AccessFromElsewhere) {
 
   // The ProfileInfoCache should also reflect the changes and its changes
   // should be reflected by the ProfileAttributesStorage.
-  size_t index = profile_info_cache()->GetIndexOfProfileWithPath(
-      GetProfilePath("testing_profile_path0"));
-  EXPECT_EQ(base::ASCIIToUTF16("NewName"),
-            profile_info_cache()->GetNameToDisplayOfProfileAtIndex(index));
+  EXPECT_EQ(base::ASCIIToUTF16("NewName"), second_entry->GetName());
 
-  profile_info_cache()->SetLocalProfileNameOfProfileAtIndex(
-      index, base::ASCIIToUTF16("OtherNewName"));
+  second_entry->SetLocalProfileName(base::ASCIIToUTF16("OtherNewName"));
   EXPECT_EQ(base::ASCIIToUTF16("OtherNewName"), first_entry->GetName());
 }
 

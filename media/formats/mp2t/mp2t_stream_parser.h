@@ -109,8 +109,10 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
 
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
   bool ShouldForceEncryptedParser();
-  std::unique_ptr<EsParser> CreateEncryptedH264Parser(int pes_pid);
-  std::unique_ptr<EsParser> CreateEncryptedAacParser(int pes_pid);
+  std::unique_ptr<EsParser> CreateEncryptedH264Parser(int pes_pid,
+                                                      bool emit_clear_buffers);
+  std::unique_ptr<EsParser> CreateEncryptedAacParser(int pes_pid,
+                                                     bool emit_clear_buffers);
 
   std::unique_ptr<PidState> MakeCatPidState();
   void UnregisterCat();

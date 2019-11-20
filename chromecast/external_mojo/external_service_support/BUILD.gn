@@ -35,9 +35,14 @@ source_set("process_setup") {
   ]
 }
 
-source_set("standalone_service_main") {
+source_set("service_process") {
   sources = [
     "service_process.h",
+  ]
+}
+
+source_set("standalone_service_main") {
+  sources = [
     "standalone_service_main.cc",
   ]
   deps = [
@@ -46,6 +51,9 @@ source_set("standalone_service_main") {
     "//base",
     "//chromecast/external_mojo/public/cpp:common",
     "//mojo/core/embedder",
+  ]
+  public_deps = [
+    ":service_process",
   ]
 }
 

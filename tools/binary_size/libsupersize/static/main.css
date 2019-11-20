@@ -175,7 +175,10 @@ ul {
 
 .count,
 .size,
-.percent {
+.percent,
+.added,
+.removed,
+.changed {
   margin-left: auto;
   padding-left: 16px;
   text-align: right;

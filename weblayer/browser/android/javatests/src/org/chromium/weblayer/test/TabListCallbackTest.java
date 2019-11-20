@@ -104,8 +104,7 @@ public class TabListCallbackTest {
     @SmallTest
     public void testMoveToDifferentFragment() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Browser browser2 =
-                    Browser.fromFragment(mActivity.createBrowserFragment(0));
+            Browser browser2 = Browser.fromFragment(mActivity.createBrowserFragment(0));
             Browser browser1 = mActivity.getBrowser();
             TabListCallbackImpl callback1 = new TabListCallbackImpl();
             browser1.registerTabListCallback(callback1);

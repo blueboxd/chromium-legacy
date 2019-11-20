@@ -11,18 +11,18 @@
 
     <div route-path="default">
       <div class="settings-box two-line first">
-        <div class="start" aria-describedby="secondaryText">
+        <div class="start" id="title" aria-hidden="true">
           $i18n{powerwashTitle}
-          <div class="secondary" id="secondaryText"
-              aria-hidden="true">
+          <div class="secondary" id="secondaryText" aria-hidden="true">
             $i18n{powerwashDescription}
           </div>
         </div>
         <div class="separator"></div>
         <cr-button id="powerwash"
             on-click="onShowPowerwashDialog_"
-            aria-label="$i18n{resetPageTitle}"
-            aria-describedby="secondaryText">
+            aria-labelledby="title"
+            aria-describedby="secondaryText"
+            aria-roledescription="$i18n{powerwashButtonRoleDescription}">
           $i18n{powerwashButton}
         </cr-button>
       </div>

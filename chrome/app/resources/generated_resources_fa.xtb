@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">نماد برنامه</translation>
 <translation id="1410616244180625362">ادامه اجازه به <ph name="HOST" /> برای دسترسی به دوربین</translation>
 <translation id="1414648216875402825">شما نسخه ناپایداری از <ph name="PRODUCT_NAME" /> را به‌روزرسانی می‌کنید که حاوی قابلیت‌های در حال توسعه است. خرابی‌ها و اشکال‌های غیرمنتظره‌ای رخ خواهد داد. لطفاُ با احتیاط ادامه دهید.</translation>
-<translation id="1414866280542221544">فعال کردن در این دستگاه</translation>
 <translation id="1415708812149920388">دسترسی برای خواندن محتوای بریده‌دان امکان‌پذیر نیست</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (شناسه برنامه افزودنی «<ph name="EXTENSION_ID" />») در این نوع جلسه مجاز نیست.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">تکه پیتزا</translation>
 <translation id="1468571364034902819">نمی‌توان از این نمایه استفاده کرد</translation>
 <translation id="1470811252759861213">برای دریافت افزونه‌هایتان در همه رایانه‌هایتان، <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">با این کار، همه داده‌های موجود در کلید امنیتی، ازجمله پین آن، پاک‌سازی می‌شود</translation>
 <translation id="1472675084647422956">بیشتر ببینید</translation>
 <translation id="1475502736924165259">گواهی‌هایی برای فایل دارید که در هیچ‌کدام از دسته‌های دیگر قرار نمی‌گیرد</translation>
 <translation id="1476088332184200792">کپی در دستگاه</translation>
@@ -839,7 +837,6 @@
 <translation id="2202898655984161076">هنگام فهرست کردن چاپگرها مشکلی روی داد. برخی از چاپگرهای شما با <ph name="CLOUD_PRINT_NAME" /> با موفقیت ثبت نشده‌اند.</translation>
 <translation id="2203682048752833055">موتور جستجوی مورداستفاده در <ph name="BEGIN_LINK" />نوار نشانی<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">خواندن و تغییر هر موردی که تایپ می‌کنید</translation>
-<translation id="2204397710290433380">‏ADB (پل اشکال‌زدایی Android) غیرفعال شود؟</translation>
 <translation id="220792432208469595">‏داده‌های استفاده و عیب‌یابی را ارسال کنید. این دستگاه درحال‌حاضر به‌صورت‌ خودکار داده‌های عیب‌یابی و داده‌های استفاده از دستگاه و برنامه را برای Google ارسال می‌کند. این داده‌ها به بهبود پایداری سیستم و برنامه و موارد دیگر کمک خواهد کرد. بعضی داده‌های انبوه نیز به برنامه‌ها و شرکای Google (مانند برنامه‌نویس‌های Android) کمک می‌کند. این تنظیم توسط مالک اعمال می‌شود. اگر تنظیم «فعالیت وب و برنامه» تکمیلی روشن باشد، ممکن است این داده‌ها در حساب Google شما ذخیره شود. <ph name="BEGIN_LINK1" />بیشتر بدانید<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">لطفاً این کد پین را در "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
 <translation id="2213140827792212876">برداشتن اشتراک‌گذاری</translation>
@@ -976,6 +973,7 @@
 <translation id="2396783860772170191">پین ۴ رقمی را وارد کنید (۹۹۹۹-۰۰۰۰)</translation>
 <translation id="2399939490305346086">داده‌های ورود به سیستم کلید امنیتی</translation>
 <translation id="2407481962792080328">‏وقتی به «حساب Google» خود وارد می‌شوید، این ویژگی روشن می‌شود</translation>
+<translation id="2408018932941436077">درحال ذخیره کارت</translation>
 <translation id="2408955596600435184">پین را وارد کنید</translation>
 <translation id="241082044617551207">افزایه ناشناس</translation>
 <translation id="2412593942846481727">به‌روزرسانی دردسترس است</translation>
@@ -2004,7 +2002,6 @@
 <translation id="3873315167136380065">برای روشن کردن این گزینه، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /> تا عبارت عبور همگام‌سازی حذف شود</translation>
 <translation id="3873423927483480833">نمایش پین‌ها</translation>
 <translation id="3873915545594852654">‏در رابطه با ++ARC مشکلی پیش آمد.</translation>
-<translation id="387924939625099872">‏برای غیرفعال کردن ADB (پل اشکال‌زدایی Android)، <ph name="DEVICE_TYPE" /> را بازراه‌اندازی کنید. دستگاه به تنظیمات کارخانه‌ای بازنشانی می‌شود و همه داده‌های محلی و حساب‌های کاربر پاک می‌شود.</translation>
 <translation id="3879748587602334249">مدیریت بارگیری</translation>
 <translation id="3886446263141354045">درخواست شما برای دسترسی به این سایت برای <ph name="NAME" /> ارسال شده است</translation>
 <translation id="3888550877729210209">یادداشت‌برداری با <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2406,7 +2403,6 @@
 <translation id="4501530680793980440">تأیید حذف</translation>
 <translation id="4502423230170890588">حذف از این دستگاه</translation>
 <translation id="4504940961672722399">با کلیک کردن روی این نماد یا با فشار دادن <ph name="EXTENSION_SHORTCUT" /> از این برنامه افزودنی استفاده کنید.</translation>
-<translation id="4506379069541445709">‏درصورت ادامه، ایجاد و آزمایش برنامه‌های Android را برای ADB امکان‌پذیر می‌کنید. توجه داشته باشید ADB نصب برنامه‌های آزمایشی را که Google تأیید نکرده است، مجاز می‌کند.</translation>
 <translation id="4508051413094283164">باز کردن همه در پنجره ناشناس</translation>
 <translation id="4508265954913339219">فعالسازی انجام نشد</translation>
 <translation id="4508765956121923607">مشاهده م&amp;نبع</translation>
@@ -3309,7 +3305,6 @@
 <translation id="5851868085455377790">صادرکننده</translation>
 <translation id="5852112051279473187">وای! هنگام ثبت این دستگاه واقعا مشکلی روی داد. لطفاً دوباره امتحان کنید یا با نماینده پشتیبانی خود تماس بگیرید.</translation>
 <translation id="5852137567692933493">‏راه‌اندازی مجدد و Powerwash</translation>
-<translation id="5852360662347412211">‏به تنظیمات Linux بروید و دوباره امتحان کنید</translation>
 <translation id="5854912040170951372">پیتزا</translation>
 <translation id="5855643921295613558">۰٫۶ ثانیه</translation>
 <translation id="5856721540245522153">فعال کردن ویژگی‌های رفع اشکال</translation>
@@ -3322,7 +3317,6 @@
 <translation id="5860494867054883682">درحال به‌روزرسانی دستگاه شما به کانال <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">نمایش ابزار قلم در قفسه</translation>
 <translation id="5863445608433396414">فعال کردن ویژگی‌های رفع اشکال</translation>
-<translation id="5863471434640009253">‏برای فعال کردن «پل اشکال‌زدایی Android»، ابتدا <ph name="DEVICE_TYPE" /> را بازراه‌اندازی کنید. برای غیرفعال کردن ADB (پل اشکال‌زدایی Android)، باید به تنظیمات کارخانه‌ای بازنشانی کنید.</translation>
 <translation id="5864471791310927901">‏بررسی DHCP انجام نشد</translation>
 <translation id="586567932979200359">شما <ph name="PRODUCT_NAME" /> را از تصویر دیسک آن اجرا می‌کنید. با نصب آن روی رایانه می‌توانید آن را بدون تصویر دیسک اجرا کنید، و مطمئن شوید که به روز نگه داشته خواهد شد.</translation>
 <translation id="5865733239029070421">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند</translation>
@@ -3392,7 +3386,6 @@
 <translation id="5958529069007801266">کاربر نظارت‌شده</translation>
 <translation id="5959471481388474538">شبکه در دسترس نیست</translation>
 <translation id="595959584676692139">برای استفاده از این افزونه، صفحه را تازه‌سازی کنید</translation>
-<translation id="5961320084471308154">‏ADB (پل اشکال‌زدایی Android) فعال شود؟</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> اوج مصرف)</translation>
 <translation id="5965661248935608907">‏این برنامه افزودنی همچنین صفحه‌ای را که هنگام کلیک کردن روی دکمه صفحه اصلی یا جستجو از Omnibox نشان داده می‌شود، کنترل می‌کند.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> می‌تواند فایل‌های <ph name="FOLDERNAME" /> را مشاهده کند</translation>
@@ -4256,7 +4249,6 @@
 <translation id="7254554697254365959">این صفحه ترجمه نشد.</translation>
 <translation id="7254951428499890870">مطمئنید می‌خواهید «<ph name="APP_NAME" />» را در حالت تشخیص راه‌اندازی کنید؟</translation>
 <translation id="7255002516883565667">درحال‌حاضر، یک کارت دارید که فقط در این دستگاه قابل استفاده است</translation>
-<translation id="7255916308560539517">برای تأیید بازنشانی، کلید امنیتی‌تان را لمس کنید. همه اطلاعات ذخیره‌شده در کلید امنیتی (ازجمله پین) پاک می‌شود.</translation>
 <translation id="7255935316994522020">اعمال</translation>
 <translation id="7256069762010468647">سایت درحال استفاده از دوربین شما است</translation>
 <translation id="7256405249507348194">خطای نامشخص: <ph name="DESC" /></translation>
@@ -4766,6 +4758,7 @@
 <translation id="7968833647796919681">فعال کردن جمع‌آوری داده‌های عملکرد</translation>
 <translation id="7968982339740310781">مشاهدهٔ جزئیات</translation>
 <translation id="7969046989155602842">فرمان</translation>
+<translation id="7970882136539140748">درحال‌حاضر نمی‌توان کارت را ذخیره کرد</translation>
 <translation id="7972714317346275248">‏PKCS #1 SHA-384 با رمزگذاری RSA</translation>
 <translation id="7973962044839454485">‏احراز هویت PPP به دلیل نام کاربری یا گذرواژه نادرست انجام نشد</translation>
 <translation id="7974566588408714340">تلاش مجدد با <ph name="EXTENSIONNAME" /></translation>
@@ -5087,7 +5080,6 @@
 <translation id="8431909052837336408">تغییر پین سیم</translation>
 <translation id="8434480141477525001">‏درگاه اشکال‌زدایی NaCl</translation>
 <translation id="8435395510592618362">هویتتان را با <ph name="APP_NAME" /> تأیید کنید</translation>
-<translation id="843760761634048214">ذخیره کارت اعتباری</translation>
 <translation id="8438328416656800239">به مرورگر هوشمندی جابه‌جا شوید</translation>
 <translation id="8438566539970814960">بهبود جستجوها و مرور</translation>
 <translation id="8439506636278576865">ترجمه صفحات نوشته شده به این زبان پیشنهاد داده شود</translation>
@@ -5470,6 +5462,7 @@
 <translation id="8965037249707889821">گذرواژه قدیمی را وارد کنید</translation>
 <translation id="8966870118594285808">اگر به اشتباه برگه‌ای را بستید، دوباره آن را باز کنید</translation>
 <translation id="8967866634928501045">‏Alt Shift A را برای نمایش فشار دهید</translation>
+<translation id="8968766641738584599">ذخیره کارت</translation>
 <translation id="89720367119469899">فرار</translation>
 <translation id="8972513834460200407">‏لطفاً با سرپرست شبکه خود بررسی کنید تا مطمئن شوید فایروال از بارگیری از سرورهای Google جلوگیری نمی‌کند.</translation>
 <translation id="8973557916016709913">برداشتن سطح بزرگ‌نمایی</translation>
@@ -5576,7 +5569,6 @@
 <translation id="9116799625073598554">برنامه یادداشت‌برداری</translation>
 <translation id="9117030152748022724">مدیریت برنامه‌ها</translation>
 <translation id="9121814364785106365">باز کردن به‌عنوان برگه الصاق شده</translation>
-<translation id="9122074588095746047">‏ADB فعال نشد</translation>
 <translation id="9124003689441359348">گذرواژه‌های ذخیره‌شده در اینجا ظاهر خواهند شد</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> باقی‌مانده.)</translation>
 <translation id="9128317794749765148">راه‌اندازی تکمیل نشد</translation>

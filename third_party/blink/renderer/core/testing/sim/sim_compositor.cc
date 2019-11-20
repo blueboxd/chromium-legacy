@@ -21,13 +21,10 @@
 namespace blink {
 
 SimCompositor::SimCompositor() {
-  LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(true);
   last_frame_time_ = base::TimeTicks::Now();
 }
 
-SimCompositor::~SimCompositor() {
-  LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(false);
-}
+SimCompositor::~SimCompositor() = default;
 
 void SimCompositor::SetWebView(
     WebViewImpl& web_view,

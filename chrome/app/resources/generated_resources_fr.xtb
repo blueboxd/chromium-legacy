@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Icône de l'application</translation>
 <translation id="1410616244180625362">Continuer à autoriser <ph name="HOST" /> à accéder à votre caméra</translation>
 <translation id="1414648216875402825">Vous passez à une version instable de <ph name="PRODUCT_NAME" /> qui contient des fonctionnalités en cours de développement. Des plantages et des bugs inattendus peuvent se produire. Procédez avec prudence.</translation>
-<translation id="1414866280542221544">Activer sur cet appareil</translation>
 <translation id="1415708812149920388">Accès en lecture au presse-papiers refusé</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID d'extension "<ph name="EXTENSION_ID" />") n'est pas autorisé à se joindre à ce type de session.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Part de pizza</translation>
 <translation id="1468571364034902819">Impossible d'utiliser ce profil</translation>
 <translation id="1470811252759861213">Pour synchroniser vos extensions sur tous vos ordinateurs, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Cette opération effacera toutes les données stockées sur la clé de sécurité, y compris son code</translation>
 <translation id="1472675084647422956">Plus</translation>
 <translation id="1475502736924165259">Vous disposez de certificats qui n'appartiennent à aucune autre catégorie.</translation>
 <translation id="1476088332184200792">Copier sur votre appareil</translation>
@@ -842,7 +840,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2202898655984161076">Un problème est survenu lors de l'affichage de la liste des imprimantes. Certaines de vos imprimantes ne sont peut-être pas correctement enregistrées dans <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Moteur de recherche utilisé dans la <ph name="BEGIN_LINK" />barre d'adresse<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Accéder au contenu que vous saisissez et le modifier</translation>
-<translation id="2204397710290433380">Désactiver ADB ?</translation>
 <translation id="220792432208469595">Envoyer des données d'utilisation et de diagnostic. À l'heure actuelle, cet appareil envoie automatiquement à Google des données relatives aux diagnostics et à l'utilisation de l'appareil et des applications. Ce processus permettra d'améliorer, entre autres, la stabilité du système et des applications. Certaines données globales seront également utiles aux développeurs des applications Google et à nos partenaires, tels que les développeurs Android. Ce paramètre est appliqué par le propriétaire. Si vous activez le paramètre relatif à l'activité supplémentaire sur le Web et les applications, ces données peuvent être enregistrées dans votre compte Google. <ph name="BEGIN_LINK1" />En savoir plus<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Veuillez saisir le code d'accès de "<ph name="DEVICE_NAME" />" :</translation>
 <translation id="2213140827792212876">Supprimer le partage</translation>
@@ -979,6 +976,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2396783860772170191">Saisissez un code à quatre chiffres (entre 0000 et 9999)</translation>
 <translation id="2399939490305346086">Données de connexion sur la clé de sécurité</translation>
 <translation id="2407481962792080328">Lorsque vous vous connectez à votre compte Google, cette fonctionnalité est activée</translation>
+<translation id="2408018932941436077">Enregistrement de la carte…</translation>
 <translation id="2408955596600435184">Saisissez votre code.</translation>
 <translation id="241082044617551207">Plug-in inconnu</translation>
 <translation id="2412593942846481727">Mise à jour disponible</translation>
@@ -2007,7 +2005,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3873315167136380065">Pour activer cette fonctionnalité, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /> pour supprimer votre phrase secrète de synchronisation</translation>
 <translation id="3873423927483480833">Afficher les codes</translation>
 <translation id="3873915545594852654">Un problème est survenu avec ARC++.</translation>
-<translation id="387924939625099872">Pour désactiver ADB, redémarrez votre <ph name="DEVICE_TYPE" />. La configuration d'usine sera rétablie, et les comptes utilisateur et données locales seront effacés.</translation>
 <translation id="3879748587602334249">Gestionnaire de téléchargement</translation>
 <translation id="3886446263141354045">Votre demande d'accès à ce site a bien été envoyée à <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Prise de notes avec <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4501530680793980440">Confirmer la suppression</translation>
 <translation id="4502423230170890588">Supprimer de cet appareil</translation>
 <translation id="4504940961672722399">Utilisez cette extension en cliquant sur cette icône ou en appuyant sur <ph name="EXTENSION_SHORTCUT" /></translation>
-<translation id="4506379069541445709">Si vous continuez, ADB pourra créer et tester des applications Android. Notez qu'ADB autorise l'installation d'applications de test non validées par Google.</translation>
 <translation id="4508051413094283164">Tout ouvrir dans une fenêtre de navigation privée</translation>
 <translation id="4508265954913339219">Échec de l'activation</translation>
 <translation id="4508765956121923607">Afficher la s&amp;ource</translation>
@@ -3043,7 +3039,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5466374726908360271">Coller et chercher "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Recherche de partages de fichiers…</translation>
 <translation id="5471768120198416576">Bonjour ! Je suis la voix de votre synthèse vocale.</translation>
-<translation id="5472133193607270166">Lorsque cette option est activée, les sites ne peuvent pas utiliser votre activité de navigation sur différents sites pour personnaliser les annonces. Certains sites peuvent ne pas fonctionner correctement.</translation>
+<translation id="5472133193607270166">Lorsque cette option est activée, les sites ne peuvent pas utiliser votre activité de navigation sur d'autres sites pour personnaliser les annonces. Certains peuvent ne pas fonctionner correctement.</translation>
 <translation id="5473333559083690127">Saisir encore le nouveau code</translation>
 <translation id="5481941284378890518">Ajouter des imprimantes à proximité</translation>
 <translation id="5483785310822538350">Retirer les droits d'accès aux fichiers et aux appareils</translation>
@@ -3313,7 +3309,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5851868085455377790">Émetteur</translation>
 <translation id="5852112051279473187">Petit problème ! Une erreur est survenue lors de l'inscription de cet appareil. Veuillez réessayer ou contacter votre représentant de l'assistance technique.</translation>
 <translation id="5852137567692933493">Redémarrer et lancer Powerwash</translation>
-<translation id="5852360662347412211">Accédez aux paramètres Linux et réessayez</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0,6 seconde</translation>
 <translation id="5856721540245522153">Activer les fonctionnalités de débogage</translation>
@@ -3326,7 +3321,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5860494867054883682">Mise à jour de votre appareil sur la version <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)…</translation>
 <translation id="5862109781435984885">Afficher les outils de stylet sur l'étagère</translation>
 <translation id="5863445608433396414">Activer les fonctionnalités de débogage</translation>
-<translation id="5863471434640009253">Pour activer Android Debug Bridge, commencez par redémarrer votre <ph name="DEVICE_TYPE" />. La désactivation d'ADB nécessite de rétablir la configuration d'usine.</translation>
 <translation id="5864471791310927901">Échec de la vérification DHCP</translation>
 <translation id="586567932979200359">Vous exécutez <ph name="PRODUCT_NAME" /> à partir de son image disque. Si vous l'installez sur votre ordinateur, vous pourrez l'utiliser sans image disque et bénéficierez de mises à jour automatiques.</translation>
 <translation id="5865733239029070421">Envoie automatiquement des statistiques d'utilisation et des rapports d'erreur à Google</translation>
@@ -3396,7 +3390,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5958529069007801266">Utilisateur supervisé</translation>
 <translation id="5959471481388474538">Réseau indisponible</translation>
 <translation id="595959584676692139">Actualiser la page pour utiliser cette extension</translation>
-<translation id="5961320084471308154">Activer ADB ?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (pic : <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Elle contrôle également la page qui s'affiche lorsque vous cliquez sur le bouton Accueil ou lorsque vous effectuez une recherche dans l'omnibox.</translation>
 <translation id="5969419185858894314">Le site <ph name="ORIGIN" /> peut afficher les fichiers du dossier <ph name="FOLDERNAME" /></translation>
@@ -4260,7 +4253,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7254554697254365959">Impossible de traduire cette page.</translation>
 <translation id="7254951428499890870">Voulez-vous vraiment lancer l'application "<ph name="APP_NAME" />" en mode diagnostic ?</translation>
 <translation id="7255002516883565667">Vous disposez actuellement d'une carte qui ne peut être utilisée qu'avec cet appareil</translation>
-<translation id="7255916308560539517">Appuyez à nouveau sur votre clé de sécurité pour confirmer la réinitialisation. Cette opération effacera toutes les informations stockées sur la clé de sécurité, y compris son code.</translation>
 <translation id="7255935316994522020">Appliquer</translation>
 <translation id="7256069762010468647">Le site utilise votre caméra</translation>
 <translation id="7256405249507348194">Erreur non reconnue : <ph name="DESC" />.</translation>
@@ -4770,6 +4762,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7968833647796919681">Activer la collecte de données relatives aux performances</translation>
 <translation id="7968982339740310781">Afficher les détails</translation>
 <translation id="7969046989155602842">Commande</translation>
+<translation id="7970882136539140748">Impossible d'enregistrer la carte pour le moment</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 avec chiffrement RSA</translation>
 <translation id="7973962044839454485">Échec de l'authentification PPP en raison de la saisie d'un nom d'utilisateur ou d'un mot de passe erronés.</translation>
 <translation id="7974566588408714340">Réessayer avec "<ph name="EXTENSIONNAME" />"</translation>
@@ -5091,7 +5084,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8431909052837336408">Modifier le code de la SIM</translation>
 <translation id="8434480141477525001">Port de débogage de Native Client</translation>
 <translation id="8435395510592618362">Valider votre identité avec <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Enregistrer les informations de la carte de paiement</translation>
 <translation id="8438328416656800239">Passez à un navigateur intelligent</translation>
 <translation id="8438566539970814960">Améliorer les recherches et la navigation</translation>
 <translation id="8439506636278576865">Proposer de traduire les pages dans cette langue</translation>
@@ -5474,6 +5466,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8965037249707889821">Saisir l'ancien mot de passe</translation>
 <translation id="8966870118594285808">Permet de rouvrir un onglet fermé par erreur</translation>
 <translation id="8967866634928501045">Appuyez sur Alt+Maj+A pour afficher</translation>
+<translation id="8968766641738584599">Enregistrer la carte</translation>
 <translation id="89720367119469899">Échap</translation>
 <translation id="8972513834460200407">Vérifiez auprès de votre administrateur réseau que le pare-feu ne bloque pas les téléchargements effectués depuis les serveurs Google.</translation>
 <translation id="8973557916016709913">Supprimer le niveau de zoom</translation>
@@ -5580,7 +5573,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9116799625073598554">Application de prise de notes</translation>
 <translation id="9117030152748022724">Gérer vos applications</translation>
 <translation id="9121814364785106365">Ouvrir dans un onglet épinglé</translation>
-<translation id="9122074588095746047">Impossible d'activer ADB</translation>
 <translation id="9124003689441359348">Les mots de passe enregistrés s'afficheront ici</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> restante(s))</translation>
 <translation id="9128317794749765148">Impossible de terminer la configuration</translation>

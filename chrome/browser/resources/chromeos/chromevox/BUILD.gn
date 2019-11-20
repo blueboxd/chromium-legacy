@@ -371,10 +371,12 @@ if (is_chromeos) {
     testonly = true
     assert(enable_extensions)
 
-    deps = [
-      ":chromevox_extjs_tests",
-      ":chromevox_unitjs_tests",
-    ]
+    # TODO(crbug.com/1026473): Reenable these when failures on
+    # linux-chromeos-rel are addressed.
+    # deps = [
+    #  ":chromevox_extjs_tests",
+    #  ":chromevox_unitjs_tests",
+    # ]
 
     # TODO(jamescook): Figure out which of these are really necessary.
     data = [

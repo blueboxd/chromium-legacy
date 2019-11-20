@@ -961,6 +961,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si se inhabilita o no se establece, se muestran advertencias de seguridad cuando se usan algunas marcas de la línea de comandos para iniciar Chrome.
 
           En Windows, esta política solo está disponible en instancias vinculadas a un dominio <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
+<translation id="2480971699591919564">Habilita la función Llamar con un clic, que permite que los usuarios envíen números de teléfono desde computadoras de escritorio con Chrome hacia dispositivos Android donde el usuario accedió a su cuenta. Para obtener más información, consulta el artículo del Centro de ayuda: https://support.google.com/chrome/answer/9430554?hl=en.
+
+      Si se habilita esta política, el usuario de Chrome podrá enviar números de teléfono a dispositivos Android.
+
+      Si se inhabilita, el usuario de Chrome no podrá realizar esta acción.
+
+      Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+
+      Si no la estableces, se habilitará la función Llamar con un clic de forma predeterminada.</translation>
 <translation id="2482676533225429905">Mensajería nativa</translation>
 <translation id="2483146640187052324">Predecir acciones de la red en cualquier conexión de red</translation>
 <translation id="2484208301968418871">Esta política controla la aplicación del filtro de URL de SafeSites.
@@ -1965,6 +1974,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4075864623710596000">Los nombres de host que se especifican en esta lista no se incluirán en la revisión de la política de HSTS que podría mejorar las solicitudes de http a https. En esta política, solo se permiten nombres de host con una sola etiqueta. Los nombres de host deben estar canonicalizados: debe convertirse cualquier IDN a su formato de etiqueta A y todas las letras en formato ASCII deben estar en minúscula. Esta política solo se aplica a los nombres de host específicos de la lista; no se aplica a los subdominios de estos nombres.</translation>
 <translation id="408029843066770167">Permitir consultas a un servicio de hora de Google</translation>
 <translation id="408076456549153854">Habilitar el acceso en el navegador</translation>
+<translation id="4082498585300984671">Habilita la función Llamar con un clic</translation>
 <translation id="40853027210512570">Anula las reglas predeterminadas de selección de impresora de <ph name="PRODUCT_NAME" />.
 
       Esta política determina las reglas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" />, que sucede la primera vez que se usa la función de impresión con un perfil.
@@ -3528,13 +3538,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       En caso de que no deba permitirse el acceso a otra cuenta a través del modo de navegación incógnito, considera bloquear dicho modo mediante la política IncognitoModeAvailability.
 
       Debes tener en cuenta que, si bloquean sus cookies, los usuarios podrán acceder a los servicios de Google en un estado no autenticado.</translation>
-<translation id="6837480141980366278">Permite controlar si el cliente DNS integrado se utiliza en <ph name="PRODUCT_NAME" />.
-
-      Si se establece esta política como verdadera, se utilizará el cliente DNS integrado en caso de que esté disponible.
-
-      Si se establece como falsa, no se utilizará el cliente DNS integrado.
-
-      Si no se establece, se habilitará el cliente DNS integrado de forma predeterminada en MacOS, el Sistema operativo Chrome y Android (cuando no están habilitados el DNS privado ni la VPN). Además, los usuarios podrán decidir si se utiliza el cliente DNS integrado al editar chrome://flags o al especificar una marca de línea de comandos.</translation>
 <translation id="6843296367238757293">Esta política es obsoleta, por lo que no se recomienda su uso. Obtén más información en https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">En la versión 68 de <ph name="PRODUCT_NAME" />, se quitó esta política y se reemplazó por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Habilita la función de accesibilidad de resaltar la posición del cursor</translation>
@@ -3933,13 +3936,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7373200034079131670">Reiniciar cuando el usuario sale de su cuenta si se inició Android o una VM</translation>
 <translation id="737655323154569539">Restringe el tamaño de la página de impresión. Si la política no se configura o se establece con un valor vacío, no se aplicará ninguna restricción.</translation>
 <translation id="7382191643394429934">Permitir la impresión con y sin gráficos de fondo</translation>
-<translation id="7383445181072113521">Determina el nombre de host del dispositivo que se usa en solicitudes de DHCP.
-
-      Si se establece esta política como una string no vacía, esa string se usará como el nombre de host del dispositivo para la solicitud de DHCP.
-
-      La string puede contener las variables <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" /> o <ph name="MACHINE_NAME_PLACEHOLDER" />, que se reemplazarán con valores del dispositivo antes de usarse como nombre de host. La sustitución resultante debe ser un nombre de host válido (según RFC 1035, sección 3.1).
-
-      Si no se establece esta política, o si el valor que se obtiene después de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud de DHCP. </translation>
 <translation id="7389872682701720082">Si habilitas esta opción, se ejecutarán siempre los complementos actualizados.
 
       Si no se habilita o no se configura esta opción, se solicitará permiso a los usuarios para ejecutar complementos que requieran autorización (estos complementos pueden comprometer la seguridad).</translation>
@@ -4329,7 +4325,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8141795997560411818">Esta política no impide que el usuario use la app de Google Drive de Android. Si deseas evitar el acceso a Google Drive, también debes inhabilitar la instalación de su app.</translation>
 <translation id="8142894094385450823">Establecer la configuración regional recomendada para una sesión administrada</translation>
 <translation id="8146727383888924340">Permite a los usuarios canjear ofertas a través del Registro del Sistema operativo Chrome.</translation>
-<translation id="8148785525797916822">Elimina la advertencia que aparece cuando se ejecuta <ph name="PRODUCT_NAME" /> en una computadora o sistema operativo que ya no son compatibles.</translation>
 <translation id="8148901634826284024">Habilita la función de accesibilidad del modo de contraste alto.
 
           Si esta política se establece como verdadera, el modo de contraste alto estará siempre habilitado.

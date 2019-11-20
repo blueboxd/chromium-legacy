@@ -903,9 +903,7 @@ void RenderText::SetColor(SkColor value) {
 }
 
 void RenderText::ApplyColor(SkColor value, const Range& range) {
-  // Do not change styles mid-grapheme to avoid breaking ligatures.
-  Range expanded_range = ExpandRangeToGraphemeBoundary(range);
-  colors_.ApplyValue(value, expanded_range);
+  colors_.ApplyValue(value, range);
   OnTextColorChanged();
 }
 
@@ -914,9 +912,7 @@ void RenderText::SetBaselineStyle(BaselineStyle value) {
 }
 
 void RenderText::ApplyBaselineStyle(BaselineStyle value, const Range& range) {
-  // Do not change styles mid-grapheme to avoid breaking ligatures.
-  Range expanded_range = ExpandRangeToGraphemeBoundary(range);
-  baselines_.ApplyValue(value, expanded_range);
+  baselines_.ApplyValue(value, range);
 }
 
 void RenderText::ApplyFontSizeOverride(int font_size_override,
@@ -934,9 +930,7 @@ void RenderText::SetStyle(TextStyle style, bool value) {
 }
 
 void RenderText::ApplyStyle(TextStyle style, bool value, const Range& range) {
-  // Do not change styles mid-grapheme to avoid breaking ligatures.
-  Range expanded_range = ExpandRangeToGraphemeBoundary(range);
-  styles_[style].ApplyValue(value, expanded_range);
+  styles_[style].ApplyValue(value, range);
 
   cached_bounds_and_offset_valid_ = false;
   // TODO(oshima|msw): Not all style change requires layout changes.
@@ -952,9 +946,7 @@ void RenderText::SetWeight(Font::Weight weight) {
 }
 
 void RenderText::ApplyWeight(Font::Weight weight, const Range& range) {
-  // Do not change styles mid-grapheme to avoid breaking ligatures.
-  Range expanded_range = ExpandRangeToGraphemeBoundary(range);
-  weights_.ApplyValue(weight, expanded_range);
+  weights_.ApplyValue(weight, range);
 
   cached_bounds_and_offset_valid_ = false;
   OnLayoutTextAttributeChanged(false);
@@ -2113,17 +2105,6 @@ Range RenderText::ExpandRangeToWordBoundary(const Range& range) const {
 
   return range.is_reversed() ? Range(range_max, range_min)
                              : Range(range_min, range_max);
-}
-
-Range RenderText::ExpandRangeToGraphemeBoundary(const Range& range) {
-  const size_t start =
-      IsValidCursorIndex(range.start())
-          ? range.start()
-          : IndexOfAdjacentGrapheme(range.start(), CURSOR_BACKWARD);
-  const size_t end = IsValidCursorIndex(range.end())
-                         ? range.end()
-                         : IndexOfAdjacentGrapheme(range.end(), CURSOR_FORWARD);
-  return Range(start, end);
 }
 
 internal::TextRunList* RenderText::GetRunList() {

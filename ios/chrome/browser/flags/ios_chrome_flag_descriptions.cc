@@ -136,6 +136,11 @@ const char kDcheckIsFatalDescription[] =
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
 
+const char kDefaultToDesktopOnIPadName[] = "Request desktop version by default";
+const char kDefaultToDesktopOnIPadDescription[] =
+    "By default, on iPad, the desktop version of the web sites will be "
+    "requested";
+
 const char kDetectMainThreadFreezeName[] = "Detect freeze in the main thread.";
 const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "
@@ -239,6 +244,11 @@ const char kLockBottomToolbarDescription[] =
 
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
+
+const char kMobileGoogleSRPName[] = "Mobile version of Google SRP by default";
+const char kMobileGoogleSRPDescription[] =
+    "Request the Mobile version of Google SRP by default when the desktop mode "
+    "is requested by default.";
 
 const char kNewClearBrowsingDataUIName[] = "Clear Browsing Data UI";
 const char kNewClearBrowsingDataUIDescription[] =

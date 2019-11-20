@@ -47,11 +47,6 @@
 
 namespace {
 
-// Parameters and defaults for the |kRecurrentInterstitialFeature| field trial.
-
-// This parameter controls whether the count of recurrent errors is
-// per-browsing-session or persisted to a pref, accumulating across browsing
-// sessions. Default is "in-memory".
 #if defined(OS_ANDROID)
 ChromeSSLHostStateDelegate::RecurrentInterstitialMode
     kRecurrentInterstitialDefaultMode =

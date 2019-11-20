@@ -51,7 +51,7 @@ class MEDIA_EXPORT AudioOutputStreamSink
                  base::TimeTicks delay_timestamp,
                  int prior_frames_skipped,
                  AudioBus* dest) override;
-  void OnError() override;
+  void OnError(ErrorType type) override;
   void Flush() override;
 
  private:

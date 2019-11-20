@@ -665,11 +665,12 @@ TEST_F(RenderTextTest, ApplyStyles) {
   EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
       expected_italic));
 
-  // Styles shouldn't be changed mid-grapheme.
+  // Styles mid-grapheme should work. Style of first character of the grapheme
+  // is used.
   render_text->SetText(UTF8ToUTF16("0\u0915\u093f1\u0915\u093f2"));
   render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, Range(2, 5));
   EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_UNDERLINE].EqualsForTesting(
-      {{0, false}, {1, true}, {6, false}}));
+      {{0, false}, {2, true}, {5, false}}));
 }
 
 TEST_F(RenderTextTest, ApplyStyleSurrogatePair) {
@@ -684,34 +685,45 @@ TEST_F(RenderTextTest, ApplyStyleSurrogatePair) {
   render_text->Draw(canvas());
 
   EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
-      {{0, false}, {1, true}, {3, false}}));
+      {{0, false}, {2, true}, {3, false}}));
   EXPECT_TRUE(test_api()->colors().EqualsForTesting(
-      {{0, SK_ColorBLACK}, {1, SK_ColorRED}, {3, SK_ColorBLACK}}));
+      {{0, SK_ColorBLACK}, {2, SK_ColorRED}, {3, SK_ColorBLACK}}));
   EXPECT_TRUE(
       test_api()->weights().EqualsForTesting({{0, Font::Weight::NORMAL},
-                                              {1, Font::Weight::BOLD},
+                                              {2, Font::Weight::BOLD},
                                               {3, Font::Weight::NORMAL}}));
 }
 
 TEST_F(RenderTextTest, ApplyStyleGrapheme) {
   RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"\u0065\u0301"));
+  render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, gfx::Range(1, 2));
+  render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, gfx::Range(0, 1));
+  DrawVisualText();
+
+  // Ensures that the whole grapheme is drawn with the same style.
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+  EXPECT_EQ(1u, text_log.size());
+}
+
+TEST_F(RenderTextTest, ApplyStyleMultipleGraphemes) {
+  RenderText* render_text = GetRenderText();
   render_text->SetText(WideToUTF16(L"x\u0065\u0301x"));
-  // Apply the style in the middle of a grapheme. The style should be applied to
-  // the whole range of the grapheme.
+  // Apply the style in the middle of a grapheme.
   gfx::Range range(2, 3);
-  render_text->ApplyWeight(gfx::Font::Weight::BOLD, range);
   render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, range);
-  render_text->ApplyColor(SK_ColorRED, range);
-  render_text->Draw(canvas());
+  DrawVisualText();
 
   EXPECT_TRUE(test_api()->styles()[TEXT_STYLE_ITALIC].EqualsForTesting(
-      {{0, false}, {1, true}, {3, false}}));
-  EXPECT_TRUE(test_api()->colors().EqualsForTesting(
-      {{0, SK_ColorBLACK}, {1, SK_ColorRED}, {3, SK_ColorBLACK}}));
-  EXPECT_TRUE(
-      test_api()->weights().EqualsForTesting({{0, Font::Weight::NORMAL},
-                                              {1, Font::Weight::BOLD},
-                                              {3, Font::Weight::NORMAL}}));
+      {{0, false}, {2, true}, {3, false}}));
+
+  // Ensures that the style of the grapheme is the style at its first character.
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(2u, text_log.size());
+  EXPECT_EQ(2U, text_log[0].glyph_count);
+  EXPECT_EQ(1U, text_log[1].glyph_count);
 }
 
 TEST_F(RenderTextTest, AppendTextKeepsStyles) {

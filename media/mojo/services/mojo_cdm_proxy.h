@@ -15,7 +15,7 @@
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/mojo/mojom/cdm_proxy.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -70,7 +70,7 @@ class MEDIA_MOJO_EXPORT MojoCdmProxy : public cdm::CdmProxy,
   mojo::Remote<mojom::CdmProxy> cdm_proxy_remote_;
   cdm::CdmProxyClient* client_;
 
-  mojo::AssociatedBinding<mojom::CdmProxyClient> client_binding_;
+  mojo::AssociatedReceiver<mojom::CdmProxyClient> client_receiver_{this};
 
   int cdm_id_ = CdmContext::kInvalidCdmId;
 

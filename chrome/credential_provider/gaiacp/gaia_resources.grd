@@ -2,6 +2,7 @@
 <grit current_release="1" latest_public_release="0">
   <outputs />
   <translations>
+    <file path="strings/gaia_resources_af.xtb" lang="af" />
     <file path="strings/gaia_resources_am.xtb" lang="am" />
     <file path="strings/gaia_resources_ar.xtb" lang="ar" />
     <file path="strings/gaia_resources_bg.xtb" lang="bg" />

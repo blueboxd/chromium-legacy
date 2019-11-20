@@ -59,37 +59,37 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">abc ghi<div>|</div><div></div><div></div>opq xyz</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc |ghi<div></div><div></div><div></div>opq xyz</div>',
+  '<div contenteditable dir="rtl">abc ghi|<div></div><div></div><div></div>opq xyz</div>',
   '7-8 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc ghi<div></div>|<div></div><div></div>opq xyz</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc |ghi<div></div><div></div><div></div>opq xyz</div>',
+  '<div contenteditable dir="rtl">abc ghi|<div></div><div></div><div></div>opq xyz</div>',
   '7-9 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc ghi<div></div><div>|</div><div></div>opq xyz</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc |ghi<div></div><div></div><div></div>opq xyz</div>',
+  '<div contenteditable dir="rtl">abc ghi|<div></div><div></div><div></div>opq xyz</div>',
   '7-10 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc ghi<div></div><div></div>|<div></div>opq xyz</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc |ghi<div></div><div></div><div></div>opq xyz</div>',
+  '<div contenteditable dir="rtl">abc ghi|<div></div><div></div><div></div>opq xyz</div>',
   '7-11 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc ghi<div></div><div></div><div>|</div>opq xyz</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc |ghi<div></div><div></div><div></div>opq xyz</div>',
+  '<div contenteditable dir="rtl">abc ghi|<div></div><div></div><div></div>opq xyz</div>',
   '7-12 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc ghi<div></div><div></div><div></div>|opq xyz</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc |ghi<div></div><div></div><div></div>opq xyz</div>',
+  '<div contenteditable dir="rtl">abc ghi|<div></div><div></div><div></div>opq xyz</div>',
   '7-13 rtl right word');
 
 selection_test(

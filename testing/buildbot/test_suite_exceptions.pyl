@@ -71,11 +71,6 @@
       },
     },
   },
-  'blink_unittests': {
-    'remove_from': [
-      'android-code-coverage-native', # crbug/1018431
-    ],
-  },
   'breakpad_unittests': {
     'modifications': {
       'android-asan': {
@@ -406,6 +401,9 @@
   },
   'components_unittests': {
     'remove_from': [
+      # chromium.linux
+      'Fuchsia x64', # https://crbug.com/961457
+      # chromium.fyi
       'android-code-coverage-native', # crbug/1018431
     ],
     'modifications': {
@@ -428,10 +426,6 @@
         },
       },
     },
-    'remove_from': [
-      # chromium.linux
-      'Fuchsia x64', # https://crbug.com/961457
-    ]
   },
   'content_browsertests': {
     'remove_from': [
@@ -2188,6 +2182,13 @@
     },
   },
   'webkit_unit_tests': {
+    'remove_from': [
+      # Flakily fails on Win7. https://crbug.com/943372.
+      'Win7 Tests (1)',
+      'Win 7 Tests x64 (1)',
+      # chromium.fyi
+      'android-code-coverage-native', # crbug/1018431
+    ],
     'modifications': {
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
@@ -2204,11 +2205,6 @@
         },
       },
     },
-    'remove_from': [
-      # Flakily fails on Win7. https://crbug.com/943372.
-      'Win7 Tests (1)',
-      'Win 7 Tests x64 (1)',
-    ],
   },
   'webview_instrumentation_test_apk': {
     'remove_from': [

@@ -4,10 +4,8 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_non_recording_data_store.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
-#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -22,9 +20,6 @@ const url::Origin kTestOrigin = url::Origin::Create(GURL("http://www.foo.com"));
 class LocalSiteCharacteristicsNonRecordingDataStoreTest : public testing::Test {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteCharacteristicsDatabase);
-
     recording_data_store_ =
         std::make_unique<LocalSiteCharacteristicsDataStore>(&parent_profile_);
     non_recording_data_store_ =
@@ -38,7 +33,6 @@ class LocalSiteCharacteristicsNonRecordingDataStoreTest : public testing::Test {
   void WaitForAsyncOperationsToComplete() { task_environment_.RunUntilIdle(); }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile parent_profile_;
   TestingProfile profile_;

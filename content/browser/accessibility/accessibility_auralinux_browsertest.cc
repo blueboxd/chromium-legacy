@@ -790,6 +790,220 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
 }
 #endif  //  defined(ATK_230)
 
+#if defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 32, 0)
+typedef gboolean (*ScrollSubstringToFunc)(AtkText* text,
+                                          gint start_offset,
+                                          gint end_offset,
+                                          AtkScrollType type);
+ScrollSubstringToFunc g_scroll_substring_to = nullptr;
+
+NO_SANITIZE("cfi-icall")
+gboolean ScrollSubstringTo(AtkText* text,
+                           gint start_offset,
+                           gint end_offset,
+                           AtkScrollType type) {
+  EXPECT_NE(g_scroll_substring_to, nullptr);
+  return g_scroll_substring_to(text, start_offset, end_offset, type);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestScrollSubstringTo) {
+  // There's a chance we may be compiled with a newer version of ATK and then
+  // run with an older one, so we need to do a runtime check for this method
+  // that is available in ATK 2.32 instead of linking directly.
+  g_scroll_substring_to = reinterpret_cast<ScrollSubstringToFunc>(
+      dlsym(RTLD_DEFAULT, "atk_text_scroll_substring_to"));
+  if (!g_scroll_substring_to) {
+    LOG(WARNING) << "Skipping "
+                    "AccessibilityAuraLinuxBrowserTest::TestSubstringScrollTo"
+                    " because ATK version < 2.32 detected.";
+    return;
+  }
+
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+        <div style="height: 50000px; width: 50000px;"></div>
+        <div style="position: relative; left: 1000px;">Target 1</div>
+        <div style="height: 50000px;"></div>
+        <div style="position: relative; left: 10000px;"> Target 2</div>
+        <div style="height: 50000px;"></div>
+        <div style="position: relative; left: 100000px;"> Target 3</div>
+        <div style="height: 50000px;"></div>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  // Get the dimensions of the document.
+  int doc_x, doc_y, doc_width, doc_height;
+  atk_component_get_extents(ATK_COMPONENT(document), &doc_x, &doc_y, &doc_width,
+                            &doc_height, ATK_XY_SCREEN);
+
+  // The document should only have three children, three span elements.
+  ASSERT_EQ(3, atk_object_get_n_accessible_children(document));
+
+  AtkObject* target1 = atk_object_ref_accessible_child(document, 0);
+  AtkObject* target2 = atk_object_ref_accessible_child(document, 1);
+
+  ASSERT_TRUE(ATK_IS_TEXT(target1));
+  ASSERT_TRUE(ATK_IS_TEXT(target2));
+
+  ASSERT_EQ(ATK_ROLE_SECTION, atk_object_get_role(target1));
+  ASSERT_EQ(ATK_ROLE_SECTION, atk_object_get_role(target2));
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+  int x, y;
+  atk_text_get_character_extents(ATK_TEXT(target1), 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+
+  ASSERT_TRUE(
+      ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_RIGHT_EDGE));
+  waiter.WaitForNotification();
+  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_NE(x, doc_x);
+
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+
+  ASSERT_TRUE(
+      ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_BOTTOM_EDGE));
+  waiter.WaitForNotification();
+  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_LEFT_EDGE));
+  waiter.WaitForNotification();
+  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_TOP_LEFT));
+  waiter.WaitForNotification();
+  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_EQ(x, doc_x);
+
+  g_object_unref(target1);
+  g_object_unref(target2);
+}
+
+typedef gboolean (*ScrollSubstringToPointFunc)(AtkText* text,
+                                               gint start_offset,
+                                               gint end_offset,
+                                               AtkCoordType coord_type,
+                                               gint x,
+                                               gint y);
+ScrollSubstringToPointFunc g_scroll_substring_to_point = nullptr;
+
+NO_SANITIZE("cfi-icall")
+gboolean ScrollSubstringToPoint(AtkText* text,
+                                gint start_offset,
+                                gint end_offset,
+                                AtkCoordType coord_type,
+                                gint x,
+                                gint y) {
+  EXPECT_NE(g_scroll_substring_to_point, nullptr);
+  return g_scroll_substring_to_point(text, start_offset, end_offset, coord_type,
+                                     x, y);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestScrollSubstringToPoint) {
+  // There's a chance we may be compiled with a newer version of ATK and then
+  // run with an older one, so we need to do a runtime check for this method
+  // that is available in ATK 2.30 instead of linking directly.
+  g_scroll_substring_to_point = reinterpret_cast<ScrollSubstringToPointFunc>(
+      dlsym(RTLD_DEFAULT, "atk_text_scroll_substring_to_point"));
+  if (!g_scroll_substring_to_point) {
+    LOG(WARNING)
+        << "Skipping "
+           "AccessibilityAuraLinuxBrowserTest::TestScrollSubstringToPoint"
+           " because ATK version < 2.30 detected.";
+    return;
+  }
+
+  LoadSampleParagraphInScrollableDocument();
+  AtkText* atk_text = GetSampleParagraph();
+  ASSERT_TRUE(ATK_IS_COMPONENT(atk_text));
+  AtkComponent* atk_component = ATK_COMPONENT(atk_text);
+
+  int prev_x, prev_y, x, y;
+  atk_text_get_character_extents(atk_text, 1, &prev_x, &prev_y, nullptr,
+                                 nullptr, ATK_XY_SCREEN);
+
+  AccessibilityNotificationWaiter location_changed_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kLocationChanged);
+  ScrollSubstringToPoint(atk_text, 1, 2, ATK_XY_PARENT, 0, 0);
+  location_changed_waiter.WaitForNotification();
+
+  atk_text_get_character_extents(atk_text, 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_EQ(prev_x, x);
+  EXPECT_GT(prev_y, y);
+
+  constexpr int kScrollToY = 0;
+  ScrollSubstringToPoint(atk_text, 1, 2, ATK_XY_SCREEN, 0, kScrollToY);
+  location_changed_waiter.WaitForNotification();
+  atk_text_get_character_extents(atk_text, 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_EQ(kScrollToY, y);
+
+  constexpr int kScrollToY_2 = 243;
+  ScrollSubstringToPoint(atk_text, 1, 2, ATK_XY_SCREEN, 0, kScrollToY_2);
+  location_changed_waiter.WaitForNotification();
+  atk_text_get_character_extents(atk_text, 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_EQ(kScrollToY_2, y);
+
+  ScrollSubstringToPoint(atk_text, 1, 2, ATK_XY_SCREEN, 0, 129);
+  location_changed_waiter.WaitForNotification();
+  atk_text_get_character_extents(atk_text, 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+
+  AtkObject* frame = FindAtkObjectParentFrame(ATK_OBJECT(atk_component));
+  int frame_y;
+  atk_component_get_extents(ATK_COMPONENT(frame), nullptr, &frame_y, nullptr,
+                            nullptr, ATK_XY_SCREEN);
+
+  // We do a check that the vertical position is within 5 pixels of the frame
+  // position.
+  EXPECT_LT(std::abs(frame_y - y), 5);
+
+  g_object_unref(atk_text);
+}
+#endif  //  defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 32, 0)
+
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
   AtkText* atk_text = SetUpInputField();
 

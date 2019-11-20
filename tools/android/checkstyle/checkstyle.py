@@ -15,6 +15,8 @@ CHROMIUM_SRC = os.path.normpath(
                  os.pardir, os.pardir, os.pardir))
 CHECKSTYLE_ROOT = os.path.join(CHROMIUM_SRC, 'third_party', 'checkstyle',
                                'checkstyle-all.jar')
+JAVA_PATH = os.path.join(CHROMIUM_SRC, 'third_party', 'jdk', 'current', 'bin',
+                         'java')
 
 
 def FormatCheckstyleOutput(checkstyle_output):
@@ -43,21 +45,12 @@ def RunCheckstyle(input_api, output_api, style_file, black_list=None):
     return []
 
   # Run checkstyle
-  checkstyle_env = os.environ.copy()
-  checkstyle_env['JAVA_CMD'] = 'java'
-  try:
-    check = subprocess.Popen(['java', '-cp',
-                              CHECKSTYLE_ROOT,
-                              'com.puppycrawl.tools.checkstyle.Main', '-c',
-                              style_file, '-f', 'xml'] + java_files,
-                              stdout=subprocess.PIPE, env=checkstyle_env)
-    stdout, _ = check.communicate()
-  except OSError as e:
-    import errno
-    if e.errno == errno.ENOENT:
-      install_error = ('  checkstyle is not installed. Please run '
-                       'build/install-build-deps-android.sh')
-      return [output_api.PresubmitPromptWarning(install_error)]
+  check = subprocess.Popen([JAVA_PATH, '-cp',
+                            CHECKSTYLE_ROOT,
+                            'com.puppycrawl.tools.checkstyle.Main', '-c',
+                            style_file, '-f', 'xml'] + java_files,
+                            stdout=subprocess.PIPE)
+  stdout, _ = check.communicate()
 
   result_errors = []
   result_warnings = []

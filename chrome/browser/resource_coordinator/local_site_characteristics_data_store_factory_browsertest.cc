@@ -4,7 +4,6 @@
 
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -41,8 +40,6 @@ class LocalSiteCharacteristicsDataStoreFactoryTest
   ~LocalSiteCharacteristicsDataStoreFactoryTest() override = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteCharacteristicsDatabase);
     InProcessBrowserTest::SetUp();
   }
 
@@ -52,8 +49,6 @@ class LocalSiteCharacteristicsDataStoreFactoryTest
         chromeos::switches::kIgnoreUserProfileMappingForTests);
   }
 #endif
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataStoreFactoryTest);
 };

@@ -11,8 +11,18 @@
 // Configurable service data.
 constexpr char kGcdBaseUrl[] = "https://www.googleapis.com/clouddevices/v1";
 constexpr char kGcdJid[] = "clouddevices.gserviceaccount.com";
+
+// Debug builds should default to the autopush environment (can be configured
+// via cmd line switch).  Release builds will point to the prod environment.
+#if defined(NDEBUG)
 constexpr char kFtlServerEndpoint[] = "instantmessaging-pa.googleapis.com";
 constexpr char kRemotingServerEndpoint[] = "remotedesktop-pa.googleapis.com";
+#else
+constexpr char kFtlServerEndpoint[] =
+    "tachyon-playground-autopush-grpc.sandbox.googleapis.com";
+constexpr char kRemotingServerEndpoint[] =
+    "autopush-remotedesktop-pa.sandbox.googleapis.com";
+#endif
 
 // Command line switches.
 #if !defined(NDEBUG)

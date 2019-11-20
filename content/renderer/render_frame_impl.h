@@ -344,11 +344,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // frame, |element| will be null.
   void FocusedElementChanged(const blink::WebElement& element);
 
-  // TODO(dmazzoni): the only reason this is here is to plumb it through to
-  // RenderAccessibilityImpl. It should use the RenderFrameObserver method, once
-  // blink has a separate accessibility tree per frame.
-  void FocusedElementChangedForAccessibility(const blink::WebElement& element);
-
   // A RenderView opened by this RenderFrame needs to be shown.
   void ShowCreatedWindow(bool opened_by_user_gesture,
                          RenderWidget* render_widget_to_show,

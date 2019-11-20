@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.EmptyTabGroupModelFilterObse
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupUtils;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -336,6 +337,21 @@ class TabListMediator {
         @Override
         public void onFaviconUpdated(Tab updatedTab, Bitmap icon) {
             updateFaviconForTab(updatedTab, icon);
+        }
+
+        @Override
+        public void onUrlUpdated(Tab tab) {
+            int index = mModel.indexFromId(tab.getId());
+
+            if (index == TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs
+                    && FeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+                Tab currentGroupSelectedTab =
+                        TabGroupUtils.getSelectedTabInGroupForTab(mTabModelSelector, tab);
+                index = mModel.indexFromId(currentGroupSelectedTab.getId());
+            }
+
+            if (index == TabModel.INVALID_TAB_INDEX) return;
+            mModel.get(index).model.set(TabProperties.URL, getUrlForTab(tab));
         }
     };
 
@@ -889,6 +905,7 @@ class TabListMediator {
                 TabProperties.CREATE_GROUP_LISTENER, getCreateGroupButtonListener(tab, isSelected));
         mModel.get(index).model.set(TabProperties.IS_SELECTED, isSelected);
         mModel.get(index).model.set(TabProperties.TITLE, getLatestTitleForTab(tab));
+        mModel.get(index).model.set(TabProperties.URL, getUrlForTab(tab));
 
         updateFaviconForTab(tab, null);
         boolean forceUpdate = isSelected && !quickMode;
@@ -1010,6 +1027,7 @@ class TabListMediator {
                 new PropertyModel.Builder(TabProperties.ALL_KEYS_TAB_GRID)
                         .with(TabProperties.TAB_ID, tab.getId())
                         .with(TabProperties.TITLE, getLatestTitleForTab(tab))
+                        .with(TabProperties.URL, getUrlForTab(tab))
                         .with(TabProperties.FAVICON,
                                 mTabListFaviconProvider.getDefaultFaviconDrawable(
                                         tab.isIncognito()))
@@ -1071,6 +1089,26 @@ class TabListMediator {
             tabInfo.set(TabProperties.THUMBNAIL_FETCHER, callback);
         }
         tab.addObserver(mTabObserver);
+    }
+
+    private String getUrlForTab(Tab tab) {
+        if (!mActionsOnAllRelatedTabs) return tab.getUrl();
+
+        List<Tab> relatedTabs = getRelatedTabsForId(tab.getId());
+        if (relatedTabs.size() == 1) return tab.getUrl();
+
+        StringBuilder builder = new StringBuilder();
+        // TODO(1024925): Address i18n issue for the list separator.
+        String separator = ", ";
+        for (int i = 0; i < relatedTabs.size(); i++) {
+            String domain = UrlUtilities.getDomainAndRegistry(relatedTabs.get(i).getUrl(), false);
+            if (!domain.isEmpty()) {
+                builder.append(domain);
+
+                if (i < relatedTabs.size() - 1) builder.append(separator);
+            }
+        }
+        return builder.toString();
     }
 
     @Nullable

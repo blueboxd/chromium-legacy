@@ -253,12 +253,12 @@ SkColor ShelfConfig::GetMaximizedShelfColor() const {
 SkColor ShelfConfig::GetDefaultShelfColor() const {
   if (!features::IsBackgroundBlurEnabled()) {
     return AshColorProvider::Get()->GetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparentWithoutBlur,
+        AshColorProvider::BaseLayerType::kTransparent90,
         AshColorProvider::AshColorMode::kDark);
   }
 
   SkColor final_color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kTransparentWithBlur,
+      AshColorProvider::BaseLayerType::kTransparent74,
       AshColorProvider::AshColorMode::kDark);
 
   if (!Shell::Get()->wallpaper_controller())

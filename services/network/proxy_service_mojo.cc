@@ -19,7 +19,8 @@ namespace network {
 
 std::unique_ptr<net::ProxyResolutionService>
 CreateProxyResolutionServiceUsingMojoFactory(
-    proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
+    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
+        mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     std::unique_ptr<net::PacFileFetcher> pac_file_fetcher,
     std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher,

@@ -12,7 +12,14 @@
 #include "components/games/core/proto/game.pb.h"
 
 namespace games {
-using HighlightedGameCallback = base::OnceCallback<void(std::unique_ptr<Game>)>;
+
+enum ResponseCode {
+  kSuccess = 0,
+  kFileNotFound = 1,
+};
+
+using HighlightedGameCallback =
+    base::OnceCallback<void(ResponseCode, std::unique_ptr<Game>)>;
 
 }  // namespace games
 

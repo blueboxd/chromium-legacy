@@ -86,6 +86,7 @@ need to be translated for each locale.-->
     <output filename="ui_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
+    <file path="translations/ui_strings_af.xtb" lang="af" />
     <file path="translations/ui_strings_am.xtb" lang="am" />
     <file path="translations/ui_strings_ar.xtb" lang="ar" />
     <file path="translations/ui_strings_bg.xtb" lang="bg" />

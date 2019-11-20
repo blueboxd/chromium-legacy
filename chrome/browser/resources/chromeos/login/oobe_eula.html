@@ -26,8 +26,8 @@
       </hd-iron-icon>
       <h1 slot="title">[[i18nDynamic(locale, 'oobeEulaSectionTitle')]]</h1>
       <div slot="footer" class="flex layout vertical">
-        <webview id="crosEulaFrame"
-            role="document" class="focus-on-show flex"
+        <webview id="crosEulaFrame" allowTransparency
+            role="document" class="focus-on-show flex oobe-tos-webview"
             i18n-values="aria-label:oobeEulaIframeLabel"
             on-contentload="onFrameLoad_">
         </webview>

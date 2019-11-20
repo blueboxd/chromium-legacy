@@ -48,12 +48,9 @@ void ElementIntersectionObserverData::RemoveObservation(
 bool ElementIntersectionObserverData::ComputeIntersectionsForTarget(
     unsigned flags) {
   bool needs_occlusion_tracking = false;
-  HeapVector<Member<IntersectionObservation>> observations_to_process;
-  CopyValuesToVector(intersection_observations_, observations_to_process);
-  for (auto& observation : observations_to_process) {
-    needs_occlusion_tracking |=
-        observation->Observer()->NeedsOcclusionTracking();
-    observation->ComputeIntersection(flags);
+  for (auto& entry : intersection_observations_) {
+    needs_occlusion_tracking |= entry.key->NeedsOcclusionTracking();
+    entry.value->ComputeIntersection(flags);
   }
   return needs_occlusion_tracking;
 }
@@ -63,10 +60,7 @@ bool ElementIntersectionObserverData::ComputeIntersectionsForLifecycleUpdate(
   bool needs_occlusion_tracking = false;
 
   // Process explicit-root observers for which this element is root.
-  HeapVector<Member<IntersectionObserver>> observers_to_process;
-  // TODO(szager): Do we still need this copy?
-  CopyToVector(intersection_observers_, observers_to_process);
-  for (auto& observer : observers_to_process) {
+  for (auto& observer : intersection_observers_) {
     needs_occlusion_tracking |= observer->NeedsOcclusionTracking();
     if (flags & IntersectionObservation::kExplicitRootObserversNeedUpdate) {
       observer->ComputeIntersections(flags);

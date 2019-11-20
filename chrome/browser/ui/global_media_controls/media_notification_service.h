@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
@@ -99,6 +100,23 @@ class MediaNotificationService
  private:
   friend class MediaNotificationServiceTest;
   friend class MediaToolbarButtonControllerTest;
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
+                           HideAfterTimeoutAndActiveAgainOnPlay);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
+                           SessionIsRemovedImmediatelyWhenATabCloses);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest, DismissesMediaSession);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationServiceTest,
+                           HidesInactiveNotifications);
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class GlobalMediaControlsDismissReason {
+    kUserDismissedNotification = 0,
+    kInactiveTimeout = 1,
+    kTabClosed = 2,
+    kMediaSessionStopped = 3,
+    kMaxValue = kMediaSessionStopped,
+  };
 
   class Session : public content::WebContentsObserver,
                   public media_session::mojom::MediaControllerObserver {
@@ -140,11 +158,17 @@ class MediaNotificationService
     void SetController(
         mojo::Remote<media_session::mojom::MediaController> controller);
 
-   private:
-    void StartInactiveTimer();
+    // Sets the reason why this session was dismissed/removed. Can only be
+    // called if the value has not already been set.
+    void set_dismiss_reason(GlobalMediaControlsDismissReason reason);
 
+   private:
     // Called when a session is interacted with (to reset |inactive_timer_|).
     void OnSessionInteractedWith();
+
+    void StartInactiveTimer();
+
+    void OnInactiveTimerFired();
 
     MediaNotificationService* owner_;
     const std::string id_;
@@ -152,6 +176,9 @@ class MediaNotificationService
 
     // Used to stop/hide a paused session after a period of inactivity.
     base::OneShotTimer inactive_timer_;
+
+    // The reason why this session was dismissed/removed.
+    base::Optional<GlobalMediaControlsDismissReason> dismiss_reason_;
 
     // Used to receive updates to the Media Session playback state.
     mojo::Receiver<media_session::mojom::MediaControllerObserver>

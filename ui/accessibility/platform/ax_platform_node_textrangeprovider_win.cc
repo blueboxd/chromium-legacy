@@ -1144,24 +1144,33 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
   // first snap them both to be unignored positions.
   NormalizeAsUnignoredTextRange();
 
-  // Only normalize non-degenerate ranges.
-  if (*start_ != *end_) {
-    AXPositionInstance normalized_start =
-        start_->AsLeafTextPositionBeforeCharacter();
-    if (!normalized_start->IsNullPosition()) {
-      DCHECK_EQ(*start_, *normalized_start);
-      start_ = std::move(normalized_start);
-    }
+  if (*start_ == *end_)
+    return;
 
-    AXPositionInstance normalized_end =
-        end_->AsLeafTextPositionAfterCharacter();
-    if (!normalized_end->IsNullPosition()) {
-      DCHECK_EQ(*end_, *normalized_end);
-      end_ = std::move(normalized_end);
-    }
+  AXPositionInstance normalized_start =
+      start_->AsLeafTextPositionBeforeCharacter();
+  AXPositionInstance normalized_end = end_->AsLeafTextPositionAfterCharacter();
 
-    DCHECK_LE(*start_, *end_);
-  }
+  // Handle the fringe case when |normalized_start| and |normalized_end| end up
+  // inverted after AsLeafTextPosition{Before|After}Character() calls.
+  // Consider the following case:
+  //    text1<start_>|IGNORED node|<end_>text2
+  // Due to |start_| and |end_| positions spanning ignored nodes, we end up
+  // with the following inverted normalized positions:
+  //    <normalized_end>text1|IGNORED node|<normalized_start>text2
+  // So we want to create a collapsed range by setting |normalized_end| to
+  // |normalized_start|.
+  if (!normalized_start->IsNullPosition() &&
+      !normalized_end->IsNullPosition() && *normalized_end < *normalized_start)
+    normalized_end = normalized_start->Clone();
+
+  if (!normalized_start->IsNullPosition())
+    start_ = std::move(normalized_start);
+
+  if (!normalized_end->IsNullPosition())
+    end_ = std::move(normalized_end);
+
+  DCHECK_LE(*start_, *end_);
 }
 
 }  // namespace ui

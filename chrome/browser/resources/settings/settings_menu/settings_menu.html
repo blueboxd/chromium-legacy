@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
@@ -17,7 +18,7 @@
 
 <dom-module id="settings-menu">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared cr-icons">
       :host {
         box-sizing: border-box;
         display: block;
@@ -89,7 +90,7 @@
       }
 
       #advancedButton > iron-icon,
-      #extensionsLink > iron-icon {
+      #extensionsLink > .cr-icon {
         @apply --cr-icon-height-width;
         margin-inline-end: 14px;  /* 16px - 2px from margin for outline. */
       }
@@ -231,7 +232,7 @@
           on-click="onExtensionsLinkClick_"
           title="$i18n{extensionsLinkTooltip}">
         <span>$i18n{extensionsPageTitle}</span>
-        <iron-icon icon="cr:open-in-new"></iron-icon>
+        <div class="cr-icon icon-external"></div>
       </a>
       <a id="about-menu" href="/help">$i18n{aboutPageTitle}</a>
     </iron-selector>

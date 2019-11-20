@@ -15,6 +15,7 @@ import org.chromium.weblayer_private.interfaces.INavigation;
 import org.chromium.weblayer_private.interfaces.INavigationController;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 import org.chromium.weblayer_private.interfaces.ITab;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Provides methods to control navigation, along with maintaining the current list of navigations.
@@ -142,11 +143,13 @@ public final class NavigationController {
     private final class NavigationControllerClientImpl extends INavigationControllerClient.Stub {
         @Override
         public IClientNavigation createClientNavigation(INavigation navigationImpl) {
+            StrictModeWorkaround.apply();
             return new Navigation(navigationImpl);
         }
 
         @Override
         public void navigationStarted(IClientNavigation navigation) {
+            StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onNavigationStarted((Navigation) navigation);
             }
@@ -154,6 +157,7 @@ public final class NavigationController {
 
         @Override
         public void navigationRedirected(IClientNavigation navigation) {
+            StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onNavigationRedirected((Navigation) navigation);
             }
@@ -161,6 +165,7 @@ public final class NavigationController {
 
         @Override
         public void readyToCommitNavigation(IClientNavigation navigation) {
+            StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onReadyToCommitNavigation((Navigation) navigation);
             }
@@ -168,6 +173,7 @@ public final class NavigationController {
 
         @Override
         public void navigationCompleted(IClientNavigation navigation) {
+            StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onNavigationCompleted((Navigation) navigation);
             }
@@ -175,6 +181,7 @@ public final class NavigationController {
 
         @Override
         public void navigationFailed(IClientNavigation navigation) {
+            StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onNavigationFailed((Navigation) navigation);
             }
@@ -182,6 +189,7 @@ public final class NavigationController {
 
         @Override
         public void loadStateChanged(boolean isLoading, boolean toDifferentDocument) {
+            StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onLoadStateChanged(isLoading, toDifferentDocument);
             }
@@ -189,6 +197,7 @@ public final class NavigationController {
 
         @Override
         public void loadProgressChanged(double progress) {
+            StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onLoadProgressChanged(progress);
             }
@@ -196,6 +205,7 @@ public final class NavigationController {
 
         @Override
         public void onFirstContentfulPaint() {
+            StrictModeWorkaround.apply();
             for (NavigationCallback callback : mCallbacks) {
                 callback.onFirstContentfulPaint();
             }

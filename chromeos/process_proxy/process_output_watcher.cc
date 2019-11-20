@@ -42,8 +42,8 @@ size_t UTF8SizeFromLeadingByte(uint8_t leading_byte) {
 
 void RelayToTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const base::Closure& callback) {
-  task_runner->PostTask(FROM_HERE, callback);
+    base::OnceClosure callback) {
+  task_runner->PostTask(FROM_HERE, std::move(callback));
 }
 
 }  // namespace
@@ -75,8 +75,9 @@ void ProcessOutputWatcher::OnProcessOutputCanReadWithoutBlocking() {
 void ProcessOutputWatcher::WatchProcessOutput() {
   output_file_watcher_ = base::FileDescriptorWatcher::WatchReadable(
       process_output_file_.GetPlatformFile(),
-      base::Bind(&ProcessOutputWatcher::OnProcessOutputCanReadWithoutBlocking,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &ProcessOutputWatcher::OnProcessOutputCanReadWithoutBlocking,
+          base::Unretained(this)));
 }
 
 void ProcessOutputWatcher::ReadFromFd(int fd) {
@@ -92,9 +93,9 @@ void ProcessOutputWatcher::ReadFromFd(int fd) {
   if (bytes_read > 0) {
     ReportOutput(
         PROCESS_OUTPUT_TYPE_OUT, bytes_read,
-        base::Bind(&RelayToTaskRunner, base::ThreadTaskRunnerHandle::Get(),
-                   base::Bind(&ProcessOutputWatcher::WatchProcessOutput,
-                              weak_factory_.GetWeakPtr())));
+        base::BindOnce(&RelayToTaskRunner, base::ThreadTaskRunnerHandle::Get(),
+                       base::BindOnce(&ProcessOutputWatcher::WatchProcessOutput,
+                                      weak_factory_.GetWeakPtr())));
     return;
   }
 
@@ -103,7 +104,7 @@ void ProcessOutputWatcher::ReadFromFd(int fd) {
 
   // If there is nothing on the output the watched process has exited (slave end
   // of pty is closed).
-  on_read_callback_.Run(PROCESS_OUTPUT_TYPE_EXIT, "", base::Closure());
+  on_read_callback_.Run(PROCESS_OUTPUT_TYPE_EXIT, "", base::OnceClosure());
 
   // Cancel pending |WatchProcessOutput| calls.
   weak_factory_.InvalidateWeakPtrs();
@@ -147,12 +148,12 @@ size_t ProcessOutputWatcher::OutputSizeWithoutIncompleteUTF8() {
 
 void ProcessOutputWatcher::ReportOutput(ProcessOutputType type,
                                         size_t new_bytes_count,
-                                        const base::Closure& callback) {
+                                        base::OnceClosure callback) {
   read_buffer_size_ += new_bytes_count;
   size_t output_to_report = OutputSizeWithoutIncompleteUTF8();
 
   on_read_callback_.Run(type, std::string(read_buffer_, output_to_report),
-                        callback);
+                        std::move(callback));
 
   // Move the bytes that were left behind to the beginning of the buffer and
   // update the buffer size accordingly.

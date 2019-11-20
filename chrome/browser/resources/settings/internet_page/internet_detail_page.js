@@ -735,8 +735,8 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
-   * @param {!mojom.GlobalPolicy} globalPolicy
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
+   * @param {!mojom.GlobalPolicy|undefined} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {boolean}
@@ -782,7 +782,7 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @return {boolean}
    * @private
    */
@@ -966,11 +966,11 @@ Polymer({
   },
 
   /**
-   * @param {!mojom.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedProperties|undefined} managedProperties
    * @param {?OncMojo.NetworkStateProperties} defaultNetwork
    * @param {boolean} propertiesReceived
    * @param {boolean} outOfRange
-   * @param {!mojom.GlobalPolicy} globalPolicy
+   * @param {!mojom.GlobalPolicy|undefined} globalPolicy
    * @param {boolean} managedNetworkAvailable
    * @param {?OncMojo.DeviceStateProperties} deviceState
    * @return {boolean} Whether or not to enable the network connect button.
@@ -1047,7 +1047,7 @@ Polymer({
   },
 
   /** @private */
-  onConnectTap_: function() {
+  handleConnectTap_: function() {
     if (this.managedProperties_.type == mojom.NetworkType.kTether &&
         (!this.managedProperties_.typeProperties.tether.hasConnectedToHost)) {
       this.showTetherDialog_();
@@ -1076,12 +1076,69 @@ Polymer({
   },
 
   /** @private */
-  onDisconnectTap_: function() {
+  handleDisconnectTap_: function() {
     this.networkConfig_.startDisconnect(this.guid).then(response => {
       if (!response.success) {
         console.error('Disconnect failed for: ' + this.guid);
       }
     });
+  },
+
+  /** @private */
+  onConnectDisconnectTap_: function() {
+    if (this.enableConnect_(
+            this.managedProperties_, this.defaultNetwork,
+            this.propertiesReceived_, this.outOfRange_, this.globalPolicy,
+            this.managedNetworkAvailable, this.deviceState_)) {
+      this.handleConnectTap_();
+      return;
+    }
+
+    if (this.showDisconnect_(this.managedProperties_)) {
+      this.handleDisconnectTap_();
+      return;
+    }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldConnectDisconnectButtonBeHidden_: function() {
+    return !this.showConnect_(
+               this.managedProperties_, this.globalPolicy,
+               this.managedNetworkAvailable, this.deviceState_) &&
+        !this.showDisconnect_(this.managedProperties_);
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldConnectDisconnectButtonBeDisabled_: function() {
+    return !this.enableConnect_(
+               this.managedProperties_, this.defaultNetwork,
+               this.propertiesReceived_, this.outOfRange_, this.globalPolicy,
+               this.managedNetworkAvailable, this.deviceState_) &&
+        !this.showDisconnect_(this.managedProperties_);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getConnectDisconnectButtonLabel_: function() {
+    if (this.showConnect_(
+            this.managedProperties_, this.globalPolicy,
+            this.managedNetworkAvailable, this.deviceState_)) {
+      return this.i18n('networkButtonConnect');
+    }
+
+    if (this.showDisconnect_(this.managedProperties_)) {
+      return this.i18n('networkButtonDisconnect');
+    }
+
+    return '';
   },
 
   /** @private */

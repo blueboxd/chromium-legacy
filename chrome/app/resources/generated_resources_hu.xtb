@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Alkalmazás ikonja</translation>
 <translation id="1410616244180625362">A(z) <ph name="HOST" /> továbbra is hozzáférhet az Ön kamerájához</translation>
 <translation id="1414648216875402825">A(z) <ph name="PRODUCT_NAME" /> instabil verziójára frissít, amely fejlesztés alatt álló funkciókat tartalmaz. Előfordulhatnak rendszerösszeomlások és váratlan programhibák. Kérjük, fokozott körültekintéssel lépjen tovább.</translation>
-<translation id="1414866280542221544">Engedélyezés ezen az eszközön</translation>
 <translation id="1415708812149920388">A vágólap olvasásához szükséges hozzáférés megtagadva</translation>
 <translation id="1415990189994829608">Az ilyen jellegű munkamenetekben a(z) <ph name="EXTENSION_NAME" /> (bővítményazonosító: „<ph name="EXTENSION_ID" />”) nem engedélyezett.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Pizzaszelet</translation>
 <translation id="1468571364034902819">Ez a profil nem használható</translation>
 <translation id="1470811252759861213">Ha az összes számítógépén szeretné elérni bővítményeit: <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Ezzel törli a biztonsági hardverkulcson tárolt összes adatot, köztük a PIN-kódot is</translation>
 <translation id="1472675084647422956">Továbbiak megjelenítése</translation>
 <translation id="1475502736924165259">Vannak olyan tanúsítványok, amelyek nem illenek a többi kategória egyikébe se</translation>
 <translation id="1476088332184200792">Átmásolás az eszközére</translation>
@@ -842,7 +840,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2202898655984161076">Hiba történt a nyomtatók felsorolása közben. Lehet, hogy néhány nyomtató nem regisztrálható itt: <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">A <ph name="BEGIN_LINK" />címsávban<ph name="END_LINK" /> használt keresőmotor</translation>
 <translation id="2204034823255629767">Bárminek az olvasása és módosítása, amit Ön begépel</translation>
-<translation id="2204397710290433380">Letiltja az ADB-t?</translation>
 <translation id="220792432208469595">Használati és diagnosztikai adatok küldése. Ez az eszköz jelenleg automatikusan küld diagnosztikai, eszköz- és alkalmazáshasználati adatokat a Google-nak. Az adatok a rendszer- és alkalmazásstabilitás javításában, valamint más fejlesztésekben segítenek. Bizonyos összesített adatok a Google-alkalmazásoknak és -partnereknek, például az Android-fejlesztőknek is segítenek. Ezt a beállítást kötelezővé tette az eszköz tulajdonosa. Ha az Internetes és alkalmazástevékenységek beállítás is be van kapcsolva, akkor a rendszer ezeket az adatokat az Ön Google-fiókjába is mentheti. <ph name="BEGIN_LINK1" />További információ.<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Kérjük, adja meg a PIN kódot a(z) "<ph name="DEVICE_NAME" />" eszközhöz:</translation>
 <translation id="2213140827792212876">Megosztás visszavonása</translation>
@@ -979,6 +976,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2396783860772170191">Adjon meg egy négyjegyű PIN-kódot (0000–9999)</translation>
 <translation id="2399939490305346086">Biztonsági hardverkulcs bejelentkezési adatai</translation>
 <translation id="2407481962792080328">Amikor bejelentkezik Google-fiókjába, a rendszer bekapcsolja ezt a funkciót</translation>
+<translation id="2408018932941436077">Kártya mentése folyamatban</translation>
 <translation id="2408955596600435184">PIN-kód megadása</translation>
 <translation id="241082044617551207">Ismeretlen beépülő modul</translation>
 <translation id="2412593942846481727">Rendelkezésre áll frissítés</translation>
@@ -2007,7 +2005,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3873315167136380065">Ennek bekapcsolásához <ph name="BEGIN_LINK" />állítsa alaphelyzetbe a szinkronizálást<ph name="END_LINK" />, hogy eltávolíthassa az összetett szinkronizálási jelszót</translation>
 <translation id="3873423927483480833">PIN-kódok megjelenítése</translation>
 <translation id="3873915545594852654">ARC++-hiba történt.</translation>
-<translation id="387924939625099872">Az ADB letiltásához indítsa újra <ph name="DEVICE_TYPE" /> eszközét. A rendszer visszaállítja az eszköz gyári beállításait, valamint eltávolítja róla az összes felhasználói fiókot és helyi adatot.</translation>
 <translation id="3879748587602334249">Letöltéskezelő</translation>
 <translation id="3886446263141354045">Webhely-hozzáférési kérelme elküldve a következő személynek: <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Jegyzetek készítése a(z) <ph name="LOCK_SCREEN_APP_NAME" /> alkalmazással</translation>
@@ -2408,7 +2405,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4501530680793980440">Eltávolítás megerősítése</translation>
 <translation id="4502423230170890588">Eltávolítás az eszközről</translation>
 <translation id="4504940961672722399">A bővítményt az ikonra kattintva, illetve a következő billentyűkódot megnyomva használhatja: <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">A folytatással engedélyezi az ADB számára az Android-alkalmazások létrehozását és tesztelését. Felhívjuk figyelmét, hogy az ADB lehetővé teszi olyan tesztalkalmazások telepítését, amelyeket nem hagyott jóvá a Google.</translation>
 <translation id="4508051413094283164">Összes megnyitása inkognitóablakban</translation>
 <translation id="4508265954913339219">Aktiválás sikertelen</translation>
 <translation id="4508765956121923607">F&amp;orrás megtekintése</translation>
@@ -3313,7 +3309,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5851868085455377790">Kiállító</translation>
 <translation id="5852112051279473187">Hoppá! Az eszköz rögzítése közben hiba történt. Kérjük, próbálja újra, vagy forduljon a támogatási képviselőhöz.</translation>
 <translation id="5852137567692933493">Újraindítás és Powerwash</translation>
-<translation id="5852360662347412211">Nyissa meg a Linux-beállításokat, és próbálja újra</translation>
 <translation id="5854912040170951372">Pizza</translation>
 <translation id="5855643921295613558">0,6 másodperc</translation>
 <translation id="5856721540245522153">Hibakeresési funkciók bekapcsolása</translation>
@@ -3326,7 +3321,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5860494867054883682">Eszköz frissítése a(z) <ph name="CHANNEL_NAME" /> csatornára (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Érintőceruza-eszközök megjelenítése a polcon</translation>
 <translation id="5863445608433396414">Hibakeresési funkciók bekapcsolása</translation>
-<translation id="5863471434640009253">Az Android Debug Bridge eszköz engedélyezéséhez előbb indítsa újra <ph name="DEVICE_TYPE" /> eszközét. Az ADB letiltásához vissza kell állítani az eszköz gyári beállításait.</translation>
 <translation id="5864471791310927901">DHCP-keresés sikertelen</translation>
 <translation id="586567932979200359">A <ph name="PRODUCT_NAME" /> alkalmazást jelenleg a lemezképéről futtatja. Ha telepíti a számítógépére, akkor futtathatja a lemezkép nélkül is, emellett biztosan naprakészen tartja.</translation>
 <translation id="5865733239029070421">Automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google-nak</translation>
@@ -3396,7 +3390,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5958529069007801266">Felügyelt felhasználó</translation>
 <translation id="5959471481388474538">A hálózat nem érhető el</translation>
 <translation id="595959584676692139">Töltse be újra az oldalt a bővítmény használatához</translation>
-<translation id="5961320084471308154">Engedélyezi az ADB-t?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (csúcs: <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Kezdőlap gombra történő kattintáskor vagy a cím- és keresősávban indított kereséskor.</translation>
 <translation id="5969419185858894314">A(z) <ph name="ORIGIN" /> megtekintheti a(z) <ph name="FOLDERNAME" /> mappában lévő fájlokat</translation>
@@ -4260,7 +4253,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7254554697254365959">Nem sikerült lefordítani az oldalt.</translation>
 <translation id="7254951428499890870">Biztosan diagnosztikai módban indítja el a(z) „<ph name="APP_NAME" />” alkalmazást?</translation>
 <translation id="7255002516883565667">Jelenleg egy olyan kártyája van, amelyet csak ezen az eszközön használhat</translation>
-<translation id="7255916308560539517">A visszaállítás megerősítéséhez érintse meg újra a biztonsági hardverkulcsot. Ezzel törli a biztonsági hardverkulcson tárolt összes adatot, köztük a PIN-kódot is.</translation>
 <translation id="7255935316994522020">Alkalmaz</translation>
 <translation id="7256069762010468647">A webhely használja a kameráját</translation>
 <translation id="7256405249507348194">Ismeretlen hiba: <ph name="DESC" /></translation>
@@ -4770,6 +4762,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7968833647796919681">Teljesítménybeli adatok gyűjtésének engedélyezése</translation>
 <translation id="7968982339740310781">Részletek megjelenítése</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">A kártya jelenleg nem menthető</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 RSA titkosítással</translation>
 <translation id="7973962044839454485">Nem sikerült a PPP-hitelesítés helytelen felhasználónév vagy jelszó miatt</translation>
 <translation id="7974566588408714340">A(z) <ph name="EXTENSIONNAME" /> használatának újrapróbálása</translation>
@@ -5091,7 +5084,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8431909052837336408">SIM-kártya PIN-kódjának módosítása</translation>
 <translation id="8434480141477525001">NaCl hibakeresési port</translation>
 <translation id="8435395510592618362">Igazolja személyazonosságát a(z) <ph name="APP_NAME" /> alkalmazással</translation>
-<translation id="843760761634048214">Hitelkártya mentése</translation>
 <translation id="8438328416656800239">Váltás intelligens böngészőre</translation>
 <translation id="8438566539970814960">Keresések és böngészés javítása</translation>
 <translation id="8439506636278576865">Kínálja fel az ezen a nyelven írt oldalak fordítását</translation>
@@ -5474,6 +5466,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8965037249707889821">Adja meg a régi jelszót</translation>
 <translation id="8966870118594285808">Lap újramegnyitása, ha véletlenül bezárja</translation>
 <translation id="8967866634928501045">A megjelenítéshez nyomja le az Alt+Shift+A billentyűparancsot</translation>
+<translation id="8968766641738584599">Kártya mentése</translation>
 <translation id="89720367119469899">Vezérlő</translation>
 <translation id="8972513834460200407">Kérdezze meg a hálózati rendszergazdától, hogy a tűzfal nem tiltja-e le a Google szervereiről érkező letöltéseket.</translation>
 <translation id="8973557916016709913">Nagyítási szint eltávolítása</translation>
@@ -5580,7 +5573,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9116799625073598554">Jegyzetkészítő alkalmazás</translation>
 <translation id="9117030152748022724">Az alkalmazások kezelése</translation>
 <translation id="9121814364785106365">Megnyitás rögzített lapként</translation>
-<translation id="9122074588095746047">Nem sikerült az ADB engedélyezése</translation>
 <translation id="9124003689441359348">A mentett jelszavak itt jelennek meg</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> maradt)</translation>
 <translation id="9128317794749765148">Nem sikerült a beállítás befejezése</translation>

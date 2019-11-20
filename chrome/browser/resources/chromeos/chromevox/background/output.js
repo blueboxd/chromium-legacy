@@ -114,6 +114,9 @@ Output = function() {
 
   /** @private {boolean} */
   this.enableHints_ = true;
+
+  /** @private {!Object} */
+  this.initialSpeechProps_ = {};
 };
 
 /**
@@ -939,7 +942,7 @@ Output.prototype = {
 
   /**
    * Don't include hints in subsequent output.
-   * @return {Output}
+   * @return {!Output}
    */
   withoutHints: function() {
     this.enableHints_ = false;
@@ -947,9 +950,19 @@ Output.prototype = {
   },
 
   /**
+   * Supply initial speech properties that will be applied to all output.
+   * @param {!Object} speechProps
+   * @return {!Output}
+   */
+  withInitialSpeechProperties: function(speechProps) {
+    this.initialSpeechProps_ = speechProps;
+    return this;
+  },
+
+  /**
    * Suppresses processing of a token for subsequent formatting commands.
    * @param {string} token
-   * @return {Output}
+   * @return {!Output}
    */
   suppress: function(token) {
     this.suppressions_[token] = true;
@@ -1015,7 +1028,7 @@ Output.prototype = {
   /**
    * Triggers callback for a speech event.
    * @param {function()} callback
-   * @return {Output}
+   * @return {!Output}
    */
   onSpeechEnd: function(callback) {
     this.speechEndCallback_ = function(opt_cleanupOnly) {
@@ -1060,8 +1073,17 @@ Output.prototype = {
       }
 
       var speechProps = /** @type {Object} */ (
-                            buff.getSpanInstanceOf(Output.SpeechProperties)) ||
-          {};
+          buff.getSpanInstanceOf(Output.SpeechProperties));
+
+      if (!speechProps) {
+        speechProps = this.initialSpeechProps_;
+      } else {
+        for (var [key, value] of Object.entries(this.initialSpeechProps_)) {
+          if (speechProps[key] === undefined) {
+            speechProps[key] = value;
+          }
+        }
+      }
 
       speechProps.category = this.speechCategory_;
 

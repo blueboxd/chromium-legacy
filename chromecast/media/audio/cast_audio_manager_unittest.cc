@@ -201,7 +201,7 @@ TEST_F(CastAudioManagerTest, CanMakeStream) {
 
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
-  EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+  EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
   stream->Start(&mock_source_callback_);
   RunThreadsUntilIdle();
 
@@ -225,7 +225,7 @@ TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
   if (stream->Open()) {
     EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
         .WillRepeatedly(Invoke(OnMoreData));
-    EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+    EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
     stream->Start(&mock_source_callback_);
     RunThreadsUntilIdle();
 
@@ -244,7 +244,7 @@ TEST_F(CastAudioManagerTest, DISABLED_CanMakeStreamProxy) {
   RunThreadsUntilIdle();
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
-  EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+  EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
   stream->Start(&mock_source_callback_);
   RunThreadsUntilIdle();
 
@@ -265,7 +265,7 @@ TEST_F(CastAudioManagerTest, CanMakeMixerStream) {
 
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
-  EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+  EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
   stream->Start(&mock_source_callback_);
   RunThreadsUntilIdle();
 
@@ -287,7 +287,7 @@ TEST_F(CastAudioManagerTest, CanMakeCommunicationsStream) {
 
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
-  EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
+  EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
   task_environment_.RunUntilIdle();
 
   stream->Stop();

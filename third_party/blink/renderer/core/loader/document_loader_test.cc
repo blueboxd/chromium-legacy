@@ -106,7 +106,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     // WebURLLoaderTestDelegate overrides:
     bool FillNavigationParamsResponse(WebNavigationParams* params) override {
       params->response = WebURLResponse(params->url);
-      params->response.SetMimeType("application/pdf");
+      params->response.SetMimeType("application/x-webkit-test-webplugin");
       params->response.SetHttpStatusCode(200);
 
       String data("<html><body>foo</body></html>");
@@ -167,9 +167,9 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     StaticDataNavigationBodyLoader* body_loader_ = nullptr;
   };
 
-  // We use a plugin document triggered by "application/pdf" mime type,
-  // because that gives us reliable way to get a WebLocalFrameClient callback
-  // from inside BodyDataReceived() call.
+  // We use a plugin document triggered by "application/x-webkit-test-webplugin"
+  // mime type, because that gives us reliable way to get a WebLocalFrameClient
+  // callback from inside BodyDataReceived() call.
   ScopedFakePluginRegistry fake_plugins;
   MainFrameClient main_frame_client;
   web_view_helper_.Initialize(&main_frame_client);

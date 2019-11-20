@@ -202,13 +202,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div > just a test</div>| sit</span> amet</div>',
   selection => selection.modify('extend', 'right', 'word'),
-  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div> just a |test</div>^ sit</span> amet</div>',
+  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div> just a test|</div>^ sit</span> amet</div>',
   `${behavior} 7-29 rtl right word`);
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div > just a test</div> |sit</span> amet</div>',
   selection => selection.modify('extend', 'right', 'word'),
-  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div> just a |test</div>^ sit</span> amet</div>',
+  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div> just a test|</div>^ sit</span> amet</div>',
   `${behavior} 7-30 rtl right word`);
 
 selection_test(

@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">رمز التطبيق</translation>
 <translation id="1410616244180625362">مواصلة السماح لـ <ph name="HOST" /> بالدخول إلى الكاميرا</translation>
 <translation id="1414648216875402825">إنك تُجري تحديثًا لإصدار غير ثابت من <ph name="PRODUCT_NAME" /> والذي يشتمل على ميزات قيد التقدم. لذا قد تحدث أعطال وأخطاء غير متوقعة. يُرجى المتابعة مع توخّي الحذر.</translation>
-<translation id="1414866280542221544">تفعيل على هذا الجهاز</translation>
 <translation id="1415708812149920388">تم رفض الوصول لقراءة الحافظة</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (معرف الإضافة "<ph name="EXTENSION_ID" />") غير مسموح بها في هذا النوع من الجلسات.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">شريحة بيتزا</translation>
 <translation id="1468571364034902819">يتعذّر استخدام هذا الملف الشخصي</translation>
 <translation id="1470811252759861213">للحصول على الإضافات على جميع أجهزة الكمبيوتر، <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">سيؤدي هذا الإجراء إلى محو جميع البيانات على مفتاح الأمان، بما في ذلك رقم تعريفه الشخصي.</translation>
 <translation id="1472675084647422956">عرض المزيد</translation>
 <translation id="1475502736924165259">لديك شهادات في الملف لا تندرج تحت أي فئة من الفئات الأخرى</translation>
 <translation id="1476088332184200792">‏نسخ إلى Your Device (جهازك)</translation>
@@ -842,7 +840,6 @@
 <translation id="2202898655984161076">حدثت مشكلة أثناء إدراج الطابعات. ربما لا يتم تسجيل بعض الطابعات بنجاح في <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">محرك البحث الذي تم استخدامه في <ph name="BEGIN_LINK" />شريط العناوين<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">قراءة وتغيير أي شيء تكتبه</translation>
-<translation id="2204397710290433380">‏هل تريد إيقاف ADB؟</translation>
 <translation id="220792432208469595">‏يمكنك إرسال بيانات الاستخدام والتشخيص. يرسل هذا الجهاز حاليًا بيانات استخدام التطبيق والجهاز والتشخيص تلقائيًا إلى Google. سيساعد ذلك في استقرار عمل النظام والتطبيقات، بالإضافة إلى التحسينات الأخرى. كما ستساعد بعض البيانات المجمّعة تطبيقات Google وشركائها، مثل مطوّري برامج نظام التشغيل Android. ويفرض المالك هذا الإعداد. في حال تفعيل إعداد "النشاط الإضافي على الويب وفي التطبيقات"، قد يتم حفظ هذه البيانات في حسابك على Google. <ph name="BEGIN_LINK1" />مزيد من المعلومات<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">يُرجى إدخال رمز رقم التعريف الشخصي هذا على "<ph name="DEVICE_NAME" />":</translation>
 <translation id="2213140827792212876">إزالة المشاركة</translation>
@@ -979,6 +976,7 @@
 <translation id="2396783860772170191">أدخِل رقم التعريف الشخصي المكوَّن من 4 أرقام (0000-9999).</translation>
 <translation id="2399939490305346086">بيانات تسجيل الدخول على مفتاح الأمان</translation>
 <translation id="2407481962792080328">‏عند تسجيل الدخول إلى حسابك على Google، يتم تفعيل هذه الميزة.</translation>
+<translation id="2408018932941436077">جارٍ حفظ البطاقة</translation>
 <translation id="2408955596600435184">إدخال رقم التعريف الشخصي</translation>
 <translation id="241082044617551207">مكوّن إضافي غير محدّد</translation>
 <translation id="2412593942846481727">هناك تحديث جديد</translation>
@@ -1027,7 +1025,7 @@
 <translation id="2470702053775288986">تم إيقاف الإضافات غير المدعومة</translation>
 <translation id="2473195200299095979">ترجم هذه الصفحة</translation>
 <translation id="2475982808118771221">حدث خطأ</translation>
-<translation id="2476578072172137802">إعدادات الموقع</translation>
+<translation id="2476578072172137802">إعدادات الموقع الإلكتروني</translation>
 <translation id="2478176599153288112">أذونات ملف الوسائط لـ "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">مشاركة الصوت</translation>
 <translation id="2480868415629598489">تعديل البيانات التي يتم نسخها ولصقها</translation>
@@ -2007,7 +2005,6 @@
 <translation id="3873315167136380065">لتفعيل هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /> لإزالة عبارة مرور المزامنة.</translation>
 <translation id="3873423927483480833">إظهار أرقام التعريف الشخصية</translation>
 <translation id="3873915545594852654">‏حدثت مشكلة في "وقت تشغيل التطبيقات في Chrome (ARC++)".</translation>
-<translation id="387924939625099872">‏لإيقاف ADB، أعِد تشغيل جهاز <ph name="DEVICE_TYPE" />. ستتم إعادة ضبط الجهاز على الإعدادات الأصلية وسيتم محو بيانات جميع حسابات المستخدمين والبيانات المحلية.</translation>
 <translation id="3879748587602334249">تطبيق إدارة التنزيل</translation>
 <translation id="3886446263141354045">تمّ إرسال طلبك للدخول إلى هذا الموقع إلى <ph name="NAME" /></translation>
 <translation id="3888550877729210209">تسجيل الملاحظات من خلال <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2406,7 +2403,6 @@
 <translation id="4501530680793980440">تأكيد الإزالة</translation>
 <translation id="4502423230170890588">إزالة من هذا الجهاز</translation>
 <translation id="4504940961672722399">استخدم هذه الإضافة بالنقر على هذا الرمز أو بالضغط على <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">‏ستؤدي المواصلة إلى تفعيل ADB لإنشاء تطبيقات متوافقة مع Android واختبارها. تجدر الإشارة إلى أن ADB يسمح بتثبيت تطبيقات الاختبار التي لم تتحقّق منها Google.</translation>
 <translation id="4508051413094283164">فتح الكل في نافذة التصفح المتخفي</translation>
 <translation id="4508265954913339219">تعذّر إتمام عملية التفعيل</translation>
 <translation id="4508765956121923607">عرض الم&amp;صدر</translation>
@@ -3040,7 +3036,7 @@
 <translation id="5466374726908360271">ل&amp;صق وبحث عن "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">البحث عن خوادم مشاركة الملفات</translation>
 <translation id="5471768120198416576">مرحبًا! هذا صوت ميزة تحويل النص إلى كلام.</translation>
-<translation id="5472133193607270166">عند التفعيل، لا يمكن للمواقع الإلكترونية استخدام نشاط التصفّح على المواقع الإلكترونية المختلفة لتخصيص الإعلانات. يمكن ألا تعمل بعض المواقع الإلكترونية على نحو سليم.</translation>
+<translation id="5472133193607270166">عند التفعيل، لا يمكن للمواقع الإلكترونية استخدام نشاط التصفّح الخاص بك على المواقع الإلكترونية المختلفة لتخصيص الإعلانات. يمكن ألا تعمل بعض المواقع الإلكترونية على نحو سليم.</translation>
 <translation id="5473333559083690127">إعادة إدخال رقم التعريف الشخصي الجديد</translation>
 <translation id="5481941284378890518">إضافة طابعات مجاورة</translation>
 <translation id="5483785310822538350">إبطال الوصول للملف والجهاز</translation>
@@ -3309,7 +3305,6 @@
 <translation id="5851868085455377790">جهة الإصدار</translation>
 <translation id="5852112051279473187">عفوًا، حدث خطأ جسيم أثناء تسجيل هذه الخدمة. يُرجى إعادة المحاولة أو الاتصال بممثل الدعم.</translation>
 <translation id="5852137567692933493">‏إعادة التشغيل وإجراء Powerwash</translation>
-<translation id="5852360662347412211">‏يُرجى الانتقال إلى إعدادات Linux والمحاولة مرة أخرى.</translation>
 <translation id="5854912040170951372">الشريحة</translation>
 <translation id="5855643921295613558">0,6 ثانية</translation>
 <translation id="5856721540245522153">تفعيل ميزات تصحيح الأخطاء</translation>
@@ -3322,7 +3317,6 @@
 <translation id="5860494867054883682">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">عرض أدوات قلم الشاشة في الرف</translation>
 <translation id="5863445608433396414">تفعيل ميزات تصحيح الأخطاء</translation>
-<translation id="5863471434640009253">‏لتفعيل Android Debug Bridge، أعِد تشغيل جهاز <ph name="DEVICE_TYPE" /> أولاً. يتطلب إيقاف ADB إعادة الضبط على الإعدادات الأصلية.</translation>
 <translation id="5864471791310927901">‏تعذّر بحث DHCP</translation>
 <translation id="586567932979200359">أنت تشغّل <ph name="PRODUCT_NAME" /> من صورته على القرص. ويسمح لك تثبيته على الكمبيوتر بتشغيله بدون الحاجة إلى صورة القرص، كما يضمن ذلك الحفاظ على تحديثه بشكل مستمر.</translation>
 <translation id="5865733239029070421">‏يُرسِل إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
@@ -3392,7 +3386,6 @@
 <translation id="5958529069007801266">مستخدم يخضع للإدارة</translation>
 <translation id="5959471481388474538">الشبكة غير متاحة</translation>
 <translation id="595959584676692139">يُرجى إعادة تحميل الصفحة لاستخدام هذه الإضافة</translation>
-<translation id="5961320084471308154">‏هل تريد تفعيل ADB؟</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> في الذروة)</translation>
 <translation id="5965661248935608907">كما أنها تتحكم في الصفحة التي تظهر عند النقر على زر الصفحة الرئيسية أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="5969419185858894314">بإمكان <ph name="ORIGIN" /> عرض الملفات في <ph name="FOLDERNAME" />.</translation>
@@ -4257,7 +4250,6 @@
 <translation id="7254554697254365959">تعذرت ترجمة هذه الصفحة.</translation>
 <translation id="7254951428499890870">هل تريد فعلًا تشغيل "<ph name="APP_NAME" />" في الوضع التشخيصي؟</translation>
 <translation id="7255002516883565667">تمتلك الآن بطاقة واحدة يمكنك استخدامها فقط على هذا الجهاز.</translation>
-<translation id="7255916308560539517">يُرجى لمس مفتاح الأمان مرة أخرى لتأكيد إعادة الضبط. سيتم محو جميع المعلومات المحفوظة في مفتاح الأمان، بما في ذلك رقم تعريفه الشخصي.</translation>
 <translation id="7255935316994522020">تطبيق</translation>
 <translation id="7256069762010468647">يستخدم موقع الويب الكاميرا.</translation>
 <translation id="7256405249507348194">خطأ غير معروف: <ph name="DESC" /></translation>
@@ -4767,6 +4759,7 @@
 <translation id="7968833647796919681">تفعيل جمع بيانات عن مستوى الأداء</translation>
 <translation id="7968982339740310781">عرض التفاصيل</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">يتعذّر حفظ البطاقة الآن.</translation>
 <translation id="7972714317346275248">‏PKCS #1 SHA-384 مع تشفير RSA</translation>
 <translation id="7973962044839454485">‏تعذّرت مصادقة PPP نظرًا لوجود خطأ في اسم المستخدم أو كلمة المرور</translation>
 <translation id="7974566588408714340">إعادة المحاولة باستخدام <ph name="EXTENSIONNAME" /></translation>
@@ -5088,7 +5081,6 @@
 <translation id="8431909052837336408">‏تغيير رمز PIN لشريحة SIM</translation>
 <translation id="8434480141477525001">‏منفذ تصحيح أخطاء NaCl</translation>
 <translation id="8435395510592618362">إثبات هويتك من خلال <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">حفظ بطاقة الائتمان</translation>
 <translation id="8438328416656800239">التبديل إلى متصفح ذكي</translation>
 <translation id="8438566539970814960">تحسين عمليات البحث والتصفُّح</translation>
 <translation id="8439506636278576865">عرض ترجمة الصفحات المكتوبة بهذه اللغة</translation>
@@ -5471,6 +5463,7 @@
 <translation id="8965037249707889821">إدخال كلمة المرور القديمة</translation>
 <translation id="8966870118594285808">إعادة فتح علامة تبويب في حال إغلاقها عن طريق الخطأ</translation>
 <translation id="8967866634928501045">‏يُرجى الضغط على Alt+Shift+A للعرض.</translation>
+<translation id="8968766641738584599">حفظ البطاقة</translation>
 <translation id="89720367119469899">خروج</translation>
 <translation id="8972513834460200407">‏يُرجى التحقق مع مشرف الشبكة للتأكد من عدم حظر الجدار الناري للتنزيلات من خوادم Google.</translation>
 <translation id="8973557916016709913">إزالة مستوى التكبير/التصغير</translation>
@@ -5577,7 +5570,6 @@
 <translation id="9116799625073598554">تطبيق تدوين الملاحظات</translation>
 <translation id="9117030152748022724">إدارة تطبيقاتك</translation>
 <translation id="9121814364785106365">فتح كعلامة تبويب مثبتة</translation>
-<translation id="9122074588095746047">‏يتعذّر تفعيل ADB</translation>
 <translation id="9124003689441359348">ستظهر هنا كلمات المرور المحفوظة</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (<ph name="LICENSE_COUNT" /> من التراخيص متبقية.)</translation>
 <translation id="9128317794749765148">تعذّر إكمال الإعداد</translation>

@@ -9,7 +9,4 @@ specific_include_rules = {
     # expose it to any other files except through the public mojo interface.
     "+chrome/services/app_service/app_service_impl.h",
   ],
-  "app_service_test\.cc": [
-    "+chrome/services/app_service/app_service.h",
-  ],
 }

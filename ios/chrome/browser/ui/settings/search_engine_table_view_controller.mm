@@ -71,7 +71,7 @@ const char kUmaSelectDefaultSearchEngine[] =
   FaviconLoader* _faviconLoader;
 }
 
-#pragma mark Initialization
+#pragma mark - Initialization
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
@@ -89,6 +89,7 @@ const char kUmaSelectDefaultSearchEngine[] =
     _faviconLoader =
         IOSChromeFaviconLoaderFactory::GetForBrowserState(browserState);
     [self setTitle:l10n_util::GetNSString(IDS_IOS_SEARCH_ENGINE_SETTING_TITLE)];
+    [self updateUIForEditState];
   }
   return self;
 }
@@ -98,6 +99,7 @@ const char kUmaSelectDefaultSearchEngine[] =
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.separatorInset = UIEdgeInsetsMake(
       0, kTableViewSeparatorLeadingInset, 0, kTableViewSeparatorTrailingInset);
 
@@ -140,11 +142,40 @@ const char kUmaSelectDefaultSearchEngine[] =
   }
 }
 
-#pragma mark UITableViewDelegate
+#pragma mark - SettingsRootTableViewController
+
+- (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
+  // Do not call super as this also deletes the section if it is empty.
+  [self deleteItemAtIndexPaths:indexPaths];
+}
+
+// Hide toolbar for non-editing mode or when no items are selected.
+- (BOOL)shouldHideToolbar {
+  return !self.editing || self.tableView.indexPathsForSelectedRows.count == 0;
+}
+
+- (BOOL)shouldShowEditButton {
+  return YES;
+}
+
+- (BOOL)editButtonEnabled {
+  return [self.tableViewModel hasItemForItemType:ItemTypeCustomEngine
+                               sectionIdentifier:SectionIdentifierFirstList] ||
+         [self.tableViewModel hasItemForItemType:ItemTypeCustomEngine
+                               sectionIdentifier:SectionIdentifierSecondList];
+}
+
+#pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
+
+  // Keep selection in editing mode.
+  if (self.editing) {
+    return;
+  }
+
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
   TableViewModel* model = self.tableViewModel;
   TableViewItem* selectedItem = [model itemAtIndexPath:indexPath];
@@ -250,6 +281,19 @@ const char kUmaSelectDefaultSearchEngine[] =
   return cell;
 }
 
+- (BOOL)tableView:(UITableView*)tableView
+    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  return item.type == ItemTypeCustomEngine;
+}
+
+- (void)tableView:(UITableView*)tableView
+    commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
+     forRowAtIndexPath:(NSIndexPath*)indexPath {
+  DCHECK(editingStyle == UITableViewCellEditingStyleDelete);
+  [self deleteItemAtIndexPaths:@[ indexPath ]];
+}
+
 #pragma mark - SearchEngineObserving
 
 - (void)searchEngineChanged {
@@ -340,6 +384,118 @@ const char kUmaSelectDefaultSearchEngine[] =
       _templateURLService->GetDefaultSearchProvider()->GetEngineType(
           _templateURLService->search_terms_data()),
       SEARCH_ENGINE_MAX);
+}
+
+// Deletes custom search engines at |indexPaths|. If a custom engine is selected
+// as the default engine, resets default engine to the first prepopulated
+// engine.
+- (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
+  // Update |_templateURLService|, |_firstList| and |_secondList|.
+  _updatingBackend = YES;
+  size_t removedItemsInSecondList = 0;
+  NSInteger firstSection = [self.tableViewModel
+      sectionForSectionIdentifier:SectionIdentifierFirstList];
+  bool resetDefaultEngine = false;
+
+  // Remove search engines from |_firstList|, |_secondList| and
+  // |_templateURLService|.
+  for (NSIndexPath* path : indexPaths) {
+    TemplateURL* engine = nullptr;
+    if (path.section == firstSection) {
+      TableViewItem* item = [self.tableViewModel itemAtIndexPath:path];
+      // Only custom search engine can be deleted.
+      DCHECK(item.type == ItemTypeCustomEngine);
+      // The custom search engine in the first section should be the last one.
+      DCHECK(path.row == static_cast<int>(_firstList.size()) - 1);
+
+      engine = _firstList.back();
+      _firstList.pop_back();
+    } else {
+      DCHECK(path.row < static_cast<int>(_secondList.size()));
+
+      engine = _secondList[path.row];
+      // Mark as deleted by setting to nullptr.
+      _secondList[path.row] = nullptr;
+      ++removedItemsInSecondList;
+    }
+    // If |engine| is selected as default search engine, reset the default
+    // engine to the first prepopulated engine.
+    if (engine == _templateURLService->GetDefaultSearchProvider()) {
+      DCHECK(_firstList.size() > 0);
+      _templateURLService->SetUserSelectedDefaultSearchProvider(_firstList[0]);
+      resetDefaultEngine = true;
+    }
+    _templateURLService->Remove(engine);
+  }
+
+  // Clean up the second list.
+  if (removedItemsInSecondList > 0) {
+    if (removedItemsInSecondList == _secondList.size()) {
+      _secondList.clear();
+    } else {
+      std::vector<TemplateURL*> newList(
+          _secondList.size() - removedItemsInSecondList, nullptr);
+      for (size_t i = 0, added = 0; i < _secondList.size(); ++i) {
+        if (_secondList[i]) {
+          newList[added++] = _secondList[i];
+        }
+      }
+      _secondList = std::move(newList);
+    }
+  }
+
+  // Update UI.
+  __weak SearchEngineTableViewController* weakSelf = self;
+  [self.tableView
+      performBatchUpdates:^{
+        SearchEngineTableViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+
+        [strongSelf removeFromModelItemAtIndexPaths:indexPaths];
+        [strongSelf.tableView
+            deleteRowsAtIndexPaths:indexPaths
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+
+        TableViewModel* model = strongSelf.tableViewModel;
+
+        // Update the first prepopulated engine if it's reset as default.
+        if (resetDefaultEngine) {
+          NSIndexPath* indexPath = [NSIndexPath indexPathForRow:0
+                                                      inSection:firstSection];
+          TableViewItem* item = [model itemAtIndexPath:indexPath];
+          SearchEngineItem* engineItem =
+              base::mac::ObjCCastStrict<SearchEngineItem>(item);
+          engineItem.accessoryType = UITableViewCellAccessoryCheckmark;
+          [strongSelf.tableView
+              reloadRowsAtIndexPaths:@[ indexPath ]
+                    withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+
+        // Remove second section if it's empty.
+        if (strongSelf->_secondList.empty() &&
+            [model
+                hasSectionForSectionIdentifier:SectionIdentifierSecondList]) {
+          NSInteger section =
+              [model sectionForSectionIdentifier:SectionIdentifierSecondList];
+          [model removeSectionWithIdentifier:SectionIdentifierSecondList];
+          [strongSelf.tableView
+                deleteSections:[NSIndexSet indexSetWithIndex:section]
+              withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+
+        _updatingBackend = NO;
+      }
+      completion:^(BOOL finished) {
+        SearchEngineTableViewController* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+        // Update editing status.
+        if (![strongSelf editButtonEnabled]) {
+          [strongSelf setEditing:NO animated:YES];
+        }
+        [strongSelf updateUIForEditState];
+      }];
 }
 
 @end

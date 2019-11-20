@@ -260,18 +260,20 @@ void ParseSizeInfo(const char* gzipped,
     }
   }
 
-  // List of component names
-  int n_components = ReadLoneInt(&rest);
-  if (n_components <= 0) {
-    std::cerr << "Unexpected non-positive components list length: "
-              << n_components << std::endl;
-    exit(1);
-  }
-  std::cout << "Reading " << n_components << " components" << std::endl;
+  if (has_components) {
+    // List of component names
+    int n_components = ReadLoneInt(&rest);
+    if (n_components <= 0) {
+      std::cerr << "Unexpected non-positive components list length: "
+                << n_components << std::endl;
+      exit(1);
+    }
+    std::cout << "Reading " << n_components << " components" << std::endl;
 
-  info->components.reserve(n_components);
-  for (int i = 0; i < n_components; i++) {
-    info->components.push_back(strsep(&rest, "\n"));
+    info->components.reserve(n_components);
+    for (int i = 0; i < n_components; i++) {
+      info->components.push_back(strsep(&rest, "\n"));
+    }
   }
 
   // Section names

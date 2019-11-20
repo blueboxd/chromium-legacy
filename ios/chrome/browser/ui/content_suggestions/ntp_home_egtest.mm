@@ -647,6 +647,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
       tapSettingsMenuButton:grey_accessibilityID(@"Search Engine")];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Yahoo!")]
       performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SettingsMenuBackButton()]
+      performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
 
@@ -666,6 +669,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   [ChromeEarlGreyUI
       tapSettingsMenuButton:grey_accessibilityID(@"Search Engine")];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Google")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::SettingsMenuBackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];

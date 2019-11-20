@@ -20,6 +20,7 @@ import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabBrowserControlsVisibilityDelegate;
@@ -310,7 +311,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
     @Inject
     public CustomTabDelegateFactory(ChromeActivity activity,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
             ExternalAuthUtils authUtils, MultiWindowUtils multiWindowUtils,
             ExternalIntentsPolicyProvider externalIntentsPolicyProvider) {

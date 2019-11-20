@@ -24,7 +24,7 @@
 
     <uses-sdk
         android:minSdkVersion="19"
-        android:targetSdkVersion="28" />
+        android:targetSdkVersion="29" />
 
     <application
         android:icon="@mipmap/ic_launcher"

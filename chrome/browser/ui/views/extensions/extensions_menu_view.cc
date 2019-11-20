@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -56,10 +57,11 @@ ExtensionsMenuView::ExtensionsMenuView(
                                views::BubbleBorder::Arrow::TOP_RIGHT),
       browser_(browser),
       extensions_container_(extensions_container),
-      model_(ToolbarActionsModel::Get(browser_->profile())),
-      model_observer_(this),
+      toolbar_model_(ToolbarActionsModel::Get(browser_->profile())),
+      toolbar_model_observer_(this),
       button_listener_(browser_) {
-  model_observer_.Add(model_);
+  toolbar_model_observer_.Add(toolbar_model_);
+  browser_->tab_strip_model()->AddObserver(this);
   set_margins(gfx::Insets(0));
 
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
@@ -76,6 +78,9 @@ ExtensionsMenuView::~ExtensionsMenuView() {
     DCHECK_EQ(g_extensions_dialog, this);
   g_extensions_dialog = nullptr;
   extensions_menu_items_.clear();
+
+  // Note: No need to call TabStripModel::RemoveObserver(), because it's handled
+  // directly within TabStripModelObserver::~TabStripModelObserver().
 }
 
 base::string16 ExtensionsMenuView::GetWindowTitle() const {
@@ -132,9 +137,9 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
   std::vector<std::unique_ptr<ToolbarActionViewController>> cant_access;
   std::vector<std::unique_ptr<ToolbarActionViewController>> wants_access;
   std::vector<std::unique_ptr<ToolbarActionViewController>> accessing_site_data;
-  for (auto action_id : model_->action_ids()) {
-    auto action = model_->CreateActionForId(browser_, extensions_container_,
-                                            false, action_id);
+  for (auto action_id : toolbar_model_->action_ids()) {
+    auto action = toolbar_model_->CreateActionForId(
+        browser_, extensions_container_, false, action_id);
     switch (action->GetPageInteractionStatus(web_contents)) {
       case ToolbarActionViewController::PageInteractionStatus::kNone:
         cant_access.push_back(std::move(action));
@@ -206,6 +211,19 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
   add_group(&cant_access, IDS_EXTENSIONS_MENU_CANT_ACCESS_SITE_DATA);
 
   return extension_buttons;
+}
+
+void ExtensionsMenuView::TabChangedAt(content::WebContents* contents,
+                                      int index,
+                                      TabChangeType change_type) {
+  Repopulate();
+}
+
+void ExtensionsMenuView::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  Repopulate();
 }
 
 // TODO(pbos): Revisit observed events below.

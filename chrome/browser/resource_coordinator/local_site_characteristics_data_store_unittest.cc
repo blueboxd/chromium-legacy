@@ -10,7 +10,6 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
-#include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_types.h"
@@ -50,8 +49,6 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
  protected:
   LocalSiteCharacteristicsDataStoreTest()
       : scoped_set_tick_clock_for_testing_(&test_clock_) {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kSiteCharacteristicsDatabase);
     data_store_ =
         std::make_unique<LocalSiteCharacteristicsDataStore>(&profile_);
     mock_db_ =
@@ -121,7 +118,6 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
   content::BrowserTaskEnvironment task_environment_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfile profile_;
 
   // Owned by |data_store_|.

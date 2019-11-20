@@ -276,7 +276,6 @@
 <translation id="2248949050832152960">WebAuthn ಬಳಸಿ</translation>
 <translation id="2250931979407627383">ಎಡಭಾಗದ ಅಂಚನ್ನು ಹೊಲಿಯಿರಿ</translation>
 <translation id="225207911366869382">ಈ ನೀತಿಗಾಗಿ ಈ ಮೌಲ್ಯವನ್ನು ಅಸಮ್ಮತಿಸಲಾಗಿದೆ.</translation>
-<translation id="2257315177824333709">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಕಾರ್ಡ್ ಅನ್ನು ಇದೀಗ ಉಳಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="2258928405015593961">ಭವಿಷ್ಯದ ಅವಧಿ ಮುಗಿಯುವ ದಿನಾಂಕವನ್ನು ನಮೂದಿಸಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="2262243747453050782">HTTP ದೋಷ</translation>
 <translation id="2263079731045660823">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ ಸ್ವಯಂ ಭರ್ತಿಯ ಮಾಹಿತಿಯನ್ನು Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
@@ -645,6 +644,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ಹೆಚ್ಚಿನ ಐಟಂ}one{<ph name="ITEM_COUNT" /> ಹೆಚ್ಚಿನ ಐಟಂಗಳು}other{<ph name="ITEM_COUNT" /> ಹೆಚ್ಚಿನ ಐಟಂಗಳು}}</translation>
 <translation id="4176463684765177261">ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4194250254487269611">ಸದ್ಯಕ್ಕೆ ನಿಮ್ಮ ಕಾರ್ಡ್ ಅನ್ನು ಉಳಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="4196861286325780578">&amp;ಸರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ಫೈರ್‌ವಾಲ್ ಮತ್ತು ಆಂಟಿವೈರಸ್ ಕಾನ್ಫಿಗರೇಶನ್‌‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>

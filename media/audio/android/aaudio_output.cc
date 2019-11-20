@@ -126,7 +126,7 @@ void AAudioOutputStream::Start(AudioSourceCallback* callback) {
     // Lock is required in case a previous asynchronous requestStop() still has
     // not completed by the time we reach this point.
     base::AutoLock al(lock_);
-    callback_->OnError();
+    callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
     callback_ = nullptr;
   }
 }
@@ -145,7 +145,7 @@ void AAudioOutputStream::Stop() {
   if (result != AAUDIO_OK) {
     DLOG(ERROR) << "Failed to stop audio stream, result: "
                 << AAudio_convertResultToText(result);
-    callback_->OnError();
+    callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
   }
 
   callback_ = nullptr;
@@ -201,8 +201,9 @@ aaudio_data_callback_result_t AAudioOutputStream::OnAudioDataRequested(
 
 void AAudioOutputStream::OnStreamError(aaudio_result_t error) {
   base::AutoLock al(lock_);
+  // TODO(dalecurtis): Consider sending a translated |error| code.
   if (callback_)
-    callback_->OnError();
+    callback_->OnError(AudioSourceCallback::ErrorType::kUnknown);
 }
 
 void AAudioOutputStream::SetVolume(double volume) {

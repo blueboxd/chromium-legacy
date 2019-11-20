@@ -277,7 +277,6 @@
 <translation id="2248949050832152960">Use WebAuthn</translation>
 <translation id="2250931979407627383">Edge stitch left</translation>
 <translation id="225207911366869382">This value is deprecated for this policy.</translation>
-<translation id="2257315177824333709">Sorry, your card can't be saved at the moment</translation>
 <translation id="2258928405015593961">Enter an expiry date in the future and try again</translation>
 <translation id="2262243747453050782">HTTP error</translation>
 <translation id="2263079731045660823">Update credit card auto-fill info in Chrome settings</translation>
@@ -651,6 +650,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> more item}other{<ph name="ITEM_COUNT" /> more items}}</translation>
 <translation id="4176463684765177261">Disabled</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4194250254487269611">Your card can't be saved at the moment</translation>
 <translation id="4196861286325780578">&amp;Redo move</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>

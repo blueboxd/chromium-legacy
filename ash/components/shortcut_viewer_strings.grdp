@@ -654,4 +654,16 @@
   <message name="IDS_KSV_DESCRIPTION_OPEN_GOOGLE_ASSISTANT" desc="Description of the command in keyboard shortcut viewer.">
     Open Google Assistant
   </message>
+  <message name="IDS_KSV_DESCRIPTION_MOVE_APPS_IN_GRID" desc="Description of the command in keyboard shortcut viewer.">
+    Move an app icon around the app grid
+  </message>
+  <message name="IDS_KSV_SHORTCUT_MOVE_APPS_IN_GRID" desc="Human readable version of the keyboard shortcut.">
+    <ph name="ctrl">$1<ex>Ctrl</ex></ph>, then <ph name="left">$2<ex>v</ex></ph> or <ph name="right">$3<ex>v</ex></ph> or <ph name="up">$4<ex>v</ex></ph> or <ph name="down">$5<ex>v</ex></ph>
+  </message>
+  <message name="IDS_KSV_DESCRIPTION_MOVE_APPS_IN_OUT_FOLDER" desc="Description of the command in keyboard shortcut viewer.">
+    Move an app icon in/out of a folder in the app grid
+  </message>
+  <message name="IDS_KSV_SHORTCUT_MOVE_APPS_IN_OUT_FOLDER" desc="Human readable version of the keyboard shortcut.">
+    <ph name="ctrl">$1<ex>Ctrl</ex></ph><ph name="separator">$2<ex>+</ex></ph><ph name="shift">$3<ex>Shift</ex></ph>, then <ph name="left">$4<ex>v</ex></ph> or <ph name="right">$5<ex>v</ex></ph> or <ph name="up">$6<ex>v</ex></ph> or <ph name="down">$7<ex>v</ex></ph>
+  </message>
 </grit-part>

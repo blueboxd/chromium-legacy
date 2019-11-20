@@ -40,12 +40,6 @@
 
 namespace blink {
 
-struct SMILTimeContainer::NextIntervalTimeLess {
-  bool operator()(const SVGSMILElement& a, const SVGSMILElement& b) {
-    return a.NextIntervalTime() < b.NextIntervalTime();
-  }
-};
-
 class ScheduledAnimationsMutationsForbidden {
   STACK_ALLOCATED();
 
@@ -113,7 +107,10 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
 
   sandwich->Add(animation);
 
-  priority_queue_.Insert(animation);
+  // Enter the element into the queue with the "latest" possible time. The
+  // timed element will update its position in the queue when (re)evaluating
+  // its current interval.
+  priority_queue_.Insert(SMILTime::Unresolved(), animation);
 }
 
 void SMILTimeContainer::Unschedule(SVGSMILElement* animation,
@@ -141,12 +138,13 @@ void SMILTimeContainer::Unschedule(SVGSMILElement* animation,
   priority_queue_.Remove(animation);
 }
 
-void SMILTimeContainer::Reschedule(SVGSMILElement* animation) {
+void SMILTimeContainer::Reschedule(SVGSMILElement* animation,
+                                   SMILTime interval_time) {
   // TODO(fs): We trigger this sometimes at the moment - for example when
   // removing the entire fragment that the timed element is in.
   if (!priority_queue_.Contains(animation))
     return;
-  priority_queue_.Update(animation);
+  priority_queue_.Update(interval_time, animation);
   // We're inside a call to UpdateIntervals() or ResetIntervals(), so
   // we don't need to request an update - that will happen after the regular
   // update has finished (if needed).
@@ -464,9 +462,9 @@ void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
 
 SMILTime SMILTimeContainer::NextProgressTime(SMILTime presentation_time) const {
   SMILTime next_progress_time = SMILTime::Unresolved();
-  for (const auto& element : priority_queue_) {
-    next_progress_time = std::min(next_progress_time,
-                                  element->NextProgressTime(presentation_time));
+  for (const auto& entry : priority_queue_) {
+    next_progress_time = std::min(
+        next_progress_time, entry.second->NextProgressTime(presentation_time));
     if (next_progress_time <= presentation_time)
       break;
   }
@@ -486,29 +484,27 @@ void SMILTimeContainer::RemoveUnusedKeys() {
 void SMILTimeContainer::ResetIntervals() {
   base::AutoReset<bool> updating_intervals_scope(&is_updating_intervals_, true);
   ScheduledAnimationsMutationsForbidden scope(this);
-  for (auto& element : priority_queue_)
-    element->Reset();
-}
-
-SVGSMILElement* SMILTimeContainer::GetNextReady(
-    SMILTime presentation_time) const {
-  DCHECK(!priority_queue_.IsEmpty());
-  SVGSMILElement* next_element = priority_queue_.MinElement();
-  if (next_element->NextIntervalTime() > presentation_time)
-    return nullptr;
-  return next_element;
+  for (auto& entry : priority_queue_)
+    entry.second->Reset();
+  // (Re)set the priority of all the elements in the queue to the earliest
+  // possible, so that a later call to UpdateIntervals() will run an update for
+  // all of them.
+  priority_queue_.ResetAllPriorities(SMILTime::Earliest());
 }
 
 void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
   DCHECK(document_time.IsFinite());
   DCHECK_GE(document_time, SMILTime());
+  DCHECK(!priority_queue_.IsEmpty());
 
   base::AutoReset<bool> updating_intervals_scope(&is_updating_intervals_, true);
-  while (SVGSMILElement* element = GetNextReady(document_time)) {
+  while (priority_queue_.Min() <= document_time) {
+    SVGSMILElement* element = priority_queue_.MinElement();
     element->UpdateInterval(document_time);
     element->UpdateActiveState(document_time);
-    element->UpdateNextIntervalTime(document_time);
-    priority_queue_.Update(element);
+    SMILTime next_interval_time =
+        element->ComputeNextIntervalTime(document_time);
+    priority_queue_.Update(next_interval_time, element);
   }
 }
 
@@ -529,8 +525,7 @@ void SMILTimeContainer::UpdateAnimationTimings(SMILTime presentation_time) {
   UpdateIntervals(latest_update_time_);
 
   while (latest_update_time_ < presentation_time) {
-    const SMILTime interval_time =
-        priority_queue_.MinElement()->NextIntervalTime();
+    const SMILTime interval_time = priority_queue_.Min();
     if (interval_time <= presentation_time) {
       latest_update_time_ = interval_time;
       UpdateIntervals(latest_update_time_);

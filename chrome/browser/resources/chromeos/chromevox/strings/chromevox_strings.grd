@@ -58,6 +58,7 @@
     <output filename="_locales/zh_TW/messages.json.gz" type="chrome_messages_json_gzip" lang="zh-TW"/>
   </outputs>
   <translations>
+    <file path="chromevox_strings_af.xtb" lang="af" />
     <file path="chromevox_strings_am.xtb" lang="am" />
     <file path="chromevox_strings_ar.xtb" lang="ar" />
     <file path="chromevox_strings_bg.xtb" lang="bg" />

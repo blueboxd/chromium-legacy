@@ -306,6 +306,10 @@ void DialogDelegate::ResetViewShownTimeStampForTesting() {
   GetDialogClientView()->ResetViewShownTimeStampForTesting();
 }
 
+void DialogDelegate::SetButtonRowInsets(const gfx::Insets& insets) {
+  GetDialogClientView()->SetButtonRowInsets(insets);
+}
+
 DialogDelegate::~DialogDelegate() {
   UMA_HISTOGRAM_LONG_TIMES("Dialog.DialogDelegate.Duration",
                            base::TimeTicks::Now() - creation_time_);

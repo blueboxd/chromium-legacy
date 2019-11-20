@@ -277,7 +277,6 @@
 <translation id="2248949050832152960">Kasuta WebAuthn-autentimist</translation>
 <translation id="2250931979407627383">Õmblus vasakus servas</translation>
 <translation id="225207911366869382">Väärtus on eeskirjade jaoks aegunud.</translation>
-<translation id="2257315177824333709">Vabandust, teie kaarti ei saa praegu salvestada</translation>
 <translation id="2258928405015593961">Sisestage tulevikus olev aegumiskuupäev ja proovige uuesti</translation>
 <translation id="2262243747453050782">HTTP viga</translation>
 <translation id="2263079731045660823">Värskendage krediitkaartide automaatse täitmise andmeid Chrome'i seadetes</translation>
@@ -664,6 +663,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Veel <ph name="ITEM_COUNT" /> üksus}other{Veel <ph name="ITEM_COUNT" /> üksust}}</translation>
 <translation id="4176463684765177261">Keelatud</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>
+<translation id="4194250254487269611">Teie kaarti ei saa praegu salvestada</translation>
 <translation id="4196861286325780578">&amp;Teisalda uuesti</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollige tulemüüri ja viirusetõrje seadistusi<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (ümbrik)</translation>

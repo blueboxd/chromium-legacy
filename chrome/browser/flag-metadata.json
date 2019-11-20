@@ -1356,7 +1356,7 @@
   {
     "name": "enable-filtering-scroll-events",
     "owners": [ "axantoine", "eirage", "nzolghadr", "input-dev" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-force-dark",
@@ -1663,8 +1663,8 @@
   },
   {
     "name": "enable-portals",
-    "owners": [ "adithyas", "jbroman", "lfg" ],
-    "expiry_milestone": 80
+    "owners": [ "jbroman", "//third_party/blink/renderer/core/html/portal/OWNERS" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-previews-coin-flip",
@@ -1724,12 +1724,12 @@
   {
     "name": "enable-resampling-input-events",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-resampling-scroll-events",
     "owners": [ "eirage", "nzolghadr", "input-dev" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-resource-loading-hints",
@@ -1810,7 +1810,7 @@
     "owners": [ "site-isolation-dev", "alexmos", "lukasza" ],
     // Note: consider keeping this flag even after password-triggered site
     // isolation launches to allow users of low-memory devices to opt in.
-    "expiry_milestone": 80
+    "expiry_milestone": 84
   },
   {
     "name": "enable-site-per-process",
@@ -1942,7 +1942,7 @@
   },
   {
     "name": "enable-touch-drag-drop",
-    "owners": [ "eirage", "input-dev" ],
+    "owners": [ "nzolghadr", "input-dev" ],
     "expiry_milestone": 82
   },
   {

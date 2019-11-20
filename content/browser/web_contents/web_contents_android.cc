@@ -15,7 +15,6 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -41,7 +40,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "net/android/network_library.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
@@ -202,13 +200,6 @@ WebContentsAndroid::WebContentsAndroid(WebContentsImpl* web_contents)
              Java_WebContentsImpl_create(env, reinterpret_cast<intptr_t>(this),
                                          navigation_controller_.GetJavaObject())
                  .obj());
-  blink::mojom::RendererPreferences* prefs =
-      web_contents_->GetMutableRendererPrefs();
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  prefs->network_contry_iso =
-      command_line->HasSwitch(switches::kNetworkCountryIso) ?
-          command_line->GetSwitchValueASCII(switches::kNetworkCountryIso)
-          : net::android::GetTelephonyNetworkCountryIso();
 }
 
 WebContentsAndroid::~WebContentsAndroid() {

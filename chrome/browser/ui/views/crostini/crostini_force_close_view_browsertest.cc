@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/ui/views/crostini/crostini_browser_test_util.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace crostini {
 namespace {
@@ -41,14 +40,15 @@ class CrostiniForceCloseViewTest : public DialogBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(CrostiniForceCloseViewTest, FocusesForceQuit) {
   ShowUi("");
-  EXPECT_EQ(dialog_widget_->client_view()->AsDialogClientView()->ok_button(),
-            dialog_widget_->GetFocusManager()->GetFocusedView());
+  EXPECT_EQ(
+      dialog_widget_->widget_delegate()->AsDialogDelegate()->GetOkButton(),
+      dialog_widget_->GetFocusManager()->GetFocusedView());
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniForceCloseViewTest, OkInvokesCallback) {
   ShowUi("");
   EXPECT_EQ(force_close_invocations_, 0);
-  dialog_widget_->client_view()->AsDialogClientView()->AcceptWindow();
+  dialog_widget_->widget_delegate()->AsDialogDelegate()->AcceptDialog();
   EXPECT_EQ(force_close_invocations_, 1);
 }
 
@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniForceCloseViewTest,
                        CancelDoesNotInvokeCallback) {
   ShowUi("");
   EXPECT_EQ(force_close_invocations_, 0);
-  dialog_widget_->client_view()->AsDialogClientView()->CancelWindow();
+  dialog_widget_->widget_delegate()->AsDialogDelegate()->CancelDialog();
   EXPECT_EQ(force_close_invocations_, 0);
 }
 

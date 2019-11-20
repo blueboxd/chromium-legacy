@@ -20,6 +20,8 @@
 
 namespace {
 
+const char kGAIAGivenNameKey[] = "gaia_given_name";
+const char kGAIANameKey[] = "gaia_name";
 const char kShortcutNameKey[] = "shortcut_name";
 const char kActiveTimeKey[] = "active_time";
 const char kAuthCredentialsKey[] = "local_auth_credentials";
@@ -54,6 +56,9 @@ const char ProfileAttributesEntry::kUserNameKey[] = "user_name";
 const char ProfileAttributesEntry::kGAIAIdKey[] = "gaia_id";
 const char ProfileAttributesEntry::kIsConsentedPrimaryAccountKey[] =
     "is_consented_primary_account";
+const char ProfileAttributesEntry::kNameKey[] = "name";
+const char ProfileAttributesEntry::kIsUsingDefaultNameKey[] =
+    "is_using_default_name";
 
 // static
 void ProfileAttributesEntry::RegisterLocalStatePrefs(
@@ -119,14 +124,12 @@ void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
 }
 
 base::string16 ProfileAttributesEntry::GetLocalProfileName() const {
-  return GetString16(ProfileInfoCache::kNameKey);
+  return GetString16(kNameKey);
 }
 
 base::string16 ProfileAttributesEntry::GetGAIANameToDisplay() const {
-  base::string16 gaia_given_name =
-      GetString16(ProfileInfoCache::kGAIAGivenNameKey);
-  return gaia_given_name.empty() ? GetString16(ProfileInfoCache::kGAIANameKey)
-                                 : gaia_given_name;
+  base::string16 gaia_given_name = GetGAIAGivenName();
+  return gaia_given_name.empty() ? GetGAIAName() : gaia_given_name;
 }
 
 bool ProfileAttributesEntry::ShouldShowProfileLocalName(
@@ -205,9 +208,16 @@ bool ProfileAttributesEntry::HasProfileNameChanged() {
 }
 
 base::string16 ProfileAttributesEntry::GetName() const {
-  return ShouldConcatenateGaiaAndProfileName()
-             ? GetNameToDisplay()
-             : profile_info_cache_->GetNameOfProfileAtIndex(profile_index());
+  if (ShouldConcatenateGaiaAndProfileName())
+    return GetNameToDisplay();
+
+  base::string16 name;
+  // Unless the user has customized the profile name, we should use the
+  // profile's Gaia given name, if it's available.
+  if (IsUsingDefaultName())
+    name = GetGAIANameToDisplay();
+
+  return name.empty() ? GetLocalProfileName() : name;
 }
 
 base::string16 ProfileAttributesEntry::GetShortcutName() const {
@@ -264,11 +274,11 @@ bool ProfileAttributesEntry::GetBackgroundStatus() const {
 }
 
 base::string16 ProfileAttributesEntry::GetGAIAName() const {
-  return profile_info_cache_->GetGAIANameOfProfileAtIndex(profile_index());
+  return GetString16(kGAIANameKey);
 }
 
 base::string16 ProfileAttributesEntry::GetGAIAGivenName() const {
-  return profile_info_cache_->GetGAIAGivenNameOfProfileAtIndex(profile_index());
+  return GetString16(kGAIAGivenNameKey);
 }
 
 std::string ProfileAttributesEntry::GetGAIAId() const {
@@ -320,7 +330,7 @@ bool ProfileAttributesEntry::IsEphemeral() const {
 }
 
 bool ProfileAttributesEntry::IsUsingDefaultName() const {
-  return profile_info_cache_->ProfileIsUsingDefaultNameAtIndex(profile_index());
+  return GetBool(kIsUsingDefaultNameKey);
 }
 
 SigninState ProfileAttributesEntry::GetSigninState() const {
@@ -366,8 +376,8 @@ size_t ProfileAttributesEntry::GetMetricsBucketIndex() {
 }
 
 void ProfileAttributesEntry::SetLocalProfileName(const base::string16& name) {
-  profile_info_cache_->SetLocalProfileNameOfProfileAtIndex(profile_index(),
-                                                           name);
+  if (SetString16(kNameKey, name))
+    profile_info_cache_->NotifyIfProfileNamesHaveChanged();
 }
 
 void ProfileAttributesEntry::SetShortcutName(const base::string16& name) {
@@ -404,11 +414,13 @@ void ProfileAttributesEntry::SetBackgroundStatus(bool running_background_apps) {
 }
 
 void ProfileAttributesEntry::SetGAIAName(const base::string16& name) {
-  profile_info_cache_->SetGAIANameOfProfileAtIndex(profile_index(), name);
+  if (SetString16(kGAIANameKey, name))
+    profile_info_cache_->NotifyIfProfileNamesHaveChanged();
 }
 
 void ProfileAttributesEntry::SetGAIAGivenName(const base::string16& name) {
-  profile_info_cache_->SetGAIAGivenNameOfProfileAtIndex(profile_index(), name);
+  if (SetString16(kGAIAGivenNameKey, name))
+    profile_info_cache_->NotifyIfProfileNamesHaveChanged();
 }
 
 void ProfileAttributesEntry::SetGAIAPicture(gfx::Image image) {
@@ -439,8 +451,8 @@ void ProfileAttributesEntry::SetIsEphemeral(bool value) {
 }
 
 void ProfileAttributesEntry::SetIsUsingDefaultName(bool value) {
-  profile_info_cache_->SetProfileIsUsingDefaultNameAtIndex(
-      profile_index(), value);
+  if (SetBool(kIsUsingDefaultNameKey, value))
+    profile_info_cache_->NotifyIfProfileNamesHaveChanged();
 }
 
 void ProfileAttributesEntry::SetIsUsingDefaultAvatar(bool value) {

@@ -20,6 +20,7 @@ import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,11 +76,13 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @Override
     public void setTopView(IObjectWrapper viewWrapper) {
+        StrictModeWorkaround.apply();
         getViewController().setTopView(ObjectWrapper.unwrap(viewWrapper, View.class));
     }
 
     @Override
     public void setSupportsEmbedding(boolean enable, IObjectWrapper valueCallback) {
+        StrictModeWorkaround.apply();
         getViewController().setSupportsEmbedding(enable,
                 (ValueCallback<Boolean>) ObjectWrapper.unwrap(valueCallback, ValueCallback.class));
     }
@@ -94,11 +97,13 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @Override
     public IProfile getProfile() {
+        StrictModeWorkaround.apply();
         return mProfile;
     }
 
     @Override
     public void addTab(ITab iTab) {
+        StrictModeWorkaround.apply();
         TabImpl tab = (TabImpl) iTab;
         if (tab.getBrowser() == this) return;
         addTabImpl(tab);
@@ -134,6 +139,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @Override
     public boolean setActiveTab(ITab controller) {
+        StrictModeWorkaround.apply();
         TabImpl tab = (TabImpl) controller;
         if (tab != null && tab.getBrowser() != this) return false;
         mViewController.setActiveTab(tab);
@@ -153,21 +159,25 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @Override
     public List getTabs() {
+        StrictModeWorkaround.apply();
         return new ArrayList(mTabs);
     }
 
     @Override
     public int getActiveTabId() {
+        StrictModeWorkaround.apply();
         return getActiveTab() != null ? getActiveTab().getId() : 0;
     }
 
     @Override
     public void setClient(IBrowserClient client) {
+        StrictModeWorkaround.apply();
         mClient = client;
     }
 
     @Override
     public void destroyTab(ITab iTab) {
+        StrictModeWorkaround.apply();
         detachTab(iTab);
         ((TabImpl) iTab).destroy();
     }

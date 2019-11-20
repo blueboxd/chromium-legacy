@@ -4871,4 +4871,89 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
             *GetEnd(normalized_range_win.Get()));
 }
 
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestNormalizeTextRangeSpanIgnoredNodes) {
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData before_text;
+  before_text.id = 2;
+  before_text.role = ax::mojom::Role::kStaticText;
+  before_text.SetName("before");
+  root_data.child_ids.push_back(before_text.id);
+
+  ui::AXNodeData ignored_text1;
+  ignored_text1.id = 3;
+  ignored_text1.role = ax::mojom::Role::kStaticText;
+  ignored_text1.AddState(ax::mojom::State::kIgnored);
+  ignored_text1.SetName("ignored1");
+  root_data.child_ids.push_back(ignored_text1.id);
+
+  ui::AXNodeData ignored_text2;
+  ignored_text2.id = 4;
+  ignored_text2.role = ax::mojom::Role::kStaticText;
+  ignored_text2.AddState(ax::mojom::State::kIgnored);
+  ignored_text2.SetName("ignored2");
+  root_data.child_ids.push_back(ignored_text2.id);
+
+  ui::AXNodeData after_text;
+  after_text.id = 5;
+  after_text.role = ax::mojom::Role::kStaticText;
+  after_text.SetName("after");
+  root_data.child_ids.push_back(after_text.id);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.root_id = root_data.id;
+  update.tree_data.tree_id = tree_id;
+  update.has_tree_data = true;
+  update.nodes = {root_data, before_text, ignored_text1, ignored_text2,
+                  after_text};
+  Init(update);
+  AXNodePosition::SetTree(tree_.get());
+
+  // Making |owner| AXID:1 so that |TestAXNodeWrapper::BuildAllWrappers|
+  // will build the entire tree.
+  AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 1)));
+
+  // TextPosition, anchor_id=2, text_offset=6, annotated_text=before<>
+  AXNodePosition::AXPositionInstance range_start =
+      AXNodePosition::CreateTextPosition(tree_id, /*anchor_id=*/2,
+                                         /*text_offset=*/6,
+                                         ax::mojom::TextAffinity::kDownstream);
+
+  // TextPosition, anchor_id=5, text_offset=0, annotated_text=<a>fter
+  AXNodePosition::AXPositionInstance range_end =
+      AXNodePosition::CreateTextPosition(tree_id, /*anchor_id=*/5,
+                                         /*text_offset=*/0,
+                                         ax::mojom::TextAffinity::kDownstream);
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> range_span_ignored_nodes;
+  // Text range before NormalizeTextRange()
+  // |before<>||ignored1||ignored2||<a>fter|
+  //         |-----------------------|
+  ComPtr<ITextRangeProvider> text_range_provider =
+      AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+          owner, std::move(range_start), std::move(range_end));
+  text_range_provider->QueryInterface(IID_PPV_ARGS(&range_span_ignored_nodes));
+
+  // Text range after NormalizeTextRange()
+  // |before||ignored1||ignored2||<a>fter|
+  //                              |-|
+  NormalizeTextRange(range_span_ignored_nodes.Get());
+  EXPECT_EQ(*GetStart(range_span_ignored_nodes.Get()),
+            *GetEnd(range_span_ignored_nodes.Get()));
+
+  EXPECT_EQ(true, GetStart(range_span_ignored_nodes.Get())->IsTextPosition());
+  EXPECT_EQ(true, GetStart(range_span_ignored_nodes.Get())->AtStartOfAnchor());
+  EXPECT_EQ(5, GetStart(range_span_ignored_nodes.Get())->anchor_id());
+  EXPECT_EQ(0, GetStart(range_span_ignored_nodes.Get())->text_offset());
+
+  EXPECT_EQ(true, GetEnd(range_span_ignored_nodes.Get())->IsTextPosition());
+  EXPECT_EQ(true, GetEnd(range_span_ignored_nodes.Get())->AtStartOfAnchor());
+  EXPECT_EQ(5, GetEnd(range_span_ignored_nodes.Get())->anchor_id());
+  EXPECT_EQ(0, GetEnd(range_span_ignored_nodes.Get())->text_offset());
+}
 }  // namespace ui

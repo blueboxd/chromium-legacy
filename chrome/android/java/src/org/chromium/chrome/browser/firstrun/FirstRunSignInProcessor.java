@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.firstrun;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,6 +22,7 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.signin.AccountManagerFacade;
 
 /**
  * A helper to perform all necessary steps for the automatic FRE sign in.
@@ -74,8 +76,15 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
+        // TODO(https://crbug.com/795292): Move this to SigninFirstRunFragment.
+        Account account = AccountManagerFacade.get().getAccountFromName(accountName);
+        if (account == null) {
+            setFirstRunFlowSignInComplete(true);
+            return;
+        }
+
         final boolean setUp = getFirstRunFlowSignInSetup();
-        signinManager.signIn(accountName, new SignInCallback() {
+        signinManager.signIn(account, new SignInCallback() {
             @Override
             public void onSignInComplete() {
                 UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);

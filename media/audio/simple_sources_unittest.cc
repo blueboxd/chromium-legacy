@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "media/audio/audio_io.h"
 #include "media/audio/test_data.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
@@ -78,9 +79,9 @@ TEST(SimpleSources, SineWaveAudioCapped) {
 
 TEST(SimpleSources, OnError) {
   SineWaveAudioSource source(1, 200, AudioParameters::kTelephoneSampleRate);
-  source.OnError();
+  source.OnError(AudioOutputStream::AudioSourceCallback::ErrorType::kUnknown);
   EXPECT_EQ(1, source.errors());
-  source.OnError();
+  source.OnError(AudioOutputStream::AudioSourceCallback::ErrorType::kUnknown);
   EXPECT_EQ(2, source.errors());
 }
 

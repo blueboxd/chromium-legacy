@@ -3087,6 +3087,9 @@
     <message name="IDS_SETTINGS_FACTORY_RESET_BUTTON_LABEL" desc="Label for the factory reset button.">
       Reset
     </message>
+    <message name="IDS_SETTINGS_FACTORY_RESET_BUTTON_ROLE" desc="A label to be read aloud by screen readers when the Reset button is focused. This button initiates the device factory reset flow.">
+      Reset Button
+    </message>
   </if>
 
   <!-- Search Page -->

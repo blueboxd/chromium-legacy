@@ -1353,6 +1353,7 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
     {"powerwashDialogButton", IDS_SETTINGS_RESTART},
     {"powerwashLearnMoreUrl", IDS_FACTORY_RESET_HELP_URL},
     {"powerwashButton", IDS_SETTINGS_FACTORY_RESET_BUTTON_LABEL},
+    {"powerwashButtonRoleDescription", IDS_SETTINGS_FACTORY_RESET_BUTTON_ROLE},
 #endif
     // Automatic reset banner (now a dialog).
     {"resetAutomatedDialogTitle", IDS_SETTINGS_RESET_AUTOMATED_DIALOG_TITLE},

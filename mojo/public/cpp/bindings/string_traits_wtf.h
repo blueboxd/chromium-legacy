@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_STRING_TRAITS_WTF_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_STRING_TRAITS_WTF_H_
 
+#include "base/component_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/string_traits.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -13,7 +14,7 @@
 namespace mojo {
 
 template <>
-struct StringTraits<WTF::String> {
+struct COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) StringTraits<WTF::String> {
   static bool IsNull(const WTF::String& input) { return input.IsNull(); }
   static void SetToNull(WTF::String* output);
 

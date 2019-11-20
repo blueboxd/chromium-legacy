@@ -161,7 +161,7 @@ public interface BottomSheetContent {
      *         scrolls down the page.
      */
     default boolean hideOnScroll() {
-        return true;
+        return false;
     }
 
     /**

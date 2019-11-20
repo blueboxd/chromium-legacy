@@ -292,13 +292,15 @@ VisiblePosition SelectionModifier::EndForPlatform() const {
 
 Position SelectionModifier::NextWordPositionForPlatform(
     const Position& original_position) {
+  const PlatformWordBehavior platform_word_behavior =
+      GetFrame().GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight()
+          ? PlatformWordBehavior::kWordSkipSpaces
+          : PlatformWordBehavior::kWordDontSkipSpaces;
   // Next word position can't be upstream.
   const Position position_after_current_word =
-      NextWordPosition(original_position).GetPosition();
+      NextWordPosition(original_position, platform_word_behavior).GetPosition();
 
-  if (!GetFrame().GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight())
-    return position_after_current_word;
-  return SkipWhitespace(position_after_current_word);
+  return position_after_current_word;
 }
 
 static VisiblePosition AdjustForwardPositionForUserSelectAll(

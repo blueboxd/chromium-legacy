@@ -94,6 +94,7 @@ void PaintLayerStackingNode::DirtyZOrderLists() {
       layer->SetNeedsReorderOverlayOverflowControls(false);
   }
   layer_to_overlay_overflow_controls_painting_after_.clear();
+  overlay_overflow_controls_reordered_list_.clear();
 
   z_order_lists_dirty_ = true;
 
@@ -244,6 +245,7 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
       layer_to_overlay_overflow_controls_painting_after_
           .insert(layer_to_paint_overlay_overflow_controls_after, PaintLayers())
           .stored_value->value.push_back(&paint_layer);
+      overlay_overflow_controls_reordered_list_.push_back(&paint_layer);
     }
     paint_layer.SetNeedsReorderOverlayOverflowControls(
         !!layer_to_paint_overlay_overflow_controls_after);

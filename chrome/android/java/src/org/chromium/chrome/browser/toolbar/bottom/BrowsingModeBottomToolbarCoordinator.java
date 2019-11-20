@@ -9,6 +9,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 
+import org.chromium.base.Callback;
+import org.chromium.base.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
@@ -50,6 +52,12 @@ public class BrowsingModeBottomToolbarCoordinator {
     /** The menu button that lives in the browsing mode bottom toolbar. */
     private final MenuButton mMenuButton;
 
+    /** The callback to be exectured when the share button on click listener is available. */
+    private final Callback<OnClickListener> mShareButtonListenerSupplierCallback;
+
+    /** The supplier for the share button on click listener. */
+    private final ObservableSupplier<OnClickListener> mShareButtonListenerSupplier;
+
     /**
      * Build the coordinator that manages the browsing mode bottom toolbar.
      * @param root The root {@link View} for locating the views to inflate.
@@ -60,7 +68,8 @@ public class BrowsingModeBottomToolbarCoordinator {
      */
     BrowsingModeBottomToolbarCoordinator(View root, ActivityTabProvider tabProvider,
             OnClickListener homeButtonListener, OnClickListener searchAcceleratorListener,
-            OnClickListener shareButtonListener, OnLongClickListener tabSwitcherLongClickListner) {
+            ObservableSupplier<OnClickListener> shareButtonListenerSupplier,
+            OnLongClickListener tabSwitcherLongClickListner) {
         BrowsingModeBottomToolbarModel model = new BrowsingModeBottomToolbarModel();
 
         final ViewGroup toolbarRoot = root.findViewById(R.id.bottom_toolbar_browsing);
@@ -77,7 +86,11 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mShareButton = toolbarRoot.findViewById(R.id.share_button);
         mShareButton.setWrapperView(toolbarRoot.findViewById(R.id.share_button_wrapper));
-        mShareButton.setOnClickListener(shareButtonListener);
+        mShareButtonListenerSupplierCallback = shareButtonListener -> {
+            mShareButton.setOnClickListener(shareButtonListener);
+        };
+        mShareButtonListenerSupplier = shareButtonListenerSupplier;
+        mShareButtonListenerSupplier.addObserver(mShareButtonListenerSupplierCallback);
         mShareButton.setActivityTabProvider(tabProvider);
 
         mSearchAccelerator = toolbarRoot.findViewById(R.id.search_accelerator);
@@ -181,6 +194,7 @@ public class BrowsingModeBottomToolbarCoordinator {
      * Clean up any state when the browsing mode bottom toolbar is destroyed.
      */
     public void destroy() {
+        mShareButtonListenerSupplier.removeObserver(mShareButtonListenerSupplierCallback);
         mMediator.destroy();
         mHomeButton.destroy();
         mShareButton.destroy();

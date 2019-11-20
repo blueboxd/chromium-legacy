@@ -59,13 +59,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">abc def<div>|<br></div><div><br></div><div><br></div>uvw xyz</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc |def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+  '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
   '2-8 rtl right word');
 
 selection_test(
   '<div contenteditable dir="rtl">abc def<div><br>|</div><div><br></div><div><br></div>uvw xyz</div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="rtl">abc |def<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
+  '<div contenteditable dir="rtl">abc def|<div><br></div><div><br></div><div><br></div>uvw xyz</div>',
   '2-9 rtl right word');
 
 selection_test(

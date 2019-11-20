@@ -789,6 +789,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6818926723028410516">Selecciona elements</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Tradueix</translation>
+<translation id="6840155290835956714">Pregunta abans d'enviar</translation>
 <translation id="6845325883481699275">Ajuda a millorar la seguretat de Chrome</translation>
 <translation id="6846298663435243399">S'està carregant…</translation>
 <translation id="6850409657436465440">La baixada encara està en curs</translation>
@@ -1095,7 +1096,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="9133397713400217035">Explora sense connexió</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
-<translation id="9139068048179869749">Pregunta'm abans de permetre que els llocs web enviïn notificacions (opció recomanada)</translation>
 <translation id="9139318394846604261">Compres</translation>
 <translation id="9155898266292537608">També pots fer un toc ràpid en una paraula per fer cerques</translation>
 <translation id="9169507124922466868">L'historial de navegació està obert fins a la meitat</translation>

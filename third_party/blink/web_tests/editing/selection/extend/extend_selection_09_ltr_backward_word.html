@@ -50,7 +50,7 @@ selection_test(
 selection_test(
   '<div contenteditable dir="ltr">Lorem <div  dir="ltr">|ipsum dolor sit</div> amet</div>',
   selection => selection.modify('extend', 'backward', 'word'),
-  '<div contenteditable dir="ltr">|Lorem <div dir="ltr">^ipsum dolor sit</div> amet</div>',
+  '<div contenteditable dir="ltr">Lorem |<div dir="ltr">^ipsum dolor sit</div> amet</div>',
   `${behavior} 9-6 ltr backward word`);
 
 selection_test(
@@ -140,13 +140,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="ltr">Lorem <div  dir="ltr">ipsum dolor sit</div>| amet</div>',
   selection => selection.modify('extend', 'backward', 'word'),
-  '<div contenteditable dir="ltr">Lorem <div dir="ltr">ipsum dolor |sit</div>^ amet</div>',
+  '<div contenteditable dir="ltr">Lorem <div dir="ltr">ipsum dolor sit|</div>^ amet</div>',
   `${behavior} 9-21 ltr backward word`);
 
 selection_test(
   '<div contenteditable dir="ltr">Lorem <div  dir="ltr">ipsum dolor sit</div> |amet</div>',
   selection => selection.modify('extend', 'backward', 'word'),
-  '<div contenteditable dir="ltr">Lorem <div dir="ltr">ipsum dolor |sit</div>^ amet</div>',
+  '<div contenteditable dir="ltr">Lorem <div dir="ltr">ipsum dolor sit|</div>^ amet</div>',
   `${behavior} 9-22 ltr backward word`);
 
 selection_test(

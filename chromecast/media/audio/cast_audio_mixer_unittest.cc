@@ -66,7 +66,8 @@ void SignalPull(
 
 void SignalError(
     ::media::AudioOutputStream::AudioSourceCallback* source_callback) {
-  source_callback->OnError();
+  source_callback->OnError(
+      ::media::AudioOutputStream::AudioSourceCallback::ErrorType::kUnknown);
 }
 
 // Mock implementations
@@ -80,7 +81,7 @@ class MockAudioSourceCallback
 
   MOCK_METHOD4(OnMoreData,
                int(base::TimeDelta, base::TimeTicks, int, ::media::AudioBus*));
-  MOCK_METHOD0(OnError, void());
+  MOCK_METHOD1(OnError, void(ErrorType));
 
  private:
   int OnMoreDataImpl(base::TimeDelta /* delay */,
@@ -366,7 +367,7 @@ TEST_F(CastAudioMixerTest, OnError) {
 
   // Note that error will only be triggered on the first stream because that
   // is the only stream that has been started.
-  EXPECT_CALL(source, OnError());
+  EXPECT_CALL(source, OnError(_));
   SignalError(source_callback_);
   base::RunLoop().RunUntilIdle();
 

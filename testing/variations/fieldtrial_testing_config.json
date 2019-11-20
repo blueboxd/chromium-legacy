@@ -1824,7 +1824,6 @@
                         "event_trigger": "name:data_saver_milestone_promo_iph_would_have_triggered;comparator:<2;window:90;storage:360",
                         "event_used": "name:data_saver_milestone_promo;comparator:<2;window:90;storage:360",
                         "session_rate": "==0",
-                        "tracking_only": "true",
                         "x_milestone_promo_data_savings_in_megabytes": "1024;100"
                     },
                     "enable_features": [
@@ -2454,6 +2453,30 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MediaRouterUIRouteController"
+                    ]
+                }
+            ]
+        }
+    ],
+    "EnableSafetyTipUI": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "UIEnabled",
+                    "params": {
+                        "editdistance": "false",
+                        "editdistance_siteengagement": "true",
+                        "topsites": "true"
+                    },
+                    "enable_features": [
+                        "SafetyTip"
                     ]
                 }
             ]

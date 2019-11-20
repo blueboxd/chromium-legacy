@@ -74,6 +74,7 @@ all other OS specific variables will be false.
     <output filename="ios_search_widget_extension_chromium_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
+    <file path="resources/ios_search_widget_extension_chromium_strings_af.xtb" lang="af" />
     <file path="resources/ios_search_widget_extension_chromium_strings_am.xtb" lang="am" />
     <file path="resources/ios_search_widget_extension_chromium_strings_ar.xtb" lang="ar" />
     <file path="resources/ios_search_widget_extension_chromium_strings_bg.xtb" lang="bg" />

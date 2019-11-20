@@ -68,6 +68,7 @@ This file contains the strings for bluetooth.
     <output filename="bluetooth_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
   </outputs>
   <translations>
+    <file path="strings/bluetooth_strings_af.xtb" lang="af" />
     <file path="strings/bluetooth_strings_am.xtb" lang="am" />
     <file path="strings/bluetooth_strings_ar.xtb" lang="ar" />
     <file path="strings/bluetooth_strings_bg.xtb" lang="bg" />

@@ -67,11 +67,17 @@ MediaNotificationService::Session::Session(
   SetController(std::move(controller));
 }
 
-MediaNotificationService::Session::~Session() = default;
+MediaNotificationService::Session::~Session() {
+  base::UmaHistogramEnumeration(
+      "Media.GlobalMediaControls.DismissReason",
+      dismiss_reason_.value_or(
+          GlobalMediaControlsDismissReason::kMediaSessionStopped));
+}
 
 void MediaNotificationService::Session::WebContentsDestroyed() {
   // If the WebContents is destroyed, then we should just remove the item
   // instead of freezing it.
+  set_dismiss_reason(GlobalMediaControlsDismissReason::kTabClosed);
   owner_->RemoveItem(id_);
 }
 
@@ -112,6 +118,12 @@ void MediaNotificationService::Session::SetController(
   }
 }
 
+void MediaNotificationService::Session::set_dismiss_reason(
+    GlobalMediaControlsDismissReason reason) {
+  DCHECK(!dismiss_reason_.has_value());
+  dismiss_reason_ = reason;
+}
+
 void MediaNotificationService::Session::OnSessionInteractedWith() {
   // If we're not currently tracking inactive time, then no action is needed.
   if (!inactive_timer_.IsRunning())
@@ -125,15 +137,20 @@ void MediaNotificationService::Session::OnSessionInteractedWith() {
 void MediaNotificationService::Session::StartInactiveTimer() {
   DCHECK(!inactive_timer_.IsRunning());
 
+  // Using |base::Unretained()| here is okay since |this| owns
+  // |inactive_timer_|.
   inactive_timer_.Start(
       FROM_HERE, kInactiveTimerDelay,
-      base::BindOnce(
-          [](media_message_center::MediaSessionNotificationItem* item) {
-            // If the session has been paused and inactive for long enough, then
-            // dismiss it.
-            item->Dismiss();
-          },
-          item_.get()));
+      base::BindOnce(&MediaNotificationService::Session::OnInactiveTimerFired,
+                     base::Unretained(this)));
+}
+
+void MediaNotificationService::Session::OnInactiveTimerFired() {
+  set_dismiss_reason(GlobalMediaControlsDismissReason::kInactiveTimeout);
+
+  // If the session has been paused and inactive for long enough, then
+  // dismiss it.
+  item_->Dismiss();
 }
 
 MediaNotificationService::MediaNotificationService(
@@ -351,8 +368,12 @@ void MediaNotificationService::OnContainerDismissed(const std::string& id) {
   }
 
   auto it = sessions_.find(id);
-  if (it != sessions_.end())
-    it->second.item()->Dismiss();
+  if (it == sessions_.end())
+    return;
+
+  it->second.set_dismiss_reason(
+      GlobalMediaControlsDismissReason::kUserDismissedNotification);
+  it->second.item()->Dismiss();
 }
 
 void MediaNotificationService::OnContainerDestroyed(const std::string& id) {

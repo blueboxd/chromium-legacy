@@ -66,54 +66,33 @@ class GlobalErrorWithStandardBubble
   GlobalErrorWithStandardBubble();
   ~GlobalErrorWithStandardBubble() override;
 
-  // Returns an icon to use for the bubble view.
+  // Override these methods to customize the contents of the error bubble:
   virtual gfx::Image GetBubbleViewIcon();
-
-  // Returns the title for the bubble view.
   virtual base::string16 GetBubbleViewTitle() = 0;
-  // Returns the messages for the bubble view, one per line. Multiple messages
-  // are only supported on Views.
-  // TODO(yoz): Add multi-line support for GTK and Cocoa.
   virtual std::vector<base::string16> GetBubbleViewMessages() = 0;
-  // Returns the accept button label for the bubble view.
   virtual base::string16 GetBubbleViewAcceptButtonLabel() = 0;
-  // Returns true if the bubble needs a close(x) button.
   virtual bool ShouldShowCloseButton() const;
-  // Returns true if the accept button needs elevation icon (only effective
-  // on Windows platform).
   virtual bool ShouldAddElevationIconToAcceptButton();
-  // Returns the cancel button label for the bubble view. To hide the cancel
-  // button return an empty string.
   virtual base::string16 GetBubbleViewCancelButtonLabel() = 0;
-  // Returns the default dialog button. Default behavior is to return
-  // ui::DIALOG_BUTTON_OK. Do not return ui::DIALOG_BUTTON_CANCEL if hiding the
-  // cancel button.
   virtual int GetDefaultDialogButton() const;
-  // Called when the bubble view is closed. |browser| is the Browser that the
-  // bubble view was shown on.
-  virtual void BubbleViewDidClose(Browser* browser);
-  // Notifies subclasses that the bubble view is closed. |browser| is the
-  // Browser that the bubble view was shown on.
-  virtual void OnBubbleViewDidClose(Browser* browser) = 0;
-  // Called when the user clicks on the accept button. |browser| is the
-  // Browser that the bubble view was shown on.
-  virtual void BubbleViewAcceptButtonPressed(Browser* browser) = 0;
-  // Called when the user clicks the cancel button. |browser| is the
-  // Browser that the bubble view was shown on.
-  virtual void BubbleViewCancelButtonPressed(Browser* browser) = 0;
-  // Returns true if the bubble should close when focus is lost. If false, the
-  // bubble will stick around until the user explicitly acknowledges it.
-  // Defaults to true.
   virtual bool ShouldCloseOnDeactivate() const;
-  // Return true if 'cancel' button should be created as an extra view placed on
-  // the left edge across from the 'ok' button.
   virtual bool ShouldUseExtraView() const;
+
+  // Override these methods to be notified when events happen on the bubble:
+  virtual void OnBubbleViewDidClose(Browser* browser) = 0;
+  virtual void BubbleViewAcceptButtonPressed(Browser* browser) = 0;
+  virtual void BubbleViewCancelButtonPressed(Browser* browser) = 0;
 
   // GlobalError overrides:
   bool HasBubbleView() override;
   bool HasShownBubbleView() override;
   void ShowBubbleView(Browser* browser) override;
   GlobalErrorBubbleViewBase* GetBubbleView() override;
+
+  // This method is used by the View to notify this object that the bubble has
+  // closed. Do not call it. It is only virtual for unit tests; do not override
+  // it either.
+  virtual void BubbleViewDidClose(Browser* browser);
 
  private:
   bool has_shown_bubble_view_;

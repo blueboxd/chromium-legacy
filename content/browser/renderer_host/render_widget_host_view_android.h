@@ -545,6 +545,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   gfx::Rect default_bounds_;
 
   const bool using_browser_compositor_;
+  const bool using_viz_for_webview_;
   std::unique_ptr<SynchronousCompositorHost> sync_compositor_;
 
   SynchronousCompositorClient* synchronous_compositor_client_;

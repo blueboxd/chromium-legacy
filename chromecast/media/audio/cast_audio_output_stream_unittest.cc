@@ -699,7 +699,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrame) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(0);
+  EXPECT_CALL(source_callback, OnError(_)).Times(0);
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
   stream->Stop();
@@ -734,7 +734,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrameAfterStop) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(0);
+  EXPECT_CALL(source_callback, OnError(_)).Times(0);
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
 
@@ -765,7 +765,7 @@ TEST_F(CastAudioOutputStreamTest, PushFrameAfterClose) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(0);
+  EXPECT_CALL(source_callback, OnError(_)).Times(0);
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
 
@@ -796,7 +796,7 @@ TEST_F(CastAudioOutputStreamTest, DISABLED_DeviceBusy) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // No error must be reported to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(0);
+  EXPECT_CALL(source_callback, OnError(_)).Times(0);
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
   // Make sure that one frame was pushed.
@@ -831,7 +831,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceError) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // AudioOutputStream must report error to source callback.
-  EXPECT_CALL(source_callback, OnError());
+  EXPECT_CALL(source_callback, OnError(_));
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
   // Make sure that AudioOutputStream attempted to push the initial frame.
@@ -856,7 +856,7 @@ TEST_F(CastAudioOutputStreamTest, DeviceAsyncError) {
   EXPECT_CALL(source_callback, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   // AudioOutputStream must report error to source callback.
-  EXPECT_CALL(source_callback, OnError()).Times(testing::AtLeast(1));
+  EXPECT_CALL(source_callback, OnError(_)).Times(testing::AtLeast(1));
   stream->Start(&source_callback);
   RunThreadsUntilIdle();
 

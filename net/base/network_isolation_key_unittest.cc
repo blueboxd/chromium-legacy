@@ -433,4 +433,32 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
   EXPECT_FALSE(empty_key.GetFrameOrigin().has_value());
 }
 
+TEST(NetworkIsolationKeyTest, CreateTransient) {
+  for (bool append_frame_origin : {false, true}) {
+    base::test::ScopedFeatureList feature_list;
+    if (append_frame_origin) {
+      feature_list.InitAndEnableFeature(
+          net::features::kAppendFrameOriginToNetworkIsolationKey);
+    } else {
+      feature_list.InitAndDisableFeature(
+          net::features::kAppendFrameOriginToNetworkIsolationKey);
+    }
+
+    NetworkIsolationKey transient_key = NetworkIsolationKey::CreateTransient();
+    EXPECT_TRUE(transient_key.IsFullyPopulated());
+    EXPECT_TRUE(transient_key.IsTransient());
+    EXPECT_FALSE(transient_key.IsEmpty());
+    EXPECT_EQ(transient_key, transient_key);
+
+    // Transient values can't be saved to disk.
+    base::Value value;
+    EXPECT_FALSE(transient_key.ToValue(&value));
+
+    // Make sure that subsequent calls don't return the same NIK.
+    for (int i = 0; i < 1000; ++i) {
+      EXPECT_NE(transient_key, NetworkIsolationKey::CreateTransient());
+    }
+  }
+}
+
 }  // namespace net

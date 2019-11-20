@@ -14102,6 +14102,52 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessSwapOnInnerContents) {
   EXPECT_NE(a_view, b_view);
 }
 
+// This test ensures that WebContentsImpl::FocusOwningWebContents() focuses an
+// inner WebContents when it is given an OOPIF's RenderWidgetHost inside that
+// inner WebContents.  This setup isn't currently supported in Chrome
+// (requiring issue 614463), but it can happen in embedders.  See
+// https://crbug.com/1026056.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusInnerContentsFromOOPIF) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Set up and attach an artificial inner WebContents.
+  FrameTreeNode* child_frame =
+      web_contents()->GetFrameTree()->root()->child_at(0);
+  WebContentsImpl* inner_contents =
+      static_cast<WebContentsImpl*>(CreateAndAttachInnerContents(
+          ToRenderFrameHost(child_frame).render_frame_host()));
+  FrameTreeNode* inner_contents_root = inner_contents->GetFrameTree()->root();
+
+  // Navigate inner WebContents to b.com, and then navigate a subframe on that
+  // page to c.com.
+  GURL b_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(b)"));
+  NavigateFrameToURL(inner_contents_root, b_url);
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  FrameTreeNode* inner_child = inner_contents_root->child_at(0);
+  NavigateFrameToURL(inner_child, c_url);
+
+  // Because |inner_contents| was set up without kGuestScheme, it can actually
+  // have OOPIFs.  Ensure that the subframe is in an OOPIF.
+  EXPECT_NE(inner_contents_root->current_frame_host()->GetSiteInstance(),
+            inner_child->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(inner_child->current_frame_host()->IsCrossProcessSubframe());
+
+  // Make sure the outer WebContents is focused to start with.
+  web_contents()->Focus();
+  web_contents()->SetAsFocusedWebContentsIfNecessary();
+  EXPECT_EQ(web_contents(), web_contents()->GetFocusedWebContents());
+
+  // Focus the inner WebContents as if an event were received and dispatched
+  // directly on the |inner_child|'s RenderWidgetHost, and ensure that this
+  // took effect.
+  inner_contents->FocusOwningWebContents(
+      inner_child->current_frame_host()->GetRenderWidgetHost());
+  EXPECT_EQ(inner_contents, web_contents()->GetFocusedWebContents());
+}
+
 // Check that a web frame can't navigate a remote subframe to a file: URL.  The
 // frame should stay at the old URL, and the navigation attempt should produce
 // a console error message.  See https://crbug.com/894399.

@@ -36,14 +36,14 @@ const char kFrameRemoved[] = "The frame was removed.";
 // Generates an injection key based on the host ID and either the file URL, if
 // available, or the code string. The format of the key is
 // "<type><host_id><digest>", where <type> is one of "F" (file) and "C" (code),
-// <host_id> is the host ID, and <digest> is the hash digest (base::Hash) of
-// the file URL or the code string, respectively.
+// <host_id> is the host ID, and <digest> is an unspecified hash digest of the
+// file URL or the code string, respectively.
 const std::string GenerateInjectionKey(const HostID& host_id,
                                        const GURL& file_url,
                                        const std::string& code) {
   const std::string& source = file_url.is_valid() ? file_url.spec() : code;
-  return base::StringPrintf("%c%s%u", file_url.is_valid() ? 'F' : 'C',
-                            host_id.id().c_str(), base::Hash(source));
+  return base::StringPrintf("%c%s%zu", file_url.is_valid() ? 'F' : 'C',
+                            host_id.id().c_str(), base::FastHash(source));
 }
 
 // A handler for a single injection request. On creation this will send the

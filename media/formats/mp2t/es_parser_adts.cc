@@ -122,7 +122,7 @@ EsParserAdts::EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
       emit_buffer_cb_(emit_buffer_cb),
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
       get_decrypt_config_cb_(),
-      use_hls_sample_aes_(false),
+      init_encryption_scheme_(EncryptionScheme::kUnencrypted),
 #endif
       sbr_in_mimetype_(sbr_in_mimetype) {
 }
@@ -131,15 +131,13 @@ EsParserAdts::EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
 EsParserAdts::EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
                            const EmitBufferCB& emit_buffer_cb,
                            const GetDecryptConfigCB& get_decrypt_config_cb,
-                           bool use_hls_sample_aes,
+                           EncryptionScheme init_encryption_scheme,
                            bool sbr_in_mimetype)
     : new_audio_config_cb_(new_audio_config_cb),
       emit_buffer_cb_(emit_buffer_cb),
       get_decrypt_config_cb_(get_decrypt_config_cb),
-      use_hls_sample_aes_(use_hls_sample_aes),
-      sbr_in_mimetype_(sbr_in_mimetype) {
-  DCHECK_EQ(!!get_decrypt_config_cb_, use_hls_sample_aes_);
-}
+      init_encryption_scheme_(init_encryption_scheme),
+      sbr_in_mimetype_(sbr_in_mimetype) {}
 #endif
 
 EsParserAdts::~EsParserAdts() {
@@ -210,7 +208,7 @@ bool EsParserAdts::ParseFromEsQueue() {
         DecodeTimestamp::FromPresentationTime(current_pts));
     stream_parser_buffer->set_duration(frame_duration);
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-    if (use_hls_sample_aes_) {
+    if (get_decrypt_config_cb_) {
       const DecryptConfig* base_decrypt_config = get_decrypt_config_cb_.Run();
       if (base_decrypt_config) {
         std::vector<SubsampleEntry> subsamples;
@@ -262,9 +260,7 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header,
                        : orig_sample_rate;
   EncryptionScheme scheme = EncryptionScheme::kUnencrypted;
 #if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
-  if (use_hls_sample_aes_) {
-    scheme = EncryptionScheme::kCbcs;
-  }
+  scheme = init_encryption_scheme_;
 #endif
   AudioDecoderConfig audio_decoder_config(
       kCodecAAC, kSampleFormatS16, channel_layout, extended_samples_per_second,

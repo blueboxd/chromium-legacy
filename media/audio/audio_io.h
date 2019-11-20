@@ -79,7 +79,13 @@ class MEDIA_EXPORT AudioOutputStream {
     // destroyed yet. No direct action needed by the AudioStream, but it is
     // a good place to stop accumulating sound data since is is likely that
     // playback will not continue.
-    virtual void OnError() = 0;
+    //
+    // An ErrorType may be provided with more information on what went wrong. An
+    // unhandled kDeviceChange type error is likely to result in further errors;
+    // so it's recommended that sources close their existing output stream and
+    // request a new one when this error is sent.
+    enum class ErrorType { kUnknown, kDeviceChange };
+    virtual void OnError(ErrorType type) = 0;
   };
 
   virtual ~AudioOutputStream() {}

@@ -33,6 +33,6 @@ bool ShouldTriggerSafetyTipFromKeywordInURL(
     const GURL& url,
     const DomainInfo& navigated_domain,
     const char* const sensitive_keywords[],
-    size_t num_keywords);
+    const size_t num_sensitive_keywords);
 
 #endif  // CHROME_BROWSER_REPUTATION_LOCAL_HEURISTICS_H_

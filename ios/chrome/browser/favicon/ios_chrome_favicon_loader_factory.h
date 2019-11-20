@@ -26,6 +26,9 @@ class IOSChromeFaviconLoaderFactory : public BrowserStateKeyedServiceFactory {
   static FaviconLoader* GetForBrowserStateIfExists(
       ios::ChromeBrowserState* browser_state);
   static IOSChromeFaviconLoaderFactory* GetInstance();
+  // Returns the default factory used to build FaviconLoader. Can be registered
+  // with SetTestingFactory to use the FaviconService instance during testing.
+  static TestingFactory GetDefaultFactory();
 
  private:
   friend class base::NoDestructor<IOSChromeFaviconLoaderFactory>;

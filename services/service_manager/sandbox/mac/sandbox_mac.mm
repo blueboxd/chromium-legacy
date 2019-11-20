@@ -214,13 +214,13 @@ bool SandboxMac::Enable(SandboxType sandbox_type) {
 base::FilePath SandboxMac::GetCanonicalPath(const base::FilePath& path) {
   base::ScopedFD fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
   if (!fd.is_valid()) {
-    DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: " << path.value();
+    DPLOG(ERROR) << "GetCanonicalSandboxPath() failed for: " << path.value();
     return path;
   }
 
   base::FilePath::CharType canonical_path[MAXPATHLEN];
   if (HANDLE_EINTR(fcntl(fd.get(), F_GETPATH, canonical_path)) != 0) {
-    DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: " << path.value();
+    DPLOG(ERROR) << "GetCanonicalSandboxPath() failed for: " << path.value();
     return path;
   }
 

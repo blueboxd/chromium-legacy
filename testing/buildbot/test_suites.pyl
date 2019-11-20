@@ -117,11 +117,7 @@
     },
 
     'android_monochrome_smoke_tests': {
-      'monochrome_public_bundle_fake_modules_smoke_test': {
-        # TODO(https://crbug.com/1025316): Make non-experimental when these work
-        # properly with component builds.
-        'experiment_percentage': 100
-      },
+      'monochrome_public_bundle_fake_modules_smoke_test': {},
       'monochrome_public_bundle_smoke_test': {},
       'monochrome_public_smoke_test': {},
     },

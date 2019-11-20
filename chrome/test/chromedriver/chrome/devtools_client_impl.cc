@@ -278,9 +278,18 @@ Status DevToolsClientImpl::HandleEventsUntil(
         return Status(kOk);
     }
 
-    Status status = ProcessNextMessage(-1, timeout);
-    if (status.IsError())
+    // Create a small timeout so conditional_func can be retried
+    // when only funcinterval has expired, continue while loop
+    // but return timeout status if primary timeout has expired
+    Timeout funcinterval =
+        Timeout(base::TimeDelta::FromMilliseconds(100), &timeout);
+    Status status = ProcessNextMessage(-1, funcinterval);
+    if (status.code() == kTimeout) {
+      if (timeout.IsExpired())
+        return status;
+    } else if (status.IsError()) {
       return status;
+    }
   }
 }
 

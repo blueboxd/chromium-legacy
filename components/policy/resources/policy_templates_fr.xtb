@@ -996,6 +996,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si elle est activée ou si elle n'est pas définie, les avertissements de sécurité s'affichent si certains indicateurs de ligne de commande sont utilisés pour lancer Chrome.
 
           Sur Windows, cette règle est uniquement disponible sur les instances associées à un domaine <ph name="MS_AD_NAME" /> ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
+<translation id="2480971699591919564">Cette règle active la fonctionnalité d'appel direct, qui autorise les utilisateurs à envoyer des numéros de téléphone depuis leur ordinateur équipé de Chrome vers un appareil Android lorsqu'ils sont connectés. Pour plus d'informations, consultez cet article du centre d'aide : https://support.google.com/chrome/answer/9430554?hl=fr.
+
+      Si cette règle est activée, la fonctionnalité permettant d'envoyer des numéros de téléphone vers des appareils Android sera activée pour l'utilisateur Chrome.
+
+      Si cette règle est désactivée, la fonctionnalité permettant d'envoyer des numéros de téléphone vers des appareils Android sera désactivée pour l'utilisateur Chrome.
+
+      Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
+
+      Si vous ne définissez pas cette règle, la fonctionnalité d'appel direct est activée par défaut.</translation>
 <translation id="2482676533225429905">Messagerie native</translation>
 <translation id="2483146640187052324">Prédire les actions réseau lors d'une connexion au réseau</translation>
 <translation id="2484208301968418871">Cette règle contrôle l'application du filtre d'URL SafeSites.
@@ -2018,6 +2027,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4075864623710596000">Les noms d'hôte indiqués dans cette liste seront exemptés de la vérification de la règle HSTS susceptible de remplacer les requêtes HTTP par des requêtes HTTPS. Seuls les noms d'hôte sans extension sont autorisés dans cette règle. Les noms d'hôtes doivent être indiqués sous forme canonique : tous les noms de domaine internationalisés (IDN) doivent être convertis dans leur format d'étiquette A, et toutes les lettres ASCII doivent être en minuscules. Cette règle ne s'applique qu'aux noms d'hôte spécifiques indiqués. Elle ne concerne pas leurs sous-domaines.</translation>
 <translation id="408029843066770167">Autoriser l'envoi de requêtes à un service horaire de Google</translation>
 <translation id="408076456549153854">Activer la connexion au navigateur</translation>
+<translation id="4082498585300984671">Activer la fonctionnalité d'appel direct</translation>
 <translation id="40853027210512570">Remplace les règles par défaut de sélection d'imprimante pour <ph name="PRODUCT_NAME" />.
 
       Cette règle détermine les critères utilisés pour la sélection d'imprimante par défaut dans <ph name="PRODUCT_NAME" />, ce qui se produit la première fois que la fonction d'impression est utilisée avec un profil.
@@ -3105,7 +3115,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           Si cette règle n'est pas définie, l'action par défaut est effectuée, à savoir l'arrêt.
 
           Dans ce cas, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour verrouiller ou non l'écran avant l'arrêt.</translation>
-<translation id="5755002458331714762"> Les API Web Components v0 (Shadow DOM v0, Custom Elements v0 et HTML Imports) sont obsolètes depuis 2018 et seront désactivés par défaut à compter de la version M80. Cette règle offre la possibilité de réactiver ces fonctionnalités pour certains sites en particulier jusqu'à la version M84.
+<translation id="5755002458331714762"> Les API Web Components v0 (Shadow DOM v0, Custom Elements v0 et HTML Imports) sont obsolètes depuis 2018 et ont été désactivées par défaut à partir de la version M80. Cette règle offre la possibilité de réactiver ces fonctionnalités pour certains sites en particulier jusqu'à la version M84.
 
       Si elle est définie sur "True", les fonctionnalités de Web Components v0 seront activées pour tous les sites.
 
@@ -3627,13 +3637,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Dans le cas où la connexion à un autre compte ne devrait pas être autorisée via le mode navigation privée, pensez à bloquer ce mode à l'aide de la règle IncognitoModeAvailability.
 
       Notez que les utilisateurs peuvent accéder aux services Google dans un état non authentifié en bloquant leurs cookies.</translation>
-<translation id="6837480141980366278">Permet de définir si le client DNS intégré est utilisé ou non dans <ph name="PRODUCT_NAME" />.
-
-      Si cette règle est définie sur "True", le client DNS intégré est utilisé, si disponible.
-
-      Si cette règle est définie sur "False", le client DNS intégré n'est jamais utilisé.
-
-      Si cette règle n'est pas configurée, le client DNS intégré est activé par défaut sur Mac OS, Android (lorsque ni le DNS privé, ni le VPN ne sont activés) et Chrome OS, et l'utilisateur peut choisir si le client DNS intégré doit être utilisé ou non, soit en modifiant chrome://flags, soit à l'aide d'un indicateur de ligne de commande.</translation>
 <translation id="6843296367238757293">Cette règle est obsolète. Nous vous déconseillons de l'utiliser. Pour en savoir plus, rendez-vous sur https://support.google.com/chrome/a/answer/7643500.</translation>
 <translation id="684856667300805181">Cette règle a été supprimée dans <ph name="PRODUCT_NAME" /> 68 et remplacée par <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Activer la fonctionnalité d'accessibilité de mise en surbrillance du curseur</translation>
@@ -4042,13 +4045,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7373200034079131670">Redémarrage en cas de déconnexion de l'utilisateur si Android ou une VM sont lancés</translation>
 <translation id="737655323154569539">Limite le format de la page d'impression. Si la règle n'est pas définie ou qu'elle est vide, on considère qu'il n'y a aucune restriction.</translation>
 <translation id="7382191643394429934">Autoriser l'impression à la fois avec et sans images de fond</translation>
-<translation id="7383445181072113521">Détermine le nom d'hôte de l'appareil utilisé pour les requêtes DHCP.
-
-      Si cette règle est définie sur une chaîne non vide, celle-ci servira de nom d'hôte de l'appareil lors de la requête DHCP.
-
-      La chaîne peut contenir les variables <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" /> et <ph name="MACHINE_NAME_PLACEHOLDER" />, qui seront remplacées par les valeurs trouvées sur l'appareil avant qu'elle soit utilisée comme nom d'hôte. Le résultat de cette substitution doit former un nom d'hôte valide (conformément à la RFC 1035, section 3.1).
-
-      Si cette règle n'est pas définie ou si la valeur après substitution ne constitue pas un nom d'hôte valide, aucun nom d'hôte ne sera défini dans la requête DHCP. </translation>
 <translation id="7389872682701720082">Si vous activez ce paramètre, les plug-ins non obsolètes sont toujours exécutés.
 
       Si ce paramètre est désactivé ou n'est pas configuré, les utilisateurs doivent donner leur permission pour l'exécution des plug-ins qui nécessitent une autorisation. Ceux-ci présentent un risque de sécurité.</translation>
@@ -4302,7 +4298,7 @@ au maximum si un utilisateur se sert de l'appareil.
       Si ce paramètre n'est pas défini, l'autorisation des utilisateurs sera requise pour l'exécution des plug-ins obsolètes</translation>
 <translation id="7862137072381331997">Lorsque cette règle est activée, toutes les URL consultées sont vérifiées en temps réel à l'aide de la fonctionnalité de navigation sécurisée.
 
-      Lorsque cette règle est désactivée ou n'est pas définie, les vérifications courantes de la navigation sécurisée sont effectuées. Les vérifications courantes de la navigation sécurisée peuvent tout de même inclure des recherches en temps réel, selon si l'option "Améliorer les recherches et la navigation" a été activée. Pour forcer la désactivation des recherches en temps réel, consultez la règle <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" />.</translation>
+      Lorsque cette règle est désactivée ou n'est pas définie, seules les vérifications courantes de la navigation sécurisée sont effectuées. Les vérifications courantes de la navigation sécurisée peuvent tout de même inclure des recherches en temps réel, selon si l'option "Améliorer les recherches et la navigation" a été activée. Pour forcer la désactivation des recherches en temps réel, consultez la règle <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" />.</translation>
 <translation id="7863947545897944083">Permet d'activer la fonctionnalité d'accessibilité de contraste élevé sur l'écran de connexion.
 
           Si cette règle est définie sur "True", le contraste élevé est toujours activé sur l'écran de connexion.
@@ -4451,7 +4447,6 @@ Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'ut
 <translation id="8141795997560411818">Cette règle n'empêche pas l'utilisateur de se servir de l'application Google Drive pour Android. Pour ce faire, vous devez également annuler l'autorisation d'installation de cette application.</translation>
 <translation id="8142894094385450823">Définir les paramètres régionaux recommandés pour une session gérée</translation>
 <translation id="8146727383888924340">Autoriser les utilisateurs à profiter de leurs offres via le service d'enregistrement Chrome OS</translation>
-<translation id="8148785525797916822">Supprime l'avertissement qui s'affiche lorsque l'application <ph name="PRODUCT_NAME" /> s'exécute sur un ordinateur ou un système d'exploitation qui n'est plus accepté.</translation>
 <translation id="8148901634826284024">Active la fonctionnalité d'accessibilité du mode Contraste élevé.
 
           Si vous définissez cette règle sur "True", le mode Contraste élevé est activé en permanence.

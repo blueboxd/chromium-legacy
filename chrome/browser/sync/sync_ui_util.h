@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 #define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 
 class Browser;
@@ -32,12 +31,18 @@ enum MessageType {
 
 // The action associated with the sync status.
 enum ActionType {
-  NO_ACTION,              // No action to take.
-  REAUTHENTICATE,         // User needs to reauthenticate.
-  SIGNOUT_AND_SIGNIN,     // User needs to sign out and sign in.
-  UPGRADE_CLIENT,         // User needs to upgrade the client.
-  ENTER_PASSPHRASE,       // User needs to enter their passphrase.
-  CONFIRM_SYNC_SETTINGS,  // User needs to confirm sync settings.
+  // No action to take.
+  NO_ACTION,
+  // User needs to reauthenticate.
+  REAUTHENTICATE,
+  // User needs to sign out and sign in.
+  SIGNOUT_AND_SIGNIN,
+  // User needs to upgrade the client.
+  UPGRADE_CLIENT,
+  // User needs to enter their passphrase.
+  ENTER_PASSPHRASE,
+  // User needs to confirm sync settings.
+  CONFIRM_SYNC_SETTINGS,
 };
 
 // Sync errors that should be exposed to the user through the avatar button.
@@ -52,27 +57,23 @@ enum AvatarSyncErrorType {
   SETTINGS_UNCONFIRMED_ERROR,        // Sync settings dialog not confirmed yet.
 };
 
-// Returns the high-level sync status, and populates status and link label
-// strings for the current sync status by querying |sync_service| and
-// |identity_manager|. Any of |status_label|, |link_label|, and |action_type|
-// may be null if the caller isn't interested in it.
-MessageType GetStatusLabels(syncer::SyncService* sync_service,
-                            signin::IdentityManager* identity_manager,
-                            bool is_user_signout_allowed,
-                            base::string16* status_label,
-                            base::string16* link_label,
-                            ActionType* action_type);
+struct StatusLabels {
+  MessageType message_type;
+  int status_label_string_id;
+  int link_label_string_id;
+  ActionType action_type;
+};
 
-// Returns the high-level sync status, and populates status and link label
-// strings for the current sync status by querying |profile|. This is a
+// Returns the high-level sync status by querying |sync_service| and
+// |identity_manager|.
+StatusLabels GetStatusLabels(syncer::SyncService* sync_service,
+                             signin::IdentityManager* identity_manager,
+                             bool is_user_signout_allowed);
+
+// Returns the high-level sync status by querying |profile|. This is a
 // convenience version of GetStatusLabels that use the |sync_service| and
 // |identity_manager| associated to |profile| via their respective factories.
-// Any of |status_label|, |link_label|, and |action_type| may be null if the
-// caller isn't interested in it.
-MessageType GetStatusLabels(Profile* profile,
-                            base::string16* status_label,
-                            base::string16* link_label,
-                            ActionType* action_type);
+StatusLabels GetStatusLabels(Profile* profile);
 
 // Convenience version of GetStatusLabels for when you're not interested in the
 // actual labels, only in the return value.

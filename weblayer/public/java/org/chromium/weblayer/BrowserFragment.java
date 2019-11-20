@@ -24,6 +24,7 @@ import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IRemoteFragment;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * WebLayer's fragment implementation.
@@ -50,67 +51,80 @@ public final class BrowserFragment extends Fragment {
     private final IRemoteFragmentClient mClientImpl = new IRemoteFragmentClient.Stub() {
         @Override
         public void superOnCreate(IObjectWrapper savedInstanceState) {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onCreate(ObjectWrapper.unwrap(savedInstanceState, Bundle.class));
         }
 
         @Override
         public void superOnAttach(IObjectWrapper context) {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onAttach(ObjectWrapper.unwrap(context, Context.class));
         }
 
         @Override
         public void superOnActivityCreated(IObjectWrapper savedInstanceState) {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onCreate(ObjectWrapper.unwrap(savedInstanceState, Bundle.class));
         }
 
         @Override
         public void superOnStart() {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onStart();
         }
 
         @Override
         public void superOnResume() {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onResume();
         }
 
         @Override
         public void superOnPause() {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onPause();
         }
 
         @Override
         public void superOnStop() {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onStop();
         }
 
         @Override
         public void superOnDestroyView() {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onDestroyView();
         }
 
         @Override
         public void superOnDetach() {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onDetach();
         }
 
         @Override
         public void superOnDestroy() {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onDestroy();
         }
 
         @Override
         public void superOnSaveInstanceState(IObjectWrapper outState) {
+            StrictModeWorkaround.apply();
             BrowserFragment.super.onSaveInstanceState(ObjectWrapper.unwrap(outState, Bundle.class));
         }
 
         @Override
         public IObjectWrapper getActivity() {
+            StrictModeWorkaround.apply();
             return ObjectWrapper.wrap(BrowserFragment.this.getActivity());
         }
 
         @Override
         public boolean startActivityForResult(
                 IObjectWrapper intent, int requestCode, IObjectWrapper options) {
+            StrictModeWorkaround.apply();
             try {
                 BrowserFragment.this.startActivityForResult(
                         ObjectWrapper.unwrap(intent, Intent.class), requestCode,
@@ -125,6 +139,7 @@ public final class BrowserFragment extends Fragment {
         public boolean startIntentSenderForResult(IObjectWrapper intent, int requestCode,
                 IObjectWrapper fillInIntent, int flagsMask, int flagsValues, int extraFlags,
                 IObjectWrapper options) {
+            StrictModeWorkaround.apply();
             try {
                 BrowserFragment.this.startIntentSenderForResult(
                         ObjectWrapper.unwrap(intent, IntentSender.class), requestCode,
@@ -138,11 +153,13 @@ public final class BrowserFragment extends Fragment {
 
         @Override
         public boolean shouldShowRequestPermissionRationale(String permission) {
+            StrictModeWorkaround.apply();
             return BrowserFragment.this.shouldShowRequestPermissionRationale(permission);
         }
 
         @Override
         public void requestPermissions(String[] permissions, int requestCode) {
+            StrictModeWorkaround.apply();
             BrowserFragment.this.requestPermissions(permissions, requestCode);
         }
     };

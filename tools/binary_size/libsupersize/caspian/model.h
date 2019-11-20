@@ -79,6 +79,8 @@ class BaseSymbol {
   virtual float PssWithoutPadding() const = 0;
   virtual float PaddingPss() const = 0;
 
+  virtual DiffStatus GetDiffStatus() const = 0;
+
   int32_t SizeWithoutPadding() const { return Size() - Padding(); }
 
   int32_t EndAddress() const { return Address() + SizeWithoutPadding(); }
@@ -156,6 +158,8 @@ class Symbol : public BaseSymbol {
 
   float PaddingPss() const override;
 
+  DiffStatus GetDiffStatus() const override;
+
   int32_t address_ = 0;
   int32_t size_ = 0;
   int32_t flags_ = 0;
@@ -206,18 +210,7 @@ class DeltaSymbol : public BaseSymbol {
   float PssWithoutPadding() const override;
   float PaddingPss() const override;
 
-  DiffStatus DiffStatus() const {
-    if (!before_) {
-      return DiffStatus::kAdded;
-    }
-    if (!after_) {
-      return DiffStatus::kRemoved;
-    }
-    if (Size() || Pss() != 0) {
-      return DiffStatus::kChanged;
-    }
-    return DiffStatus::kUnchanged;
-  }
+  DiffStatus GetDiffStatus() const override;
 
  private:
   const Symbol* before_ = nullptr;
@@ -264,7 +257,7 @@ struct DeltaSizeInfo : BaseSizeInfo {
   Results CountsByDiffStatus() const {
     Results ret{0};
     for (const DeltaSymbol& sym : delta_symbols) {
-      ret[static_cast<uint8_t>(sym.DiffStatus())]++;
+      ret[static_cast<uint8_t>(sym.GetDiffStatus())]++;
     }
     return ret;
   }
@@ -278,18 +271,24 @@ struct DeltaSizeInfo : BaseSizeInfo {
 
 struct Stat {
   int32_t count = 0;
+  int32_t added = 0;
+  int32_t removed = 0;
+  int32_t changed = 0;
   float size = 0.0f;
 
   void operator+=(const Stat& other) {
     count += other.count;
     size += other.size;
+    added += other.added;
+    removed += other.removed;
+    changed += other.changed;
   }
 };
 
 struct NodeStats {
   NodeStats();
   ~NodeStats();
-  NodeStats(SectionId section, int32_t count, float size);
+  NodeStats(const BaseSymbol& symbol);
   void WriteIntoJson(Json::Value* out) const;
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;

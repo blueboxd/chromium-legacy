@@ -201,8 +201,8 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
     std::unique_ptr<DevToolsClient> client(new DevToolsClientImpl(
         socket_factory_, endpoint_.GetDebuggerUrl(*it), *it));
     std::unique_ptr<WebViewImpl> web_view(
-        new WebViewImpl(*it, false, &browser_info_, std::move(client), NULL,
-                        page_load_strategy_));
+        new WebViewImpl(*it, false, nullptr, &browser_info_, std::move(client),
+                        nullptr, page_load_strategy_));
 
     status = web_view->ConnectIfNecessary();
     // Ignore disconnected error, because the debugger might have closed when

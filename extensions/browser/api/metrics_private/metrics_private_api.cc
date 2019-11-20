@@ -140,7 +140,8 @@ ExtensionFunction::ResponseAction
 MetricsPrivateRecordSparseHashableFunction::Run() {
   auto params = RecordSparseHashable::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  base::UmaHistogramSparse(params->metric_name, base::Hash(params->value));
+  base::UmaHistogramSparse(params->metric_name,
+                           base::PersistentHash(params->value));
   return RespondNow(NoArguments());
 }
 

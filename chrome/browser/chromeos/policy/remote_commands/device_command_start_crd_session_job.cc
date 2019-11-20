@@ -229,17 +229,8 @@ void DeviceCommandStartCRDSessionJob::RunImpl(
 void DeviceCommandStartCRDSessionJob::OnOAuthTokenReceived(
     const std::string& token) {
   oauth_token_ = token;
-  // Skip ICE config fetching since the It2Me host will handle that for us.
-  // TODO(crbug/976535): Remove the ICE config logic and methods for this
-  // scenario once the change to short-circuit the fetch has been merged.
-  OnICEConfigReceived(base::Value());
-}
-
-void DeviceCommandStartCRDSessionJob::OnICEConfigReceived(
-    base::Value ice_config) {
-  ice_config_ = std::move(ice_config);
   delegate_->StartCRDHostAndGetCode(
-      oauth_token_, std::move(ice_config_), terminate_upon_input_,
+      oauth_token_, terminate_upon_input_,
       base::BindOnce(&DeviceCommandStartCRDSessionJob::OnAccessCodeReceived,
                      weak_factory_.GetWeakPtr()),
       base::BindOnce(&DeviceCommandStartCRDSessionJob::FinishWithError,

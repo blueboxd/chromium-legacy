@@ -277,7 +277,6 @@
 <translation id="2248949050832152960">Folosește WebAuthn</translation>
 <translation id="2250931979407627383">Broșare pe marginea din stânga</translation>
 <translation id="225207911366869382">Valoarea este învechită pentru această politică.</translation>
-<translation id="2257315177824333709">Momentan cardul nu poate fi salvat</translation>
 <translation id="2258928405015593961">Introdu o dată de expirare din viitor și încearcă din nou</translation>
 <translation id="2262243747453050782">Eroare HTTP</translation>
 <translation id="2263079731045660823">Actualizează informațiile privind completarea automată a cardurilor de credit în setările Chrome</translation>
@@ -662,6 +661,7 @@
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Încă <ph name="ITEM_COUNT" /> articol}few{Încă <ph name="ITEM_COUNT" /> articole}other{Încă <ph name="ITEM_COUNT" /> de articole}}</translation>
 <translation id="4176463684765177261">Dezactivat</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4194250254487269611">Cardul nu poate fi salvat în acest moment</translation>
 <translation id="4196861286325780578">&amp;Repetați mutarea</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
 <translation id="4215751373031079683">7x9 (Plic)</translation>

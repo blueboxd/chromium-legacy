@@ -357,15 +357,14 @@ PreviewsEligibilityReason PreviewsDeciderImpl::CheckLocalBlacklist(
       passed_reasons);
 }
 
-bool PreviewsDeciderImpl::LoadPageHints(
+bool PreviewsDeciderImpl::AreCommitTimePreviewsAvailable(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!previews_opt_guide_)
     return false;
 
-  return previews_opt_guide_->MaybeLoadOptimizationHints(navigation_handle,
-                                                         base::DoNothing());
+  return previews_opt_guide_->AreCommitTimePreviewsAvailable(navigation_handle);
 }
 
 bool PreviewsDeciderImpl::GetResourceLoadingHints(

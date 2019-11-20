@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Ikona aplikacji</translation>
 <translation id="1410616244180625362">Nadal zezwalaj witrynie <ph name="HOST" /> na dostęp do kamery</translation>
 <translation id="1414648216875402825">Aktualizujesz <ph name="PRODUCT_NAME" /> do niestabilnej wersji zawierającej funkcje, nad którymi wciąż pracujemy. Będą występować awarie i nieoczekiwane błędy. Zachowaj ostrożność.</translation>
-<translation id="1414866280542221544">Włącz na tym urządzeniu</translation>
 <translation id="1415708812149920388">Brak uprawnień do odczytu zawartości schowka</translation>
 <translation id="1415990189994829608">Rozszerzenie <ph name="EXTENSION_NAME" /> (identyfikator rozszerzenia „<ph name="EXTENSION_ID" />”) jest niedozwolone w tym typie sesji.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Kawałek pizzy</translation>
 <translation id="1468571364034902819">Nie można użyć tego profilu</translation>
 <translation id="1470811252759861213">Aby korzystać z rozszerzeń na wszystkich swoich komputerach, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Spowoduje to usunięcie z klucza bezpieczeństwa wszystkich danych, w tym kodu PIN</translation>
 <translation id="1472675084647422956">Pokaż więcej</translation>
 <translation id="1475502736924165259">Masz zapisane certyfikaty, które nie pasują do żadnej z pozostałych kategorii</translation>
 <translation id="1476088332184200792">Skopiuj na swoje urządzenie</translation>
@@ -842,7 +840,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2202898655984161076">Podczas tworzenia listy drukarek wystąpił problem. Niektóre drukarki mogły nie zostać pomyślnie zarejestrowane w usłudze <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Wyszukiwarka używana w <ph name="BEGIN_LINK" />pasku adresu<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Odczyt i zmiana wpisanego tekstu</translation>
-<translation id="2204397710290433380">Wyłączyć ADB?</translation>
 <translation id="220792432208469595">Wysyłaj dane diagnostyczne oraz informacje o użyciu. To urządzenie automatycznie wysyła do Google dane diagnostyczne oraz informacje o używaniu urządzenia i aplikacji. Dzięki temu będziemy mogli poprawić stabilność systemu i aplikacji oraz wprowadzić inne ulepszenia. Niektóre dane zbiorcze pomogą nam też udoskonalić aplikacje Google lub zostaną wykorzystane przez naszych partnerów, na przykład deweloperów aplikacji na Androida. To ustawienie jest wymuszone przez właściciela. Jeśli włączysz ustawienie Dodatkowa aktywność w internecie i aplikacjach, te dane mogą być zapisywane na Twoim koncie Google. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Wpisz ten kod PIN na urządzeniu „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="2213140827792212876">Usuń udostępnianie</translation>
@@ -979,6 +976,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2396783860772170191">Wpisz 4-cyfrowy kod PIN (0000–9999)</translation>
 <translation id="2399939490305346086">Dane logowania na kluczu bezpieczeństwa</translation>
 <translation id="2407481962792080328">Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google</translation>
+<translation id="2408018932941436077">Zapisuję kartę</translation>
 <translation id="2408955596600435184">Wpisz kod PIN</translation>
 <translation id="241082044617551207">Nieznana wtyczka</translation>
 <translation id="2412593942846481727">Dostępna aktualizacja</translation>
@@ -2007,7 +2005,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3873315167136380065">Aby włączyć tę funkcję, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" /> w celu usunięcia hasła synchronizacji</translation>
 <translation id="3873423927483480833">Pokaż kody PIN</translation>
 <translation id="3873915545594852654">Wystąpił problem z ARC++.</translation>
-<translation id="387924939625099872">Aby wyłączyć ADB, uruchom ponownie urządzenie <ph name="DEVICE_TYPE" />. Zostaną na nim przywrócone ustawienia fabryczne, a wszystkie konta użytkowników i przechowywane na nim dane zostaną usunięte.</translation>
 <translation id="3879748587602334249">Menedżer pobierania</translation>
 <translation id="3886446263141354045">Twoja prośba o dostęp to tej strony została wysłana do: <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Robienie notatek w aplikacji <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4501530680793980440">Potwierdź usunięcie</translation>
 <translation id="4502423230170890588">Usuń z tego urządzenia</translation>
 <translation id="4504940961672722399">Użyj tego rozszerzenia, klikając tę ikonę lub naciskając <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Jeśli będziesz kontynuować, włączone zostanie narzędzie ADB do tworzenia i testowania aplikacji na Androida. Pamiętaj, że ADB umożliwia instalowanie i testowanie aplikacji, które nie zostały zweryfikowane przez Google.</translation>
 <translation id="4508051413094283164">Otwórz wszystkie w oknie incognito</translation>
 <translation id="4508265954913339219">Aktywacja nie powiodła się</translation>
 <translation id="4508765956121923607">Wyświetl ź&amp;ródło</translation>
@@ -3312,7 +3308,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5851868085455377790">Wystawca</translation>
 <translation id="5852112051279473187">Ups, coś się kompletnie nie udało podczas próby zarejestrowania tego urządzenia. Spróbuj ponownie lub skontaktuj się z przedstawicielem obsługi klienta.</translation>
 <translation id="5852137567692933493">Uruchom ponownie i wykonaj Powerwash</translation>
-<translation id="5852360662347412211">Otwórz ustawienia Linuksa i spróbuj ponownie</translation>
 <translation id="5854912040170951372">Kawałek pizzy</translation>
 <translation id="5855643921295613558">0,6 s</translation>
 <translation id="5856721540245522153">Włącz funkcje debugowania</translation>
@@ -3325,7 +3320,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5860494867054883682">Aktualizuję Twoje urządzenie do kanału: <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Pokaż narzędzia rysika na półce</translation>
 <translation id="5863445608433396414">Włącz funkcje debugowania</translation>
-<translation id="5863471434640009253">Aby włączyć Android Debug Bridge, najpierw uruchom ponownie urządzenie <ph name="DEVICE_TYPE" />. W celu wyłączenia ADB trzeba będzie przywrócić na urządzeniu ustawienia fabryczne.</translation>
 <translation id="5864471791310927901">Wyszukiwanie DHCP nie powiodło się</translation>
 <translation id="586567932979200359">Produkt <ph name="PRODUCT_NAME" /> został uruchomiony z obrazu dysku. Zainstalowanie go na komputerze umożliwi uruchamianie bez użycia obrazu dysku i bieżące aktualizowanie.</translation>
 <translation id="5865733239029070421">Automatycznie przesyła do Google statystyki użytkowania i raporty o awariach</translation>
@@ -3395,7 +3389,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5958529069007801266">Użytkownik nadzorowany</translation>
 <translation id="5959471481388474538">Sieć niedostępna</translation>
 <translation id="595959584676692139">Aby użyć tego rozszerzenia, załaduj ponownie stronę</translation>
-<translation id="5961320084471308154">Włączyć ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> w szczycie)</translation>
 <translation id="5965661248935608907">Kontroluje także to, jaka strona wyświetla się po kliknięciu przycisku strony głównej lub wyszukiwaniu w omniboksie.</translation>
 <translation id="5969419185858894314">Strona <ph name="ORIGIN" /> może przeglądać pliki w folderze <ph name="FOLDERNAME" /></translation>
@@ -4259,7 +4252,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7254554697254365959">Nie udało się przetłumaczyć tej strony.</translation>
 <translation id="7254951428499890870">Czy na pewno chcesz uruchomić „<ph name="APP_NAME" />” w trybie diagnostycznym?</translation>
 <translation id="7255002516883565667">Obecnie masz jedną kartę, której można używać tylko na tym urządzeniu</translation>
-<translation id="7255916308560539517">Jeszcze raz dotknij klucza bezpieczeństwa, by potwierdzić resetowanie. Usunięte zostaną wszystkie informacje zapisane w kluczu, w tym jego kod PIN.</translation>
 <translation id="7255935316994522020">Zastosuj</translation>
 <translation id="7256069762010468647">Strona używa kamery</translation>
 <translation id="7256405249507348194">Nierozpoznany błąd: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7968833647796919681">Włącz zbieranie danych o wydajności</translation>
 <translation id="7968982339740310781">Wyświetl szczegóły</translation>
 <translation id="7969046989155602842">Command</translation>
+<translation id="7970882136539140748">W tej chwili nie udało się zapisać karty</translation>
 <translation id="7972714317346275248">PKCS #1, SHA-384 z szyfrowaniem RSA</translation>
 <translation id="7973962044839454485">Uwierzytelnianie PPP nie powiodło się z powodu nieprawidłowej nazwy użytkownika lub hasła</translation>
 <translation id="7974566588408714340">Ponów za pomocą rozszerzenia <ph name="EXTENSIONNAME" /></translation>
@@ -5090,7 +5083,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8431909052837336408">Zmień PIN do karty SIM</translation>
 <translation id="8434480141477525001">Port debugowania NaCl</translation>
 <translation id="8435395510592618362">Weryfikacja tożsamości w aplikacji <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Zapisz kartę kredytową</translation>
 <translation id="8438328416656800239">Przejdź na inteligentną przeglądarkę</translation>
 <translation id="8438566539970814960">Ulepsz wyszukiwanie i przeglądanie</translation>
 <translation id="8439506636278576865">Proponuj tłumaczenie stron w tym języku</translation>
@@ -5473,6 +5465,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8965037249707889821">Wpisz stare hasło</translation>
 <translation id="8966870118594285808">Możesz ponownie otworzyć kartę zamkniętą przez przypadek</translation>
 <translation id="8967866634928501045">Naciśnij Alt+Shift+A, by wyświetlić</translation>
+<translation id="8968766641738584599">Zapisz kartę</translation>
 <translation id="89720367119469899">Ucieczka</translation>
 <translation id="8972513834460200407">Skontaktuj się z administratorem sieci, by dowiedzieć się, czy zapora sieciowa nie blokuje pobrań z serwerów Google.</translation>
 <translation id="8973557916016709913">Usuń poziom powiększenia</translation>
@@ -5579,7 +5572,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="9116799625073598554">Aplikacja do notatek</translation>
 <translation id="9117030152748022724">Zarządzanie aplikacjami</translation>
 <translation id="9121814364785106365">Otwórz jako przypiętą kartę</translation>
-<translation id="9122074588095746047">Nie udało się włączyć ADB</translation>
 <translation id="9124003689441359348">Tutaj pojawią się zapisane hasła</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (pozostało: <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Nie udało się ukończyć konfiguracji</translation>

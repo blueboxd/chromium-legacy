@@ -111,6 +111,10 @@ public final class ChromePreferenceKeys {
             "signin_promo_last_shown_chrome_version";
     public static final String SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES =
             "signin_promo_last_shown_account_names";
+    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS =
+            "signin_promo_impressions_count_bookmarks";
+    public static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS =
+            "signin_promo_impressions_count_settings";
 
     /**
      * Whether Chrome is set as the default browser.
@@ -205,6 +209,145 @@ public final class ChromePreferenceKeys {
      */
     public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";
 
+    /**
+     * Personalized signin promo preference.
+     */
+    public static final String PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED =
+            "signin_promo_bookmarks_declined";
+    /**
+     * Generic signin and sync promo preferences.
+     */
+    public static final String PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT =
+            "enhanced_bookmark_signin_promo_show_count";
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // Keys representing cached feature flags                                                     //
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Key for whether DownloadResumptionBackgroundTask should load native in service manager only
+     * mode.
+     * Default value is false.
+     */
+    public static final String SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY =
+            "service_manager_for_download_resumption";
+
+    /**
+     * Key for whether PrefetchBackgroundTask should load native in service manager only mode.
+     * Default value is false.
+     */
+    public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY =
+            "service_manager_for_background_prefetch";
+
+    public static final String INTEREST_FEED_CONTENT_SUGGESTIONS_KEY =
+            "interest_feed_content_suggestions";
+
+    /**
+     * Whether or not the download auto-resumption is enabled in native.
+     * Default value is true.
+     */
+    public static final String DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY =
+            "download_auto_resumption_in_native";
+
+    /**
+     * Whether or not the bottom toolbar is enabled.
+     * Default value is false.
+     */
+    public static final String BOTTOM_TOOLBAR_ENABLED_KEY = "bottom_toolbar_enabled";
+
+    /**
+     * Whether or not the adaptive toolbar is enabled.
+     * Default value is true.
+     */
+    public static final String ADAPTIVE_TOOLBAR_ENABLED_KEY = "adaptive_toolbar_enabled";
+
+    /**
+     * Whether or not the labeled bottom toolbar is enabled.
+     * Default value is false.
+     */
+    public static final String LABELED_BOTTOM_TOOLBAR_ENABLED_KEY =
+            "labeled_bottom_toolbar_enabled";
+
+    /**
+     * Whether or not night mode is available.
+     * Default value is false.
+     */
+    public static final String NIGHT_MODE_AVAILABLE_KEY = "night_mode_available";
+
+    /**
+     * Whether or not night mode should set "light" as the default option.
+     * Default value is false.
+     */
+    public static final String NIGHT_MODE_DEFAULT_TO_LIGHT = "night_mode_default_to_light";
+
+    /**
+     * Whether or not night mode is available for custom tabs.
+     * Default value is false.
+     */
+    public static final String NIGHT_MODE_CCT_AVAILABLE_KEY = "night_mode_cct_available";
+
+    /**
+     * Whether or not command line on non-rooted devices is enabled.
+     * Default value is false.
+     */
+    public static final String COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY =
+            "command_line_on_non_rooted_enabled";
+
+    /**
+     * Whether or not the start surface is enabled.
+     * Default value is false.
+     */
+    public static final String START_SURFACE_ENABLED_KEY = "start_surface_enabled";
+
+    /**
+     * Whether or not grey triangle icon on non-secure connections feature is enabled.
+     * Default value is false.
+     */
+    public static final String MARK_HTTP_AS_DANGER_WARNING_KEY = "mark_http_as_danger_warning";
+
+    /**
+     * Whether or not the grid tab switcher is enabled.
+     * Default value is false.
+     */
+    public static final String GRID_TAB_SWITCHER_ENABLED_KEY = "grid_tab_switcher_enabled";
+
+    /**
+     * Whether or not the tab group is enabled.
+     * Default value is false.
+     */
+    public static final String TAB_GROUPS_ANDROID_ENABLED_KEY = "tab_group_android_enabled";
+
+    /**
+     * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
+     * experiment is enabled). Default value is true.
+     */
+    public static final String PRIORITIZE_BOOTSTRAP_TASKS_KEY = "prioritize_bootstrap_tasks";
+
+    /**
+     * Whether warming up network service is enabled.
+     * Default value is false.
+     */
+    public static final String NETWORK_SERVICE_WARM_UP_ENABLED_KEY =
+            "network_service_warm_up_enabled";
+
+    /**
+     * Key to cache whether immersive ui mode is enabled.
+     */
+    public static final String IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";
+
+    /**
+     * Key to cache whether SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT is enabled.
+     */
+    public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
+            "swap_pixel_format_to_fix_convert_from_translucent";
+
+    /**
+     * Whether or not we should directly open the dialer when a click to call notification is
+     * received. Default value is false.
+     */
+    public static final String CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY =
+            "click_to_call_open_dialer_directly";
+
     @CheckDiscard("Validation is performed in tests and in debug builds.")
     static List<String> createUsedKeys() {
         // These values are currently used as SharedPreferences keys.
@@ -235,6 +378,8 @@ public final class ChromePreferenceKeys {
                 PROMOS_SKIPPED_ON_FIRST_START,
                 SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
                 SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS,
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS,
                 CHROME_DEFAULT_BROWSER,
                 UI_THEME_SETTING_KEY,
                 DARKEN_WEBSITES_ENABLED_KEY,
@@ -253,7 +398,31 @@ public final class ChromePreferenceKeys {
                 TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA,
                 WEBAPK_UNINSTALLED_PACKAGES,
                 REACHED_CODE_PROFILER_GROUP_KEY,
-                OFFLINE_INDICATOR_V2_ENABLED_KEY
+                OFFLINE_INDICATOR_V2_ENABLED_KEY,
+                PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED,
+                PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,
+
+                // Cached feature flags
+                SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY,
+                SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY,
+                INTEREST_FEED_CONTENT_SUGGESTIONS_KEY,
+                DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY,
+                BOTTOM_TOOLBAR_ENABLED_KEY,
+                ADAPTIVE_TOOLBAR_ENABLED_KEY,
+                LABELED_BOTTOM_TOOLBAR_ENABLED_KEY,
+                NIGHT_MODE_AVAILABLE_KEY,
+                NIGHT_MODE_DEFAULT_TO_LIGHT,
+                NIGHT_MODE_CCT_AVAILABLE_KEY,
+                COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY,
+                START_SURFACE_ENABLED_KEY,
+                MARK_HTTP_AS_DANGER_WARNING_KEY,
+                GRID_TAB_SWITCHER_ENABLED_KEY,
+                TAB_GROUPS_ANDROID_ENABLED_KEY,
+                PRIORITIZE_BOOTSTRAP_TASKS_KEY,
+                NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
+                IMMERSIVE_UI_MODE_ENABLED,
+                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
+                CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY
         );
         // clang-format on
     }
@@ -313,6 +482,8 @@ public final class ChromePreferenceKeys {
                 PROMOS_SKIPPED_ON_FIRST_START,
                 SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
                 SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS,
+                SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS,
                 CHROME_DEFAULT_BROWSER,
                 UI_THEME_SETTING_KEY,
                 DARKEN_WEBSITES_ENABLED_KEY,
@@ -331,7 +502,31 @@ public final class ChromePreferenceKeys {
                 TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA,
                 WEBAPK_UNINSTALLED_PACKAGES,
                 REACHED_CODE_PROFILER_GROUP_KEY,
-                OFFLINE_INDICATOR_V2_ENABLED_KEY
+                OFFLINE_INDICATOR_V2_ENABLED_KEY,
+                PREF_PERSONALIZED_SIGNIN_PROMO_DECLINED,
+                PREF_SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,
+
+                // Cached feature flags
+                SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY,
+                SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY,
+                INTEREST_FEED_CONTENT_SUGGESTIONS_KEY,
+                DOWNLOAD_AUTO_RESUMPTION_IN_NATIVE_KEY,
+                BOTTOM_TOOLBAR_ENABLED_KEY,
+                ADAPTIVE_TOOLBAR_ENABLED_KEY,
+                LABELED_BOTTOM_TOOLBAR_ENABLED_KEY,
+                NIGHT_MODE_AVAILABLE_KEY,
+                NIGHT_MODE_DEFAULT_TO_LIGHT,
+                NIGHT_MODE_CCT_AVAILABLE_KEY,
+                COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY,
+                START_SURFACE_ENABLED_KEY,
+                MARK_HTTP_AS_DANGER_WARNING_KEY,
+                GRID_TAB_SWITCHER_ENABLED_KEY,
+                TAB_GROUPS_ANDROID_ENABLED_KEY,
+                PRIORITIZE_BOOTSTRAP_TASKS_KEY,
+                NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
+                IMMERSIVE_UI_MODE_ENABLED,
+                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
+                CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY
         );
         // clang-format on
     }

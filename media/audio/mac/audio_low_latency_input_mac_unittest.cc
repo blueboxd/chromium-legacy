@@ -138,7 +138,8 @@ class MacAudioInputTest : public testing::Test {
         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                         CHANNEL_LAYOUT_STEREO, fs, samples_per_packet),
         AudioDeviceDescription::kDefaultDeviceId,
-        base::Bind(&MacAudioInputTest::OnLogMessage, base::Unretained(this)));
+        base::BindRepeating(&MacAudioInputTest::OnLogMessage,
+                            base::Unretained(this)));
     EXPECT_TRUE(ais);
     return ais;
   }
@@ -152,7 +153,8 @@ class MacAudioInputTest : public testing::Test {
         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
                         fs, samples_per_packet),
         AudioDeviceDescription::kDefaultDeviceId,
-        base::Bind(&MacAudioInputTest::OnLogMessage, base::Unretained(this)));
+        base::BindRepeating(&MacAudioInputTest::OnLogMessage,
+                            base::Unretained(this)));
     EXPECT_TRUE(ais);
     return ais;
   }

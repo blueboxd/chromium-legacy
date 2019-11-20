@@ -894,6 +894,10 @@ def StartChromeDriverServer(chromedriver_binary,
   return chromedriver_server
 
 
+def _CommandLineError(parser, message):
+  parser.error(message + '\nPlease run "%s --help" for help' % __file__)
+
+
 def _GetCommandLineOptions():
   """Get, parse, and error check command line options for this file."""
   usage = "usage: %prog <chromedriver binary> <input log path> [options]"
@@ -916,15 +920,18 @@ def _GetCommandLineOptions():
       "strings so that they can be replayed again.")
 
   options, args = parser.parse_args()
+  if len(args) < 2:
+    _CommandLineError(parser,
+                      'ChromeDriver binary and/or input log path missing.')
+  if len(args) > 2:
+    _CommandLineError(parser, 'Too many command line arguments.')
   if not os.path.exists(args[0]):
-    parser.error("Path given for chromedriver is invalid.\n"
-                 'Please run "%s --help" for help' % __file__)
+    _CommandLineError(parser, 'Path given for chromedriver is invalid.')
   if options.chrome and not os.path.exists(options.chrome):
-    parser.error("Path given by --chrome is invalid.\n"
-                 'Please run "%s --help" for help' % __file__)
+    _CommandLineError(parser, 'Path given by --chrome is invalid.')
   if options.replayable and not options.output_log_path:
-    parser.error("Replayable log option needs --output-log-path specified. \n"
-                 'Please run "%s --help" for help' % __file__)
+    _CommandLineError(
+        parser, 'Replayable log option needs --output-log-path specified.')
 
   return options, args
 

@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">Lietotnes ikona</translation>
 <translation id="1410616244180625362">Arī turpmāk ļaut vietnei <ph name="HOST" /> piekļūt kamerai</translation>
 <translation id="1414648216875402825">Jūs atjaunināt uz nestabilu <ph name="PRODUCT_NAME" /> versiju, kurā ietvertas funkcijas, kas vēl tiek izstrādātas. Radīsies avārijas un neparedzētas kļūdas. Rīkojieties apdomīgi!</translation>
-<translation id="1414866280542221544">Iespējot šajā ierīcē</translation>
 <translation id="1415708812149920388">Liegta piekļuve starpliktuves satura lasīšanai</translation>
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (paplašinājuma ID “<ph name="EXTENSION_ID" />”) nav atļauts šāda veida sesijā.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">Picas šķēle</translation>
 <translation id="1468571364034902819">Nevar izmantot šo profilu</translation>
 <translation id="1470811252759861213">Lai paplašinājumi būtu pieejami visos datoros, <ph name="SIGN_IN_LINK" />.</translation>
-<translation id="1470967055429794975">Tas izdzēsīs visus drošības atslēgas datus, ieskaitot tās PIN</translation>
 <translation id="1472675084647422956">Rādīt vairāk</translation>
 <translation id="1475502736924165259">Sistēmā ir sertifikāti, kas neiederas nevienā no citām kategorijām</translation>
 <translation id="1476088332184200792">Kopēt uz jūsu ierīci</translation>
@@ -842,7 +840,6 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2202898655984161076">Radās problēma saistībā ar printeru parādīšanu. Iespējams, daži no printeriem nav sekmīgi reģistrēti pakalpojumā <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2203682048752833055">Meklētājprogramma, kas tiek izmantota <ph name="BEGIN_LINK" />adreses joslā<ph name="END_LINK" /></translation>
 <translation id="2204034823255629767">Lasīt un mainīt visu, ko rakstāt</translation>
-<translation id="2204397710290433380">Vai atspējot ADB?</translation>
 <translation id="220792432208469595">Lietojuma un diagnostikas datu sūtīšana. Pašlaik dati par šo ierīci un ierīces diagnostikas un lietotņu lietojuma dati tiek automātiski sūtīti uzņēmumam Google. Šī informācija palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Šo iestatījumu ir noteicis īpašnieks. Ja ir ieslēgts papildu iestatījums “Darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti jūsu Google kontā. <ph name="BEGIN_LINK1" />Uzzināt vairāk<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">Ievadiet šo PIN kodu ierīcē <ph name="DEVICE_NAME" />:</translation>
 <translation id="2213140827792212876">Noņemt kopīgošanu</translation>
@@ -979,6 +976,7 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2396783860772170191">Ievadiet 4 ciparu PIN (0000–9999)</translation>
 <translation id="2399939490305346086">Drošības atslēgas pierakstīšanās dati</translation>
 <translation id="2407481962792080328">Kad pierakstāties savā Google kontā, šī funkcija ir ieslēgta.</translation>
+<translation id="2408018932941436077">Karte tiek saglabāta.</translation>
 <translation id="2408955596600435184">Ievadiet PIN kodu</translation>
 <translation id="241082044617551207">Nezināms spraudnis</translation>
 <translation id="2412593942846481727">Ir pieejams atjauninājums</translation>
@@ -2007,7 +2005,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3873315167136380065">Lai ieslēgtu šo funkciju un noņemtu sinhronizēšanas ieejas frāzi, <ph name="BEGIN_LINK" />atiestatiet sinhronizāciju<ph name="END_LINK" />.</translation>
 <translation id="3873423927483480833">Rādīt PIN kodus</translation>
 <translation id="3873915545594852654">Radās problēma ar ARC++.</translation>
-<translation id="387924939625099872">Lai atspējotu rīku ADB, jārestartē <ph name="DEVICE_TYPE" />. Ierīcē tiks atjaunoti rūpnīcas iestatījumi, un visi lietotāju konti un lokālie dati tiks izdzēsti.</translation>
 <translation id="3879748587602334249">Lejupielāžu pārvaldnieks</translation>
 <translation id="3886446263141354045">Pieprasījums piekļūt šai vietnei ir nosūtīts lietotājam <ph name="NAME" /></translation>
 <translation id="3888550877729210209">Piezīmju rakstīšana, izmantojot <ph name="LOCK_SCREEN_APP_NAME" /></translation>
@@ -2409,7 +2406,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4501530680793980440">Apstiprināt noņemšanu</translation>
 <translation id="4502423230170890588">Noņemt no šīs ierīces</translation>
 <translation id="4504940961672722399">Lai lietotu šo paplašinājumu, noklikšķiniet uz šīs ikonas vai nospiediet taustiņu kombināciju <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4506379069541445709">Turpinot jūs iespējosiet ADB Android lietotņu izveidei un testēšanai. Ņemiet vērā, ka ADB ļauj instalēt testa lietotnes, ko uzņēmums Google nav verificējis.</translation>
 <translation id="4508051413094283164">Atvērt visu inkognito režīma logā</translation>
 <translation id="4508265954913339219">Aktivizācija neizdevās</translation>
 <translation id="4508765956121923607">Skatīt av&amp;otu</translation>
@@ -3312,7 +3308,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5851868085455377790">Izdevējs</translation>
 <translation id="5852112051279473187">Vai! Palaižot ierīci, kaut kas nogāja greizi. Lūdzu, mēģiniet vēlreiz vai sazinieties ar savu atbalsta pārstāvi.</translation>
 <translation id="5852137567692933493">Restartēt un aktivizēt funkciju Powerwash</translation>
-<translation id="5852360662347412211">Pārejiet uz Linux iestatījumiem un mēģiniet vēlreiz.</translation>
 <translation id="5854912040170951372">Pica</translation>
 <translation id="5855643921295613558">0,6 sekundes</translation>
 <translation id="5856721540245522153">Atkļūdošanas funkciju iespējošana</translation>
@@ -3325,7 +3320,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5860494867054883682">Notiek ierīces atjaunināšana uz kanālu <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Rādīt skārienekrāna pildspalvas rīkus plauktā</translation>
 <translation id="5863445608433396414">Iespējot atkļūdošanas funkcijas</translation>
-<translation id="5863471434640009253">Lai iespējotu Android atkļūdošanas tiltu, vispirms jārestartē <ph name="DEVICE_TYPE" />. Lai atspējotu ADB, jāatjauno rūpnīcas iestatījumi.</translation>
 <translation id="5864471791310927901">DHCP uzmeklēšana neizdevās</translation>
 <translation id="586567932979200359">Jūs izpildāt <ph name="PRODUCT_NAME" /> no diska attēla. Instalējot datorā, varēsiet to izpildīt bez diska attēla, un tiks nodrošināta tā atjaunināšana.</translation>
 <translation id="5865733239029070421">Automātiski sūtīt lietojuma statistiku un avāriju pārskatus Google serveriem</translation>
@@ -3395,7 +3389,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5958529069007801266">Uzraudzīts lietotājs</translation>
 <translation id="5959471481388474538">Tīkls nav pieejams.</translation>
 <translation id="595959584676692139">Lai izmantotu šo paplašinājumu, atkārtoti ielādējiet lapu</translation>
-<translation id="5961320084471308154">Vai iespējot rīku ADB?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maks. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5965661248935608907">Tas nosaka arī to, kāda lapa tiks rādīta, kad noklikšķināsiet uz pogas “Sākums” vai meklēsiet, izmantojot universālo lodziņu.</translation>
 <translation id="5969419185858894314">Vietne <ph name="ORIGIN" /> var atvērt mapē <ph name="FOLDERNAME" /> esošos failus.</translation>
@@ -4259,7 +4252,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7254554697254365959">Šo lapu nevarēja pārtulkot.</translation>
 <translation id="7254951428499890870">Vai tiešām vēlaties palaist lietotni <ph name="APP_NAME" /> diagnostikas režīmā?</translation>
 <translation id="7255002516883565667">Pašlaik vienu no savām kartēm varat izmantot tikai šajā ierīcē</translation>
-<translation id="7255916308560539517">Vēlreiz pieskarieties drošības atslēgai, lai apstiprinātu atiestatīšanu. Tiks dzēsta visa drošības atslēgā saglabātā informācija, tostarp tās PIN.</translation>
 <translation id="7255935316994522020">Lietot</translation>
 <translation id="7256069762010468647">Vietne izmanto jūsu kameru.</translation>
 <translation id="7256405249507348194">Neatpazīta kļūda: <ph name="DESC" /></translation>
@@ -4768,6 +4760,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7968833647796919681">Iespējot veiktspējas datu apkopošanu</translation>
 <translation id="7968982339740310781">Skatīt detalizētu informāciju</translation>
 <translation id="7969046989155602842">Komandtaustiņš</translation>
+<translation id="7970882136539140748">Karti šobrīd nevar saglabāt.</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 ar RSA šifrējumu</translation>
 <translation id="7973962044839454485">PSP autentifikācija neizdevās nepareiza lietotājvārda un paroles dēļ.</translation>
 <translation id="7974566588408714340">Mēģināt vēlreiz, izmantojot paplašinājumu <ph name="EXTENSIONNAME" /></translation>
@@ -5089,7 +5082,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8431909052837336408">SIM kartes PIN mainīšana</translation>
 <translation id="8434480141477525001">Native Client atkļūdošanas ports</translation>
 <translation id="8435395510592618362">Identitātes verificēšana, izmantojot <ph name="APP_NAME" /></translation>
-<translation id="843760761634048214">Saglabāt kredītkarti</translation>
 <translation id="8438328416656800239">Pāreja uz viedu pārlūku</translation>
 <translation id="8438566539970814960">Uzlabot meklēšanu un pārlūkošanu</translation>
 <translation id="8439506636278576865">Piedāvāt tulkot lapas šajā valodā</translation>
@@ -5472,6 +5464,7 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8965037249707889821">Ievadiet veco paroli</translation>
 <translation id="8966870118594285808">Ja nejauši aizvērāt cilni, atveriet to atkārtoti</translation>
 <translation id="8967866634928501045">Lai skatītu saturu, nospiediet Alt+Shift+A.</translation>
+<translation id="8968766641738584599">Saglabāt karti</translation>
 <translation id="89720367119469899">Escape</translation>
 <translation id="8972513834460200407">Lūdzu, sazinieties ar savu tīkla administratoru, lai pārliecinātos, vai ugunsmūris nebloķē lejupielādes no Google serveriem.</translation>
 <translation id="8973557916016709913">Noņemt tālummaiņas līmeni</translation>
@@ -5578,7 +5571,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="9116799625073598554">Piezīmju pierakstīšanas lietotne</translation>
 <translation id="9117030152748022724">Lietotņu pārvaldība</translation>
 <translation id="9121814364785106365">Atvērt kā piespraustu cilni</translation>
-<translation id="9122074588095746047">Nevarēja iespējot ADB</translation>
 <translation id="9124003689441359348">Šeit tiks parādītas saglabātās paroles.</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" /> (atlikušas: <ph name="LICENSE_COUNT" />)</translation>
 <translation id="9128317794749765148">Nevarēja pabeigt iestatīšanu</translation>

@@ -31,9 +31,6 @@ constexpr gfx::Size kIconSize{24, 24};
 // The font delta of the window title.
 constexpr int kLabelFontDelta = 2;
 
-// TODO(sammiequon): Combine this with the duplicate in overview.
-constexpr int kHeaderHeightDp = 40;
-
 // Values of the backdrop.
 constexpr int kBackdropRoundingDp = 4;
 constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);

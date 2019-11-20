@@ -247,17 +247,18 @@ int CountCompleteFields(const CollectUserDataOptions& options,
 }
 
 // Helper function that compares instances of AutofillProfile by completeness
-// in regards to the current options.
-int CompletenessCompare(const CollectUserDataOptions& options,
-                        const autofill::AutofillProfile& a,
-                        const autofill::AutofillProfile& b) {
-  int result =
-      CountCompleteFields(options, a) - CountCompleteFields(options, b);
-  if (result == 0) {
+// in regards to the current options. Full profiles should be ordered above
+// empty ones and fall back to compare the profile's name in case of equality.
+bool CompletenessCompare(const CollectUserDataOptions& options,
+                         const autofill::AutofillProfile& a,
+                         const autofill::AutofillProfile& b) {
+  int complete_fields_a = CountCompleteFields(options, a);
+  int complete_fields_b = CountCompleteFields(options, b);
+  if (complete_fields_a == complete_fields_b) {
     return base::i18n::ToLower(GetProfileFullName(a))
-        .compare(base::i18n::ToLower(GetProfileFullName(b)));
+               .compare(base::i18n::ToLower(GetProfileFullName(b))) < 0;
   }
-  return result;
+  return complete_fields_a > complete_fields_b;
 }
 
 }  // namespace

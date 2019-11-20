@@ -134,8 +134,9 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceEntryVector getBufferedEntriesByType(
       const AtomicString& entry_type);
   PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
-  PerformanceEntryVector getEntriesByName(const AtomicString& name,
-                                          const AtomicString& entry_type);
+  PerformanceEntryVector getEntriesByName(
+      const AtomicString& name,
+      const AtomicString& entry_type = g_null_atom);
 
   void clearResourceTimings();
   void setResourceTimingBufferSize(unsigned);
@@ -260,11 +261,23 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   bool HasObserverFor(PerformanceEntry::EntryType) const;
 
-  // TODO(npm): is the AtomicString parameter here actually needed?
-  static bool PassesTimingAllowCheck(const ResourceResponse&,
+  // Checks whether the single ResourceResponse passes the Timing-Allow-Origin
+  // check. The first parameter is the ResourceResponse being checked. The
+  // second parameter is the next ResourceResponse in the redirect chain, or is
+  // equal to the first parameter if there is no such response. This parameter
+  // is only introduced temporarily to enable computing a UseCounter within this
+  // method. The first bool parameter is
+  // https://fetch.spec.whatwg.org/#concept-request-response-tainting, while the
+  // second bool is
+  // https://fetch.spec.whatwg.org/#concept-request-tainted-origin.
+  // The next ResourceResponse and tainted origin flag are currently only being
+  // used in a UseCounter.
+  static bool PassesTimingAllowCheck(const ResourceResponse& response,
+                                     const ResourceResponse& next_response,
                                      const SecurityOrigin&,
                                      ExecutionContext*,
-                                     bool* tainted);
+                                     bool* response_tainting_not_basic,
+                                     bool* tainted_origin_flag);
 
   static bool AllowsTimingRedirect(const Vector<ResourceResponse>&,
                                    const ResourceResponse&,

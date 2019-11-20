@@ -61,6 +61,17 @@ Polymer({
   dndManager_: null,
 
   /** @override */
+  created: function() {
+    // Regular expression that captures the leading slash, the content and the
+    // trailing slash in three different groups.
+    const CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
+    const path = location.pathname.replace(CANONICAL_PATH_REGEX, '$1$2');
+    if (path !== '/') {  // Only queries are supported, not subpages.
+      window.history.replaceState(undefined /* stateObject */, '', '/');
+    }
+  },
+
+  /** @override */
   attached: function() {
     document.documentElement.classList.remove('loading');
 

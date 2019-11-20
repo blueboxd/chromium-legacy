@@ -7,6 +7,9 @@
 #include <d3d11.h>
 #include <string>
 
+#include "base/stl_util.h"
+#include "base/version.h"
+#include "components/version_info/version_info.h"
 #include "third_party/openxr/src/include/openxr/openxr_platform.h"
 
 namespace device {
@@ -25,7 +28,30 @@ XrResult GetSystem(XrInstance instance, XrSystemId* system) {
 
 XrResult CreateInstance(XrInstance* instance) {
   XrInstanceCreateInfo instance_create_info = {XR_TYPE_INSTANCE_CREATE_INFO};
-  strcpy_s(instance_create_info.applicationInfo.applicationName, "Chromium");
+
+  std::string application_name = version_info::GetProductName() + " " +
+                                 version_info::GetMajorVersionNumber();
+  errno_t error =
+      strcpy_s(instance_create_info.applicationInfo.applicationName,
+               base::size(instance_create_info.applicationInfo.applicationName),
+               application_name.c_str());
+  DCHECK_EQ(error, 0);
+
+  base::Version version = version_info::GetVersion();
+  DCHECK_EQ(version.components().size(), 4uLL);
+  uint32_t build = version.components()[2];
+
+  // application version will be the build number of each vendor
+  instance_create_info.applicationInfo.applicationVersion = build;
+
+  error = strcpy_s(instance_create_info.applicationInfo.engineName,
+                   base::size(instance_create_info.applicationInfo.engineName),
+                   "Chromium");
+  DCHECK_EQ(error, 0);
+
+  // engine version should be the build number of chromium
+  instance_create_info.applicationInfo.engineVersion = build;
+
   instance_create_info.applicationInfo.apiVersion = XR_CURRENT_API_VERSION;
 
   // xrCreateInstance validates the list of extensions and returns

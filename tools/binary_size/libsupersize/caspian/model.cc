@@ -113,6 +113,10 @@ float Symbol::PaddingPss() const {
   return static_cast<float>(Padding()) / NumAliases();
 }
 
+DiffStatus Symbol::GetDiffStatus() const {
+  return DiffStatus::kUnchanged;
+}
+
 // delta symbol
 
 DeltaSymbol::DeltaSymbol(const Symbol* before, const Symbol* after)
@@ -234,6 +238,19 @@ float DeltaSymbol::PaddingPss() const {
   return 0;
 }
 
+DiffStatus DeltaSymbol::GetDiffStatus() const {
+  if (!before_) {
+    return DiffStatus::kAdded;
+  }
+  if (!after_) {
+    return DiffStatus::kRemoved;
+  }
+  if (Size() || Pss() != 0) {
+    return DiffStatus::kChanged;
+  }
+  return DiffStatus::kUnchanged;
+}
+
 TreeNode::TreeNode() = default;
 TreeNode::~TreeNode() {
   // TODO(jaspercb): Could use custom allocator to delete all nodes in one go.
@@ -343,10 +360,23 @@ void TreeNode::WriteIntoJson(
 NodeStats::NodeStats() = default;
 NodeStats::~NodeStats() = default;
 
-NodeStats::NodeStats(SectionId sectionId,
-                     int32_t count,
-                     float size) {
-  child_stats[sectionId] = {count, size};
+NodeStats::NodeStats(const BaseSymbol& symbol) {
+  const SectionId section = symbol.Section();
+  Stat& section_stats = child_stats[section];
+  section_stats = {1, 0, 0, 0, symbol.Pss()};
+  switch (symbol.GetDiffStatus()) {
+    case DiffStatus::kUnchanged:
+      break;
+    case DiffStatus::kAdded:
+      section_stats.added = 1;
+      break;
+    case DiffStatus::kRemoved:
+      section_stats.removed = 1;
+      break;
+    case DiffStatus::kChanged:
+      section_stats.changed = 1;
+      break;
+  }
 }
 
 void NodeStats::WriteIntoJson(Json::Value* out) const {
@@ -357,6 +387,9 @@ void NodeStats::WriteIntoJson(Json::Value* out) const {
     (*out)[sectionId] = Json::Value(Json::objectValue);
     (*out)[sectionId]["size"] = stats.size;
     (*out)[sectionId]["count"] = stats.count;
+    (*out)[sectionId]["added"] = stats.added;
+    (*out)[sectionId]["removed"] = stats.removed;
+    (*out)[sectionId]["changed"] = stats.changed;
   }
 }
 

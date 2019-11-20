@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controll
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.splashscreen.TwaSplashController;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.TrustedWebActivityDisclosureView;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.ExternalIntentsPolicyProvider;
@@ -59,7 +58,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             CustomTabActivityNavigationController navigationController,
             ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
             Lazy<TwaSplashController> splashController,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             TrustedWebActivityUmaRecorder umaRecorder,
             CustomTabStatusBarColorProvider statusBarColorProvider,
             ActivityLifecycleDispatcher lifecycleDispatcher,
@@ -107,7 +106,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
     }
 
     private void initSplashScreen(Lazy<TwaSplashController> splashController,
-            CustomTabIntentDataProvider intentDataProvider,
+            BrowserServicesIntentDataProvider intentDataProvider,
             TrustedWebActivityUmaRecorder umaRecorder) {
         boolean showSplashScreen =
                 TwaSplashController.intentIsForTwaWithSplashScreen(intentDataProvider.getIntent());

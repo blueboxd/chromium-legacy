@@ -28,6 +28,8 @@ class WindowPreviewView;
 class ASH_EXPORT WindowMiniView : public views::View,
                                   public aura::WindowObserver {
  public:
+  static constexpr int kHeaderHeightDp = 40;
+
   ~WindowMiniView() override;
 
   // Sets the visiblity of |backdrop_view_|. Creates it if it is null.

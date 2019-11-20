@@ -48,6 +48,7 @@
     <output filename="values-zh-rTW/android_keyboard_accessory_strings.xml" lang="zh-TW" type="android" />
   </outputs>
   <translations>
+    <file lang="af" path="translations/android_keyboard_accessory_strings_af.xtb" />
     <file lang="am" path="translations/android_keyboard_accessory_strings_am.xtb" />
     <file lang="ar" path="translations/android_keyboard_accessory_strings_ar.xtb" />
     <file lang="bg" path="translations/android_keyboard_accessory_strings_bg.xtb" />

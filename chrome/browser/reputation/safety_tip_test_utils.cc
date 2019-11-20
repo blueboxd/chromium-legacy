@@ -35,6 +35,8 @@ void SetSafetyTipPatternsWithFlagType(
     std::vector<std::string> patterns,
     chrome_browser_safety_tips::FlaggedPage::FlagType type) {
   auto config_proto = GetConfig();
+  config_proto->clear_flagged_page();
+
   std::sort(patterns.begin(), patterns.end());
   for (const auto& pattern : patterns) {
     chrome_browser_safety_tips::FlaggedPage* page =
@@ -53,6 +55,8 @@ void SetSafetyTipBadRepPatterns(std::vector<std::string> patterns) {
 
 void SetSafetyTipAllowlistPatterns(std::vector<std::string> patterns) {
   auto config_proto = GetConfig();
+  config_proto->clear_allowed_pattern();
+
   std::sort(patterns.begin(), patterns.end());
   for (const auto& pattern : patterns) {
     chrome_browser_safety_tips::UrlPattern* page =

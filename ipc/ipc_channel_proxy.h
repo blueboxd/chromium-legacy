@@ -168,7 +168,7 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
   void RemoveFilter(MessageFilter* filter);
 
   using GenericAssociatedInterfaceFactory =
-      base::Callback<void(mojo::ScopedInterfaceEndpointHandle)>;
+      base::RepeatingCallback<void(mojo::ScopedInterfaceEndpointHandle)>;
 
   // Adds a generic associated interface factory to bind incoming interface
   // requests directly on the IO thread. MUST be called either before Init() or
@@ -179,8 +179,8 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
       const GenericAssociatedInterfaceFactory& factory);
 
   template <typename Interface>
-  using AssociatedInterfaceFactory =
-      base::Callback<void(mojo::AssociatedInterfaceRequest<Interface>)>;
+  using AssociatedInterfaceFactory = base::RepeatingCallback<void(
+      mojo::AssociatedInterfaceRequest<Interface>)>;
 
   // Helper to bind an IO-thread associated interface factory, inferring the
   // interface name from the callback argument's type. MUST be called before
@@ -190,8 +190,8 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
       const AssociatedInterfaceFactory<Interface>& factory) {
     AddGenericAssociatedInterfaceForIOThread(
         Interface::Name_,
-        base::Bind(&ChannelProxy::BindAssociatedInterfaceRequest<Interface>,
-                   factory));
+        base::BindRepeating(
+            &ChannelProxy::BindAssociatedInterfaceRequest<Interface>, factory));
   }
 
   // Requests an associated interface from the remote endpoint.

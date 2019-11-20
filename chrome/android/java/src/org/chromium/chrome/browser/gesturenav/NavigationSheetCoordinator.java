@@ -343,7 +343,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public boolean hideOnScroll() {
-        return false;
+        return true;
     }
 
     @Override

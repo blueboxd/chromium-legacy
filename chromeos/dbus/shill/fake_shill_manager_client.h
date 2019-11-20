@@ -49,14 +49,14 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
                          const base::Closure& callback,
                          const ErrorCallback& error_callback) override;
   void ConfigureService(const base::DictionaryValue& properties,
-                        const ObjectPathCallback& callback,
+                        ObjectPathCallback callback,
                         const ErrorCallback& error_callback) override;
   void ConfigureServiceForProfile(const dbus::ObjectPath& profile_path,
                                   const base::DictionaryValue& properties,
-                                  const ObjectPathCallback& callback,
+                                  ObjectPathCallback callback,
                                   const ErrorCallback& error_callback) override;
   void GetService(const base::DictionaryValue& properties,
-                  const ObjectPathCallback& callback,
+                  ObjectPathCallback callback,
                   const ErrorCallback& error_callback) override;
   void ConnectToBestServices(const base::Closure& callback,
                              const ErrorCallback& error_callback) override;

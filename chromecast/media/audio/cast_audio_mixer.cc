@@ -40,10 +40,10 @@ class CastAudioMixer::MixerProxyStream
     DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   }
 
-  void OnError() {
+  void OnError(ErrorType type) {
     DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
     if (source_callback_)
-      source_callback_->OnError();
+      source_callback_->OnError(type);
   }
 
  private:
@@ -280,19 +280,19 @@ int CastAudioMixer::OnMoreData(base::TimeDelta delay,
   return dest->frames();
 }
 
-void CastAudioMixer::OnError() {
+void CastAudioMixer::OnError(ErrorType type) {
   // Called on backend thread.
   audio_manager_->GetTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CastAudioMixer::HandleError, base::Unretained(this)));
+      FROM_HERE, base::BindOnce(&CastAudioMixer::HandleError,
+                                base::Unretained(this), type));
 }
 
-void CastAudioMixer::HandleError() {
+void CastAudioMixer::HandleError(ErrorType type) {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
 
   error_ = true;
   for (auto it = proxy_streams_.begin(); it != proxy_streams_.end(); ++it)
-    (*it)->OnError();
+    (*it)->OnError(type);
 }
 
 }  // namespace media

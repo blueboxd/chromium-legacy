@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,12 +14,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.signin.SigninActivity.AccessPoint;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -41,11 +40,6 @@ public class SigninPromoController {
          */
         void onDismiss();
     }
-
-    private static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS =
-            "signin_promo_impressions_count_bookmarks";
-    private static final String SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS =
-            "signin_promo_impressions_count_settings";
 
     private static final int MAX_IMPRESSIONS_BOOKMARKS = 20;
     private static final int MAX_IMPRESSIONS_SETTINGS = 20;
@@ -75,10 +69,11 @@ public class SigninPromoController {
      * @param accessPoint The access point for which the impression limit is being checked.
      */
     public static boolean hasNotReachedImpressionLimit(@AccessPoint int accessPoint) {
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+        SharedPreferencesManager preferencesManager = SharedPreferencesManager.getInstance();
         switch (accessPoint) {
             case SigninAccessPoint.BOOKMARK_MANAGER:
-                return sharedPreferences.getInt(SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, 0)
+                return preferencesManager.readInt(
+                               ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS)
                         < MAX_IMPRESSIONS_BOOKMARKS;
             case SigninAccessPoint.NTP_CONTENT_SUGGESTIONS:
                 // There is no impression limit for NTP content suggestions.
@@ -87,7 +82,8 @@ public class SigninPromoController {
                 // There is no impression limit for Recent Tabs.
                 return true;
             case SigninAccessPoint.SETTINGS:
-                return sharedPreferences.getInt(SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS, 0)
+                return preferencesManager.readInt(
+                               ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS)
                         < MAX_IMPRESSIONS_SETTINGS;
             default:
                 assert false : "Unexpected value for access point: " + accessPoint;
@@ -104,7 +100,8 @@ public class SigninPromoController {
 
         switch (mAccessPoint) {
             case SigninAccessPoint.BOOKMARK_MANAGER:
-                mImpressionCountName = SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS;
+                mImpressionCountName =
+                        ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS;
                 mImpressionUserActionName = "Signin_Impression_FromBookmarkManager";
                 mImpressionWithAccountUserActionName =
                         "Signin_ImpressionWithAccount_FromBookmarkManager";
@@ -171,7 +168,7 @@ public class SigninPromoController {
                         R.string.signin_promo_description_recent_tabs_no_account;
                 break;
             case SigninAccessPoint.SETTINGS:
-                mImpressionCountName = SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS;
+                mImpressionCountName = ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS;
                 mImpressionUserActionName = "Signin_Impression_FromSettings";
                 mImpressionWithAccountUserActionName = "Signin_ImpressionWithAccount_FromSettings";
                 mSigninWithDefaultUserActionName = "Signin_SigninWithDefault_FromSettings";
@@ -296,8 +293,7 @@ public class SigninPromoController {
     }
 
     private int getNumImpressions() {
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        return preferences.getInt(mImpressionCountName, 0);
+        return SharedPreferencesManager.getInstance().readInt(mImpressionCountName);
     }
 
     private void signinWithNewAccount(Context context) {
@@ -346,22 +342,20 @@ public class SigninPromoController {
 
         // If mImpressionCountName is not null then we should record impressions.
         if (mImpressionCountName != null) {
-            SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-            int numImpressions = preferences.getInt(mImpressionCountName, 0) + 1;
-            preferences.edit().putInt(mImpressionCountName, numImpressions).apply();
+            SharedPreferencesManager.getInstance().incrementInt(mImpressionCountName);
         }
     }
 
     @VisibleForTesting
     public static void setSigninPromoImpressionsCountBookmarksForTests(int count) {
         SharedPreferencesManager.getInstance().writeInt(
-                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, count);
+                ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, count);
     }
 
     @VisibleForTesting
     public static int getSigninPromoImpressionsCountBookmarksForTests() {
         return SharedPreferencesManager.getInstance().readInt(
-                SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS, 0);
+                ChromePreferenceKeys.SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS);
     }
 
     @VisibleForTesting

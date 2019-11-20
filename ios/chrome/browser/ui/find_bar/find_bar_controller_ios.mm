@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
@@ -28,8 +29,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kFindInPageContainerViewId = @"kFindInPageContainerViewId";
 
 namespace {
 

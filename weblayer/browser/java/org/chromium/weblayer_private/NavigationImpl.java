@@ -15,6 +15,7 @@ import org.chromium.weblayer_private.interfaces.INavigation;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 import org.chromium.weblayer_private.interfaces.LoadError;
 import org.chromium.weblayer_private.interfaces.NavigationState;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.Arrays;
 import java.util.List;
@@ -61,6 +62,7 @@ public final class NavigationImpl extends INavigation.Stub {
     @Override
     @NavigationState
     public int getState() {
+        StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
         return implTypeToJavaType(
                 NavigationImplJni.get().getState(mNativeNavigationImpl, NavigationImpl.this));
@@ -68,12 +70,14 @@ public final class NavigationImpl extends INavigation.Stub {
 
     @Override
     public String getUri() {
+        StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
         return NavigationImplJni.get().getUri(mNativeNavigationImpl, NavigationImpl.this);
     }
 
     @Override
     public List<String> getRedirectChain() {
+        StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
         return Arrays.asList(NavigationImplJni.get().getRedirectChain(
                 mNativeNavigationImpl, NavigationImpl.this));
@@ -81,6 +85,7 @@ public final class NavigationImpl extends INavigation.Stub {
 
     @Override
     public int getHttpStatusCode() {
+        StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
         return NavigationImplJni.get().getHttpStatusCode(
                 mNativeNavigationImpl, NavigationImpl.this);
@@ -88,18 +93,21 @@ public final class NavigationImpl extends INavigation.Stub {
 
     @Override
     public boolean isSameDocument() {
+        StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
         return NavigationImplJni.get().isSameDocument(mNativeNavigationImpl, NavigationImpl.this);
     }
 
     @Override
     public boolean isErrorPage() {
+        StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
         return NavigationImplJni.get().isErrorPage(mNativeNavigationImpl, NavigationImpl.this);
     }
 
     @Override
     public int getLoadError() {
+        StrictModeWorkaround.apply();
         throwIfNativeDestroyed();
         return implLoadErrorToLoadError(
                 NavigationImplJni.get().getLoadError(mNativeNavigationImpl, NavigationImpl.this));

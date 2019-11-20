@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
 
@@ -19,6 +20,7 @@ import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.sync.SyncAndServicesPreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
 import java.lang.annotation.Retention;
@@ -133,8 +135,14 @@ public class SigninFragment extends SigninFragmentBase {
     @Override
     protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback) {
+        // TODO(https://crbug.com/1002056): Change onSigninAccepted to get CoreAccountInfo.
+        Account account = AccountManagerFacade.get().getAccountFromName(accountName);
+        if (account == null) {
+            callback.run();
+            return;
+        }
         IdentityServicesProvider.getSigninManager().signIn(
-                accountName, new SigninManager.SignInCallback() {
+                account, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(

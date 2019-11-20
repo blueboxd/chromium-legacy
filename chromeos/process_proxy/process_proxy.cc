@@ -90,8 +90,8 @@ bool ProcessProxy::StartWatchingOutput(
 
   // This object will delete itself once watching is stopped.
   // It also takes ownership of the passed fds.
-  output_watcher_.reset(new ProcessOutputWatcher(
-      master_copy, base::Bind(&ProcessProxy::OnProcessOutput, this)));
+  output_watcher_ = std::make_unique<ProcessOutputWatcher>(
+      master_copy, base::BindRepeating(&ProcessProxy::OnProcessOutput, this));
 
   watcher_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ProcessOutputWatcher::Start,
@@ -102,32 +102,32 @@ bool ProcessProxy::StartWatchingOutput(
 
 void ProcessProxy::OnProcessOutput(ProcessOutputType type,
                                    const std::string& output,
-                                   const base::Closure& callback) {
+                                   base::OnceClosure callback) {
   if (!callback_runner_.get())
     return;
 
   callback_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ProcessProxy::CallOnProcessOutputCallback,
-                                this, type, output, callback));
+                                this, type, output, std::move(callback)));
 }
 
 void ProcessProxy::CallOnProcessOutputCallback(ProcessOutputType type,
                                                const std::string& output,
-                                               const base::Closure& callback) {
+                                               base::OnceClosure callback) {
   // We may receive some output even after Close was called (crosh process does
   // not have to quit instantly, or there may be some trailing data left in
   // output stream fds). In that case owner of the callback may be gone so we
   // don't want to send it anything. |callback_set_| is reset when this gets
   // closed.
   if (callback_set_) {
-    output_ack_callback_ = callback;
+    output_ack_callback_ = std::move(callback);
     callback_.Run(type, output);
   }
 }
 
 void ProcessProxy::AckOutput() {
-  if (!output_ack_callback_.is_null()) {
-    output_ack_callback_.Run();
+  if (output_ack_callback_) {
+    std::move(output_ack_callback_).Run();
     output_ack_callback_.Reset();
   }
 }

@@ -26,6 +26,26 @@ namespace {
 
 using LoadingState = TabLoadTracker::LoadingState;
 
+// The period of time after loading during which we ignore title/favicon
+// change events. It's possible for some site that are loaded in background to
+// use some of these features without this being an attempt to communicate
+// with the user (e.g. the tab is just really finishing to load).
+constexpr base::TimeDelta kTitleOrFaviconChangePostLoadGracePeriod =
+    base::TimeDelta::FromSeconds(20);
+
+// The period of time during which we ignore events after a tab gets
+// backgrounded. It's necessary because some events might happen shortly after
+// backgrounding a tab without this being an attempt to communicate with the
+// user:
+//    - There might be a delay between a media request gets initiated and the
+//      time the audio actually starts.
+//    - Same-document navigation can cause the title or favicon to change, if
+//      the user switch tab before this completes this will be recorded as a
+//      background communication event while in reality it's just a navigation
+//      event.
+constexpr base::TimeDelta kFeatureUsagePostBackgroundGracePeriod =
+    base::TimeDelta::FromSeconds(10);
+
 performance_manager::TabVisibility ContentVisibilityToRCVisibility(
     content::Visibility visibility) {
   if (visibility == content::Visibility::VISIBLE)
@@ -259,9 +279,7 @@ bool LocalSiteCharacteristicsWebContentsObserver::ShouldIgnoreFeatureUsageEvent(
   if (feature_type == FeatureType::kTitleChange ||
       feature_type == FeatureType::kFaviconChange) {
     DCHECK(!loaded_time_.is_null());
-    if (NowTicks() - loaded_time_ <
-        GetStaticSiteCharacteristicsDatabaseParams()
-            .title_or_favicon_change_post_load_grace_period) {
+    if (NowTicks() - loaded_time_ < kTitleOrFaviconChangePostLoadGracePeriod) {
       return true;
     }
   }
@@ -270,8 +288,7 @@ bool LocalSiteCharacteristicsWebContentsObserver::ShouldIgnoreFeatureUsageEvent(
   // usually false positives.
   DCHECK(!backgrounded_time_.is_null());
   if (NowTicks() - backgrounded_time_ <
-      GetStaticSiteCharacteristicsDatabaseParams()
-          .feature_usage_post_background_grace_period) {
+      kFeatureUsagePostBackgroundGracePeriod) {
     return true;
   }
 

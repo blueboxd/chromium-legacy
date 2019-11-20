@@ -38,6 +38,7 @@
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/prefs/testing_pref_service.h"
@@ -150,6 +151,38 @@ class TestPreviewsBlackList : public PreviewsBlackList {
   PreviewsEligibilityReason status_;
 };
 
+class TestOptimizationGuideDecider
+    : public optimization_guide::OptimizationGuideDecider {
+ public:
+  void RegisterOptimizationTypesAndTargets(
+      const std::vector<optimization_guide::proto::OptimizationType>&
+          optimization_types,
+      const std::vector<optimization_guide::proto::OptimizationTarget>&
+          optimization_targets) override {}
+  optimization_guide::OptimizationGuideDecision ShouldTargetNavigation(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationTarget optimization_target)
+      override {
+    return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+  optimization_guide::OptimizationGuideDecision CanApplyOptimization(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata)
+      override {
+    return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+  optimization_guide::OptimizationGuideDecision
+  ShouldTargetNavigationAndCanApplyOptimization(
+      content::NavigationHandle* navigation_handle,
+      optimization_guide::proto::OptimizationTarget optimization_target,
+      optimization_guide::proto::OptimizationType optimization_type,
+      optimization_guide::OptimizationMetadata* optimization_metadata)
+      override {
+    return optimization_guide::OptimizationGuideDecision::kFalse;
+  }
+};
+
 // Stub class of PreviewsOptimizationGuide to control IsWhitelisted and
 // IsBlacklisted outcomes when testing PreviewsDeciderImpl.
 class TestPreviewsOptimizationGuide
@@ -157,8 +190,10 @@ class TestPreviewsOptimizationGuide
       public network::NetworkQualityTracker::EffectiveConnectionTypeObserver {
  public:
   TestPreviewsOptimizationGuide(
+      optimization_guide::OptimizationGuideDecider* optimization_guide_decider,
       network::NetworkQualityTracker* network_quality_tracker)
-      : network_quality_tracker_(network_quality_tracker) {
+      : PreviewsOptimizationGuide(optimization_guide_decider),
+        network_quality_tracker_(network_quality_tracker) {
     network_quality_tracker_->AddEffectiveConnectionTypeObserver(this);
   }
 
@@ -208,19 +243,6 @@ class TestPreviewsOptimizationGuide
     if (type == PreviewsType::LITE_PAGE_REDIRECT) {
       return url.host().compare("blacklisted.example.com") == 0;
     }
-    return false;
-  }
-
-  // PreviewsOptimizationGuide:
-  bool MaybeLoadOptimizationHints(content::NavigationHandle* navigation_handle,
-                                  base::OnceClosure callback) override {
-    return false;
-  }
-
-  // PreviewsOptimizationGuide:
-  bool GetResourceLoadingHints(
-      const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) override {
     return false;
   }
 
@@ -447,7 +469,7 @@ class PreviewsDeciderImplTest
     optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
     std::unique_ptr<TestPreviewsOptimizationGuide> previews_opt_guide =
         std::make_unique<TestPreviewsOptimizationGuide>(
-            &network_quality_tracker_);
+            &optimization_guide_decider_, &network_quality_tracker_);
     previews_opt_guide_ = previews_opt_guide.get();
     ui_service_.reset(new TestPreviewsUIService(
         std::move(previews_decider_impl), std::make_unique<TestOptOutStore>(),
@@ -481,6 +503,7 @@ class PreviewsDeciderImplTest
  private:
   base::test::TaskEnvironment task_environment_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
+  TestOptimizationGuideDecider optimization_guide_decider_;
   TestPreviewsOptimizationGuide* previews_opt_guide_;
   std::unique_ptr<TestPreviewsUIService> ui_service_;
   network::TestNetworkQualityTracker network_quality_tracker_;

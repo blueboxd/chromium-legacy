@@ -102,7 +102,7 @@ class COMPONENT_EXPORT(BIOD_CLIENT) BiodClient {
   // the the human readable label the user gave the biometric.
   virtual void StartEnrollSession(const std::string& user_id,
                                   const std::string& label,
-                                  const ObjectPathCallback& callback) = 0;
+                                  ObjectPathCallback callback) = 0;
 
   // Gets all the records registered with this biometric. |callback| is called
   // with all the object paths of the records with |user_id| after this method
@@ -117,7 +117,7 @@ class COMPONENT_EXPORT(BIOD_CLIENT) BiodClient {
 
   // Starts the biometric auth session. |callback| is called with the object
   // path of the auth session after the method succeeds.
-  virtual void StartAuthSession(const ObjectPathCallback& callback) = 0;
+  virtual void StartAuthSession(ObjectPathCallback callback) = 0;
 
   // Requests the type of biometric. |callback| is called with the biometric
   // type after the method succeeds.

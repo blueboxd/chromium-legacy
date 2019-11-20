@@ -1777,6 +1777,12 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
     // TODO(ericrk): Collapse with non-webview registration below.
+    if (features::IsUsingVizForWebView()) {
+      frame_sink_provider_->CreateForWidget(
+          render_widget->routing_id(),
+          std::move(compositor_frame_sink_receiver),
+          std::move(compositor_frame_sink_client));
+    }
     frame_sink_provider_->RegisterRenderFrameMetadataObserver(
         render_widget->routing_id(),
         std::move(render_frame_metadata_observer_client_receiver),
@@ -1790,7 +1796,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         std::move(params.synthetic_begin_frame_source),
         render_widget->widget_input_handler_manager()
             ->GetSynchronousCompositorRegistry(),
-        std::move(frame_swap_message_queue)));
+        std::move(frame_swap_message_queue),
+        std::move(params.pipes.compositor_frame_sink_remote),
+        std::move(params.pipes.client_receiver)));
     return;
   }
 #endif

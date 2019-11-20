@@ -16,6 +16,7 @@
 #include "services/tracing/perfetto/test_utils.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/perfetto/protos/perfetto/common/commit_data_request.pb.h"
 
 // TODO(crbug.com/961066): Fix memory leaks in tests and re-enable on LSAN.
 #ifdef LEAK_SANITIZER
@@ -211,8 +212,24 @@ TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
 
   no_more_packets_runloop.Run();
 
-  EXPECT_EQ(client->all_client_commit_data_requests(),
-            new_producer->all_host_commit_data_requests());
+  // {cli,host}_reqs are a std::vector<std::string>. Each entry of the vector
+  // is a proto-serialized CommitDataRequest.
+  const auto& cli_reqs = client->all_client_commit_data_requests();
+  const auto& host_reqs = new_producer->all_host_commit_data_requests();
+  ASSERT_EQ(cli_reqs.size(), host_reqs.size());
+  for (size_t i = 0; i < cli_reqs.size(); i++) {
+    // Note that the proto-encoded strings are not identical. This is because
+    // perfetto doesn't emit unset fields. But then when going over mojo these
+    // unset fields get copied as 0-value (it's fine), so on the host side we
+    // see extra fields being explicitly zero-initialized. Here we force a
+    // re-encode using the libprotobuf message for the sake of the comparison.
+    // libprotobuf will re-normalize messages before serializing.
+    perfetto::protos::CommitDataRequest cli_req;
+    ASSERT_TRUE(cli_req.ParseFromString(cli_reqs[i]));
+    perfetto::protos::CommitDataRequest host_req;
+    ASSERT_TRUE(host_req.ParseFromString(cli_reqs[i]));
+    ASSERT_EQ(cli_req.SerializeAsString(), host_req.SerializeAsString());
+  }
 
   ProducerClient::DeleteSoonForTesting(std::move(client));
 }

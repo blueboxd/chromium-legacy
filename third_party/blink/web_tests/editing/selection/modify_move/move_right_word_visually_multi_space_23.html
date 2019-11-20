@@ -135,43 +135,43 @@ selection_test(
 selection_test(
   '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij|    opq    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq    |</div>',
+  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq|    </div>',
   '23-21 right word');
 
 selection_test(
   '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij |   opq    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq    |</div>',
+  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq|    </div>',
   '23-22 right word');
 
 selection_test(
   '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij  |  opq    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq    |</div>',
+  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq|    </div>',
   '23-23 right word');
 
 selection_test(
   '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij   | opq    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq    |</div>',
+  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq|    </div>',
   '23-24 right word');
 
 selection_test(
   '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    |opq    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq    |</div>',
+  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq|    </div>',
   '23-25 right word');
 
 selection_test(
   '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    o|pq    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq    |</div>',
+  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq|    </div>',
   '23-26 right word');
 
 selection_test(
   '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    op|q    </div>',
   selection => selection.modify('move', 'right', 'word'),
-  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq    |</div>',
+  '<div contenteditable dir="ltr" style="white-space:pre">    abc    def    hij    opq|    </div>',
   '23-27 right word');
 
 selection_test(

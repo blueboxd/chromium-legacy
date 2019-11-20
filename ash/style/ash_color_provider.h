@@ -12,14 +12,15 @@
 namespace ash {
 
 // The color provider for system UI. It provides colors for Shield layer, Base
-// layer and +1 layer. Shield layer is a combination of color, opacity and blur
-// which may change depending on the context, it is usually a fullscreen layer.
-// e.g, PowerButtoneMenuScreenView for power button menu. Base layer is the
-// bottom layer of any UI displayed on top of all other UIs. e.g, the ShelfView
-// that contains all the shelf items. Controls layer is where components such as
-// icons and inkdrops lay on, it may also indicate the state of an interactive
-// element (active/inactive states). The color of an element in system UI will
-// be the combination of the colors of the three layers.
+// layer, Controls layer and Content layer. Shield layer is a combination of
+// color, opacity and blur which may change depending on the context, it is
+// usually a fullscreen layer. e.g, PowerButtoneMenuScreenView for power button
+// menu. Base layer is the bottom layer of any UI displayed on top of all other
+// UIs. e.g, the ShelfView that contains all the shelf items. Controls layer is
+// where components such as icons and inkdrops lay on, it may also indicate the
+// state of an interactive element (active/inactive states). Content layer means
+// the UI elements, e.g., separator, text, icon. The color of an element in
+// system UI will be the combination of the colors of the four layers.
 class ASH_EXPORT AshColorProvider {
  public:
   // The color mode of system UI. Switch "--ash-color-mode" can only set
@@ -36,20 +37,31 @@ class ASH_EXPORT AshColorProvider {
     kDark
   };
 
-  // Types of Shield layer.
+  // Types of Shield layer. Number at the end of each type indicates the alpha
+  // value.
   enum class ShieldLayerType {
-    kAlpha20,  // opacity of the layer is 20%
-    kAlpha40,  // opacity of the layer is 40%
-    kAlpha60,  // opacity of the layer is 60%
+    kShield20 = 0,
+    kShield40,
+    kShield60,
+    kShield74,
+    kShield90,
+  };
+
+  // Blur sigma for system UI layers.
+  enum class LayerBlurSigma {
+    kBlurDefault = 30,  // Default blur sigma is 30.
+    kBlurSigma20 = 20,
+    kBlurSigma10 = 10,
   };
 
   // Types of Base layer.
   enum class BaseLayerType {
-    // Base layer is transparent with blur.
-    kTransparentWithBlur = 0,
-
-    // Base layer is transparent without blur.
-    kTransparentWithoutBlur,
+    // Number at the end of each transparent type indicates the alpha value.
+    kTransparent20 = 0,
+    kTransparent40,
+    kTransparent60,
+    kTransparent74,
+    kTransparent90,
 
     // Base layer is opaque.
     kOpaque,

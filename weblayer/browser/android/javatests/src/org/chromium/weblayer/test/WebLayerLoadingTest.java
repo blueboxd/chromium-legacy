@@ -50,18 +50,14 @@ public class WebLayerLoadingTest {
     @Test
     @SmallTest
     public void loadsAsync() {
-        loadAsyncAndWait(webLayer -> {
-            assertNotNull(webLayer);
-        });
+        loadAsyncAndWait(webLayer -> { assertNotNull(webLayer); });
     }
 
     @Test
     @SmallTest
     public void twoSequentialAsyncLoadsYieldSameInstance() {
         loadAsyncAndWait(webLayer1 -> {
-            loadAsyncAndWait(webLayer2 -> {
-                assertEquals(webLayer1, webLayer2);
-            });
+            loadAsyncAndWait(webLayer2 -> { assertEquals(webLayer1, webLayer2); });
         });
     }
 
@@ -70,9 +66,7 @@ public class WebLayerLoadingTest {
     public void twoParallelAsyncLoadsYieldSameInstance() {
         List<WebLayer> asyncResults = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            loadAsyncAndWait(webLayer -> {
-                asyncResults.add(webLayer);
-            });
+            loadAsyncAndWait(webLayer -> { asyncResults.add(webLayer); });
         }
         assertEquals(asyncResults.get(0), asyncResults.get(1));
     }
@@ -90,9 +84,7 @@ public class WebLayerLoadingTest {
     @SmallTest
     public void asyncLoadAfterSyncLoadYieldsTheSameInstance() {
         WebLayer webLayer1 = loadSync();
-        loadAsyncAndWait(webLayer2 -> {
-            assertEquals(webLayer1, webLayer2);
-        });
+        loadAsyncAndWait(webLayer2 -> { assertEquals(webLayer1, webLayer2); });
     }
 
     @Test
@@ -132,20 +124,19 @@ public class WebLayerLoadingTest {
     private void loadAsyncAndWait(Callback<WebLayer> callback) {
         CallbackHelper callbackHelper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-                try {
-                    WebLayer.loadAsync(mContext, webLayer -> {
-                        callback.onResult(webLayer);
-                        callbackHelper.notifyCalled();
-                    });
-                } catch (UnsupportedVersionException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            try {
+                WebLayer.loadAsync(mContext, webLayer -> {
+                    callback.onResult(webLayer);
+                    callbackHelper.notifyCalled();
+                });
+            } catch (UnsupportedVersionException e) {
+                throw new RuntimeException(e);
+            }
+        });
         try {
             callbackHelper.waitForFirst();
         } catch (TimeoutException e) {
             throw new RuntimeException(e);
         }
     }
-
 }

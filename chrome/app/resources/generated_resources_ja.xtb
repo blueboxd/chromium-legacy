@@ -283,7 +283,6 @@
 <translation id="1410197035576869800">アプリのアイコン</translation>
 <translation id="1410616244180625362"><ph name="HOST" /> によるカメラへのアクセスを引き続き許可する</translation>
 <translation id="1414648216875402825">アップデートしようとしているバージョンの <ph name="PRODUCT_NAME" /> には開発中の機能が含まれており、不安定です。クラッシュや予期しないバグが発生します。続行する場合は十分にご注意ください。</translation>
-<translation id="1414866280542221544">このデバイスで有効にする</translation>
 <translation id="1415708812149920388">クリップボードの読み取りアクセスが拒否されました</translation>
 <translation id="1415990189994829608">このタイプのセッションでは、<ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）は使用できません。</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
@@ -326,7 +325,6 @@
 <translation id="1465827627707997754">ピザ</translation>
 <translation id="1468571364034902819">このプロフィールは使用できません</translation>
 <translation id="1470811252759861213">お使いのどのデバイスでも同じ拡張機能を使用するには、<ph name="SIGN_IN_LINK" />します。</translation>
-<translation id="1470967055429794975">セキュリティ キーに保存されているすべてのデータ（PIN を含む）が消去されます</translation>
 <translation id="1472675084647422956">表示項目を増やす</translation>
 <translation id="1475502736924165259">他のどのカテゴリにも適合しない証明書がファイルに格納されています</translation>
 <translation id="1476088332184200792">デバイスにコピー</translation>
@@ -842,7 +840,6 @@
 <translation id="2202898655984161076">プリンタのリスト作成中に問題が発生しました。一部のプリンタが <ph name="CLOUD_PRINT_NAME" /> に正常に登録されていない可能性があります。</translation>
 <translation id="2203682048752833055"><ph name="BEGIN_LINK" />アドレスバー<ph name="END_LINK" />で使用される検索エンジン</translation>
 <translation id="2204034823255629767">すべての入力内容の読み取りと変更</translation>
-<translation id="2204397710290433380">ADB を無効にしますか？</translation>
 <translation id="220792432208469595">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。[その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータは Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="220858061631308971">「<ph name="DEVICE_NAME" />」の PIN コードを入力してください:</translation>
 <translation id="2213140827792212876">共有を解除します</translation>
@@ -979,6 +976,7 @@
 <translation id="2396783860772170191">4 桁の PIN（0000～9999）を入力してください</translation>
 <translation id="2399939490305346086">セキュリティ キーのログインデータ</translation>
 <translation id="2407481962792080328">この機能は Google アカウントにログインすると有効になります</translation>
+<translation id="2408018932941436077">カードを保存しています</translation>
 <translation id="2408955596600435184">PIN を入力してください</translation>
 <translation id="241082044617551207">不明なプラグイン</translation>
 <translation id="2412593942846481727">アップデートが利用可能</translation>
@@ -2007,7 +2005,6 @@
 <translation id="3873315167136380065">この設定をオンにするには、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />して同期パスフレーズを削除します</translation>
 <translation id="3873423927483480833">PIN を表示</translation>
 <translation id="3873915545594852654">ARC++ で問題が発生しました。</translation>
-<translation id="387924939625099872">ADB を無効にするには、<ph name="DEVICE_TYPE" /> を再起動してください。再起動すると、設定は出荷時の状態にリセットされ、すべてのユーザー アカウントとローカルデータは消去されます。</translation>
 <translation id="3879748587602334249">ダウンロード マネージャ</translation>
 <translation id="3886446263141354045">このサイトへのアクセス リクエストを <ph name="NAME" /> さんに送信しました</translation>
 <translation id="3888550877729210209"><ph name="LOCK_SCREEN_APP_NAME" /> でメモをとる</translation>
@@ -2409,7 +2406,6 @@
 <translation id="4501530680793980440">削除の確認</translation>
 <translation id="4502423230170890588">このデバイスから削除</translation>
 <translation id="4504940961672722399">この拡張機能を使用するには、このアイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
-<translation id="4506379069541445709">続行すると、ADB による Android アプリの作成とテストが可能になります。ADB を使用すると、Google が確認していないアプリのインストールが可能になりますのでご注意ください。</translation>
 <translation id="4508051413094283164">すべてをシークレット ウィンドウで開く</translation>
 <translation id="4508265954913339219">起動に失敗しました</translation>
 <translation id="4508765956121923607">ソースを表示(&amp;O)</translation>
@@ -3312,7 +3308,6 @@
 <translation id="5851868085455377790">発行元</translation>
 <translation id="5852112051279473187">エラー: このデバイスの登録中に問題が発生しました。もう一度お試しいただくか、サポート担当者にお問い合わせください。</translation>
 <translation id="5852137567692933493">再起動して Powerwash を実行する</translation>
-<translation id="5852360662347412211">Linux の設定に移動して、もう一度お試しください。</translation>
 <translation id="5854912040170951372">スライス</translation>
 <translation id="5855643921295613558">0.6秒</translation>
 <translation id="5856721540245522153">デバッグ機能を有効にする</translation>
@@ -3325,7 +3320,6 @@
 <translation id="5860494867054883682">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="5862109781435984885">シェルフにタッチペン ツールを表示</translation>
 <translation id="5863445608433396414">デバッグ機能を有効にする</translation>
-<translation id="5863471434640009253">Android Debug Bridge（ADB）を有効にするには、まず <ph name="DEVICE_TYPE" /> を再起動してください。ADB を無効にする場合は、出荷時の設定へのリセットが必要になります。</translation>
 <translation id="5864471791310927901">DHCP を検索できませんでした</translation>
 <translation id="586567932979200359"><ph name="PRODUCT_NAME" /> はディスク イメージから実行されています。パソコンにインストールすると、ディスク イメージなしで実行できるようになり、常に最新の状態に維持できます。</translation>
 <translation id="5865733239029070421">使用統計情報や障害レポートを Google に自動送信します</translation>
@@ -3395,7 +3389,6 @@
 <translation id="5958529069007801266">監視対象ユーザー</translation>
 <translation id="5959471481388474538">ネットワークは利用できません</translation>
 <translation id="595959584676692139">この拡張機能を使用するにはページを再読み込みします</translation>
-<translation id="5961320084471308154">ADB を有効にしますか？</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" />（最大 <ph name="NUM_KILOBYTES_LIVE" />）</translation>
 <translation id="5965661248935608907">この拡張機能では、ホーム ボタンのクリック時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> は「<ph name="FOLDERNAME" />」のファイルを表示できます</translation>
@@ -4259,7 +4252,6 @@
 <translation id="7254554697254365959">このページを翻訳できませんでした。</translation>
 <translation id="7254951428499890870">「<ph name="APP_NAME" />」を診断モードで起動してもよろしいですか？</translation>
 <translation id="7255002516883565667">現在、このデバイスでのみ使用できるカードが 1 つあります</translation>
-<translation id="7255916308560539517">リセットを確定するには、セキュリティ キーをもう一度タップしてください。セキュリティ キーに保存されているすべての情報（PIN を含む）が消去されます。</translation>
 <translation id="7255935316994522020">適用</translation>
 <translation id="7256069762010468647">サイトでカメラが使用されています</translation>
 <translation id="7256405249507348194">不明なエラー: <ph name="DESC" /></translation>
@@ -4769,6 +4761,7 @@
 <translation id="7968833647796919681">パフォーマンス データの収集を有効にする</translation>
 <translation id="7968982339740310781">詳細を表示</translation>
 <translation id="7969046989155602842">コマンド</translation>
+<translation id="7970882136539140748">現在、カードを保存できません</translation>
 <translation id="7972714317346275248">PKCS #1 SHA-384 with RSA 暗号化</translation>
 <translation id="7973962044839454485">ユーザー名またはパスワードが正しくないため、PPP 認証に失敗しました</translation>
 <translation id="7974566588408714340">「<ph name="EXTENSIONNAME" />」で再試行</translation>
@@ -5090,7 +5083,6 @@
 <translation id="8431909052837336408">SIM PIN を変更</translation>
 <translation id="8434480141477525001">NaCl デバッグ ポート</translation>
 <translation id="8435395510592618362"><ph name="APP_NAME" /> で本人確認を行う</translation>
-<translation id="843760761634048214">クレジット カードを保存</translation>
 <translation id="8438328416656800239">スマートなブラウザをぜひご利用ください</translation>
 <translation id="8438566539970814960">検索とブラウジングを改善する</translation>
 <translation id="8439506636278576865">この言語のページで翻訳ツールを表示する</translation>
@@ -5473,6 +5465,7 @@
 <translation id="8965037249707889821">古いパスワードを入力</translation>
 <translation id="8966870118594285808">間違って閉じたタブをもう一度開きます</translation>
 <translation id="8967866634928501045">Alt+Shift+A キーで表示します</translation>
+<translation id="8968766641738584599">カードを保存</translation>
 <translation id="89720367119469899">エスケープ</translation>
 <translation id="8972513834460200407">ファイアウォールが Google のサーバーからのダウンロードをブロックしていないかどうかをネットワーク管理者に確認してください。</translation>
 <translation id="8973557916016709913">拡大縮小値の指定を削除</translation>
@@ -5579,7 +5572,6 @@
 <translation id="9116799625073598554">メモ用アプリ</translation>
 <translation id="9117030152748022724">アプリを管理する</translation>
 <translation id="9121814364785106365">固定されたタブとして開く</translation>
-<translation id="9122074588095746047">ADB を有効にできませんでした</translation>
 <translation id="9124003689441359348">保存したパスワードがここに表示されます</translation>
 <translation id="9125466540846359910"><ph name="LICENSE_TYPE" />（残り <ph name="LICENSE_COUNT" /> ライセンス）</translation>
 <translation id="9128317794749765148">セットアップを完了できませんでした</translation>

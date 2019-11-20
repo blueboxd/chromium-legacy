@@ -2482,6 +2482,26 @@ message ChildStatusReportResponse {
   optional string error_message = 2;
 }
 
+// Request from a device to subscribe to a public FCM topic. This is intended
+// to be used by managed browsers to subscribe to invalidations topics for CBCM
+// policies.
+message TopicSubscriptionRequest {
+  // This is the ID of the firebase project through which |topic| will be
+  // notified.
+  required string project_id = 1;
+
+  // The firebase token for the device that is requesting to subscribe to
+  // |topic|.
+  required string subscriber_token = 2;
+
+  // The public topic that this device wants to subscribe to. This should be
+  // obtained from CBCM's PolicyData's policy_invalidation_topic field.
+  required string topic = 3;
+}
+
+// Response from the DM server following a TopicSubscriptionRequest.
+message TopicSubscriptionResponse {}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -2518,6 +2538,7 @@ message ChildStatusReportResponse {
 //     * policy_validation_report
 //     * device_initial_enrollment_state
 //     * refresh_account
+//     * topic_subscription
 //   * devicetype: MUST BE "1" for Android, "2" for Chrome OS or "3" for Chrome
 //     browser.
 //   * apptype: MUST BE Android or Chrome.
@@ -2535,7 +2556,7 @@ message ChildStatusReportResponse {
 //     gcm_id_update, active_directory_enroll_play_user,
 //     active_directory_play_activity, active_directory_user_signin,
 //     policy_validation_report, chrome_desktop_report,
-//     chrome_os_user_report and refresh_account requests
+//     chrome_os_user_report, refresh_account requests and topic_subscription
 //     Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check,
@@ -2575,6 +2596,7 @@ message ChildStatusReportResponse {
 //   policy_validation_report: policy_validation_report_request
 //   device_initial_enrollment_state: device_initial_enrollment_state_request
 //   refresh_account: refresh_account_request
+//   topic_subscription: topic_subscription_request
 message DeviceManagementRequest {
   reserved 24;  // unused previous version of chrome_desktop_report_request.
 
@@ -2677,7 +2699,10 @@ message DeviceManagementRequest {
   // A ChromeOS user report request.
   optional ChromeOsUserReportRequest chrome_os_user_report_request = 33;
 
-  // Next id: 34.
+  // An FCM public topic subscription request.
+  optional TopicSubscriptionRequest topic_subscription_request = 34;
+
+  // Next id: 35.
 }
 
 // Response from server to device.
@@ -2802,5 +2827,8 @@ message DeviceManagementResponse {
   // Response to a ChromeOS user report request.
   optional ChromeOsUserReportResponse chrome_os_user_report_response = 32;
 
-  // Next id: 33.
+  // Response to an FCM public topic subscription request.
+  optional TopicSubscriptionResponse topic_subscription_response = 33;
+
+  // Next id: 34.
 }

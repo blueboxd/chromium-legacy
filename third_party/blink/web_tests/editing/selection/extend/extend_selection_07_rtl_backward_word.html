@@ -116,13 +116,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div >| just a test</div> sit</span> amet</div>',
   selection => selection.modify('extend', 'backward', 'word'),
-  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum |dolor<div>^ just a test</div> sit</span> amet</div>',
+  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor|<div>^ just a test</div> sit</span> amet</div>',
   `${behavior} 7-17 rtl backward word`);
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div > |just a test</div> sit</span> amet</div>',
   selection => selection.modify('extend', 'backward', 'word'),
-  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum |dolor<div>^ just a test</div> sit</span> amet</div>',
+  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor|<div>^ just a test</div> sit</span> amet</div>',
   `${behavior} 7-18 rtl backward word`);
 
 selection_test(
@@ -188,13 +188,13 @@ selection_test(
 selection_test(
   '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div > just a test</div>| sit</span> amet</div>',
   selection => selection.modify('extend', 'backward', 'word'),
-  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div> just a |test</div>^ sit</span> amet</div>',
+  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div> just a test|</div>^ sit</span> amet</div>',
   `${behavior} 7-29 rtl backward word`);
 
 selection_test(
   '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div > just a test</div> |sit</span> amet</div>',
   selection => selection.modify('extend', 'backward', 'word'),
-  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div> just a |test</div>^ sit</span> amet</div>',
+  '<div contenteditable dir="rtl">Lorem <span style="direction: ltr">ipsum dolor<div> just a test|</div>^ sit</span> amet</div>',
   `${behavior} 7-30 rtl backward word`);
 
 selection_test(

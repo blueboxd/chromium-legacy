@@ -11,6 +11,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.interfaces.INavigationController;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
+import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 /**
  * Acts as the bridge between java and the C++ implementation of of NavigationController.
@@ -32,60 +33,70 @@ public final class NavigationControllerImpl extends INavigationController.Stub {
 
     @Override
     public void navigate(String uri) {
+        StrictModeWorkaround.apply();
         NavigationControllerImplJni.get().navigate(
                 mNativeNavigationController, NavigationControllerImpl.this, uri);
     }
 
     @Override
     public void goBack() {
+        StrictModeWorkaround.apply();
         NavigationControllerImplJni.get().goBack(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public void goForward() {
+        StrictModeWorkaround.apply();
         NavigationControllerImplJni.get().goForward(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public boolean canGoBack() {
+        StrictModeWorkaround.apply();
         return NavigationControllerImplJni.get().canGoBack(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public boolean canGoForward() {
+        StrictModeWorkaround.apply();
         return NavigationControllerImplJni.get().canGoForward(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public void reload() {
+        StrictModeWorkaround.apply();
         NavigationControllerImplJni.get().reload(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public void stop() {
+        StrictModeWorkaround.apply();
         NavigationControllerImplJni.get().stop(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public int getNavigationListSize() {
+        StrictModeWorkaround.apply();
         return NavigationControllerImplJni.get().getNavigationListSize(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public int getNavigationListCurrentIndex() {
+        StrictModeWorkaround.apply();
         return NavigationControllerImplJni.get().getNavigationListCurrentIndex(
                 mNativeNavigationController, NavigationControllerImpl.this);
     }
 
     @Override
     public String getNavigationEntryDisplayUri(int index) {
+        StrictModeWorkaround.apply();
         return NavigationControllerImplJni.get().getNavigationEntryDisplayUri(
                 mNativeNavigationController, NavigationControllerImpl.this, index);
     }

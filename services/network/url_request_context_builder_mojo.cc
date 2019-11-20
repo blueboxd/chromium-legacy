@@ -24,7 +24,7 @@ URLRequestContextBuilderMojo::URLRequestContextBuilderMojo() = default;
 URLRequestContextBuilderMojo::~URLRequestContextBuilderMojo() = default;
 
 void URLRequestContextBuilderMojo::SetMojoProxyResolverFactory(
-    proxy_resolver::mojom::ProxyResolverFactoryPtr
+    mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverFactory>
         mojo_proxy_resolver_factory) {
   mojo_proxy_resolver_factory_ = std::move(mojo_proxy_resolver_factory);
 }

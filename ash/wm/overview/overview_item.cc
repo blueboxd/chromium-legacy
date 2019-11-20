@@ -32,6 +32,7 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/wm_event.h"
@@ -366,6 +367,36 @@ void OverviewItem::SetBounds(const gfx::RectF& target_bounds,
                                             OnItemBoundsAnimationEnded,
                                         weak_ptr_factory_.GetWeakPtr())}
             : nullptr);
+
+    // Minimized windows have a WindowPreviewView which mirrors content from the
+    // window. |target_bounds| may not have a matching aspect ratio to the
+    // actual window (eg. in splitview overview). In this case, the contents
+    // will be squashed to fit the given bounds. To get around this, stretch out
+    // the contents so that it matches |unclipped_size_|, then clip the layer to
+    // match |target_bounds|. This is what is done on non-minimized windows.
+    ui::Layer* preview_layer = overview_item_view_->preview_view()->layer();
+    DCHECK(preview_layer);
+    if (unclipped_size_) {
+      gfx::SizeF target_size(*unclipped_size_);
+      gfx::SizeF preview_size = GetWindowTargetBoundsWithInsets().size();
+      target_size.Enlarge(0, -kHeaderHeightDp);
+
+      const float x_scale = target_size.width() / preview_size.width();
+      const float y_scale = target_size.height() / preview_size.height();
+      gfx::Transform transform;
+      transform.Scale(x_scale, y_scale);
+      preview_layer->SetTransform(transform);
+
+      // Transform affects clip rect so scale the clip rect so that the final
+      // size is equal to the untransformed layer.
+      gfx::Size clip_size(preview_layer->size());
+      clip_size =
+          gfx::ScaleToRoundedSize(clip_size, 1.f / x_scale, 1.f / y_scale);
+      preview_layer->SetClipRect(gfx::Rect(clip_size));
+    } else {
+      preview_layer->SetClipRect(gfx::Rect());
+      preview_layer->SetTransform(gfx::Transform());
+    }
 
     // On the first update show |item_widget_|. It's created on creation of
     // |this|, and needs to be shown as soon as its bounds have been determined

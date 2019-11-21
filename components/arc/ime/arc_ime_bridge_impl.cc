@@ -79,6 +79,15 @@ void ArcImeBridgeImpl::SendConfirmCompositionText() {
   ime_instance->ConfirmCompositionText();
 }
 
+void ArcImeBridgeImpl::SendSelectionRange(const gfx::Range& selection_range) {
+  auto* ime_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), SetSelectionText);
+  if (!ime_instance)
+    return;
+
+  ime_instance->SetSelectionText(selection_range);
+}
+
 void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
   auto* ime_instance =
       ARC_GET_INSTANCE_FOR_METHOD(bridge_service_->ime(), InsertText);

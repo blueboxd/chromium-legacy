@@ -49,6 +49,7 @@ class ArcImeBridge {
   virtual void SendSetCompositionText(
       const ui::CompositionText& composition) = 0;
   virtual void SendConfirmCompositionText() = 0;
+  virtual void SendSelectionRange(const gfx::Range& selection_range) = 0;
   virtual void SendInsertText(const base::string16& text) = 0;
   virtual void SendExtendSelectionAndDelete(size_t before, size_t after) = 0;
   virtual void SendOnKeyboardAppearanceChanging(const gfx::Rect& new_bounds,

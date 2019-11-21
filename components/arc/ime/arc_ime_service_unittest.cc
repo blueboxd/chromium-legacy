@@ -31,11 +31,16 @@ namespace {
 class FakeArcImeBridge : public ArcImeBridge {
  public:
   FakeArcImeBridge()
-      : count_send_insert_text_(0), last_keyboard_availability_(false) {}
+      : count_send_insert_text_(0),
+        last_keyboard_availability_(false),
+        selection_range_(gfx::Range()) {}
 
   void SendSetCompositionText(const ui::CompositionText& composition) override {
   }
   void SendConfirmCompositionText() override {
+  }
+  void SendSelectionRange(const gfx::Range& selection_range) override {
+    selection_range_ = selection_range;
   }
   void SendInsertText(const base::string16& text) override {
     count_send_insert_text_++;
@@ -55,11 +60,13 @@ class FakeArcImeBridge : public ArcImeBridge {
   bool last_keyboard_availability() const {
     return last_keyboard_availability_;
   }
+  gfx::Range selection_range() { return selection_range_; }
 
  private:
   int count_send_insert_text_;
   gfx::Rect last_keyboard_bounds_;
   bool last_keyboard_availability_;
+  gfx::Range selection_range_;
 };
 
 class FakeInputMethod : public ui::DummyInputMethod {
@@ -239,6 +246,40 @@ TEST_F(ArcImeServiceTest, HasCompositionText) {
   EXPECT_TRUE(instance_->HasCompositionText());
   instance_->SetCompositionText(ui::CompositionText());
   EXPECT_FALSE(instance_->HasCompositionText());
+}
+
+TEST_F(ArcImeServiceTest, SetEditableSelectionRange) {
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+  ui::CompositionText composition;
+  instance_->SetCompositionText(composition);
+  EXPECT_TRUE(instance_->SetEditableSelectionRange(gfx::Range(3, 8)));
+  gfx::Range selection;
+  instance_->GetEditableSelectionRange(&selection);
+  EXPECT_EQ(gfx::Range(3, 8), selection);
+
+  EXPECT_TRUE(instance_->SetEditableSelectionRange(gfx::Range(2, 4)));
+  instance_->GetEditableSelectionRange(&selection);
+  EXPECT_EQ(gfx::Range(2, 4), selection);
+}
+
+TEST_F(ArcImeServiceTest, ConfirmCompositionText) {
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+
+  ui::CompositionText composition;
+  composition.text = base::UTF8ToUTF16("nonempty text");
+  EXPECT_FALSE(instance_->HasCompositionText());
+  instance_->SetCompositionText(composition);
+  EXPECT_TRUE(instance_->HasCompositionText());
+
+  instance_->SetEditableSelectionRange(gfx::Range(3, 8));
+
+  gfx::Range selection;
+  instance_->GetEditableSelectionRange(&selection);
+  EXPECT_EQ(gfx::Range(3, 8), selection);
+  instance_->ConfirmCompositionText(/* keep_selection */ true);
+  selection = gfx::Range();
+  instance_->GetEditableSelectionRange(&selection);
+  EXPECT_EQ(gfx::Range(3, 8), selection);
 }
 
 TEST_F(ArcImeServiceTest, ShowVirtualKeyboardIfEnabled) {

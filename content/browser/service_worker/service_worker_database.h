@@ -21,7 +21,6 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "url/gurl.h"
@@ -65,6 +64,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   };
   static const char* StatusToString(Status status);
 
+  using FeatureToTokensMap = std::map<std::string /* feature_name */,
+                                      std::vector<std::string /* token */>>;
+
   struct CONTENT_EXPORT RegistrationData {
     // These values are immutable for the life of a registration.
     int64_t registration_id;
@@ -81,8 +83,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     bool has_fetch_handler;
     base::Time last_update_check;
     base::Time script_response_time;
-    base::Optional<blink::TrialTokenValidator::FeatureToTokensMap>
-        origin_trial_tokens;
+    base::Optional<FeatureToTokensMap> origin_trial_tokens;
     blink::mojom::NavigationPreloadState navigation_preload_state;
     std::set<blink::mojom::WebFeature> used_features;
 

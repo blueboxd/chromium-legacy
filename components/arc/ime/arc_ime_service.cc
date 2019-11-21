@@ -397,12 +397,9 @@ void ArcImeService::SetCompositionText(
 }
 
 void ArcImeService::ConfirmCompositionText(bool keep_selection) {
-  // TODO(b/134473433) Modify this function so that when keep_selection is
-  // true, the selection is not changed when text committed
-  if (keep_selection) {
-    NOTIMPLEMENTED_LOG_ONCE();
+  if (!keep_selection) {
+    InvalidateSurroundingTextAndSelectionRange();
   }
-  InvalidateSurroundingTextAndSelectionRange();
   has_composition_text_ = false;
   // Note: SendConfirmCompositonText() will commit the text and
   // keep the selection unchanged
@@ -557,7 +554,9 @@ bool ArcImeService::GetCompositionTextRange(gfx::Range* range) const {
 }
 
 bool ArcImeService::SetEditableSelectionRange(const gfx::Range& range) {
-  return false;
+  selection_range_ = range;
+  ime_bridge_->SendSelectionRange(selection_range_);
+  return true;
 }
 
 bool ArcImeService::DeleteRange(const gfx::Range& range) {

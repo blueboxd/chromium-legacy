@@ -93,23 +93,6 @@ struct ReadPixelsContext {
   gfx::Rect result_rect;
 };
 
-template <class T>
-void OnReadbackDone(
-    void* c,
-    std::unique_ptr<const SkSurface::AsyncReadResult> async_result) {
-  static_assert(std::is_base_of<CopyOutputResult, T>::value,
-                "T must be subclass of CopyOutputResult");
-  std::unique_ptr<ReadPixelsContext> context(
-      static_cast<ReadPixelsContext*>(c));
-  if (!async_result) {
-    // This will automatically send an empty result.
-    return;
-  }
-  auto result =
-      std::make_unique<T>(context->result_rect, std::move(async_result));
-  context->request->SendResult(std::move(result));
-}
-
 class CopyOutputResultYUV : public CopyOutputResult {
  public:
   CopyOutputResultYUV(const gfx::Rect& rect,
@@ -164,49 +147,20 @@ class CopyOutputResultYUV : public CopyOutputResult {
   std::unique_ptr<const SkSurface::AsyncReadResult> result_;
 };
 
-class CopyOutputResultRGBA : public CopyOutputResult {
- public:
-  CopyOutputResultRGBA(const gfx::Rect& rect,
-                       std::unique_ptr<const SkSurface::AsyncReadResult> result)
-      : CopyOutputResult(Format::RGBA_BITMAP, rect) {
-    DCHECK_EQ(1, result->count());
-
-    // Return "null" bitmap for empty result.
-    if (rect.IsEmpty())
-      return;
-
-    auto info = SkImageInfo::MakeN32Premul(
-        size().width(), size().height(), GetRGBAColorSpace().ToSkColorSpace());
-
-    // Passing ownership of |result| to DestroyAsyncReadResult.
-    auto* result_ptr = result.release();
-    cached_bitmap()->installPixels(
-        info, const_cast<void*>(result_ptr->data(0)), result_ptr->rowBytes(0),
-        DestroyAsyncReadResult,
-        const_cast<SkSurface::AsyncReadResult*>(result_ptr));
+void OnYUVReadbackDone(
+    void* c,
+    std::unique_ptr<const SkSurface::AsyncReadResult> async_result) {
+  std::unique_ptr<ReadPixelsContext> context(
+      static_cast<ReadPixelsContext*>(c));
+  if (!async_result) {
+    // This will automatically send an empty result.
+    return;
   }
-
-  // CopyOutputResult implementation.
-  gfx::ColorSpace GetRGBAColorSpace() const final {
-    return gfx::ColorSpace::CreateSRGB();
-  }
-
-  const SkBitmap& AsSkBitmap() const final { return *cached_bitmap(); }
-
-  bool ReadRGBAPlane(uint8_t* dest, int stride) const final {
-    auto info = SkImageInfo::MakeN32Premul(
-        size().width(), size().height(), GetRGBAColorSpace().ToSkColorSpace());
-    return cached_bitmap()->readPixels(info, dest, stride, 0 /*srcX*/,
-                                       0 /*srcY*/);
-  }
-
- private:
-  static void DestroyAsyncReadResult(void* pixels, void* context) {
-    const SkSurface::AsyncReadResult* result =
-        static_cast<const SkSurface::AsyncReadResult*>(context);
-    delete result;
-  }
-};
+  std::unique_ptr<CopyOutputResult> result =
+      std::make_unique<CopyOutputResultYUV>(context->result_rect,
+                                            std::move(async_result));
+  context->request->SendResult(std::move(result));
+}
 
 }  // namespace
 
@@ -835,12 +789,12 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     if (output_device_->need_swap_semaphore())
       scoped_promise_image_access.end_semaphores().emplace_back();
 
-    GrFlushInfo flush_info;
-    flush_info.fFlags = kNone_GrFlushFlags;
-    flush_info.fNumSemaphores =
-        scoped_promise_image_access.end_semaphores().size();
-    flush_info.fSignalSemaphores =
-        scoped_promise_image_access.end_semaphores().data();
+    GrFlushInfo flush_info = {
+        .fFlags = kNone_GrFlushFlags,
+        .fNumSemaphores = scoped_promise_image_access.end_semaphores().size(),
+        .fSignalSemaphores =
+            scoped_promise_image_access.end_semaphores().data(),
+    };
 
     gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
                                           &flush_info);
@@ -982,12 +936,12 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     offscreen.surface()->draw(ddl.get());
     destroy_after_swap_.emplace_back(std::move(ddl));
 
-    GrFlushInfo flush_info;
-    flush_info.fFlags = kNone_GrFlushFlags;
-    flush_info.fNumSemaphores =
-        scoped_promise_image_access.end_semaphores().size();
-    flush_info.fSignalSemaphores =
-        scoped_promise_image_access.end_semaphores().data();
+    GrFlushInfo flush_info = {
+        .fFlags = kNone_GrFlushFlags,
+        .fNumSemaphores = scoped_promise_image_access.end_semaphores().size(),
+        .fSignalSemaphores =
+            scoped_promise_image_access.end_semaphores().data(),
+    };
 
     gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_,
                                           &flush_info);
@@ -1136,50 +1090,95 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     return;
   }
 
-  base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
-  if (dependency_->GetGrShaderCache()) {
-    cache_use.emplace(dependency_->GetGrShaderCache(),
-                      gpu::kInProcessCommandBufferClientId);
-  }
-  // For downscaling, use the GOOD quality setting (appropriate for
-  // thumbnailing); and, for upscaling, use the BEST quality.
-  bool is_downscale_in_both_dimensions =
-      request->scale_to().x() < request->scale_from().x() &&
-      request->scale_to().y() < request->scale_from().y();
-  SkFilterQuality filter_quality = is_downscale_in_both_dimensions
-                                       ? kMedium_SkFilterQuality
-                                       : kHigh_SkFilterQuality;
-  SkIRect srcRect = SkIRect::MakeXYWH(
-      geometry.sampling_bounds.x(), geometry.sampling_bounds.y(),
-      geometry.sampling_bounds.width(), geometry.sampling_bounds.height());
-
   if (request->result_format() ==
       CopyOutputRequest::ResultFormat::I420_PLANES) {
+    base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
+    if (dependency_->GetGrShaderCache()) {
+      cache_use.emplace(dependency_->GetGrShaderCache(),
+                        gpu::kInProcessCommandBufferClientId);
+    }
+    // For downscaling, use the GOOD quality setting (appropriate for
+    // thumbnailing); and, for upscaling, use the BEST quality.
+    bool is_downscale_in_both_dimensions =
+        request->scale_to().x() < request->scale_from().x() &&
+        request->scale_to().y() < request->scale_from().y();
+    SkFilterQuality filter_quality = is_downscale_in_both_dimensions
+                                         ? kMedium_SkFilterQuality
+                                         : kHigh_SkFilterQuality;
+    SkIRect srcRect = SkIRect::MakeXYWH(
+        geometry.sampling_bounds.x(), geometry.sampling_bounds.y(),
+        geometry.sampling_bounds.width(), geometry.sampling_bounds.height());
     std::unique_ptr<ReadPixelsContext> context =
         std::make_unique<ReadPixelsContext>(std::move(request),
                                             geometry.result_bounds);
     surface->asyncRescaleAndReadPixelsYUV420(
         kRec709_SkYUVColorSpace, SkColorSpace::MakeSRGB(), srcRect,
         {geometry.result_bounds.width(), geometry.result_bounds.height()},
-        SkSurface::RescaleGamma::kSrc, filter_quality,
-        OnReadbackDone<CopyOutputResultYUV>, context.release());
-  } else if (request->result_format() ==
-             CopyOutputRequest::ResultFormat::RGBA_BITMAP) {
-    // Perform swizzle during readback.
-    const bool skbitmap_is_bgra = (kN32_SkColorType == kBGRA_8888_SkColorType);
-    SkImageInfo dst_info = SkImageInfo::Make(
-        {geometry.result_bounds.width(), geometry.result_bounds.height()},
-        skbitmap_is_bgra ? kBGRA_8888_SkColorType : kRGBA_8888_SkColorType,
-        kPremul_SkAlphaType);
-    std::unique_ptr<ReadPixelsContext> context =
-        std::make_unique<ReadPixelsContext>(std::move(request),
-                                            geometry.result_bounds);
-    surface->asyncRescaleAndReadPixels(
-        dst_info, srcRect, SkSurface::RescaleGamma::kSrc, filter_quality,
-        OnReadbackDone<CopyOutputResultRGBA>, context.release());
-  } else {
-    NOTIMPLEMENTED();  // ResultFormat::RGBA_TEXTURE
+        SkSurface::RescaleGamma::kSrc, filter_quality, OnYUVReadbackDone,
+        context.release());
+    return;
   }
+
+  SkBitmap bitmap;
+  if (request->is_scaled()) {
+    SkImageInfo sampling_bounds_info = SkImageInfo::Make(
+        geometry.sampling_bounds.width(), geometry.sampling_bounds.height(),
+        SkColorType::kN32_SkColorType, SkAlphaType::kPremul_SkAlphaType,
+        surface->getCanvas()->imageInfo().refColorSpace());
+    bitmap.allocPixels(sampling_bounds_info);
+    surface->readPixels(bitmap, geometry.sampling_bounds.x(),
+                        geometry.sampling_bounds.y());
+
+    // Execute the scaling: For downscaling, use the RESIZE_BETTER strategy
+    // (appropriate for thumbnailing); and, for upscaling, use the RESIZE_BEST
+    // strategy. Note that processing is only done on the subset of the
+    // RenderPass output that contributes to the result.
+    using skia::ImageOperations;
+    const bool is_downscale_in_both_dimensions =
+        request->scale_to().x() < request->scale_from().x() &&
+        request->scale_to().y() < request->scale_from().y();
+    const ImageOperations::ResizeMethod method =
+        is_downscale_in_both_dimensions ? ImageOperations::RESIZE_BETTER
+                                        : ImageOperations::RESIZE_BEST;
+    bitmap = ImageOperations::Resize(
+        bitmap, method, geometry.result_bounds.width(),
+        geometry.result_bounds.height(),
+        SkIRect{geometry.result_selection.x(), geometry.result_selection.y(),
+                geometry.result_selection.right(),
+                geometry.result_selection.bottom()});
+  } else {
+    SkImageInfo sampling_bounds_info = SkImageInfo::Make(
+        geometry.result_selection.width(), geometry.result_selection.height(),
+        SkColorType::kN32_SkColorType, SkAlphaType::kPremul_SkAlphaType,
+        surface->getCanvas()->imageInfo().refColorSpace());
+    bitmap.allocPixels(sampling_bounds_info);
+    surface->readPixels(bitmap, geometry.readback_offset.x(),
+                        geometry.readback_offset.y());
+  }
+
+  // TODO(crbug.com/795132): Plumb color space throughout SkiaRenderer up to the
+  // the SkSurface/SkImage here. Until then, play "musical chairs" with the
+  // SkPixelRef to hack-in the RenderPass's |color_space|.
+  sk_sp<SkPixelRef> pixels(SkSafeRef(bitmap.pixelRef()));
+  SkIPoint origin = bitmap.pixelRefOrigin();
+  bitmap.setInfo(bitmap.info().makeColorSpace(color_space.ToSkColorSpace()),
+                 bitmap.rowBytes());
+  bitmap.setPixelRef(std::move(pixels), origin.x(), origin.y());
+
+  // Deliver the result. SkiaRenderer supports RGBA_BITMAP and I420_PLANES
+  // only. For legacy reasons, if a RGBA_TEXTURE request is being made, clients
+  // are prepared to accept RGBA_BITMAP results.
+  //
+  // TODO(crbug/754872): Get rid of the legacy behavior and send empty results
+  // for RGBA_TEXTURE requests once tab capture is moved into VIZ.
+  const CopyOutputResult::Format result_format =
+      (request->result_format() == CopyOutputResult::Format::RGBA_TEXTURE)
+          ? CopyOutputResult::Format::RGBA_BITMAP
+          : request->result_format();
+  // Note: The CopyOutputSkBitmapResult automatically provides I420 format
+  // conversion, if needed.
+  request->SendResult(std::make_unique<CopyOutputSkBitmapResult>(
+      result_format, geometry.result_selection, bitmap));
 }
 
 gpu::DecoderContext* SkiaOutputSurfaceImplOnGpu::decoder() {
@@ -1589,12 +1588,6 @@ void SkiaOutputSurfaceImplOnGpu::MarkContextLost() {
     if (context_provider_)
       context_provider_->MarkContextLost();
   }
-}
-
-void SkiaOutputSurfaceImplOnGpu::FlushForTesting() {
-  GrFlushInfo flush_info;
-  flush_info.fFlags = kSyncCpu_GrFlushFlag;
-  gr_context()->flush(flush_info);
 }
 
 }  // namespace viz

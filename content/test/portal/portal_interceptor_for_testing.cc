@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 
 namespace content {
 
@@ -21,8 +21,8 @@ PortalInterceptorForTesting* PortalInterceptorForTesting::Create(
   auto test_portal_ptr =
       base::WrapUnique(new PortalInterceptorForTesting(render_frame_host_impl));
   PortalInterceptorForTesting* test_portal = test_portal_ptr.get();
-  test_portal->GetPortal()->SetBindingForTesting(
-      mojo::MakeStrongAssociatedBinding<blink::mojom::Portal>(
+  test_portal->GetPortal()->SetReceiverForTesting(
+      mojo::MakeSelfOwnedAssociatedReceiver<blink::mojom::Portal>(
           std::move(test_portal_ptr), std::move(receiver)));
   test_portal->GetPortal()->SetClientForTesting(std::move(client));
   return test_portal;

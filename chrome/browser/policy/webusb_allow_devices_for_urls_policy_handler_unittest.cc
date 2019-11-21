@@ -753,7 +753,7 @@ TEST_P(WebUsbAllowDevicesForUrlsPolicyHandlerTest, ApplyPolicySettingsNoUrls) {
 
 // For ChromeOS this test is parameterized to test user and device policy. For
 // other operating systems, this test just tests the user policy.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebUsbAllowDevicesForUrlsPolicyHandlerTest,
 #if defined(OS_CHROMEOS)
                          testing::Values(PolicyType::kUser, PolicyType::kDevice)

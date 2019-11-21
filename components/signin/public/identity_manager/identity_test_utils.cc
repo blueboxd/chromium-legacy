@@ -310,6 +310,14 @@ void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
   account_tracker_service->SeedAccountInfo(account_info);
 }
 
+void SimulateAccountImageFetch(IdentityManager* identity_manager,
+                               const CoreAccountId& account_id,
+                               const gfx::Image& image) {
+  AccountTrackerService* account_tracker_service =
+      identity_manager->GetAccountTrackerService();
+  account_tracker_service->SetAccountImage(account_id, image);
+}
+
 void SetFreshnessOfAccountsInGaiaCookie(IdentityManager* identity_manager,
                                         bool accounts_are_fresh) {
   GaiaCookieManagerService* cookie_manager =

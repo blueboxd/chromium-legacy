@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/logging.h"
+#include "base/memory/platform_shared_memory_region.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/video_accelerator/protected_buffer_allocator.h"

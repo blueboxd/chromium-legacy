@@ -1990,13 +1990,13 @@ TEST_P(MediaStreamConstraintsUtilAudioTest, LatencyConstraint) {
   CheckLocalMediaStreamAudioSourceLatency(variable_latency_device_, 0.2, 4096);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaStreamConstraintsUtilAudioTest,
                          testing::Values("",
                                          blink::kMediaStreamSourceTab,
                                          blink::kMediaStreamSourceSystem,
                                          blink::kMediaStreamSourceDesktop));
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaStreamConstraintsRemoteAPMTest,
                          testing::Bool());
 

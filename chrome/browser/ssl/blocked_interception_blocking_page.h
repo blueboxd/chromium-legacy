@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SSL_BLOCKED_INTERCEPTION_BLOCKING_PAGE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ssl/ssl_blocking_page_base.h"
+#include "components/security_interstitials/content/ssl_blocking_page_base.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/blocked_interception_ui.h"
 #include "net/ssl/ssl_info.h"

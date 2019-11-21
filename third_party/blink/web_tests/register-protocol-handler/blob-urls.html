@@ -3,10 +3,9 @@
 <script src="../resources/testharnessreport.js"></script>
 <title>Test that blob: URLs fail registerProtocolHandler checks</title>
 <body>
-<iframe id='frame'></iframe>
 
 <script>
-const frameSrc =
+const winSrc =
 `<html>
 <head>
 <script>
@@ -14,9 +13,9 @@ try {
   navigator.registerProtocolHandler('web+test',
                                     location.href + '?%s',
                                     'Test handler');
-  window.parent.postMessage('rph succeeded', '*');
+  window.opener.postMessage('rph succeeded', '*');
 } catch (e) {
-  window.parent.postMessage('rph failed: ' + e.message, '*');
+  window.opener.postMessage('rph failed: ' + e.message, '*');
 }
 <\/script>
 <\/head>
@@ -28,12 +27,13 @@ Test page
 
 window.addEventListener('message', (msg) => {
   assert_equals(msg.data,
-                'rph failed: Failed to execute \'registerProtocolHandler\' on \'Navigator\': The scheme of the url provided must be the \'http\' or \'https\'.',
+                'rph failed: Failed to execute \'registerProtocolHandler\' on \'Navigator\': The scheme of the url provided must be \'https\' or \'chrome-extension\'.',
                 'registerProtocolHandler should have failed');
   done();
 });
 
-const data = new Blob([frameSrc], {type: 'text/html'});
-document.getElementById('frame').src = window.URL.createObjectURL(data);
+const data = new Blob([winSrc], {type: 'text/html'});
+const objectURL = window.URL.createObjectURL(data);
+window.open(objectURL, '_blank');
 </script>
 </body>

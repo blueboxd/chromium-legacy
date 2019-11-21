@@ -65,9 +65,12 @@ class CORE_EXPORT ScriptIterator {
                                      v8::Local<v8::Object>,
                                      ExceptionState&);
 
-  ScriptIterator(std::nullptr_t) : isolate_(nullptr), done_(true) {}
+  // Constructs a ScriptIterator from an ES object that implements the iterator
+  // protocol: |iterator| is supposed to have a next() method that returns an
+  // object with two properties, "done" and "value".
+  ScriptIterator(v8::Isolate*, v8::Local<v8::Object> iterator);
 
-  ScriptIterator(v8::Local<v8::Object> iterator, v8::Isolate*);
+  ScriptIterator() = default;
 
   ScriptIterator(ScriptIterator&&) noexcept = default;
   ScriptIterator& operator=(ScriptIterator&&) noexcept = default;
@@ -85,12 +88,12 @@ class CORE_EXPORT ScriptIterator {
   v8::MaybeLocal<v8::Value> GetValue() { return value_; }
 
  private:
-  v8::Isolate* isolate_;
+  v8::Isolate* isolate_ = nullptr;
   v8::Local<v8::Object> iterator_;
   v8::Local<v8::String> next_key_;
   v8::Local<v8::String> done_key_;
   v8::Local<v8::String> value_key_;
-  bool done_;
+  bool done_ = true;
   v8::MaybeLocal<v8::Value> value_;
 };
 

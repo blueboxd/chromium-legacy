@@ -4,8 +4,11 @@
 
 #include "chrome/browser/profiles/gaia_info_update_service_factory.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -34,16 +37,17 @@ GAIAInfoUpdateServiceFactory* GAIAInfoUpdateServiceFactory::GetInstance() {
 
 KeyedService* GAIAInfoUpdateServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = static_cast<Profile*>(context);
+  Profile* profile = Profile::FromBrowserContext(context);
   if (!GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(profile))
     return NULL;
-  return new GAIAInfoUpdateService(profile);
-}
 
-void GAIAInfoUpdateServiceFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* prefs) {
-  prefs->RegisterInt64Pref(prefs::kProfileGAIAInfoUpdateTime, 0);
-  prefs->RegisterStringPref(prefs::kProfileGAIAInfoPictureURL, std::string());
+  if (!g_browser_process->profile_manager())
+    return nullptr;  // Some tests don't have a profile manager.
+
+  return new GAIAInfoUpdateService(
+      IdentityManagerFactory::GetForProfile(profile),
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage(),
+      profile->GetPath(), profile->GetPrefs());
 }
 
 bool GAIAInfoUpdateServiceFactory::ServiceIsNULLWhileTesting() const {

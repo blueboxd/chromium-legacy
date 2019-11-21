@@ -1153,6 +1153,8 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   std::string scheme_lower = base::ToLowerASCII(source_scheme);
   bool secure_source = GURL::SchemeIsCryptographic(scheme_lower);
+  cc->SetSourceScheme(secure_source ? CookieSourceScheme::kSecure
+                                    : CookieSourceScheme::kNonSecure);
   if ((cc->IsSecure() && !secure_source)) {
     status.AddExclusionReason(
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);

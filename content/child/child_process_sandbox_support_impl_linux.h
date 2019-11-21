@@ -5,9 +5,9 @@
 #ifndef CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
 #define CONTENT_CHILD_CHILD_PROCESS_SANDBOX_SUPPORT_IMPL_LINUX_H_
 
-#include <map>
-
 #include <stdint.h>
+
+#include <map>
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
@@ -15,9 +15,9 @@
 #include "components/services/font/public/cpp/font_loader.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "ui/gfx/font_fallback_linux.h"
 
 namespace blink {
-struct OutOfProcessFont;
 struct WebFontRenderStyle;
 }
 
@@ -37,7 +37,7 @@ class WebSandboxSupportLinux : public blink::WebSandboxSupport {
   // font name if the request could not be satisfied.
   void GetFallbackFontForCharacter(blink::WebUChar32 character,
                                    const char* preferred_locale,
-                                   blink::OutOfProcessFont* font) override;
+                                   gfx::FallbackFontData* font) override;
 
   // Matches a font uniquely by postscript name or full font name.  Used in
   // Blink for @font-face { src: local(arg) } matching.  Provide full font name
@@ -46,7 +46,7 @@ class WebSandboxSupportLinux : public blink::WebSandboxSupport {
   // filename is empty and the interface id is zero if no match is found.
   void MatchFontByPostscriptNameOrFullFontName(
       const char* font_unique_name,
-      blink::OutOfProcessFont* font) override;
+      gfx::FallbackFontData* font) override;
 
   // Returns rendering settings for a provided font family, size, and style.
   // |size_and_style| stores the bold setting in its least-significant bit, the
@@ -64,7 +64,7 @@ class WebSandboxSupportLinux : public blink::WebSandboxSupport {
   // cached. The cache is protected by this lock.
   base::Lock lock_;
   // Maps unicode chars to their fallback fonts.
-  std::map<int32_t, blink::OutOfProcessFont> unicode_font_families_
+  std::map<int32_t, gfx::FallbackFontData> unicode_font_families_
       GUARDED_BY(lock_);
 
   sk_sp<font_service::FontLoader> font_loader_;

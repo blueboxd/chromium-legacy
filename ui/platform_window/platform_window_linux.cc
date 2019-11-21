@@ -16,16 +16,6 @@ bool PlatformWindowLinux::IsSyncExtensionAvailable() const {
 
 void PlatformWindowLinux::OnCompleteSwapAfterResize() {}
 
-base::Optional<int> PlatformWindowLinux::GetWorkspace() const {
-  return base::nullopt;
-}
-
-void PlatformWindowLinux::SetVisibleOnAllWorkspaces(bool always_visible) {}
-
-bool PlatformWindowLinux::IsVisibleOnAllWorkspaces() const {
-  return false;
-}
-
 gfx::Rect PlatformWindowLinux::GetXRootWindowOuterBounds() const {
   return {};
 }

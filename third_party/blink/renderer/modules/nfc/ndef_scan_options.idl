@@ -5,7 +5,7 @@
 // https://w3c.github.io/web-nfc/#the-ndefscanoptions-dictionary
 dictionary NDEFScanOptions {
     AbortSignal? signal;
-    USVString url = "";
+    USVString id = "";
     NDEFRecordType? recordType;
     USVString mediaType = "";
 };

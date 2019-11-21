@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc.mojom;
 
@@ -17,7 +17,8 @@ interface CrashCollectorHost {
   // Sets build properties included in every report.
   [MinVersion=1] SetBuildProperties@1(string device,
                                       string board,
-                                      string cpu_abi);
+                                      string cpu_abi,
+                                      [MinVersion=3] string? fingerprint);
 };
 
 // Next Method ID: 2

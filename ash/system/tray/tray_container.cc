@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/geometry/insets.h"
@@ -18,22 +19,15 @@ namespace ash {
 TrayContainer::TrayContainer(Shelf* shelf) : shelf_(shelf) {
   DCHECK(shelf_);
 
-  ShelfConfig::Get()->AddObserver(this);
-
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   UpdateLayout();
 }
 
 TrayContainer::~TrayContainer() {
-  ShelfConfig::Get()->RemoveObserver(this);
 }
 
-void TrayContainer::OnShelfConfigUpdated() {
-  UpdateLayout();
-}
-
-void TrayContainer::UpdateAfterShelfAlignmentChange() {
+void TrayContainer::UpdateAfterShelfChange() {
   UpdateLayout();
 }
 

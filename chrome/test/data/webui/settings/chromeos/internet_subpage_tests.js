@@ -22,22 +22,6 @@ suite('InternetSubpage', function() {
       internetKnownNetworksPageTitle: 'internetKnownNetworksPageTitle',
     });
 
-    CrOncStrings = {
-      OncTypeCellular: 'OncTypeCellular',
-      OncTypeEthernet: 'OncTypeEthernet',
-      OncTypeMobile: 'OncTypeMobile',
-      OncTypeTether: 'OncTypeTether',
-      OncTypeVPN: 'OncTypeVPN',
-      OncTypeWiFi: 'OncTypeWiFi',
-      networkListItemConnected: 'networkListItemConnected',
-      networkListItemConnecting: 'networkListItemConnecting',
-      networkListItemConnectingTo: 'networkListItemConnectingTo',
-      networkListItemLabelTemplate: '%1 - %2',
-      networkListItemNotConnected: 'networkListItemNotConnected',
-      networkListItemNoNetwork: 'networkListItemNoNetwork',
-      vpnNameTemplate: 'vpnNameTemplate',
-    };
-
     mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
 

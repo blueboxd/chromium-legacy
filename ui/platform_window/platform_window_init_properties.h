@@ -39,6 +39,8 @@ enum class PlatformWindowOpacity {
   kTranslucentWindow,
 };
 
+class WorkspaceExtensionDelegate;
+
 // Initial properties which are passed to PlatformWindow to be initialized
 // with a desired set of properties.
 struct COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowInitProperties {
@@ -73,6 +75,8 @@ struct COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowInitProperties {
   bool visible_on_all_workspaces = false;
   bool remove_standard_frame = false;
   std::string workspace;
+
+  WorkspaceExtensionDelegate* workspace_extension_delegate = nullptr;
 
 #if defined(OS_LINUX)
   bool prefer_dark_theme = false;

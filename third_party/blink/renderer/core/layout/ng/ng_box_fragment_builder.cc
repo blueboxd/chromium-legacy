@@ -119,6 +119,8 @@ void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
       items_builder_->AddLine(*line, offset);
       // TODO(kojii): We probably don't need to AddChild this line, but there
       // maybe OOF objects. Investigate how to handle them.
+    } else {
+      DCHECK(fragment.IsFloating());
     }
   }
   AddChild(fragment, offset, inline_container);

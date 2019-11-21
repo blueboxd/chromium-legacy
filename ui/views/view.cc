@@ -430,10 +430,11 @@ bool View::GetVisible() const {
 }
 
 void View::SetVisible(bool visible) {
-  if (visible_ != visible) {
-    // If the View is currently visible, schedule paint to refresh parent.
+  const bool was_visible = visible_;
+  if (was_visible != visible) {
+    // If the View was visible, schedule paint to refresh parent.
     // TODO(beng): not sure we should be doing this if we have a layer.
-    if (visible_)
+    if (was_visible)
       SchedulePaint();
 
     visible_ = visible;
@@ -457,7 +458,7 @@ void View::SetVisible(bool visible) {
   if (parent_) {
     LayoutManager* const layout_manager = parent_->GetLayoutManager();
     if (layout_manager && layout_manager->view_setting_visibility_on_ != this)
-      layout_manager->ViewVisibilitySet(parent_, this, visible);
+      layout_manager->ViewVisibilitySet(parent_, this, was_visible, visible);
   }
 }
 

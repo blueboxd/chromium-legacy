@@ -37,7 +37,7 @@ function setOriginCheckbox(value) {
 }
 
 (async function() {
-  Runtime.experiments.setEnabled('backgroundServices', true);
+  Root.Runtime.experiments.setEnabled('backgroundServices', true);
 
   TestRunner.addResult(`Tests that the grid shows information as expected.\n`);
   await TestRunner.showPanel('resources');

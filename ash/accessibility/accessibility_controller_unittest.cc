@@ -1041,7 +1041,7 @@ class AccessibilityControllerSigninTest
 
 }  // namespace
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AccessibilityControllerSigninTest,
                          ::testing::Values(TestUserLoginType::kNewUser,
                                            TestUserLoginType::kGuest,

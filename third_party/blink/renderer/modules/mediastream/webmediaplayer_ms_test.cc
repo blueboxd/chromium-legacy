@@ -1364,7 +1364,7 @@ TEST_P(WebMediaPlayerMSTest, HiddenPlayerTests) {
 }
 #endif
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebMediaPlayerMSTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),

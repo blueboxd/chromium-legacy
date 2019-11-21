@@ -137,9 +137,6 @@ class BackForwardCacheMetrics
   void MarkNotRestoredWithReason(
       const BackForwardCacheCanStoreDocumentResult& can_store);
 
-  // Marks the frame disabled the back forward cache with the reason.
-  void MarkDisableForRenderFrameHost(const base::StringPiece& reason);
-
   // Injects a clock for mocking time.
   // Should be called only from the UI thread.
   CONTENT_EXPORT static void OverrideTimeForTesting(base::TickClock* clock);
@@ -188,7 +185,7 @@ class BackForwardCacheMetrics
 
   // The reasons given at BackForwardCache::DisableForRenderFrameHost. These are
   // a further breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.
-  std::set<std::string> disallowed_reasons_;
+  std::set<std::string> disabled_reasons_;
 
   DISALLOW_COPY_AND_ASSIGN(BackForwardCacheMetrics);
 };

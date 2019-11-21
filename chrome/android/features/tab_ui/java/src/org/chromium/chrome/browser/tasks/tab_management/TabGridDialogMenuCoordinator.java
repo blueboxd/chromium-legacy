@@ -91,7 +91,7 @@ public class TabGridDialogMenuCoordinator {
         // clang-format off
         adapter.registerType(ListItemType.MENU_ITEM,
                 () -> LayoutInflater.from(listView.getContext())
-                        .inflate(R.layout.tab_switcher_action_menu_item, null),
+                        .inflate(R.layout.list_menu_item, listView, false),
                 TabGridDialogMenuItemBinder::binder);
         // clang-format on
         listView.setOnItemClickListener((p, v, pos, id) -> {

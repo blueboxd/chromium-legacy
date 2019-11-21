@@ -489,11 +489,13 @@ void ShowSearchEngineSettings(Browser* browser) {
 }
 
 #if defined(OS_CHROMEOS)
-void ShowManagementPageForProfile(Profile* profile) {
-  const std::string page_path = "chrome://management";
-  base::RecordAction(base::UserMetricsAction("ShowOptions"));
-  SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
-      profile, GURL(page_path));
+void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser) {
+  // Management shows in a tab because it has a "back" arrow that takes the
+  // user to the Chrome browser about page, which is part of browser settings.
+  NavigateParams params(
+      GetSingletonTabNavigateParams(browser, GURL(kChromeUIManagementURL)));
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
 }
 
 void ShowAppManagementPage(Profile* profile, const std::string& app_id) {

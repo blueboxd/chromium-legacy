@@ -1397,12 +1397,12 @@ const base::string16& RenderTextHarfBuzz::GetDisplayText() {
     UpdateDisplayText(0);
     update_display_text_ = false;
     display_run_list_.reset();
-    return layout_text();
+    return GetLayoutText();
   }
 
   EnsureLayoutRunList();
   DCHECK(!update_display_text_);
-  return text_elided() ? display_text() : layout_text();
+  return text_elided() ? display_text() : GetLayoutText();
 }
 
 Size RenderTextHarfBuzz::GetStringSize() {
@@ -1994,14 +1994,10 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   ApplyCompositionAndSelectionStyles();
 
   // Build the run list from the script items and ranged styles and baselines.
-  // Use an empty color BreakList to avoid breaking runs at color boundaries.
-  BreakList<SkColor> empty_colors;
-  empty_colors.SetMax(colors().max());
   DCHECK_LE(text.size(), baselines().max());
   for (const BreakList<bool>& style : styles())
     DCHECK_LE(text.size(), style.max());
-  internal::StyleIterator style(empty_colors, baselines(),
-                                font_size_overrides(), weights(), styles());
+  internal::StyleIterator style = GetTextStyleIterator();
 
   // Split the original text by logical runs, then each logical run by common
   // script and each sequence at special characters and style boundaries. This
@@ -2034,10 +2030,10 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
         // Find the break boundary for style. The style won't break a grapheme
         // since the style of the first character is applied to the whole
         // grapheme.
-        style.UpdatePosition(
+        style.IncrementToPosition(
             GivenTextIndexToTextIndex(text, breaking_run_start));
         size_t text_style_end =
-            TextIndexToGivenTextIndex(text, style.GetRange().end());
+            TextIndexToGivenTextIndex(text, style.GetTextBreakingRange().end());
 
         // Break runs at certain characters that need to be rendered separately
         // to prevent an unusual character from forcing a fallback font on the
@@ -2328,7 +2324,7 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
   if (update_layout_run_list_) {
     layout_run_list_.Reset();
 
-    const base::string16& text = layout_text();
+    const base::string16& text = GetLayoutText();
     if (!text.empty())
       ItemizeAndShapeText(text, &layout_run_list_);
 

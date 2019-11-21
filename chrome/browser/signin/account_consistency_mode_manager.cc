@@ -37,9 +37,6 @@ const char kAccountConsistencyFeatureMethodDiceMigration[] = "dice_migration";
 // TODO(msalama): Remove this method.
 const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
-const base::Feature kForceDiceMigration{"ForceDiceMigration",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 namespace {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -294,15 +291,7 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
     return AccountConsistencyMethod::kDisabled;
   }
 
-  if (method == AccountConsistencyMethod::kDiceMigration) {
-    if (IsDiceMigrationCompleted(profile))
-      return AccountConsistencyMethod::kDice;
-
-    if (base::FeatureList::IsEnabled(kForceDiceMigration))
-      return AccountConsistencyMethod::kDice;
-  }
-
-  return method;
+  return AccountConsistencyMethod::kDice;
 #endif
 
   NOTREACHED();

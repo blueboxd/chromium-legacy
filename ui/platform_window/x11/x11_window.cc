@@ -4,6 +4,7 @@
 
 #include "ui/platform_window/x11/x11_window.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/x/x11_util.h"
@@ -16,6 +17,7 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
+#include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/platform_window/platform_window_delegate_linux.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
@@ -94,6 +96,10 @@ X11Window::X11Window(PlatformWindowDelegateLinux* platform_window_delegate)
   // Set a class property key, which allows |this| to be used for interactive
   // events, e.g. move or resize.
   SetWmMoveResizeHandler(this, static_cast<WmMoveResizeHandler*>(this));
+
+  // Set extensions property key that extends the interface of this platform
+  // implementation.
+  SetWorkspaceExtension(this, static_cast<WorkspaceExtension*>(this));
 }
 
 X11Window::~X11Window() {
@@ -108,6 +114,8 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
   gfx::Size adjusted_size_in_pixels =
       AdjustSizeForDisplay(config.bounds.size());
   config.bounds.set_size(adjusted_size_in_pixels);
+
+  workspace_extension_delegate_ = properties.workspace_extension_delegate;
 
   Init(config);
 }
@@ -392,18 +400,6 @@ void X11Window::StackAtTop() {
   XWindow::StackXWindowAtTop();
 }
 
-base::Optional<int> X11Window::GetWorkspace() const {
-  return XWindow::workspace();
-}
-
-void X11Window::SetVisibleOnAllWorkspaces(bool always_visible) {
-  XWindow::SetXWindowVisibleOnAllWorkspaces(always_visible);
-}
-
-bool X11Window::IsVisibleOnAllWorkspaces() const {
-  return XWindow::IsXWindowVisibleOnAllWorkspaces();
-}
-
 void X11Window::FlashFrame(bool flash_frame) {
   XWindow::SetFlashFrameHint(flash_frame);
 }
@@ -447,6 +443,25 @@ bool X11Window::IsTranslucentWindowOpacitySupported() const {
 
 void X11Window::LowerXWindow() {
   XWindow::LowerWindow();
+}
+
+std::string X11Window::GetWorkspace() const {
+  base::Optional<int> workspace_id = XWindow::workspace();
+  return workspace_id.has_value() ? base::NumberToString(workspace_id.value())
+                                  : std::string();
+}
+
+void X11Window::SetVisibleOnAllWorkspaces(bool always_visible) {
+  XWindow::SetXWindowVisibleOnAllWorkspaces(always_visible);
+}
+
+bool X11Window::IsVisibleOnAllWorkspaces() const {
+  return XWindow::IsXWindowVisibleOnAllWorkspaces();
+}
+
+void X11Window::SetWorkspaceExtensionDelegate(
+    WorkspaceExtensionDelegate* delegate) {
+  workspace_extension_delegate_ = delegate;
 }
 
 bool X11Window::HandleAsAtkEvent(XEvent* xev) {
@@ -546,7 +561,8 @@ void X11Window::OnXWindowUnmapped() {
 }
 
 void X11Window::OnXWindowWorkspaceChanged() {
-  platform_window_delegate_->OnWorkspaceChanged();
+  if (workspace_extension_delegate_)
+    workspace_extension_delegate_->OnWorkspaceChanged();
 }
 
 void X11Window::OnXWindowLostPointerGrab() {

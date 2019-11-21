@@ -2,11 +2,6 @@
     "images": [
         {
             "idiom": "universal",
-            "scale": "1x",
-            "filename": "incognito_icon.png"
-        },
-        {
-            "idiom": "universal",
             "scale": "2x",
             "filename": "incognito_icon@2x.png"
         },

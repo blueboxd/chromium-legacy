@@ -211,16 +211,18 @@ void LayoutManagerBase::ViewRemoved(View* host, View* view) {
 
 void LayoutManagerBase::ViewVisibilitySet(View* host,
                                           View* view,
-                                          bool visible) {
+                                          bool old_visibility,
+                                          bool new_visibility) {
   DCHECK_EQ(host_view_, host);
   auto it = child_infos_.find(view);
   DCHECK(it != child_infos_.end());
   const bool was_ignored = it->second.ignored;
-  if (it->second.can_be_visible == visible)
+  if (it->second.can_be_visible == new_visibility)
     return;
 
   base::AutoReset<bool> setter(&suppress_invalidate_, true);
-  const bool invalidate = PropagateViewVisibilitySet(host, view, visible);
+  const bool invalidate =
+      PropagateViewVisibilitySet(host, view, new_visibility);
   if (invalidate || !was_ignored)
     InvalidateHost(false);
 }

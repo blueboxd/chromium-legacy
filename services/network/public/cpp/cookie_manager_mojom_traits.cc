@@ -81,6 +81,38 @@ bool EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite>::FromMojom(
   return false;
 }
 
+network::mojom::CookieSourceScheme
+EnumTraits<network::mojom::CookieSourceScheme,
+           net::CookieSourceScheme>::ToMojom(net::CookieSourceScheme input) {
+  switch (input) {
+    case net::CookieSourceScheme::kUnset:
+      return network::mojom::CookieSourceScheme::kUnset;
+    case net::CookieSourceScheme::kNonSecure:
+      return network::mojom::CookieSourceScheme::kNonSecure;
+    case net::CookieSourceScheme::kSecure:
+      return network::mojom::CookieSourceScheme::kSecure;
+  }
+  NOTREACHED();
+  return static_cast<network::mojom::CookieSourceScheme>(input);
+}
+
+bool EnumTraits<network::mojom::CookieSourceScheme, net::CookieSourceScheme>::
+    FromMojom(network::mojom::CookieSourceScheme input,
+              net::CookieSourceScheme* output) {
+  switch (input) {
+    case network::mojom::CookieSourceScheme::kUnset:
+      *output = net::CookieSourceScheme::kUnset;
+      return true;
+    case network::mojom::CookieSourceScheme::kNonSecure:
+      *output = net::CookieSourceScheme::kNonSecure;
+      return true;
+    case network::mojom::CookieSourceScheme::kSecure:
+      *output = net::CookieSourceScheme::kSecure;
+      return true;
+  }
+  return false;
+}
+
 network::mojom::CookieAccessSemantics EnumTraits<
     network::mojom::CookieAccessSemantics,
     net::CookieAccessSemantics>::ToMojom(net::CookieAccessSemantics input) {
@@ -390,9 +422,14 @@ bool StructTraits<
   if (!cookie.ReadPriority(&priority))
     return false;
 
+  net::CookieSourceScheme source_scheme;
+  if (!cookie.ReadSourceScheme(&source_scheme))
+    return false;
+
   *out = net::CanonicalCookie(name, value, domain, path, creation_time,
                               expiry_time, last_access_time, cookie.secure(),
-                              cookie.httponly(), site_restrictions, priority);
+                              cookie.httponly(), site_restrictions, priority,
+                              source_scheme);
   return out->IsCanonical();
 }
 

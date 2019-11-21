@@ -109,7 +109,8 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_);
 
   // Wait for the readback to complete.
-  output_surface_->FlushForTesting();
+  if (output_surface_->context_provider())
+    output_surface_->context_provider()->ContextGL()->Finish();
   run_loop.Run();
 
   return PixelsMatchReference(ref_file, comparator);
@@ -138,7 +139,8 @@ bool PixelTest::RunPixelTest(viz::RenderPassList* pass_list,
   renderer_->DrawFrame(pass_list, device_scale_factor, device_viewport_size_);
 
   // Wait for the readback to complete.
-  output_surface_->FlushForTesting();
+  if (output_surface_->context_provider())
+    output_surface_->context_provider()->ContextGL()->Finish();
   run_loop.Run();
 
   // Need to wrap |ref_pixels| in a SkBitmap.

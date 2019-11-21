@@ -12,6 +12,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "media/base/color_plane_layout.h"

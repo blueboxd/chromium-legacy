@@ -9,7 +9,7 @@
   await TestRunner.addStylesheetTag('resources/diff-before.css');
   await TestRunner.addStylesheetTag('resources/diff-after.css');
 
-  Runtime.experiments.enableForTest('sourceDiff');
+  Root.Runtime.experiments.enableForTest('sourceDiff');
   var textAfter;
   SourcesTestRunner.waitForScriptSource(
       'diff-after.css', uiSourceCode => uiSourceCode.requestContent().then(onAfterContent));

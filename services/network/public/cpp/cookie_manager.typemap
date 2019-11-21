@@ -27,4 +27,5 @@ type_mappings = [
   "network.mojom.CookieAndLineWithStatus=::net::CookieAndLineWithStatus",
   "network.mojom.CookieChangeCause=::net::CookieChangeCause",
   "network.mojom.CookieChangeInfo=::net::CookieChangeInfo",
+  "network.mojom.CookieSourceScheme=::net::CookieSourceScheme",
 ]

@@ -66,9 +66,10 @@ double BaseTemporalInputType::ValueAsDate() const {
   return ValueAsDouble();
 }
 
-void BaseTemporalInputType::SetValueAsDate(double value,
-                                           ExceptionState&) const {
-  GetElement().setValue(SerializeWithMilliseconds(value));
+void BaseTemporalInputType::SetValueAsDate(
+    const base::Optional<base::Time>& value,
+    ExceptionState&) const {
+  GetElement().setValue(SerializeWithDate(value));
 }
 
 double BaseTemporalInputType::ValueAsDouble() const {
@@ -154,8 +155,11 @@ String BaseTemporalInputType::SerializeWithComponents(
   return date.ToString(DateComponents::kMillisecond);
 }
 
-String BaseTemporalInputType::SerializeWithMilliseconds(double value) const {
-  return Serialize(Decimal::FromDouble(value));
+String BaseTemporalInputType::SerializeWithDate(
+    const base::Optional<base::Time>& value) const {
+  if (!value)
+    return g_empty_string;
+  return Serialize(Decimal::FromDouble(value->ToJsTimeIgnoringNull()));
 }
 
 String BaseTemporalInputType::LocalizeValue(

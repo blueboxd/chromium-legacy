@@ -665,7 +665,7 @@ test(() => {
     }
   });
   assert_equals(converter.testByteString, "!@#123ABCabc\x00\x80\xFF\r\n\t");
-  
+
   [{input: true, expected: "true"},
    {input: 123, expected: "123"},
    {input: null, expected: "null"},
@@ -674,12 +674,9 @@ test(() => {
     assert_equals(converter.testByteString, test.expected);
   });
   converter.setTestByteString('abc');
-  converter.setTestByteStringDefaultNull('abc');
   assert_throws(new TypeError(), () => { converter.setTestByteString('\u0100') });
-  assert_throws(new TypeError(), () => { converter.setTestByteStringDefaultNull('\u0100') });
   assert_throws(new TypeError(), () => { converter.setTestByteString() });
-  converter.setTestByteStringDefaultNull();
-  assert_equals(converter.testByteString, "");
+  assert_equals(converter.testByteString, "abc");
 }, "Test conversion of ByteString types");
 
 test(() => {
@@ -711,12 +708,9 @@ test(() => {
     assert_equals(converter.testUSVString, test.expected);
   });
   converter.setTestUSVString('abc');
-  converter.setTestUSVStringDefaultNull('abc');
   converter.setTestUSVString('\u0100');
-  converter.setTestUSVStringDefaultNull('\u0100');
   assert_throws(new TypeError(), () => { converter.setTestUSVString() });
-  converter.setTestUSVStringDefaultNull();
-  assert_equals(converter.testUSVString, "");
+  assert_equals(converter.testUSVString, "\u0100");
 }, "Test conversion of USVString types");
 
 test(() => {

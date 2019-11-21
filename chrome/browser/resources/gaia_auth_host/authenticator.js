@@ -203,6 +203,16 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Old or not supported on Chrome OS messages.
+   * @type {!Array<string>}
+   * @const
+   */
+  const IGNORED_MESSAGES_FROM_GAIA = [
+    'clearOldAttempts',
+    'showConfirmCancel',
+  ];
+
+  /**
    * Initializes the authenticator component.
    */
   class Authenticator extends cr.EventTarget {
@@ -765,7 +775,7 @@ cr.define('cr.login', function() {
       const msg = e.data;
       if (msg.method in messageHandlers) {
         messageHandlers[msg.method].call(this, msg);
-      } else {
+      } else if (!IGNORED_MESSAGES_FROM_GAIA.includes(msg.method)) {
         console.warn('Unrecognized message from GAIA: ' + msg.method);
       }
     }

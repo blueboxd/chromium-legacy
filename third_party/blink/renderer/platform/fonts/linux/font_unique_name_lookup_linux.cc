@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/fonts/linux/font_unique_name_lookup_linux.h"
-#include "third_party/blink/public/platform/linux/out_of_process_font.h"
+
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/fonts/skia/sktypeface_factory.h"
+#include "ui/gfx/font_fallback_linux.h"
 
 namespace blink {
 
@@ -14,7 +15,7 @@ FontUniqueNameLookupLinux::~FontUniqueNameLookupLinux() = default;
 
 sk_sp<SkTypeface> FontUniqueNameLookupLinux::MatchUniqueName(
     const String& font_unique_name) {
-  OutOfProcessFont uniquely_matched_font;
+  gfx::FallbackFontData uniquely_matched_font;
   if (!Platform::Current()->GetSandboxSupport()) {
     LOG(ERROR) << "@font-face src: local() instantiation only available when "
                   "connected to browser process.";
@@ -27,7 +28,7 @@ sk_sp<SkTypeface> FontUniqueNameLookupLinux::MatchUniqueName(
       ->MatchFontByPostscriptNameOrFullFontName(
           font_unique_name.Utf8(WTF::kStrictUTF8Conversion).c_str(),
           &uniquely_matched_font);
-  if (!uniquely_matched_font.filename.size())
+  if (uniquely_matched_font.filepath.empty())
     return nullptr;
 
   return SkTypeface_Factory::FromFontConfigInterfaceIdAndTtcIndex(

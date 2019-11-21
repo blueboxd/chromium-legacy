@@ -27,11 +27,12 @@ class CanonicalCookie {
     private final boolean mHttpOnly;
     private final int mSameSite;
     private final int mPriority;
+    private final int mSourceScheme;
 
     /** Constructs a CanonicalCookie */
     CanonicalCookie(String name, String value, String domain, String path, long creation,
             long expiration, long lastAccess, boolean secure, boolean httpOnly, int sameSite,
-            int priority) {
+            int priority, int sourceScheme) {
         mName = name;
         mValue = value;
         mDomain = domain;
@@ -43,6 +44,7 @@ class CanonicalCookie {
         mHttpOnly = httpOnly;
         mSameSite = sameSite;
         mPriority = priority;
+        mSourceScheme = sourceScheme;
     }
 
     /** @return Priority of the cookie. */
@@ -100,10 +102,15 @@ class CanonicalCookie {
         return mValue;
     }
 
+    /** @return Source scheme of the cookie. */
+    int sourceScheme() {
+        return mSourceScheme;
+    }
+
     // Note incognito state cannot persist across app installs since the encryption key is stored
     // in the activity state bundle. So the version here is more of a guard than a real version
     // used for format migrations.
-    private static final int SERIALIZATION_VERSION = 20160426;
+    private static final int SERIALIZATION_VERSION = 20191105;
 
     static void saveListToStream(DataOutputStream out, CanonicalCookie[] cookies)
             throws IOException {
@@ -170,6 +177,7 @@ class CanonicalCookie {
         out.writeBoolean(mHttpOnly);
         out.writeInt(mSameSite);
         out.writeInt(mPriority);
+        out.writeInt(mSourceScheme);
     }
 
     private static CanonicalCookie createFromStream(DataInputStream in) throws IOException {
@@ -177,6 +185,6 @@ class CanonicalCookie {
         in.readUTF();
         return new CanonicalCookie(in.readUTF(), in.readUTF(), in.readUTF(), in.readUTF(),
                 in.readLong(), in.readLong(), in.readLong(), in.readBoolean(), in.readBoolean(),
-                in.readInt(), in.readInt());
+                in.readInt(), in.readInt(), in.readInt());
     }
 }

@@ -114,7 +114,6 @@ imageset("popup_menu_settings") {
 imageset("popup_menu_new_incognito_tab") {
   sources = [
     "popup_menu_new_incognito_tab.imageset/Contents.json",
-    "popup_menu_new_incognito_tab.imageset/popup_menu_new_incognito_tab.png",
     "popup_menu_new_incognito_tab.imageset/popup_menu_new_incognito_tab@2x.png",
     "popup_menu_new_incognito_tab.imageset/popup_menu_new_incognito_tab@3x.png",
   ]

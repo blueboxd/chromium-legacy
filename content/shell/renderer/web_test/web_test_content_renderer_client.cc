@@ -47,8 +47,6 @@ using blink::WebFrame;
 using blink::WebLocalFrame;
 using blink::WebPlugin;
 using blink::WebPluginParams;
-using blink::WebRTCPeerConnectionHandler;
-using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebThemeEngine;
 
 namespace content {
@@ -75,11 +73,6 @@ void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
   BlinkTestRunner* test_runner = BlinkTestRunner::Get(render_view);
   test_runner->Reset(false /* for_new_test */);
-}
-
-std::unique_ptr<blink::WebMediaStreamRendererFactory>
-WebTestContentRendererClient::CreateMediaStreamRendererFactory() {
-  return blink::CreateWebMediaStreamRendererFactory();
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>

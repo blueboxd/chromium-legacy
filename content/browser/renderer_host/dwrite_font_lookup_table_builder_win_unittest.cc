@@ -132,7 +132,7 @@ TEST_P(DWriteFontLookupTableBuilderTimeoutTest, TestTimeout) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     DWriteFontLookupTableBuilderTimeoutTest,
     ::testing::Values(
         DWriteFontLookupTableBuilder::SlowDownMode::kDelayEachTask,

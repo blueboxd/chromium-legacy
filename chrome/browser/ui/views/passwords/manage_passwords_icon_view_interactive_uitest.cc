@@ -99,9 +99,9 @@ IN_PROC_BROWSER_TEST_P(ManagePasswordsIconViewTest, CloseOnClick) {
 // TODO(crbug.com/932818): Remove the condition once the experiment is enabled
 // on ChromeOS. For now, on ChromeOS, we only test the non-experimental branch.
 #if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ManagePasswordsIconViewTest,
                          ::testing::Values(false));
 #else
-INSTANTIATE_TEST_SUITE_P(, ManagePasswordsIconViewTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ManagePasswordsIconViewTest, ::testing::Bool());
 #endif  // defined(OS_CHROMEOS)

@@ -15,6 +15,7 @@
 #include "ui/ozone/platform/wayland/test/mock_xdg_popup.h"
 #include "ui/ozone/platform/wayland/test/mock_xdg_surface.h"
 #include "ui/ozone/platform/wayland/test/server_object.h"
+#include "ui/ozone/platform/wayland/test/test_subsurface.h"
 
 struct wl_resource;
 
@@ -51,9 +52,18 @@ class MockSurface : public ServerObject {
   }
   MockXdgPopup* xdg_popup() const { return xdg_popup_.get(); }
 
+  void set_sub_surface(TestSubSurface* sub_surface) {
+    sub_surface_ = sub_surface;
+  }
+  TestSubSurface* sub_surface() const { return sub_surface_; }
+
   void set_frame_callback(wl_resource* callback_resource) {
     DCHECK(!frame_callback_);
     frame_callback_ = callback_resource;
+  }
+
+  bool has_role() const {
+    return !!xdg_surface_ || !!xdg_popup_ || !!sub_surface_;
   }
 
   void AttachNewBuffer(wl_resource* buffer_resource, int32_t x, int32_t y);
@@ -63,6 +73,7 @@ class MockSurface : public ServerObject {
  private:
   std::unique_ptr<MockXdgSurface> xdg_surface_;
   std::unique_ptr<MockXdgPopup> xdg_popup_;
+  TestSubSurface* sub_surface_ = nullptr;
 
   wl_resource* frame_callback_ = nullptr;
 

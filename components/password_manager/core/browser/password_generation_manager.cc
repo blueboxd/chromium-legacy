@@ -183,17 +183,14 @@ const PasswordForm* FindUsernameConflict(
 }  // namespace
 
 PasswordGenerationManager::PasswordGenerationManager(
-    FormSaver* form_saver,
     PasswordManagerClient* client)
-    : form_saver_(form_saver),
-      client_(client),
-      clock_(new base::DefaultClock) {}
+    : client_(client), clock_(new base::DefaultClock) {}
 
 PasswordGenerationManager::~PasswordGenerationManager() = default;
 
-std::unique_ptr<PasswordGenerationManager> PasswordGenerationManager::Clone(
-    FormSaver* form_saver) const {
-  auto clone = std::make_unique<PasswordGenerationManager>(form_saver, client_);
+std::unique_ptr<PasswordGenerationManager> PasswordGenerationManager::Clone()
+    const {
+  auto clone = std::make_unique<PasswordGenerationManager>(client_);
   clone->presaved_ = presaved_;
   return clone;
 }
@@ -236,7 +233,8 @@ void PasswordGenerationManager::GeneratedPasswordAccepted(
 
 void PasswordGenerationManager::PresaveGeneratedPassword(
     PasswordForm generated,
-    const std::vector<const PasswordForm*>& matches) {
+    const std::vector<const PasswordForm*>& matches,
+    FormSaver* form_saver) {
   DCHECK(!generated.password_value.empty());
   // Clear the username value if there are already saved credentials with
   // the same username in order to prevent overwriting.
@@ -244,32 +242,34 @@ void PasswordGenerationManager::PresaveGeneratedPassword(
     generated.username_value.clear();
   generated.date_created = clock_->Now();
   if (presaved_) {
-    form_saver_->UpdateReplace(generated, {} /* matches */,
-                               base::string16() /* old_password */,
-                               presaved_.value() /* old_primary_key */);
+    form_saver->UpdateReplace(generated, {} /* matches */,
+                              base::string16() /* old_password */,
+                              presaved_.value() /* old_primary_key */);
   } else {
-    form_saver_->Save(generated, {} /* matches */,
-                      base::string16() /* old_password */);
+    form_saver->Save(generated, {} /* matches */,
+                     base::string16() /* old_password */);
   }
   presaved_ = std::move(generated);
 }
 
-void PasswordGenerationManager::PasswordNoLongerGenerated() {
+void PasswordGenerationManager::PasswordNoLongerGenerated(
+    FormSaver* form_saver) {
   DCHECK(presaved_);
-  form_saver_->Remove(*presaved_);
+  form_saver->Remove(*presaved_);
   presaved_.reset();
 }
 
 void PasswordGenerationManager::CommitGeneratedPassword(
     PasswordForm generated,
     const std::vector<const PasswordForm*>& matches,
-    const base::string16& old_password) {
+    const base::string16& old_password,
+    FormSaver* form_saver) {
   DCHECK(presaved_);
   generated.preferred = true;
   generated.date_last_used = clock_->Now();
   generated.date_created = clock_->Now();
-  form_saver_->UpdateReplace(generated, matches, old_password,
-                             presaved_.value() /* old_primary_key */);
+  form_saver->UpdateReplace(generated, matches, old_password,
+                            presaved_.value() /* old_primary_key */);
 }
 
 void PasswordGenerationManager::OnPresaveBubbleResult(

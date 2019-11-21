@@ -247,8 +247,4 @@ base::ScopedClosureRunner GLOutputSurface::GetCacheBackBufferCb() {
 gpu::SurfaceHandle GLOutputSurface::GetSurfaceHandle() const {
   return surface_handle_;
 }
-
-void GLOutputSurface::FlushForTesting() {
-  context_provider_->ContextGL()->Finish();
-}
 }  // namespace viz

@@ -64,9 +64,11 @@ double MonthInputType::ValueAsDate() const {
   return msec;
 }
 
-String MonthInputType::SerializeWithMilliseconds(double value) const {
+String MonthInputType::SerializeWithDate(
+    const base::Optional<base::Time>& value) const {
   DateComponents date;
-  if (!date.SetMillisecondsSinceEpochForMonth(value))
+  if (!value ||
+      !date.SetMillisecondsSinceEpochForMonth(value->ToJsTimeIgnoringNull()))
     return String();
   return SerializeWithComponents(date);
 }

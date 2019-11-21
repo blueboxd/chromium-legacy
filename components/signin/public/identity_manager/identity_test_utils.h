@@ -146,6 +146,10 @@ void SetCookieAccounts(IdentityManager* identity_manager,
 void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                  AccountInfo account_info);
 
+void SimulateAccountImageFetch(IdentityManager* identity_manager,
+                               const CoreAccountId& account_id,
+                               const gfx::Image& image);
+
 // Sets whether the list of accounts in Gaia cookie jar is fresh and does not
 // need to be updated.
 void SetFreshnessOfAccountsInGaiaCookie(IdentityManager* identity_manager,

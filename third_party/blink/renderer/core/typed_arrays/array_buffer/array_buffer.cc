@@ -80,7 +80,7 @@ bool ArrayBuffer::ShareContentsWith(ArrayBufferContents& result) {
   DCHECK(IsShared());
   scoped_refptr<ArrayBuffer> keep_alive(this);
 
-  if (!contents_.DataShared()) {
+  if (!contents_.BackingStore()) {
     result.Detach();
     return false;
   }
@@ -93,7 +93,7 @@ bool ArrayBuffer::ShareNonSharedForInternalUse(ArrayBufferContents& result) {
   DCHECK(!IsShared());
   scoped_refptr<ArrayBuffer> keep_alive(this);
 
-  if (!contents_.Data()) {
+  if (!contents_.BackingStore()) {
     result.Detach();
     return false;
   }

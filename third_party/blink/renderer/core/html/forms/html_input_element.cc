@@ -1211,11 +1211,12 @@ ScriptValue HTMLInputElement::valueAsDate(ScriptState* script_state) const {
 void HTMLInputElement::setValueAsDate(ScriptState* script_state,
                                       const ScriptValue& value,
                                       ExceptionState& exception_state) {
-  double date_ms = NativeValueTraits<IDLDate>::NativeValue(
-      script_state->GetIsolate(), value.V8Value(), exception_state);
+  base::Optional<base::Time> date =
+      NativeValueTraits<IDLDateOrNull>::NativeValue(
+          script_state->GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException())
     return;
-  input_type_->SetValueAsDate(date_ms, exception_state);
+  input_type_->SetValueAsDate(date, exception_state);
 }
 
 double HTMLInputElement::valueAsNumber() const {

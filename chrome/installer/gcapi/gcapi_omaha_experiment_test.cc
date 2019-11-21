@@ -293,6 +293,6 @@ TEST_P(GCAPIOmahaExperimentTest, BuildExperimentDateString) {
       BuildExperimentDateString(kTestTime + base::TimeDelta::FromDays(366)));
 }
 
-INSTANTIATE_TEST_SUITE_P(, GCAPIOmahaExperimentTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, GCAPIOmahaExperimentTest, ::testing::Bool());
 
 }  // namespace

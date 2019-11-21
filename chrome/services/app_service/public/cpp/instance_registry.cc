@@ -58,6 +58,22 @@ void InstanceRegistry::RemoveObserver(Observer* observer) {
 void InstanceRegistry::OnInstances(const Instances& deltas) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
+  for (auto& delta : deltas) {
+    // If the window state is not kDestroyed, adds to |app_id_to_app_window_|,
+    // otherwise removes the window from |app_id_to_app_window_|.
+    if (static_cast<InstanceState>(delta.get()->State() &
+                                   InstanceState::kDestroyed) ==
+        InstanceState::kUnknown) {
+      app_id_to_app_windows_[delta.get()->AppId()].insert(
+          delta.get()->Window());
+    } else {
+      app_id_to_app_windows_[delta.get()->AppId()].erase(delta.get()->Window());
+      if (app_id_to_app_windows_[delta.get()->AppId()].size() == 0) {
+        app_id_to_app_windows_.erase(delta.get()->AppId());
+      }
+    }
+  }
+
   if (in_progress_) {
     for (auto& delta : deltas) {
       deltas_pending_.push_back(delta.get()->Clone());
@@ -70,6 +86,15 @@ void InstanceRegistry::OnInstances(const Instances& deltas) {
     pending.swap(deltas_pending_);
     DoOnInstances(std::move(pending));
   }
+}
+
+std::set<aura::Window*> InstanceRegistry::GetWindows(
+    const std::string& app_id) {
+  auto it = app_id_to_app_windows_.find(app_id);
+  if (it != app_id_to_app_windows_.end()) {
+    return it->second;
+  }
+  return std::set<aura::Window*>{};
 }
 
 void InstanceRegistry::DoOnInstances(const Instances& deltas) {

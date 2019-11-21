@@ -121,7 +121,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   MoveTo PaintBoxItem(const NGFragmentItem& item,
                       const PaintInfo& paint_info,
                       const PhysicalOffset& paint_offset);
-  void PaintFloatingItems(const PaintInfo&);
   void PaintFloatingChildren(const NGPhysicalContainerFragment&,
                              const PaintInfo& paint_info,
                              const PaintInfo& float_paint_info);

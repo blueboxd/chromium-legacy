@@ -39,7 +39,7 @@
 
     </LinearLayout>
 
-    <org.chromium.chrome.browser.ui.widget.ListMenuButton
+    <org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton
         android:id="@+id/more"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -47,7 +47,7 @@
         android:paddingEnd="@dimen/selectable_list_layout_row_padding"
         android:background="@null"
         android:src="@drawable/ic_more_vert_24dp"
-        app:menuWidth="@dimen/pref_languages_item_popup_width"
+        app:menuMaxWidth="@dimen/pref_languages_item_popup_width"
         app:tint="@color/standard_mode_tint"
         tools:ignore="ContentDescription" />
 </LinearLayout>

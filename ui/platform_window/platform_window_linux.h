@@ -26,14 +26,6 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowLinux
   // compositor observer.
   virtual void OnCompleteSwapAfterResize();
 
-  // X11-specific.  Returns the workspace the PlatformWindow is located in.
-  virtual base::Optional<int> GetWorkspace() const;
-  // X11-specific.  Sets the PlatformWindow to be visible on all workspaces.
-  virtual void SetVisibleOnAllWorkspaces(bool always_visible);
-  // X11-specific.  Returns true if the PlatformWindow is visible on all
-  // workspaces.
-  virtual bool IsVisibleOnAllWorkspaces() const;
-
   // X11-specific.  Returns the current bounds in terms of the X11 Root Window
   // including the borders provided by the window manager (if any).
   virtual gfx::Rect GetXRootWindowOuterBounds() const;

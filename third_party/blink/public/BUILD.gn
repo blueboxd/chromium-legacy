@@ -121,7 +121,6 @@ source_set("blink_headers") {
     "platform/file_path_conversion.h",
     "platform/interface_provider.h",
     "platform/interface_registry.h",
-    "platform/linux/out_of_process_font.h",
     "platform/linux/web_sandbox_support.h",
     "platform/mac/web_sandbox_support.h",
     "platform/mac/web_scrollbar_theme.h",

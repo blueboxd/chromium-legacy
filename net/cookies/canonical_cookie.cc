@@ -142,7 +142,8 @@ CanonicalCookie::CanonicalCookie()
     : secure_(false),
       httponly_(false),
       same_site_(CookieSameSite::NO_RESTRICTION),
-      priority_(COOKIE_PRIORITY_MEDIUM) {}
+      priority_(COOKIE_PRIORITY_MEDIUM),
+      source_scheme_(CookieSourceScheme::kUnset) {}
 
 CanonicalCookie::CanonicalCookie(const CanonicalCookie& other) = default;
 
@@ -156,7 +157,8 @@ CanonicalCookie::CanonicalCookie(const std::string& name,
                                  bool secure,
                                  bool httponly,
                                  CookieSameSite same_site,
-                                 CookiePriority priority)
+                                 CookiePriority priority,
+                                 CookieSourceScheme scheme_secure)
     : name_(name),
       value_(value),
       domain_(domain),
@@ -167,7 +169,8 @@ CanonicalCookie::CanonicalCookie(const std::string& name,
       secure_(secure),
       httponly_(httponly),
       same_site_(same_site),
-      priority_(priority) {}
+      priority_(priority),
+      source_scheme_(scheme_secure) {}
 
 CanonicalCookie::~CanonicalCookie() = default;
 
@@ -293,11 +296,15 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   CookieSameSiteString samesite_string = CookieSameSiteString::kUnspecified;
   CookieSameSite samesite = parsed_cookie.SameSite(&samesite_string);
   RecordCookieSameSiteAttributeValueHistogram(samesite_string);
+  CookieSourceScheme source_scheme = url.SchemeIsCryptographic()
+                                         ? CookieSourceScheme::kSecure
+                                         : CookieSourceScheme::kNonSecure;
 
   std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
       parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain, cookie_path,
       creation_time, cookie_expires, creation_time, parsed_cookie.IsSecure(),
-      parsed_cookie.IsHttpOnly(), samesite, parsed_cookie.Priority()));
+      parsed_cookie.IsHttpOnly(), samesite, parsed_cookie.Priority(),
+      source_scheme));
 
   DCHECK(cc->IsCanonical());
 
@@ -306,6 +313,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
 }
 
 // static
+// TODO(crbug.com/957184): This should ideally return a CookieInclusionStatus.
 std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
     const GURL& url,
     const std::string& name,
@@ -338,7 +346,11 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
   if (!cookie_util::GetCookieDomainWithString(url, domain, &cookie_domain))
     return nullptr;
 
-  if (secure && !url.SchemeIsCryptographic())
+  CookieSourceScheme source_scheme = url.SchemeIsCryptographic()
+                                         ? CookieSourceScheme::kSecure
+                                         : CookieSourceScheme::kNonSecure;
+
+  if (secure && source_scheme == CookieSourceScheme::kNonSecure)
     return nullptr;
 
   std::string cookie_path = CanonicalCookie::CanonPathWithString(url, path);
@@ -364,7 +376,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::CreateSanitizedCookie(
 
   std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
       name, value, cookie_domain, cookie_path, creation_time, expiration_time,
-      last_access_time, secure, http_only, same_site, priority));
+      last_access_time, secure, http_only, same_site, priority, source_scheme));
   DCHECK(cc->IsCanonical());
 
   return cc;

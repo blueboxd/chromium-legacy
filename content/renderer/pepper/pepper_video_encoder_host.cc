@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/safe_math.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"

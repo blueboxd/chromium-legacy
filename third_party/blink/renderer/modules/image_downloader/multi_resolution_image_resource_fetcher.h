@@ -45,18 +45,11 @@ class MultiResolutionImageResourceFetcher {
   MultiResolutionImageResourceFetcher(
       const KURL& image_url,
       LocalFrame* frame,
-      int id,
       mojom::blink::RequestContextType request_context,
       mojom::blink::FetchCacheMode cache_mode,
       Callback callback);
 
   virtual ~MultiResolutionImageResourceFetcher();
-
-  // URL of the image we're downloading.
-  const KURL& image_url() const { return image_url_; }
-
-  // Unique identifier for the request.
-  int id() const { return id_; }
 
   // HTTP status code upon fetch completion.
   int http_status_code() const { return http_status_code_; }
@@ -98,14 +91,8 @@ class MultiResolutionImageResourceFetcher {
 
   Callback callback_;
 
-  // Unique identifier for the request.
-  const int id_;
-
   // HTTP status code upon fetch completion.
   int http_status_code_;
-
-  // URL of the image.
-  const KURL image_url_;
 
   std::unique_ptr<WebAssociatedURLLoader> loader_;
   std::unique_ptr<ClientImpl> client_;

@@ -20,6 +20,7 @@
 #include "ui/ozone/platform/wayland/test/test_data_device_manager.h"
 #include "ui/ozone/platform/wayland/test/test_output.h"
 #include "ui/ozone/platform/wayland/test/test_seat.h"
+#include "ui/ozone/platform/wayland/test/test_subcompositor.h"
 #include "ui/ozone/platform/wayland/test/test_zwp_text_input_manager.h"
 
 struct wl_client;
@@ -101,6 +102,7 @@ class TestWaylandServerThread : public base::Thread,
 
   // Represent Wayland global objects
   TestCompositor compositor_;
+  TestSubCompositor sub_compositor_;
   TestDataDeviceManager data_device_manager_;
   TestOutput output_;
   TestSeat seat_;

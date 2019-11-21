@@ -504,7 +504,7 @@ TEST_P(ChromePasswordManagerClientSchemeTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ChromePasswordManagerClientSchemeTest,
     ::testing::ValuesIn(ChromePasswordManagerClientSchemeTest::GetSchemes()));
 

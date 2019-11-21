@@ -102,7 +102,7 @@ fi
 
 distro_codename=$(lsb_release --codename --short)
 distro_id=$(lsb_release --id --short)
-supported_codenames="(trusty|xenial|bionic|disco)"
+supported_codenames="(trusty|xenial|bionic|disco|eoan)"
 supported_ids="(Debian)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $distro_codename =~ $supported_codenames &&
@@ -112,6 +112,7 @@ if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
       "\tUbuntu 16.04 LTS (xenial with EoL April 2024)\n" \
       "\tUbuntu 18.04 LTS (bionic with EoL April 2028)\n" \
       "\tUbuntu 19.04 (disco)\n" \
+      "\tUbuntu 19.10 (eoan)\n" \
       "\tDebian 8 (jessie) or later" >&2
     exit 1
   fi
@@ -174,7 +175,6 @@ dev_list="\
   libgbm-dev
   libglib2.0-dev
   libglu1-mesa-dev
-  libgnome-keyring-dev
   libgtk-3-dev
   libkrb5-dev
   libnspr4-dev
@@ -243,7 +243,6 @@ common_lib_list="\
   libfontconfig1
   libfreetype6
   libglib2.0-0
-  libgnome-keyring0
   libgtk-3-0
   libpam0g
   libpango1.0-0
@@ -402,7 +401,7 @@ case $distro_codename in
                 gcc-5-multilib-arm-linux-gnueabihf
                 gcc-arm-linux-gnueabihf"
     ;;
-  disco)
+  disco|eoan)
     arm_list+=" g++-9-multilib-arm-linux-gnueabihf
                 gcc-9-multilib-arm-linux-gnueabihf
                 gcc-arm-linux-gnueabihf"
@@ -441,6 +440,7 @@ nacl_list="\
   ${naclports_list}
 "
 
+# Some package names have changed over time
 if package_exists libssl1.1; then
   nacl_list="${nacl_list} libssl1.1:i386"
 elif package_exists libssl1.0.2; then
@@ -448,8 +448,6 @@ elif package_exists libssl1.0.2; then
 else
   nacl_list="${nacl_list} libssl1.0.0:i386"
 fi
-
-# Some package names have changed over time
 if package_exists libpng16-16; then
   lib_list="${lib_list} libpng16-16"
 else
@@ -485,7 +483,9 @@ fi
 if package_exists libav-tools; then
   dev_list="${dev_list} libav-tools"
 fi
-if package_exists php7.2-cgi; then
+if package_exists php7.3-cgi; then
+  dev_list="${dev_list} php7.3-cgi libapache2-mod-php7.3"
+elif package_exists php7.2-cgi; then
   dev_list="${dev_list} php7.2-cgi libapache2-mod-php7.2"
 elif package_exists php7.1-cgi; then
   dev_list="${dev_list} php7.1-cgi libapache2-mod-php7.1"
@@ -499,6 +499,12 @@ fi
 # installing them.
 if package_exists appmenu-gtk; then
   lib_list="$lib_list appmenu-gtk"
+fi
+if package_exists libgnome-keyring0; then
+  lib_list="${lib_list} libgnome-keyring0"
+fi
+if package_exists libgnome-keyring-dev; then
+  lib_list="${lib_list} libgnome-keyring-dev"
 fi
 
 # Cross-toolchain strip is needed for building the sysroots.

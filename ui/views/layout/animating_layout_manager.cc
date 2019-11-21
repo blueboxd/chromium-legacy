@@ -273,8 +273,8 @@ void AnimatingLayoutManager::FadeOut(View* child_view) {
   //
   // This method is typically only called from View and has a private final
   // implementation in LayoutManagerBase so we have to cast to call it.
-  static_cast<LayoutManager*>(this)->ViewVisibilitySet(host_view(), child_view,
-                                                       false);
+  static_cast<LayoutManager*>(this)->ViewVisibilitySet(
+      host_view(), child_view, child_view->GetVisible(), false);
 }
 
 void AnimatingLayoutManager::FadeIn(View* child_view) {
@@ -287,8 +287,8 @@ void AnimatingLayoutManager::FadeIn(View* child_view) {
   //
   // This method is typically only called from View and has a private final
   // implementation in LayoutManagerBase so we have to cast to call it.
-  static_cast<LayoutManager*>(this)->ViewVisibilitySet(host_view(), child_view,
-                                                       true);
+  static_cast<LayoutManager*>(this)->ViewVisibilitySet(
+      host_view(), child_view, child_view->GetVisible(), true);
 }
 
 void AnimatingLayoutManager::AddObserver(Observer* observer) {

@@ -218,7 +218,8 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
         continue;
       }
       // Only log Arc apps with sync enabled.
-      if (package->FindKey(kShouldSync)->GetBool()) {
+      const base::Value* should_sync = package->FindKey(kShouldSync);
+      if (should_sync && should_sync->GetBool()) {
         AddAppIfMissing(AppLaunchEvent_AppType_PLAY, app.first,
                         package_name_value->GetString(), base::EmptyString(),
                         true);

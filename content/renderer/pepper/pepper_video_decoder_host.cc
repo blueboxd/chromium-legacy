@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "build/build_config.h"
 #include "content/common/pepper_file_util.h"
 #include "content/public/common/content_client.h"

@@ -34,7 +34,6 @@ class ColorSpace;
 namespace viz {
 class CopyOutputRequest;
 class CopyOutputResult;
-class OutputSurface;
 }
 
 namespace cc {
@@ -68,7 +67,6 @@ class LayerTreePixelTest : public LayerTreeTest {
   void AfterTest() override;
   void EndTest() override;
   void InitializeSettings(LayerTreeSettings* settings) override;
-  void DisplayDidDrawAndSwapOnThread() override;
 
   void TryEndTest();
 
@@ -141,8 +139,6 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   // Used to create SkiaOutputSurfaceImpl.
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
-
-  viz::OutputSurface* output_surface_ = nullptr;  // not owned
 };
 
 }  // namespace cc

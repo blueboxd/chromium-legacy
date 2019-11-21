@@ -10,10 +10,6 @@
 #include "base/time/time.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 
-namespace aura {
-class Window;
-}
-
 namespace apps {
 
 class Instance;

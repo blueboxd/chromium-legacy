@@ -83,7 +83,7 @@
       }
   `);
 
-  Runtime.experiments.enableForTest('timelineInvalidationTracking');
+  Root.Runtime.experiments.enableForTest('timelineInvalidationTracking');
 
   TestRunner.runTestSuite([
     async function testClassName(next) {

@@ -127,12 +127,6 @@ bool LoginState::IsUserAuthenticated() const {
          logged_in_user_type_ == LOGGED_IN_USER_CHILD;
 }
 
-bool LoginState::IsUserGaiaAuthenticated() const {
-  return logged_in_user_type_ == LOGGED_IN_USER_REGULAR ||
-         logged_in_user_type_ == LOGGED_IN_USER_OWNER ||
-         logged_in_user_type_ == LOGGED_IN_USER_CHILD;
-}
-
 // Private methods
 
 LoginState::LoginState()

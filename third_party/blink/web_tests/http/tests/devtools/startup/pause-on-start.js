@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 (async function() {
-  Runtime._queryParamsObject.set('panel', 'sources');
+  Root.Runtime._queryParamsObject.set('panel', 'sources');
   await TestRunner.setupStartupTest('resources/pause-on-start.html');
   TestRunner.addResult(
       `Tests that tools pause on start.\n`);

@@ -1940,9 +1940,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebglDraftExtensionsDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebGLDraftExtensions)},
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    {"force-dice-migration", flag_descriptions::kForceDiceMigrationName,
-     flag_descriptions::kForceDiceMigrationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kForceDiceMigration)},
     {"show-sync-paused-reason-cookies-cleared-on-exit",
      flag_descriptions::kShowSyncPausedReasonCookiesClearedOnExitName,
      flag_descriptions::kShowSyncPausedReasonCookiesClearedOnExitDescription,

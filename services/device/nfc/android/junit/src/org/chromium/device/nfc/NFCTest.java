@@ -738,7 +738,7 @@ public class NFCTest {
 
         // Should match by WebNFC Id (exact match).
         NdefScanOptions options1 = createNdefScanOptions();
-        options1.url = TEST_URL;
+        options1.id = TEST_URL;
         int watchId1 = mNextWatchId++;
         WatchResponse mockWatchCallback1 = mock(WatchResponse.class);
         nfc.watch(options1, watchId1, mockWatchCallback1);
@@ -764,7 +764,7 @@ public class NFCTest {
 
         // Should not match
         NdefScanOptions options4 = createNdefScanOptions();
-        options4.url = AUTHOR_RECORD_DOMAIN;
+        options4.id = AUTHOR_RECORD_DOMAIN;
         int watchId4 = mNextWatchId++;
         WatchResponse mockWatchCallback4 = mock(WatchResponse.class);
         nfc.watch(options4, watchId4, mockWatchCallback4);
@@ -1083,7 +1083,7 @@ public class NFCTest {
         int watchId1 = mNextWatchId++;
         {
             NdefScanOptions options = createNdefScanOptions();
-            options.url = "https://test.com/*";
+            options.id = "https://test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId1, mockWatchCallback);
             verify(mockWatchCallback).call(mErrorCaptor.capture());
@@ -1094,7 +1094,7 @@ public class NFCTest {
         int watchId2 = mNextWatchId++;
         {
             NdefScanOptions options = createNdefScanOptions();
-            options.url = "https://test.com/contact/42";
+            options.id = "https://test.com/contact/42";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId2, mockWatchCallback);
             verify(mockWatchCallback).call(mErrorCaptor.capture());
@@ -1105,7 +1105,7 @@ public class NFCTest {
         int watchId3 = mNextWatchId++;
         {
             NdefScanOptions options = createNdefScanOptions();
-            options.url = "https://subdomain.test.com/*";
+            options.id = "https://subdomain.test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId3, mockWatchCallback);
             verify(mockWatchCallback).call(mErrorCaptor.capture());
@@ -1116,7 +1116,7 @@ public class NFCTest {
         int watchId4 = mNextWatchId++;
         {
             NdefScanOptions options = createNdefScanOptions();
-            options.url = "https://subdomain.test.com/contact";
+            options.id = "https://subdomain.test.com/contact";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId4, mockWatchCallback);
             verify(mockWatchCallback).call(mErrorCaptor.capture());
@@ -1126,7 +1126,7 @@ public class NFCTest {
         // Should not match.
         {
             NdefScanOptions options = createNdefScanOptions();
-            options.url = "https://www.test.com/*";
+            options.id = "https://www.test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
             verify(mockWatchCallback).call(mErrorCaptor.capture());
@@ -1136,7 +1136,7 @@ public class NFCTest {
         // Should not match.
         {
             NdefScanOptions options = createNdefScanOptions();
-            options.url = "http://test.com/*";
+            options.id = "http://test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
             verify(mockWatchCallback).call(mErrorCaptor.capture());
@@ -1146,7 +1146,7 @@ public class NFCTest {
         // Should not match.
         {
             NdefScanOptions options = createNdefScanOptions();
-            options.url = "invalid pattern url";
+            options.id = "invalid pattern url";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
             verify(mockWatchCallback).call(mErrorCaptor.capture());
@@ -1185,7 +1185,7 @@ public class NFCTest {
 
         // Should not match when invalid WebNFC Id is received.
         NdefScanOptions options = createNdefScanOptions();
-        options.url = "https://test.com/*";
+        options.id = "https://test.com/*";
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
         nfc.watch(options, mNextWatchId, mockWatchCallback);
         verify(mockWatchCallback).call(mErrorCaptor.capture());
@@ -1242,7 +1242,7 @@ public class NFCTest {
 
     private NdefScanOptions createNdefScanOptions() {
         NdefScanOptions options = new NdefScanOptions();
-        options.url = "";
+        options.id = "";
         options.mediaType = "";
         return options;
     }

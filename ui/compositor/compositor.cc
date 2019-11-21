@@ -26,7 +26,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/metrics/begin_main_frame_metrics.h"
-#include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/features.h"
@@ -363,12 +362,6 @@ void Compositor::DisableSwapUntilResize() {
 void Compositor::ReenableSwap() {
   DCHECK(context_factory_private_);
   context_factory_private_->ResizeDisplay(this, size_);
-}
-
-void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
-  std::unique_ptr<cc::SwapPromise> swap_promise(
-      new cc::LatencyInfoSwapPromise(latency_info));
-  host_->QueueSwapPromise(std::move(swap_promise));
 }
 
 void Compositor::SetScaleAndSize(

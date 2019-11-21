@@ -52,6 +52,10 @@ class CSVPasswordIterator {
   }
 
  private:
+  // SeekToNextValidRow seeks the iterator to the first available data row which
+  // is valid, or to the end of the CSV if there is no such row.
+  void SeekToNextValidRow();
+
   // |map_| stores the meaning of particular columns in the row.
   const CSVPassword::ColumnMap* map_ = nullptr;
   // |csv_rest_| contains the CSV lines left to be iterated over.

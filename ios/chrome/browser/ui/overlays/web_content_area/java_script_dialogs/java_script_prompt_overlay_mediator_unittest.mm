@@ -98,7 +98,7 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupMainFrame) {
   EXPECT_NSEQ(base::SysUTF8ToNSString(default_prompt_value()),
               consumer().textFieldConfigurations[0].text);
   EXPECT_FALSE(!!consumer().textFieldConfigurations[0].placeholder);
-  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibiltyIdentifier,
+  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibilityIdentifier,
               consumer().textFieldConfigurations[0].accessibilityIdentifier);
   ASSERT_EQ(2U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
@@ -117,7 +117,7 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupIframe) {
   EXPECT_NSEQ(base::SysUTF8ToNSString(default_prompt_value()),
               consumer().textFieldConfigurations[0].text);
   EXPECT_FALSE(!!consumer().textFieldConfigurations[0].placeholder);
-  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibiltyIdentifier,
+  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibilityIdentifier,
               consumer().textFieldConfigurations[0].accessibilityIdentifier);
   ASSERT_EQ(2U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
@@ -138,7 +138,7 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupWithBlockingOption) {
   EXPECT_NSEQ(base::SysUTF8ToNSString(default_prompt_value()),
               consumer().textFieldConfigurations[0].text);
   EXPECT_FALSE(!!consumer().textFieldConfigurations[0].placeholder);
-  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibiltyIdentifier,
+  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibilityIdentifier,
               consumer().textFieldConfigurations[0].accessibilityIdentifier);
   ASSERT_EQ(3U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);

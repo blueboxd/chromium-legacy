@@ -222,6 +222,6 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Toggle Site Isolation.
-INSTANTIATE_TEST_SUITE_P(, ServiceWorkerProcessBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ServiceWorkerProcessBrowserTest, testing::Bool());
 
 }  // namespace content

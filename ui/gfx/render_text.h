@@ -89,12 +89,14 @@ class GFX_EXPORT SkiaTextRenderer {
 // Internal helper class used to iterate colors, baselines, and styles.
 class StyleIterator {
  public:
-  StyleIterator(const BreakList<SkColor>& colors,
-                const BreakList<BaselineStyle>& baselines,
-                const BreakList<int>& font_size_overrides,
-                const BreakList<Font::Weight>& weights,
-                const std::vector<BreakList<bool>>& styles);
+  StyleIterator(const BreakList<SkColor>* colors,
+                const BreakList<BaselineStyle>* baselines,
+                const BreakList<int>* font_size_overrides,
+                const BreakList<Font::Weight>* weights,
+                const std::vector<BreakList<bool>>* styles);
+  StyleIterator(const StyleIterator& style);
   ~StyleIterator();
+  StyleIterator& operator=(const StyleIterator& style);
 
   // Get the colors and styles at the current iterator position.
   SkColor color() const { return color_->second; }
@@ -106,23 +108,27 @@ class StyleIterator {
   // Get the intersecting range of the current iterator set.
   Range GetRange() const;
 
+  // Get the intersecting range of the current iterator set for attributes that
+  // can break text (e.g. not color).
+  Range GetTextBreakingRange() const;
+
   // Update the iterator to point to colors and styles applicable at |position|.
-  void UpdatePosition(size_t position);
+  void IncrementToPosition(size_t position);
 
  private:
-  BreakList<SkColor> colors_;
-  BreakList<BaselineStyle> baselines_;
-  BreakList<int> font_size_overrides_;
-  BreakList<Font::Weight> weights_;
-  std::vector<BreakList<bool> > styles_;
+  // Pointers to the breaklists to iterate through. These pointers can't be
+  // nullptr and the breaklists must outlive this object.
+  const BreakList<SkColor>* colors_;
+  const BreakList<BaselineStyle>* baselines_;
+  const BreakList<int>* font_size_overrides_;
+  const BreakList<Font::Weight>* weights_;
+  const std::vector<BreakList<bool>>* styles_;
 
   BreakList<SkColor>::const_iterator color_;
   BreakList<BaselineStyle>::const_iterator baseline_;
   BreakList<int>::const_iterator font_size_override_;
   BreakList<Font::Weight>::const_iterator weight_;
   std::vector<BreakList<bool>::const_iterator> style_;
-
-  DISALLOW_COPY_AND_ASSIGN(StyleIterator);
 };
 
 // Line segments are slices of the display text to be rendered on a single line.
@@ -587,11 +593,17 @@ class GFX_EXPORT RenderText {
   Range GetLineRange(const base::string16& text,
                      const internal::Line& line) const;
 
+  // Returns the text used for layout (e.g. after rewriting, eliding and
+  // obscuring characters).
+  const base::string16& GetLayoutText();
+
   // NOTE: The value of these accessors may be stale. Please make sure
   // that these fields are up to date before accessing them.
-  const base::string16& layout_text() const { return layout_text_; }
   const base::string16& display_text() const { return display_text_; }
   bool text_elided() const { return text_elided_; }
+
+  // Returns an iterator over the |text_| attributes.
+  internal::StyleIterator GetTextStyleIterator() const;
 
   const BreakList<SkColor>& colors() const { return colors_; }
   const BreakList<BaselineStyle>& baselines() const { return baselines_; }
@@ -775,8 +787,11 @@ class GFX_EXPORT RenderText {
  private:
   friend class test::RenderTextTestApi;
 
-  // Updates |layout_text_| and |display_text_| as needed (or marks them dirty).
+  // Resets |layout_text_| and |display_text_| and marks them dirty.
   void OnTextAttributeChanged();
+
+  // Computes the |layout_text_| by rewriting it from |text_|, if needed.
+  void EnsureLayoutTextUpdated();
 
   // Elides |text| as needed to fit in the |available_width| using |behavior|.
   // |text_width| is the pre-calculated width of the text shaped by this render
@@ -972,6 +987,9 @@ class GFX_EXPORT RenderText {
 
   // The cursor position in view space, used to traverse lines of varied widths.
   base::Optional<int> cached_cursor_x_;
+
+  // Tell whether or not the |layout_text_| needs an update or is up to date.
+  bool layout_text_up_to_date_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RenderText);
 };

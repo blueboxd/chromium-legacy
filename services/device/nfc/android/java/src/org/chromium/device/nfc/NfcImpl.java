@@ -584,7 +584,7 @@ public class NfcImpl implements Nfc {
      */
     private boolean matchesWatchOptions(NdefMessage message, NdefScanOptions options) {
         // Filter by WebNfc watch Id.
-        if (!matchesWebNfcId(message.url, options.url)) return false;
+        if (!matchesWebNfcId(message.url, options.id)) return false;
 
         // Matches any record / media type.
         if ((options.mediaType == null || options.mediaType.isEmpty())

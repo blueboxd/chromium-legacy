@@ -31,6 +31,8 @@ struct PLATFORM_EXPORT StructTraits<network::mojom::CanonicalCookieDataView,
       const blink::CanonicalCookie& c);
   static network::mojom::CookiePriority priority(
       const blink::CanonicalCookie& c);
+  static network::mojom::CookieSourceScheme source_scheme(
+      const blink::CanonicalCookie& c);
 
   static bool Read(network::mojom::CanonicalCookieDataView cookie,
                    blink::CanonicalCookie* out);

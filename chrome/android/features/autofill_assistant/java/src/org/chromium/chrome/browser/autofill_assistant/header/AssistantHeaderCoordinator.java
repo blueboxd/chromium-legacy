@@ -82,9 +82,8 @@ public class AssistantHeaderCoordinator implements ProfileDataCache.Observer {
     }
 
     private void addPoodle(View root, View poodleView) {
-        View statusMessage = root.findViewById(R.id.status_message);
-        ViewGroup parent = (ViewGroup) statusMessage.getParent();
-        parent.addView(poodleView, parent.indexOfChild(statusMessage));
+        ViewGroup parent = root.findViewById(R.id.poodle_wrapper);
+        parent.addView(poodleView);
     }
 
     // TODO(b/130415092): Use image from AGSA if chrome is not signed in.

@@ -17,7 +17,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
@@ -208,15 +207,7 @@ RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
   main_thread_scheduler_->SetTopLevelBlameContext(nullptr);
 }
 
-void RendererBlinkPlatformImpl::Shutdown() {
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // SandboxSupport contains a map of OutOfProcessFont objects, which hold
-  // WebStrings and WebVectors, which become invalidated when blink is shut
-  // down. Hence, we need to clear that map now, just before blink::shutdown()
-  // is called.
-  sandbox_support_.reset();
-#endif
-}
+void RendererBlinkPlatformImpl::Shutdown() {}
 
 //------------------------------------------------------------------------------
 

@@ -509,6 +509,9 @@ base::LazyInstance<FontSetCache>::Leaky g_font_sets_by_locale =
 
 }  // namespace
 
+FallbackFontData::FallbackFontData() = default;
+FallbackFontData::FallbackFontData(const FallbackFontData& other) = default;
+
 FallbackFontData GetFallbackFontForChar(UChar32 c, const std::string& locale) {
   auto& cached_font_set = g_font_sets_by_locale.Get()[locale];
   if (!cached_font_set)

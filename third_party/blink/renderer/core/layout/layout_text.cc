@@ -2412,7 +2412,7 @@ void LayoutText::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
   ObjectPaintInvalidator paint_invalidator(*this);
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       for (NGPaintFragment* fragment : fragments) {
@@ -2421,6 +2421,15 @@ void LayoutText::InvalidateDisplayItemClients(
       }
       return;
     }
+  }
+
+  if (IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
+      paint_invalidator.InvalidateDisplayItemClient(
+          *cursor.CurrentDisplayItemClient(), invalidation_reason);
+    }
+    return;
   }
 
   paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);

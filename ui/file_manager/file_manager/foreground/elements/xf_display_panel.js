@@ -24,13 +24,6 @@ class DisplayPanel extends HTMLElement {
     this.listener_;
 
     /**
-     * True if the panel is not visible.
-     * @type {boolean}
-     * @private
-     */
-    this.hidden_ = true;
-
-    /**
      * True if the panel is collapsed to summary view.
      * @type {boolean}
      * @private
@@ -43,6 +36,8 @@ class DisplayPanel extends HTMLElement {
      * @private
      */
     this.items_ = [];
+
+    this.setAriaHidden_();
   }
 
   /**
@@ -177,6 +172,7 @@ class DisplayPanel extends HTMLElement {
    */
   panelCollapseFinished(event) {
     this.hidden = true;
+    this.setAttribute('aria-hidden', 'true');
     this.classList.remove('expanding');
     this.classList.add('expandfinished');
     this.removeEventListener('animationend', this.listener_);
@@ -352,6 +348,7 @@ class DisplayPanel extends HTMLElement {
     panel.parent = this;
     panel.setAttribute('indicator', 'progress');
     this.items_.push(/** @type {!PanelItem} */ (panel));
+    this.setAriaHidden_();
     return /** @type {!PanelItem} */ (panel);
   }
 
@@ -376,6 +373,7 @@ class DisplayPanel extends HTMLElement {
 
     displayPanel.panels_.appendChild(panel);
     displayPanel.updateSummaryPanel();
+    this.setAriaHidden_();
   }
 
   /**
@@ -402,7 +400,17 @@ class DisplayPanel extends HTMLElement {
     }
     item.remove();
     this.items_.splice(index, 1);
+    this.setAriaHidden_();
     this.updateSummaryPanel();
+  }
+
+  /**
+   * Set aria-hidden to false if there is no panel.
+   * @private
+   */
+  setAriaHidden_() {
+    const hasItems = this.connectedPanelItems_().length > 0;
+    this.setAttribute('aria-hidden', !hasItems);
   }
 
   /**
@@ -427,6 +435,7 @@ class DisplayPanel extends HTMLElement {
       item.remove();
     }
     this.items_ = [];
+    this.setAriaHidden_();
     this.updateSummaryPanel();
   }
 }

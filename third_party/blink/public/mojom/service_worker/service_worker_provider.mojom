@@ -12,7 +12,6 @@ import "third_party/blink/public/mojom/service_worker/controller_service_worker_
 import "third_party/blink/public/mojom/service_worker/service_worker_container.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_object.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom";
-import "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
 // frame tree to expose service-worker-specific interfaces between renderer

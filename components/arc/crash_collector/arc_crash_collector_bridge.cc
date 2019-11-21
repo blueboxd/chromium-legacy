@@ -29,14 +29,20 @@ void RunCrashReporter(const std::string& crash_type,
                       const std::string& device,
                       const std::string& board,
                       const std::string& cpu_abi,
+                      const base::Optional<std::string>& fingerprint,
                       base::ScopedFD pipe) {
   base::LaunchOptions options;
   options.fds_to_remap.emplace_back(pipe.get(), STDIN_FILENO);
-  auto process =
-      base::LaunchProcess({kCrashReporterPath, "--arc_java_crash=" + crash_type,
-                           "--arc_device=" + device, "--arc_board=" + board,
-                           "--arc_cpu_abi=" + cpu_abi},
-                          options);
+
+  std::vector<std::string> argv = {
+      kCrashReporterPath, "--arc_java_crash=" + crash_type,
+      "--arc_device=" + device, "--arc_board=" + board,
+      "--arc_cpu_abi=" + cpu_abi};
+
+  if (fingerprint)
+    argv.emplace_back("--arc_fingerprint=" + fingerprint.value());
+
+  auto process = base::LaunchProcess(argv, options);
 
   int exit_code = 0;
   if (!process.WaitForExit(&exit_code)) {
@@ -94,15 +100,19 @@ void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
   base::PostTask(
       FROM_HERE, {base::ThreadPool(), base::WithBaseSyncPrimitives()},
       base::BindOnce(&RunCrashReporter, type, device_, board_, cpu_abi_,
+                     fingerprint_,
                      mojo::UnwrapPlatformHandle(std::move(pipe)).TakeFD()));
 }
 
-void ArcCrashCollectorBridge::SetBuildProperties(const std::string& device,
-                                                 const std::string& board,
-                                                 const std::string& cpu_abi) {
+void ArcCrashCollectorBridge::SetBuildProperties(
+    const std::string& device,
+    const std::string& board,
+    const std::string& cpu_abi,
+    const base::Optional<std::string>& fingerprint) {
   device_ = device;
   board_ = board;
   cpu_abi_ = cpu_abi;
+  fingerprint_ = fingerprint;
 }
 
 }  // namespace arc

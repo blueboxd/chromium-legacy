@@ -1476,7 +1476,7 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 }
 
 #define INSTANTIATE_TEST_SUITE(name) \
-  INSTANTIATE_TEST_SUITE_P(, name, ::testing::Values(false, true))
+  INSTANTIATE_TEST_SUITE_P(All, name, ::testing::Values(false, true))
 
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewAshTest);
 INSTANTIATE_TEST_SUITE(ImmersiveModeBrowserViewTest);

@@ -24,6 +24,10 @@ extern const base::Feature kWebAuthBiometricEnrollment;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthPhoneSupport;
 
+// Enable WebAuthn calls in cross-origin iframes if allowed by Feature Policy.
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const base::Feature kWebAuthFeaturePolicy;
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FEATURES_H_

@@ -300,6 +300,7 @@ void PrintUsage(const char* argv0) {
   // TODO(mattm): allow target to specify an HTTPS URL to check the cert of?
   // TODO(mattm): allow target to be a verify_certificate_chain_unittest .test
   // file?
+  // TODO(mattm): allow specifying ocsp_response and sct_list inputs as well.
 }
 
 }  // namespace

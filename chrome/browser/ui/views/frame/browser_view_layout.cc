@@ -341,7 +341,7 @@ gfx::Size BrowserViewLayout::GetPreferredSize(const views::View* host) const {
 
 int BrowserViewLayout::LayoutTabStripRegion(int top) {
   if (!delegate_->IsTabStripVisible()) {
-    tab_strip_region_view_->SetVisible(false);
+    SetViewVisibility(tab_strip_region_view_, false);
     tab_strip_region_view_->SetBounds(0, 0, 0, 0);
     return top;
   }
@@ -350,7 +350,7 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
   gfx::Rect tab_strip_region_bounds(
       delegate_->GetBoundsForTabStripRegionInBrowserView());
 
-  tab_strip_region_view_->SetVisible(true);
+  SetViewVisibility(tab_strip_region_view_, true);
   tab_strip_region_view_->SetBoundsRect(tab_strip_region_bounds);
 
   return tab_strip_region_bounds.bottom() -
@@ -374,7 +374,7 @@ int BrowserViewLayout::LayoutToolbar(int top) {
   int browser_view_width = vertical_layout_rect_.width();
   bool toolbar_visible = delegate_->IsToolbarVisible();
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
-  toolbar_->SetVisible(toolbar_visible);
+  SetViewVisibility(toolbar_, toolbar_visible);
   toolbar_->SetBounds(vertical_layout_rect_.x(), top, browser_view_width,
                       height);
   return toolbar_->bounds().bottom();
@@ -390,7 +390,7 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
 
   if (delegate_->IsContentsSeparatorEnabled() &&
       (toolbar_->GetVisible() || bookmark_bar_) && top > 0) {
-    contents_separator_->SetVisible(true);
+    SetViewVisibility(contents_separator_, true);
     const int separator_height =
         contents_separator_->GetPreferredSize().height();
     contents_separator_->SetBounds(vertical_layout_rect_.x(), top,
@@ -398,7 +398,7 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
                                    separator_height);
     top += separator_height;
   } else {
-    contents_separator_->SetVisible(false);
+    SetViewVisibility(contents_separator_, false);
   }
 
   return LayoutInfoBar(top);
@@ -406,7 +406,7 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {
 
 int BrowserViewLayout::LayoutBookmarkBar(int top) {
   if (!delegate_->IsBookmarkBarVisible()) {
-    bookmark_bar_->SetVisible(false);
+    SetViewVisibility(bookmark_bar_, false);
     // TODO(jamescook): Don't change the bookmark bar height when it is
     // invisible, so we can use its height for layout even in that state.
     bookmark_bar_->SetBounds(0, top, browser_view_->width(), 0);
@@ -419,7 +419,7 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
                            vertical_layout_rect_.width(), bookmark_bar_height);
   // Set visibility after setting bounds, as the visibility update uses the
   // bounds to determine if the mouse is hovering over a button.
-  bookmark_bar_->SetVisible(true);
+  SetViewVisibility(bookmark_bar_, true);
   return top + bookmark_bar_height;
 }
 
@@ -434,7 +434,7 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
     top = browser_view_ ? browser_view_->y() : 0;
   }
 
-  infobar_container_->SetVisible(IsInfobarVisible());
+  SetViewVisibility(infobar_container_, IsInfobarVisible());
   infobar_container_->SetBounds(
       vertical_layout_rect_.x(), top, vertical_layout_rect_.width(),
       infobar_container_->GetPreferredSize().height());
@@ -500,7 +500,7 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
         delegate_->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF);
     DCHECK(download_shelf_);
     int height = visible ? download_shelf_->GetPreferredSize().height() : 0;
-    download_shelf_->SetVisible(visible);
+    SetViewVisibility(download_shelf_, visible);
     download_shelf_->SetBounds(vertical_layout_rect_.x(), bottom - height,
                                vertical_layout_rect_.width(), height);
     download_shelf_->Layout();

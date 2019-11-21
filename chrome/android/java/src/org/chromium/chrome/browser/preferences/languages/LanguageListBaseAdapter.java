@@ -22,9 +22,10 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ui.widget.ListMenuButton;
 import org.chromium.chrome.browser.ui.widget.dragreorder.DragReorderableListAdapter;
 import org.chromium.chrome.browser.ui.widget.dragreorder.DragStateDelegate;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButtonDelegate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,9 +94,9 @@ public class LanguageListBaseAdapter extends DragReorderableListAdapter<Language
 
         /**
          * Sets up the menu button at the end of this row with a given delegate.
-         * @param delegate A {@link ListMenuButton.Delegate}.
+         * @param delegate A {@link ListMenuButtonDelegate}.
          */
-        void setMenuButtonDelegate(@NonNull ListMenuButton.Delegate delegate) {
+        void setMenuButtonDelegate(@NonNull ListMenuButtonDelegate delegate) {
             mMoreButton.setVisibility(View.VISIBLE);
             mMoreButton.setDelegate(delegate);
             // Set item row end padding 0 when MenuButton is visible.

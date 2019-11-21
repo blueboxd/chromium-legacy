@@ -24,10 +24,6 @@ void PlatformWindowDelegateLinux::OnLostMouseGrab() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
-void PlatformWindowDelegateLinux::OnWorkspaceChanged() {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
 void PlatformWindowDelegateLinux::GetWindowMask(const gfx::Size& size,
                                                 SkPath* window_mask) {
   NOTIMPLEMENTED_LOG_ONCE();

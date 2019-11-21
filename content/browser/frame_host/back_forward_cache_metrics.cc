@@ -105,6 +105,7 @@ void BackForwardCacheMetrics::DidCommitNavigation(
       RecordMetricsForHistoryNavigationCommit(navigation);
     not_restored_reasons_.reset();
     blocklisted_features_ = 0;
+    disabled_reasons_.clear();
   }
 
   if (last_committed_main_frame_navigation_id_ != -1 &&
@@ -188,11 +189,8 @@ void BackForwardCacheMetrics::MarkNotRestoredWithReason(
     browsing_instance_not_swapped_reason_ =
         can_store.browsing_instance_not_swapped_reason();
   }
-}
-
-void BackForwardCacheMetrics::MarkDisableForRenderFrameHost(
-    const base::StringPiece& reason) {
-  disallowed_reasons_.insert(reason.as_string());
+  for (const std::string& reason : can_store.disabled_reasons())
+    disabled_reasons_.insert(reason);
 }
 
 void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
@@ -231,7 +229,7 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
     }
   }
 
-  for (const std::string& reason : disallowed_reasons_) {
+  for (const std::string& reason : disabled_reasons_) {
     // Use SparseHistogram instead of other simple macros for metrics. It is
     // because the reasons are represented as strings, and it was impossible to
     // define an enum values.

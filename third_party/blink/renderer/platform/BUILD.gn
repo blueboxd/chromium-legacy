@@ -1269,6 +1269,8 @@ jumbo_component("platform") {
     "peerconnection/rtc_rtp_sender_platform.h",
     "peerconnection/rtc_rtp_source.cc",
     "peerconnection/rtc_rtp_source.h",
+    "peerconnection/rtc_session_description_platform.cc",
+    "peerconnection/rtc_session_description_platform.h",
     "peerconnection/rtc_session_description_request.h",
     "peerconnection/rtc_stats.cc",
     "peerconnection/rtc_stats.h",
@@ -1478,6 +1480,7 @@ jumbo_component("platform") {
     "//third_party/blink/renderer/platform/loader",
     "//third_party/blink/renderer/platform/network",
     "//third_party/blink/renderer/platform/scheduler",
+    "//ui/gfx",
   ]
   deps = [
     ":platform_export",
@@ -1509,7 +1512,6 @@ jumbo_component("platform") {
     "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib/google:compression_utils",
     "//ui/base:base",
-    "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/mojom",
   ]

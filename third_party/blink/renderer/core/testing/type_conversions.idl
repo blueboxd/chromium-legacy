@@ -46,11 +46,9 @@ interface TypeConversions {
 
     attribute ByteString testByteString;
     void setTestByteString(ByteString byteString);
-    [ImplementedAs=setTestByteString] void setTestByteStringDefaultNull(optional ByteString byteString = null);
 
     attribute USVString testUSVString;
     void setTestUSVString(USVString usvString);
-    [ImplementedAs=setTestUSVString] void setTestUSVStringDefaultNull(optional USVString usvString = null);
 
     // The attribute below is read-only for simplicity; most of the
     // functionality is tested above, we are only interested in the

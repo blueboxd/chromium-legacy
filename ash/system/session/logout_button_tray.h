@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/session/session_observer.h"
+#include "ash/system/tray/tray_background_view.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/views/controls/button/button.h"
@@ -23,12 +24,10 @@ class MdTextButton;
 
 namespace ash {
 class Shelf;
-class TrayContainer;
 
 // Adds a logout button to the shelf's status area if enabled by the
 // kShowLogoutButtonInTray pref.
-class ASH_EXPORT LogoutButtonTray : public views::View,
-                                    public views::ButtonListener,
+class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
                                     public SessionObserver {
  public:
   explicit LogoutButtonTray(Shelf* shelf);
@@ -36,14 +35,14 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  void UpdateAfterLoginStatusChange();
-  void UpdateAfterShelfAlignmentChange();
-
-  // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  // TrayBackgroundView:
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
+  void UpdateAfterShelfChange() override;
+  void UpdateBackground() override;
+  void ClickedOutsideBubble() override;
+  void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
+  base::string16 GetAccessibleNameForTray() override;
   const char* GetClassName() const override;
-
-  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // SessionObserver:
@@ -57,8 +56,6 @@ class ASH_EXPORT LogoutButtonTray : public views::View,
   void UpdateVisibility();
   void UpdateButtonTextAndImage();
 
-  Shelf* const shelf_;
-  TrayContainer* container_;
   views::MdTextButton* button_;
   bool show_logout_button_in_tray_ = false;
   base::TimeDelta dialog_duration_;

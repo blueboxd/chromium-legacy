@@ -588,7 +588,7 @@ bool CrostiniRegistryService::IsCrostiniShelfAppId(
                        base::CompareCase::SENSITIVE)) {
     return true;
   }
-  if (shelf_app_id == kCrostiniTerminalId)
+  if (shelf_app_id == GetTerminalId())
     return true;
   // TODO(timloh): We need to handle desktop files that have been removed.
   // For example, running windows with a no-longer-valid app id will try to
@@ -619,7 +619,7 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
   const base::Value* pref_registration =
       apps->FindKeyOfType(app_id, base::Value::Type::DICTIONARY);
 
-  if (app_id == kCrostiniTerminalId)
+  if (app_id == GetTerminalId())
     return base::make_optional<Registration>(pref_registration, true);
 
   if (!pref_registration)

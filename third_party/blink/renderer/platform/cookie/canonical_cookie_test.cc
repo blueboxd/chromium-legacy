@@ -42,7 +42,8 @@ TEST(CanonicalCookieTest, CreationFailure) {
                    "\x01", "value", "domain", "/path", base::Time::Now(),
                    base::Time::Now(), base::Time::Now(), false, false,
                    network::mojom::CookieSameSite::NO_RESTRICTION,
-                   CanonicalCookie::kDefaultPriority)
+                   CanonicalCookie::kDefaultPriority,
+                   network::mojom::CookieSourceScheme::kNonSecure)
                    .has_value());
 }
 
@@ -57,7 +58,8 @@ TEST(CanonicalCookieTest, Properties) {
   base::Optional<CanonicalCookie> cookie_opt = CanonicalCookie::Create(
       "name", "value", "domain", "/path", t1, t2, t3, true, true,
       network::mojom::CookieSameSite::STRICT_MODE,
-      network::mojom::CookiePriority::HIGH);
+      network::mojom::CookiePriority::HIGH,
+      network::mojom::CookieSourceScheme::kSecure);
   ASSERT_TRUE(cookie_opt);
   CanonicalCookie& cookie = cookie_opt.value();
 
@@ -72,15 +74,17 @@ TEST(CanonicalCookieTest, Properties) {
   EXPECT_TRUE(cookie.IsHttpOnly());
   EXPECT_EQ(network::mojom::CookieSameSite::STRICT_MODE, cookie.SameSite());
   EXPECT_EQ(network::mojom::CookiePriority::HIGH, cookie.Priority());
+  EXPECT_EQ(cookie.SourceScheme(), network::mojom::CookieSourceScheme::kSecure);
 
   // Exercise WebCookieSameSite values.
   for (auto same_site : {network::mojom::CookieSameSite::NO_RESTRICTION,
                          network::mojom::CookieSameSite::LAX_MODE,
                          network::mojom::CookieSameSite::STRICT_MODE}) {
     EXPECT_EQ(same_site,
-              CanonicalCookie::Create("name", "value", "domain", "/path", t1,
-                                      t2, t3, false, false, same_site,
-                                      CanonicalCookie::kDefaultPriority)
+              CanonicalCookie::Create(
+                  "name", "value", "domain", "/path", t1, t2, t3, false, false,
+                  same_site, CanonicalCookie::kDefaultPriority,
+                  network::mojom::CookieSourceScheme::kSecure)
                   ->SameSite());
   }
 
@@ -92,7 +96,8 @@ TEST(CanonicalCookieTest, Properties) {
     EXPECT_EQ(priority,
               CanonicalCookie::Create(
                   "name", "value", "domain", "/path", t1, t2, t3, false, false,
-                  network::mojom::CookieSameSite::NO_RESTRICTION, priority)
+                  network::mojom::CookieSameSite::NO_RESTRICTION, priority,
+                  network::mojom::CookieSourceScheme::kSecure)
                   ->Priority());
   }
 }

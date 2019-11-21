@@ -27,8 +27,8 @@
 #include "extensions/common/features/feature.h"
 #include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_database.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
 
 namespace base {
 class ListValue;

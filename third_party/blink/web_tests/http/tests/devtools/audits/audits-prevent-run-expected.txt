@@ -10,9 +10,8 @@ Tests that audits panel prevents run of unauditable pages.
 [ ] Best practices
 [ ] Accessibility
 [ ] SEO
-[ ] Clear storage
-Help text: At least one category must be selected.
-Run audits: disabled visible
+[x] Publisher Ads
+Generate report: enabled visible
 
 
 **Allows audit with a single category**
@@ -23,8 +22,8 @@ Run audits: disabled visible
 [ ] Best practices
 [ ] Accessibility
 [ ] SEO
-[ ] Clear storage
-Run audits: enabled visible
+[x] Publisher Ads
+Generate report: enabled visible
 
 
 **Allows audit on undockable page**
@@ -35,8 +34,8 @@ Run audits: enabled visible
 [ ] Best practices
 [ ] Accessibility
 [ ] SEO
-[ ] Clear storage
-Run audits: enabled visible
+[x] Publisher Ads
+Generate report: enabled visible
 
 
 **Prevents audit on internal page**
@@ -48,7 +47,7 @@ URL: about:blank
 [ ] Best practices
 [ ] Accessibility
 [ ] SEO
-[ ] Clear storage
+[x] Publisher Ads
 Help text: Can only audit HTTP/HTTPS pages and Chrome extensions. Navigate to a different page to start an audit.
-Run audits: disabled visible
+Generate report: disabled visible
 

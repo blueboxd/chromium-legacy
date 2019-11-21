@@ -28,13 +28,18 @@ GFX_EXPORT void ClearAllFontFallbackCachesForTesting();
 // request could not be satisfied.
 //
 // Previously blink::WebFontInfo::fallbackFontForChar.
-struct FallbackFontData {
+struct GFX_EXPORT FallbackFontData {
   std::string name;
   base::FilePath filepath;
+  int fontconfig_interface_id = 0;
   int ttc_index = 0;
   bool is_bold = false;
   bool is_italic = false;
+
+  FallbackFontData();
+  FallbackFontData(const FallbackFontData& other);
 };
+
 GFX_EXPORT FallbackFontData
 GetFallbackFontForChar(UChar32 c, const std::string& preferred_locale);
 

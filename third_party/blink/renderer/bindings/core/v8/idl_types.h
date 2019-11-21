@@ -7,6 +7,7 @@
 
 #include <type_traits>
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types_base.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
@@ -87,9 +88,9 @@ struct IDLUnrestrictedDouble final : public IDLBaseHelper<double> {};
 struct IDLFloat final : public IDLBaseHelper<float> {};
 struct IDLUnrestrictedFloat final : public IDLBaseHelper<float> {};
 
-// Date
-// TODO(crbug.com/988343): Change |double| to |base::Time|.
-struct IDLDate final : public IDLBaseHelper<double> {};
+// Nullable Date
+struct IDLDateOrNull final : public IDLBaseHelper<base::Optional<base::Time>> {
+};
 
 // Promise
 struct IDLPromise final : public IDLBaseHelper<ScriptPromise> {};

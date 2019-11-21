@@ -116,19 +116,6 @@ bool CheckReadOnlySharedMemoryWindowsHandle(HANDLE handle) {
 }
 #endif
 
-bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  return CheckReadOnlySharedMemoryMachPort(handle.memory_object_);
-#elif defined(OS_FUCHSIA)
-  return CheckReadOnlySharedMemoryFuchsiaHandle(
-      zx::unowned_vmo(handle.GetHandle()));
-#elif defined(OS_WIN)
-  return CheckReadOnlySharedMemoryWindowsHandle(handle.GetHandle());
-#else
-  return CheckReadOnlySharedMemoryFdPosix(handle.GetHandle());
-#endif
-}
-
 bool CheckReadOnlyPlatformSharedMemoryRegionForTesting(
     subtle::PlatformSharedMemoryRegion region) {
   if (region.GetMode() != subtle::PlatformSharedMemoryRegion::Mode::kReadOnly) {

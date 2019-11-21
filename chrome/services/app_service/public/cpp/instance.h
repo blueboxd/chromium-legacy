@@ -9,10 +9,7 @@
 #include <string>
 
 #include "base/time/time.h"
-
-namespace aura {
-class Window;
-}
+#include "ui/aura/window.h"
 
 namespace apps {
 

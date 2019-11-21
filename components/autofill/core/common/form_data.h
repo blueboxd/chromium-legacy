@@ -130,6 +130,8 @@ bool DeserializeFormData(base::PickleIterator* iter, FormData* form_data);
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormData& form);
 
+bool FormDataEqualForTesting(const FormData& lhs, const FormData& rhs);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_COMMON_FORM_DATA_H_

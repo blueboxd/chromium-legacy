@@ -74,7 +74,6 @@ class RasterContextProvider;
 namespace ui {
 
 class Compositor;
-class LatencyInfo;
 class Layer;
 class Reflector;
 class ScopedAnimationDurationScaleMode;
@@ -282,8 +281,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // until it is resized.
   void DisableSwapUntilResize();
   void ReenableSwap();
-
-  void SetLatencyInfo(const LatencyInfo& latency_info);
 
   // Sets the compositor's device scale factor and size.
   void SetScaleAndSize(

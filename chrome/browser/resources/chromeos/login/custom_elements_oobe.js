@@ -59,3 +59,4 @@
 // <include src="multidevice_setup_first_run.js">
 // <include src="security_token_pin.js">
 // <include src="update_required_card.js">
+// <include src="packaged_license_screen.js">

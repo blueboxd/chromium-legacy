@@ -80,6 +80,7 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
     v8::Context::Scope context_scope(creation_context->CreationContext());
     wrapper =
         v8::ArrayBuffer::New(isolate, Buffer()->Content()->BackingStore());
+
     wrapper->Externalize(Buffer()->Content()->BackingStore());
   }
 

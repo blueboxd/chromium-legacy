@@ -49,15 +49,7 @@ PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
 PpapiBlinkPlatformImpl::~PpapiBlinkPlatformImpl() {
 }
 
-void PpapiBlinkPlatformImpl::Shutdown() {
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // SandboxSupport contains a map of OutOfProcessFont objects, which hold
-  // WebStrings and WebVectors, which become invalidated when blink is shut
-  // down. Hence, we need to clear that map now, just before blink::shutdown()
-  // is called.
-  sandbox_support_.reset();
-#endif
-}
+void PpapiBlinkPlatformImpl::Shutdown() {}
 
 blink::WebSandboxSupport* PpapiBlinkPlatformImpl::GetSandboxSupport() {
 #if defined(OS_LINUX) || defined(OS_MACOSX)

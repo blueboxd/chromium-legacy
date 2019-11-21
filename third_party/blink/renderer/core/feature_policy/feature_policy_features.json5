@@ -246,6 +246,11 @@
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {
+      name: "PublicKeyCredentials",
+      feature_policy_name: "publickey-credentials",
+      depends_on: ["WebAuthenticationFeaturePolicy"],
+    },
+    {
       name: "Script",
       feature_policy_name: "scripts",
       depends_on: ["FeaturePolicyForSandbox"],

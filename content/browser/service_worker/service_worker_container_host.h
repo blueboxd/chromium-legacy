@@ -11,6 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace service_worker_object_host_unittest {
@@ -49,7 +51,10 @@ class ServiceWorkerVersion;
 // class lives, and add sequence checkers to ensure it.
 class CONTENT_EXPORT ServiceWorkerContainerHost {
  public:
-  ServiceWorkerContainerHost(ServiceWorkerProviderHost* provider_host,
+  // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
+  // ServiceWorkerContainerType.
+  ServiceWorkerContainerHost(blink::mojom::ServiceWorkerProviderType type,
+                             ServiceWorkerProviderHost* provider_host,
                              base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerContainerHost();
 
@@ -96,6 +101,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // Removes the ServiceWorkerObjectHost corresponding to |version_id|.
   void RemoveServiceWorkerObjectHost(int64_t version_id);
 
+  bool IsContainerForServiceWorker() const;
+  bool IsContainerForClient() const;
+
+  blink::mojom::ServiceWorkerProviderType type() const { return type_; }
+
+  // Can only be called when IsContainerForClient() is true.
+  blink::mojom::ServiceWorkerClientType client_type() const;
+
   // TODO(https://crbug.com/931087): Remove this getter and |provider_host_|.
   ServiceWorkerProviderHost* provider_host() { return provider_host_; }
 
@@ -107,6 +120,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
                            RegisterWithDifferentUpdateViaCache);
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
+
+  const blink::mojom::ServiceWorkerProviderType type_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution

@@ -2473,6 +2473,8 @@ enum WebFeature {
   kResourceTimingTaintedOriginFlagFail = 3091,
   kRegisterProtocolHandlerSameOriginAsTop = 3092,
   kRegisterProtocolHandlerCrossOriginSubframe = 3093,
+  kWebNfcNdefReaderScan = 3094,
+  kWebNfcNdefWriterPush = 3095,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

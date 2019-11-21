@@ -13,7 +13,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/format_macros.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"

@@ -2660,23 +2660,6 @@
             ]
         }
     ],
-    "ForceDiceMigration": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ForceDiceMigration"
-                    ]
-                }
-            ]
-        }
-    ],
     "FreezeBackgroundTabOnNetworkIdle": [
         {
             "platforms": [

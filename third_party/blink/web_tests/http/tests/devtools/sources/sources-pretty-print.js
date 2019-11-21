@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(`Verifies that editing a pretty printed resource works properly.\n`);
 
-  Runtime.experiments.enableForTest('sourcesPrettyPrint');
+  Root.Runtime.experiments.enableForTest('sourcesPrettyPrint');
   await TestRunner.loadModule('sources_test_runner');
   await TestRunner.showPanel('sources');
 

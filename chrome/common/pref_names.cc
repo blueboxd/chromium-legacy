@@ -1268,14 +1268,6 @@ const char kProfileUsingGAIAAvatar[] = "profile.using_gaia_avatar";
 // The supervised user ID.
 const char kSupervisedUserId[] = "profile.managed_user_id";
 
-// 64-bit integer serialization of the base::Time when the user's GAIA info
-// was last updated.
-const char kProfileGAIAInfoUpdateTime[] = "profile.gaia_info_update_time";
-
-// The URL from which the GAIA profile picture was downloaded. This is cached to
-// prevent the same picture from being downloaded multiple times.
-const char kProfileGAIAInfoPictureURL[] = "profile.gaia_info_picture_url";
-
 // Integer that specifies the number of times that we have shown the upgrade
 // tutorial card in the avatar menu bubble.
 const char kProfileAvatarTutorialShown[] =

@@ -126,11 +126,13 @@ IN_PROC_BROWSER_TEST_P(RendererEventInjectionTest, TestRootTransform) {
 // This configures the display in various interesting ways for ChromeOS. In
 // particular, it tests rotation "/r" and a scale factor of 2 "*2".
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     RendererEventInjectionTest,
     ::testing::Values("1200x800", "1200x800/r", "1200x800*2", "1200x800*2/r"));
 #else
-INSTANTIATE_TEST_SUITE_P(, RendererEventInjectionTest, ::testing::Values(""));
+INSTANTIATE_TEST_SUITE_P(All,
+                         RendererEventInjectionTest,
+                         ::testing::Values(""));
 #endif
 
 }  // namespace

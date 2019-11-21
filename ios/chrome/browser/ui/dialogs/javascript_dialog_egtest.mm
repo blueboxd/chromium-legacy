@@ -206,7 +206,7 @@ void WaitForJavaScriptDialog(const GURL& url, bool visible) {
 void TypeInPrompt(NSString* input) {
   id<GREYMatcher> text_field_matcher = grey_allOf(
       grey_kindOfClass([UITextField class]),
-      grey_accessibilityID(kJavaScriptDialogTextFieldAccessibiltyIdentifier),
+      grey_accessibilityID(kJavaScriptDialogTextFieldAccessibilityIdentifier),
       nil);
   [[EarlGrey selectElementWithMatcher:text_field_matcher]
       performAction:grey_typeText(input)];

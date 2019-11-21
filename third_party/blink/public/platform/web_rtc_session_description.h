@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class WebRTCSessionDescriptionPrivate;
+class RTCSessionDescriptionPlatform;
 
 //  In order to establish the media plane, PeerConnection needs specific
 //  parameters to indicate what to transmit to the remote side, as well
@@ -83,7 +83,7 @@ class WebRTCSessionDescription {
 #endif
 
  private:
-  WebPrivatePtr<WebRTCSessionDescriptionPrivate> private_;
+  WebPrivatePtr<RTCSessionDescriptionPlatform> private_;
 };
 
 }  // namespace blink

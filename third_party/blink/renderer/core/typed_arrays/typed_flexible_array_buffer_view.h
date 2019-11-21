@@ -34,11 +34,11 @@ class TypedFlexibleArrayBufferView final : public FlexibleArrayBufferView {
 };
 
 using FlexibleFloat32ArrayView =
-    TypedFlexibleArrayBufferView<IntegralTypedArrayBase<float>>;
+    TypedFlexibleArrayBufferView<TypedArray<float>>;
 using FlexibleInt32ArrayView =
-    TypedFlexibleArrayBufferView<IntegralTypedArrayBase<int32_t>>;
+    TypedFlexibleArrayBufferView<TypedArray<int32_t>>;
 using FlexibleUint32ArrayView =
-    TypedFlexibleArrayBufferView<IntegralTypedArrayBase<uint32_t>>;
+    TypedFlexibleArrayBufferView<TypedArray<uint32_t>>;
 
 }  // namespace blink
 

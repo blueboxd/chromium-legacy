@@ -22,14 +22,13 @@ class PasswordManagerDriver;
 
 class PasswordGenerationManager {
  public:
-  PasswordGenerationManager(FormSaver* form_saver,
-                            PasswordManagerClient* client);
+  PasswordGenerationManager(PasswordManagerClient* client);
   ~PasswordGenerationManager();
   PasswordGenerationManager(const PasswordGenerationManager& rhs) = delete;
   PasswordGenerationManager& operator=(const PasswordGenerationManager&) =
       delete;
 
-  std::unique_ptr<PasswordGenerationManager> Clone(FormSaver* form_saver) const;
+  std::unique_ptr<PasswordGenerationManager> Clone() const;
 
   // Returns true iff the generated password was presaved.
   bool HasGeneratedPassword() const { return presaved_.has_value(); }
@@ -55,17 +54,19 @@ class PasswordGenerationManager {
   // Called when generated password is accepted or changed by user.
   void PresaveGeneratedPassword(
       autofill::PasswordForm generated,
-      const std::vector<const autofill::PasswordForm*>& matches);
+      const std::vector<const autofill::PasswordForm*>& matches,
+      FormSaver* form_saver);
 
   // Signals that the user cancels password generation.
-  void PasswordNoLongerGenerated();
+  void PasswordNoLongerGenerated(FormSaver* form_saver);
 
   // Finish the generation flow by saving the final credential |generated|.
   // |matches| and |old_password| have the same meaning as in FormSaver.
   void CommitGeneratedPassword(
       autofill::PasswordForm generated,
       const std::vector<const autofill::PasswordForm*>& matches,
-      const base::string16& old_password);
+      const base::string16& old_password,
+      FormSaver* form_saver);
 
 #if defined(UNIT_TEST)
   void set_clock(std::unique_ptr<base::Clock> clock) {
@@ -78,8 +79,6 @@ class PasswordGenerationManager {
                              bool accepted,
                              const autofill::PasswordForm& pending);
 
-  // Weak reference to the interface for saving credentials.
-  FormSaver* const form_saver_;
   // The client for the password form.
   PasswordManagerClient* const client_;
   // Stores the pre-saved credential.

@@ -25,7 +25,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/fonts/font_platform_data.h"
@@ -50,33 +49,15 @@ void FontCache::SetSystemFontFamily(const AtomicString& family_name) {
   MutableSystemFontFamily() = family_name;
 }
 
-void FontCache::GetFontForCharacter(
-    UChar32 c,
-    const char* preferred_locale,
-    FontCache::PlatformFallbackFont* fallback_font) {
+void FontCache::GetFontForCharacter(UChar32 c,
+                                    const char* preferred_locale,
+                                    gfx::FallbackFontData* fallback_font) {
   if (Platform::Current()->GetSandboxSupport()) {
-    OutOfProcessFont web_fallback_font;
     Platform::Current()->GetSandboxSupport()->GetFallbackFontForCharacter(
-        c, preferred_locale, &web_fallback_font);
-    fallback_font->name = web_fallback_font.name;
-    fallback_font->filename = std::string(web_fallback_font.filename.Data(),
-                                          web_fallback_font.filename.size());
-    fallback_font->fontconfig_interface_id =
-        web_fallback_font.fontconfig_interface_id;
-    fallback_font->ttc_index = web_fallback_font.ttc_index;
-    fallback_font->is_bold = web_fallback_font.is_bold;
-    fallback_font->is_italic = web_fallback_font.is_italic;
+        c, preferred_locale, fallback_font);
   } else {
     std::string locale = preferred_locale ? preferred_locale : std::string();
-    gfx::FallbackFontData fallback_data =
-        gfx::GetFallbackFontForChar(c, locale);
-    fallback_font->name = String::FromUTF8(fallback_data.name.data(),
-                                           fallback_data.name.length());
-    fallback_font->filename = fallback_data.filepath.value();
-    fallback_font->fontconfig_interface_id = 0;
-    fallback_font->ttc_index = fallback_data.ttc_index;
-    fallback_font->is_bold = fallback_data.is_bold;
-    fallback_font->is_italic = fallback_data.is_italic;
+    *fallback_font = gfx::GetFallbackFontForChar(c, locale);
   }
 }
 
@@ -89,7 +70,7 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   // WebFontRendering::setSkiaFontManager. This is used to emulate android fonts
   // on linux so we always request the family from the font manager and if none
   // is found, we return the LastResort fallback font and avoid using
-  // FontCache::getFontForCharacter which would use sandbox support to query the
+  // FontCache::GetFontForCharacter which would use sandbox support to query the
   // underlying system for the font family.
   if (font_manager_) {
     AtomicString family_name = GetFamilyNameForCharacter(
@@ -120,15 +101,15 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
       return font_data;
   }
 
-  FontCache::PlatformFallbackFont fallback_font;
+  gfx::FallbackFontData fallback_font;
   FontCache::GetFontForCharacter(
       c, font_description.LocaleOrDefault().Ascii().c_str(), &fallback_font);
-  if (fallback_font.name.IsEmpty())
+  if (fallback_font.name.empty())
     return nullptr;
 
   FontFaceCreationParams creation_params;
   creation_params = FontFaceCreationParams(
-      fallback_font.filename, fallback_font.fontconfig_interface_id,
+      fallback_font.filepath.value(), fallback_font.fontconfig_interface_id,
       fallback_font.ttc_index);
 
   // Changes weight and/or italic of given FontDescription depends on

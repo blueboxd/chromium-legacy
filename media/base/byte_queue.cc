@@ -4,6 +4,8 @@
 
 #include "media/base/byte_queue.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 

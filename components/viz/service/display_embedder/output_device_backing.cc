@@ -8,7 +8,7 @@
 
 #include "base/debug/alias.h"
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/stl_util.h"
 #include "components/viz/common/resources/resource_sizes.h"
 

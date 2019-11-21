@@ -203,23 +203,82 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
 
   scoped_refptr<const NGLayoutResult> layout_result;
   NGBoxStrut fragment_margins;
+  NGLayoutOpportunity opportunity;
 
-  // We may be able to re-use the fragment from when we calculated the
-  // inline-size, if there is no block fragmentation.
   if (!is_fragmentable) {
+    // We may be able to re-use the fragment from when we calculated the
+    // inline-size, if there is no block fragmentation.
     LayoutFloatWithoutFragmentation(unpositioned_float);
     layout_result = unpositioned_float->layout_result;
     fragment_margins = unpositioned_float->margins;
+
+    NGFragment float_fragment(parent_space.GetWritingMode(),
+                              layout_result->PhysicalFragment());
+
+    // Find a layout opportunity that will fit our float.
+    opportunity = FindLayoutOpportunityForFloat(
+        *unpositioned_float, *exclusion_space, fragment_margins,
+        float_fragment.InlineSize());
   } else {
-    // TODO(mstensho): Need to set block-offset *before* layout when
-    // fragmenting.
-    NGConstraintSpace space = CreateConstraintSpaceForFloat(
-        *unpositioned_float,
-        unpositioned_float->origin_bfc_offset.block_offset);
-    layout_result =
-        unpositioned_float->node.Layout(space, unpositioned_float->token.get());
     fragment_margins = ComputeMarginsFor(
-        space, unpositioned_float->node.Style(), parent_space);
+        unpositioned_float->node.Style(),
+        unpositioned_float->percentage_size.inline_size,
+        parent_space.GetWritingMode(), parent_space.Direction());
+    AdjustForFragmentation(unpositioned_float->token.get(), &fragment_margins);
+
+    // When fragmenting, we need to set the block-offset of the node before
+    // laying it out. This is a float, and in order to calculate its offset, we
+    // first need to know its inline-size.
+
+    // TODO(crbug.com/915929): In some cases the inline-size of the float is
+    // already known at this point, and then we should be able to set the
+    // correct layout opportunity right away, i.e. no need for optimistic
+    // placement. However, this only happens in inline formatting contexts, and
+    // we don't support fragmenting floats in inline formatting contexts yet.
+    bool optimistically_placed = true;
+
+    // We'll estimate the offset to be the one we'd get if the float isn't
+    // affected by any other floats in the block formatting context. If this
+    // turns out to be wrong, we'll need to lay out again.
+    LayoutUnit fragmentainer_delta =
+        unpositioned_float->origin_bfc_offset.block_offset +
+        fragment_margins.block_start;
+
+    do {
+      NGConstraintSpace space = CreateConstraintSpaceForFloat(
+          *unpositioned_float, fragmentainer_delta);
+
+      layout_result = unpositioned_float->node.Layout(
+          space, unpositioned_float->token.get());
+
+      // If we knew the right block-offset up front, we're done.
+      if (!optimistically_placed)
+        break;
+
+      NGFragment float_fragment(parent_space.GetWritingMode(),
+                                layout_result->PhysicalFragment());
+
+      // Find a layout opportunity that will fit our float, and see if our
+      // initial estimate was correct.
+      opportunity = FindLayoutOpportunityForFloat(
+          *unpositioned_float, *exclusion_space, fragment_margins,
+          float_fragment.InlineSize());
+
+      LayoutUnit new_fragmentainer_delta =
+          opportunity.rect.start_offset.block_offset +
+          fragment_margins.block_start;
+
+      // We can only stay where we are, or go down.
+      DCHECK_LE(fragmentainer_delta, new_fragmentainer_delta);
+
+      if (fragmentainer_delta < new_fragmentainer_delta) {
+        // The float got pushed down. We need to lay out again.
+        fragmentainer_delta = new_fragmentainer_delta;
+        optimistically_placed = false;
+        continue;
+      }
+      break;
+    } while (true);
 
     if (const NGBreakToken* break_token =
             layout_result->PhysicalFragment().BreakToken())
@@ -228,11 +287,6 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
 
   NGFragment float_fragment(parent_space.GetWritingMode(),
                             layout_result->PhysicalFragment());
-
-  // Find a layout opportunity that will fit our float.
-  NGLayoutOpportunity opportunity = FindLayoutOpportunityForFloat(
-      *unpositioned_float, *exclusion_space, fragment_margins,
-      float_fragment.InlineSize());
 
   // Calculate the float's margin box BFC offset.
   NGBfcOffset float_margin_bfc_offset = opportunity.rect.start_offset;

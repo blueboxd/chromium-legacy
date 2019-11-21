@@ -9,6 +9,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/dictation_button_tray.h"
 #include "ash/system/accessibility/select_to_speak_tray.h"
@@ -18,10 +19,13 @@
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/status_area_overflow_button_tray.h"
+#include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
 #include "base/i18n/time_formatting.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/display/display.h"
@@ -47,82 +51,65 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container, Shelf* shelf)
 }
 
 void StatusAreaWidget::Initialize() {
+  DCHECK(!initialized_);
+
   // Create the child views, left to right.
 
   overflow_button_tray_ =
       std::make_unique<StatusAreaOverflowButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(overflow_button_tray_.get());
+  AddTrayButton(overflow_button_tray_.get());
 
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
+  AddTrayButton(logout_button_tray_.get());
 
   dictation_button_tray_ = std::make_unique<DictationButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(dictation_button_tray_.get());
+  AddTrayButton(dictation_button_tray_.get());
 
   select_to_speak_tray_ = std::make_unique<SelectToSpeakTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(select_to_speak_tray_.get());
+  AddTrayButton(select_to_speak_tray_.get());
 
   ime_menu_tray_ = std::make_unique<ImeMenuTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(ime_menu_tray_.get());
+  AddTrayButton(ime_menu_tray_.get());
 
   virtual_keyboard_tray_ = std::make_unique<VirtualKeyboardTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(virtual_keyboard_tray_.get());
+  AddTrayButton(virtual_keyboard_tray_.get());
 
   palette_tray_ = std::make_unique<PaletteTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(palette_tray_.get());
+  AddTrayButton(palette_tray_.get());
 
   unified_system_tray_ = std::make_unique<UnifiedSystemTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(unified_system_tray_.get());
+  AddTrayButton(unified_system_tray_.get());
 
   overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
-  status_area_widget_delegate_->AddChildView(overview_button_tray_.get());
+  AddTrayButton(overview_button_tray_.get());
 
   // The layout depends on the number of children, so build it once after
   // adding all of them.
   status_area_widget_delegate_->UpdateLayout();
 
   // Initialize after all trays have been created.
-  overflow_button_tray_->Initialize();
-  unified_system_tray_->Initialize();
-  palette_tray_->Initialize();
-  virtual_keyboard_tray_->Initialize();
-  ime_menu_tray_->Initialize();
-  select_to_speak_tray_->Initialize();
-  dictation_button_tray_->Initialize();
-  overview_button_tray_->Initialize();
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->Initialize();
+
   UpdateAfterShelfAlignmentChange();
   UpdateAfterLoginStatusChange(
       Shell::Get()->session_controller()->login_status());
 
+  ShelfConfig::Get()->AddObserver(this);
+
   // NOTE: Container may be hidden depending on login/display state.
   Show();
+
+  initialized_ = true;
 }
 
 StatusAreaWidget::~StatusAreaWidget() {
-  overflow_button_tray_.reset();
-  unified_system_tray_.reset();
-  ime_menu_tray_.reset();
-  select_to_speak_tray_.reset();
-  dictation_button_tray_.reset();
-  virtual_keyboard_tray_.reset();
-  palette_tray_.reset();
-  logout_button_tray_.reset();
-  overview_button_tray_.reset();
-
-  // All child tray views have been removed.
-  DCHECK(GetContentsView()->children().empty());
+  ShelfConfig::Get()->RemoveObserver(this);
 }
 
 void StatusAreaWidget::UpdateAfterShelfAlignmentChange() {
-  overflow_button_tray_->UpdateAfterShelfAlignmentChange();
-  unified_system_tray_->UpdateAfterShelfAlignmentChange();
-  logout_button_tray_->UpdateAfterShelfAlignmentChange();
-  virtual_keyboard_tray_->UpdateAfterShelfAlignmentChange();
-  ime_menu_tray_->UpdateAfterShelfAlignmentChange();
-  select_to_speak_tray_->UpdateAfterShelfAlignmentChange();
-  dictation_button_tray_->UpdateAfterShelfAlignmentChange();
-  palette_tray_->UpdateAfterShelfAlignmentChange();
-  overview_button_tray_->UpdateAfterShelfAlignmentChange();
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->UpdateAfterShelfChange();
   status_area_widget_delegate_->UpdateLayout();
 }
 
@@ -131,9 +118,8 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
     return;
   login_status_ = login_status;
 
-  unified_system_tray_->UpdateAfterLoginStatusChange();
-  logout_button_tray_->UpdateAfterLoginStatusChange();
-  overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->UpdateAfterLoginStatusChange(login_status);
 }
 
 void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
@@ -156,6 +142,10 @@ void StatusAreaWidget::UpdateCollapseState() {
   if (!Shell::Get()->tablet_mode_controller())
     return;
 
+  // An update may occur during initialization of the shelf, so just skip it.
+  if (!initialized_)
+    return;
+
   bool is_collapsible =
       chromeos::switches::ShouldShowShelfHotseat() &&
       Shell::Get()->tablet_mode_controller()->InTabletMode() &&
@@ -165,19 +155,88 @@ void StatusAreaWidget::UpdateCollapseState() {
       switches::kAshForceStatusAreaCollapsible);
 
   is_collapsible |= force_collapsible;
-
-  // If the status area is already collapsed/expanded, we should not update the
-  // state again.
-  if (is_collapsible && collapse_state_ == CollapseState::NOT_COLLAPSIBLE)
-    collapse_state_ = CollapseState::COLLAPSED;
-  else if (!is_collapsible)
+  if (is_collapsible) {
+    // Update the collapse state based on the previous overflow button state.
+    collapse_state_ = overflow_button_tray_->state() ==
+                              StatusAreaOverflowButtonTray::CLICK_TO_EXPAND
+                          ? CollapseState::COLLAPSED
+                          : CollapseState::EXPANDED;
+  } else {
     collapse_state_ = CollapseState::NOT_COLLAPSIBLE;
+  }
 
-  // TODO(tengs): Right now we simply show the overflow button in the collpase
-  // state. The full calculation of which trays overflow will be done in a
-  // future CL.
-  overflow_button_tray_->SetVisiblePreferred(
-      force_collapsible && collapse_state_ != CollapseState::NOT_COLLAPSIBLE);
+  if (collapse_state_ == CollapseState::COLLAPSED) {
+    CalculateButtonVisibilityForCollapsedState();
+  } else {
+    // All tray buttons are visible when the status area is not collapsible.
+    // This is the most common state. They are also all visible when the status
+    // area is expanded by the user.
+    overflow_button_tray_->SetVisiblePreferred(collapse_state_ ==
+                                               CollapseState::EXPANDED);
+    for (TrayBackgroundView* tray_button : tray_buttons_) {
+      tray_button->set_show_when_collapsed(true);
+      tray_button->UpdateAfterStatusAreaCollapseChange();
+    }
+  }
+}
+
+void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {
+  DCHECK(collapse_state_ == CollapseState::COLLAPSED);
+
+  bool force_collapsible = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshForceStatusAreaCollapsible);
+
+  // We update visibility of each tray button based on the available width.
+  int shelf_width =
+      shelf_->shelf_widget()->GetClientAreaBoundsInScreen().width();
+  int available_width =
+      force_collapsible ? kStatusAreaForceCollapseAvailableWidth
+                        : shelf_width / 2 - kStatusAreaLeftPaddingForOverflow;
+
+  // First, reset all tray button to be hidden.
+  overflow_button_tray_->ResetStateToCollapsed();
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->set_show_when_collapsed(false);
+
+  // Iterate backwards making tray buttons visible until |available_width| is
+  // exceeded.
+  TrayBackgroundView* previous_tray = nullptr;
+  bool show_overflow_button = false;
+  int used_width = 0;
+  for (TrayBackgroundView* tray : base::Reversed(tray_buttons_)) {
+    // If we reach the final overflow tray button, then all the tray buttons fit
+    // and there is no need for a collapse state.
+    if (tray == overflow_button_tray_.get()) {
+      collapse_state_ = CollapseState::NOT_COLLAPSIBLE;
+      break;
+    }
+
+    // Skip non-enabled tray buttons.
+    if (!tray->visible_preferred())
+      continue;
+
+    // Show overflow button once available width is exceeded.
+    int tray_width = tray->tray_container()->GetPreferredSize().width();
+    if (used_width + tray_width > available_width) {
+      show_overflow_button = true;
+
+      // Maybe remove the last tray button to make rooom for the overflow tray.
+      int overflow_button_width =
+          overflow_button_tray_->GetPreferredSize().width();
+      if (previous_tray && used_width + overflow_button_width > available_width)
+        previous_tray->set_show_when_collapsed(false);
+      break;
+    }
+
+    tray->set_show_when_collapsed(true);
+    previous_tray = tray;
+    used_width += tray_width;
+  }
+
+  overflow_button_tray_->SetVisiblePreferred(show_overflow_button);
+  overflow_button_tray_->UpdateAfterStatusAreaCollapseChange();
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->UpdateAfterStatusAreaCollapseChange();
 }
 
 TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {
@@ -208,16 +267,8 @@ bool StatusAreaWidget::IsMessageBubbleShown() const {
 }
 
 void StatusAreaWidget::SchedulePaint() {
-  overview_button_tray_->SchedulePaint();
-  status_area_widget_delegate_->SchedulePaint();
-  unified_system_tray_->SchedulePaint();
-  virtual_keyboard_tray_->SchedulePaint();
-  logout_button_tray_->SchedulePaint();
-  ime_menu_tray_->SchedulePaint();
-  select_to_speak_tray_->SchedulePaint();
-  dictation_button_tray_->SchedulePaint();
-  palette_tray_->SchedulePaint();
-  overview_button_tray_->SchedulePaint();
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->SchedulePaint();
 }
 
 const ui::NativeTheme* StatusAreaWidget::GetNativeTheme() const {
@@ -260,6 +311,17 @@ void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
     keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
   }
   views::Widget::OnGestureEvent(event);
+}
+
+void StatusAreaWidget::OnShelfConfigUpdated() {
+  for (TrayBackgroundView* tray_button : tray_buttons_)
+    tray_button->UpdateAfterShelfChange();
+  UpdateCollapseState();
+}
+
+void StatusAreaWidget::AddTrayButton(TrayBackgroundView* tray_button) {
+  status_area_widget_delegate_->AddChildView(tray_button);
+  tray_buttons_.push_back(tray_button);
 }
 
 }  // namespace ash

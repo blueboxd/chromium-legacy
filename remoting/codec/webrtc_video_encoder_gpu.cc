@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "build/build_config.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"

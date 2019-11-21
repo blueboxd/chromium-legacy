@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"

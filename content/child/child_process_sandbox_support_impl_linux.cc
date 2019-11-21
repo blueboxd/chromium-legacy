@@ -8,15 +8,16 @@
 
 #include <limits>
 #include <memory>
+#include <string>
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/services/font/public/cpp/font_loader.h"
 #include "components/services/font/public/mojom/font_service.mojom.h"
-#include "third_party/blink/public/platform/linux/out_of_process_font.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "ui/gfx/font_fallback_linux.h"
 
 namespace content {
 
@@ -29,7 +30,7 @@ WebSandboxSupportLinux::~WebSandboxSupportLinux() = default;
 void WebSandboxSupportLinux::GetFallbackFontForCharacter(
     blink::WebUChar32 character,
     const char* preferred_locale,
-    blink::OutOfProcessFont* fallback_font) {
+    gfx::FallbackFontData* fallback_font) {
   TRACE_EVENT0("fonts", "WebSandboxSupportLinux::GetFallbackFontForCharacter");
 
   {
@@ -50,13 +51,11 @@ void WebSandboxSupportLinux::GetFallbackFontForCharacter(
                                               &is_bold, &is_italic))
     return;
 
-  // TODO(drott): Perhaps take OutOfProcessFont out of the picture here and pass
-  // mojo FontIdentityPtr directly?
-  fallback_font->name =
-      blink::WebString::FromUTF8(family_name.c_str(), family_name.length());
+  // mojom::FontIdentityPtr cannot be exposed on the blink/public interface.
+  // Use gfx::FallbackFontData as the container to pass this to blink.
+  fallback_font->name = family_name;
   fallback_font->fontconfig_interface_id = font_identity->id;
-  fallback_font->filename.Assign(font_identity->filepath.value().c_str(),
-                                 font_identity->filepath.value().length());
+  fallback_font->filepath = font_identity->filepath;
   fallback_font->ttc_index = font_identity->ttc_index;
   fallback_font->is_bold = is_bold;
   fallback_font->is_italic = is_italic;
@@ -67,7 +66,7 @@ void WebSandboxSupportLinux::GetFallbackFontForCharacter(
 
 void WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName(
     const char* font_unique_name,
-    blink::OutOfProcessFont* fallback_font) {
+    gfx::FallbackFontData* fallback_font) {
   TRACE_EVENT0(
       "fonts",
       "WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName");
@@ -82,8 +81,7 @@ void WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName(
   }
 
   fallback_font->fontconfig_interface_id = font_identity->id;
-  fallback_font->filename.Assign(font_identity->filepath.value().c_str(),
-                                 font_identity->filepath.value().length());
+  fallback_font->filepath = font_identity->filepath;
   fallback_font->ttc_index = font_identity->ttc_index;
 }
 

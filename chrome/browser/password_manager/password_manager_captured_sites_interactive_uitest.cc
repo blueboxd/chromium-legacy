@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_P(CapturedSitesPasswordManagerBrowserTest, Recipe) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     CapturedSitesPasswordManagerBrowserTest,
     testing::ValuesIn(GetCapturedSites(GetReplayFilesRootDirectory())),
     GetParamAsString());

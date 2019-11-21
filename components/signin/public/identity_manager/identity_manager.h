@@ -494,6 +494,9 @@ class IdentityManager : public KeyedService,
                                            const CoreAccountId& account_id);
   friend void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
                                           AccountInfo account_info);
+  friend void SimulateAccountImageFetch(IdentityManager* identity_manager,
+                                        const CoreAccountId& account_id,
+                                        const gfx::Image& image);
   friend void SetFreshnessOfAccountsInGaiaCookie(
       IdentityManager* identity_manager,
       bool accounts_are_fresh);

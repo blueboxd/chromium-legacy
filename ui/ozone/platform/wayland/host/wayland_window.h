@@ -192,6 +192,9 @@ class WaylandWindow : public PlatformWindowLinux,
   // Gets a parent window for this window.
   WaylandWindow* GetParentWindow(gfx::AcceleratedWidget parent_widget);
 
+  // Returns a root parent window.
+  WaylandWindow* GetRootParentWindow();
+
   WmMoveResizeHandler* AsWmMoveResizeHandler();
 
   // Install a surface listener and start getting wl_output enter/leave events.

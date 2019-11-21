@@ -174,8 +174,6 @@ TrayBackgroundView::TrayBackgroundView(Shelf* shelf)
   SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   layer()->SetFillsBoundsOpaquely(false);
 
-  UpdateBackground();
-
   // Start the tray items not visible, because visibility changes are animated.
   views::View::SetVisible(false);
 }
@@ -190,6 +188,8 @@ TrayBackgroundView::~TrayBackgroundView() {
 void TrayBackgroundView::Initialize() {
   GetWidget()->AddObserver(widget_observer_.get());
   Shell::Get()->system_tray_model()->virtual_keyboard()->AddObserver(this);
+
+  UpdateBackground();
 }
 
 // static
@@ -207,13 +207,13 @@ void TrayBackgroundView::SetVisiblePreferred(bool visible_preferred) {
   if (visible_preferred_ == visible_preferred)
     return;
   visible_preferred_ = visible_preferred;
-  SetVisible(GetEffectiveVisibility());
+  StartVisibilityAnimation(GetEffectiveVisibility());
 
   // We need to update which trays overflow after showing or hiding a tray.
   shelf_->GetStatusAreaWidget()->UpdateCollapseState();
 }
 
-void TrayBackgroundView::SetVisible(bool visible) {
+void TrayBackgroundView::StartVisibilityAnimation(bool visible) {
   if (visible == layer()->GetTargetVisibility())
     return;
 
@@ -341,8 +341,13 @@ void TrayBackgroundView::CloseBubble() {}
 
 void TrayBackgroundView::ShowBubble(bool show_by_click) {}
 
-void TrayBackgroundView::UpdateAfterShelfAlignmentChange() {
-  tray_container_->UpdateAfterShelfAlignmentChange();
+void TrayBackgroundView::UpdateAfterShelfChange() {
+  tray_container_->UpdateAfterShelfChange();
+}
+
+void TrayBackgroundView::UpdateAfterLoginStatusChange(
+    LoginStatus login_status) {
+  // Handled in subclasses.
 }
 
 void TrayBackgroundView::UpdateAfterRootWindowBoundsChange(

@@ -59,6 +59,15 @@ struct EnumTraits<network::mojom::CookieSameSiteContext,
 };
 
 template <>
+struct EnumTraits<network::mojom::CookieSourceScheme, net::CookieSourceScheme> {
+  static network::mojom::CookieSourceScheme ToMojom(
+      net::CookieSourceScheme input);
+
+  static bool FromMojom(network::mojom::CookieSourceScheme input,
+                        net::CookieSourceScheme* output);
+};
+
+template <>
 struct EnumTraits<network::mojom::CookieChangeCause, net::CookieChangeCause> {
   static network::mojom::CookieChangeCause ToMojom(
       net::CookieChangeCause input);
@@ -118,6 +127,9 @@ struct StructTraits<network::mojom::CanonicalCookieDataView,
   }
   static net::CookiePriority priority(const net::CanonicalCookie& c) {
     return c.Priority();
+  }
+  static net::CookieSourceScheme source_scheme(const net::CanonicalCookie& c) {
+    return c.SourceScheme();
   }
 
   static bool Read(network::mojom::CanonicalCookieDataView cookie,

@@ -278,11 +278,11 @@ TEST_P(InputControllerTest, TestOnmutedCallbackInitiallyMuted) {
 }
 
 #if defined(AUDIO_PROCESSING_IN_AUDIO_SERVICE)
-INSTANTIATE_TEST_SUITE_P(, InputControllerTest, ::testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, SystemTimeInputControllerTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, InputControllerTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SystemTimeInputControllerTest, ::testing::Bool());
 #else
-INSTANTIATE_TEST_SUITE_P(, InputControllerTest, testing::Values(false));
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All, InputControllerTest, testing::Values(false));
+INSTANTIATE_TEST_SUITE_P(All,
                          SystemTimeInputControllerTest,
                          ::testing::Values(false));
 #endif

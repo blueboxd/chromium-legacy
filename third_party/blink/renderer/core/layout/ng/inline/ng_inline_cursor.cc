@@ -414,6 +414,15 @@ const NGPhysicalBoxFragment* NGInlineCursor::CurrentBoxFragment() const {
   return nullptr;
 }
 
+const DisplayItemClient* NGInlineCursor::CurrentDisplayItemClient() const {
+  if (current_paint_fragment_)
+    return current_paint_fragment_;
+  if (current_item_)
+    return current_item_;
+  NOTREACHED();
+  return nullptr;
+}
+
 const NGInlineBreakToken& NGInlineCursor::CurrentInlineBreakToken() const {
   DCHECK(IsLineBox());
   if (current_paint_fragment_) {

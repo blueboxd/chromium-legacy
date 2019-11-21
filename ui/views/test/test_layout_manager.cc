@@ -22,5 +22,9 @@ int TestLayoutManager::GetPreferredHeightForWidth(const View* host,
   return preferred_height_for_width_;
 }
 
+void TestLayoutManager::InvalidateLayout() {
+  ++invalidate_count_;
+}
+
 }  // namespace test
 }  // namespace views

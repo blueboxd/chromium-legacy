@@ -226,7 +226,8 @@ double InputType::ValueAsDate() const {
   return DateComponents::InvalidMilliseconds();
 }
 
-void InputType::SetValueAsDate(double, ExceptionState& exception_state) const {
+void InputType::SetValueAsDate(const base::Optional<base::Time>&,
+                               ExceptionState& exception_state) const {
   exception_state.ThrowDOMException(
       DOMExceptionCode::kInvalidStateError,
       "This input element does not support Date values.");

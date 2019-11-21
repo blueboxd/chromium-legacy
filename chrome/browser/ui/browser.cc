@@ -803,8 +803,10 @@ void Browser::OnWindowClosing() {
       browser_shutdown::IsTryingToQuit() ||
       KeepAliveRegistry::GetInstance()->IsKeepingAliveOnlyByBrowserOrigin();
 
-  if (should_quit_if_last_browser && ShouldStartShutdown())
-    browser_shutdown::OnShutdownStarting(browser_shutdown::WINDOW_CLOSE);
+  if (should_quit_if_last_browser && ShouldStartShutdown()) {
+    browser_shutdown::OnShutdownStarting(
+        browser_shutdown::ShutdownType::kWindowClose);
+  }
 
   // Don't use GetForProfileIfExisting here, we want to force creation of the
   // session service so that user can restore what was open.

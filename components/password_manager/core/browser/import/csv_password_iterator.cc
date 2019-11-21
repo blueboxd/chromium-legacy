@@ -29,10 +29,9 @@ CSVPasswordIterator::CSVPasswordIterator() = default;
 
 CSVPasswordIterator::CSVPasswordIterator(const CSVPassword::ColumnMap& map,
                                          base::StringPiece csv)
-    : map_(&map),
-      csv_rest_(csv),
-      csv_row_(ExtractFirstRow(&csv_rest_)),
-      password_(base::in_place, map, csv_row_) {}
+    : map_(&map), csv_rest_(csv) {
+  SeekToNextValidRow();
+}
 
 CSVPasswordIterator::CSVPasswordIterator(const CSVPasswordIterator& other) {
   *this = other;
@@ -53,9 +52,7 @@ CSVPasswordIterator& CSVPasswordIterator::operator=(
 CSVPasswordIterator::~CSVPasswordIterator() = default;
 
 CSVPasswordIterator& CSVPasswordIterator::operator++() {
-  DCHECK(map_);
-  csv_row_ = ExtractFirstRow(&csv_rest_);
-  password_.emplace(*map_, csv_row_);
+  SeekToNextValidRow();
   return *this;
 }
 
@@ -75,6 +72,19 @@ bool CSVPasswordIterator::operator==(const CSVPasswordIterator& other) const {
          // not considered equal. Therefore the maps' addresses are checked
          // instead of their contents.
          map_ == other.map_;
+}
+
+void CSVPasswordIterator::SeekToNextValidRow() {
+  DCHECK(map_);
+  do {
+    csv_row_ = ExtractFirstRow(&csv_rest_);
+    password_.emplace(*map_, csv_row_);
+  } while (
+      // Skip over empty lines, and
+      (csv_row_.empty() && !csv_rest_.empty()) ||
+      // lines which are not correctly encoded passwords.
+      (!csv_row_.empty() &&
+       password_->Parse(nullptr) != CSVPassword::Status::kOK));
 }
 
 base::StringPiece ConsumeCSVLine(base::StringPiece* input) {

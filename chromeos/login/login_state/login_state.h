@@ -95,10 +95,6 @@ class COMPONENT_EXPORT(LOGIN_STATE) LoginState {
   // using an anonymous session like public or guest session)
   bool IsUserAuthenticated() const;
 
-  // Returns true if the user is authenticated by logging into Google account
-  // (i.e. not using an anonymous nor supervised session).
-  bool IsUserGaiaAuthenticated() const;
-
   void set_always_logged_in(bool always_logged_in) {
     always_logged_in_ = always_logged_in;
   }

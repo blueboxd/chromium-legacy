@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.bookmarks.BookmarkPromoHeader.PromoState;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
-import org.chromium.chrome.browser.ui.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.ViewType;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;

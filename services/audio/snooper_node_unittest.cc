@@ -752,7 +752,7 @@ InputAndOutputParams MakeParams(media::ChannelLayout input_channel_layout,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     SnooperNodeTest,
     testing::Values(MakeParams(media::CHANNEL_LAYOUT_STEREO,
                                48000,

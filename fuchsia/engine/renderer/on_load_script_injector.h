@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "fuchsia/engine/on_load_script_injector.mojom.h"

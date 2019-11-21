@@ -64,7 +64,7 @@
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
-#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -1038,8 +1038,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
 
-  if (LoginScreenExtensionUiHandler::Get(false /*can_create*/))
-    LoginScreenExtensionUiHandler::Shutdown();
+  if (login_screen_extension_ui::UiHandler::Get(false /*can_create*/))
+    login_screen_extension_ui::UiHandler::Shutdown();
 
   if (pre_profile_init_called_) {
     MagnificationManager::Shutdown();

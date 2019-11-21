@@ -292,9 +292,9 @@ void BackForwardCacheImpl::CanStoreRenderFrameHost(
         BackForwardCacheMetrics::NotRestoredReason::kWasGrantedMediaAccess);
   }
 
-  if (rfh->is_back_forward_cache_disabled() && !ShouldIgnoreBlocklists()) {
-    result->No(BackForwardCacheMetrics::NotRestoredReason::
-                   kDisableForRenderFrameHostCalled);
+  if (rfh->IsBackForwardCacheDisabled() && !ShouldIgnoreBlocklists()) {
+    result->NoDueToDisableForRenderFrameHostCalled(
+        rfh->back_forward_cache_disabled_reasons());
   }
 
   // Don't cache the page if it uses any disallowed features.
@@ -435,16 +435,8 @@ void BackForwardCache::DisableForRenderFrameHost(GlobalFrameRoutingId id,
   if (g_bfcache_disabled_test_observer)
     g_bfcache_disabled_test_observer->OnDisabledForFrameWithReason(id, reason);
 
-  if (auto* rfh = RenderFrameHostImpl::FromID(id)) {
-    rfh->DisableBackForwardCache();
-
-    RenderFrameHostImpl* frame = rfh;
-    while (frame->GetParent())
-      frame = frame->GetParent();
-
-    if (BackForwardCacheMetrics* metrics = frame->GetBackForwardCacheMetrics())
-      metrics->MarkDisableForRenderFrameHost(reason);
-  }
+  if (auto* rfh = RenderFrameHostImpl::FromID(id))
+    rfh->DisableBackForwardCache(reason);
 }
 
 void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {

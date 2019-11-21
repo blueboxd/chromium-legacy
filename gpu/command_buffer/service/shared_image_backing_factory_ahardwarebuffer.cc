@@ -17,6 +17,7 @@
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/posix/eintr_wrapper.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"

@@ -81,7 +81,6 @@ Polymer({
 
   /** Updates localized elements of the UI. */
   updateLocalizedContent: function() {
-    this.$.networkSelectLogin.setOncStrings();
     this.i18nUpdateLocale();
   },
 

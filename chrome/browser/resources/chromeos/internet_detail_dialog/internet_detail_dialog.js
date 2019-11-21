@@ -100,39 +100,6 @@ Polymer({
     this.getNetworkDetails_();
   },
 
-  /** @override */
-  ready: function() {
-    CrOncStrings = {
-      OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
-      OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
-      OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
-      OncTypeTether: loadTimeData.getString('OncTypeTether'),
-      OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
-      OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-      networkListItemConnected:
-          loadTimeData.getString('networkListItemConnected'),
-      networkListItemConnecting:
-          loadTimeData.getString('networkListItemConnecting'),
-      networkListItemConnectingTo:
-          loadTimeData.getString('networkListItemConnectingTo'),
-      networkListItemInitializing:
-          loadTimeData.getString('networkListItemInitializing'),
-      networkListItemLabelTemplate:
-          loadTimeData.getString('networkListItemLabelTemplate'),
-      networkListItemNotAvailable:
-          loadTimeData.getString('networkListItemNotAvailable'),
-      networkListItemScanning:
-          loadTimeData.getString('networkListItemScanning'),
-      networkListItemSimCardLocked:
-          loadTimeData.getString('networkListItemSimCardLocked'),
-      networkListItemNotConnected:
-          loadTimeData.getString('networkListItemNotConnected'),
-      networkListItemNoNetwork:
-          loadTimeData.getString('networkListItemNoNetwork'),
-      vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
-    };
-  },
-
   /** @private */
   managedPropertiesChanged_: function() {
     assert(this.managedProperties_);

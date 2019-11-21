@@ -32,6 +32,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_onboarding.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -539,7 +540,8 @@ PasswordFormManager* PasswordManager::CreateFormManager(
       client_,
       driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>(),
       form, nullptr,
-      std::make_unique<FormSaverImpl>(client_->GetProfilePasswordStore()),
+      std::make_unique<PasswordSaveManagerImpl>(
+          std::make_unique<FormSaverImpl>(client_->GetProfilePasswordStore())),
       nullptr));
   form_managers_.back()->ProcessServerPredictions(predictions_);
   return form_managers_.back().get();

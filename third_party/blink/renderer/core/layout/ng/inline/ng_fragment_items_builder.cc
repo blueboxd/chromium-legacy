@@ -79,6 +79,9 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
       // Create an item if this box has no inline children.
       const NGPhysicalBoxFragment& box =
           To<NGPhysicalBoxFragment>(child.layout_result->PhysicalFragment());
+      // Floats are in the fragment tree, not in the fragment item list.
+      DCHECK(!box.IsFloating());
+
       if (child.children_count <= 1) {
         // Compute |has_floating_descendants_for_paint_| to optimize tree
         // traversal in paint.
@@ -92,7 +95,6 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
         ++child_iter;
         continue;
       }
-      DCHECK(!box.IsFloating());
 
       // Children of inline boxes are flattened and added to |items_|, with the
       // count of descendant items to preserve the tree structure.

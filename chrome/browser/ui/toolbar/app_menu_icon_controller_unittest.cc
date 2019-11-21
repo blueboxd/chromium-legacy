@@ -184,9 +184,9 @@ TEST_P(AppMenuIconControllerTest, UpgradeNotification) {
 
 #if defined(OS_WIN)
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AppMenuIconControllerTest,
     ::testing::Range(0, static_cast<int>(install_static::NUM_INSTALL_MODES)));
 #else
-INSTANTIATE_TEST_SUITE_P(, AppMenuIconControllerTest, ::testing::Values(0));
+INSTANTIATE_TEST_SUITE_P(All, AppMenuIconControllerTest, ::testing::Values(0));
 #endif

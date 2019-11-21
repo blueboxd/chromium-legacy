@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_DIFFERENCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_DIFFERENCE_H_
 
+#include <algorithm>
 #include <iosfwd>
+
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"

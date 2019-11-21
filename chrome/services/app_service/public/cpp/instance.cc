@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "ui/aura/window.h"
-
 namespace apps {
 
 Instance::Instance(const std::string& app_id, aura::Window* window)

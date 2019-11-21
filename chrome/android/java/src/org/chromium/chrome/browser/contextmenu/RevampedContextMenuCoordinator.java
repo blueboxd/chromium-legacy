@@ -122,7 +122,7 @@ public class RevampedContextMenuCoordinator implements ContextMenuUi {
         adapter.registerType(
                 ListItemType.DIVIDER,
                 () -> LayoutInflater.from(mListView.getContext())
-                        .inflate(R.layout.context_menu_divider, null),
+                        .inflate(R.layout.app_menu_divider, null),
                 (m, v, p) -> {});
         adapter.registerType(
                 ListItemType.CONTEXT_MENU_ITEM,

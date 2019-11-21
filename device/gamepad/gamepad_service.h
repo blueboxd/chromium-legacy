@@ -14,7 +14,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/singleton.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_provider.h"

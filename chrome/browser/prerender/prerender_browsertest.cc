@@ -1290,6 +1290,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPopup) {
 
 // Checks that registering a protocol handler causes cancellation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRegisterProtocolHandler) {
+  UseHttpsSrcServer();
   PrerenderTestURL("/prerender/prerender_register_protocol_handler.html",
                    FINAL_STATUS_REGISTER_PROTOCOL_HANDLER, 0);
 }

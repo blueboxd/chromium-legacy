@@ -11,13 +11,17 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/crl_set.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
+#include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
 
 namespace net {
@@ -87,6 +91,21 @@ base::Value CertVerifyResultParams(const CertVerifyResult& verify_result) {
   results.Set("public_key_hashes", std::move(hashes));
 
   return std::move(results);
+}
+
+base::Value CertVerifierParams(const CertVerifier::RequestParams& params) {
+  base::Value dict(NetLogX509CertificateParams(params.certificate().get()));
+  if (!params.ocsp_response().empty()) {
+    dict.SetStringPath("ocsp_response",
+                       PEMEncode(params.ocsp_response(), "OCSP RESPONSE"));
+  }
+  if (!params.sct_list().empty()) {
+    dict.SetStringPath("sct_list", PEMEncode(params.sct_list(), "SCT LIST"));
+  }
+  dict.SetPath("host", NetLogStringValue(params.hostname()));
+  dict.SetIntPath("verifier_flags", params.flags());
+
+  return dict;
 }
 
 }  // namespace
@@ -248,9 +267,8 @@ int CoalescingCertVerifier::Job::Start(CertVerifier* underlying_verifier) {
   // multiple times).
   DCHECK(!pending_request_);
 
-  net_log_.BeginEvent(NetLogEventType::CERT_VERIFIER_JOB, [&] {
-    return NetLogX509CertificateParams(params_.certificate().get());
-  });
+  net_log_.BeginEvent(NetLogEventType::CERT_VERIFIER_JOB,
+                      [&] { return CertVerifierParams(params_); });
 
   verify_result_.Reset();
 

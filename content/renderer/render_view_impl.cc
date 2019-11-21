@@ -168,7 +168,6 @@
 #include <cpu-features.h>
 
 #include "base/android/build_info.h"
-#include "base/memory/shared_memory.h"
 #include "content/child/child_thread_impl.h"
 #include "ui/gfx/geometry/rect_f.h"
 

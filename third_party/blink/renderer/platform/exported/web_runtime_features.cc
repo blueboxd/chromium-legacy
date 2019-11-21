@@ -576,6 +576,10 @@ void WebRuntimeFeatures::EnableWebAuth(bool enable) {
   RuntimeEnabledFeatures::SetWebAuthEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebAuthenticationFeaturePolicy(bool enable) {
+  RuntimeEnabledFeatures::SetWebAuthenticationFeaturePolicyEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableLazyInitializeMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetLazyInitializeMediaControlsEnabled(enable);
 }

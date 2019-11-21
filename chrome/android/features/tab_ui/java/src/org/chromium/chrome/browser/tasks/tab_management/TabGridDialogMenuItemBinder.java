@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.view.View;
 import android.widget.TextView;
 
-import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -17,8 +16,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class TabGridDialogMenuItemBinder {
     public static void binder(PropertyModel model, View view, PropertyKey propertyKey) {
         if (propertyKey == TabGridDialogMenuItemProperties.TITLE) {
-            TextView textView = view.findViewById(R.id.menu_item_text);
-            textView.setText(model.get(TabGridDialogMenuItemProperties.TITLE));
+            ((TextView) view).setText(model.get(TabGridDialogMenuItemProperties.TITLE));
         }
     }
 }

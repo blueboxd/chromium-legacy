@@ -255,7 +255,7 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SignedExchangeLoaderTest,
                          ::testing::Values(false, true));
 

@@ -12,9 +12,10 @@
 namespace content {
 
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
+    blink::mojom::ServiceWorkerProviderType type,
     ServiceWorkerProviderHost* provider_host,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : provider_host_(provider_host), context_(std::move(context)) {
+    : type_(type), provider_host_(provider_host), context_(std::move(context)) {
   DCHECK(provider_host_);
   DCHECK(context_);
 }
@@ -78,6 +79,42 @@ void ServiceWorkerContainerHost::RemoveServiceWorkerObjectHost(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(base::Contains(service_worker_object_hosts_, version_id));
   service_worker_object_hosts_.erase(version_id);
+}
+
+bool ServiceWorkerContainerHost::IsContainerForServiceWorker() const {
+  return type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker;
+}
+
+bool ServiceWorkerContainerHost::IsContainerForClient() const {
+  switch (type_) {
+    case blink::mojom::ServiceWorkerProviderType::kForWindow:
+    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
+    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
+      return true;
+    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
+      return false;
+    case blink::mojom::ServiceWorkerProviderType::kUnknown:
+      break;
+  }
+  NOTREACHED() << type_;
+  return false;
+}
+
+blink::mojom::ServiceWorkerClientType ServiceWorkerContainerHost::client_type()
+    const {
+  switch (type_) {
+    case blink::mojom::ServiceWorkerProviderType::kForWindow:
+      return blink::mojom::ServiceWorkerClientType::kWindow;
+    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
+      return blink::mojom::ServiceWorkerClientType::kDedicatedWorker;
+    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
+      return blink::mojom::ServiceWorkerClientType::kSharedWorker;
+    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
+    case blink::mojom::ServiceWorkerProviderType::kUnknown:
+      break;
+  }
+  NOTREACHED() << type_;
+  return blink::mojom::ServiceWorkerClientType::kWindow;
 }
 
 }  // namespace content

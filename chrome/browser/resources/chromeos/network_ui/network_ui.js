@@ -23,35 +23,6 @@ const NetworkUI = (function() {
 
   const mojom = chromeos.networkConfig.mojom;
 
-  CrOncStrings = {
-    OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
-    OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
-    OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
-    OncTypeTether: loadTimeData.getString('OncTypeTether'),
-    OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
-    OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-    networkListItemConnected:
-        loadTimeData.getString('networkListItemConnected'),
-    networkListItemConnecting:
-        loadTimeData.getString('networkListItemConnecting'),
-    networkListItemConnectingTo:
-        loadTimeData.getString('networkListItemConnectingTo'),
-    networkListItemInitializing:
-        loadTimeData.getString('networkListItemInitializing'),
-    networkListItemLabelTemplate:
-        loadTimeData.getString('networkListItemLabelTemplate'),
-    networkListItemNotAvailable:
-        loadTimeData.getString('networkListItemNotAvailable'),
-    networkListItemScanning: loadTimeData.getString('networkListItemScanning'),
-    networkListItemSimCardLocked:
-        loadTimeData.getString('networkListItemSimCardLocked'),
-    networkListItemNotConnected:
-        loadTimeData.getString('networkListItemNotConnected'),
-    networkListItemNoNetwork:
-        loadTimeData.getString('networkListItemNoNetwork'),
-    vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
-  };
-
   // Properties to display in the network state table. Each entry can be either
   // a single state field or an array of state fields. If more than one is
   // specified then the first non empty value is used.

@@ -945,17 +945,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   bool is_in_back_forward_cache() const { return is_in_back_forward_cache_; }
 
-  bool is_back_forward_cache_disabled() const {
-    return is_back_forward_cache_disabled_;
-  }
+  bool IsBackForwardCacheDisabled() const;
 
   // Prevents this frame (along with its parents/children) from being added to
   // the BackForwardCache. If the frame is already in the cache an eviction is
   // triggered.
-  void DisableBackForwardCache();
+  void DisableBackForwardCache(base::StringPiece reason);
 
   bool is_evicted_from_back_forward_cache() {
     return is_evicted_from_back_forward_cache_;
+  }
+
+  const std::set<std::string>& back_forward_cache_disabled_reasons() const {
+    return back_forward_cache_disabled_reasons_;
   }
 
   void AddServiceWorkerProviderHost(ServiceWorkerProviderHost* host);
@@ -2423,8 +2425,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
   bool is_evicted_from_back_forward_cache_ = false;
-  bool is_back_forward_cache_disabled_ = false;
   base::OneShotTimer back_forward_cache_eviction_timer_;
+
+  // The reasons given in BackForwardCache::DisableForRenderFrameHost. This is a
+  // breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.
+  std::set<std::string> back_forward_cache_disabled_reasons_;
 
   // This used to re-commit when restoring from the BackForwardCache, with the
   // same params as the original navigation.

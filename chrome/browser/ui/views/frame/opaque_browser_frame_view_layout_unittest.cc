@@ -400,7 +400,7 @@ TEST_P(OpaqueBrowserFrameViewLayoutTest, WindowWithTitleAndIcon) {
   ExpectWindowTitle();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          OpaqueBrowserFrameViewLayoutTest,
                          ::testing::Values(false, true),
                          [](const testing::TestParamInfo<bool>& param_info) {

@@ -1125,7 +1125,14 @@ class BottomSheet extends FrameLayout
      * Called when the sheet content size changed.
      */
     private void onContentSizeChanged(int width, int height, int oldWidth, int oldHeight) {
+        boolean heightChanged = mContentDesiredHeight != height;
         mContentDesiredHeight = height;
+
+        if (heightChanged && mCurrentState == SheetState.SCROLLING) {
+            endAnimations();
+            return;
+        }
+
         ensureContentIsWrapped(/* animate= */ false);
     }
 

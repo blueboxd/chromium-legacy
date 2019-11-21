@@ -36,7 +36,6 @@ class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
-class WebMediaStreamRendererFactory;
 }
 
 namespace cc {
@@ -139,11 +138,6 @@ class MediaFactory {
   // Returns the media delegate for WebMediaPlayer usage.  If
   // |media_player_delegate_| is NULL, one is created.
   media::RendererWebMediaPlayerDelegate* GetWebMediaPlayerDelegate();
-
-  // Creates a blink::WebMediaStreamRendererFactory used for creating audio and
-  // video renderers for blink::WebMediaPlayerMS.
-  std::unique_ptr<blink::WebMediaStreamRendererFactory>
-  CreateMediaStreamRendererFactory();
 
   media::DecoderFactory* GetDecoderFactory();
 

@@ -22,8 +22,8 @@
       }
   `);
 
-  Runtime.experiments.enableForTest('timelineV8RuntimeCallStats');
-  Runtime.experiments.enableForTest('timelineShowAllEvents');
+  Root.Runtime.experiments.enableForTest('timelineV8RuntimeCallStats');
+  Root.Runtime.experiments.enableForTest('timelineShowAllEvents');
   await PerformanceTestRunner.evaluateWithTimeline('performActions()');
 
   var frame = PerformanceTestRunner.mainTrackEvents()

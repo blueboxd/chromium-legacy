@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SSL_CHROME_SSL_BLOCKING_PAGE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/browser/ssl/ssl_blocking_page_base.h"
+#include "components/security_interstitials/content/ssl_blocking_page.h"
+#include "components/security_interstitials/content/ssl_blocking_page_base.h"
 
 // Contains utilities for Chrome-specific construction of SSL pages.
 class ChromeSSLBlockingPage {

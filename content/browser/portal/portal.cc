@@ -22,7 +22,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -87,8 +86,9 @@ Portal* Portal::Create(
 
   auto portal_ptr = base::WrapUnique(new Portal(owner_render_frame_host));
   Portal* portal = portal_ptr.get();
-  portal->binding_ = mojo::MakeStrongAssociatedBinding<blink::mojom::Portal>(
-      std::move(portal_ptr), std::move(receiver));
+  portal->receiver_ =
+      mojo::MakeSelfOwnedAssociatedReceiver<blink::mojom::Portal>(
+          std::move(portal_ptr), std::move(receiver));
   portal->client_.Bind(std::move(client));
   return portal;
 }
@@ -191,7 +191,7 @@ void Portal::Navigate(const GURL& url,
                       NavigateCallback callback) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     mojo::ReportBadMessage("Portal::Navigate tried to use non-HTTP protocol.");
-    binding_->Close();  // Also deletes |this|.
+    receiver_->Close();  // Also deletes |this|.
     return;
   }
 
@@ -232,7 +232,7 @@ void Portal::Activate(blink::TransferableMessage data,
 
   if (outer_contents->portal()) {
     mojo::ReportBadMessage("Portal::Activate called on nested portal");
-    binding_->Close();  // Also deletes |this|.
+    receiver_->Close();  // Also deletes |this|.
     return;
   }
 
@@ -366,18 +366,18 @@ void Portal::OnFrameTreeNodeDestroyed(FrameTreeNode* frame_tree_node) {
   // in the outer WebContents (not the FrameTreeNode of the document containing
   // it). If that outer FrameTreeNode goes away, this Portal should stop
   // accepting new messages and go away as well.
-  binding_->Close();  // Also deletes |this|.
+  receiver_->Close();  // Also deletes |this|.
 }
 
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   // When the portal is in an orphaned state, the RenderFrameDeleted callback is
   // used to tie the portal's lifetime to its owner.
   if (render_frame_host == owner_render_frame_host_)
-    binding_->Close();  // Also deletes |this|.
+    receiver_->Close();  // Also deletes |this|.
 }
 
 void Portal::WebContentsDestroyed() {
-  binding_->Close();  // Also deletes |this|.
+  receiver_->Close();  // Also deletes |this|.
 }
 
 void Portal::LoadingStateChanged(WebContents* source,
@@ -402,9 +402,9 @@ WebContentsImpl* Portal::GetPortalContents() {
   return portal_contents_impl_;
 }
 
-void Portal::SetBindingForTesting(
-    mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding) {
-  binding_ = binding;
+void Portal::SetReceiverForTesting(
+    mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::Portal> receiver) {
+  receiver_ = receiver;
 }
 
 void Portal::SetClientForTesting(

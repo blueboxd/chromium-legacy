@@ -613,6 +613,23 @@
     Accept and continue
   </message>
 
+  <!-- Strings for the OOBE packaged license screen -->
+  <message name="IDS_OOBE_PACKAGED_LICENSE_TITLE" desc="Title of the screen which advertises use of packaged license.">
+    Enroll your device
+  </message>
+  <message name="IDS_OOBE_PACKGED_LICENSE_SUBTITLE_P1" desc="Paragraph 1 of subtitle of the packaged license screen.">
+    This Chromebook Enterprise device comes bundled with the Chrome Enterprise Upgrade. To take advantage of the enterprise capabilities, enroll this device with a Google admin account.
+  </message>
+  <message name="IDS_OOBE_PACKGED_LICENSE_SUBTITLE_P2" desc="Paragraph 2 of subtitle of the packaged license screen.">
+    Visit g.co/ChromeEnterpriseAccount if you need to create a new account.
+  </message>
+  <message name="IDS_OOBE_PACKAGED_LICENSE_ENROLL_BUTTON_LABEL" desc="The label of the button that leads to enrollment screen.">
+    Enroll
+  </message>
+  <message name="IDS_OOBE_PACKAGED_LICENSE_DONT_ENROLL_BUTTON_LABEL" desc="The label of the button that leads to login screen.">
+    Don't enroll
+  </message>
+
    <!-- Strings for the OOBE demo setup flow -->
   <message name="IDS_OOBE_DEMO_SETUP_PREFERENCES_SCREEN_TITLE" desc="The title of the dialog that allows to choose demo setup preferences.">
     Choose your demo preferences

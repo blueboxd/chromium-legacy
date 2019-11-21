@@ -215,7 +215,7 @@ void ImageDownloaderImpl::FetchImage(const KURL& image_url,
   // Create an image resource fetcher and assign it with a call back object.
   image_fetchers_.push_back(
       std::make_unique<MultiResolutionImageResourceFetcher>(
-          image_url, GetSupplementable(), 0,
+          image_url, GetSupplementable(),
           is_favicon ? blink::mojom::RequestContextType::FAVICON
                      : blink::mojom::RequestContextType::IMAGE,
           bypass_cache ? blink::mojom::FetchCacheMode::kBypassCache

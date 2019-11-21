@@ -26,10 +26,19 @@ void AttemptUserExit();
 // manager re-launch the browser with restore last session flag.
 void AttemptRestart();
 
-// Starts a user initiated relaunch process. On platforms other than
-// chromeos, this is equivalent to AttemptRestart. On ChromeOS, this relaunches
-// the entire OS, instead of just relaunching the browser.
+// Starts a user initiated relaunch process. On platforms other than Chrome OS,
+// this is equivalent to AttemptRestart. On Chrome OS, this relaunches the
+// entire OS, instead of just relaunching the browser.
 void AttemptRelaunch();
+
+#if !defined(OS_ANDROID)
+// Starts an administrator-initiated relaunch process. On platforms other than
+// Chrome OS, this relaunches the browser and restores the user's session. On
+// Chrome OS, this restarts the entire OS. This differs from AttemptRelaunch in
+// that all user prompts (e.g., beforeunload handlers and confirmation to abort
+// in-progress downloads) are bypassed.
+void RelaunchIgnoreUnloadHandlers();
+#endif
 
 // Attempt to exit by closing all browsers.  This is equivalent to
 // CloseAllBrowsers() on platforms where the application exits

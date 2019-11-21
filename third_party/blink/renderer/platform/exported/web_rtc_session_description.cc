@@ -30,45 +30,12 @@
 
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
-
-class WebRTCSessionDescriptionPrivate final
-    : public RefCounted<WebRTCSessionDescriptionPrivate> {
-  USING_FAST_MALLOC(WebRTCSessionDescription);
-
- public:
-  static scoped_refptr<WebRTCSessionDescriptionPrivate> Create(
-      const WebString& type,
-      const WebString& sdp);
-
-  WebString GetType() { return type_; }
-  void SetType(const WebString& type) { type_ = type; }
-
-  WebString Sdp() { return sdp_; }
-  void SetSdp(const WebString& sdp) { sdp_ = sdp; }
-
- private:
-  WebRTCSessionDescriptionPrivate(const WebString& type, const WebString& sdp);
-
-  WebString type_;
-  WebString sdp_;
-};
-
-scoped_refptr<WebRTCSessionDescriptionPrivate>
-WebRTCSessionDescriptionPrivate::Create(const WebString& type,
-                                        const WebString& sdp) {
-  return base::AdoptRef(new WebRTCSessionDescriptionPrivate(type, sdp));
-}
-
-WebRTCSessionDescriptionPrivate::WebRTCSessionDescriptionPrivate(
-    const WebString& type,
-    const WebString& sdp)
-    : type_(type), sdp_(sdp) {}
 
 void WebRTCSessionDescription::Assign(const WebRTCSessionDescription& other) {
   private_ = other.private_;
@@ -80,7 +47,7 @@ void WebRTCSessionDescription::Reset() {
 
 void WebRTCSessionDescription::Initialize(const WebString& type,
                                           const WebString& sdp) {
-  private_ = WebRTCSessionDescriptionPrivate::Create(type, sdp);
+  private_ = RTCSessionDescriptionPlatform::Create(type, sdp);
 }
 
 WebString WebRTCSessionDescription::GetType() const {

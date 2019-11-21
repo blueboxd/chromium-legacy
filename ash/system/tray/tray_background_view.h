@@ -12,6 +12,7 @@
 #include "ash/system/model/virtual_keyboard_model.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
+#include "ash/system/user/login_status.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/insets.h"
@@ -62,8 +63,11 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // whether the showing operation is initiated by mouse or gesture click.
   virtual void ShowBubble(bool show_by_click);
 
-  // Called whenever the shelf alignment changes.
-  virtual void UpdateAfterShelfAlignmentChange();
+  // Called whenever the shelf alignment or configuration changes.
+  virtual void UpdateAfterShelfChange();
+
+  // Called to update the tray button after the login status changes.
+  virtual void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
   // Called whenever the bounds of the root window changes.
   virtual void UpdateAfterRootWindowBoundsChange(const gfx::Rect& old_bounds,
@@ -125,7 +129,8 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // activated). The effective visibility of the tray item is determined by the
   // current state of the status tray (i.e. whether the virtual keyboard is
   // showing or if it is collapsed).
-  void SetVisiblePreferred(bool visible_preferred);
+  virtual void SetVisiblePreferred(bool visible_preferred);
+  bool visible_preferred() const { return visible_preferred_; }
 
  protected:
   // ActionableView:
@@ -144,12 +149,13 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   class HighlightPathGenerator;
   class TrayWidgetObserver;
 
+  void StartVisibilityAnimation(bool visible);
+
   // views::View:
-  void SetVisible(bool visible) override;
-  const char* GetClassName() const override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void ChildPreferredSizeChanged(views::View* child) override;
+  const char* GetClassName() const override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -163,7 +169,7 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   gfx::Insets GetBackgroundInsets() const;
 
   // Updates the background layer.
-  void UpdateBackground();
+  virtual void UpdateBackground();
 
   // Returns the effective visibility of the tray item based on the current
   // state.

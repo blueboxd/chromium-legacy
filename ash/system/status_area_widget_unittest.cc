@@ -35,6 +35,7 @@
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
+#include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 
 using session_manager::SessionState;
@@ -392,8 +393,12 @@ class StatusAreaWidgetCollapseStateTest : public AshTestBase {
     select_to_speak_->UpdateAfterStatusAreaCollapseChange();
   }
 
+  StatusAreaWidget::CollapseState collapse_state() const {
+    return status_area_->collapse_state();
+  }
+
   StatusAreaWidget* status_area_;
-  TrayBackgroundView* overflow_button_;
+  StatusAreaOverflowButtonTray* overflow_button_;
   TrayBackgroundView* virtual_keyboard_;
   TrayBackgroundView* ime_menu_;
   TrayBackgroundView* palette_;
@@ -451,7 +456,100 @@ TEST_F(StatusAreaWidgetCollapseStateTest, OverflowButtonShownWhenCollapsible) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kAshForceStatusAreaCollapsible);
   status_area_->UpdateCollapseState();
+  EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
   EXPECT_TRUE(overflow_button_->GetVisible());
+}
+
+TEST_F(StatusAreaWidgetCollapseStateTest, ClickOverflowButton) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshForceStatusAreaCollapsible);
+  status_area_->UpdateCollapseState();
+
+  // By default, status area is collapsed.
+  EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
+  EXPECT_FALSE(select_to_speak_->GetVisible());
+  EXPECT_FALSE(ime_menu_->GetVisible());
+  EXPECT_FALSE(virtual_keyboard_->GetVisible());
+  EXPECT_TRUE(palette_->GetVisible());
+  EXPECT_TRUE(overflow_button_->GetVisible());
+
+  // Click overflow button.
+  gfx::Point point = overflow_button_->GetBoundsInScreen().origin();
+  ui::MouseEvent click(ui::ET_MOUSE_PRESSED, point, point,
+                       base::TimeTicks::Now(), 0, 0);
+  overflow_button_->PerformAction(click);
+
+  // All tray buttons should be visible in the expanded state.
+  EXPECT_EQ(StatusAreaWidget::CollapseState::EXPANDED, collapse_state());
+  EXPECT_TRUE(select_to_speak_->GetVisible());
+  EXPECT_TRUE(ime_menu_->GetVisible());
+  EXPECT_TRUE(virtual_keyboard_->GetVisible());
+  EXPECT_TRUE(palette_->GetVisible());
+  EXPECT_TRUE(overflow_button_->GetVisible());
+
+  // Clicking the overflow button again should go back to the collapsed state.
+  overflow_button_->PerformAction(click);
+  EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
+  EXPECT_FALSE(select_to_speak_->GetVisible());
+  EXPECT_FALSE(ime_menu_->GetVisible());
+  EXPECT_FALSE(virtual_keyboard_->GetVisible());
+  EXPECT_TRUE(palette_->GetVisible());
+  EXPECT_TRUE(overflow_button_->GetVisible());
+}
+
+TEST_F(StatusAreaWidgetCollapseStateTest, NewTrayShownWhileCollapsed) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshForceStatusAreaCollapsible);
+  palette_->SetVisiblePreferred(false);
+  status_area_->UpdateCollapseState();
+
+  // The palette tray button should not be visible initially.
+  EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
+  EXPECT_FALSE(ime_menu_->GetVisible());
+  EXPECT_TRUE(virtual_keyboard_->GetVisible());
+  EXPECT_FALSE(palette_->GetVisible());
+
+  // Showing it should replace the virtual keyboard tray button as it has higher
+  // priority.
+  palette_->SetVisiblePreferred(true);
+  EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
+  EXPECT_FALSE(ime_menu_->GetVisible());
+  EXPECT_FALSE(virtual_keyboard_->GetVisible());
+  EXPECT_TRUE(palette_->GetVisible());
+}
+
+TEST_F(StatusAreaWidgetCollapseStateTest, TrayHiddenWhileCollapsed) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshForceStatusAreaCollapsible);
+  status_area_->UpdateCollapseState();
+
+  // The palette tray button should not visible initially.
+  EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
+  EXPECT_FALSE(ime_menu_->GetVisible());
+  EXPECT_FALSE(virtual_keyboard_->GetVisible());
+  EXPECT_TRUE(palette_->GetVisible());
+
+  // Hiding it should make the virtual keyboard tray button replace it.
+  palette_->SetVisiblePreferred(false);
+  EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
+  EXPECT_FALSE(ime_menu_->GetVisible());
+  EXPECT_TRUE(virtual_keyboard_->GetVisible());
+  EXPECT_FALSE(palette_->GetVisible());
+}
+
+TEST_F(StatusAreaWidgetCollapseStateTest, AllTraysFitInCollapsedState) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshForceStatusAreaCollapsible);
+  status_area_->UpdateCollapseState();
+  EXPECT_EQ(StatusAreaWidget::CollapseState::COLLAPSED, collapse_state());
+
+  // If all tray buttons can fit in the available space, the overflow button is
+  // now shown.
+  select_to_speak_->SetVisiblePreferred(false);
+  ime_menu_->SetVisiblePreferred(false);
+  dictation_button_->SetVisiblePreferred(false);
+  EXPECT_EQ(StatusAreaWidget::CollapseState::NOT_COLLAPSIBLE, collapse_state());
+  EXPECT_FALSE(overflow_button_->GetVisible());
 }
 
 }  // namespace ash

@@ -184,8 +184,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
-  bool is_parent_frame_secure() const { return is_parent_frame_secure_; }
-
   // Returns whether this provider host is secure enough to have a service
   // worker controller.
   // Analogous to Blink's Document::IsSecureContext. Because of how service
@@ -214,11 +212,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts. The version of the service worker.
   // This is nullptr when the worker is still starting up (until
   // CompleteStartWorkerPreparation() is called).
-  ServiceWorkerVersion* running_hosted_version() const {
-    DCHECK(!running_hosted_version_ ||
-           type_ == blink::mojom::ServiceWorkerProviderType::kForServiceWorker);
-    return running_hosted_version_.get();
-  }
+  ServiceWorkerVersion* running_hosted_version() const;
 
   // For service worker clients. Similar to EnsureControllerServiceWorker, but
   // this returns a bound Mojo ptr which is supposed to be sent to clients. The
@@ -276,13 +270,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //
   // The URL may also change on redirects during loading. Once
   // is_response_committed() is true, the URL should no longer change.
-  const GURL& url() const;
+  const GURL& url() const { return url_; }
 
   // The URL representing the site_for_cookies for this context. See
   // |URLRequest::site_for_cookies()| for details.
   // For service worker execution contexts, site_for_cookies() always
   // returns the service worker script URL.
-  const GURL& site_for_cookies() const;
+  const GURL& site_for_cookies() const { return site_for_cookies_; }
 
   // The URL representing the first-party site for this context.
   // For service worker execution contexts, top_frame_origin() always
@@ -290,11 +284,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For shared worker it is the origin of the document that created the worker.
   // For dedicated worker it is the top-frame origin of the document that owns
   // the worker.
-  base::Optional<url::Origin> top_frame_origin() const;
-
-  blink::mojom::ServiceWorkerProviderType provider_type() const {
-    return type_;
+  base::Optional<url::Origin> top_frame_origin() const {
+    return top_frame_origin_;
   }
+
+  // TODO(https://crbug.com/931087): Remove these functions in favor of the
+  // equivalent functions on ServiceWorkerContainerHost.
+  blink::mojom::ServiceWorkerProviderType provider_type() const;
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
   // Can only be called when IsProviderForClient() is true.
@@ -456,6 +452,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           client_remote,
+      scoped_refptr<ServiceWorkerVersion> running_hosted_version,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
@@ -590,8 +587,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Unique among all provider hosts.
   const int provider_id_;
 
-  const blink::mojom::ServiceWorkerProviderType type_;
-
   // A GUID that is web-exposed as FetchEvent.clientId.
   std::string client_uuid_;
 
@@ -628,7 +623,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // tab where the navigation occurs. Otherwise, a null callback.
   const WebContentsGetter web_contents_getter_;
 
-  // For service worker clients. See comments for the getter functions.
+  // See comments for the getter functions.
   GURL url_;
   GURL site_for_cookies_;
   base::Optional<url::Origin> top_frame_origin_;
@@ -663,7 +658,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // For service worker execution contexts. The ServiceWorkerVersion of the
   // service worker this is a provider for.
-  scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
+  const scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
 
   // |context_| owns |this| but if the context is destroyed and a new one is
   // created, the provider host becomes owned by the new context, while this

@@ -13,6 +13,7 @@ include_rules = [
   "+components/sync/model_impl",
   "+components/sync/test",
   "+components/sync_preferences",
+  "+components/ukm",
   "+components/url_formatter",
   "+components/webdata/common",
   "+crypto",

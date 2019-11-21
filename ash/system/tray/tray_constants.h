@@ -181,6 +181,9 @@ constexpr int kUnifiedTopShortcutButtonMinSpacing = 4;
 constexpr gfx::Insets kUnifiedDetailedViewTitlePadding(0, 0, 0, 16);
 constexpr int kUnifiedDetailedViewTitleRowHeight = 64;
 
+constexpr int kStatusAreaLeftPaddingForOverflow = 100;
+constexpr int kStatusAreaForceCollapseAvailableWidth = 200;
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

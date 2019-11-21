@@ -15,7 +15,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"

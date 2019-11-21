@@ -57,7 +57,7 @@
 
   function loadResource(name) {
     var url = TestRunner.url('resources/' + name);
-    return Runtime.loadResourcePromise(url).then(function(text) {
+    return Root.Runtime.loadResourcePromise(url).then(function(text) {
       resources[name] = text;
     });
   }

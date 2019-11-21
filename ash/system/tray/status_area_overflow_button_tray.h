@@ -40,7 +40,12 @@ class ASH_EXPORT StatusAreaOverflowButtonTray : public TrayBackgroundView {
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void Initialize() override;
   bool PerformAction(const ui::Event& event) override;
+  void SetVisiblePreferred(bool visible_preferred) override;
+  void UpdateAfterStatusAreaCollapseChange() override;
   const char* GetClassName() const override;
+
+  // Resets the state back to be collapsed (i.e. CLICK_TO_EXPAND).
+  void ResetStateToCollapsed();
 
   State state() const { return state_; }
 

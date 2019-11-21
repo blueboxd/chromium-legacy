@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -15,10 +16,6 @@
 #include "base/sequence_checker.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/cpp/instance_update.h"
-
-namespace aura {
-class Window;
-}
 
 namespace apps {
 
@@ -92,6 +89,9 @@ class InstanceRegistry {
   // The caller presumably calls OnInstances(std::move(deltas)).
   void OnInstances(const Instances& deltas);
 
+  // Return windows for the |app_id|.
+  std::set<aura::Window*> GetWindows(const std::string& app_id);
+
   // Calls f, a void-returning function whose arguments are (const
   // apps::InstanceUpdate&), on each window in the instance_registry.
   //
@@ -159,6 +159,9 @@ class InstanceRegistry {
   // Maps from window to the latest state: the "sum" of all previous deltas.
   std::map<const aura::Window*, InstancePtr> states_;
   Instances deltas_pending_;
+
+  // Maps from app id to app windows.
+  std::map<const std::string, std::set<aura::Window*>> app_id_to_app_windows_;
 
   SEQUENCE_CHECKER(my_sequence_checker_);
 };

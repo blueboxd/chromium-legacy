@@ -249,4 +249,9 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormData& form) {
   return buffer;
 }
 
+bool FormDataEqualForTesting(const FormData& lhs, const FormData& rhs) {
+  FormData::IdentityComparator less;
+  return !less(lhs, rhs) && !less(rhs, lhs);
+}
+
 }  // namespace autofill

@@ -1797,6 +1797,8 @@ jumbo_static_library("ui") {
       "webui/chromeos/login/oobe_display_chooser.h",
       "webui/chromeos/login/oobe_ui.cc",
       "webui/chromeos/login/oobe_ui.h",
+      "webui/chromeos/login/packaged_license_screen_handler.cc",
+      "webui/chromeos/login/packaged_license_screen_handler.h",
       "webui/chromeos/login/recommend_apps_screen_handler.cc",
       "webui/chromeos/login/recommend_apps_screen_handler.h",
       "webui/chromeos/login/reset_screen_handler.cc",

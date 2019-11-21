@@ -9,5 +9,5 @@
 #endif
 
 // Externed accessibility identifier.
-NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
-    @"JavaScriptDialogTextFieldAccessibiltyIdentifier";
+NSString* const kJavaScriptDialogTextFieldAccessibilityIdentifier =
+    @"JavaScriptDialogTextFieldAccessibilityIdentifier";

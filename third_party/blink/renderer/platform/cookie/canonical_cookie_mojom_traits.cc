@@ -90,6 +90,13 @@ network::mojom::CookiePriority StructTraits<
 }
 
 // static
+network::mojom::CookieSourceScheme StructTraits<
+    network::mojom::CanonicalCookieDataView,
+    blink::CanonicalCookie>::source_scheme(const blink::CanonicalCookie& c) {
+  return c.SourceScheme();
+}
+
+// static
 bool StructTraits<network::mojom::CanonicalCookieDataView,
                   blink::CanonicalCookie>::
     Read(network::mojom::CanonicalCookieDataView cookie,
@@ -131,9 +138,10 @@ bool StructTraits<network::mojom::CanonicalCookieDataView,
     return false;
 
   base::Optional<blink::CanonicalCookie> created =
-      blink::CanonicalCookie::Create(
-          name, value, domain, path, creation, expiry, last_access,
-          cookie.secure(), cookie.httponly(), site_restrictions, priority);
+      blink::CanonicalCookie::Create(name, value, domain, path, creation,
+                                     expiry, last_access, cookie.secure(),
+                                     cookie.httponly(), site_restrictions,
+                                     priority, cookie.source_scheme());
   if (!created)
     return false;
   *out = std::move(created).value();

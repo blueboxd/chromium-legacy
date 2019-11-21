@@ -10,7 +10,10 @@
 
   const dialogElement = AuditsTestRunner.getContainerElement();
   dialogElement.querySelector('input[name="audits.device_type"][value="desktop"]').click();
-  dialogElement.querySelector('input[name="audits.throttling"][value="off"]').click();
+  // Turn off simulated throttling.
+  dialogElement.querySelector('.audits-settings-pane > div').shadowRoot
+               .querySelectorAll('span')[1].shadowRoot
+               .querySelector('input').click();
 
   AuditsTestRunner.dumpStartAuditState();
   AuditsTestRunner.getRunButton().click();

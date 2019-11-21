@@ -518,6 +518,10 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientSelfNotifyTest,
   EXPECT_EQ(kTestServerChips, message.bag_of_chips().server_chips());
 }
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         EnableDisableSingleClientTest,
+                         ::testing::Values(false, true));
+
 INSTANTIATE_TEST_SUITE_P(,
                          EnableDisableSingleClientSelfNotifyTest,
                          ::testing::Values(false, true));

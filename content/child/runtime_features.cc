@@ -16,6 +16,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/navigation_policy.h"
+#include "device/fido/features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "net/base/features.h"
@@ -112,6 +113,9 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableWebAuth(
       base::FeatureList::IsEnabled(features::kWebAuth));
 #endif
+
+  WebRuntimeFeatures::EnableWebAuthenticationFeaturePolicy(
+      base::FeatureList::IsEnabled(device::kWebAuthFeaturePolicy));
 
 #if defined(OS_ANDROID)
   WebRuntimeFeatures::EnablePictureInPictureAPI(

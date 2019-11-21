@@ -44,7 +44,7 @@
     var urlPrefix =
         TestRunner.mainTarget.inspectedURL().substr(0, TestRunner.mainTarget.inspectedURL().lastIndexOf('/') + 1);
     var url = TestRunner.url('resources/' + name);
-    return Runtime.loadResourcePromise(url).then(function(text) {
+    return Root.Runtime.loadResourcePromise(url).then(function(text) {
       fs.root.addFile(name, text);
     });
   }

@@ -93,9 +93,6 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBubbleBoundsInScreen() const;
 
-  // Updates when the login status of the system changes.
-  void UpdateAfterLoginStatusChange();
-
   // Enable / disable UnifiedSystemTray button in status area. If the bubble is
   // open when disabling, also close it.
   void SetTrayEnabled(bool enabled);
@@ -125,7 +122,8 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   void HideBubble(const TrayBubbleView* bubble_view) override;
   void HideBubbleWithView(const TrayBubbleView* bubble_view) override;
   void ClickedOutsideBubble() override;
-  void UpdateAfterShelfAlignmentChange() override;
+  void UpdateAfterShelfChange() override;
+  void UpdateAfterLoginStatusChange(LoginStatus status) override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;

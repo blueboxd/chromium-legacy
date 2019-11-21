@@ -93,6 +93,91 @@ def make_dict_member_set_def(cg_context):
     return func_def
 
 
+def make_dict_fill_with_members_def(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    dictionary = cg_context.dictionary
+
+    func_name = _format(
+        "{_1}::FillWithMembers", _1=blink_class_name(dictionary))
+    func_def = FunctionDefinitionNode(
+        name=T(func_name),
+        arg_decls=[
+            T("v8::Isolate* isolate"),
+            T("v8::Local<v8::Object> creation_context"),
+            T("v8::Local<v8::Object> v8_dictionary"),
+        ],
+        return_type=T("bool"))
+
+    body = func_def.body
+    body.add_template_vars(cg_context.template_bindings())
+
+    if dictionary.inherited:
+        _1 = blink_class_name(dictionary.inherited)
+        pattern = ("if (!{_1}::FillWithMembers("
+                   "isolate, creation_context, v8_dictionary))\n"
+                   "  return false;")
+        body.append(T(_format(pattern, _1=_1)))
+
+    body.append(
+        T("return FillWithOwnMembers("
+          "isolate, creation_context, v8_dictionary)"))
+
+    return func_def
+
+
+def make_dict_fill_with_own_members_def(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    T = TextNode
+
+    dictionary = cg_context.dictionary
+    own_members = sorted(dictionary.own_members, key=lambda m: m.identifier)
+
+    func_name = _format(
+        "{_1}::FillWithOwnMembers", _1=blink_class_name(dictionary))
+    func_def = FunctionDefinitionNode(
+        name=T(func_name),
+        arg_decls=[
+            T("v8::Isolate* isolate"),
+            T("v8::Local<v8::Object> creation_context"),
+            T("v8::Local<v8::Object> v8_dictionary")
+        ],
+        return_type=T("bool"))
+
+    body = func_def.body
+    body.add_template_vars(cg_context.template_bindings())
+
+    body.extend([
+        T("const v8::Eternal<v8::Name>* member_keys = EternalKeys(isolate);"),
+        T("v8::Local<v8::Context> current_context = "
+          "isolate->GetCurrentContext();"),
+    ])
+
+    # TODO(peria): Support runtime enabled / origin trial members.
+    for key_index, member in enumerate(own_members):
+        _1 = name_style.api_func("has", member.identifier)
+        _2 = name_style.api_func(member.identifier)
+        _3 = key_index
+        pattern = ("""
+if ({_1}()) {{
+  v8::Local<v8::Value> v8_value = ToV8({_2}(), creation_context, isolate);
+  v8::Local<v8::Name> key = member_keys[{_3}].Get(isolate);
+  if (!v8_dictionary->CreateDataProperty(current_context, key, v8_value)
+           .ToChecked()) {{
+    return false;
+  }}
+}}\
+""")
+        body.append(T(_format(pattern, _1=_1, _2=_2, _3=_3)))
+
+    body.append(T("return true;"))
+
+    return func_def
+
+
 def generate_dictionaries(web_idl_database, output_dirs):
     dictionary = web_idl_database.find("ExampleDictionary")
     filename = "{}.cc".format(name_style.file(dictionary.identifier))
@@ -105,6 +190,8 @@ def generate_dictionaries(web_idl_database, output_dirs):
 
     code_node = SymbolScopeNode()
 
+    code_node.append(make_dict_fill_with_members_def(cg_context))
+    code_node.append(make_dict_fill_with_own_members_def(cg_context))
     for member in sorted(dictionary.own_members, key=lambda x: x.identifier):
         code_node.extend([
             make_dict_member_get_def(cg_context.make_copy(dict_member=member)),

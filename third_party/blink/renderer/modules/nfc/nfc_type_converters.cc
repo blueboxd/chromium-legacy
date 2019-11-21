@@ -71,9 +71,9 @@ TypeConverter<NDEFScanOptionsPtr, const blink::NDEFScanOptions*>::Convert(
     const blink::NDEFScanOptions* scanOptions) {
   // https://w3c.github.io/web-nfc/#dom-ndefscanoptions
   // Default values for NDEFScanOptions dictionary are:
-  // url = "", recordType = null, mediaType = ""
+  // id = "", recordType = null, mediaType = ""
   NDEFScanOptionsPtr scanOptionsPtr = NDEFScanOptions::New();
-  scanOptionsPtr->url = scanOptions->url();
+  scanOptionsPtr->id = scanOptions->id();
   scanOptionsPtr->media_type = scanOptions->mediaType();
 
   if (scanOptions->hasRecordType()) {

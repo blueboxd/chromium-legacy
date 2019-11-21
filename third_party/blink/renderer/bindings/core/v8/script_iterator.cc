@@ -19,22 +19,22 @@ ScriptIterator ScriptIterator::FromIterable(v8::Isolate* isolate,
   const v8::Local<v8::Function> iterator_method =
       GetEsIteratorMethod(isolate, value, exception_state);
   if (exception_state.HadException())
-    return ScriptIterator(nullptr);
+    return ScriptIterator();
   if (iterator_method.IsEmpty())
-    return ScriptIterator(nullptr);
+    return ScriptIterator();
 
   // Use the method returned above to invoke the GetIterator(V, sync, method)
   // abstract ES operation.
   const v8::Local<v8::Object> iterator =
       GetEsIteratorWithMethod(isolate, iterator_method, value, exception_state);
   if (exception_state.HadException())
-    return ScriptIterator(nullptr);
+    return ScriptIterator();
 
-  return ScriptIterator(iterator, isolate);
+  return ScriptIterator(isolate, iterator);
 }
 
-ScriptIterator::ScriptIterator(v8::Local<v8::Object> iterator,
-                               v8::Isolate* isolate)
+ScriptIterator::ScriptIterator(v8::Isolate* isolate,
+                               v8::Local<v8::Object> iterator)
     : isolate_(isolate),
       iterator_(iterator),
       next_key_(V8AtomicString(isolate, "next")),

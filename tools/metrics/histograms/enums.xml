@@ -25513,6 +25513,8 @@ Called by update_net_error_codes.py.-->
   <int value="3091" label="ResourceTimingTaintedOriginFlagFail"/>
   <int value="3092" label="RegisterProtocolHandlerSameOriginAsTop"/>
   <int value="3093" label="RegisterProtocolHandlerCrossOriginSubframe"/>
+  <int value="3094" label="WebNfcNdefReaderScan"/>
+  <int value="3095" label="WebNfcNdefWriterPush"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -25599,6 +25601,7 @@ Called by update_net_error_codes.py.-->
   <int value="64" label="ClientHintWidth"/>
   <int value="65" label="DocumentAccess"/>
   <int value="66" label="WebXr"/>
+  <int value="67" label="PublicKeyCredentials"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -38016,7 +38019,6 @@ from previous Chrome versions.
   <int value="834033186" label="enable-data-reduction-proxy-dev"/>
   <int value="834326277" label="enable-answers-in-suggest"/>
   <int value="835018878" label="disable-quic"/>
-  <int value="835324823" label="ForceDiceMigration:enabled"/>
   <int value="836406476" label="EnableTouchableAppContextMenu:enabled"/>
   <int value="838887742" label="manual-enhanced-bookmarks"/>
   <int value="839798268" label="SafeBrowsingTelemetryForApkDownloads:disabled"/>
@@ -38076,7 +38078,6 @@ from previous Chrome versions.
   <int value="928900043" label="OmniboxLooseMaxLimitOnDedicatedRows:disabled"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
   <int value="934292666" label="DownloadRename:enabled"/>
-  <int value="935364646" label="ForceDiceMigration:disabled"/>
   <int value="935655516" label="password-import-export:disabled"/>
   <int value="936341613" label="OfflinePagesCT:disabled"/>
   <int value="936919953" label="bypass-app-banner-engagement-checks"/>
@@ -57122,6 +57123,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Window close">The last browser window was closed.</int>
   <int value="2" label="Browser exit">User clicked on the Exit menu item.</int>
   <int value="3" label="End session">OS is logging off or shutting down.</int>
+  <int value="4" label="Silent exit relaunch">
+    Exit without onbeforeunload or in-progress download prompts.
+  </int>
 </enum>
 
 <enum name="SideloadUIEvents">

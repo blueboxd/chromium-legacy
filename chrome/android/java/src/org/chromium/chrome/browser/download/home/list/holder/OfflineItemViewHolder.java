@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
+import static org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu.buildMenuListItem;
+
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -18,16 +20,21 @@ import org.chromium.chrome.browser.download.home.list.ListProperties;
 import org.chromium.chrome.browser.download.home.list.view.AsyncImageView;
 import org.chromium.chrome.browser.download.home.metrics.UmaUtils;
 import org.chromium.chrome.browser.download.home.view.SelectionView;
-import org.chromium.chrome.browser.ui.widget.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.listmenu.BasicListMenu;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenu;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButtonDelegate;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.chrome.download.R;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemVisuals;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Helper that supports all typical actions for OfflineItems.
  */
-class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton.Delegate {
+class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButtonDelegate {
     /** The {@link View} that visually represents the selected state of this list item. */
     protected final SelectionView mSelectionView;
 
@@ -125,6 +132,25 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
         mThumbnail.setImageDrawable(null);
     }
 
+    @Override
+    public ListMenu getListMenu() {
+        ModelList listItems = new ModelList();
+        listItems.add(buildMenuListItem(R.string.share, 0, 0));
+        if (mCanRename) listItems.add(buildMenuListItem(R.string.rename, 0, 0));
+        listItems.add(buildMenuListItem(R.string.delete, 0, 0));
+        ListMenu.Delegate delegate = (model) -> {
+            int textId = model.get(ListMenuItemProperties.TITLE_ID);
+            if (textId == R.string.share) {
+                if (mShareCallback != null) mShareCallback.run();
+            } else if (textId == R.string.delete) {
+                if (mDeleteCallback != null) mDeleteCallback.run();
+            } else if (textId == R.string.rename) {
+                if (mRenameCallback != null) mRenameCallback.run();
+            }
+        };
+        return new BasicListMenu(mMore.getContext(), listItems, delegate);
+    }
+
     /**
      * Called when a {@link OfflineItemVisuals} are retrieved and are used to build the
      * {@link Drawable} to use for the thumbnail {@link View}.  Can be overridden by subclasses who
@@ -137,32 +163,6 @@ class OfflineItemViewHolder extends ListItemViewHolder implements ListMenuButton
     protected Drawable onThumbnailRetrieved(OfflineItemVisuals visuals) {
         if (visuals == null || visuals.icon == null) return null;
         return new BitmapDrawable(itemView.getResources(), visuals.icon);
-    }
-
-    // ListMenuButton.Delegate implementation.
-    @Override
-    public ListMenuButton.Item[] getItems() {
-        if (mCanRename) {
-            return new ListMenuButton.Item[] {
-                    new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
-                    new ListMenuButton.Item(itemView.getContext(), R.string.rename, true),
-                    new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
-        } else {
-            return new ListMenuButton.Item[] {
-                    new ListMenuButton.Item(itemView.getContext(), R.string.share, true),
-                    new ListMenuButton.Item(itemView.getContext(), R.string.delete, true)};
-        }
-    }
-
-    @Override
-    public void onItemSelected(ListMenuButton.Item item) {
-        if (item.getTextId() == R.string.share) {
-            if (mShareCallback != null) mShareCallback.run();
-        } else if (item.getTextId() == R.string.delete) {
-            if (mDeleteCallback != null) mDeleteCallback.run();
-        } else if (item.getTextId() == R.string.rename) {
-            if (mRenameCallback != null) mRenameCallback.run();
-        }
     }
 
     private boolean shouldPushSelection(PropertyModel properties, ListItem item) {

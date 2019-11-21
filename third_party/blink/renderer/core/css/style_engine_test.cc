@@ -2414,4 +2414,37 @@ TEST_F(StyleEngineTest, StyleRecalcRootInShadowTree) {
   EXPECT_EQ(span, GetStyleRecalcRoot());
 }
 
+TEST_F(StyleEngineTest, StyleRecalcRootOutsideFlatTree) {
+  ScopedFlatTreeStyleRecalcForTest feature_scope(true);
+
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id="host"><div id="ensured"><span></span></div></div>
+    <div id="dirty"></div>
+  )HTML");
+
+  auto* host = GetDocument().getElementById("host");
+  auto* dirty = GetDocument().getElementById("dirty");
+  auto* ensured = GetDocument().getElementById("ensured");
+  auto* span = To<Element>(ensured->firstChild());
+
+  host->AttachShadowRootInternal(ShadowRootType::kOpen);
+
+  UpdateAllLifecyclePhases();
+
+  dirty->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
+  EXPECT_EQ(dirty, GetStyleRecalcRoot());
+
+  // Ensure a computed style for the span parent to try to trick us into
+  // incorrectly using the span as a recalc root.
+  ensured->EnsureComputedStyle();
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "pink");
+
+  // <span> is outside the flat tree, so it should not affect the style recalc
+  // root.
+  EXPECT_EQ(dirty, GetStyleRecalcRoot());
+
+  // Should not trigger any DCHECK failures.
+  UpdateAllLifecyclePhases();
+}
+
 }  // namespace blink

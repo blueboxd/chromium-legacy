@@ -191,6 +191,20 @@ void RestoreBreakList(RenderText* render_text, BreakList<T>* break_list) {
   }
 }
 
+// Move the iterator |iter| forward until |position| is included in the range.
+template <typename T>
+typename BreakList<T>::const_iterator IncrementBreakListIteratorToPosition(
+    const BreakList<T>& break_list,
+    typename BreakList<T>::const_iterator iter,
+    size_t position) {
+  for (; iter != break_list.breaks().end(); ++iter) {
+    const gfx::Range range = break_list.GetRange(iter);
+    if (position >= range.start() && position < range.end())
+      break;
+  }
+  return iter;
+}
+
 // Determines the equivalent codepoint (same rank) at |text[index]| in
 // |other_text|. The size of each codepoint may no longer match due to elision,
 // truncation or revision but their ordering is still the same. The following
@@ -450,43 +464,52 @@ void SkiaTextRenderer::DrawStrike(int x,
   canvas_skia_->drawRect(r, flags_);
 }
 
-StyleIterator::StyleIterator(const BreakList<SkColor>& colors,
-                             const BreakList<BaselineStyle>& baselines,
-                             const BreakList<int>& font_size_overrides,
-                             const BreakList<Font::Weight>& weights,
-                             const std::vector<BreakList<bool>>& styles)
+StyleIterator::StyleIterator(const BreakList<SkColor>* colors,
+                             const BreakList<BaselineStyle>* baselines,
+                             const BreakList<int>* font_size_overrides,
+                             const BreakList<Font::Weight>* weights,
+                             const std::vector<BreakList<bool>>* styles)
     : colors_(colors),
       baselines_(baselines),
       font_size_overrides_(font_size_overrides),
       weights_(weights),
       styles_(styles) {
-  color_ = colors_.breaks().begin();
-  baseline_ = baselines_.breaks().begin();
-  font_size_override_ = font_size_overrides_.breaks().begin();
-  weight_ = weights_.breaks().begin();
-  for (size_t i = 0; i < styles_.size(); ++i)
-    style_.push_back(styles_[i].breaks().begin());
+  color_ = colors_->breaks().begin();
+  baseline_ = baselines_->breaks().begin();
+  font_size_override_ = font_size_overrides_->breaks().begin();
+  weight_ = weights_->breaks().begin();
+  for (size_t i = 0; i < styles_->size(); ++i)
+    style_.push_back((*styles_)[i].breaks().begin());
 }
 
-StyleIterator::~StyleIterator() {}
+StyleIterator::StyleIterator(const StyleIterator& style) = default;
+StyleIterator::~StyleIterator() = default;
+StyleIterator& StyleIterator::operator=(const StyleIterator& style) = default;
 
 Range StyleIterator::GetRange() const {
-  Range range(colors_.GetRange(color_));
-  range = range.Intersect(baselines_.GetRange(baseline_));
-  range = range.Intersect(font_size_overrides_.GetRange(font_size_override_));
-  range = range.Intersect(weights_.GetRange(weight_));
+  return GetTextBreakingRange().Intersect(colors_->GetRange(color_));
+}
+
+Range StyleIterator::GetTextBreakingRange() const {
+  Range range = baselines_->GetRange(baseline_);
+  range = range.Intersect(font_size_overrides_->GetRange(font_size_override_));
+  range = range.Intersect(weights_->GetRange(weight_));
   for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
-    range = range.Intersect(styles_[i].GetRange(style_[i]));
+    range = range.Intersect((*styles_)[i].GetRange(style_[i]));
   return range;
 }
 
-void StyleIterator::UpdatePosition(size_t position) {
-  color_ = colors_.GetBreak(position);
-  baseline_ = baselines_.GetBreak(position);
-  font_size_override_ = font_size_overrides_.GetBreak(position);
-  weight_ = weights_.GetBreak(position);
-  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i)
-    style_[i] = styles_[i].GetBreak(position);
+void StyleIterator::IncrementToPosition(size_t position) {
+  color_ = IncrementBreakListIteratorToPosition(*colors_, color_, position);
+  baseline_ =
+      IncrementBreakListIteratorToPosition(*baselines_, baseline_, position);
+  font_size_override_ = IncrementBreakListIteratorToPosition(
+      *font_size_overrides_, font_size_override_, position);
+  weight_ = IncrementBreakListIteratorToPosition(*weights_, weight_, position);
+  for (size_t i = 0; i < TEXT_STYLE_COUNT; ++i) {
+    style_[i] = IncrementBreakListIteratorToPosition((*styles_)[i], style_[i],
+                                                     position);
+  }
 }
 
 LineSegment::LineSegment() : run(0) {}
@@ -1295,6 +1318,11 @@ RenderText::RenderText()
       cached_bounds_and_offset_valid_(false),
       strike_thickness_factor_(kLineThicknessFactor) {}
 
+internal::StyleIterator RenderText::GetTextStyleIterator() const {
+  return internal::StyleIterator(&colors_, &baselines_, &font_size_overrides_,
+                                 &weights_, &styles_);
+}
+
 bool RenderText::IsHomogeneous() const {
   if (colors().breaks().size() > 1 || baselines().breaks().size() > 1 ||
       font_size_overrides().breaks().size() > 1 ||
@@ -1368,7 +1396,58 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
 void RenderText::OnTextColorChanged() {
 }
 
+void RenderText::EnsureLayoutTextUpdated() {
+  if (layout_text_up_to_date_)
+    return;
+
+  layout_text_ = text_;
+
+  // Obscure the layout text by replacing hidden characters by bullets.
+  if (obscured_)
+    ObscuredText(multiline_, obscured_reveal_index_, &layout_text_);
+
+  // Handle unicode control characters ISO 6429 (block C0). Range from 0 to 0x1F
+  // and 0x7F.
+  ReplaceControlCharactersWithSymbols(multiline_, &layout_text_);
+
+  const base::string16& text = layout_text_;
+  if (truncate_length_ > 0 && truncate_length_ < text.length()) {
+    // Truncate the text at a valid character break and append an ellipsis.
+    icu::StringCharacterIterator iter(text.c_str());
+    // Respect ELIDE_HEAD and ELIDE_MIDDLE preferences during truncation.
+    if (elide_behavior_ == ELIDE_HEAD) {
+      iter.setIndex32(
+          static_cast<int32_t>(text.length() - truncate_length_ + 1));
+      layout_text_.assign(kEllipsisUTF16 + text.substr(iter.getIndex()));
+    } else if (elide_behavior_ == ELIDE_MIDDLE) {
+      iter.setIndex32(static_cast<int32_t>(truncate_length_ / 2));
+      const size_t ellipsis_start = iter.getIndex();
+      iter.setIndex32(
+          static_cast<int32_t>(text.length() - (truncate_length_ / 2)));
+      const size_t ellipsis_end = iter.getIndex();
+      DCHECK_LE(ellipsis_start, ellipsis_end);
+      layout_text_.assign(text.substr(0, ellipsis_start) + kEllipsisUTF16 +
+                          text.substr(ellipsis_end));
+    } else {
+      iter.setIndex32(static_cast<int32_t>(truncate_length_ - 1));
+      layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
+    }
+  }
+
+  // Wait to reset |layout_text_up_to_date_| until the end, to ensure this
+  // function's implementation doesn't indirectly rely on it being up to date
+  // anywhere.
+  layout_text_up_to_date_ = true;
+}
+
+const base::string16& RenderText::GetLayoutText() {
+  EnsureLayoutTextUpdated();
+  return layout_text_;
+}
+
 void RenderText::UpdateDisplayText(float text_width) {
+  EnsureLayoutTextUpdated();
+
   // TODO(krb): Consider other elision modes for multiline.
   if ((multiline_ && (!max_lines_ || elide_behavior() != ELIDE_TAIL)) ||
       elide_behavior() == NO_ELIDE || elide_behavior() == FADE_TAIL ||
@@ -1678,14 +1757,16 @@ base::i18n::TextDirection RenderText::GetTextDirection(
 
 size_t RenderText::TextIndexToGivenTextIndex(const base::string16& given_text,
                                              size_t index) const {
-  DCHECK(given_text == layout_text() || given_text == display_text());
+  DCHECK(layout_text_up_to_date_);
+  DCHECK(given_text == layout_text_ || given_text == display_text());
   DCHECK_LE(index, text().length());
   return GetTextIndexForOtherText(text(), index, given_text);
 }
 
 size_t RenderText::GivenTextIndexToTextIndex(const base::string16& given_text,
                                              size_t index) const {
-  DCHECK(given_text == layout_text() || given_text == display_text());
+  DCHECK(layout_text_up_to_date_);
+  DCHECK(given_text == layout_text_ || given_text == display_text());
   DCHECK_LE(index, text().length());
   return GetTextIndexForOtherText(given_text, index, text());
 }
@@ -1779,39 +1860,7 @@ void RenderText::OnTextAttributeChanged() {
   text_elided_ = false;
   line_breaks_.SetMax(0);
 
-  layout_text_ = text_;
-
-  // Obscure the layout text by replacing hidden characters by bullets.
-  if (obscured_)
-    ObscuredText(multiline_, obscured_reveal_index_, &layout_text_);
-
-  // Handle unicode control characters ISO 6429 (block C0). Range from 0 to 0x1F
-  // and 0x7F.
-  ReplaceControlCharactersWithSymbols(multiline_, &layout_text_);
-
-  const base::string16& text = layout_text_;
-  if (truncate_length_ > 0 && truncate_length_ < text.length()) {
-    // Truncate the text at a valid character break and append an ellipsis.
-    icu::StringCharacterIterator iter(text.c_str());
-    // Respect ELIDE_HEAD and ELIDE_MIDDLE preferences during truncation.
-    if (elide_behavior_ == ELIDE_HEAD) {
-      iter.setIndex32(
-          static_cast<int32_t>(text.length() - truncate_length_ + 1));
-      layout_text_.assign(kEllipsisUTF16 + text.substr(iter.getIndex()));
-    } else if (elide_behavior_ == ELIDE_MIDDLE) {
-      iter.setIndex32(static_cast<int32_t>(truncate_length_ / 2));
-      const size_t ellipsis_start = iter.getIndex();
-      iter.setIndex32(
-          static_cast<int32_t>(text.length() - (truncate_length_ / 2)));
-      const size_t ellipsis_end = iter.getIndex();
-      DCHECK_LE(ellipsis_start, ellipsis_end);
-      layout_text_.assign(text.substr(0, ellipsis_start) + kEllipsisUTF16 +
-                          text.substr(ellipsis_end));
-    } else {
-      iter.setIndex32(static_cast<int32_t>(truncate_length_ - 1));
-      layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
-    }
-  }
+  layout_text_up_to_date_ = false;
 
   OnLayoutTextAttributeChanged(true);
 }

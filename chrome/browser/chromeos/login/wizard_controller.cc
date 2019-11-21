@@ -67,6 +67,7 @@
 #include "chrome/browser/chromeos/login/screens/multidevice_setup_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
+#include "chrome/browser/chromeos/login/screens/packaged_license_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
@@ -116,6 +117,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -571,6 +573,10 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
   append(std::make_unique<MarketingOptInScreen>(
       oobe_ui->GetView<MarketingOptInScreenHandler>(),
       base::BindRepeating(&WizardController::OnMarketingOptInScreenExit,
+                          weak_factory_.GetWeakPtr())));
+  append(std::make_unique<PackagedLicenseScreen>(
+      oobe_ui->GetView<PackagedLicenseScreenHandler>(),
+      base::BindRepeating(&WizardController::OnPackagedLicenseScreenExit,
                           weak_factory_.GetWeakPtr())));
 
   return result;
@@ -1212,6 +1218,12 @@ void WizardController::OnSupervisionTransitionScreenExit() {
   OnScreenExit(SupervisionTransitionScreenView::kScreenId, 0 /* exit_code */);
 
   OnOobeFlowFinished();
+}
+
+void WizardController::OnPackagedLicenseScreenExit(
+    PackagedLicenseScreen::Result result) {
+  // TODO(crbug.com/1024809): Add new screen to the OOBE flow.
+  NOTREACHED();
 }
 
 void WizardController::OnOobeFlowFinished() {

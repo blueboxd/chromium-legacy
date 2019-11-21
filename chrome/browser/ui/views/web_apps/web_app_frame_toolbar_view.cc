@@ -457,9 +457,11 @@ std::pair<int, int> WebAppFrameToolbarView::LayoutInContainer(
   if (!center_container_->GetVisible())
     return std::pair<int, int>(0, 0);
 
-  gfx::RectF center_bounds = gfx::RectF(center_container_->bounds());
+  // Bounds for remaining inner space, in parent container coordinates.
+  gfx::Rect center_bounds = center_container_->bounds();
   DCHECK(center_bounds.x() == 0 || back_ || reload_);
-  View::ConvertRectToTarget(this, parent(), &center_bounds);
+  center_bounds.Offset(bounds().OffsetFromOrigin());
+
   return std::pair<int, int>(center_bounds.x(), center_bounds.right());
 }
 

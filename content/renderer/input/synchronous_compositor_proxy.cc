@@ -7,7 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "components/viz/common/features.h"
 #include "content/common/android/sync_compositor_statics.h"
 #include "content/common/input/sync_compositor_messages.h"

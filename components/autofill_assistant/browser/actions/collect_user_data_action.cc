@@ -8,7 +8,6 @@
 #include <set>
 #include <utility>
 
-#include "base/android/locale_utils.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/case_conversion.h"
@@ -70,13 +69,15 @@ bool IsCompleteContact(
 }
 
 bool IsCompleteAddress(const autofill::AutofillProfile* profile,
-                       bool require_postal_code,
-                       const std::string& locale) {
+                       bool require_postal_code) {
   if (!profile) {
     return false;
   }
+  // We use a hard coded locale here since it's not used in the autofill:: code
+  // anyway. I.e. creating this profile ends up in FormGroup::GetInfoImpl, which
+  // simply ignores the app_locale.
   auto address_data =
-      autofill::i18n::CreateAddressDataFromAutofillProfile(*profile, locale);
+      autofill::i18n::CreateAddressDataFromAutofillProfile(*profile, "en-US");
   if (!autofill::addressinput::HasAllRequiredFields(*address_data)) {
     return false;
   }
@@ -90,17 +91,15 @@ bool IsCompleteAddress(const autofill::AutofillProfile* profile,
 
 bool IsCompleteShippingAddress(
     const autofill::AutofillProfile* profile,
-    const CollectUserDataOptions& collect_user_data_options,
-    const std::string& locale) {
+    const CollectUserDataOptions& collect_user_data_options) {
   return !collect_user_data_options.request_shipping ||
-         IsCompleteAddress(profile, /* require_postal_code = */ false, locale);
+         IsCompleteAddress(profile, /* require_postal_code = */ false);
 }
 
 bool IsCompleteCreditCard(
     const autofill::CreditCard* credit_card,
     const autofill::AutofillProfile* billing_profile,
-    const CollectUserDataOptions& collect_user_data_options,
-    const std::string& locale) {
+    const CollectUserDataOptions& collect_user_data_options) {
   if (!collect_user_data_options.request_payment_method) {
     return true;
   }
@@ -109,9 +108,9 @@ bool IsCompleteCreditCard(
     return false;
   }
 
-  if (!IsCompleteAddress(billing_profile,
-                         collect_user_data_options.require_billing_postal_code,
-                         locale)) {
+  if (!IsCompleteAddress(
+          billing_profile,
+          collect_user_data_options.require_billing_postal_code)) {
     return false;
   }
 
@@ -219,33 +218,30 @@ bool IsValidUserFormSection(
   return true;
 }
 
-base::string16 GetProfileFullName(const autofill::AutofillProfile& profile,
-                                  const std::string& locale) {
-  return profile.GetInfo(
-      autofill::AutofillType(autofill::ServerFieldType::NAME_FULL), locale);
+// Share this helper function with use_address_action.
+base::string16 GetProfileFullName(const autofill::AutofillProfile& profile) {
+  return autofill::data_util::JoinNameParts(
+      profile.GetRawInfo(autofill::NAME_FIRST),
+      profile.GetRawInfo(autofill::NAME_MIDDLE),
+      profile.GetRawInfo(autofill::NAME_LAST));
 }
 
 int CountCompleteFields(const CollectUserDataOptions& options,
-                        const std::string& locale,
                         const autofill::AutofillProfile& profile) {
   int completed_fields = 0;
-  if (options.request_payer_name &&
-      !GetProfileFullName(profile, locale).empty()) {
+  if (options.request_payer_name && !GetProfileFullName(profile).empty()) {
     ++completed_fields;
   }
   if (options.request_shipping &&
-      !profile
-           .GetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS)
-           .empty()) {
+      !profile.GetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS).empty()) {
     ++completed_fields;
   }
   if (options.request_payer_email &&
-      !profile.GetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS).empty()) {
+      !profile.GetRawInfo(autofill::EMAIL_ADDRESS).empty()) {
     ++completed_fields;
   }
   if (options.request_payer_phone &&
-      !profile.GetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER)
-           .empty()) {
+      !profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER).empty()) {
     ++completed_fields;
   }
   return completed_fields;
@@ -255,14 +251,13 @@ int CountCompleteFields(const CollectUserDataOptions& options,
 // in regards to the current options. Full profiles should be ordered above
 // empty ones and fall back to compare the profile's name in case of equality.
 bool CompletenessCompare(const CollectUserDataOptions& options,
-                         const std::string& locale,
                          const autofill::AutofillProfile& a,
                          const autofill::AutofillProfile& b) {
-  int complete_fields_a = CountCompleteFields(options, locale, a);
-  int complete_fields_b = CountCompleteFields(options, locale, b);
+  int complete_fields_a = CountCompleteFields(options, a);
+  int complete_fields_b = CountCompleteFields(options, b);
   if (complete_fields_a == complete_fields_b) {
-    return base::i18n::ToLower(GetProfileFullName(a, locale))
-               .compare(base::i18n::ToLower(GetProfileFullName(b, locale))) < 0;
+    return base::i18n::ToLower(GetProfileFullName(a))
+               .compare(base::i18n::ToLower(GetProfileFullName(b))) < 0;
   }
   return complete_fields_a > complete_fields_b;
 }
@@ -515,8 +510,7 @@ void CollectUserDataAction::OnGetUserData(
 
       if (contact_details_proto.request_payer_name()) {
         Metrics::RecordPaymentRequestFirstNameOnly(
-            user_data->contact_profile
-                ->GetRawInfo(autofill::ServerFieldType::NAME_LAST)
+            user_data->contact_profile->GetRawInfo(autofill::NAME_LAST)
                 .empty());
       }
 
@@ -524,7 +518,7 @@ void CollectUserDataAction::OnGetUserData(
         processed_action_proto_->mutable_collect_user_data_result()
             ->set_payer_email(
                 base::UTF16ToUTF8(user_data->contact_profile->GetRawInfo(
-                    autofill::ServerFieldType::EMAIL_ADDRESS)));
+                    autofill::EMAIL_ADDRESS)));
       }
 
       if (!contact_details_proto.contact_details_name().empty()) {
@@ -772,12 +766,12 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
     }
 
     if (collect_user_data_options.request_shipping) {
-      auto completeAddressIter = std::find_if(
-          profiles.begin(), profiles.end(),
-          [&collect_user_data_options, this](const auto* profile) {
-            return IsCompleteShippingAddress(profile, collect_user_data_options,
-                                             delegate_->GetLocale());
-          });
+      auto completeAddressIter =
+          std::find_if(profiles.begin(), profiles.end(),
+                       [&collect_user_data_options](const auto* profile) {
+                         return IsCompleteShippingAddress(
+                             profile, collect_user_data_options);
+                       });
       if (completeAddressIter == profiles.end()) {
         return false;
       }
@@ -788,8 +782,8 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
     auto credit_cards = personal_data_manager->GetCreditCards();
     auto completeCardIter = std::find_if(
         credit_cards.begin(), credit_cards.end(),
-        [&collect_user_data_options, personal_data_manager,
-         this](const auto* credit_card) {
+        [&collect_user_data_options,
+         personal_data_manager](const auto* credit_card) {
           // TODO(b/142630213): Figure out how to retrieve billing profile if
           // user has turned off addresses in Chrome settings.
           return IsCompleteCreditCard(
@@ -797,7 +791,7 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
               credit_card != nullptr
                   ? personal_data_manager->GetProfileByGUID(credit_card->guid())
                   : nullptr,
-              collect_user_data_options, delegate_->GetLocale());
+              collect_user_data_options);
         });
     if (completeCardIter == credit_cards.end()) {
       return false;
@@ -812,14 +806,11 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
 // static
 bool CollectUserDataAction::IsUserDataComplete(
     const UserData& user_data,
-    const CollectUserDataOptions& options,
-    const std::string& locale) {
+    const CollectUserDataOptions& options) {
   return IsCompleteContact(user_data.contact_profile.get(), options) &&
-         IsCompleteShippingAddress(user_data.shipping_address.get(), options,
-                                   locale) &&
+         IsCompleteShippingAddress(user_data.shipping_address.get(), options) &&
          IsCompleteCreditCard(user_data.card.get(),
-                              user_data.billing_address.get(), options,
-                              locale) &&
+                              user_data.billing_address.get(), options) &&
          IsValidLoginChoice(user_data.login_choice_identifier, options) &&
          IsValidTermsChoice(user_data.terms_and_conditions, options) &&
          IsValidDateTimeRange(user_data.date_time_range_start,
@@ -839,16 +830,31 @@ void CollectUserDataAction::UpdatePersonalDataManagerFields(
        delegate_->GetPersonalDataManager()->GetProfilesToSuggest()) {
     user_data->available_profiles.emplace_back(
         std::make_unique<autofill::AutofillProfile>(*profile));
+    // We want to make sure that there is a first and last name.
+    /*
+    auto* local_profile = user_data->available_profiles.back().get();
+    base::string16 name = local_profile->GetRawInfo(autofill::NAME_FULL);
+    autofill::data_util::NameParts parts =
+      autofill::data_util::SplitName(name);
+    // Only overwrite if the first name is empty.
+    if (local_profile->HasRawInfo(autofill::NAME_FIRST)) {
+      local_profile->SetRawInfo(autofill::NAME_FIRST,
+                          parts.given);
+      local_profile->SetRawInfo(autofill::NAME_MIDDLE,
+                          parts.middle);
+      local_profile->SetRawInfo(autofill::NAME_LAST,
+                          parts.family);
+    }
+    */
   }
 
-  const std::string locale = delegate_->GetLocale();
   std::sort(user_data->available_profiles.begin(),
             user_data->available_profiles.end(),
-            [&collect_user_data_options, &locale](
+            [&collect_user_data_options](
                 const std::unique_ptr<autofill::AutofillProfile>& a,
                 const std::unique_ptr<autofill::AutofillProfile>& b) {
-              return CompletenessCompare(*collect_user_data_options, locale,
-                                         *a.get(), *b.get());
+              return CompletenessCompare(*collect_user_data_options, *a.get(),
+                                         *b.get());
             });
 
   if (field_change != nullptr) {

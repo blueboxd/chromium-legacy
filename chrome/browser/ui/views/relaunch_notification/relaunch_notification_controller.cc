@@ -305,5 +305,5 @@ void RelaunchNotificationController::Close() {
 }
 
 void RelaunchNotificationController::OnRelaunchDeadlineExpired() {
-  chrome::AttemptRelaunch();
+  chrome::RelaunchIgnoreUnloadHandlers();
 }

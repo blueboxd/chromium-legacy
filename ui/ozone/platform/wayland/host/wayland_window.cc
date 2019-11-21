@@ -262,32 +262,38 @@ void WaylandWindow::CreateXdgSurface() {
 void WaylandWindow::CreateAndShowTooltipSubSurface() {
   // Since Aura does not not provide a reference parent window, needed by
   // Wayland, we get the current focused window to place and show the tooltips.
-  parent_window_ =
+  auto* parent_window =
       connection_->wayland_window_manager()->GetCurrentFocusedWindow();
 
   // Tooltip creation is an async operation. By the time Aura actually creates
   // the tooltip, it is possible that the user has already moved the
   // mouse/pointer out of the window that triggered the tooptip. In this case,
-  // parent_window_ is NULL.
-  if (!parent_window_) {
-    Hide();
+  // parent_window is NULL.
+  if (!parent_window)
     return;
-  }
 
-  if (!tooltip_subsurface_) {
-    wl_subcompositor* subcompositor = connection_->subcompositor();
-    DCHECK(subcompositor);
-    tooltip_subsurface_.reset(wl_subcompositor_get_subsurface(
-        subcompositor, surface_.get(), parent_window_->surface()));
-  }
+  wl_subcompositor* subcompositor = connection_->subcompositor();
+  DCHECK(subcompositor);
+  tooltip_subsurface_.reset(wl_subcompositor_get_subsurface(
+      subcompositor, surface_.get(), parent_window->surface()));
+
+  // Chromium positions tooltip windows in screen coordinates, but Wayland
+  // requires them to be in local surface coordinates aka relative to parent
+  // window.
+  const auto parent_bounds_dip =
+      gfx::ScaleToRoundedRect(parent_window->GetBounds(), 1.0 / ui_scale_);
+  auto new_bounds_dip =
+      TranslateBoundsToParentCoordinates(bounds_px_, parent_bounds_dip);
+  auto bounds_px =
+      gfx::ScaleToRoundedRect(new_bounds_dip, ui_scale_ / buffer_scale_);
 
   DCHECK(tooltip_subsurface_);
   // Convert position to DIP.
   wl_subsurface_set_position(tooltip_subsurface_.get(),
-                             bounds_px_.x() / buffer_scale_,
-                             bounds_px_.y() / buffer_scale_);
+                             bounds_px.x() / buffer_scale_,
+                             bounds_px.y() / buffer_scale_);
   wl_subsurface_set_desync(tooltip_subsurface_.get());
-  wl_surface_commit(parent_window_->surface());
+  wl_surface_commit(parent_window->surface());
   connection_->ScheduleFlush();
 }
 
@@ -366,8 +372,8 @@ void WaylandWindow::Show(bool inactive) {
 }
 
 void WaylandWindow::Hide() {
-  if (is_tooltip_) {
-    parent_window_ = nullptr;
+  if (!is_tooltip_) {
+    tooltip_subsurface_.reset();
   } else {
     if (child_window_)
       child_window_->Hide();
@@ -872,6 +878,10 @@ WaylandWindow* WaylandWindow::GetParentWindow(
   if (!parent_window)
     return connection_->wayland_window_manager()->GetCurrentFocusedWindow();
   return parent_window;
+}
+
+WaylandWindow* WaylandWindow::GetRootParentWindow() {
+  return parent_window_ ? parent_window_->GetRootParentWindow() : this;
 }
 
 WmMoveResizeHandler* WaylandWindow::AsWmMoveResizeHandler() {

@@ -118,7 +118,12 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
                           : SecurityOrigin::IsSecure(cookie_url);
   // If attempting to set/delete a secure cookie on an insecure origin, throw an
   // exception, rather than failing silently as document.cookie does.
-  if (secure && !SecurityOrigin::IsSecure(cookie_url)) {
+  network::mojom::CookieSourceScheme source_scheme_enum =
+      SecurityOrigin::IsSecure(cookie_url)
+          ? network::mojom::CookieSourceScheme::kSecure
+          : network::mojom::CookieSourceScheme::kNonSecure;
+  if (secure &&
+      source_scheme_enum != network::mojom::CookieSourceScheme::kSecure) {
     exception_state.ThrowTypeError(
         "Cannot modify a secure cookie on insecure origin");
     return base::nullopt;
@@ -142,7 +147,7 @@ base::Optional<CanonicalCookie> ToCanonicalCookie(
   return CanonicalCookie::Create(
       name, value, domain, options->path(), base::Time() /*creation*/, expires,
       base::Time() /*last_access*/, secure, false /*http_only*/, same_site,
-      CanonicalCookie::kDefaultPriority);
+      CanonicalCookie::kDefaultPriority, source_scheme_enum);
 }
 
 // Returns null if and only if an exception is thrown.

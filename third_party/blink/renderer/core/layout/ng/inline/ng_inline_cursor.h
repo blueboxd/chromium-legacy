@@ -18,6 +18,7 @@
 namespace blink {
 
 class ComputedStyle;
+class DisplayItemClient;
 class LayoutBlockFlow;
 class LayoutInline;
 class LayoutObject;
@@ -162,6 +163,7 @@ class CORE_EXPORT NGInlineCursor {
   // line.
   TextDirection CurrentBaseDirection() const;
   const NGPhysicalBoxFragment* CurrentBoxFragment() const;
+  const DisplayItemClient* CurrentDisplayItemClient() const;
   const LayoutObject* CurrentLayoutObject() const;
   Node* CurrentNode() const;
 

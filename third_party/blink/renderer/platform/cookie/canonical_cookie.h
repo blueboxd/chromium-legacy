@@ -37,6 +37,9 @@ class BLINK_PLATFORM_EXPORT CanonicalCookie {
   bool IsHttpOnly() const { return is_http_only_; }
   network::mojom::CookieSameSite SameSite() const { return same_site_; }
   network::mojom::CookiePriority Priority() const { return priority_; }
+  network::mojom::CookieSourceScheme SourceScheme() const {
+    return source_scheme_;
+  }
 
   // If the result is not canonical, nullopt will be returned.
   static base::Optional<CanonicalCookie> Create(
@@ -50,7 +53,8 @@ class BLINK_PLATFORM_EXPORT CanonicalCookie {
       bool is_secure,
       bool is_http_only,
       network::mojom::CookieSameSite same_site,
-      network::mojom::CookiePriority priority);
+      network::mojom::CookiePriority priority,
+      network::mojom::CookieSourceScheme source_scheme);
 
   // Parsing, for the document.cookie API.
   // If the result is not canonical, nullopt will be returned.
@@ -74,7 +78,8 @@ class BLINK_PLATFORM_EXPORT CanonicalCookie {
                   bool is_secure,
                   bool is_http_only,
                   network::mojom::CookieSameSite same_site,
-                  network::mojom::CookiePriority priority);
+                  network::mojom::CookiePriority priority,
+                  network::mojom::CookieSourceScheme source_scheme);
 
   WebString name_;
   WebString value_;
@@ -88,6 +93,8 @@ class BLINK_PLATFORM_EXPORT CanonicalCookie {
   network::mojom::CookieSameSite same_site_ =
       network::mojom::CookieSameSite::NO_RESTRICTION;
   network::mojom::CookiePriority priority_ = kDefaultPriority;
+  network::mojom::CookieSourceScheme source_scheme_ =
+      network::mojom::CookieSourceScheme::kUnset;
 };
 
 }  // namespace blink

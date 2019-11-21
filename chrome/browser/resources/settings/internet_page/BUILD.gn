@@ -127,7 +127,6 @@ js_library("network_summary") {
 js_library("network_summary_item") {
   deps = [
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_strings",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",

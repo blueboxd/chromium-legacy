@@ -1637,7 +1637,7 @@ bool TabStripModel::CloseWebContentses(
   // We only try the fast shutdown path if the whole browser process is *not*
   // shutting down. Fast shutdown during browser termination is handled in
   // browser_shutdown::OnShutdownStarting.
-  if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID) {
+  if (!browser_shutdown::HasShutdownStarted()) {
     // Construct a map of processes to the number of associated tabs that are
     // closing.
     base::flat_map<content::RenderProcessHost*, size_t> processes;

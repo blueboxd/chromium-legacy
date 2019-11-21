@@ -20,6 +20,7 @@
 /** @const */ var SCREEN_OOBE_DEMO_PREFERENCES = 'demo-preferences';
 /** @const */ var SCREEN_OOBE_KIOSK_ENABLE = 'kiosk-enable';
 /** @const */ var SCREEN_OOBE_AUTO_ENROLLMENT_CHECK = 'auto-enrollment-check';
+/** @const */ var SCREEN_PACKAGED_LICENSE = 'packaged-license';
 /** @const */ var SCREEN_GAIA_SIGNIN = 'gaia-signin';
 /** @const */ var SCREEN_ACCOUNT_PICKER = 'account-picker';
 /** @const */ var SCREEN_ERROR_MESSAGE = 'error-message';

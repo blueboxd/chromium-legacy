@@ -66,6 +66,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_display_chooser.h"
+#include "chrome/browser/ui/webui/chromeos/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -461,6 +462,9 @@ void OobeUI::ConfigureOobeDisplay() {
       js_calls_container_.get()));
 
   AddScreenHandler(std::make_unique<MultiDeviceSetupScreenHandler>(
+      js_calls_container_.get()));
+
+  AddScreenHandler(std::make_unique<PackagedLicenseScreenHandler>(
       js_calls_container_.get()));
 
   Profile* profile = Profile::FromWebUI(web_ui());

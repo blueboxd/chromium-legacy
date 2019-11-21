@@ -1628,4 +1628,18 @@ TEST_F(NGInlineNodeTest, SegmentRanges) {
   EXPECT_EQ(ToEndOffsetList(segments->Ranges(9, 12, 1)), expect_9_12);
 }
 
+// https://crbug.com/1021677
+TEST_F(NGInlineNodeTest, ReusingWithCollapsed) {
+  SetupHtml("container",
+            "<div id=container>"
+            "abc "
+            "<img style='float:right'>"
+            "<br id='remove'>"
+            "<b style='white-space:pre'>x</b>"
+            "</div>");
+  GetElementById("remove")->remove();
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_EQ(String(u"abc \uFFFCx"), GetText());
+}
+
 }  // namespace blink

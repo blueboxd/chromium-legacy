@@ -13,7 +13,7 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
-import org.chromium.ui.widget.ChromeImageButton;
+import org.chromium.chrome.browser.ui.widget.listmenu.ListMenuButton;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -22,8 +22,8 @@ import org.chromium.ui.widget.Toast;
  *                    toolbar.
  */
 public class ToggleTabStackButton
-        extends ChromeImageButton implements TabCountProvider.TabCountObserver,
-                                             View.OnClickListener, View.OnLongClickListener {
+        extends ListMenuButton implements TabCountProvider.TabCountObserver, View.OnClickListener,
+                                          View.OnLongClickListener {
     private TabSwitcherDrawable mTabSwitcherButtonDrawable;
     private TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
     private TabCountProvider mTabCountProvider;

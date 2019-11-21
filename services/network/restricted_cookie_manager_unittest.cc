@@ -1068,7 +1068,7 @@ TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     RestrictedCookieManagerTest,
     ::testing::Values(mojom::RestrictedCookieManagerRole::SCRIPT,
                       mojom::RestrictedCookieManagerRole::NETWORK));

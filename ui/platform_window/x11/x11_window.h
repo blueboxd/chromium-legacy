@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "ui/base/x/x11_window.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/platform_window/extensions/workspace_extension.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/platform_window_linux.h"
@@ -16,6 +17,7 @@
 namespace ui {
 
 class LocatedEvent;
+class WorkspaceExtensionDelegate;
 
 // Delegate interface used to communicate the X11PlatformWindow API client about
 // XEvents of interest.
@@ -33,7 +35,8 @@ class X11_WINDOW_EXPORT XEventDelegate {
 class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
                                     public WmMoveResizeHandler,
                                     public XWindow,
-                                    public PlatformEventDispatcher {
+                                    public PlatformEventDispatcher,
+                                    public WorkspaceExtension {
  public:
   explicit X11Window(PlatformWindowDelegateLinux* platform_window_delegate);
   ~X11Window() override;
@@ -83,9 +86,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   ZOrderLevel GetZOrderLevel() const override;
   void StackAbove(gfx::AcceleratedWidget widget) override;
   void StackAtTop() override;
-  base::Optional<int> GetWorkspace() const override;
-  void SetVisibleOnAllWorkspaces(bool always_visible) override;
-  bool IsVisibleOnAllWorkspaces() const override;
   void FlashFrame(bool flash_frame) override;
   gfx::Rect GetXRootWindowOuterBounds() const override;
   bool ContainsPointInXRegion(const gfx::Point& point) const override;
@@ -98,6 +98,13 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   void SizeConstraintsChanged() override;
   bool IsTranslucentWindowOpacitySupported() const override;
   void LowerXWindow() override;
+
+  // WorkspaceExtension:
+  std::string GetWorkspace() const override;
+  void SetVisibleOnAllWorkspaces(bool always_visible) override;
+  bool IsVisibleOnAllWorkspaces() const override;
+  void SetWorkspaceExtensionDelegate(
+      WorkspaceExtensionDelegate* delegate) override;
 
  protected:
   PlatformWindowDelegateLinux* platform_window_delegate() const {
@@ -160,6 +167,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   PlatformWindowDelegateLinux* const platform_window_delegate_;
 
   XEventDelegate* x_event_delegate_ = nullptr;
+
+  WorkspaceExtensionDelegate* workspace_extension_delegate_ = nullptr;
 
   // Tells if the window got a ::Close call.
   bool is_shutting_down_ = false;

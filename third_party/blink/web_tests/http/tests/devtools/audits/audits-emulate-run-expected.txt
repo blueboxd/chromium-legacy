@@ -7,12 +7,12 @@ Tests that mobile emulation works.
 [x] Best practices
 [x] Accessibility
 [x] SEO
-[x] Clear storage
-Run audits: enabled visible
+[ ] Publisher Ads
+Generate report: enabled visible
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/audits/resources/audits-emulate-pass.html
-Version: 5.5.0
+Version: 5.7.0
 TestedAsMobileDevice: true
 ViewportDimensions: {
   "innerWidth": 412,

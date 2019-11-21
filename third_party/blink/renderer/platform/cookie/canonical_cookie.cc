@@ -34,6 +34,13 @@ STATIC_ASSERT_ENUM(net::CookiePriority::COOKIE_PRIORITY_HIGH,
 STATIC_ASSERT_ENUM(net::CookiePriority::COOKIE_PRIORITY_DEFAULT,
                    blink::CanonicalCookie::kDefaultPriority);
 
+STATIC_ASSERT_ENUM(net::CookieSourceScheme::kUnset,
+                   network::mojom::CookieSourceScheme::kUnset);
+STATIC_ASSERT_ENUM(net::CookieSourceScheme::kNonSecure,
+                   network::mojom::CookieSourceScheme::kNonSecure);
+STATIC_ASSERT_ENUM(net::CookieSourceScheme::kSecure,
+                   network::mojom::CookieSourceScheme::kSecure);
+
 namespace blink {
 
 namespace {
@@ -44,7 +51,8 @@ net::CanonicalCookie ToNetCanonicalCookie(const CanonicalCookie& cookie) {
       cookie.Path().Utf8(), cookie.CreationDate(), cookie.ExpiryDate(),
       cookie.LastAccessDate(), cookie.IsSecure(), cookie.IsHttpOnly(),
       static_cast<net::CookieSameSite>(cookie.SameSite()),
-      static_cast<net::CookiePriority>(cookie.Priority()));
+      static_cast<net::CookiePriority>(cookie.Priority()),
+      static_cast<net::CookieSourceScheme>(cookie.SourceScheme()));
   DCHECK(net_cookie.IsCanonical());
   return net_cookie;
 }
@@ -53,17 +61,19 @@ net::CanonicalCookie ToNetCanonicalCookie(const CanonicalCookie& cookie) {
 
 CanonicalCookie::CanonicalCookie() = default;
 
-CanonicalCookie::CanonicalCookie(WebString name,
-                                 WebString value,
-                                 WebString domain,
-                                 WebString path,
-                                 base::Time creation,
-                                 base::Time expiration,
-                                 base::Time last_access,
-                                 bool is_secure,
-                                 bool is_http_only,
-                                 network::mojom::CookieSameSite same_site,
-                                 network::mojom::CookiePriority priority)
+CanonicalCookie::CanonicalCookie(
+    WebString name,
+    WebString value,
+    WebString domain,
+    WebString path,
+    base::Time creation,
+    base::Time expiration,
+    base::Time last_access,
+    bool is_secure,
+    bool is_http_only,
+    network::mojom::CookieSameSite same_site,
+    network::mojom::CookiePriority priority,
+    network::mojom::CookieSourceScheme source_scheme)
     : name_(std::move(name)),
       value_(std::move(value)),
       domain_(std::move(domain)),
@@ -74,7 +84,8 @@ CanonicalCookie::CanonicalCookie(WebString name,
       is_secure_(is_secure),
       is_http_only_(is_http_only),
       same_site_(same_site),
-      priority_(priority) {
+      priority_(priority),
+      source_scheme_(source_scheme) {
   DCHECK(ToNetCanonicalCookie(*this).IsCanonical());
 }
 
@@ -114,7 +125,8 @@ base::Optional<CanonicalCookie> CanonicalCookie::Create(
       cookie->ExpiryDate(), cookie->LastAccessDate(), cookie->IsSecure(),
       cookie->IsHttpOnly(),
       static_cast<network::mojom::CookieSameSite>(cookie->SameSite()),
-      static_cast<network::mojom::CookiePriority>(cookie->Priority()));
+      static_cast<network::mojom::CookiePriority>(cookie->Priority()),
+      static_cast<network::mojom::CookieSourceScheme>(cookie->SourceScheme()));
 }
 
 // static
@@ -129,18 +141,21 @@ base::Optional<CanonicalCookie> CanonicalCookie::Create(
     bool is_secure,
     bool is_http_only,
     network::mojom::CookieSameSite same_site,
-    network::mojom::CookiePriority priority) {
-  net::CanonicalCookie net_cookie(name.Utf8(), value.Utf8(), domain.Utf8(),
-                                  path.Utf8(), creation, expiration,
-                                  last_access, is_secure, is_http_only,
-                                  static_cast<net::CookieSameSite>(same_site),
-                                  static_cast<net::CookiePriority>(priority));
+    network::mojom::CookiePriority priority,
+    network::mojom::CookieSourceScheme source_scheme) {
+  net::CanonicalCookie net_cookie(
+      name.Utf8(), value.Utf8(), domain.Utf8(), path.Utf8(), creation,
+      expiration, last_access, is_secure, is_http_only,
+      static_cast<net::CookieSameSite>(same_site),
+      static_cast<net::CookiePriority>(priority),
+      static_cast<net::CookieSourceScheme>(source_scheme));
   if (!net_cookie.IsCanonical())
     return base::nullopt;
 
   return CanonicalCookie(std::move(name), std::move(value), std::move(domain),
                          std::move(path), creation, expiration, last_access,
-                         is_secure, is_http_only, same_site, priority);
+                         is_secure, is_http_only, same_site, priority,
+                         source_scheme);
 }
 
 constexpr const network::mojom::CookiePriority

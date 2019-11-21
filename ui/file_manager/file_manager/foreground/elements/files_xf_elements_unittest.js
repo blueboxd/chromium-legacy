@@ -2,18 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @type {!DisplayPanel|!Element} */
+let displayPanel;
+
 /**
  * Adds a xf-display-panel element to the test page.
  */
 function setUpPage() {
   document.body.innerHTML +=
       '<xf-display-panel id="test-xf-display-panel"></xf-display-panel>';
+  displayPanel = assert(document.querySelector('#test-xf-display-panel'));
 }
 
 function tearDown() {
-  /** @type {!DisplayPanel|!Element} */
-  const displayPanel = assert(document.querySelector('#test-xf-display-panel'));
   displayPanel.removeAllPanelItems();
+}
+
+/**
+ * Tests that adding and removing panels to <xf-display-panel> updates the
+ * aria-hidden attribute.
+ */
+function testDisplayPanelAriaHidden() {
+  // Starts without any panel so should be hidden;
+  assertEquals(displayPanel.getAttribute('aria-hidden'), 'true');
+
+  // Create a panel, but since it isn't attached so the container should still
+  // be hidden.
+  const progressPanel = displayPanel.createPanelItem('testpanel');
+  assertEquals(displayPanel.getAttribute('aria-hidden'), 'true');
+
+  // Attach the Panel. It should make the container visible.
+  displayPanel.attachPanelItem(progressPanel);
+  assertEquals(displayPanel.getAttribute('aria-hidden'), 'false');
+
+  // Remove the last panel and should be hidden again.
+  displayPanel.removePanelItem(progressPanel);
+  assertEquals(displayPanel.getAttribute('aria-hidden'), 'true');
+
+  // Add multiple panels, then should be visible.
+  displayPanel.addPanelItem('testpanel2');
+  displayPanel.addPanelItem('testpanel3');
+  assertEquals(displayPanel.getAttribute('aria-hidden'), 'false');
+
+  // Clear all the panels, then should be hidden.
+  displayPanel.removeAllPanelItems();
+  assertEquals(displayPanel.getAttribute('aria-hidden'), 'true');
 }
 
 async function testDisplayPanelAttachPanel(done) {
@@ -81,6 +114,10 @@ async function testDisplayPanelChangingPanelTypes(done) {
   assertEquals(
       signal, 'cancel', 'Expected signal name "cancel". Got ' + signal);
 
+  // Check the progress panel text container has correct aria role.
+  const textHost = panelItem.shadowRoot.querySelector('.xf-panel-text');
+  assertEquals('alert', textHost.getAttribute('role'));
+
   // Change the panel item to an error panel.
   panelItem.panelType = panelItem.panelTypeError;
 
@@ -131,6 +168,9 @@ async function testDisplayPanelChangingPanelTypes(done) {
   expand.click();
   assertEquals(signal, 'none', 'Expected no signal. Got ' + signal);
 
+  // Check the summary panel text container has no aria role.
+  assertEquals('', textHost.getAttribute('role'));
+
   done();
 }
 
@@ -145,10 +185,9 @@ function testFilesDisplayPanelErrorText() {
   /** @type {!HTMLElement} */
   const text = assert(panelItem.shadowRoot.querySelector('.xf-panel-text'));
 
-  // To work with screen readers, the text element containing
-  // parent element should have aria role 'alert'.
-  const textParent = text.parentElement;
-  assertEquals('alert', textParent.getAttribute('role'));
+  // To work with screen readers, the text element should have aria role
+  // 'alert'.
+  assertEquals('alert', text.getAttribute('role'));
 
   // Change the primary and secondary text on the panel item.
   panelItem.primaryText = 'foo';

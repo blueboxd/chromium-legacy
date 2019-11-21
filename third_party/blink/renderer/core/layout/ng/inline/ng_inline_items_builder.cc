@@ -349,6 +349,9 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
           NOTREACHED();
           break;
       }
+    } else if (last_item->EndCollapseType() == NGInlineItem::kCollapsed) {
+      RestoreTrailingCollapsibleSpace(last_item);
+      return false;
     }
 
     // On nowrap -> wrap boundary, a break opporunity may be inserted.

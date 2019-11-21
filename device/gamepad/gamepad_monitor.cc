@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
 #include "device/gamepad/gamepad_service.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
 #include "mojo/public/cpp/bindings/message.h"

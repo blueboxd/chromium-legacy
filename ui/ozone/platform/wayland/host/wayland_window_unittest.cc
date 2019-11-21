@@ -1162,6 +1162,67 @@ TEST_P(WaylandWindowTest, OnCloseRequest) {
   Sync();
 }
 
+TEST_P(WaylandWindowTest, TooltipSimpleParent) {
+  VerifyAndClearExpectations();
+
+  gfx::Rect tooltip_window_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
+  std::unique_ptr<WaylandWindow> tooltip_window;
+  EXPECT_TRUE(CreateWaylandWindowWithParams(
+      PlatformWindowType::kTooltip, window_->GetWidget(), tooltip_window_bounds,
+      &delegate_, &tooltip_window));
+
+  window_->SetPointerFocus(true);
+
+  tooltip_window->Show(false);
+
+  Sync();
+
+  auto* mock_tooltip_surface =
+      server_.GetObject<wl::MockSurface>(tooltip_window->GetWidget());
+  auto* test_subsurface = mock_tooltip_surface->sub_surface();
+
+  EXPECT_EQ(test_subsurface->position(), tooltip_window_bounds.origin());
+  EXPECT_FALSE(test_subsurface->sync());
+
+  window_->SetPointerFocus(false);
+}
+
+TEST_P(WaylandWindowTest, TooltipNestedParent) {
+  VerifyAndClearExpectations();
+
+  gfx::Rect menu_window_bounds(gfx::Point(10, 10), gfx::Size(100, 100));
+  std::unique_ptr<WaylandWindow> menu_window;
+  EXPECT_TRUE(CreateWaylandWindowWithParams(
+      PlatformWindowType::kMenu, window_->GetWidget(), menu_window_bounds,
+      &delegate_, &menu_window));
+
+  VerifyAndClearExpectations();
+
+  gfx::Rect tooltip_window_bounds(gfx::Point(15, 15), gfx::Size(10, 10));
+  std::unique_ptr<WaylandWindow> tooltip_window;
+  EXPECT_TRUE(CreateWaylandWindowWithParams(
+      PlatformWindowType::kTooltip, menu_window->GetWidget(),
+      tooltip_window_bounds, &delegate_, &tooltip_window));
+
+  VerifyAndClearExpectations();
+
+  menu_window->SetPointerFocus(true);
+
+  tooltip_window->Show(false);
+
+  Sync();
+
+  auto* mock_tooltip_surface =
+      server_.GetObject<wl::MockSurface>(tooltip_window->GetWidget());
+  auto* test_subsurface = mock_tooltip_surface->sub_surface();
+
+  auto new_origin = tooltip_window_bounds.origin() -
+                    menu_window_bounds.origin().OffsetFromOrigin();
+  EXPECT_EQ(test_subsurface->position(), new_origin);
+
+  menu_window->SetPointerFocus(false);
+}
+
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,
                          WaylandWindowTest,
                          ::testing::Values(kXdgShellV5));

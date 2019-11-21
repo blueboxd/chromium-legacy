@@ -28,7 +28,7 @@ class ConfigParserWithStringInterpolation(ConfigParser.SafeConfigParser):
 
   '''A .ini file parser that supports strings and environment variables.'''
 
-  ENV_VAR_PATTERN = re.compile('\$([A-Za-z0-9_]+)')
+  ENV_VAR_PATTERN = re.compile(r'\$([A-Za-z0-9_]+)')
 
   def values(self, section):
     return map(

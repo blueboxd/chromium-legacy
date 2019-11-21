@@ -112,7 +112,7 @@ TEST_P(SyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
   reader.Read(output_bus.get());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SyncReaderBitstreamTest,
                          ::testing::ValuesIn(overflow_test_case_values));
 

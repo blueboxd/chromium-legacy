@@ -54,6 +54,12 @@ enum CookiePriority {
   HIGH
 };
 
+enum CookieSourceScheme {
+  kUnset,
+  kNonSecure,
+  kSecure,
+};
+
 // See https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
 // and https://tools.ietf.org/html/draft-ietf-httpbis-rfc6265bis for
 // information about same site cookie restrictions.
@@ -111,6 +117,7 @@ struct CanonicalCookie {
   bool httponly = false;
   CookieSameSite site_restrictions = NO_RESTRICTION;
   CookiePriority priority = MEDIUM;
+  CookieSourceScheme source_scheme = kUnset;
 };
 
 // Keep values here in sync with

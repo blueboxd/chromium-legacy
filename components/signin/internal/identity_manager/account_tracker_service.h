@@ -48,6 +48,9 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager*,
                                           const std::string&,
                                           const std::string&,
                                           const std::string&);
+void SimulateAccountImageFetch(signin::IdentityManager*,
+                               const CoreAccountId&,
+                               const gfx::Image&);
 }  // namespace signin
 
 // Retrieves and caches GAIA information about Google Accounts.
@@ -169,6 +172,9 @@ class AccountTrackerService {
       const std::string&,
       const std::string&,
       const std::string&);
+  friend void signin::SimulateAccountImageFetch(signin::IdentityManager*,
+                                                const CoreAccountId&,
+                                                const gfx::Image&);
 
   void NotifyAccountUpdated(const AccountInfo& account_info);
   void NotifyAccountRemoved(const AccountInfo& account_info);

@@ -46,7 +46,8 @@ class DateTimeLocalInputType final : public BaseTemporalInputType {
   void CountUsage() override;
   const AtomicString& FormControlType() const override;
   double ValueAsDate() const override;
-  void SetValueAsDate(double, ExceptionState&) const override;
+  void SetValueAsDate(const base::Optional<base::Time>&,
+                      ExceptionState&) const override;
   StepRange CreateStepRange(AnyStepHandling) const override;
   bool ParseToDateComponentsInternal(const String&,
                                      DateComponents*) const override;

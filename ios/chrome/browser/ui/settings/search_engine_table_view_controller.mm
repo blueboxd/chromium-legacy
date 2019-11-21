@@ -41,7 +41,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 };
 
 const CGFloat kTableViewSeparatorLeadingInset = 56;
-const CGFloat kTableViewSeparatorTrailingInset = 16;
 const int kFaviconDesiredSizeInPoint = 32;
 const int kFaviconMinSizeInPoint = 16;
 constexpr base::TimeDelta kMaxVisitAge = base::TimeDelta::FromDays(2);
@@ -100,8 +99,8 @@ const char kUmaSelectDefaultSearchEngine[] =
   [super viewDidLoad];
 
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
-  self.tableView.separatorInset = UIEdgeInsetsMake(
-      0, kTableViewSeparatorLeadingInset, 0, kTableViewSeparatorTrailingInset);
+  self.tableView.separatorInset =
+      UIEdgeInsetsMake(0, kTableViewSeparatorLeadingInset, 0, 0);
 
   [self loadModel];
 }

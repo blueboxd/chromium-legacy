@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_ui_api.h"
 
-#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/login_screen_extension_ui_handler.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_screen_ui/ui_handler.h"
 #include "chrome/common/extensions/api/login_screen_ui.h"
 
 namespace login_screen_ui = extensions::api::login_screen_ui;
@@ -25,7 +25,7 @@ ExtensionFunction::ResponseAction LoginScreenUiShowFunction::Run() {
 
   std::string error;
   bool success =
-      chromeos::LoginScreenExtensionUiHandler::Get(true /*can_create*/)
+      chromeos::login_screen_extension_ui::UiHandler::Get(true /*can_create*/)
           ->Show(extension(), options.url, user_can_close, &error);
 
   if (!success)
@@ -39,7 +39,7 @@ LoginScreenUiCloseFunction::~LoginScreenUiCloseFunction() = default;
 ExtensionFunction::ResponseAction LoginScreenUiCloseFunction::Run() {
   std::string error;
   bool success =
-      chromeos::LoginScreenExtensionUiHandler::Get(true /*can_create*/)
+      chromeos::login_screen_extension_ui::UiHandler::Get(true /*can_create*/)
           ->Close(extension(), &error);
 
   if (!success)

@@ -185,6 +185,13 @@ directorytree.createRowElementContentFilesNG = (id, label) => {
 directorytree.styleRowElementDepth = undefined;
 
 /**
+ * The iron-icon-set prefix for tree rows that have an .align-right-icon class
+ * element added to the row (eject icon, AndroidAppItem launch icon).
+ * @type {string}
+ */
+directorytree.rightIconSetPrefix = 'files16';
+
+/**
  * A tree item has a tree row with a text label.
  */
 class TreeItem extends cr.ui.TreeItem {
@@ -734,7 +741,8 @@ class DirectoryItem extends TreeItem {
 
     // Append eject iron-icon.
     const ironIcon = document.createElement('iron-icon');
-    ironIcon.setAttribute('icon', 'files16:eject');
+    const iconSet = directorytree.rightIconSetPrefix;
+    ironIcon.setAttribute('icon', `${iconSet}:eject`);
     ejectButton.appendChild(ironIcon);
 
     // Add the eject button as the last element of the tree row content.
@@ -1670,7 +1678,8 @@ class AndroidAppItem extends TreeItem {
 
     // Append external-link iron-icon.
     const ironIcon = document.createElement('iron-icon');
-    ironIcon.setAttribute('icon', 'files16:external-link');
+    const iconSet = directorytree.rightIconSetPrefix;
+    ironIcon.setAttribute('icon', `${iconSet}:external-link`);
     externalLinkIcon.appendChild(ironIcon);
 
     // Add the external link as the last element of the tree row content.

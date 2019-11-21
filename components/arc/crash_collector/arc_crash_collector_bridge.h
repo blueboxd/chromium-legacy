@@ -37,9 +37,11 @@ class ArcCrashCollectorBridge
   // mojom::CrashCollectorHost overrides.
   void DumpCrash(const std::string& type, mojo::ScopedHandle pipe) override;
 
-  void SetBuildProperties(const std::string& device,
-                          const std::string& board,
-                          const std::string& cpu_abi) override;
+  void SetBuildProperties(
+      const std::string& device,
+      const std::string& board,
+      const std::string& cpu_abi,
+      const base::Optional<std::string>& fingerprint) override;
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
@@ -47,6 +49,7 @@ class ArcCrashCollectorBridge
   std::string device_;
   std::string board_;
   std::string cpu_abi_;
+  base::Optional<std::string> fingerprint_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcCrashCollectorBridge);
 };

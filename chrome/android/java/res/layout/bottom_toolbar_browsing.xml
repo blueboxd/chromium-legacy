@@ -95,7 +95,9 @@
 
         <org.chromium.chrome.browser.toolbar.TabSwitcherButtonView
             android:id="@+id/tab_switcher_button"
-            style="@style/SplitToolbarButton" />
+            style="@style/SplitToolbarButton"
+            app:menuMaxWidth="@dimen/tab_switcher_menu_width"
+            app:menuVerticalOverlapAnchor="false" />
 
         <TextView
             android:id="@+id/tab_switcher_button_label"

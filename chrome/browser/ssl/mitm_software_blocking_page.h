@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/ssl/ssl_blocking_page_base.h"
+#include "components/security_interstitials/content/ssl_blocking_page_base.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/mitm_software_ui.h"
 #include "components/ssl_errors/error_classification.h"

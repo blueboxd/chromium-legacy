@@ -1248,8 +1248,8 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
                      BackForwardCacheMetrics::NotRestoredReason::kTimeout));
 }
 
-void RenderFrameHostImpl::DisableBackForwardCache() {
-  is_back_forward_cache_disabled_ = true;
+void RenderFrameHostImpl::DisableBackForwardCache(base::StringPiece reason) {
+  back_forward_cache_disabled_reasons_.insert(reason.as_string());
   MaybeEvictFromBackForwardCache();
 }
 
@@ -7821,9 +7821,14 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   if (!is_in_back_forward_cache_)
     return;
 
+  RenderFrameHostImpl* top_document = this;
+  while (RenderFrameHostImpl* parent = top_document->GetParent())
+    top_document = parent;
+
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
-  auto can_store = controller->GetBackForwardCache().CanStoreDocument(this);
+  auto can_store =
+      controller->GetBackForwardCache().CanStoreDocument(top_document);
   TRACE_EVENT1("navigation",
                "RenderFrameHostImpl::MaybeEvictFromBackForwardCache",
                "can_store", can_store.ToString());
@@ -7924,6 +7929,10 @@ BackForwardCacheMetrics* RenderFrameHostImpl::GetBackForwardCacheMetrics() {
   if (!navigation_entry)
     return nullptr;
   return navigation_entry->back_forward_cache_metrics();
+}
+
+bool RenderFrameHostImpl::IsBackForwardCacheDisabled() const {
+  return back_forward_cache_disabled_reasons_.size();
 }
 
 }  // namespace content

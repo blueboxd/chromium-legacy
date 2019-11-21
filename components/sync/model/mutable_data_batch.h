@@ -29,7 +29,7 @@ class MutableDataBatch : public DataBatch {
   ~MutableDataBatch() override;
 
   // Takes ownership of the data tied to a given key used for storage. Put
-  // should be called at most once for any given storfage_key. Data will be
+  // should be called at most once for any given storage_key. Data will be
   // readable in the same order that they are put into the batch.
   void Put(const std::string& storage_key,
            std::unique_ptr<EntityData> entity_data);

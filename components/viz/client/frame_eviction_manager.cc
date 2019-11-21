@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"
-#include "base/memory/shared_memory.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"

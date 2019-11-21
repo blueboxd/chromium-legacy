@@ -1278,8 +1278,9 @@ bool Node::ShouldSkipMarkingStyleDirty() const {
 
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
-  ContainerNode* ancestor = GetStyleRecalcParent();
-  bool parent_dirty = ancestor && ancestor->IsDirtyForStyleRecalc();
+  ContainerNode* style_parent = GetStyleRecalcParent();
+  bool parent_dirty = style_parent && style_parent->IsDirtyForStyleRecalc();
+  ContainerNode* ancestor = style_parent;
   for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
        ancestor = ancestor->GetStyleRecalcParent()) {
     if (!ancestor->isConnected())
@@ -1311,7 +1312,6 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
       if (current_style->IsEnsuredOutsideFlatTree())
         return;
     } else {
-      ContainerNode* style_parent = ancestor;
       while (style_parent && !style_parent->CanParticipateInFlatTree())
         style_parent = style_parent->GetStyleRecalcParent();
       if (style_parent) {

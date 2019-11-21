@@ -44,17 +44,19 @@ class NET_EXPORT CanonicalCookie {
   // themselves.
   // NOTE: Prefer using CreateSanitizedCookie() over directly using this
   // constructor.
-  CanonicalCookie(const std::string& name,
-                  const std::string& value,
-                  const std::string& domain,
-                  const std::string& path,
-                  const base::Time& creation,
-                  const base::Time& expiration,
-                  const base::Time& last_access,
-                  bool secure,
-                  bool httponly,
-                  CookieSameSite same_site,
-                  CookiePriority priority);
+  CanonicalCookie(
+      const std::string& name,
+      const std::string& value,
+      const std::string& domain,
+      const std::string& path,
+      const base::Time& creation,
+      const base::Time& expiration,
+      const base::Time& last_access,
+      bool secure,
+      bool httponly,
+      CookieSameSite same_site,
+      CookiePriority priority,
+      CookieSourceScheme scheme_secure = CookieSourceScheme::kUnset);
 
   ~CanonicalCookie();
 
@@ -113,6 +115,10 @@ class NET_EXPORT CanonicalCookie {
   bool IsHttpOnly() const { return httponly_; }
   CookieSameSite SameSite() const { return same_site_; }
   CookiePriority Priority() const { return priority_; }
+  // Returns an enum indicating the source scheme that set this cookie. This is
+  // not part of the cookie spec but is being used to collect metrics for a
+  // potential change to the cookie spec.
+  CookieSourceScheme SourceScheme() const { return source_scheme_; }
   bool IsDomainCookie() const {
     return !domain_.empty() && domain_[0] == '.'; }
   bool IsHostCookie() const { return !IsDomainCookie(); }
@@ -155,6 +161,9 @@ class NET_EXPORT CanonicalCookie {
   // '/login' and '/' do not match '/login/en').
   bool IsEquivalentForSecureCookieMatching(const CanonicalCookie& ecc) const;
 
+  void SetSourceScheme(CookieSourceScheme source_scheme) {
+    source_scheme_ = source_scheme;
+  }
   void SetLastAccessDate(const base::Time& date) {
     last_access_date_ = date;
   }
@@ -297,6 +306,7 @@ class NET_EXPORT CanonicalCookie {
   bool httponly_;
   CookieSameSite same_site_;
   CookiePriority priority_;
+  CookieSourceScheme source_scheme_;
 };
 
 // This class represents if a cookie was included or excluded in a cookie get or

@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 
@@ -107,13 +107,13 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
     return owner_render_frame_host_;
   }
 
-  // Gets/sets the mojo binding. Only used in tests.
-  mojo::StrongAssociatedBindingPtr<blink::mojom::Portal>
+  // Gets/sets the mojo receiver. Only used in tests.
+  mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::Portal>
   GetBindingForTesting() {
-    return binding_;
+    return receiver_;
   }
-  void SetBindingForTesting(
-      mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding);
+  void SetReceiverForTesting(
+      mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::Portal> receiver);
   void SetClientForTesting(
       mojo::AssociatedRemote<blink::mojom::PortalClient> client);
 
@@ -130,8 +130,8 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // to reference this portal when communicating with the renderer.
   const base::UnguessableToken portal_token_;
 
-  // WeakPtr to StrongBinding.
-  mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding_;
+  // WeakPtr to SelfOwnedAssociatedReceiver.
+  mojo::SelfOwnedAssociatedReceiverRef<blink::mojom::Portal> receiver_;
 
   // Receives messages from the inner render process.
   mojo::AssociatedReceiver<blink::mojom::PortalHost> portal_host_receiver_;

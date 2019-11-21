@@ -2871,10 +2871,6 @@ const char kAndroidNightModeDescription[] =
 
 #else  // !defined(OS_ANDROID)
 
-const char kForceDiceMigrationName[] = "Force the migration to Dice";
-const char kForceDiceMigrationDescription[] =
-    "When enabled the account reconcilor will force the migration to dice";
-
 const char kShowSyncPausedReasonCookiesClearedOnExitName[] =
     "Show sync paused reason is the setup of cookie settings.";
 const char kShowSyncPausedReasonCookiesClearedOnExitDescription[] =

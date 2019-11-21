@@ -46,7 +46,6 @@ class WebLocalFrame;
 class WebPlugin;
 class WebPrescientNetworking;
 class WebServiceWorkerContextProxy;
-class WebMediaStreamRendererFactory;
 class WebThemeEngine;
 class WebURL;
 class WebURLRequest;
@@ -254,10 +253,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // worthwhile precaution when the plugin provides an active scripting
   // language.
   virtual bool IsOriginIsolatedPepperPlugin(const base::FilePath& plugin_path);
-
-  // Allows an embedder to provide a blink::WebMediaStreamRendererFactory.
-  virtual std::unique_ptr<blink::WebMediaStreamRendererFactory>
-  CreateMediaStreamRendererFactory();
 
   // Allows embedder to register the key system(s) it supports by populating
   // |key_systems|.

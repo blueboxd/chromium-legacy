@@ -15,7 +15,6 @@
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "chrome/services/app_service/public/cpp/preferred_apps.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
 #include "chrome/browser/apps/app_service/crostini_apps.h"
 #include "chrome/browser/apps/app_service/extension_apps.h"
+#include "chrome/services/app_service/public/cpp/instance_registry.h"
 #endif  // OS_CHROMEOS
 
 class PrefRegistrySimple;

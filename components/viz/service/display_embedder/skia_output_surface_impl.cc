@@ -667,18 +667,6 @@ void SkiaOutputSurfaceImpl::RenderToOverlay(
 #endif
 }
 
-void SkiaOutputSurfaceImpl::FlushForTesting() {
-  base::WaitableEvent event;
-  auto callback = base::BindOnce(
-      [](SkiaOutputSurfaceImplOnGpu* impl_on_gpu, base::WaitableEvent* event) {
-        impl_on_gpu->FlushForTesting();
-        event->Signal();
-      },
-      base::Unretained(impl_on_gpu_.get()), &event);
-  ScheduleGpuTask(std::move(callback), std::vector<gpu::SyncToken>());
-  event.Wait();
-}
-
 bool SkiaOutputSurfaceImpl::Initialize() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

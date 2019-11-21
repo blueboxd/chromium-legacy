@@ -37,7 +37,7 @@ TEST(CanonicalCookieTest, Constructor) {
   std::unique_ptr<CanonicalCookie> cookie1(std::make_unique<CanonicalCookie>(
       "A", "2", "www.example.com", "/test", current_time, base::Time(),
       base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT));
+      COOKIE_PRIORITY_DEFAULT, CookieSourceScheme::kSecure));
   EXPECT_EQ("A", cookie1->Name());
   EXPECT_EQ("2", cookie1->Value());
   EXPECT_EQ("www.example.com", cookie1->Domain());
@@ -45,11 +45,12 @@ TEST(CanonicalCookieTest, Constructor) {
   EXPECT_FALSE(cookie1->IsSecure());
   EXPECT_FALSE(cookie1->IsHttpOnly());
   EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie1->SameSite());
+  EXPECT_EQ(cookie1->SourceScheme(), CookieSourceScheme::kSecure);
 
   std::unique_ptr<CanonicalCookie> cookie2(std::make_unique<CanonicalCookie>(
       "A", "2", ".www.example.com", "/", current_time, base::Time(),
       base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
-      COOKIE_PRIORITY_DEFAULT));
+      COOKIE_PRIORITY_DEFAULT, CookieSourceScheme::kNonSecure));
   EXPECT_EQ("A", cookie2->Name());
   EXPECT_EQ("2", cookie2->Value());
   EXPECT_EQ(".www.example.com", cookie2->Domain());
@@ -57,18 +58,27 @@ TEST(CanonicalCookieTest, Constructor) {
   EXPECT_FALSE(cookie2->IsSecure());
   EXPECT_FALSE(cookie2->IsHttpOnly());
   EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie2->SameSite());
+  EXPECT_EQ(cookie2->SourceScheme(), CookieSourceScheme::kNonSecure);
 
-  auto cookie = std::make_unique<CanonicalCookie>(
+  // Set Secure to true but don't specify is_source_scheme_secure
+  auto cookie3 = std::make_unique<CanonicalCookie>(
+      "A", "2", ".www.example.com", "/", current_time, base::Time(),
+      base::Time(), true /* secure */, false, CookieSameSite::NO_RESTRICTION,
+      COOKIE_PRIORITY_DEFAULT);
+  EXPECT_TRUE(cookie3->IsSecure());
+  EXPECT_EQ(cookie3->SourceScheme(), CookieSourceScheme::kUnset);
+
+  auto cookie4 = std::make_unique<CanonicalCookie>(
       "A", "2", ".www.example.com", "/test", current_time, base::Time(),
       base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
       COOKIE_PRIORITY_DEFAULT);
-  EXPECT_EQ("A", cookie->Name());
-  EXPECT_EQ("2", cookie->Value());
-  EXPECT_EQ(".www.example.com", cookie->Domain());
-  EXPECT_EQ("/test", cookie->Path());
-  EXPECT_FALSE(cookie->IsSecure());
-  EXPECT_FALSE(cookie->IsHttpOnly());
-  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie->SameSite());
+  EXPECT_EQ("A", cookie4->Name());
+  EXPECT_EQ("2", cookie4->Value());
+  EXPECT_EQ(".www.example.com", cookie4->Domain());
+  EXPECT_EQ("/test", cookie4->Path());
+  EXPECT_FALSE(cookie4->IsSecure());
+  EXPECT_FALSE(cookie4->IsHttpOnly());
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, cookie4->SameSite());
 }
 
 TEST(CanonicalCookie, CreationCornerCases) {
@@ -102,6 +112,7 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_EQ("www.example.com", cookie->Domain());
   EXPECT_EQ("/test", cookie->Path());
   EXPECT_FALSE(cookie->IsSecure());
+  EXPECT_EQ(cookie->SourceScheme(), CookieSourceScheme::kNonSecure);
 
   GURL url2("http://www.foo.com");
   cookie = CanonicalCookie::Create(url2, "B=1", creation_time, server_time);
@@ -110,6 +121,7 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_EQ("www.foo.com", cookie->Domain());
   EXPECT_EQ("/", cookie->Path());
   EXPECT_FALSE(cookie->IsSecure());
+  EXPECT_EQ(cookie->SourceScheme(), CookieSourceScheme::kNonSecure);
 
   // Test creating secure cookies. Secure scheme is not checked upon creation,
   // so a URL of any scheme can create a Secure cookie.
@@ -121,6 +133,17 @@ TEST(CanonicalCookieTest, Create) {
   cookie = CanonicalCookie::Create(https_url, "A=2; Secure", creation_time,
                                    server_time, &status);
   EXPECT_TRUE(cookie->IsSecure());
+
+  GURL url3("https://www.foo.com");
+  cookie = CanonicalCookie::Create(url3, "A=2; Secure", creation_time,
+                                   server_time, &status);
+  EXPECT_TRUE(cookie->IsSecure());
+  EXPECT_EQ(cookie->SourceScheme(), CookieSourceScheme::kSecure);
+
+  cookie =
+      CanonicalCookie::Create(url3, "A=2", creation_time, server_time, &status);
+  EXPECT_FALSE(cookie->IsSecure());
+  EXPECT_EQ(cookie->SourceScheme(), CookieSourceScheme::kSecure);
 
   // Test creating http only cookies. HttpOnly is not checked upon creation.
   cookie = CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time,

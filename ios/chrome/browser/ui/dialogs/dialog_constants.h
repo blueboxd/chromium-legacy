@@ -8,6 +8,6 @@
 #import <Foundation/Foundation.h>
 
 // Accessibility identifier added to the text field of JavaScript prompts.
-extern NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier;
+extern NSString* const kJavaScriptDialogTextFieldAccessibilityIdentifier;
 
 #endif  // IOS_CHROME_BROWSER_UI_DIALOGS_DIALOG_CONSTANTS_H_

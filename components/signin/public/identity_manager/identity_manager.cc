@@ -698,9 +698,9 @@ void IdentityManager::OnAccountUpdated(const AccountInfo& info) {
 }
 
 void IdentityManager::OnAccountRemoved(const AccountInfo& info) {
+  UpdateUnconsentedPrimaryAccount();
   for (auto& observer : observer_list_)
     observer.OnExtendedAccountInfoRemoved(info);
-  UpdateUnconsentedPrimaryAccount();
 }
 
 }  // namespace signin

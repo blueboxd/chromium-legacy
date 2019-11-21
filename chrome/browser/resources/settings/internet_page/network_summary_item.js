@@ -58,8 +58,7 @@ Polymer({
 
     /**
      * Title line describing the network type to appear in the row's top
-     * line. If it is undefined, the title text is a default from
-     * CrOncStrings (see this.getTitleText_() below).
+     * line. If it is undefined, the title text is set to a default value.
      * @type {string|undefined}
      */
     networkTitleText: String,
@@ -107,9 +106,9 @@ Polymer({
       // Enabled or enabling states.
       if (deviceState.deviceState == mojom.DeviceStateType.kEnabled) {
         if (this.networkStateList.length > 0) {
-          return CrOncStrings.networkListItemNotConnected;
+          return this.i18n('networkListItemNotConnected');
         }
-        return CrOncStrings.networkListItemNoNetwork;
+        return this.i18n('networkListItemNoNetwork');
       }
       if (deviceState.deviceState == mojom.DeviceStateType.kEnabling) {
         return this.i18n('internetDeviceEnabling');
@@ -136,19 +135,18 @@ Polymer({
       // state text 'Connected' to avoid repeating the label in the sublabel.
       // See http://crbug.com/989907 for details.
       return networkState.type == mojom.NetworkType.kEthernet ?
-          CrOncStrings.networkListItemConnected :
+          this.i18n('networkListItemConnected') :
           name;
     }
     if (connectionState == mojom.ConnectionStateType.kConnecting) {
-      return name ?
-          CrOncStrings.networkListItemConnectingTo.replace('$1', name) :
-          CrOncStrings.networkListItemConnecting;
+      return name ? this.i18n('networkListItemConnectingTo', name) :
+                    this.i18n('networkListItemConnecting');
     }
     if (networkState.type == mojom.NetworkType.kCellular && deviceState &&
         deviceState.scanning) {
       return this.i18n('internetMobileSearching');
     }
-    return CrOncStrings.networkListItemNotConnected;
+    return this.i18n('networkListItemNotConnected');
   },
 
   /**
@@ -374,7 +372,6 @@ Polymer({
    * @private
    */
   getTitleText_: function() {
-    assert(CrOncStrings);
     return this.networkTitleText ||
         this.getNetworkTypeString_(this.activeNetworkState.type);
   },

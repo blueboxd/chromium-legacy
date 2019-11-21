@@ -16,6 +16,8 @@ namespace password_manager {
 
 using ::autofill::PasswordForm;
 
+using Label = CSVPassword::Label;
+
 TEST(CSVPasswordIteratorTest, Operations) {
   // Default.
   CSVPasswordIterator def;
@@ -23,9 +25,9 @@ TEST(CSVPasswordIteratorTest, Operations) {
 
   // From CSV.
   const CSVPassword::ColumnMap kColMap = {
-      {0, CSVPassword::Label::kOrigin},
-      {1, CSVPassword::Label::kUsername},
-      {2, CSVPassword::Label::kPassword},
+      {0, Label::kOrigin},
+      {1, Label::kUsername},
+      {2, Label::kPassword},
   };
   constexpr base::StringPiece kCSV = "http://example.com,user,password";
   CSVPasswordIterator iter(kColMap, kCSV);
@@ -57,45 +59,51 @@ TEST(CSVPasswordIteratorTest, Operations) {
   EXPECT_EQ(++old, iter);
 }
 
-TEST(CSVPasswordIteratorTest, Success) {
+TEST(CSVPasswordIteratorTest, MostRowsCorrect) {
   const CSVPassword::ColumnMap kColMap = {
-      {0, CSVPassword::Label::kOrigin},
-      {1, CSVPassword::Label::kUsername},
-      {2, CSVPassword::Label::kPassword},
+      {1, Label::kOrigin},
+      {4, Label::kUsername},
+      {2, Label::kPassword},
   };
   constexpr base::StringPiece kCSVBlob =
-      "http://example.com,u1,p1\n"
-      "http://example.com,u2,p2\r\n"
-      "http://example.com,u3,p\r\r\n"
-      "http://example.com,\"u\n4\",\"p\n4\"\n"
-      "http://example.com,u5,p5";
-  constexpr base::StringPiece kExpectedPasswords[] = {"p1", "p2", "p\r", "p\n4",
-                                                      "p5"};
+      ",http://example.com,p1,.,u1\n"
+      "something,http://example.com,p2,T,u2\r\n"
+      // The empty line below is completely ignored.
+      "\r\n"
+      "other,http://example.com,p3,>,u\r\r\n"
+      "***,http://example.com,\"p\n4\",\"\n\",\"u\n4\"\n"
+      // The row below is also ignored, because it contains no valid URL.
+      ",:,p,,u\n"
+      "\",\",http://example.com,p5,;,u5\n"
+      // The last row is ignored, because it is invalid.
+      ",http://example.com,p,,u,\"\n";
+  constexpr base::StringPiece kExpectedUsernames[] = {"u1", "u2", "u\r", "u\n4",
+                                                      "u5"};
 
   CSVPasswordIterator iter(kColMap, kCSVBlob);
 
   CSVPasswordIterator check = iter;
-  for (size_t i = 0; i < base::size(kExpectedPasswords); ++i) {
+  for (size_t i = 0; i < base::size(kExpectedUsernames); ++i) {
     EXPECT_EQ(CSVPassword::Status::kOK, (check++)->Parse(nullptr))
         << "on line " << i;
   }
   EXPECT_NE(CSVPassword::Status::kOK, check->Parse(nullptr));
 
-  for (const base::StringPiece& expected_password : kExpectedPasswords) {
+  for (const base::StringPiece& expected_username : kExpectedUsernames) {
     PasswordForm result = (iter++)->ParseValid();
     // Detailed checks of the parsed result are made in the test for
-    // CSVPassword. Here only the last field (password) is checked to (1) ensure
+    // CSVPassword. Here only the last field (username) is checked to (1) ensure
     // that lines are processed in the expected sequence, and (2) line breaks
     // are handled as expected (in particular, '\r' alone is not a line break).
-    EXPECT_EQ(base::ASCIIToUTF16(expected_password), result.password_value);
+    EXPECT_EQ(base::ASCIIToUTF16(expected_username), result.username_value);
   }
 }
 
-TEST(CSVPasswordIteratorTest, Failure) {
+TEST(CSVPasswordIteratorTest, LastRowCorrect) {
   const CSVPassword::ColumnMap kColMap = {
-      {0, CSVPassword::Label::kOrigin},
-      {1, CSVPassword::Label::kUsername},
-      {2, CSVPassword::Label::kPassword},
+      {0, Label::kOrigin},
+      {1, Label::kUsername},
+      {2, Label::kPassword},
   };
   constexpr base::StringPiece kCSVBlob =
       "too few fields\n"
@@ -103,19 +111,34 @@ TEST(CSVPasswordIteratorTest, Failure) {
       "http://notascii.ž.com,u,p\n"
       "http://example.com,empty-password,\n"
       "http://no-failure.example.com,to check that,operator++ worked";
-  constexpr size_t kLinesInBlob = 5;
 
   CSVPasswordIterator iter(kColMap, kCSVBlob);
 
-  CSVPasswordIterator check = iter;
-  for (size_t i = 0; i + 1 < kLinesInBlob; ++i) {
-    EXPECT_NE(CSVPassword::Status::kOK, (check++)->Parse(nullptr))
-        << "on line " << i;
-  }
-  // Last line was not a failure.
-  EXPECT_EQ(CSVPassword::Status::kOK, (check++)->Parse(nullptr));
+  PasswordForm pf;
+  // The iterator should skip all the faulty rows and land on the last one.
+  EXPECT_EQ(CSVPassword::Status::kOK, (iter++)->Parse(&pf));
+  EXPECT_EQ("http://no-failure.example.com/", pf.signon_realm);
+
   // After iterating over all lines, there is no more data to parse.
-  EXPECT_NE(CSVPassword::Status::kOK, check->Parse(nullptr));
+  EXPECT_NE(CSVPassword::Status::kOK, iter->Parse(nullptr));
+}
+
+TEST(CSVPasswordIteratorTest, NoRowCorrect) {
+  const CSVPassword::ColumnMap kColMap = {
+      {0, Label::kOrigin},
+      {1, Label::kUsername},
+      {2, Label::kPassword},
+  };
+  constexpr base::StringPiece kCSVBlob =
+      "too few fields\n"
+      "http://example.com,\"\"trailing,p\n"
+      "http://notascii.ž.com,u,p\n"
+      "http://example.com,empty-password,";
+
+  CSVPasswordIterator iter(kColMap, kCSVBlob);
+  CSVPasswordIterator end(kColMap, base::StringPiece());
+
+  EXPECT_EQ(iter, end);
 }
 
 }  // namespace password_manager

@@ -87,6 +87,4 @@ void OutputSurface::SetGpuVSyncEnabled(bool enabled) {
 bool OutputSurface::IsSoftwareMirrorMode() const {
   return false;
 }
-
-void OutputSurface::FlushForTesting() {}
 }  // namespace viz

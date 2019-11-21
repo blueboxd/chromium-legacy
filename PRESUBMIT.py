@@ -947,15 +947,6 @@ _BANNED_CPP_FUNCTIONS = (
       _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK,
     ),
     (
-      r'/base::SharedMemory(|Handle)',
-      (
-          'base::SharedMemory is deprecated. Please use',
-          '{Writable,ReadOnly}SharedMemoryRegion instead.',
-      ),
-      False,
-      (),
-    ),
-    (
       r'/\bRunMessageLoop\b',
       (
           'RunMessageLoop is deprecated, use RunLoop instead.',

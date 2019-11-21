@@ -5,7 +5,6 @@
 #include "chrome/services/app_service/public/cpp/instance_update.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
 
 namespace {
 

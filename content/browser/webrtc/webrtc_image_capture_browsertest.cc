@@ -276,8 +276,8 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSucceedsBrowserTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,  // Use no prefix, so that these get picked up when using
-       // --gtest_filter=WebRtc*
+    All,  // Use no prefix, so that these get picked up when using
+          // --gtest_filter=WebRtc*
     WebRtcImageCaptureSucceedsBrowserTest,
     testing::Combine(
         testing::Values(TargetCamera::FAKE_DEVICE),
@@ -372,7 +372,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureGetPhotoStateFailsBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcImageCaptureGetPhotoStateFailsBrowserTest,
                          testing::ValuesIn(kTargetVideoCaptureStacks));
 
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureSetPhotoOptionsFailsBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcImageCaptureSetPhotoOptionsFailsBrowserTest,
                          testing::ValuesIn(kTargetVideoCaptureStacks));
 
@@ -423,7 +423,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureTakePhotoFailsBrowserTest, GrabFrame) {
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGrabFrameSucceeds()"));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcImageCaptureTakePhotoFailsBrowserTest,
                          testing::ValuesIn(kTargetVideoCaptureStacks));
 

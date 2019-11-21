@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/modules/nfc/ndef_scan_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -87,8 +88,8 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
   // TODO(https://crbug.com/520391): Instead of NDEFScanOptions#url, introduce
   // and use NDEFScanOptions#id to do the filtering after we add support for
   // writing NDEFRecord#id.
-  if (options->hasURL() && !options->url().IsEmpty()) {
-    KURL pattern_url(options->url());
+  if (options->hasId() && !options->id().IsEmpty()) {
+    KURL pattern_url(options->id());
     if (!pattern_url.IsValid() || pattern_url.Protocol() != "https") {
       exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                         "Invalid URL pattern was provided.");
@@ -116,6 +117,8 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
                                               WrapPersistent(this),
                                               WrapPersistent(resolver_.Get())));
   }
+
+  UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcNdefReaderScan);
 
   GetNfcProxy()->StartReading(
       this, options,

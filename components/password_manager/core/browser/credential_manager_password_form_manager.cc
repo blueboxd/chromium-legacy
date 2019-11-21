@@ -14,6 +14,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
+#include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/browser/password_store.h"
 
 using autofill::PasswordForm;
@@ -30,9 +31,10 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
           client,
           std::move(saved_form),
           std::move(form_fetcher),
-          (form_saver ? std::move(form_saver)
-                      : std::make_unique<FormSaverImpl>(
-                            client->GetProfilePasswordStore()))),
+          std::make_unique<PasswordSaveManagerImpl>(
+              (form_saver ? std::move(form_saver)
+                          : std::make_unique<FormSaverImpl>(
+                                client->GetProfilePasswordStore())))),
       delegate_(delegate) {}
 
 CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() =

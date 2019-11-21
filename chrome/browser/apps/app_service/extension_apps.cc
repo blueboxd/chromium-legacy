@@ -27,13 +27,16 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -216,6 +219,18 @@ void ExtensionApps::RecordUninstallCanceledAction(Profile* profile,
         extensions::ExtensionUninstallDialog::CLOSE_ACTION_CANCELED,
         extensions::ExtensionUninstallDialog::CLOSE_ACTION_LAST);
   }
+}
+
+bool ExtensionApps::ShowPauseAppDialog(const std::string& app_id) {
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (!browser->is_type_app()) {
+      continue;
+    }
+    if (web_app::GetAppIdFromApplicationName(browser->app_name()) == app_id) {
+      return true;
+    }
+  }
+  return false;
 }
 
 ExtensionApps::ExtensionApps(

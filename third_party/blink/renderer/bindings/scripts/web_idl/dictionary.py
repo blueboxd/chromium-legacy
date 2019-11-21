@@ -169,4 +169,4 @@ class DictionaryMember(WithIdentifier, WithExtendedAttributes,
     @property
     def default_value(self):
         """Returns the default value or None."""
-        raise exceptions.NotImplementedError()
+        return self._default_value

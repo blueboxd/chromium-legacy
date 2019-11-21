@@ -536,6 +536,14 @@ void NGBlockNode::FinishLayout(
                                      &physical_fragment);
       } else {
         CopyFragmentDataToLayoutBoxForInlineChildren(physical_fragment);
+
+        // Floats are in the fragment tree, not in the item list, and the
+        // painter relies on |LayoutBox.Location()|.
+        if (physical_fragment.HasFloatingDescendantsForPaint()) {
+          CopyFragmentDataToLayoutBoxForInlineChildren(
+              physical_fragment, physical_fragment.Size().width,
+              Style().IsFlippedBlocksWritingMode());
+        }
       }
     } else {
       // We still need to clear paint fragments in case it had inline children,
@@ -982,7 +990,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
     LayoutUnit initial_container_width,
     bool initial_container_is_flipped,
     PhysicalOffset offset) {
-  DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   for (const auto& child : container.Children()) {
     if (child->IsContainer()) {
       PhysicalOffset child_offset = offset + child.Offset();

@@ -11,8 +11,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request_base.h"
@@ -37,7 +39,10 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
       scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor);
   ~CheckClientDownloadRequest() override;
 
+  // download::DownloadItem::Observer:
   void OnDownloadDestroyed(download::DownloadItem* download) override;
+  void OnDownloadUpdated(download::DownloadItem* download) override;
+
   static bool IsSupportedDownload(const download::DownloadItem& item,
                                   const base::FilePath& target_path,
                                   DownloadCheckResultReason* reason,
@@ -92,6 +97,9 @@ class CheckClientDownloadRequest : public CheckClientDownloadRequestBase,
   download::DownloadItem* item_;
   CheckDownloadRepeatingCallback callback_;
 
+  // Upload start time used for UMA duration histograms.
+  base::TimeTicks upload_start_time_;
+
   // When uploading files for deep scanning, we need to preserve the original
   // result and reason from the server, just in case deep scanning fails.
   DownloadCheckResult saved_result_;
@@ -113,6 +121,30 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
                                     const int64_t content_size,
                                     BinaryUploadService::Result result,
                                     DeepScanningClientResponse response);
+
+// Access points used to record UMA metrics. Adding an access point here
+// requires updating histograms.xml by adding histograms with names
+//   "SafeBrowsing.DeepScan.<access-point>.BytesPerSeconds"
+//   "SafeBrowsing.DeepScan.<access-point>.Duration"
+//   "SafeBrowsing.DeepScan.<access-point>.<result>.Duration"
+// TODO(domfc): Add UPLOAD, DRAG_AND_DROP and PASTE access points.
+enum class DeepScanAccessPoint {
+  DOWNLOAD,
+};
+std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point);
+
+// Helper functions to record DeepScanning UMA metrics for the duration of the
+// request split by its result and bytes/sec for successful requests.
+void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
+                           base::TimeDelta duration,
+                           int64_t total_bytes,
+                           const BinaryUploadService::Result& result,
+                           const DeepScanningClientResponse& response);
+void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
+                           base::TimeDelta duration,
+                           int64_t total_bytes,
+                           const std::string& result,
+                           bool success);
 
 }  // namespace safe_browsing
 

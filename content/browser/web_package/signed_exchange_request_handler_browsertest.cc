@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
       "SignedExchange.Time.CertificateFetch.Failure", UsePrefetch() ? 2 : 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SignedExchangeRequestHandlerBrowserTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool()));

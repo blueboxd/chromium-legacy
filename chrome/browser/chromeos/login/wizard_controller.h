@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
+#include "chrome/browser/chromeos/login/screens/packaged_license_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_screen.h"
@@ -231,6 +232,7 @@ class WizardController {
   void OnDeviceModificationCanceled();
   void OnSupervisionTransitionScreenExit();
   void OnOobeFlowFinished();
+  void OnPackagedLicenseScreenExit(PackagedLicenseScreen::Result result);
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.

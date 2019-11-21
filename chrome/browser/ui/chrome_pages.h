@@ -128,7 +128,8 @@ void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
 
 #if defined(OS_CHROMEOS)
-void ShowManagementPageForProfile(Profile* profile);
+// Shows the enterprise management info page in a browser tab.
+void ShowEnterpriseManagementPageInTabbedBrowser(Browser* browser);
 
 // Constructs an OS settings GURL for the specified |sub_page|.
 GURL GetOSSettingsUrl(const std::string& sub_page);

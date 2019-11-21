@@ -170,20 +170,6 @@ void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
   DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
 }
 
-std::string DesktopWindowTreeHostLinux::GetWorkspace() const {
-  base::Optional<int> workspace = GetPlatformWindowLinux()->GetWorkspace();
-  return workspace ? base::NumberToString(workspace.value()) : std::string();
-}
-
-void DesktopWindowTreeHostLinux::SetVisibleOnAllWorkspaces(
-    bool always_visible) {
-  GetPlatformWindowLinux()->SetVisibleOnAllWorkspaces(always_visible);
-}
-
-bool DesktopWindowTreeHostLinux::IsVisibleOnAllWorkspaces() const {
-  return GetPlatformWindowLinux()->IsVisibleOnAllWorkspaces();
-}
-
 void DesktopWindowTreeHostLinux::SetOpacity(float opacity) {
   DesktopWindowTreeHostPlatform::SetOpacity(opacity);
   // Note that this is no-op for Wayland.
@@ -367,10 +353,6 @@ void DesktopWindowTreeHostLinux::CreateNonClientEventFilter() {
 
 void DesktopWindowTreeHostLinux::DestroyNonClientEventFilter() {
   non_client_window_event_filter_.reset();
-}
-
-void DesktopWindowTreeHostLinux::OnWorkspaceChanged() {
-  OnHostWorkspaceChanged();
 }
 
 void DesktopWindowTreeHostLinux::GetWindowMask(const gfx::Size& size,

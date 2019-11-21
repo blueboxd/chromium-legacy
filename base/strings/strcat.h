@@ -59,10 +59,13 @@ namespace base {
 // for this call and generate slightly less code. This is something we can
 // explore more in the future.
 
-BASE_EXPORT std::string StrCat(span<const StringPiece> pieces);
-BASE_EXPORT string16 StrCat(span<const StringPiece16> pieces);
-BASE_EXPORT std::string StrCat(span<const std::string> pieces);
-BASE_EXPORT string16 StrCat(span<const string16> pieces);
+BASE_EXPORT std::string StrCat(span<const StringPiece> pieces)
+    WARN_UNUSED_RESULT;
+BASE_EXPORT string16 StrCat(span<const StringPiece16> pieces)
+    WARN_UNUSED_RESULT;
+BASE_EXPORT std::string StrCat(span<const std::string> pieces)
+    WARN_UNUSED_RESULT;
+BASE_EXPORT string16 StrCat(span<const string16> pieces) WARN_UNUSED_RESULT;
 
 // Initializer list forwards to the array version.
 inline std::string StrCat(std::initializer_list<StringPiece> pieces) {

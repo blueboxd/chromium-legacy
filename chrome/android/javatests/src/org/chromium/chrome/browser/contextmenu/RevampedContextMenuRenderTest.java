@@ -81,7 +81,7 @@ public class RevampedContextMenuRenderTest extends DummyUiActivityTestCase {
             mAdapter.registerType(
                     ListItemType.DIVIDER,
                     () -> LayoutInflater.from(listView.getContext())
-                            .inflate(R.layout.context_menu_divider, null),
+                            .inflate(R.layout.app_menu_divider, null),
                     (m, v, p) -> {
                     });
             mAdapter.registerType(

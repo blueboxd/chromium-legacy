@@ -293,7 +293,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     WebRtcVideoCaptureServiceEnumerationBrowserTest,
     ::testing::Values(
         TestParams{ServiceApi::kSingleClient, VirtualDeviceType::kSharedMemory},

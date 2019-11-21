@@ -5,11 +5,12 @@
 import("//build/config/chromecast_build.gni")
 
 component("webrtc_component") {
+  configs += [ "//third_party/webrtc:common_config" ]
+  public_configs = [ "//third_party/webrtc:common_inherited_config" ]
   public_deps = [
     ":init_webrtc",
     ":metrics",
     ":task_queue_factory",
-    ":webrtc",
     "//third_party/webrtc/api:callfactory_api",
     "//third_party/webrtc/api:ice_transport_factory",
     "//third_party/webrtc/api:libjingle_logging_api",
@@ -98,21 +99,6 @@ component("webrtc_component") {
   }
 }
 
-source_set("webrtc") {
-  visibility = [ ":*" ]
-  public_deps = [
-    # TODO(kjellander): Start cleaning up this target as soon as
-    # https://codereview.chromium.org/2022833002/ is landed. The target should
-    # be removed entirely if possible.
-    "//third_party/webrtc/rtc_base:rtc_base_approved",
-  ]
-  deps = [
-    "//third_party/webrtc/p2p:rtc_p2p",
-  ]
-  configs += [ "//third_party/webrtc:common_config" ]
-  public_configs = [ "//third_party/webrtc:common_inherited_config" ]
-}
-
 source_set("init_webrtc") {
   visibility = [ ":*" ]
   sources = [
@@ -132,9 +118,6 @@ source_set("init_webrtc") {
     # In that case it is ok to remove these two lines.
     "//third_party/abseil-cpp:absl_include_config",
     "//third_party/abseil-cpp:absl_define_config",
-  ]
-  public_deps = [
-    ":libjingle_webrtc_common",
   ]
   deps = [
     "//base",
@@ -163,21 +146,6 @@ source_set("field_trial") {
   ]
   deps = [
     "//base",
-  ]
-}
-
-source_set("libjingle_webrtc_common") {
-  visibility = [ ":*" ]
-  configs += [ "//third_party/webrtc:common_config" ]
-  public_configs = [ "//third_party/webrtc:common_inherited_config" ]
-
-  deps = [
-    ":webrtc",
-    "//third_party/webrtc/media:rtc_media",
-    "//third_party/webrtc/media:rtc_media_base",
-    "//third_party/webrtc/pc:libjingle_peerconnection",
-    "//third_party/webrtc/pc:rtc_pc",
-    "//third_party/webrtc/system_wrappers",
   ]
 }
 

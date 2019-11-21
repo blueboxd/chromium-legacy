@@ -7,7 +7,6 @@
 #include "media/base/renderer_factory.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
 
@@ -162,11 +161,6 @@ bool ContentRendererClient::IsSupportedVideoType(const media::VideoType& type) {
 bool ContentRendererClient::IsSupportedBitstreamAudioCodec(
     media::AudioCodec codec) {
   return false;
-}
-
-std::unique_ptr<blink::WebMediaStreamRendererFactory>
-ContentRendererClient::CreateMediaStreamRendererFactory() {
-  return nullptr;
 }
 
 bool ContentRendererClient::ShouldReportDetailedMessageForSource(

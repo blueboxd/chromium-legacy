@@ -518,31 +518,23 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
   }
 }
 
-void NGBoxFragmentPainter::PaintFloatingItems(const PaintInfo& paint_info) {
-  DCHECK(items_);
-  DCHECK(PhysicalFragment().HasFloatingDescendantsForPaint());
-
-  for (const std::unique_ptr<NGFragmentItem>& item : items_->Items()) {
-    const NGPhysicalBoxFragment* child_fragment = item->BoxFragment();
-    if (!child_fragment || child_fragment->HasSelfPaintingLayer() ||
-        !child_fragment->IsFloating())
-      continue;
-    // TODO(kojii): The float is outside of the inline formatting context and
-    // that it maybe another NG inline formatting context, NG block layout, or
-    // legacy. NGBoxFragmentPainter can handle only the first case. In order
-    // to cover more tests for other two cases, we always fallback to legacy,
-    // which will forward back to NGBoxFragmentPainter if the float is for
-    // NGBoxFragmentPainter. We can shortcut this for the first case when
-    // we're more stable.
-    ObjectPainter(*child_fragment->GetLayoutObject())
-        .PaintAllPhasesAtomically(paint_info);
-  }
-}
-
 void NGBoxFragmentPainter::PaintFloatingChildren(
     const NGPhysicalContainerFragment& container,
     const PaintInfo& paint_info,
     const PaintInfo& float_paint_info) {
+#if DCHECK_IS_ON()
+  // Floats are in the fragment tree, not in the fragment item list.
+  if (const NGPhysicalBoxFragment* box_fragment =
+          DynamicTo<NGPhysicalBoxFragment>(&container)) {
+    if (const NGFragmentItems* items = box_fragment->Items()) {
+      DCHECK(std::none_of(
+          items->Items().begin(), items->Items().end(), [](const auto& item) {
+            return item->BoxFragment() && item->BoxFragment()->IsFloating();
+          }));
+    }
+  }
+#endif
+
   for (const NGLink& child : container.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
     if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsColumnBox())
@@ -588,10 +580,6 @@ void NGBoxFragmentPainter::PaintFloats(const PaintInfo& paint_info) {
   PaintInfo float_paint_info(paint_info);
   if (paint_info.phase == PaintPhase::kFloat)
     float_paint_info.phase = PaintPhase::kForeground;
-  if (items_) {
-    PaintFloatingItems(float_paint_info);
-    return;
-  }
   PaintFloatingChildren(PhysicalFragment(), paint_info, float_paint_info);
 }
 

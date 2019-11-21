@@ -10,17 +10,20 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/profiles/profile_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chromeos/constants/chromeos_constants.h"
+#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/login/login_state/login_state.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/user_manager/user_manager.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/escape.h"
@@ -75,7 +78,16 @@ base::FilePath GetCacheRootPath(Profile* profile) {
 bool IsDriveEnabledForProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!chromeos::IsProfileAssociatedWithGaiaAccount(profile))
+  // Disable Drive for non-Gaia accounts.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableGaiaServices)) {
+    return false;
+  }
+  if (!chromeos::LoginState::IsInitialized())
+    return false;
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user || !user->HasGaiaAccount())
     return false;
 
   // Disable Drive if preference is set. This can happen with commandline flag

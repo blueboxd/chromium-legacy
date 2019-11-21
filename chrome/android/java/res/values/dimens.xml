@@ -56,6 +56,7 @@
 
     <!-- Custom Menu dimensions -->
     <dimen name="tab_switcher_menu_width">222dp</dimen>
+    <dimen name="tab_switcher_menu_vertical_padding">8dp</dimen>
 
     <dimen name="menu_badge_translation_y_distance">6dp</dimen>
 
@@ -635,7 +636,6 @@
     <dimen name="revamped_context_menu_list_lateral_padding">16dp</dimen>
     <dimen name="revamped_context_menu_bottom_padding">8dp</dimen>
     <dimen name="revamped_context_menu_header_vertical_padding">16dp</dimen>
-    <dimen name="revamped_context_menu_divider_padding">8dp</dimen>
     <dimen name="revamped_context_menu_header_image_max_size">60dp</dimen>
     <dimen name="revamped_context_menu_header_circle_bg_diameter">48dp</dimen>
     <dimen name="revamped_context_menu_header_circle_bg_lateral_margin">6dp</dimen>

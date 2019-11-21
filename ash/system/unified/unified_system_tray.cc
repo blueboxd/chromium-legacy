@@ -269,7 +269,7 @@ gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {
   return bubble_ ? bubble_->GetBoundsInScreen() : gfx::Rect();
 }
 
-void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
+void UnifiedSystemTray::UpdateAfterLoginStatusChange(LoginStatus status) {
   SetVisiblePreferred(true);
   PreferredSizeChanged();
 }
@@ -376,8 +376,8 @@ void UnifiedSystemTray::ClickedOutsideBubble() {
   CloseBubble();
 }
 
-void UnifiedSystemTray::UpdateAfterShelfAlignmentChange() {
-  TrayBackgroundView::UpdateAfterShelfAlignmentChange();
+void UnifiedSystemTray::UpdateAfterShelfChange() {
+  TrayBackgroundView::UpdateAfterShelfChange();
   time_view_->UpdateAlignmentForShelf(shelf());
 }
 

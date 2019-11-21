@@ -240,7 +240,7 @@ def CodeSignBundle(bundle_path, identity, extra_args):
 
 
 def InstallSystemFramework(framework_path, bundle_path, args):
-  """Install framework from |framework_path| to |bundle| and code-re-sign it."""
+  """Install framework from |framework_path| to bundle at |bundle_path|."""
   installed_framework_path = os.path.join(
       bundle_path, 'Frameworks', os.path.basename(framework_path))
 
@@ -251,8 +251,18 @@ def InstallSystemFramework(framework_path, bundle_path, args):
       shutil.rmtree(installed_framework_path)
     shutil.copytree(framework_path, installed_framework_path)
 
-  CodeSignBundle(installed_framework_path, args.identity,
+
+def CodeSignPrivateFramework(framework_path, args):
+  """Code sign a private framework (i.e. installed in Frameworks/ directory)."""
+  CodeSignBundle(framework_path, args.identity,
       ['--deep', '--preserve-metadata=identifier,entitlements,flags'])
+
+def CodeSignAllPrivateFrameworks(bundle_path, args):
+  """Code sign all private frameworks of bundle at |bundle_path|."""
+  private_framework_dir = os.path.join(bundle_path, 'Frameworks')
+  private_framework_glob = os.path.join(private_framework_dir, '*.framework')
+  for framework_path in glob.glob(private_framework_glob):
+    CodeSignPrivateFramework(framework_path, args)
 
 
 def GenerateEntitlements(path, provisioning_profile, bundle_identifier):
@@ -407,6 +417,9 @@ class CodeSignBundleAction(Action):
     # Install system frameworks if requested.
     for framework_path in args.frameworks:
       InstallSystemFramework(framework_path, args.path, args)
+
+    # Code sign all private frameworks.
+    CodeSignAllPrivateFrameworks(args.path, args)
 
     # Copy main binary into bundle.
     if os.path.isfile(bundle.binary_path):

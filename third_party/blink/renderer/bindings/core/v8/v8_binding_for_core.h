@@ -387,16 +387,24 @@ CORE_EXPORT float ToRestrictedFloat(v8::Isolate*,
                                     v8::Local<v8::Value>,
                                     ExceptionState&);
 
-inline double ToCoreDate(v8::Isolate* isolate,
-                         v8::Local<v8::Value> object,
-                         ExceptionState& exception_state) {
+inline base::Optional<base::Time> ToCoreNullableDate(
+    v8::Isolate* isolate,
+    v8::Local<v8::Value> object,
+    ExceptionState& exception_state) {
+  // https://html.spec.whatwg.org/C/#common-input-element-apis:dom-input-valueasdate-2
+  //   ... otherwise if the new value is null or a Date object representing the
+  //   NaN time value, then set the value of the element to the empty string;
+  // We'd like to return same values for |null| and an invalid Date object.
   if (object->IsNull())
-    return std::numeric_limits<double>::quiet_NaN();
+    return base::nullopt;
   if (!object->IsDate()) {
     exception_state.ThrowTypeError("The provided value is not a Date.");
-    return 0;
+    return base::nullopt;
   }
-  return object.As<v8::Date>()->ValueOf();
+  double time_value = object.As<v8::Date>()->ValueOf();
+  if (!std::isfinite(time_value))
+    return base::nullopt;
+  return base::Time::FromJsTime(time_value);
 }
 
 // USVString conversion helper.

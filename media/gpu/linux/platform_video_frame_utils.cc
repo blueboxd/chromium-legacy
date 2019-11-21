@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_file.h"
+#include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"

@@ -12,11 +12,18 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
+#include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 using chromeos::ProfileHelper;
 using user_manager::UserManager;
@@ -29,6 +36,17 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientEnterpriseTest, TrayEnterprise) {
   // Managed devices show an item in the menu.
   EXPECT_TRUE(test_api->IsBubbleViewVisible(ash::VIEW_ID_TRAY_ENTERPRISE,
                                             true /* open_tray */));
+
+  // The tooltip shows the domain.
+  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
+                                       base::UTF8ToUTF16("example.com")),
+            test_api->GetBubbleViewTooltip(ash::VIEW_ID_TRAY_ENTERPRISE));
+
+  // Clicking the item opens the management page.
+  test_api->ClickBubbleView(ash::VIEW_ID_TRAY_ENTERPRISE);
+  EXPECT_EQ(
+      GURL(chrome::kChromeUIManagementURL),
+      browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 }
 
 class SystemTrayClientClockTest : public chromeos::LoginManagerTest {

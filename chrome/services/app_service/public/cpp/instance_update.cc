@@ -6,7 +6,6 @@
 
 #include "base/strings/string_util.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
-#include "ui/aura/window.h"
 
 namespace apps {
 

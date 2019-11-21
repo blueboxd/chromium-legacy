@@ -73,16 +73,17 @@ inline LayoutUnit FragmentainerSpaceAtBfcStart(const NGConstraintSpace& space) {
   return space.FragmentainerBlockSize() - space.FragmentainerOffsetAtBfc();
 }
 
-// Adjust the border+scrollbar+padding strut for fragmentation. Leading
-// border+scrollbar+padding should only take up space in the first fragment
-// generated from a node.
+// Adjust a box strut (margins, borders, scrollbars, and/or padding) to take
+// fragmentation into account. Leading block margin, border, scrollbar or
+// padding should only take up space in the first fragment generated from a
+// node.
 inline void AdjustForFragmentation(const NGBlockBreakToken* break_token,
-                                   NGBoxStrut* border_scrollbar_padding) {
+                                   NGBoxStrut* box_strut) {
   if (LIKELY(!break_token))
     return;
   if (break_token->IsBreakBefore())
     return;
-  border_scrollbar_padding->block_start = LayoutUnit();
+  box_strut->block_start = LayoutUnit();
 }
 
 // Set up a child's constraint space builder for block fragmentation. The child

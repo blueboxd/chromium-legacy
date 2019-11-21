@@ -12,6 +12,7 @@ Polymer({
 
   behaviors: [
     CrPolicyNetworkBehaviorMojo,
+    I18nBehavior,
   ],
 
   properties: {
@@ -130,11 +131,10 @@ Polymer({
   getItemName_: function() {
     if (this.item.hasOwnProperty('customItemName')) {
       const item = /** @type {!NetworkList.CustomItemState} */ (this.item);
-      let name = item.customItemName || '';
-      if (CrOncStrings.hasOwnProperty(item.customItemName)) {
-        name = CrOncStrings[item.customItemName];
-      }
-      return name;
+      const name = item.customItemName || '';
+      const customName = this.i18n(item.customItemName);
+
+      return customName ? customName : name;
     }
     return OncMojo.getNetworkStateDisplayName(
         /** @type {!OncMojo.NetworkStateProperties} */ (this.item));
@@ -148,9 +148,8 @@ Polymer({
   getAriaLabel_: function() {
     const status = this.getNetworkStateText_();
     if (status) {
-      return CrOncStrings.networkListItemLabelTemplate
-          .replace('$1', this.getItemName_())
-          .replace('$2', status);
+      return this.i18n(
+          'networkListItemLabelTemplate', this.getItemName_(), status);
     }
     return this.getItemName_();
   },
@@ -186,22 +185,22 @@ Polymer({
     const connectionState = this.networkState.connectionState;
     if (this.networkState.type == mojom.NetworkType.kCellular) {
       if (this.shouldShowNotAvailableText_()) {
-        return CrOncStrings.networkListItemNotAvailable;
+        return this.i18n('networkListItemNotAvailable');
       }
       if (this.networkState.typeState.cellular.scanning) {
-        return CrOncStrings.networkListItemScanning;
+        return this.i18n('networkListItemScanning');
       }
       if (this.networkState.typeState.cellular.simLocked) {
-        return CrOncStrings.networkListItemSimCardLocked;
+        return this.i18n('networkListItemSimCardLocked');
       }
     }
     if (OncMojo.connectionStateIsConnected(connectionState)) {
       // TODO(khorimoto): Consider differentiating between Portal, Connected,
       // and Online.
-      return CrOncStrings.networkListItemConnected;
+      return this.i18n('networkListItemConnected');
     }
     if (connectionState == mojom.ConnectionStateType.kConnecting) {
-      return CrOncStrings.networkListItemConnecting;
+      return this.i18n('networkListItemConnecting');
     }
     return '';
   },

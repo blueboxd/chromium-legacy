@@ -136,38 +136,6 @@ Polymer({
       // </if>
     };
 
-    // <if expr="chromeos">
-    CrOncStrings = {
-      OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
-      OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
-      OncTypeMobile: loadTimeData.getString('OncTypeMobile'),
-      OncTypeTether: loadTimeData.getString('OncTypeTether'),
-      OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
-      OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-      networkListItemConnected:
-          loadTimeData.getString('networkListItemConnected'),
-      networkListItemConnecting:
-          loadTimeData.getString('networkListItemConnecting'),
-      networkListItemConnectingTo:
-          loadTimeData.getString('networkListItemConnectingTo'),
-      networkListItemInitializing:
-          loadTimeData.getString('networkListItemInitializing'),
-      networkListItemLabelTemplate:
-          loadTimeData.getString('networkListItemLabelTemplate'),
-      networkListItemNotAvailable:
-          loadTimeData.getString('networkListItemNotAvailable'),
-      networkListItemScanning:
-          loadTimeData.getString('networkListItemScanning'),
-      networkListItemSimCardLocked:
-          loadTimeData.getString('networkListItemSimCardLocked'),
-      networkListItemNotConnected:
-          loadTimeData.getString('networkListItemNotConnected'),
-      networkListItemNoNetwork:
-          loadTimeData.getString('networkListItemNoNetwork'),
-      vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
-    };
-    // </if>
-
     // The SplitSettings feature hides OS settings in the browser settings page.
     // https://crbug.com/950007
     const showOSSettings = loadTimeData.getBoolean('showOSSettings');

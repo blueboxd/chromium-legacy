@@ -84,16 +84,6 @@ CSVPasswordSequence::CSVPasswordSequence(std::string csv)
       return;
     }
   }
-
-  // Check the data rows.
-  const CSVPasswordIterator end(map_, base::StringPiece());
-  for (CSVPasswordIterator it(map_, data_rows_); it != end; ++it) {
-    CSVPassword::Status status = it->Parse(nullptr);
-    if (status != CSVPassword::Status::kOK) {
-      result_ = status;
-      return;
-    }
-  }
 }
 
 CSVPasswordSequence::CSVPasswordSequence(CSVPasswordSequence&&) = default;

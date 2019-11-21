@@ -12,10 +12,6 @@
 class GAIAInfoUpdateService;
 class Profile;
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 // Singleton that owns all GAIAInfoUpdateServices and associates them with
 // Profiles. Listens for the Profile's destruction notification and cleans up
 // the associated GAIAInfoUpdateService.
@@ -39,8 +35,6 @@ class GAIAInfoUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
-  void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) override;
   bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(GAIAInfoUpdateServiceFactory);

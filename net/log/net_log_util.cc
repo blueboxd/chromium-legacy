@@ -19,6 +19,7 @@
 #include "net/base/address_family.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_verifier.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -153,6 +154,20 @@ std::unique_ptr<base::DictionaryValue> GetNetConstants() {
       dict->SetInteger(flag.name, flag.constant);
 
     constants_dict->Set("certStatusFlag", std::move(dict));
+  }
+
+  // Add a dictionary with information about the relationship between
+  // CertVerifier::VerifyFlags and their symbolic names.
+  {
+    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+
+    dict->SetInteger("VERIFY_DISABLE_NETWORK_FETCHES",
+                     CertVerifier::VERIFY_DISABLE_NETWORK_FETCHES);
+
+    static_assert(CertVerifier::VERIFY_FLAGS_LAST == (1 << 0),
+                  "Update with new flags");
+
+    constants_dict->Set("certVerifierFlags", std::move(dict));
   }
 
   // Add a dictionary with information about the relationship between load flag

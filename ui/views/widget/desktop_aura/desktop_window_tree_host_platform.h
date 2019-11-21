@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/aura/window_tree_host_platform.h"
+#include "ui/platform_window/extensions/workspace_extension_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 
@@ -18,7 +19,8 @@ namespace views {
 
 class VIEWS_EXPORT DesktopWindowTreeHostPlatform
     : public aura::WindowTreeHostPlatform,
-      public DesktopWindowTreeHost {
+      public DesktopWindowTreeHost,
+      public ui::WorkspaceExtensionDelegate {
  public:
   DesktopWindowTreeHostPlatform(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -107,6 +109,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   void OnActivationChanged(bool active) override;
   base::Optional<gfx::Size> GetMinimumSizeForWindow() override;
   base::Optional<gfx::Size> GetMaximumSizeForWindow() override;
+
+  // ui::WorkspaceExtensionDelegate:
+  void OnWorkspaceChanged() override;
 
  protected:
   // TODO(https://crbug.com/990756): move these methods back to private

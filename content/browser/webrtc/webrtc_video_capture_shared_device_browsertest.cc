@@ -274,7 +274,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     WebRtcVideoCaptureSharedDeviceBrowserTest,
     ::testing::Values(
         TestParams{ServiceApi::kSingleClient,

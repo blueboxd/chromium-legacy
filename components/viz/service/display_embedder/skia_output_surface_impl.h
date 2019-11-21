@@ -159,8 +159,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                        gpu::Mailbox overlay_candidate_mailbox,
                        const gfx::Rect& bounds) override;
 
-  void FlushForTesting() override;
-
  private:
   bool Initialize();
   void InitializeOnGpuThread(base::WaitableEvent* event, bool* result);

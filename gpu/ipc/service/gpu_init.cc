@@ -201,7 +201,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
 
   bool enable_watchdog = !gpu_preferences_.disable_gpu_watchdog &&
-                         !command_line->HasSwitch(switches::kHeadless);
+                         !command_line->HasSwitch(switches::kHeadless) &&
+                         !use_swiftshader;
 
   // Disable the watchdog in debug builds because they tend to only be run by
   // developers who will not appreciate the watchdog killing the GPU process.
@@ -220,6 +221,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // startup.
   delayed_watchdog_enable = true;
 #endif
+
+  // PreSandbox is mainly for resource handling and not related to the GPU
+  // driver, it doesn't need the GPU watchdog. The loadLibrary may take long
+  // time that killing and restarting the GPU process will not help.
+  sandbox_helper_->PreSandboxStartup();
 
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
@@ -247,8 +253,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     DCHECK(watchdog_started);
 #endif  // OS_WIN
   }
-
-  sandbox_helper_->PreSandboxStartup();
 
   bool attempted_startsandbox = false;
 #if defined(OS_LINUX)
@@ -296,6 +300,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
 
   if (!gl_initialized) {
+    // Pause watchdog. LoadLibrary in GLBindings may take long time.
+    if (watchdog_thread_)
+      watchdog_thread_->PauseWatchdog();
     gl_initialized = gl::init::InitializeStaticGLBindingsOneOff();
 
     if (!gl_initialized) {
@@ -303,6 +310,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       return false;
     }
 
+    if (watchdog_thread_)
+      watchdog_thread_->ResumeWatchdog();
     if (gl::GetGLImplementation() != gl::kGLImplementationDisabled) {
       gl_initialized =
           gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ false);
@@ -338,6 +347,8 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         return false;
 #else
         gl::init::ShutdownGL(true);
+        watchdog_thread_ = nullptr;
+        watchdog_init.SetGpuWatchdogPtr(nullptr);
         if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
           VLOG(1)
               << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
@@ -449,8 +460,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (use_swiftshader ||
       gl::GetGLImplementation() == gl::GetSoftwareGLImplementation()) {
     gpu_info_.software_rendering = true;
-    if (watchdog_thread_)
-      watchdog_thread_->Stop();
+    watchdog_thread_ = nullptr;
+    watchdog_init.SetGpuWatchdogPtr(nullptr);
+  } else if (gl_disabled) {
     watchdog_thread_ = nullptr;
     watchdog_init.SetGpuWatchdogPtr(nullptr);
   } else if (enable_watchdog && delayed_watchdog_enable) {

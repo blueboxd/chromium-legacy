@@ -62,6 +62,7 @@ public class CanonicalCookieTest {
         Assert.assertEquals(lhs.isHttpOnly(), rhs.isHttpOnly());
         Assert.assertEquals(lhs.getSameSite(), rhs.getSameSite());
         Assert.assertEquals(lhs.getPriority(), rhs.getPriority());
+        Assert.assertEquals(lhs.sourceScheme(), rhs.sourceScheme());
     }
 
     private static void doSaveRestoreCookiesListTest(final List<CanonicalCookie> cookies)
@@ -85,13 +86,13 @@ public class CanonicalCookieTest {
         ArrayList<CanonicalCookie> cookies = new ArrayList<>();
         cookies.add(new CanonicalCookie("name", "value", "domain", "path", 0 /* creation */,
                 1 /* expiration */, 0 /* lastAccess */, false /* secure */, true /* httpOnly */,
-                0 /* sameSite */, 0 /* priority */));
+                0 /* sameSite */, 0 /* priority */, 1 /* sourceScheme */));
         cookies.add(new CanonicalCookie("name2", "value2", ".domain2", "path2", 10 /* creation */,
                 20 /* expiration */, 15 /* lastAccess */, true /* secure */, false /* httpOnly */,
-                1 /* sameSite */, 1 /* priority */));
+                1 /* sameSite */, 1 /* priority */, 2 /* sourceScheme */));
         cookies.add(new CanonicalCookie("name3", "value3", "domain3", "path3", 10 /* creation */,
                 20 /* expiration */, 15 /* lastAccess */, true /* secure */, false /* httpOnly */,
-                2 /* sameSite */, 2 /* priority */));
+                2 /* sameSite */, 2 /* priority */, 2 /* sourceScheme */));
 
         doSaveRestoreCookiesListTest(cookies);
     }

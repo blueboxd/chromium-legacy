@@ -10,7 +10,6 @@
 #include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_fence.h"

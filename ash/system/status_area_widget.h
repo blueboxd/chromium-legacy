@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "ui/views/widget/widget.h"
@@ -33,7 +34,8 @@ class VirtualKeyboardTray;
 // the bottom-right of the screen. Exists separately from ShelfView/ShelfWidget
 // so that it can be shown in cases where the rest of the shelf is hidden (e.g.
 // on secondary monitors at the login screen).
-class ASH_EXPORT StatusAreaWidget : public views::Widget {
+class ASH_EXPORT StatusAreaWidget : public views::Widget,
+                                    public ShelfConfig::Observer {
  public:
   // Whether the status area is collapsed or expanded. Currently, this is only
   // applicable in in-app tablet mode. Otherwise the state is NOT_COLLAPSIBLE.
@@ -126,6 +128,16 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  // ShelfConfig::Observer:
+  void OnShelfConfigUpdated() override;
+
+  // Adds a new tray button to the status area.
+  void AddTrayButton(TrayBackgroundView* tray_button);
+
+  // Called when in the collapsed state to calculate and update the visibility
+  // of each tray button.
+  void CalculateButtonVisibilityForCollapsedState();
+
   StatusAreaWidgetDelegate* status_area_widget_delegate_;
 
   std::unique_ptr<StatusAreaOverflowButtonTray> overflow_button_tray_;
@@ -138,11 +150,17 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   std::unique_ptr<ImeMenuTray> ime_menu_tray_;
   std::unique_ptr<SelectToSpeakTray> select_to_speak_tray_;
 
+  // Vector of the tray buttons above. The ordering is used to determine which
+  // tray buttons are hidden when they overflow the available width.
+  std::vector<TrayBackgroundView*> tray_buttons_;
+
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;
 
   CollapseState collapse_state_ = CollapseState::NOT_COLLAPSIBLE;
 
   Shelf* shelf_;
+
+  bool initialized_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };

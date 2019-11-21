@@ -4194,7 +4194,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcLocalIpsAllowedUrlsTest, RunTest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcLocalIpsAllowedUrlsTest,
                          ::testing::Range(0, 3));
 
@@ -5565,7 +5565,7 @@ IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
 }
 #undef MAYBE_RunTest
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          PromotionalTabsEnabledPolicyTest,
                          ::testing::Values(BooleanPolicy::kNotConfigured,
                                            BooleanPolicy::kFalse,
@@ -5675,7 +5675,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcEventLogCollectionAllowedPolicyTest,
                          ::testing::Values(BooleanPolicy::kNotConfigured,
                                            BooleanPolicy::kFalse,

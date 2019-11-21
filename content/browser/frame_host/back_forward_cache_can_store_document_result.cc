@@ -71,7 +71,11 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
     case Reason::kBlocklistedFeatures:
       return "blocklisted features: " + DescribeFeatures(blocklisted_features_);
     case Reason::kDisableForRenderFrameHostCalled:
-      return "BackForwardCache::DisableForRenderFrameHost() was called";
+      return "BackForwardCache::DisableForRenderFrameHost() was called: " +
+             base::JoinString(
+                 std::vector<std::string>(disabled_reasons_.begin(),
+                                          disabled_reasons_.end()),
+                 ", ");
     case Reason::kDomainNotAllowed:
       return "This domain is not allowed to be stored in BackForwardCache";
     case Reason::kHTTPMethodNotGET:
@@ -121,6 +125,16 @@ void BackForwardCacheCanStoreDocumentResult::NoDueToRelatedActiveContents(
   not_stored_reasons_.set(static_cast<size_t>(
       BackForwardCacheMetrics::NotRestoredReason::kRelatedActiveContentsExist));
   browsing_instance_not_swapped_reason_ = browsing_instance_not_swapped_reason;
+}
+
+void BackForwardCacheCanStoreDocumentResult::
+    NoDueToDisableForRenderFrameHostCalled(
+        const std::set<std::string>& reasons) {
+  not_stored_reasons_.set(
+      static_cast<size_t>(BackForwardCacheMetrics::NotRestoredReason::
+                              kDisableForRenderFrameHostCalled));
+  for (const std::string& reason : reasons)
+    disabled_reasons_.insert(reason);
 }
 
 BackForwardCacheCanStoreDocumentResult::

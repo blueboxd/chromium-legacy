@@ -18,8 +18,8 @@
 NSString* const kWebViewShellBackButtonAccessibilityLabel = @"Back";
 NSString* const kWebViewShellForwardButtonAccessibilityLabel = @"Forward";
 NSString* const kWebViewShellAddressFieldAccessibilityLabel = @"Address field";
-NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
-    @"WebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier";
+NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
+    @"WebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier";
 
 @interface ShellViewController ()<CWVDownloadTaskDelegate,
                                   CWVNavigationDelegate,
@@ -809,7 +809,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   [alert addTextFieldWithConfigurationHandler:^(UITextField* textField) {
     textField.text = defaultText;
     textField.accessibilityIdentifier =
-        kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier;
+        kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier;
   }];
 
   __weak UIAlertController* weakAlert = alert;

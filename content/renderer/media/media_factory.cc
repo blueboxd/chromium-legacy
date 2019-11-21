@@ -572,7 +572,7 @@ blink::WebMediaPlayer* MediaFactory::CreateWebMediaPlayerForMediaStream(
 
   return new blink::WebMediaPlayerMS(
       frame, client, GetWebMediaPlayerDelegate(), std::move(media_log),
-      CreateMediaStreamRendererFactory(),
+      blink::CreateWebMediaStreamRendererFactory(),
       render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia),
       render_thread->GetIOTaskRunner(), video_frame_compositor_task_runner,
       render_thread->GetMediaThreadTaskRunner(),
@@ -590,15 +590,6 @@ MediaFactory::GetWebMediaPlayerDelegate() {
         new media::RendererWebMediaPlayerDelegate(render_frame_);
   }
   return media_player_delegate_;
-}
-
-std::unique_ptr<blink::WebMediaStreamRendererFactory>
-MediaFactory::CreateMediaStreamRendererFactory() {
-  std::unique_ptr<blink::WebMediaStreamRendererFactory> factory =
-      GetContentClient()->renderer()->CreateMediaStreamRendererFactory();
-  if (factory.get())
-    return factory;
-  return blink::CreateWebMediaStreamRendererFactory();
 }
 
 media::DecoderFactory* MediaFactory::GetDecoderFactory() {

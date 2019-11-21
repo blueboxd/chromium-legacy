@@ -109,14 +109,11 @@ class MultiResolutionImageResourceFetcher::ClientImpl
 MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     const KURL& image_url,
     LocalFrame* frame,
-    int id,
     mojom::blink::RequestContextType request_context,
     mojom::blink::FetchCacheMode cache_mode,
     Callback callback)
     : callback_(std::move(callback)),
-      id_(id),
       http_status_code_(0),
-      image_url_(image_url),
       request_(image_url) {
   WebAssociatedURLLoaderOptions options;
   SetLoaderOptions(options);
@@ -128,7 +125,7 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     // So if we don't set the skip flag here, malicious service workers can
     // override the favicon image of any origins.
     if (!frame->GetDocument()->GetSecurityOrigin()->CanAccess(
-            SecurityOrigin::Create(image_url_).get())) {
+            SecurityOrigin::Create(image_url).get())) {
       SetSkipServiceWorker(true);
     }
   }

@@ -169,7 +169,10 @@ class VIEWS_EXPORT LayoutManagerBase : public LayoutManager {
   void Installed(View* host) final;
   void ViewAdded(View* host, View* view) final;
   void ViewRemoved(View* host, View* view) final;
-  void ViewVisibilitySet(View* host, View* view, bool visible) final;
+  void ViewVisibilitySet(View* host,
+                         View* view,
+                         bool old_visibility,
+                         bool new_visibility) final;
 
   void AddOwnedLayoutInternal(std::unique_ptr<LayoutManagerBase> owned_layout);
 

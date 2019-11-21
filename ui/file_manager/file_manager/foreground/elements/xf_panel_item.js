@@ -146,10 +146,10 @@ class PanelItem extends HTMLElement {
                 height: 68px;
               }
             </style>
-            <div class='xf-panel-item' role='alert'>
+            <div class='xf-panel-item'>
                 <xf-circular-progress id='indicator'>
                 </xf-circular-progress>
-                <div class='xf-panel-text'>
+                <div class='xf-panel-text' role='alert'>
                     <span class='xf-panel-label-text' tabindex='0'>
                     </span>
                     <br class='xf-linebreaker'/>
@@ -204,6 +204,10 @@ class PanelItem extends HTMLElement {
 
     const buttonSpacer = this.shadowRoot.querySelector('#button-gap');
 
+    // Default the text host to use an alert role.
+    const textHost = assert(this.shadowRoot.querySelector('.xf-panel-text'));
+    textHost.setAttribute('role', 'alert');
+
     // Setup the panel configuration for the panel type.
     // TOOD(crbug.com/947388) Simplify this switch breaking out common cases.
     /** @type {?Element} */
@@ -227,6 +231,9 @@ class PanelItem extends HTMLElement {
         primaryButton.dataset.category = 'expand';
         primaryButton.setAttribute(
             'aria-label', '$i18n{FEEDBACK_EXPAND_LABEL}');
+        // Remove the 'alert' role to stop screen readers repeatedly
+        // reading each progress update.
+        textHost.setAttribute('role', '');
         buttonSpacer.insertAdjacentElement('afterend', primaryButton);
         break;
       case this.panelTypeDone:

@@ -42,10 +42,6 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowDelegateLinux
   // However, explicit grab is available only for popup (menu) windows.
   virtual void OnLostMouseGrab();
 
-  // Notifies the delegate if the PlatformWindow has changed the workspace it is
-  // located in.
-  virtual void OnWorkspaceChanged();
-
   // Returns a mask to be used to clip the window for the given
   // size. This is used to create the non-rectangular window shape.
   virtual void GetWindowMask(const gfx::Size& size, SkPath* window_mask);

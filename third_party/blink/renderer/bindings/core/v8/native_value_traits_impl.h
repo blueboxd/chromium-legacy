@@ -396,12 +396,13 @@ struct CORE_EXPORT NativeValueTraits<IDLPromise>
 
 // Type-specific overloads
 template <>
-struct CORE_EXPORT NativeValueTraits<IDLDate>
-    : public NativeValueTraitsBase<IDLDate> {
-  static double NativeValue(v8::Isolate* isolate,
-                            v8::Local<v8::Value> value,
-                            ExceptionState& exception_state) {
-    return ToCoreDate(isolate, value, exception_state);
+struct CORE_EXPORT NativeValueTraits<IDLDateOrNull>
+    : public NativeValueTraitsBase<IDLDateOrNull> {
+  static base::Optional<base::Time> NativeValue(
+      v8::Isolate* isolate,
+      v8::Local<v8::Value> value,
+      ExceptionState& exception_state) {
+    return ToCoreNullableDate(isolate, value, exception_state);
   }
 };
 

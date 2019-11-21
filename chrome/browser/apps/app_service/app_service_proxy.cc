@@ -15,7 +15,6 @@
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/app_service_impl.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/cpp/intent_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -279,12 +278,22 @@ void AppServiceProxy::PauseApps(
     constexpr bool kPaused = true;
     UpdatePausedStatus(app_type, data.first, kPaused);
 
-    // TODO(crbug.com/1011235): Add the app running checking. If the app is not
-    // running, don't create the pause dialog, pause the app directly.
-    if (app_type != apps::mojom::AppType::kArc) {
+#if defined(OS_CHROMEOS)
+    std::set<aura::Window*> windows = instance_registry_.GetWindows(data.first);
+    // If the app is not running, calls PauseApp directly.
+    // For Family Link v1, if the app is Web apps, and opened with Chrome in a
+    // tab, calls PauseApp directly, because we will show app pause information
+    // in browser. If the app is an ARC app, or a Web app opened in a window,
+    // start the pause dialog.
+    //
+    // TODO(crbug.com/853604): Removes the Chrome browser checking when Family
+    // Link supports browser tabs.
+    if (windows.empty() || (app_type == apps::mojom::AppType::kWeb &&
+                            !ExtensionApps::ShowPauseAppDialog(data.first))) {
       app_service_->PauseApp(app_type, data.first);
       continue;
     }
+#endif  // OS_CHROMEOS
 
     cache_.ForOneApp(data.first, [this, &data](const apps::AppUpdate& update) {
       this->LoadIconForPauseDialog(update, data.second);

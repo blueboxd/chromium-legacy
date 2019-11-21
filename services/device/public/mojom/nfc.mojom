@@ -84,8 +84,8 @@ struct NDEFPushOptions {
 };
 
 struct NDEFScanOptions {
-  // Defines filtering constraint for NFC messages with specified |url|.
-  string? url;
+  // Defines filtering constraint for NFC messages with specified |id|.
+  string? id;
 
   // Defines record type filtering constraint.
   string? record_type;

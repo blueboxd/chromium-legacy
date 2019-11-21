@@ -1495,14 +1495,14 @@ TEST(V8ScriptValueSerializerTest, RoundTripFileNonNativeSnapshot) {
 // when the checker was constructed, according to WTF::currentTime.
 class TimeIntervalChecker {
  public:
-  TimeIntervalChecker() : start_time_(base::Time::Now().ToDoubleT()) {}
+  TimeIntervalChecker() : start_time_(base::Time::Now()) {}
   bool WasAliveAt(double time_in_milliseconds) {
-    double time = time_in_milliseconds / kMsPerSecond;
-    return start_time_ <= time && time <= base::Time::Now().ToDoubleT();
+    base::Time time = base::Time::FromJsTime(time_in_milliseconds);
+    return start_time_ <= time && time <= base::Time::Now();
   }
 
  private:
-  const double start_time_;
+  const base::Time start_time_;
 };
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV3) {

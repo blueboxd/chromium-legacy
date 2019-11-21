@@ -26,10 +26,6 @@ class CrashesDOMHandler;
 class FlashDOMHandler;
 }
 
-namespace chrome {
-void AttemptRestart();
-}
-
 namespace domain_reliability {
 class DomainReliabilityServiceFactory;
 }
@@ -87,7 +83,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
  private:
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
-  friend void chrome::AttemptRestart();
   friend class ChromeBrowserFieldTrials;
   // For StackSamplingConfiguration.
   friend class ChromeBrowserMainParts;

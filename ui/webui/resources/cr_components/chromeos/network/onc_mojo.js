@@ -437,8 +437,8 @@ class OncMojo {
    * @return {string}
    */
   static getNetworkTypeDisplayName(type) {
-    assert(CrOncStrings);
-    return CrOncStrings['OncType' + OncMojo.getNetworkTypeString(type)];
+    return loadTimeData.getStringF(
+        'OncType' + OncMojo.getNetworkTypeString(type));
   }
 
   /**
@@ -447,10 +447,9 @@ class OncMojo {
    * @return {string}
    */
   static getVpnDisplayName(networkName, providerName) {
-    assert(CrOncStrings);
     if (providerName) {
-      return CrOncStrings.vpnNameTemplate.replace('$1', providerName)
-          .replace('$2', networkName);
+      return loadTimeData.getStringF(
+          'vpnNameTemplate', providerName, networkName);
     }
     return networkName;
   }

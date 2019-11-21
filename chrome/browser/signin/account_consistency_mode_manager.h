@@ -32,8 +32,6 @@ extern const char kAccountConsistencyFeatureMethodMirror[];
 extern const char kAccountConsistencyFeatureMethodDiceMigration[];
 extern const char kAccountConsistencyFeatureMethodDice[];
 
-extern const base::Feature kForceDiceMigration;
-
 // Manages the account consistency mode for each profile.
 class AccountConsistencyModeManager : public KeyedService {
  public:

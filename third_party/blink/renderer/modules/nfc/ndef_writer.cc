@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/nfc/ndef_push_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -103,6 +104,8 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
         WTF::Bind(&NDEFWriter::Abort, WrapPersistent(this), options->target(),
                   WrapPersistent(resolver)));
   }
+
+  UseCounter::Count(execution_context, WebFeature::kWebNfcNdefWriterPush);
 
   auto callback = WTF::Bind(&NDEFWriter::OnRequestCompleted,
                             WrapPersistent(this), WrapPersistent(resolver));

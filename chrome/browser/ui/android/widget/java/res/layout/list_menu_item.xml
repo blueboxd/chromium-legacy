@@ -9,6 +9,8 @@
     android:layout_width="match_parent"
     android:layout_height="?android:attr/listPreferredItemHeightSmall"
     android:textAppearance="@style/TextAppearance.ListMenuItem"
+    android:drawablePadding="@dimen/menu_drawable_padding"
     android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground"
     style="@style/ListMenuItemStyle"
-    app:chromeDrawableTint="@color/default_icon_color_blue" />
+    app:chromeDrawableTint="@color/default_icon_color_secondary" />

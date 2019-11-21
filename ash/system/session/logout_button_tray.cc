@@ -33,11 +33,9 @@
 
 namespace ash {
 
-LogoutButtonTray::LogoutButtonTray(Shelf* shelf) : shelf_(shelf) {
+LogoutButtonTray::LogoutButtonTray(Shelf* shelf) : TrayBackgroundView(shelf) {
   DCHECK(shelf);
   Shell::Get()->session_controller()->AddObserver(this);
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-  container_ = AddChildView(std::make_unique<TrayContainer>(shelf));
 
   auto button = views::MdTextButton::Create(this, base::string16(),
                                             CONTEXT_LAUNCHER_BUTTON);
@@ -46,8 +44,7 @@ LogoutButtonTray::LogoutButtonTray(Shelf* shelf) : shelf_(shelf) {
       AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
           AshColorProvider::BaseLayerType::kRed, kLogoutButtonTrayColor));
 
-  button_ = container_->AddChildView(std::move(button));
-  SetVisible(false);
+  button_ = tray_container()->AddChildView(std::move(button));
 }
 
 LogoutButtonTray::~LogoutButtonTray() {
@@ -60,11 +57,15 @@ void LogoutButtonTray::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kLogoutDialogDurationMs, 20000);
 }
 
-void LogoutButtonTray::UpdateAfterShelfAlignmentChange() {
-  // We must first update the button so that |container_| can lay it out
+void LogoutButtonTray::UpdateAfterShelfChange() {
+  // We must first update the button so that its container can lay it out
   // correctly.
   UpdateButtonTextAndImage();
-  container_->UpdateAfterShelfAlignmentChange();
+  tray_container()->UpdateAfterShelfChange();
+}
+
+void LogoutButtonTray::UpdateBackground() {
+  // The logout button does not have a background.
 }
 
 void LogoutButtonTray::ButtonPressed(views::Button* sender,
@@ -101,11 +102,6 @@ void LogoutButtonTray::OnActiveUserPrefServiceChanged(PrefService* prefs) {
   UpdateLogoutDialogDuration();
 }
 
-void LogoutButtonTray::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  View::GetAccessibleNodeData(node_data);
-  node_data->SetName(button_->GetText());
-}
-
 const char* LogoutButtonTray::GetClassName() const {
   return "LogoutButtonTray";
 }
@@ -122,22 +118,30 @@ void LogoutButtonTray::UpdateLogoutDialogDuration() {
   dialog_duration_ = base::TimeDelta::FromMilliseconds(duration_ms);
 }
 
-void LogoutButtonTray::UpdateAfterLoginStatusChange() {
+void LogoutButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
   UpdateButtonTextAndImage();
 }
 
+void LogoutButtonTray::ClickedOutsideBubble() {}
+
+void LogoutButtonTray::HideBubbleWithView(const TrayBubbleView* bubble_view) {}
+
+base::string16 LogoutButtonTray::GetAccessibleNameForTray() {
+  return button_->GetText();
+}
+
 void LogoutButtonTray::UpdateVisibility() {
-  LoginStatus login_status = shelf_->GetStatusAreaWidget()->login_status();
-  SetVisible(show_logout_button_in_tray_ &&
-             login_status != LoginStatus::NOT_LOGGED_IN &&
-             login_status != LoginStatus::LOCKED);
+  LoginStatus login_status = shelf()->GetStatusAreaWidget()->login_status();
+  SetVisiblePreferred(show_logout_button_in_tray_ &&
+                      login_status != LoginStatus::NOT_LOGGED_IN &&
+                      login_status != LoginStatus::LOCKED);
 }
 
 void LogoutButtonTray::UpdateButtonTextAndImage() {
-  LoginStatus login_status = shelf_->GetStatusAreaWidget()->login_status();
+  LoginStatus login_status = shelf()->GetStatusAreaWidget()->login_status();
   const base::string16 title =
       user::GetLocalizedSignOutStringForStatus(login_status, false);
-  if (shelf_->IsHorizontalAlignment()) {
+  if (shelf()->IsHorizontalAlignment()) {
     button_->SetText(title);
     button_->SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
     button_->SetMinSize(gfx::Size(0, kTrayItemSize));

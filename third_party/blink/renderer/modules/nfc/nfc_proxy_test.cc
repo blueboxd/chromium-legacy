@@ -80,7 +80,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
     // Only match the watches using |url| in options.
     WTF::Vector<uint32_t> ids;
     for (auto& pair : watches_) {
-      if (pair.second->url == tag_message_->url) {
+      if (pair.second->id == tag_message_->url) {
         ids.push_back(pair.first);
       }
     }
@@ -183,7 +183,7 @@ TEST_F(NFCProxyTest, SuccessfulPath) {
   auto& document = GetDocument();
   auto* nfc_proxy = NFCProxy::From(document);
   auto* scan_options = NDEFScanOptions::Create();
-  scan_options->setURL(kTestUrl);
+  scan_options->setId(kTestUrl);
   auto* reader = MakeGarbageCollected<MockNDEFReader>(&document);
 
   {
@@ -236,7 +236,7 @@ TEST_F(NFCProxyTest, ErrorPath) {
   auto& document = GetDocument();
   auto* nfc_proxy = NFCProxy::From(document);
   auto* scan_options = NDEFScanOptions::Create();
-  scan_options->setURL(kTestUrl);
+  scan_options->setId(kTestUrl);
   auto* reader = MakeGarbageCollected<MockNDEFReader>(&document);
 
   // Make the fake NFC service return an error for the incoming watch request.

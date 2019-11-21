@@ -7,12 +7,12 @@ Tests that audits panel passes flags.
 [x] Best practices
 [x] Accessibility
 [x] SEO
-[x] Clear storage
-Run audits: enabled visible
+[ ] Publisher Ads
+Generate report: enabled visible
 
 =============== Lighthouse Results ===============
 emulatedFormFactor: desktop
 disableStorageReset: false
-throttlingMethod: provided
+throttlingMethod: devtools
 TestedAsMobileDevice: false
 

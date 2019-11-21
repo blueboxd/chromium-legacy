@@ -197,7 +197,7 @@ TEST_P(AudioShifterTest, UnderOverFlow) {
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AudioShifterTest,
                          ::testing::Combine(::testing::Range(0, 3),
                                             ::testing::Range(0, 3),

@@ -1680,9 +1680,6 @@ extern const char kAndroidNightModeDescription[];
 
 #else  // !defined(OS_ANDROID)
 
-extern const char kForceDiceMigrationName[];
-extern const char kForceDiceMigrationDescription[];
-
 extern const char kShowSyncPausedReasonCookiesClearedOnExitName[];
 extern const char kShowSyncPausedReasonCookiesClearedOnExitDescription[];
 

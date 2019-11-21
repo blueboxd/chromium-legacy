@@ -467,7 +467,8 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
   std::string GetTestClientDataJSON(std::string type) {
     return AuthenticatorCommon::SerializeCollectedClientDataToJson(
-        std::move(type), GetTestOrigin().Serialize(), GetTestChallengeBytes());
+        std::move(type), GetTestOrigin().Serialize(), GetTestChallengeBytes(),
+        /*is_cross_origin*/ false);
   }
 
   AuthenticatorStatus TryAuthenticationWithAppId(const std::string& origin,

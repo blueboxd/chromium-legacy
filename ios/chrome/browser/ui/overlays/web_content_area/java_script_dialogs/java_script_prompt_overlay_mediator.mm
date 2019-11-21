@@ -23,8 +23,8 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
-    @"JavaScriptPromptTextFieldAccessibiltyIdentifier";
+NSString* const kJavaScriptPromptTextFieldAccessibilityIdentifier =
+    @"JavaScriptPromptTextFieldAccessibilityIdentifier";
 
 @interface JavaScriptPromptOverlayMediator ()
 @property(nonatomic, readonly) OverlayRequest* request;
@@ -80,7 +80,7 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
   return @[ [[TextFieldConfiguration alloc]
                  initWithText:defaultPromptValue
                   placeholder:nil
-      accessibilityIdentifier:kJavaScriptPromptTextFieldAccessibiltyIdentifier
+      accessibilityIdentifier:kJavaScriptPromptTextFieldAccessibilityIdentifier
               secureTextEntry:NO] ];
 }
 

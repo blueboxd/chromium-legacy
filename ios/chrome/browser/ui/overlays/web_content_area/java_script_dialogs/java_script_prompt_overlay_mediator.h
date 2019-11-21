@@ -10,7 +10,7 @@
 class OverlayRequest;
 
 // The accessibility ID for prompt's text field.
-extern NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier;
+extern NSString* const kJavaScriptPromptTextFieldAccessibilityIdentifier;
 
 // Mediator object that uses a JavaScriptPromptOverlayRequestConfig to set
 // up the UI for a JavaScript prompt overlay.

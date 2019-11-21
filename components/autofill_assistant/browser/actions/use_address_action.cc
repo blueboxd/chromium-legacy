@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/actions/required_fields_fallback_handler.h"
@@ -125,55 +126,55 @@ void UseAddressAction::OnFormFilled(std::unique_ptr<FallbackData> fallback_data,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+// This logic is from NameInfo::FullName.
+base::string16 FullName(const autofill::AutofillProfile& profile) {
+  return autofill::data_util::JoinNameParts(
+      profile.GetRawInfo(autofill::NAME_FIRST),
+      profile.GetRawInfo(autofill::NAME_MIDDLE),
+      profile.GetRawInfo(autofill::NAME_LAST));
+}
+
 std::unique_ptr<FallbackData> UseAddressAction::CreateFallbackData(
     const autofill::AutofillProfile& profile) {
-  // TODO(crbug.com/806868): Get the locale from the backend.
-  std::string app_locale = "en-US";
-
   auto fallback_data = std::make_unique<FallbackData>();
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::FIRST_NAME,
-      base::UTF16ToUTF8(profile.GetInfo(autofill::NAME_FIRST, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::NAME_FIRST)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::LAST_NAME,
-      base::UTF16ToUTF8(profile.GetInfo(autofill::NAME_LAST, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::NAME_LAST)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::FULL_NAME,
-      base::UTF16ToUTF8(profile.GetInfo(autofill::NAME_FIRST, app_locale)));
+      base::UTF16ToUTF8(FullName(profile)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::PHONE_NUMBER,
-      base::UTF16ToUTF8(
-          profile.GetInfo(autofill::PHONE_HOME_WHOLE_NUMBER, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::EMAIL,
-      base::UTF16ToUTF8(profile.GetInfo(autofill::EMAIL_ADDRESS, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::EMAIL_ADDRESS)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::ORGANIZATION,
-      base::UTF16ToUTF8(profile.GetInfo(autofill::COMPANY_NAME, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::COMPANY_NAME)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::COUNTRY_CODE,
-      base::UTF16ToUTF8(
-          profile.GetInfo(autofill::ADDRESS_HOME_COUNTRY, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::REGION,
-      base::UTF16ToUTF8(
-          profile.GetInfo(autofill::ADDRESS_HOME_STATE, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_STATE)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::STREET_ADDRESS,
       base::UTF16ToUTF8(
-          profile.GetInfo(autofill::ADDRESS_HOME_STREET_ADDRESS, app_locale)));
+          profile.GetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::LOCALITY,
-      base::UTF16ToUTF8(
-          profile.GetInfo(autofill::ADDRESS_HOME_CITY, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_CITY)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::DEPENDANT_LOCALITY,
-      base::UTF16ToUTF8(profile.GetInfo(
-          autofill::ADDRESS_HOME_DEPENDENT_LOCALITY, app_locale)));
+      base::UTF16ToUTF8(
+          profile.GetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_LOCALITY)));
   fallback_data->field_values.emplace(
       (int)UseAddressProto::RequiredField::POSTAL_CODE,
-      base::UTF16ToUTF8(
-          profile.GetInfo(autofill::ADDRESS_HOME_ZIP, app_locale)));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_ZIP)));
 
   return fallback_data;
 }

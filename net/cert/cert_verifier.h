@@ -89,6 +89,8 @@ class NET_EXPORT CertVerifier {
     // Note that cached information may still be used, if it can be accessed
     // without accessing the network.
     VERIFY_DISABLE_NETWORK_FETCHES = 1 << 0,
+
+    VERIFY_FLAGS_LAST = VERIFY_DISABLE_NETWORK_FETCHES
   };
 
   // Parameters to verify |certificate| against the supplied

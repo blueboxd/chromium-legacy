@@ -26,7 +26,7 @@
   var sourceFrame;
 
   function step1() {
-    var testName = Runtime.queryParam('test');
+    var testName = Root.Runtime.queryParam('test');
     testName = testName.substring(testName.lastIndexOf('/') + 1);
     SourcesTestRunner.showScriptSource(testName, step2);
   }

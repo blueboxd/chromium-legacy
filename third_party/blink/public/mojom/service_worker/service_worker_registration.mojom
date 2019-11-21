@@ -4,35 +4,18 @@
 
 module blink.mojom;
 
-import "third_party/blink/public/mojom/script/script_type.mojom";
 import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
 import "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_database.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_object.mojom";
+import "third_party/blink/public/mojom/service_worker/service_worker_registration_options.mojom";
 import "url/mojom/url.mojom";
-
-const int64 kInvalidServiceWorkerRegistrationId = -1;
-
-// Represents ServiceWorkerUpdateViaCache enum for ServiceWorkerRegistrationOptions:
-// https://w3c.github.io/ServiceWorker/#enumdef-serviceworkerupdateviacache
-enum ServiceWorkerUpdateViaCache {
-  kImports,
-  kAll,
-  kNone,
-};
 
 struct ChangedServiceWorkerObjectsMask {
   bool installing;
   bool waiting;
   bool active;
-};
-
-// Represents options for register():
-// https://w3c.github.io/ServiceWorker/#dictdef-registrationoptions
-struct ServiceWorkerRegistrationOptions {
-  url.mojom.Url scope;
-  ScriptType type = kClassic;
-  ServiceWorkerUpdateViaCache update_via_cache = kImports;
 };
 
 // Describes a ServiceWorkerRegistration:

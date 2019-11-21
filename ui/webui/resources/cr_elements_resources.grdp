@@ -223,14 +223,6 @@
                file="cr_elements/chromeos/cr_picture/icons.html"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_ONC_STRINGS_HTML"
-               file="cr_elements/chromeos/network/cr_onc_strings.html"
-               type="chrome_html"
-               compress="gzip" />
-    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_ONC_STRINGS_JS"
-               file="cr_elements/chromeos/network/cr_onc_strings.js"
-               type="chrome_html"
-               compress="gzip" />
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_LOTTIE_HTML"
                file="cr_elements/chromeos/cr_lottie/cr_lottie.html"
                type="chrome_html"

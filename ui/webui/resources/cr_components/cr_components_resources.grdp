@@ -500,7 +500,7 @@
                file="cr_components/chromeos/network/network_select.js"
                type="chrome_html"
                compress="gzip" />
-    <structure name="IDR_CR_ELEMENTS_CHROMEOS_NETWORK_ICONS_HTML"
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_NETWORK_ICONS_HTML"
                file="cr_components/chromeos/network/network_icons.html"
                type="chrome_html"
                preprocess="true"

@@ -77,9 +77,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
-  std::string GetWorkspace() const override;
-  void SetVisibleOnAllWorkspaces(bool always_visible) override;
-  bool IsVisibleOnAllWorkspaces() const override;
   void SetOpacity(float opacity) override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   void InitModalType(ui::ModalType modal_type) override;
@@ -112,7 +109,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void DestroyNonClientEventFilter();
 
   // PlatformWindowDelegateLinux overrides:
-  void OnWorkspaceChanged() override;
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void OnLostMouseGrab() override;
 

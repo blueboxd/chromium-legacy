@@ -245,12 +245,12 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
 // static
 WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     MediaStreamVideoSource* source,
-    const MediaStreamVideoSource::ConstraintsCallback& callback,
+    MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
   WebMediaStreamTrack track;
   track.Initialize(source->Owner());
-  track.SetPlatformTrack(
-      std::make_unique<MediaStreamVideoTrack>(source, callback, enabled));
+  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+      source, std::move(callback), enabled));
   return track;
 }
 
@@ -258,12 +258,12 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
 WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     const WebString& id,
     MediaStreamVideoSource* source,
-    const MediaStreamVideoSource::ConstraintsCallback& callback,
+    MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
   WebMediaStreamTrack track;
   track.Initialize(id, source->Owner());
-  track.SetPlatformTrack(
-      std::make_unique<MediaStreamVideoTrack>(source, callback, enabled));
+  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+      source, std::move(callback), enabled));
   return track;
 }
 
@@ -274,13 +274,13 @@ WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     const base::Optional<bool>& noise_reduction,
     bool is_screencast,
     const base::Optional<double>& min_frame_rate,
-    const MediaStreamVideoSource::ConstraintsCallback& callback,
+    MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled) {
   WebMediaStreamTrack track;
   track.Initialize(source->Owner());
   track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       source, adapter_settings, noise_reduction, is_screencast, min_frame_rate,
-      callback, enabled));
+      std::move(callback), enabled));
   return track;
 }
 
@@ -296,7 +296,7 @@ MediaStreamVideoTrack* MediaStreamVideoTrack::GetVideoTrack(
 
 MediaStreamVideoTrack::MediaStreamVideoTrack(
     MediaStreamVideoSource* source,
-    const MediaStreamVideoSource::ConstraintsCallback& callback,
+    MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled)
     : WebPlatformMediaStreamTrack(true),
       adapter_settings_(std::make_unique<VideoTrackAdapterSettings>(
@@ -316,7 +316,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
                    media::BindToCurrentLoop(WTF::BindRepeating(
                        &MediaStreamVideoTrack::set_computed_source_format,
                        weak_factory_.GetWeakPtr())),
-                   callback);
+                   std::move(callback));
 }
 
 MediaStreamVideoTrack::MediaStreamVideoTrack(
@@ -325,7 +325,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
     const base::Optional<bool>& noise_reduction,
     bool is_screen_cast,
     const base::Optional<double>& min_frame_rate,
-    const MediaStreamVideoSource::ConstraintsCallback& callback,
+    MediaStreamVideoSource::ConstraintsOnceCallback callback,
     bool enabled)
     : WebPlatformMediaStreamTrack(true),
       adapter_settings_(
@@ -347,7 +347,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
                    media::BindToCurrentLoop(WTF::BindRepeating(
                        &MediaStreamVideoTrack::set_computed_source_format,
                        weak_factory_.GetWeakPtr())),
-                   callback);
+                   std::move(callback));
 }
 
 MediaStreamVideoTrack::~MediaStreamVideoTrack() {

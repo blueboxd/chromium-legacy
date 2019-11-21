@@ -98,11 +98,6 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
 AutocompleteResult::AutocompleteResult() {
   // Reserve space for the max number of matches we'll show.
   matches_.reserve(GetMaxMatches());
-
-  // It's probably safe to do this in the initializer list, but there's little
-  // penalty to doing it here and it ensures our object is fully constructed
-  // before calling member functions.
-  default_match_ = end();
 }
 
 AutocompleteResult::~AutocompleteResult() {}
@@ -190,7 +185,6 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
       matches_.back().swap_contents_and_description = emphasize;
     }
   }
-  default_match_ = end();
 }
 
 void AutocompleteResult::SortAndCull(
@@ -240,9 +234,9 @@ void AutocompleteResult::SortAndCull(
       top_match = FindTopMatch(input, &matches_);
 
     RotateMatchToFront(top_match, &matches_);
-  }
 
-  DiscourageTopMatchFromBeingSearchEntity(&matches_);
+    DiscourageTopMatchFromBeingSearchEntity(&matches_);
+  }
 
   size_t max_url_count = 0;
   if (OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() &&
@@ -267,35 +261,21 @@ void AutocompleteResult::SortAndCull(
     GroupSuggestionsBySearchVsURL(next, matches_.end());
   }
 
-  // Early exit when there is no default match. This can occur in these cases:
-  //  1. There are no matches.
-  //  2. The first match doesn't have |allowed_to_be_default_match| as true.
-  //     This implies that NONE of the matches were allowed to be the default.
-  if (matches_.empty() || !matches_.begin()->allowed_to_be_default_match) {
-    default_match_ = end();
-    return;
-  }
-
-  // Since we didn't early exit, the first match must be the default match.
-  // TODO(tommycli): We can delete |default_match_|, since if matches.begin()
-  // has a true |allowed_to_be_default_match|, it will always be the default
-  // match.
-  default_match_ = matches_.begin();
-
-  // Almost all matches are "navigable": they have a valid |destination_url|.
-  // One example exception is the user tabbing into keyword search mode,
-  // but not having typed a query yet. In that case, the default match should
-  // rightfully be non-navigable, and pressing Enter should do nothing.
-  if (default_match_->destination_url.is_valid()) {
+  // If we have a default match, run some sanity checks. Skip these checks if
+  // the default match has no |destination_url|. An example of this is the
+  // default match after the user has tabbed into keyword search mode, but has
+  // not typed a query yet.
+  auto* default_match = this->default_match();
+  if (default_match && default_match->destination_url.is_valid()) {
     const base::string16 debug_info =
-        base::ASCIIToUTF16("fill_into_edit=") + default_match_->fill_into_edit +
+        base::ASCIIToUTF16("fill_into_edit=") + default_match->fill_into_edit +
         base::ASCIIToUTF16(", provider=") +
-        ((default_match_->provider != nullptr)
-             ? base::ASCIIToUTF16(default_match_->provider->GetName())
+        ((default_match->provider != nullptr)
+             ? base::ASCIIToUTF16(default_match->provider->GetName())
              : base::string16()) +
         base::ASCIIToUTF16(", input=") + input.text();
 
-    if (AutocompleteMatch::IsSearchType(default_match_->type)) {
+    if (AutocompleteMatch::IsSearchType(default_match->type)) {
       // We shouldn't get query matches for URL inputs.
       DCHECK_NE(metrics::OmniboxInputType::URL, input.type()) << debug_info;
     } else {
@@ -305,7 +285,7 @@ void AutocompleteResult::SortAndCull(
           input.parts().scheme.is_nonempty()) {
         const std::string& in_scheme = base::UTF16ToUTF8(input.scheme());
         const std::string& dest_scheme =
-            default_match_->destination_url.scheme();
+            default_match->destination_url.scheme();
         DCHECK(url_formatter::IsEquivalentScheme(in_scheme, dest_scheme))
             << debug_info;
       }
@@ -465,7 +445,6 @@ AutocompleteResult::iterator AutocompleteResult::end() {
   return matches_.end();
 }
 
-// Returns the match at the given index.
 const AutocompleteMatch& AutocompleteResult::match_at(size_t index) const {
   DCHECK_LT(index, matches_.size());
   return matches_[index];
@@ -474,6 +453,13 @@ const AutocompleteMatch& AutocompleteResult::match_at(size_t index) const {
 AutocompleteMatch* AutocompleteResult::match_at(size_t index) {
   DCHECK_LT(index, matches_.size());
   return &matches_[index];
+}
+
+const AutocompleteMatch* AutocompleteResult::default_match() const {
+  if (begin() != end() && begin()->allowed_to_be_default_match)
+    return &(*begin());
+
+  return nullptr;
 }
 
 bool AutocompleteResult::TopMatchIsStandaloneVerbatimMatch() const {
@@ -594,28 +580,17 @@ size_t AutocompleteResult::CalculateNumMatches(
 
 void AutocompleteResult::Reset() {
   matches_.clear();
-  default_match_ = end();
 }
 
 void AutocompleteResult::Swap(AutocompleteResult* other) {
-  const size_t default_match_offset = default_match_ - begin();
-  const size_t other_default_match_offset =
-      other->default_match_ - other->begin();
   matches_.swap(other->matches_);
-  default_match_ = begin() + other_default_match_offset;
-  other->default_match_ = other->begin() + default_match_offset;
 }
 
-void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
-  if (this == &rhs)
+void AutocompleteResult::CopyFrom(const AutocompleteResult& other) {
+  if (this == &other)
     return;
 
-  matches_ = rhs.matches_;
-  // Careful!  You can't just copy iterators from another container, you have to
-  // reconstruct them.
-  default_match_ = (rhs.default_match_ == rhs.end())
-                       ? end()
-                       : (begin() + (rhs.default_match_ - rhs.begin()));
+  matches_ = other.matches_;
 }
 
 #if DCHECK_IS_ON()

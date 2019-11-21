@@ -356,6 +356,8 @@ bool ContentsView::IsShowingSearchResults() const {
 }
 
 void ContentsView::ShowEmbeddedAssistantUI(bool show) {
+  expand_arrow_view_->SetVisible(!show);
+
   const int assistant_page =
       GetPageIndexForState(ash::AppListState::kStateEmbeddedAssistant);
   DCHECK_GE(assistant_page, 0);

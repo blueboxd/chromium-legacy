@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/platform_apps/api/music_manager_private/device_id.h"
 
+#include "base/callback.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 
 namespace chrome_apps {

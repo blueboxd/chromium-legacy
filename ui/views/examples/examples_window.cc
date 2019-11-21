@@ -19,6 +19,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/examples/ax_example.h"
 #include "ui/views/examples/box_layout_example.h"
 #include "ui/views/examples/bubble_example.h"
 #include "ui/views/examples/button_example.h"
@@ -61,6 +62,7 @@ namespace {
 // Creates the default set of examples.
 ExampleVector CreateExamples() {
   ExampleVector examples;
+  examples.push_back(std::make_unique<AxExample>());
   examples.push_back(std::make_unique<BoxLayoutExample>());
   examples.push_back(std::make_unique<BubbleExample>());
   examples.push_back(std::make_unique<ButtonExample>());

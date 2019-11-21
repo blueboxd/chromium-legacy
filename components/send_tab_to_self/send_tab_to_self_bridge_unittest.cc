@@ -675,8 +675,9 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&older_device);
 
   TargetDeviceInfo target_device_info(
-      recent_device.client_name(), recent_device.guid(),
-      recent_device.device_type(), recent_device.last_updated_timestamp());
+      recent_device.client_name(), recent_device.client_name(),
+      recent_device.guid(), recent_device.device_type(),
+      recent_device.last_updated_timestamp());
 
   EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
               ElementsAre(target_device_info));
@@ -707,8 +708,9 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&disabled_device);
 
   TargetDeviceInfo target_device_info(
-      enabled_device.client_name(), enabled_device.guid(),
-      enabled_device.device_type(), enabled_device.last_updated_timestamp());
+      enabled_device.client_name(), enabled_device.client_name(),
+      enabled_device.guid(), enabled_device.device_type(),
+      enabled_device.last_updated_timestamp());
 
   EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
               ElementsAre(target_device_info));
@@ -738,8 +740,9 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&valid_device);
 
   TargetDeviceInfo target_device_info(
-      valid_device.client_name(), valid_device.guid(),
-      valid_device.device_type(), valid_device.last_updated_timestamp());
+      valid_device.client_name(), valid_device.client_name(),
+      valid_device.guid(), valid_device.device_type(),
+      valid_device.last_updated_timestamp());
 
   EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
               ElementsAre(target_device_info));
@@ -778,8 +781,9 @@ TEST_F(SendTabToSelfBridgeTest, GetTargetDeviceInfoSortedList_NoLocalDevice) {
   AddTestDevice(&other_device);
 
   TargetDeviceInfo target_device_info(
-      other_device.client_name(), other_device.guid(),
-      other_device.device_type(), other_device.last_updated_timestamp());
+      other_device.client_name(), other_device.client_name(),
+      other_device.guid(), other_device.device_type(),
+      other_device.last_updated_timestamp());
 
   EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
               ElementsAre(target_device_info));
@@ -810,11 +814,13 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&recent_device);
 
   TargetDeviceInfo older_device_info(
-      older_device.client_name(), older_device.guid(),
-      older_device.device_type(), older_device.last_updated_timestamp());
+      older_device.client_name(), older_device.client_name(),
+      older_device.guid(), older_device.device_type(),
+      older_device.last_updated_timestamp());
   TargetDeviceInfo recent_device_info(
-      recent_device.client_name(), recent_device.guid(),
-      recent_device.device_type(), recent_device.last_updated_timestamp());
+      recent_device.client_name(), recent_device.client_name(),
+      recent_device.guid(), recent_device.device_type(),
+      recent_device.last_updated_timestamp());
 
   // Set the map by calling it. Make sure it has the 2 devices.
   EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
@@ -843,8 +849,8 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&device);
 
   // Set the map by calling it. Make sure it has the device.
-  TargetDeviceInfo device_info(device.client_name(), device.guid(),
-                               device.device_type(),
+  TargetDeviceInfo device_info(device.client_name(), device.client_name(),
+                               device.guid(), device.device_type(),
                                device.last_updated_timestamp());
 
   EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
@@ -860,9 +866,9 @@ TEST_F(SendTabToSelfBridgeTest,
   AddTestDevice(&new_device);
 
   // Make sure both devices are in the map.
-  TargetDeviceInfo new_device_info(new_device.client_name(), new_device.guid(),
-                                   new_device.device_type(),
-                                   new_device.last_updated_timestamp());
+  TargetDeviceInfo new_device_info(
+      new_device.client_name(), new_device.client_name(), new_device.guid(),
+      new_device.device_type(), new_device.last_updated_timestamp());
 
   EXPECT_THAT(bridge()->GetTargetDeviceInfoSortedList(),
               ElementsAre(device_info, new_device_info));

@@ -77,9 +77,8 @@ bool CloudPolicyManager::IsInitializationComplete(PolicyDomain domain) const {
 void CloudPolicyManager::RefreshPolicies() {
   if (service()) {
     waiting_for_policy_refresh_ = true;
-    service()->RefreshPolicy(
-        base::Bind(&CloudPolicyManager::OnRefreshComplete,
-                   base::Unretained(this)));
+    service()->RefreshPolicy(base::BindOnce(
+        &CloudPolicyManager::OnRefreshComplete, base::Unretained(this)));
   } else {
     OnRefreshComplete(false);
   }

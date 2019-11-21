@@ -32,10 +32,6 @@ class TabLifecycleUnitExternal {
   // Returns the WebContents associated with this tab.
   virtual content::WebContents* GetWebContents() const = 0;
 
-  // Whether the tab is playing audio, has played audio recently, is accessing
-  // the microphone, is accessing the camera or is being mirrored.
-  virtual bool IsMediaTab() const = 0;
-
   // Returns true if this tab can be automatically discarded.
   virtual bool IsAutoDiscardable() const = 0;
 

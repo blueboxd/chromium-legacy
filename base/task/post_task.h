@@ -242,6 +242,9 @@ BASE_EXPORT scoped_refptr<SingleThreadTaskRunner> CreateCOMSTATaskRunner(
 // Returns: The SequencedTaskRunner for the currently executing task, if any.
 // Otherwise it returns a null scoped_refptr. On threads where there's no
 // TaskExecutor registered this will DCHECK e.g. in a one-off ThreadPool task.
+//
+// Experimental: Further discussions are in progress for this API. Please
+// continue using SequencedTaskRunnerHandle::Get() in the mean time.
 BASE_EXPORT const scoped_refptr<SequencedTaskRunner>&
 GetContinuationTaskRunner();
 

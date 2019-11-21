@@ -131,7 +131,7 @@ struct PrintTestName {
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CheckOCSPTest,
                          ::testing::ValuesIn(kTestParams),
                          PrintTestName());
@@ -189,7 +189,7 @@ base::StringPiece kGetURLTestParams[] = {
 class CreateOCSPGetURLTest
     : public ::testing::TestWithParam<base::StringPiece> {};
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CreateOCSPGetURLTest,
                          ::testing::ValuesIn(kGetURLTestParams));
 

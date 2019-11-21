@@ -2471,6 +2471,8 @@ enum WebFeature {
   kARIADescriptionAttribute = 3089,
   kStrictMimeTypeChecksWouldBlockWorker = 3090,
   kResourceTimingTaintedOriginFlagFail = 3091,
+  kRegisterProtocolHandlerSameOriginAsTop = 3092,
+  kRegisterProtocolHandlerCrossOriginSubframe = 3093,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

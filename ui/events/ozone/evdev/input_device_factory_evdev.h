@@ -26,7 +26,7 @@
 #include "ui/ozone/public/input_controller.h"
 
 #if defined(USE_EVDEV_GESTURES)
-#include "ui/events/ozone/chromeos/gesture_properties_service.h"
+#include "ui/events/ozone/evdev/libgestures_glue/gesture_properties_service.h"
 #endif
 
 namespace ui {
@@ -35,7 +35,7 @@ class CursorDelegateEvdev;
 class DeviceEventDispatcherEvdev;
 
 #if !defined(USE_EVDEV)
-#error Missing dependency on ui/events/ozone:events_ozone_evdev
+#error Missing dependency on ui/events/ozone/evdev
 #endif
 
 #if defined(USE_EVDEV_GESTURES)

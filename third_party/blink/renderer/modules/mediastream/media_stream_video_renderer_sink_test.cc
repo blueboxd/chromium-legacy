@@ -40,7 +40,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
                              false /* remote */);
     blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
     blink_track_ = MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_, WebPlatformMediaStreamSource::ConstraintsCallback(),
+        mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
         true);
     mock_source_->StartMockedSource();
     base::RunLoop().RunUntilIdle();

@@ -121,7 +121,7 @@ em {
 }
 
 #cookie-controls-toggle,
-#cookie-controls-tooltip-icon-wrapper {
+#cookie-controls-tooltip-icon {
   flex: none;
 }
 
@@ -129,14 +129,12 @@ em {
   width: 34px;
 }
 
-#cookie-controls-tooltip-icon-wrapper {
-  /* calc(var(--cr-icon-size) + var(--cr-controlled-by-spacing)) */
-  /* Using actual numbers because the above definitions are lazy-loaded. */
-  width: 44px;
+#cookie-controls-tooltip-icon {
+  margin-inline-end: 24px; /* var(--cr-controlled-by-spacing) */
 }
 
-#cookie-controls-tooltip-icon-wrapper > a {
-  color: inherit;
+#cookie-controls-tooltip-icon:not(:defined) {
+  width: 20px; /* var(--cr-icon-size) */
 }
 
 /** Layout ------------------------------------------------------------------ */

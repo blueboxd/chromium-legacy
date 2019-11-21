@@ -165,6 +165,59 @@ arc::mojom::IntentInfoPtr CreateArcViewIntent(apps::mojom::IntentPtr intent) {
   return arc_intent;
 }
 
+apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
+    const arc::IntentFilter& arc_intent_filter) {
+  auto intent_filter = apps::mojom::IntentFilter::New();
+
+  std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
+  for (auto& scheme : arc_intent_filter.schemes()) {
+    scheme_condition_values.push_back(apps_util::MakeConditionValue(
+        scheme, apps::mojom::PatternMatchType::kNone));
+  }
+  if (!scheme_condition_values.empty()) {
+    auto scheme_condition =
+        apps_util::MakeCondition(apps::mojom::ConditionType::kScheme,
+                                 std::move(scheme_condition_values));
+    intent_filter->conditions.push_back(std::move(scheme_condition));
+  }
+
+  std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
+  for (auto& authority : arc_intent_filter.authorities()) {
+    host_condition_values.push_back(apps_util::MakeConditionValue(
+        authority.host(), apps::mojom::PatternMatchType::kNone));
+  }
+  if (!host_condition_values.empty()) {
+    auto host_condition = apps_util::MakeCondition(
+        apps::mojom::ConditionType::kHost, std::move(host_condition_values));
+    intent_filter->conditions.push_back(std::move(host_condition));
+  }
+
+  std::vector<apps::mojom::ConditionValuePtr> path_condition_values;
+  for (auto& path : arc_intent_filter.paths()) {
+    apps::mojom::PatternMatchType match_type;
+    switch (path.match_type()) {
+      case arc::mojom::PatternType::PATTERN_LITERAL:
+        match_type = apps::mojom::PatternMatchType::kLiteral;
+        break;
+      case arc::mojom::PatternType::PATTERN_PREFIX:
+        match_type = apps::mojom::PatternMatchType::kPrefix;
+        break;
+      case arc::mojom::PatternType::PATTERN_SIMPLE_GLOB:
+        match_type = apps::mojom::PatternMatchType::kGlob;
+        break;
+    }
+    path_condition_values.push_back(
+        apps_util::MakeConditionValue(path.pattern(), match_type));
+  }
+  if (!path_condition_values.empty()) {
+    auto path_condition = apps_util::MakeCondition(
+        apps::mojom::ConditionType::kPattern, std::move(path_condition_values));
+    intent_filter->conditions.push_back(std::move(path_condition));
+  }
+
+  return intent_filter;
+}
+
 }  // namespace
 
 namespace apps {
@@ -655,6 +708,46 @@ void ArcApps::OnIntentFiltersUpdated(
   }
 }
 
+void ArcApps::OnPreferredAppsChanged() {
+  mojo::Remote<apps::mojom::AppService>& app_service =
+      apps::AppServiceProxyFactory::GetForProfile(profile_)->AppService();
+  if (!app_service.is_bound()) {
+    return;
+  }
+
+  auto* intent_helper_bridge =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
+  if (!intent_helper_bridge) {
+    return;
+  }
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+
+  const std::vector<arc::IntentFilter>& added_preferred_apps =
+      intent_helper_bridge->GetAddedPreferredApps();
+
+  for (auto& added_preferred_app : added_preferred_apps) {
+    constexpr bool kFromPublisher = true;
+    // TODO(crbug.com/853604): Currently only handles one App ID per package.
+    // If need to handle multiple activities per package, will need to
+    // update ARC to send through the corresponding activity and ensure this
+    // activity matches with the main_activity that stored in app_service.
+    // Will add an activity field in the arc::mojom::intent_filter.
+    // Also need to make sure this still work with the Chrome set preference
+    // because the intent filter uplifted for each package doesn't contain
+    // activity info.
+    std::string app_id =
+        prefs->GetAppIdByPackageName(added_preferred_app.package_name());
+    app_service->AddPreferredApp(apps::mojom::AppType::kArc, app_id,
+                                 ConvertArcIntentFilter(added_preferred_app),
+                                 /*intent=*/nullptr, kFromPublisher);
+  }
+  // TODO(crbug.com/853604): Handle when preference deleted.
+}
+
 void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                                 int32_t size_hint_in_dip,
                                 IconEffects icon_effects,
@@ -809,56 +902,7 @@ void ArcApps::UpdateAppIntentFilters(
   const std::vector<arc::IntentFilter>& arc_intent_filters =
       intent_helper_bridge->GetIntentFilterForPackage(package_name);
   for (auto& arc_intent_filter : arc_intent_filters) {
-    auto intent_filter = apps::mojom::IntentFilter::New();
-
-    std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
-    for (auto& scheme : arc_intent_filter.schemes()) {
-      scheme_condition_values.push_back(apps_util::MakeConditionValue(
-          scheme, apps::mojom::PatternMatchType::kNone));
-    }
-    if (!scheme_condition_values.empty()) {
-      auto scheme_condition =
-          apps_util::MakeCondition(apps::mojom::ConditionType::kScheme,
-                                   std::move(scheme_condition_values));
-      intent_filter->conditions.push_back(std::move(scheme_condition));
-    }
-
-    std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
-    for (auto& authority : arc_intent_filter.authorities()) {
-      host_condition_values.push_back(apps_util::MakeConditionValue(
-          authority.host(), apps::mojom::PatternMatchType::kNone));
-    }
-    if (!host_condition_values.empty()) {
-      auto host_condition = apps_util::MakeCondition(
-          apps::mojom::ConditionType::kHost, std::move(host_condition_values));
-      intent_filter->conditions.push_back(std::move(host_condition));
-    }
-
-    std::vector<apps::mojom::ConditionValuePtr> path_condition_values;
-    for (auto& path : arc_intent_filter.paths()) {
-      apps::mojom::PatternMatchType match_type;
-      switch (path.match_type()) {
-        case arc::mojom::PatternType::PATTERN_LITERAL:
-          match_type = apps::mojom::PatternMatchType::kLiteral;
-          break;
-        case arc::mojom::PatternType::PATTERN_PREFIX:
-          match_type = apps::mojom::PatternMatchType::kPrefix;
-          break;
-        case arc::mojom::PatternType::PATTERN_SIMPLE_GLOB:
-          match_type = apps::mojom::PatternMatchType::kGlob;
-          break;
-      }
-      path_condition_values.push_back(
-          apps_util::MakeConditionValue(path.pattern(), match_type));
-    }
-    if (!path_condition_values.empty()) {
-      auto path_condition =
-          apps_util::MakeCondition(apps::mojom::ConditionType::kPattern,
-                                   std::move(path_condition_values));
-      intent_filter->conditions.push_back(std::move(path_condition));
-    }
-
-    intent_filters->push_back(std::move(intent_filter));
+    intent_filters->push_back(ConvertArcIntentFilter(arc_intent_filter));
   }
 }
 

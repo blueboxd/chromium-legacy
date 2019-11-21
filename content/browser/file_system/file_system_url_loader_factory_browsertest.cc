@@ -479,7 +479,7 @@ class FileSystemURLLoaderFactoryTest
   DISALLOW_COPY_AND_ASSIGN(FileSystemURLLoaderFactoryTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FileSystemURLLoaderFactoryTest,
                          testing::Values(TestMode::kRegular,
                                          TestMode::kIncognito));

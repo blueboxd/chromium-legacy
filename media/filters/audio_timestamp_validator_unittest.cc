@@ -251,7 +251,7 @@ TEST_P(AudioTimestampValidatorTest, RepeatedWarnForSlowAccumulatingDrift) {
 // discard values. These simulate configurations for different containers/codecs
 // which present different challenges when building timestamp expectations.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AudioTimestampValidatorTest,
     ::testing::Combine(
         ::testing::Values(0, 10),             // output delay

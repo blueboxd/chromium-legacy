@@ -61,7 +61,7 @@ TEST_P(IMM32ManagerTest, ConvertInputModeToImmFlags) {
   EXPECT_EQ(test_case.expected_conversion_mode, conversion_mode);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          IMM32ManagerTest,
                          ::testing::ValuesIn(kInputModeTestCases));
 

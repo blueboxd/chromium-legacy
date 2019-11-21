@@ -300,7 +300,7 @@ class WebSocketHandshakeStreamCreateHelperTest
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebSocketHandshakeStreamCreateHelperTest,
                          Values(BASIC_HANDSHAKE_STREAM,
                                 HTTP2_HANDSHAKE_STREAM));

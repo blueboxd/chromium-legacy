@@ -71,7 +71,7 @@ class DataSaverHoldbackBrowserTest : public InProcessBrowserTest,
 };
 
 // The data saver holdback is enabled only if the first param is true.
-INSTANTIATE_TEST_SUITE_P(, DataSaverHoldbackBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, DataSaverHoldbackBrowserTest, testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(DataSaverHoldbackBrowserTest,
                        DataSaverEnabledWithHoldbackEnabled) {

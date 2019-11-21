@@ -55,8 +55,8 @@ void WebSandboxSupportLinux::GetFallbackFontForCharacter(
   fallback_font->name =
       blink::WebString::FromUTF8(family_name.c_str(), family_name.length());
   fallback_font->fontconfig_interface_id = font_identity->id;
-  fallback_font->filename.Assign(font_identity->str_representation.c_str(),
-                                 font_identity->str_representation.length());
+  fallback_font->filename.Assign(font_identity->filepath.value().c_str(),
+                                 font_identity->filepath.value().length());
   fallback_font->ttc_index = font_identity->ttc_index;
   fallback_font->is_bold = is_bold;
   fallback_font->is_italic = is_italic;
@@ -82,8 +82,8 @@ void WebSandboxSupportLinux::MatchFontByPostscriptNameOrFullFontName(
   }
 
   fallback_font->fontconfig_interface_id = font_identity->id;
-  fallback_font->filename.Assign(font_identity->str_representation.c_str(),
-                                 font_identity->str_representation.length());
+  fallback_font->filename.Assign(font_identity->filepath.value().c_str(),
+                                 font_identity->filepath.value().length());
   fallback_font->ttc_index = font_identity->ttc_index;
 }
 
@@ -96,8 +96,6 @@ void WebSandboxSupportLinux::GetWebFontRenderStyleForStrike(
     blink::WebFontRenderStyle* out) {
   TRACE_EVENT0("fonts",
                "WebSandboxSupportLinux::GetWebFontRenderStyleForStrike");
-
-  font_service::mojom::FontIdentityPtr font_identity;
 
   *out = blink::WebFontRenderStyle();
 

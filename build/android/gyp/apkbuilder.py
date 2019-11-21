@@ -108,14 +108,9 @@ def _ParseArgs(args):
   options.secondary_native_lib_placeholders = build_utils.ParseGnList(
       options.secondary_native_lib_placeholders)
   options.java_resources = build_utils.ParseGnList(options.java_resources)
-  all_libs = []
-  for gyp_list in options.native_libs:
-    all_libs.extend(build_utils.ParseGnList(gyp_list))
-  options.native_libs = all_libs
-  secondary_libs = []
-  for gyp_list in options.secondary_native_libs:
-    secondary_libs.extend(build_utils.ParseGnList(gyp_list))
-  options.secondary_native_libs = secondary_libs
+  options.native_libs = build_utils.ParseGnList(options.native_libs)
+  options.secondary_native_libs = build_utils.ParseGnList(
+      options.secondary_native_libs)
 
   # --apksigner-path, --zipalign-path, --key-xxx arguments are
   # required when building an APK, but not a bundle module.

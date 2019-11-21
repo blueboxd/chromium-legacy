@@ -1025,8 +1025,10 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
     return;
   }
   Node* inserted_node = change.sibling_changed;
-  if (inserted_node->IsContainerNode() || inserted_node->IsTextNode())
+  if (inserted_node->IsContainerNode() || inserted_node->IsTextNode()) {
+    inserted_node->ClearFlatTreeNodeDataIfHostChanged(*this);
     inserted_node->SetStyleChangeOnInsertion();
+  }
 }
 
 void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {

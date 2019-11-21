@@ -58,27 +58,17 @@ GLenum ToGLImageLayout(VkImageLayout layout) {
 
 }  // namespace
 
-ExternalVkImageGlRepresentation::ExternalVkImageGlRepresentation(
-    SharedImageManager* manager,
+ExternalVkImageGLRepresentationShared::ExternalVkImageGLRepresentationShared(
     SharedImageBacking* backing,
-    MemoryTypeTracker* tracker,
-    gles2::Texture* texture,
     GLuint texture_service_id)
-    : SharedImageRepresentationGLTexture(manager, backing, tracker),
-      texture_(texture),
+    : backing_(static_cast<ExternalVkImageBacking*>(backing)),
       texture_service_id_(texture_service_id) {}
 
-ExternalVkImageGlRepresentation::~ExternalVkImageGlRepresentation() {}
-
-gles2::Texture* ExternalVkImageGlRepresentation::GetTexture() {
-  return texture_;
-}
-
-bool ExternalVkImageGlRepresentation::BeginAccess(GLenum mode) {
+bool ExternalVkImageGLRepresentationShared::BeginAccess(GLenum mode) {
   // There should not be multiple accesses in progress on the same
   // representation.
   if (current_access_mode_) {
-    LOG(ERROR) << "BeginAccess called on ExternalVkImageGlRepresentation before"
+    LOG(ERROR) << "BeginAccess called on ExternalVkImageGLRepresentation before"
                << " the previous access ended.";
     return false;
   }
@@ -87,7 +77,7 @@ bool ExternalVkImageGlRepresentation::BeginAccess(GLenum mode) {
          mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   const bool readonly = (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 
-  if (!readonly && backing()->format() == viz::ResourceFormat::BGRA_8888) {
+  if (!readonly && backing_impl()->format() == viz::ResourceFormat::BGRA_8888) {
     NOTIMPLEMENTED()
         << "BeginAccess write on a BGRA_8888 backing is not supported.";
     return false;
@@ -114,11 +104,11 @@ bool ExternalVkImageGlRepresentation::BeginAccess(GLenum mode) {
   return true;
 }
 
-void ExternalVkImageGlRepresentation::EndAccess() {
+void ExternalVkImageGLRepresentationShared::EndAccess() {
   if (!current_access_mode_) {
     // TODO(crbug.com/933452): We should be able to handle this failure more
     // gracefully rather than shutting down the whole process.
-    LOG(ERROR) << "EndAccess called on ExternalVkImageGlRepresentation before "
+    LOG(ERROR) << "EndAccess called on ExternalVkImageGLRepresentation before "
                << "BeginAccess";
     return;
   }
@@ -140,7 +130,7 @@ void ExternalVkImageGlRepresentation::EndAccess() {
       // TODO(crbug.com/933452): We should be able to handle this failure more
       // gracefully rather than shutting down the whole process.
       LOG(FATAL) << "Unable to create a VkSemaphore in "
-                 << "ExternalVkImageGlRepresentation for synchronization with "
+                 << "ExternalVkImageGLRepresentation for synchronization with "
                  << "Vulkan";
       return;
     }
@@ -150,7 +140,7 @@ void ExternalVkImageGlRepresentation::EndAccess() {
     vkDestroySemaphore(backing_impl()->device(), semaphore, nullptr);
     if (!semaphore_handle.is_valid()) {
       LOG(FATAL) << "Unable to export VkSemaphore into GL in "
-                 << "ExternalVkImageGlRepresentation for synchronization with "
+                 << "ExternalVkImageGLRepresentation for synchronization with "
                  << "Vulkan";
       return;
     }
@@ -162,7 +152,7 @@ void ExternalVkImageGlRepresentation::EndAccess() {
       // TODO(crbug.com/933452): We should be able to semaphore_handle this
       // failure more gracefully rather than shutting down the whole process.
       LOG(FATAL) << "Unable to export VkSemaphore into GL in "
-                 << "ExternalVkImageGlRepresentation for synchronization with "
+                 << "ExternalVkImageGLRepresentation for synchronization with "
                  << "Vulkan";
       return;
     }
@@ -182,7 +172,7 @@ void ExternalVkImageGlRepresentation::EndAccess() {
                             true /* is_gl */);
 }
 
-GLuint ExternalVkImageGlRepresentation::ImportVkSemaphoreIntoGL(
+GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
     SemaphoreHandle handle) {
   if (!handle.is_valid())
     return 0;
@@ -207,6 +197,52 @@ GLuint ExternalVkImageGlRepresentation::ImportVkSemaphoreIntoGL(
 #else  // !defined(OS_FUCHSIA) && !defined(OS_LINUX)
 #error Unsupported OS
 #endif
+}
+
+ExternalVkImageGLRepresentation::ExternalVkImageGLRepresentation(
+    SharedImageManager* manager,
+    SharedImageBacking* backing,
+    MemoryTypeTracker* tracker,
+    gles2::Texture* texture,
+    GLuint texture_service_id)
+    : SharedImageRepresentationGLTexture(manager, backing, tracker),
+      texture_(texture),
+      representation_shared_(backing, texture_service_id) {}
+
+ExternalVkImageGLRepresentation::~ExternalVkImageGLRepresentation() {}
+
+gles2::Texture* ExternalVkImageGLRepresentation::GetTexture() {
+  return texture_;
+}
+
+bool ExternalVkImageGLRepresentation::BeginAccess(GLenum mode) {
+  return representation_shared_.BeginAccess(mode);
+}
+void ExternalVkImageGLRepresentation::EndAccess() {
+  representation_shared_.EndAccess();
+}
+
+ExternalVkImageGLPassthroughRepresentation::
+    ExternalVkImageGLPassthroughRepresentation(SharedImageManager* manager,
+                                               SharedImageBacking* backing,
+                                               MemoryTypeTracker* tracker,
+                                               GLuint texture_service_id)
+    : SharedImageRepresentationGLTexturePassthrough(manager, backing, tracker),
+      representation_shared_(backing, texture_service_id) {}
+
+ExternalVkImageGLPassthroughRepresentation::
+    ~ExternalVkImageGLPassthroughRepresentation() {}
+
+const scoped_refptr<gles2::TexturePassthrough>&
+ExternalVkImageGLPassthroughRepresentation::GetTexturePassthrough() {
+  return representation_shared_.backing_impl()->GetTexturePassthrough();
+}
+
+bool ExternalVkImageGLPassthroughRepresentation::BeginAccess(GLenum mode) {
+  return representation_shared_.BeginAccess(mode);
+}
+void ExternalVkImageGLPassthroughRepresentation::EndAccess() {
+  representation_shared_.EndAccess();
 }
 
 }  // namespace gpu

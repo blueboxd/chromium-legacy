@@ -63,22 +63,23 @@ const char kChallenge[] = "challenge";
 const char kResponse[] = "response";
 const char kKeyNameForSpkac[] = "attest-ent-machine-123456";
 
-void RegisterKeyCallbackTrue(
-    chromeos::attestation::AttestationKeyType key_type,
-    const cryptohome::Identification& user_id,
-    const std::string& key_name,
-    const cryptohome::AsyncMethodCaller::Callback& callback) {
+void RegisterKeyCallbackTrue(chromeos::attestation::AttestationKeyType key_type,
+                             const cryptohome::Identification& user_id,
+                             const std::string& key_name,
+                             cryptohome::AsyncMethodCaller::Callback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true, cryptohome::MOUNT_ERROR_NONE));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), true, cryptohome::MOUNT_ERROR_NONE));
 }
 
 void RegisterKeyCallbackFalse(
     chromeos::attestation::AttestationKeyType key_type,
     const cryptohome::Identification& user_id,
     const std::string& key_name,
-    const cryptohome::AsyncMethodCaller::Callback& callback) {
+    cryptohome::AsyncMethodCaller::Callback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, cryptohome::MOUNT_ERROR_NONE));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), false, cryptohome::MOUNT_ERROR_NONE));
 }
 
 void SignChallengeCallbackTrue(
@@ -90,9 +91,9 @@ void SignChallengeCallbackTrue(
     chromeos::attestation::AttestationChallengeOptions options,
     const std::string& challenge,
     const std::string& key_name_for_spkac,
-    const cryptohome::AsyncMethodCaller::DataCallback& callback) {
+    cryptohome::AsyncMethodCaller::DataCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, true, "response"));
+      FROM_HERE, base::BindOnce(std::move(callback), true, "response"));
 }
 
 void SignChallengeCallbackFalse(
@@ -104,9 +105,9 @@ void SignChallengeCallbackFalse(
     chromeos::attestation::AttestationChallengeOptions options,
     const std::string& challenge,
     const std::string& key_name_for_spkac,
-    const cryptohome::AsyncMethodCaller::DataCallback& callback) {
+    cryptohome::AsyncMethodCaller::DataCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, false, ""));
+      FROM_HERE, base::BindOnce(std::move(callback), false, ""));
 }
 
 void GetCertificateCallbackTrue(

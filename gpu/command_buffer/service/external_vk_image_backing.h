@@ -51,6 +51,10 @@ class ExternalVkImageBacking final : public SharedImageBacking {
 
   SharedContextState* context_state() const { return context_state_; }
   const GrBackendTexture& backend_texture() const { return backend_texture_; }
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough()
+      const {
+    return texture_passthrough_;
+  }
   VulkanImplementation* vulkan_implementation() const {
     return context_state()->vk_context_provider()->GetVulkanImplementation();
   }
@@ -141,6 +145,8 @@ class ExternalVkImageBacking final : public SharedImageBacking {
       base::WritableSharedMemoryMapping shared_memory_mapping,
       size_t stride,
       size_t memory_offset);
+  // Returns texture_service_id for ProduceGLTexture and GLTexturePassthrough.
+  GLuint ProduceGLTextureInternal();
 
   using FillBufferCallback = base::OnceCallback<void(void* buffer)>;
   bool WritePixels(size_t data_size,
@@ -160,6 +166,7 @@ class ExternalVkImageBacking final : public SharedImageBacking {
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;
   gles2::Texture* texture_ = nullptr;
+  scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 
   // GMB related stuff.
   base::WritableSharedMemoryMapping shared_memory_mapping_;

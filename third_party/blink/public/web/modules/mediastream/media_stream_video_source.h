@@ -73,7 +73,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
                 const VideoCaptureDeliverFrameCB& frame_callback,
                 const VideoTrackSettingsCallback& settings_callback,
                 const VideoTrackFormatCallback& format_callback,
-                const ConstraintsCallback& callback);
+                ConstraintsOnceCallback callback);
   void RemoveTrack(MediaStreamVideoTrack* track, base::OnceClosure callback);
 
   // Reconfigures this MediaStreamVideoSource to use |adapter_settings| on
@@ -284,7 +284,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
         const VideoTrackSettingsCallback& settings_callback,
         const VideoTrackFormatCallback& format_callback,
         std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
-        const ConstraintsCallback& callback);
+        ConstraintsOnceCallback callback);
     PendingTrackInfo(PendingTrackInfo&& other);
     PendingTrackInfo& operator=(PendingTrackInfo&& other);
     ~PendingTrackInfo();
@@ -296,7 +296,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
     // TODO(guidou): Make |adapter_settings| a regular field instead of a
     // unique_ptr.
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings;
-    ConstraintsCallback callback;
+    ConstraintsOnceCallback callback;
   };
   std::vector<PendingTrackInfo> pending_tracks_;
 

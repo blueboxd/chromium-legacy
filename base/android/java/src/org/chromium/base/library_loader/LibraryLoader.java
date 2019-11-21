@@ -335,7 +335,8 @@ public class LibraryLoader {
      * @return whether to enable reached code profiler (see
      *         setReachedCodeProfilerEnabledOnNextRuns()).
      */
-    private static boolean isReachedCodeProfilerEnabled() {
+    @VisibleForTesting
+    public static boolean isReachedCodeProfilerEnabled() {
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             return ContextUtils.getAppSharedPreferences().getBoolean(
                     REACHED_CODE_PROFILER_ENABLED_KEY, false);

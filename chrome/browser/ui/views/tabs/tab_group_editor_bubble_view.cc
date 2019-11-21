@@ -170,8 +170,6 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   close_menu_item->SetBorder(views::CreateEmptyBorder(menu_item_border_inset));
   menu_items_container->AddChildView(std::move(close_menu_item));
 
-  menu_items_container->AddChildView(std::make_unique<views::Separator>());
-
   std::unique_ptr<views::LabelButton> feedback_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_FEEDBACK,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),

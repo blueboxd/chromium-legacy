@@ -701,12 +701,12 @@ TEST_F(VaapiJpegDecoderTest, DecodeFails) {
   EXPECT_FALSE(Decoder()->GetScopedVASurface());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VaapiJpegDecoderTest,
                          testing::ValuesIn(kVAImageTestCases),
                          vaapi_test_utils::TestParamToString);
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VaapiJpegDecoderWithDmaBufsTest,
                          testing::ValuesIn(kDmaBufTestCases),
                          vaapi_test_utils::TestParamToString);

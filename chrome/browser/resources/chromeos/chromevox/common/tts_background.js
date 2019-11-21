@@ -757,3 +757,30 @@ TtsBackground.prototype.updateFromPrefs_ = function(announce, prefs) {
 
 /** @private {RegExp} */
 TtsBackground.SKIP_WHITESPACE_ = /^[\s\u00a0]*$/;
+
+/** @override */
+TtsBackground.prototype.resetTextToSpeechSettings = function() {
+  goog.base(this, 'resetTextToSpeechSettings');
+
+  var rate = ChromeVox.tts.getDefaultProperty('rate');
+  var pitch = ChromeVox.tts.getDefaultProperty('pitch');
+  var volume = ChromeVox.tts.getDefaultProperty('volume');
+  chrome.settingsPrivate.setPref('settings.tts.speech_rate', rate);
+  chrome.settingsPrivate.setPref('settings.tts.speech_pitch', pitch);
+  chrome.settingsPrivate.setPref('settings.tts.speech_volume', volume);
+
+  // Ensure this announcement doesn't get cut off by speech triggered by
+  // updateFromPrefs_().
+  // Copy properties from AbstractTts.PERSONALITY_ANNOTATION and add the
+  // doNotInterrupt property.
+  var speechProperties = {};
+  var sourceProperties = AbstractTts.PERSONALITY_ANNOTATION || {};
+  for (var [key, value] of Object.entries(sourceProperties)) {
+    speechProperties[key] = value;
+  }
+  speechProperties['doNotInterrupt'] = true;
+
+  ChromeVox.tts.speak(
+      Msgs.getMsg('announce_tts_default_settings'), QueueMode.FLUSH,
+      speechProperties);
+};

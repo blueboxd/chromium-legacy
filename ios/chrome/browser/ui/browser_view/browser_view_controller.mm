@@ -788,11 +788,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
     self.toolbarInterface = _toolbarCoordinatorAdaptor;
 
-    _downloadManagerCoordinator = [[DownloadManagerCoordinator alloc]
-        initWithBaseViewController:_browserContainerViewController];
-    _downloadManagerCoordinator.presenter =
-        [[VerticalAnimationContainer alloc] init];
-
+    // TODO(crbug.com/1024288): Remove these lines along the legacy code
+    // removal.
+    if (!IsDownloadInfobarMessagesUIEnabled()) {
+      _downloadManagerCoordinator = [[DownloadManagerCoordinator alloc]
+          initWithBaseViewController:_browserContainerViewController];
+      _downloadManagerCoordinator.presenter =
+          [[VerticalAnimationContainer alloc] init];
+    }
     if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
       _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                           presentingViewController:self];
@@ -2200,12 +2203,15 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [self.primaryToolbarCoordinator activityServicePositioner];
   _activityServiceCoordinator.presentationProvider = self;
 
-  // DownloadManagerCoordinator is already created.
-  DCHECK(_downloadManagerCoordinator);
-  _downloadManagerCoordinator.webStateList = self.tabModel.webStateList;
-  _downloadManagerCoordinator.bottomMarginHeightAnchor =
-      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
-          .heightAnchor;
+  // TODO(crbug.com/1024288): Remove these lines along the legacy code removal.
+  if (!IsDownloadInfobarMessagesUIEnabled()) {
+    // DownloadManagerCoordinator is already created.
+    DCHECK(_downloadManagerCoordinator);
+    _downloadManagerCoordinator.webStateList = self.tabModel.webStateList;
+    _downloadManagerCoordinator.bottomMarginHeightAnchor =
+        [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
+            .heightAnchor;
+  }
 
   self.popupMenuCoordinator =
       [[PopupMenuCoordinator alloc] initWithBaseViewController:self
@@ -2722,10 +2728,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         ReadingListModelFactory::GetForBrowserState(self.browserState));
   }
 
-  // DownloadManagerTabHelper cannot function without delegate.
-  DCHECK(_downloadManagerCoordinator);
-  DownloadManagerTabHelper::CreateForWebState(webState,
-                                              _downloadManagerCoordinator);
+  // TODO(crbug.com/1024288): Remove these lines along the legacy code removal.
+  if (!IsDownloadInfobarMessagesUIEnabled()) {
+    // DownloadManagerTabHelper cannot function without delegate.
+    DCHECK(_downloadManagerCoordinator);
+    DownloadManagerTabHelper::CreateForWebState(webState,
+                                                _downloadManagerCoordinator);
+  }
+
   NewTabPageTabHelper::CreateForWebState(webState, self);
 
   // The language detection helper accepts a callback from the translate
@@ -2899,39 +2909,40 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (UIEdgeInsets)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
     snapshotEdgeInsetsForWebState:(web::WebState*)webState {
   DCHECK(webState);
-  // The NTP's snapshot should be inset |headerHeight| from the top to remove
-  // the fake NTP toolbar from the snapshot.
-  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
-  BOOL isNTPActive = NTPHelper && NTPHelper->IsActive();
-  // When using frame-based viewport adjustment calculations out of web//, the
-  // WebState view's superview is used as the base snapshot view.  The content
-  // area is |headerHeight| from the top of its superview, so snapshots should
-  // be inset from this amount.
-  bool usesContentInset = ios::GetChromeBrowserProvider()
-                              ->GetFullscreenProvider()
-                              ->IsInitialized() ||
-                          webState->GetWebViewProxy().shouldUseViewContentInset;
-  // When the tab strip is present, there is no inset for the content area of
-  // the NTP.
-  if ([self canShowTabStrip] && isNTPActive) {
-    return UIEdgeInsetsZero;
-  }
-  if (isNTPActive || !usesContentInset) {
-    return UIEdgeInsetsMake(self.headerHeight, 0.0, self.bottomToolbarHeight,
-                            0.0);
-  }
 
-  // For all other scenarios, the content area is inset from the snapshot base
-  // view by the web view proxy's contentInset.
-  return webState->GetWebViewProxy().contentInset;
+  FullscreenController* fullscreenController =
+      FullscreenControllerFactory::GetForBrowserState(self.browserState);
+  UIEdgeInsets maxViewportInsets = fullscreenController->GetMaxViewportInsets();
+
+  NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
+  if (NTPHelper && NTPHelper->IsActive()) {
+    // If the NTP is active, then it's used as the base view for snapshotting.
+    // When the tab strip is visible, the NTP is laid out below the toolbars, so
+    // it should not be inset while snapshotting.  When the tab strip is not
+    // used, the NTP is laid out fullscreen and the top portion of the view will
+    // be obstructed by the toolbars when the snapshot is displayed in the tab
+    // grid.  In that case, the NTP should be inset by the maximum viewport
+    /// insets.
+    return [self canShowTabStrip] ? UIEdgeInsetsZero : maxViewportInsets;
+  } else {
+    // If the NTP is inactive, the WebState's view is used as the base view for
+    // snapshotting.  If fullscreen is implemented by resizing the scroll view,
+    // then the WebState view is already laid out within the visible viewport
+    // and doesn't need to be inset.  If fullscreen uses the content inset, then
+    // the WebState view is laid out fullscreen and should be inset by the
+    // viewport insets.
+    return fullscreenController->ResizesScrollView() ? UIEdgeInsetsZero
+                                                     : maxViewportInsets;
+  }
 }
 
 - (NSArray<UIView*>*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
            snapshotOverlaysForWebState:(web::WebState*)webState {
   DCHECK(webState);
-  DCHECK(self.tabModel.webStateList->GetIndexOfWebState(webState) !=
-         WebStateList::kInvalidIndex);
-  if (!self.webUsageEnabled)
+  WebStateList* webStateList = self.tabModel.webStateList;
+  DCHECK_NE(webStateList->GetIndexOfWebState(webState),
+            WebStateList::kInvalidIndex);
+  if (!self.webUsageEnabled || webState != webStateList->GetActiveWebState())
     return @[];
 
   NSMutableArray<UIView*>* overlays = [NSMutableArray array];
@@ -2989,14 +3000,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (UIView*)snapshotGenerator:(SnapshotGenerator*)snapshotGenerator
          baseViewForWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
-  if (NTPHelper && NTPHelper->IsActive()) {
+  if (NTPHelper && NTPHelper->IsActive())
     return _ntpCoordinatorsForWebStates[webState].viewController.view;
-  }
-  UIView* webStateView = webState->GetView();
-  DCHECK(webStateView);
-  // |webStateView| is resized because of fullscreen. Using its superview when
-  // possible ensures that the snapshot has a consistent size.
-  return webStateView.superview ?: webStateView;
+  return webState->GetView();
 }
 
 #pragma mark - SnapshotGeneratorDelegate helpers

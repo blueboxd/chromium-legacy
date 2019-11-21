@@ -1180,6 +1180,10 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // TODO(creis): Remove the "if" once https://crbug.com/522193 is fixed.
   if (frame_entry) {
     DCHECK(params.page_state == frame_entry->page_state());
+
+    // Remember the bindings the renderer process has at this point, so that
+    // we do not grant this entry additional bindings if we come back to it.
+    frame_entry->SetBindings(rfh->GetEnabledBindings());
   }
 
   // Once it is committed, we no longer need to track several pieces of state on
@@ -1196,10 +1200,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // for subframe navigations.
   if (!rfh->GetParent())
     CHECK_EQ(active_entry->site_instance(), rfh->GetSiteInstance());
-
-  // Remember the bindings the renderer process has at this point, so that
-  // we do not grant this entry additional bindings if we come back to it.
-  active_entry->SetBindings(rfh->GetEnabledBindings());
 
   // Now prep the rest of the details for the notification and broadcast.
   details->entry = active_entry;

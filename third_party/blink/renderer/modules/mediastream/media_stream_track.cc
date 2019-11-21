@@ -179,7 +179,7 @@ void CloneNativeVideoMediaStreamTrack(const WebMediaStreamTrack& original,
       native_source, original_track->adapter_settings(),
       original_track->noise_reduction(), original_track->is_screencast(),
       original_track->min_frame_rate(),
-      MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
+      MediaStreamVideoSource::ConstraintsOnceCallback(), clone.IsEnabled()));
 }
 
 void DidSetMediaStreamTrackEnabled(MediaStreamComponent* component) {

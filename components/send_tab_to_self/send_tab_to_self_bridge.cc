@@ -728,6 +728,7 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
 
   target_device_name_to_cache_info_.clear();
   std::set<std::string> unique_device_names;
+  std::unordered_map<std::string, int> short_names_counter;
   for (const auto& device : all_devices) {
     // If the current device is considered expired for our purposes, stop here
     // since the next devices in the vector are at least as expired than this
@@ -749,15 +750,24 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
       continue;
     }
 
+    SharingDeviceNames device_names = GetSharingDeviceNames(device.get());
+
     // Only keep one device per device name. We only keep the first occurrence
     // which is the most recent.
-    if (unique_device_names.insert(device->client_name()).second) {
-      TargetDeviceInfo target_device_info(device->client_name(), device->guid(),
-                                          device->device_type(),
-                                          device->last_updated_timestamp());
+    if (unique_device_names.insert(device_names.full_name).second) {
+      TargetDeviceInfo target_device_info(
+          device_names.full_name, device_names.short_name, device->guid(),
+          device->device_type(), device->last_updated_timestamp());
       target_device_name_to_cache_info_.push_back(target_device_info);
       oldest_non_expired_device_timestamp_ = device->last_updated_timestamp();
+
+      short_names_counter[device_names.short_name]++;
     }
+  }
+  for (auto& device_info : target_device_name_to_cache_info_) {
+    bool unique_short_name = short_names_counter[device_info.short_name] == 1;
+    device_info.device_name =
+        (unique_short_name ? device_info.short_name : device_info.full_name);
   }
 }
 

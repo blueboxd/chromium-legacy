@@ -73,10 +73,12 @@ message MediaDecodingConfigProto {
     optional string init_data_type = 2;
 
     // The robustness level associated with the audio content type.
-    optional string audio_robustness = 3;
+    // DEPRECATED: use audio.robustness.
+    optional string audio_robustness = 3 [deprecated = true];
 
     // The robustness level associated with the video content type.
-    optional string video_robustness = 4;
+    // DEPRECATED: use video.robustness.
+    optional string video_robustness = 4 [deprecated = true];
 
     // Whether use of a Distinctive Identifier(s) is required.
     optional MediaKeysRequirement distinctive_identifier = 5
@@ -87,6 +89,14 @@ message MediaDecodingConfigProto {
 
     // A list of MediaKeySessionTypes that must be supported.
     repeated MediaKeySessionType session_types = 7;
+
+    message KeySystemTrackConfig {
+      // The robustness level associated with a given track.
+      optional string robustness = 1;
+    }
+    // Track-specific key system details.
+    optional KeySystemTrackConfig key_system_audio_config = 8;
+    optional KeySystemTrackConfig key_system_video_config = 9;
   }
   optional KeySystemConfig key_system_config = 4;
 }

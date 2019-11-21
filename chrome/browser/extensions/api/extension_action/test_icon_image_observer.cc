@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace extensions {
 
@@ -14,6 +15,10 @@ TestIconImageObserver::~TestIconImageObserver() = default;
 
 void TestIconImageObserver::Wait(IconImage* icon) {
   if (!icon->did_complete_initial_load()) {
+    // Tricky: The icon might not actually be visible in the viewport yet (e.g.,
+    // if it's for an extension that is buried in the menu). Force the icon to
+    // load by requesting a bitmap.
+    icon->image_skia().bitmap();
     observer_.Add(icon);
     run_loop_.Run();
   }

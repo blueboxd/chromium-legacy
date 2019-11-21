@@ -57,7 +57,7 @@ class HomeScreenControllerTest : public AshTestBase,
   DISALLOW_COPY_AND_ASSIGN(HomeScreenControllerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, HomeScreenControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, HomeScreenControllerTest, testing::Bool());
 
 TEST_P(HomeScreenControllerTest, OnlyMinimizeCycleListWindows) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow());

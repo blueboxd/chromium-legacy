@@ -431,22 +431,29 @@ VectorOf<typename NativeValueTraits<IDLType>::ImplType> ToImplArguments(
   return result;
 }
 
+// The functions below implement low-level abstract ES operations for dealing
+// with iterators. Most code should use ScriptIterator instead.
+//
+// Retrieves an ES object's @@iterator method by calling
+//     ? GetMethod(V, @@iterator)
+// per https://tc39.es/ecma262/#sec-getmethod
 // Returns the iterator method for an object, or an empty v8::Local if the
 // method is null or undefined.
 CORE_EXPORT v8::Local<v8::Function> GetEsIteratorMethod(v8::Isolate*,
                                                         v8::Local<v8::Object>,
                                                         ExceptionState&);
-
-// Gets an iterator for an object, given the iterator method for that object.
+// Retrieves an iterator object from a given ES object whose @@iterator method
+// has been retrieved via GetEsIteratorMethod(). It essentially calls
+//     ? GetIterator(iterable, sync, method)
+// per https://tc39.es/ecma262/#sec-getiterator
 CORE_EXPORT v8::Local<v8::Object> GetEsIteratorWithMethod(
     v8::Isolate*,
     v8::Local<v8::Function>,
     v8::Local<v8::Object>,
     ExceptionState&);
-
-// Validates that the passed object is a sequence type per the WebIDL spec: it
-// has a callable @iterator.
-// https://heycam.github.io/webidl/#es-sequence
+// Wrapper around GetEsIteratorMethod(). It returns true if a given ES value is
+// an object that has a valid @@iterator property (i.e. the property exists and
+// is callable).
 CORE_EXPORT bool HasCallableIteratorSymbol(v8::Isolate*,
                                            v8::Local<v8::Value>,
                                            ExceptionState&);

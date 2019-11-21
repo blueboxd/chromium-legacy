@@ -236,6 +236,7 @@ NaClProcessHost::NaClProcessHost(
   process_ = content::BrowserChildProcessHost::Create(
       static_cast<content::ProcessType>(PROCESS_TYPE_NACL_LOADER), this,
       content::ChildProcessHost::IpcMode::kLegacy);
+  process_->SetMetricsName("NaCl Loader");
 
   // Set the display name so the user knows what plugin the process is running.
   // We aren't on the UI thread so getting the pref locale for language

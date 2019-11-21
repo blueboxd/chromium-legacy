@@ -86,12 +86,13 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
 std::unique_ptr<viz::SkiaOutputSurface>
 LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
   // Set up the SkiaOutputSurfaceImpl.
-  auto output_surface = viz::SkiaOutputSurfaceImpl::Create(
+  auto skia_output_surface = viz::SkiaOutputSurfaceImpl::Create(
       std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
           viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
           gpu::kNullSurfaceHandle),
       viz::RendererSettings());
-  return output_surface;
+  output_surface_ = skia_output_surface.get();
+  return skia_output_surface;
 }
 
 std::unique_ptr<viz::OutputSurface>
@@ -116,6 +117,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     display_output_surface = std::make_unique<PixelTestOutputSurface>(
         std::make_unique<viz::SoftwareOutputDevice>());
   }
+  output_surface_ = display_output_surface.get();
   return std::move(display_output_surface);
 }
 
@@ -199,6 +201,13 @@ void LayerTreePixelTest::EndTest() {
 
 void LayerTreePixelTest::InitializeSettings(LayerTreeSettings* settings) {
   settings->gpu_rasterization_forced = use_vulkan();
+}
+
+void LayerTreePixelTest::DisplayDidDrawAndSwapOnThread() {
+  // This ensures that async GPU accelerated readbacks complete. The flush must
+  // come after the swap because the drawing must complete and the swap may not
+  // trigger a flush (see SkiaOutputDeviceOffscreen).
+  output_surface_->FlushForTesting();
 }
 
 void LayerTreePixelTest::TryEndTest() {
@@ -378,10 +387,8 @@ SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
 }
 
 void LayerTreePixelTest::Finish() {
-  std::unique_ptr<gpu::GLInProcessContext> context =
-      viz::CreateTestInProcessContext();
-  GLES2Interface* gl = context->GetImplementation();
-  gl->Finish();
+  if (output_surface_)
+    output_surface_->FlushForTesting();
 }
 
 }  // namespace cc

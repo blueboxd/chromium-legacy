@@ -95,8 +95,8 @@ void DeviceLocalAccountPolicyProvider::RefreshPolicies() {
   if (broker && broker->core()->service()) {
     waiting_for_policy_refresh_ = true;
     broker->core()->service()->RefreshPolicy(
-        base::Bind(&DeviceLocalAccountPolicyProvider::ReportPolicyRefresh,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&DeviceLocalAccountPolicyProvider::ReportPolicyRefresh,
+                       weak_factory_.GetWeakPtr()));
   } else {
     UpdateFromBroker();
   }

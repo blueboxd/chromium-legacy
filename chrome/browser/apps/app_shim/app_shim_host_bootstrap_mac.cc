@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/mac/app_shim.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -83,7 +82,7 @@ const base::FilePath& AppShimHostBootstrap::GetProfilePath() {
   return app_shim_info_->profile_path;
 }
 
-apps::AppShimLaunchType AppShimHostBootstrap::GetLaunchType() const {
+chrome::mojom::AppShimLaunchType AppShimHostBootstrap::GetLaunchType() const {
   return app_shim_info_->launch_type;
 }
 
@@ -128,11 +127,12 @@ void AppShimHostBootstrap::OnShimConnected(
 void AppShimHostBootstrap::OnConnectedToHost(
     mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
   std::move(shim_connected_callback_)
-      .Run(apps::APP_SHIM_LAUNCH_SUCCESS, std::move(app_shim_receiver));
+      .Run(chrome::mojom::AppShimLaunchResult::kSuccess,
+           std::move(app_shim_receiver));
 }
 
 void AppShimHostBootstrap::OnFailedToConnectToHost(
-    apps::AppShimLaunchResult result) {
+    chrome::mojom::AppShimLaunchResult result) {
   // Because there will be users of the AppShim interface in failure, just
   // return a dummy receiver.
   mojo::Remote<chrome::mojom::AppShim> dummy_remote;

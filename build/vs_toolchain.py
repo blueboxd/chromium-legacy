@@ -223,6 +223,10 @@ def _CopyRuntimeImpl(target, source, verbose=True):
     # Make the file writable so that we can overwrite or delete it later,
     # keep it readable.
     os.chmod(target, stat.S_IWRITE | stat.S_IREAD)
+    # Sometimes BUILTIN/Administrators and SYSTEM doesn't grant the access
+    # to the file on bots. crbug.com/956016.
+    subprocess.call(['icacls', target, '/grant', 'Administrators:f'])
+    subprocess.call(['icacls', target, '/grant', 'SYSTEM:f'])
 
 def _SortByHighestVersionNumberFirst(list_of_str_versions):
   """This sorts |list_of_str_versions| according to version number rules

@@ -81,14 +81,15 @@ void AutocompleteClassifier::Classify(
   input.set_want_asynchronous_matches(false);
   controller_->Start(input);
   DCHECK(controller_->done());
-  const AutocompleteResult& result = controller_->result();
-  if (result.empty() || result.default_match() == result.end()) {
+
+  auto* default_match = controller_->result().default_match();
+  if (!default_match) {
     if (alternate_nav_url)
       *alternate_nav_url = GURL();
     return;
   }
 
-  *match = *result.begin();
+  *match = *default_match;
   if (alternate_nav_url) {
     *alternate_nav_url =
         AutocompleteResult::ComputeAlternateNavUrl(input, *match);

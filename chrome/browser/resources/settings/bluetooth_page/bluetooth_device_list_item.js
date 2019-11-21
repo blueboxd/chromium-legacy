@@ -21,14 +21,14 @@ Polymer({
     },
 
     /**
-     * Uses getDeviceName_ as a label for a11y. It will be added as an
-     * attribute on this top-level bluetooth-device-list-item.
+     * The aria-label attribute for the top-level bluetooth-device-list-item
+     * element.
      */
     ariaLabel: {
       type: String,
       notify: true,
       reflectToAttribute: true,
-      computed: 'getDeviceName_(device)',
+      computed: 'getAriaLabel_(device)',
     },
   },
 
@@ -90,6 +90,25 @@ Polymer({
    */
   getDeviceName_: function(device) {
     return device.name || device.address;
+  },
+
+  /**
+   * @param {!chrome.bluetooth.Device} device
+   * @return {string} The aria label to use for a |device| that will include the
+   * device name and device type if known.
+   * @private
+   */
+  getAriaLabel_: function(device) {
+    // We need to turn the device name and type into a single localized string.
+    // The possible device type enum values can be seen here:
+    // https://developer.chrome.com/apps/bluetooth#type-Device.
+    // The localization id is computed dynamically to avoid maintaining a
+    // mapping from the enum string value to the localization id.
+    // if device.type is not defined, we fall back to an unknown device string.
+    const deviceName = this.getDeviceName_(device);
+    return (device.type) ?
+        this.i18n('bluetoothDeviceType_' + device.type, deviceName) :
+        this.i18n('bluetoothDeviceType_unknown', deviceName);
   },
 
   /**

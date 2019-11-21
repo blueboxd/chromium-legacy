@@ -229,6 +229,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
       const gfx::SwapResponse& response,
       std::vector<ui::LatencyInfo>* latency_info);
 
+  // Flushes all GPU work and waits until it has been executed. All asynchronous
+  // GPU readbacks are completed once this method finishes.
+  virtual void FlushForTesting();
+
  protected:
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;

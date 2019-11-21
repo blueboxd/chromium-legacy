@@ -135,7 +135,6 @@ bool NativeWindowOcclusionTrackerWin::IsWindowVisibleAndFullyOpaque(
     return false;
 
   LONG ex_styles = GetWindowLong(hwnd, GWL_EXSTYLE);
-
   // Filter out "transparent" windows, windows where the mouse clicks fall
   // through them.
   if (ex_styles & WS_EX_TRANSPARENT)
@@ -153,12 +152,20 @@ bool NativeWindowOcclusionTrackerWin::IsWindowVisibleAndFullyOpaque(
   if (ex_styles & WS_EX_LAYERED) {
     BYTE alpha;
     DWORD flags;
-    if (GetLayeredWindowAttributes(hwnd, nullptr, &alpha, &flags)) {
-      if (flags & LWA_ALPHA && alpha < 255)
-        return false;
-      if (flags & LWA_COLORKEY)
-        return false;
-    }
+
+    // GetLayeredWindowAttributes only works if the application has
+    // previously called SetLayeredWindowAttributes on the window.
+    // The function will fail if the layered window was setup with
+    // UpdateLayeredWindow. Treat this failure as the window being transparent.
+    // See Remarks section of
+    // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getlayeredwindowattributes
+    if (!GetLayeredWindowAttributes(hwnd, nullptr, &alpha, &flags))
+      return false;
+
+    if (flags & LWA_ALPHA && alpha < 255)
+      return false;
+    if (flags & LWA_COLORKEY)
+      return false;
   }
 
   // Filter out windows that do not have a simple rectangular region.

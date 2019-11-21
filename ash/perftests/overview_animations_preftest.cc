@@ -90,7 +90,7 @@ ASH_CONTENT_TEST_P(OverviewAnimationsTest, EnterExit) {
   TRACE_EVENT_ASYNC_END0("ui", "Interaction.ui_Overview", this);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          OverviewAnimationsTest,
                          ::testing::Combine(::testing::Values(2, 8),
                                             /*blank=*/testing::Bool(),

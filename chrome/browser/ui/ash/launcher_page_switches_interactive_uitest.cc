@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_P(LauncherPageSwitchesTest, SwitchToFarPage) {
   waiter.Wait();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LauncherPageSwitchesTest,
                          /*tablet_mode=*/::testing::Bool());
 

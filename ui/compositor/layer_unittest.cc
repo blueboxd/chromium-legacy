@@ -425,7 +425,7 @@ class TestCompositorAnimationObserver : public CompositorAnimationObserver {
 
 }  // namespace
 
-INSTANTIATE_TEST_SUITE_P(, LayerWithRealCompositorTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, LayerWithRealCompositorTest, ::testing::Bool());
 
 TEST_P(LayerWithRealCompositorTest, Draw) {
   std::unique_ptr<Layer> layer =

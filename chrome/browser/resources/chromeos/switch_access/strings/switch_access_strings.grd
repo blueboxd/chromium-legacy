@@ -61,8 +61,12 @@
     <file path="switch_access_strings_af.xtb" lang="af" />
     <file path="switch_access_strings_am.xtb" lang="am" />
     <file path="switch_access_strings_ar.xtb" lang="ar" />
+    <file path="switch_access_strings_as.xtb" lang="as" />
+    <file path="switch_access_strings_az.xtb" lang="az" />
+    <file path="switch_access_strings_be.xtb" lang="be" />
     <file path="switch_access_strings_bg.xtb" lang="bg" />
     <file path="switch_access_strings_bn.xtb" lang="bn" />
+    <file path="switch_access_strings_bs.xtb" lang="bs" />
     <file path="switch_access_strings_ca.xtb" lang="ca" />
     <file path="switch_access_strings_cs.xtb" lang="cs" />
     <file path="switch_access_strings_da.xtb" lang="da" />
@@ -72,35 +76,53 @@
     <file path="switch_access_strings_es.xtb" lang="es" />
     <file path="switch_access_strings_es-419.xtb" lang="es-419" />
     <file path="switch_access_strings_et.xtb" lang="et" />
+    <file path="switch_access_strings_eu.xtb" lang="eu" />
     <file path="switch_access_strings_fa.xtb" lang="fa" />
     <file path="switch_access_strings_fi.xtb" lang="fi" />
     <file path="switch_access_strings_fil.xtb" lang="fil" />
     <file path="switch_access_strings_fr.xtb" lang="fr" />
+    <file path="switch_access_strings_fr-CA.xtb" lang="fr-CA" />
+    <file path="switch_access_strings_gl.xtb" lang="gl" />
     <file path="switch_access_strings_gu.xtb" lang="gu" />
     <file path="switch_access_strings_hi.xtb" lang="hi" />
     <file path="switch_access_strings_hr.xtb" lang="hr" />
     <file path="switch_access_strings_hu.xtb" lang="hu" />
+    <file path="switch_access_strings_hy.xtb" lang="hy" />
     <file path="switch_access_strings_id.xtb" lang="id" />
+    <file path="switch_access_strings_is.xtb" lang="is" />
     <file path="switch_access_strings_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="switch_access_strings_iw.xtb" lang="he" />
     <file path="switch_access_strings_ja.xtb" lang="ja" />
+    <file path="switch_access_strings_ka.xtb" lang="ka" />
+    <file path="switch_access_strings_kk.xtb" lang="kk" />
+    <file path="switch_access_strings_km.xtb" lang="km" />
     <file path="switch_access_strings_kn.xtb" lang="kn" />
     <file path="switch_access_strings_ko.xtb" lang="ko" />
+    <file path="switch_access_strings_ky.xtb" lang="ky" />
+    <file path="switch_access_strings_lo.xtb" lang="lo" />
     <file path="switch_access_strings_lt.xtb" lang="lt" />
     <file path="switch_access_strings_lv.xtb" lang="lv" />
+    <file path="switch_access_strings_mk.xtb" lang="mk" />
     <file path="switch_access_strings_ml.xtb" lang="ml" />
+    <file path="switch_access_strings_mn.xtb" lang="mn" />
     <file path="switch_access_strings_mr.xtb" lang="mr" />
     <file path="switch_access_strings_ms.xtb" lang="ms" />
+    <file path="switch_access_strings_my.xtb" lang="my" />
+    <file path="switch_access_strings_ne.xtb" lang="ne" />
     <file path="switch_access_strings_nl.xtb" lang="nl" />
     <file path="switch_access_strings_no.xtb" lang="no" />
+    <file path="switch_access_strings_or.xtb" lang="or" />
+    <file path="switch_access_strings_pa.xtb" lang="pa" />
     <file path="switch_access_strings_pl.xtb" lang="pl" />
     <file path="switch_access_strings_pt-BR.xtb" lang="pt-BR" />
     <file path="switch_access_strings_pt-PT.xtb" lang="pt-PT" />
     <file path="switch_access_strings_ro.xtb" lang="ro" />
     <file path="switch_access_strings_ru.xtb" lang="ru" />
+    <file path="switch_access_strings_si.xtb" lang="si" />
     <file path="switch_access_strings_sk.xtb" lang="sk" />
     <file path="switch_access_strings_sl.xtb" lang="sl" />
+    <file path="switch_access_strings_sq.xtb" lang="sq" />
     <file path="switch_access_strings_sr.xtb" lang="sr" />
     <file path="switch_access_strings_sv.xtb" lang="sv" />
     <file path="switch_access_strings_sw.xtb" lang="sw" />
@@ -109,9 +131,13 @@
     <file path="switch_access_strings_th.xtb" lang="th" />
     <file path="switch_access_strings_tr.xtb" lang="tr" />
     <file path="switch_access_strings_uk.xtb" lang="uk" />
+    <file path="switch_access_strings_ur.xtb" lang="ur" />
+    <file path="switch_access_strings_uz.xtb" lang="uz" />
     <file path="switch_access_strings_vi.xtb" lang="vi" />
     <file path="switch_access_strings_zh-CN.xtb" lang="zh-CN" />
+    <file path="switch_access_strings_zh-HK.xtb" lang="zh-HK" />
     <file path="switch_access_strings_zh-TW.xtb" lang="zh-TW" />
+    <file path="switch_access_strings_zu.xtb" lang="zu" />
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">

@@ -132,3 +132,8 @@ TtsInterface.prototype.getDefaultProperty = function(property) {};
  * @return {boolean} Whether speech is now on or off.
  */
 TtsInterface.prototype.toggleSpeechOnOrOff = function() {};
+
+/**
+ * Sets the rate, pitch, and volume TTS Settings to their defaults.
+ */
+TtsInterface.prototype.resetTextToSpeechSettings = function() {};

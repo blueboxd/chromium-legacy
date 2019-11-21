@@ -14,10 +14,8 @@ if (optimize_webui) {
 
   optimize_webui("build") {
     host = "bookmarks"
-    html_in_files = [ "bookmarks.html" ]
-    html_out_files = [ "vulcanized.html" ]
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
-    js_out_files = [ "bookmarks.js" ]
+    js_out_files = [ "bookmarks.rollup.js" ]
     js_module_in_files = [ "bookmarks.js" ]
 
     deps = [

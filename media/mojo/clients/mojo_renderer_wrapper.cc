@@ -41,6 +41,11 @@ void MojoRendererWrapper::SetCdm(media::CdmContext* cdm_context,
   mojo_renderer_->SetCdm(cdm_context, std::move(cdm_attached_cb));
 }
 
+void MojoRendererWrapper::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  mojo_renderer_->SetLatencyHint(latency_hint);
+}
+
 base::TimeDelta MojoRendererWrapper::GetMediaTime() {
   return mojo_renderer_->GetMediaTime();
 }

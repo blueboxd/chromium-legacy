@@ -16,7 +16,7 @@
 ; No additional resource access needed.
 
 ; This is available in 10.15+, and rolled out as a Finch experiment.
-(if (param-true? filter-syscalls)
+(if (param-true? filter-syscalls-debug)
   (when (defined? 'syscall-unix)
     (deny syscall-unix (with send-signal SIGSYS))
     (allow syscall-unix

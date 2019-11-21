@@ -43,12 +43,6 @@ bool AccessibilityWindowInfoDataWrapper::IsVisibleToUser() const {
   return true;
 }
 
-bool AccessibilityWindowInfoDataWrapper::IsFocused() const {
-  // In Talkback, Android windows themselves cannot be focused. Only individual
-  // nodes within these windows can have focus.
-  return false;
-}
-
 bool AccessibilityWindowInfoDataWrapper::CanBeAccessibilityFocused() const {
   // Windows are too generic to be Accessibility focused in Chrome, although
   // they can be Accessibility focused in Android by virtue of having

@@ -197,6 +197,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void RenderToOverlay(gpu::Mailbox overlay_candidate_mailbox,
                        const gfx::Rect& bounds);
 
+  void FlushForTesting();
+
   // gpu::DisplayContext implementation:
   void MarkContextLost() override;
 

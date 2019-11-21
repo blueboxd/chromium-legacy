@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame_pool.h"
 #include "media/capture/video_capturer_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
@@ -28,6 +29,7 @@ namespace blink {
 
 class LocalFrame;
 class WebGraphicsContext3DProvider;
+class WebGraphicsContext3DProviderWrapper;
 
 // CanvasCaptureHandler acts as the link between Blink side HTMLCanvasElement
 // and Chrome side VideoCapturerSource. It is responsible for handling
@@ -51,7 +53,8 @@ class MODULES_EXPORT CanvasCaptureHandler {
       blink::WebMediaStreamTrack* track);
 
   void SendNewFrame(sk_sp<SkImage> image,
-                    blink::WebGraphicsContext3DProvider* context_provider);
+                    base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
+                        context_provider);
   bool NeedsNewFrame() const;
 
   // Functions called by media::VideoCapturerSource implementation.
@@ -82,16 +85,21 @@ class MODULES_EXPORT CanvasCaptureHandler {
       blink::WebGraphicsContext3DProvider* context_provider);
   void ReadYUVPixelsAsync(
       sk_sp<SkImage> image,
-      blink::WebGraphicsContext3DProvider* context_provider);
+      base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
+          context_provider);
   void OnARGBPixelsReadAsync(sk_sp<SkImage> image,
                              scoped_refptr<media::VideoFrame> temp_argb_frame,
                              base::TimeTicks this_frame_ticks,
                              bool flip,
                              bool success);
-  void OnYUVPixelsReadAsync(sk_sp<SkImage> image,
-                            scoped_refptr<media::VideoFrame> yuv_frame,
-                            base::TimeTicks this_frame_ticks,
-                            bool success);
+  void OnYUVPixelsReadAsync(
+      sk_sp<SkImage> image,
+      GLuint copy_texture,
+      base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
+          context_provider,
+      scoped_refptr<media::VideoFrame> yuv_frame,
+      base::TimeTicks this_frame_ticks,
+      bool success);
 
   scoped_refptr<media::VideoFrame> ConvertToYUVFrame(
       bool is_opaque,

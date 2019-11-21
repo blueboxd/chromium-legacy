@@ -1739,7 +1739,7 @@ TEST_P(AutofillWalletMetadataSyncBridgeRemoteChangesTest,
               UnorderedElementsAre(EqualsSpecifics(merged_profile)));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AutofillWalletMetadataSyncBridgeRemoteChangesTest,
                          ::testing::Values(INITIAL_SYNC_ADD,
                                            LATER_SYNC_ADD,

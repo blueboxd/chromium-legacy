@@ -84,7 +84,7 @@ TEST_P(DeviceDockMacAddressHandlerTest, OnPolicyChange) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     DeviceDockMacAddressHandlerTest,
     testing::Values(std::make_tuple(1, "designated_dock_mac"),
                     std::make_tuple(2, "builtin_adapter_mac"),

@@ -100,6 +100,12 @@ void LoggedInSpokenFeedbackTest::SendKeyPressWithSearch(ui::KeyboardCode key) {
       nullptr, key, false, false, false, true)));
 }
 
+void LoggedInSpokenFeedbackTest::SendKeyPressWithSearchAndControlAndShift(
+    ui::KeyboardCode key) {
+  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
+      nullptr, key, true, true, false, true)));
+}
+
 void LoggedInSpokenFeedbackTest::SendMouseMoveTo(const gfx::Point& location) {
   ASSERT_NO_FATAL_FAILURE(
       ASSERT_TRUE(ui_controls::SendMouseMove(location.x(), location.y())));
@@ -908,6 +914,43 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
             speech_monitor_.GetNextUtterance());
   EXPECT_TRUE(speech_monitor_.GetDelayForLastUtteranceMS() >=
               kExpectedPhoneticSpeechAndHintDelayMS);
+}
+
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
+  EnableChromeVox();
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html,<button autofocus>Click me</button>"));
+
+  // Included to reduce flakiness.
+  while (speech_monitor_.GetNextUtterance() !=
+         "Press Search plus Space to activate.") {
+  }
+  // Reset Tts settings using hotkey and assert speech output.
+  SendKeyPressWithSearchAndControlAndShift(ui::VKEY_OEM_5);
+  while (speech_monitor_.GetNextUtterance() !=
+         "Reset text to speech settings to default values.") {
+  }
+  // Increase speech rate.
+  SendKeyPressWithSearch(ui::VKEY_OEM_4);
+  while (speech_monitor_.GetNextUtterance() != "Rate 19 percent") {
+  }
+  // Increase speech pitch.
+  SendKeyPressWithSearch(ui::VKEY_OEM_6);
+  while (speech_monitor_.GetNextUtterance() != "Pitch 50 percent") {
+  }
+  // Reset Tts settings again.
+  SendKeyPressWithSearchAndControlAndShift(ui::VKEY_OEM_5);
+  while (speech_monitor_.GetNextUtterance() !=
+         "Reset text to speech settings to default values.") {
+  }
+  // Ensure that increasing speech rate and pitch jump to the same values as
+  // before.
+  SendKeyPressWithSearch(ui::VKEY_OEM_4);
+  while (speech_monitor_.GetNextUtterance() != "Rate 19 percent") {
+  }
+  SendKeyPressWithSearch(ui::VKEY_OEM_6);
+  while (speech_monitor_.GetNextUtterance() != "Pitch 50 percent") {
+  }
 }
 
 }  // namespace chromeos

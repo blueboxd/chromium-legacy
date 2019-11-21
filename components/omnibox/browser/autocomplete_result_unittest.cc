@@ -244,8 +244,8 @@ TEST_F(AutocompleteResultTest, Swap) {
 
   // Swap with empty shouldn't do anything interesting.
   r1.Swap(&r2);
-  EXPECT_EQ(r1.end(), r1.default_match());
-  EXPECT_EQ(r2.end(), r2.default_match());
+  EXPECT_FALSE(r1.default_match());
+  EXPECT_FALSE(r2.default_match());
 
   // Swap with a single match.
   ACMatches matches;
@@ -258,13 +258,15 @@ TEST_F(AutocompleteResultTest, Swap) {
   matches.push_back(match);
   r1.AppendMatches(input, matches);
   r1.SortAndCull(input, template_url_service_.get());
-  EXPECT_EQ(r1.begin(), r1.default_match());
+  EXPECT_TRUE(r1.default_match());
+  EXPECT_EQ(&*r1.begin(), r1.default_match());
 
   r1.Swap(&r2);
   EXPECT_TRUE(r1.empty());
-  EXPECT_EQ(r1.end(), r1.default_match());
+  EXPECT_FALSE(r1.default_match());
   ASSERT_FALSE(r2.empty());
-  EXPECT_EQ(r2.begin(), r2.default_match());
+  EXPECT_TRUE(r2.default_match());
+  EXPECT_EQ(&*r2.begin(), r2.default_match());
 }
 
 TEST_F(AutocompleteResultTest, AlternateNavUrl) {

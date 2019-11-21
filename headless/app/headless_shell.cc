@@ -14,6 +14,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
@@ -44,7 +45,6 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_WIN)
@@ -242,11 +242,10 @@ void HeadlessShell::OnStart(HeadlessBrowser* browser) {
         std::make_unique<net::SSLKeyLoggerImpl>(ssl_keylog_file));
   }
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kLang)) {
-    context_builder.SetAcceptLanguage(
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            ::switches::kLang));
-  }
+  // Retrieve the locale set by InitApplicationLocale() in
+  // headless_content_main_delegate.cc in a way that is free of side-effects.
+  context_builder.SetAcceptLanguage(base::i18n::GetConfiguredLocale());
+
   browser_context_ = context_builder.Build();
   browser_->SetDefaultBrowserContext(browser_context_);
 

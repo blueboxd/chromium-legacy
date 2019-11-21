@@ -50,7 +50,6 @@ BASIC_TYPES = (PRIMITIVE_TYPES | frozenset([
     'DOMString',
     'ByteString',
     'USVString',
-    'Date',
     # http://heycam.github.io/webidl/#idl-types
     'void',
 ]))
@@ -74,7 +73,6 @@ TYPE_NAMES = {
     'ByteString': 'ByteString',
     'USVString': 'USVString',
     'object': 'Object',
-    'Date': 'Date',
 }
 
 STRING_TYPES = frozenset([

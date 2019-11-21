@@ -65,12 +65,12 @@ void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
 void UserPolicySigninService::RegisterForPolicyWithAccountId(
     const std::string& username,
     const std::string& account_id,
-    const PolicyRegistrationCallback& callback) {
+    PolicyRegistrationCallback callback) {
   // Create a new CloudPolicyClient for fetching the DMToken.
   std::unique_ptr<CloudPolicyClient> policy_client =
       CreateClientForRegistrationOnly(username);
   if (!policy_client) {
-    callback.Run(std::string(), std::string());
+    std::move(callback).Run(std::string(), std::string());
     return;
   }
 
@@ -84,18 +84,18 @@ void UserPolicySigninService::RegisterForPolicyWithAccountId(
 
   // Using a raw pointer to |this| is okay, because we own the
   // |registration_helper_|.
-  auto registration_callback = base::Bind(
+  auto registration_callback = base::BindOnce(
       &UserPolicySigninService::CallPolicyRegistrationCallback,
-      base::Unretained(this), base::Passed(&policy_client), callback);
+      base::Unretained(this), std::move(policy_client), std::move(callback));
   registration_helper_->StartRegistration(identity_manager(), account_id,
-                                          registration_callback);
+                                          std::move(registration_callback));
 }
 
 void UserPolicySigninService::CallPolicyRegistrationCallback(
     std::unique_ptr<CloudPolicyClient> client,
     PolicyRegistrationCallback callback) {
   registration_helper_.reset();
-  callback.Run(client->dm_token(), client->client_id());
+  std::move(callback).Run(client->dm_token(), client->client_id());
 }
 
 void UserPolicySigninService::Shutdown() {
@@ -158,8 +158,8 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
       kCloudPolicyRegistrationType));
   registration_helper_->StartRegistration(
       identity_manager(), identity_manager()->GetPrimaryAccountId(),
-      base::Bind(&UserPolicySigninService::OnRegistrationDone,
-                 base::Unretained(this)));
+      base::BindOnce(&UserPolicySigninService::OnRegistrationDone,
+                     base::Unretained(this)));
 }
 
 void UserPolicySigninService::CancelPendingRegistration() {

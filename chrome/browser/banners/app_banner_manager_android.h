@@ -23,8 +23,6 @@ struct AddToHomescreenParams;
 
 namespace banners {
 
-class AppBannerUiDelegateAndroid;
-
 // Extends the AppBannerManager to support native Android apps. This class owns
 // a Java-side AppBannerManager which interfaces with the Java runtime to fetch
 // native app data and install them when requested.
@@ -134,8 +132,6 @@ class AppBannerManagerAndroid
   // Called for recording metrics.
   void RecordEventForAppBanner(AddToHomescreenInstaller::Event event,
                                const AddToHomescreenParams& a2hs_params);
-
-  std::unique_ptr<AppBannerUiDelegateAndroid> ui_delegate_;
 
   // The URL of the badge icon.
   GURL badge_icon_url_;

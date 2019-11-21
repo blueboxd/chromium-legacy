@@ -97,6 +97,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   void SetPlaybackRate(double playback_rate) override;
   float GetVolume() const override;
   void SetVolume(float volume) override;
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) override;
   base::TimeDelta GetMediaTime() const override;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const override;
   base::TimeDelta GetMediaDuration() const override;

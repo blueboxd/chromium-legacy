@@ -32,7 +32,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
@@ -41,7 +40,6 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
@@ -52,7 +50,6 @@ import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActi
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.customtabs.features.CustomTabNavigationBarController;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -66,7 +63,6 @@ import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
-import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -76,22 +72,14 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
  */
-public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent> {
+public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityComponent> {
     private CustomTabIntentDataProvider mIntentDataProvider;
     private CustomTabsSessionToken mSession;
     private CustomTabActivityTabController mTabController;
     private CustomTabActivityTabProvider mTabProvider;
     private CustomTabActivityTabFactory mTabFactory;
-    private CustomTabActivityNavigationController mNavigationController;
     private CustomTabStatusBarColorProvider mCustomTabStatusBarColorProvider;
-    private CustomTabToolbarCoordinator mToolbarCoordinator;
     private CustomTabIntentHandler mCustomTabIntentHandler;
-
-    // This is to give the right package name while using the client's resources during an
-    // overridePendingTransition call.
-    // TODO(ianwen, yusufo): Figure out a solution to extract external resources without having to
-    // change the package name.
-    private boolean mShouldOverridePackage;
 
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
@@ -129,15 +117,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
     };
 
-    @Override
-    protected RootUiCoordinator createRootUiCoordinator() {
-        // TODO(https://crbug.com/1020324): Move this logic into a CustomTabRootUICoordinator that
-        // can synchronously orchestrate the creation of child coordinators.
-        return new RootUiCoordinator(this, (toolbarManager) -> {
-            mToolbarCoordinator.onToolbarInitialized(toolbarManager);
-            mNavigationController.onToolbarInitialized(toolbarManager);
-        }, null, getShareDelegateSupplier());
-    }
 
     @Override
     protected Drawable getBackgroundDrawable() {
@@ -335,21 +314,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    protected int getControlContainerLayoutId() {
-        return R.layout.custom_tabs_control_container;
-    }
-
-    @Override
-    protected int getToolbarLayoutId() {
-        return R.layout.custom_tabs_toolbar;
-    }
-
-    @Override
-    public int getControlContainerHeightResource() {
-        return R.dimen.custom_tabs_control_container_height;
-    }
-
-    @Override
     public String getPackageName() {
         if (mShouldOverridePackage) return mIntentDataProvider.getClientPackageName();
         return super.getPackageName();
@@ -390,18 +354,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         } else {
             defaultBehavior.run();
         }
-    }
-
-    @Override
-    protected boolean handleBackPressed() {
-        return mNavigationController.navigateOnBack();
-    }
-
-    @Override
-    public boolean canShowAppMenu() {
-        if (getActivityTab() == null || !mToolbarCoordinator.toolbarIsInitialized()) return false;
-
-        return super.canShowAppMenu();
     }
 
     @Override

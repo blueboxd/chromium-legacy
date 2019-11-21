@@ -27,26 +27,25 @@ SystemSaltGetter::SystemSaltGetter() {}
 
 SystemSaltGetter::~SystemSaltGetter() = default;
 
-void SystemSaltGetter::GetSystemSalt(
-    const GetSystemSaltCallback& callback) {
+void SystemSaltGetter::GetSystemSalt(GetSystemSaltCallback callback) {
   if (!system_salt_.empty()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, system_salt_));
+        FROM_HERE, base::BindOnce(std::move(callback), system_salt_));
     return;
   }
 
   CryptohomeClient::Get()->WaitForServiceToBeAvailable(
       base::BindOnce(&SystemSaltGetter::DidWaitForServiceToBeAvailable,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void SystemSaltGetter::AddOnSystemSaltReady(const base::Closure& closure) {
+void SystemSaltGetter::AddOnSystemSaltReady(base::OnceClosure closure) {
   if (!raw_salt_.empty()) {
-    closure.Run();
+    std::move(closure).Run();
     return;
   }
 
-  on_system_salt_ready_.push_back(closure);
+  on_system_salt_ready_.push_back(std::move(closure));
 }
 
 const SystemSaltGetter::RawSalt* SystemSaltGetter::GetRawSalt() const {
@@ -59,36 +58,36 @@ void SystemSaltGetter::SetRawSaltForTesting(
 }
 
 void SystemSaltGetter::DidWaitForServiceToBeAvailable(
-    const GetSystemSaltCallback& callback,
+    GetSystemSaltCallback callback,
     bool service_is_available) {
   if (!service_is_available) {
     LOG(ERROR) << "WaitForServiceToBeAvailable failed.";
-    callback.Run(std::string());
+    std::move(callback).Run(std::string());
     return;
   }
   CryptohomeClient::Get()->GetSystemSalt(
       base::BindOnce(&SystemSaltGetter::DidGetSystemSalt,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SystemSaltGetter::DidGetSystemSalt(
-    const GetSystemSaltCallback& callback,
+    GetSystemSaltCallback callback,
     base::Optional<std::vector<uint8_t>> system_salt) {
   if (system_salt.has_value() && !system_salt->empty() &&
       system_salt->size() % 2 == 0U) {
     raw_salt_ = std::move(system_salt).value();
     system_salt_ = ConvertRawSaltToHexString(raw_salt_);
 
-    std::vector<base::Closure> callbacks;
+    std::vector<base::OnceClosure> callbacks;
     callbacks.swap(on_system_salt_ready_);
-    for (const base::Closure& callback : callbacks) {
-      callback.Run();
+    for (base::OnceClosure& callback : callbacks) {
+      std::move(callback).Run();
     }
   } else {
     LOG(WARNING) << "System salt not available";
   }
 
-  callback.Run(system_salt_);
+  std::move(callback).Run(system_salt_);
 }
 
 // static

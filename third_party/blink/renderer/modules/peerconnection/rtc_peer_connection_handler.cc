@@ -607,7 +607,7 @@ bool IsHostnameCandidate(const RTCIceCandidatePlatform& candidate) {
   // top-level domain, which are gathered when the mDNS concealment of local
   // IPs is enabled.
   const char kLocalTld[] = ".local";
-  if (!candidate.Address().ContainsOnlyASCII())
+  if (!candidate.Address().ContainsOnlyASCIIOrEmpty())
     return false;
   // TODO(crbug.com/787254): Replace with String::EndsWithIgnoringCase.
   return base::EndsWith(candidate.Address().Ascii(), kLocalTld,

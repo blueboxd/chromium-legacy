@@ -61,8 +61,12 @@
     <file path="chromevox_strings_af.xtb" lang="af" />
     <file path="chromevox_strings_am.xtb" lang="am" />
     <file path="chromevox_strings_ar.xtb" lang="ar" />
+    <file path="chromevox_strings_as.xtb" lang="as" />
+    <file path="chromevox_strings_az.xtb" lang="az" />
+    <file path="chromevox_strings_be.xtb" lang="be" />
     <file path="chromevox_strings_bg.xtb" lang="bg" />
     <file path="chromevox_strings_bn.xtb" lang="bn" />
+    <file path="chromevox_strings_bs.xtb" lang="bs" />
     <file path="chromevox_strings_ca.xtb" lang="ca" />
     <file path="chromevox_strings_cs.xtb" lang="cs" />
     <file path="chromevox_strings_da.xtb" lang="da" />
@@ -72,35 +76,53 @@
     <file path="chromevox_strings_es.xtb" lang="es" />
     <file path="chromevox_strings_es-419.xtb" lang="es-419" />
     <file path="chromevox_strings_et.xtb" lang="et" />
+    <file path="chromevox_strings_eu.xtb" lang="eu" />
     <file path="chromevox_strings_fa.xtb" lang="fa" />
     <file path="chromevox_strings_fi.xtb" lang="fi" />
     <file path="chromevox_strings_fil.xtb" lang="fil" />
     <file path="chromevox_strings_fr.xtb" lang="fr" />
+    <file path="chromevox_strings_fr-CA.xtb" lang="fr-CA" />
+    <file path="chromevox_strings_gl.xtb" lang="gl" />
     <file path="chromevox_strings_gu.xtb" lang="gu" />
     <file path="chromevox_strings_hi.xtb" lang="hi" />
     <file path="chromevox_strings_hr.xtb" lang="hr" />
     <file path="chromevox_strings_hu.xtb" lang="hu" />
+    <file path="chromevox_strings_hy.xtb" lang="hy" />
     <file path="chromevox_strings_id.xtb" lang="id" />
+    <file path="chromevox_strings_is.xtb" lang="is" />
     <file path="chromevox_strings_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="chromevox_strings_iw.xtb" lang="he" />
     <file path="chromevox_strings_ja.xtb" lang="ja" />
+    <file path="chromevox_strings_ka.xtb" lang="ka" />
+    <file path="chromevox_strings_kk.xtb" lang="kk" />
+    <file path="chromevox_strings_km.xtb" lang="km" />
     <file path="chromevox_strings_kn.xtb" lang="kn" />
     <file path="chromevox_strings_ko.xtb" lang="ko" />
+    <file path="chromevox_strings_ky.xtb" lang="ky" />
+    <file path="chromevox_strings_lo.xtb" lang="lo" />
     <file path="chromevox_strings_lt.xtb" lang="lt" />
     <file path="chromevox_strings_lv.xtb" lang="lv" />
+    <file path="chromevox_strings_mk.xtb" lang="mk" />
     <file path="chromevox_strings_ml.xtb" lang="ml" />
+    <file path="chromevox_strings_mn.xtb" lang="mn" />
     <file path="chromevox_strings_mr.xtb" lang="mr" />
     <file path="chromevox_strings_ms.xtb" lang="ms" />
+    <file path="chromevox_strings_my.xtb" lang="my" />
+    <file path="chromevox_strings_ne.xtb" lang="ne" />
     <file path="chromevox_strings_nl.xtb" lang="nl" />
     <file path="chromevox_strings_no.xtb" lang="no" />
+    <file path="chromevox_strings_or.xtb" lang="or" />
+    <file path="chromevox_strings_pa.xtb" lang="pa" />
     <file path="chromevox_strings_pl.xtb" lang="pl" />
     <file path="chromevox_strings_pt-BR.xtb" lang="pt-BR" />
     <file path="chromevox_strings_pt-PT.xtb" lang="pt-PT" />
     <file path="chromevox_strings_ro.xtb" lang="ro" />
     <file path="chromevox_strings_ru.xtb" lang="ru" />
+    <file path="chromevox_strings_si.xtb" lang="si" />
     <file path="chromevox_strings_sk.xtb" lang="sk" />
     <file path="chromevox_strings_sl.xtb" lang="sl" />
+    <file path="chromevox_strings_sq.xtb" lang="sq" />
     <file path="chromevox_strings_sr.xtb" lang="sr" />
     <file path="chromevox_strings_sv.xtb" lang="sv" />
     <file path="chromevox_strings_sw.xtb" lang="sw" />
@@ -109,9 +131,13 @@
     <file path="chromevox_strings_th.xtb" lang="th" />
     <file path="chromevox_strings_tr.xtb" lang="tr" />
     <file path="chromevox_strings_uk.xtb" lang="uk" />
+    <file path="chromevox_strings_ur.xtb" lang="ur" />
+    <file path="chromevox_strings_uz.xtb" lang="uz" />
     <file path="chromevox_strings_vi.xtb" lang="vi" />
     <file path="chromevox_strings_zh-CN.xtb" lang="zh-CN" />
+    <file path="chromevox_strings_zh-HK.xtb" lang="zh-HK" />
     <file path="chromevox_strings_zh-TW.xtb" lang="zh-TW" />
+    <file path="chromevox_strings_zu.xtb" lang="zu" />
   </translations>
   <release allow_pseudo="false" seq="1">
     <messages fallback_to_english="true">
@@ -3769,6 +3795,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       </message>
       <message desc="Spoken if the user attempts to jump to the previous paragraph when none exists." name="IDS_CHROMEVOX_NO_PREVIOUS_PARAGRAPH">
         No previous paragraph.
+      </message>
+      <message desc="Spoken when the user resets text to speech settings back to their default values" name="IDS_CHROMEVOX_ANNOUNCE_TTS_DEFAULT_SETTINGS">
+        Reset text to speech settings to default values.
+      </message>
+      <message desc="The description of the resetTextToSpeechSettings key. Displayed in the Options page." name="IDS_CHROMEVOX_RESET_TTS_SETTINGS">
+        Reset text to speech settings
       </message>
     </messages>
   </release>

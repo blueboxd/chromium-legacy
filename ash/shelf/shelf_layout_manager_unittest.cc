@@ -1024,7 +1024,7 @@ class ShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
 };
 
 // Used to test the Hotseat, ScrollabeShelf, and DenseShelf features.
-INSTANTIATE_TEST_SUITE_P(, ShelfLayoutManagerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ShelfLayoutManagerTest, testing::Bool());
 
 // Makes sure SetVisible updates work area and widget appropriately.
 TEST_P(ShelfLayoutManagerTest, SetVisible) {
@@ -3288,7 +3288,7 @@ class HotseatStateWatcher : public ShelfLayoutManagerObserver {
 };
 
 // Used to test autohide and always shown shelf.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          HotseatShelfLayoutManagerTest,
                          testing::Values(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
                                          SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS));

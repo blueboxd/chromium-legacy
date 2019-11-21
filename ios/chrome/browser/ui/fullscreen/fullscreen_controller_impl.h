@@ -29,6 +29,7 @@ class FullscreenControllerImpl : public FullscreenController {
   bool IsEnabled() const override;
   void IncrementDisabledCounter() override;
   void DecrementDisabledCounter() override;
+  bool ResizesScrollView() const override;
   void BrowserTraitCollectionChangedBegin() override;
   void BrowserTraitCollectionChangedEnd() override;
   CGFloat GetProgress() const override;

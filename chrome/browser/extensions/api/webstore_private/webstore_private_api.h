@@ -334,6 +334,23 @@ class WebstorePrivateGetExtensionStatusFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebstorePrivateGetExtensionStatusFunction);
 };
 
+class WebstorePrivateRequestExtensionFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webstorePrivate.requestExtension",
+                             WEBSTOREPRIVATE_REQUESTEXTENSION)
+  WebstorePrivateRequestExtensionFunction();
+
+ private:
+  ~WebstorePrivateRequestExtensionFunction() override;
+
+  // Extensionfunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  void AddExtensionToPendingList(const ExtensionId& id);
+
+  DISALLOW_COPY_AND_ASSIGN(WebstorePrivateRequestExtensionFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_WEBSTORE_PRIVATE_WEBSTORE_PRIVATE_API_H_

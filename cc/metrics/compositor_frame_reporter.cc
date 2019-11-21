@@ -38,65 +38,74 @@ constexpr int kFrameSequenceTrackerTypeCount =
 
 // Names for CompositorFrameReporter::StageType, which should be updated in case
 // of changes to the enum.
-constexpr const char* kStageNames[] = {
-    [static_cast<int>(StageType::kBeginImplFrameToSendBeginMainFrame)] =
-        "BeginImplFrameToSendBeginMainFrame",
-    [static_cast<int>(StageType::kSendBeginMainFrameToCommit)] =
-        "SendBeginMainFrameToCommit",
-    [static_cast<int>(StageType::kCommit)] = "Commit",
-    [static_cast<int>(StageType::kEndCommitToActivation)] =
-        "EndCommitToActivation",
-    [static_cast<int>(StageType::kActivation)] = "Activation",
-    [static_cast<int>(StageType::kEndActivateToSubmitCompositorFrame)] =
-        "EndActivateToSubmitCompositorFrame",
-    [static_cast<int>(
-        StageType::kSubmitCompositorFrameToPresentationCompositorFrame)] =
-        "SubmitCompositorFrameToPresentationCompositorFrame",
-    [static_cast<int>(StageType::kTotalLatency)] = "TotalLatency",
-    [static_cast<int>(VizBreakdown::kSubmitToReceiveCompositorFrame) +
-        kVizBreakdownInitialIndex] =
-        "SubmitCompositorFrameToPresentationCompositorFrame."
-        "SubmitToReceiveCompositorFrame",
-    [static_cast<int>(VizBreakdown::kReceivedCompositorFrameToStartDraw) +
-        kVizBreakdownInitialIndex] =
-        "SubmitCompositorFrameToPresentationCompositorFrame."
-        "ReceivedCompositorFrameToStartDraw",
-    [static_cast<int>(VizBreakdown::kStartDrawToSwapEnd) +
-        kVizBreakdownInitialIndex] =
-        "SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapEnd",
-    [static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame) +
-        kVizBreakdownInitialIndex] =
-        "SubmitCompositorFrameToPresentationCompositorFrame."
-        "SwapEndToPresentationCompositorFrame",
-    [static_cast<int>(BlinkBreakdown::kHandleInputEvents) +
-        kBlinkBreakdownInitialIndex] =
-        "SendBeginMainFrameToCommit.HandleInputEvents",
-    [static_cast<int>(BlinkBreakdown::kAnimate) + kBlinkBreakdownInitialIndex] =
-        "SendBeginMainFrameToCommit.Animate",
-    [static_cast<int>(BlinkBreakdown::kStyleUpdate) +
-        kBlinkBreakdownInitialIndex] = "SendBeginMainFrameToCommit.StyleUpdate",
-    [static_cast<int>(BlinkBreakdown::kLayoutUpdate) +
-        kBlinkBreakdownInitialIndex] =
-        "SendBeginMainFrameToCommit.LayoutUpdate",
-    [static_cast<int>(BlinkBreakdown::kPrepaint) +
-        kBlinkBreakdownInitialIndex] = "SendBeginMainFrameToCommit.Prepaint",
-    [static_cast<int>(BlinkBreakdown::kComposite) +
-        kBlinkBreakdownInitialIndex] = "SendBeginMainFrameToCommit.Composite",
-    [static_cast<int>(BlinkBreakdown::kPaint) + kBlinkBreakdownInitialIndex] =
-        "SendBeginMainFrameToCommit.Paint",
-    [static_cast<int>(BlinkBreakdown::kScrollingCoordinator) +
-        kBlinkBreakdownInitialIndex] =
-        "SendBeginMainFrameToCommit.ScrollingCoordinator",
-    [static_cast<int>(BlinkBreakdown::kCompositeCommit) +
-        kBlinkBreakdownInitialIndex] =
-        "SendBeginMainFrameToCommit.CompositeCommit",
-    [static_cast<int>(BlinkBreakdown::kUpdateLayers) +
-        kBlinkBreakdownInitialIndex] =
-        "SendBeginMainFrameToCommit.UpdateLayers"};
-
-static_assert(sizeof(kStageNames) / sizeof(kStageNames[0]) ==
-                  kStageTypeCount + kAllBreakdownCount,
-              "Compositor latency stages has changed.");
+constexpr const char* GetStageName(int stage_type_index) {
+  switch (stage_type_index) {
+    case static_cast<int>(StageType::kBeginImplFrameToSendBeginMainFrame):
+      return "BeginImplFrameToSendBeginMainFrame";
+    case static_cast<int>(StageType::kSendBeginMainFrameToCommit):
+      return "SendBeginMainFrameToCommit";
+    case static_cast<int>(StageType::kCommit):
+      return "Commit";
+    case static_cast<int>(StageType::kEndCommitToActivation):
+      return "EndCommitToActivation";
+    case static_cast<int>(StageType::kActivation):
+      return "Activation";
+    case static_cast<int>(StageType::kEndActivateToSubmitCompositorFrame):
+      return "EndActivateToSubmitCompositorFrame";
+    case static_cast<int>(
+        StageType::kSubmitCompositorFrameToPresentationCompositorFrame):
+      return "SubmitCompositorFrameToPresentationCompositorFrame";
+    case static_cast<int>(StageType::kTotalLatency):
+      return "TotalLatency";
+    case static_cast<int>(VizBreakdown::kSubmitToReceiveCompositorFrame) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "SubmitToReceiveCompositorFrame";
+    case static_cast<int>(VizBreakdown::kReceivedCompositorFrameToStartDraw) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "ReceivedCompositorFrameToStartDraw";
+    case static_cast<int>(VizBreakdown::kStartDrawToSwapEnd) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "StartDrawToSwapEnd";
+    case static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame) +
+        kVizBreakdownInitialIndex:
+      return "SubmitCompositorFrameToPresentationCompositorFrame."
+             "SwapEndToPresentationCompositorFrame";
+    case static_cast<int>(BlinkBreakdown::kHandleInputEvents) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.HandleInputEvents";
+    case static_cast<int>(BlinkBreakdown::kAnimate) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.Animate";
+    case static_cast<int>(BlinkBreakdown::kStyleUpdate) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.StyleUpdate";
+    case static_cast<int>(BlinkBreakdown::kLayoutUpdate) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.LayoutUpdate";
+    case static_cast<int>(BlinkBreakdown::kPrepaint) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.Prepaint";
+    case static_cast<int>(BlinkBreakdown::kComposite) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.Composite";
+    case static_cast<int>(BlinkBreakdown::kPaint) + kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.Paint";
+    case static_cast<int>(BlinkBreakdown::kScrollingCoordinator) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.ScrollingCoordinator";
+    case static_cast<int>(BlinkBreakdown::kCompositeCommit) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.CompositeCommit";
+    case static_cast<int>(BlinkBreakdown::kUpdateLayers) +
+        kBlinkBreakdownInitialIndex:
+      return "SendBeginMainFrameToCommit.UpdateLayers";
+    default:
+      return "";
+  }
+}
 
 // Names for CompositorFrameReporter::MissedFrameReportTypes, which should be
 // updated in case of changes to the enum.
@@ -122,13 +131,14 @@ std::string HistogramName(const int report_type_index,
                           const int stage_type_index) {
   DCHECK_LE(frame_sequence_tracker_type_index,
             FrameSequenceTrackerType::kMaxType);
-  const char* tracker_type_name = FrameSequenceTracker::
-      kFrameSequenceTrackerTypeNames[frame_sequence_tracker_type_index];
+  const char* tracker_type_name =
+      FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
+          frame_sequence_tracker_type_index);
   DCHECK(tracker_type_name);
   return base::StrCat({"CompositorLatency.",
                        kReportTypeNames[report_type_index], tracker_type_name,
                        *tracker_type_name ? "." : "",
-                       kStageNames[stage_type_index]});
+                       GetStageName(stage_type_index)});
 }
 }  // namespace
 
@@ -164,7 +174,7 @@ void CompositorFrameReporter::StartStage(
   CHECK_GE(stage_type_index, 0);
   TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
       "cc,benchmark", "PipelineReporter", this,
-      TRACE_STR_COPY(kStageNames[stage_type_index]), start_time);
+      TRACE_STR_COPY(GetStageName(stage_type_index)), start_time);
 }
 
 void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {

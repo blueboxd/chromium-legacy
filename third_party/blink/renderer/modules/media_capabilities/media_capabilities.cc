@@ -175,21 +175,19 @@ bool IsValidMediaDecodingConfiguration(
   }
 
   if (configuration->hasKeySystemConfiguration()) {
-    if (configuration->keySystemConfiguration()->hasAudioRobustness() &&
+    if (configuration->keySystemConfiguration()->hasAudio() &&
         !configuration->hasAudio()) {
       *message =
-          "The keySystemConfiguration object contains an "
-          "audioRobustness property but the root configuration has no "
-          "audio configuration.";
+          "The keySystemConfiguration object contains an audio property but "
+          "the root configuration has no audio configuration.";
       return false;
     }
 
-    if (configuration->keySystemConfiguration()->hasVideoRobustness() &&
+    if (configuration->keySystemConfiguration()->hasVideo() &&
         !configuration->hasVideo()) {
       *message =
-          "The keySystemConfiguration object contains an "
-          "videoRobustness property but the root configuration has no "
-          "video configuration.";
+          "The keySystemConfiguration object contains a video property but the "
+          "root configuration has no video configuration.";
       return false;
     }
   }
@@ -779,9 +777,10 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
         MediaKeySystemMediaCapability::Create();
     // Set the contentType attribute to config.audio.contentType.
     audio_capability->setContentType(configuration->audio()->contentType());
-    // Set the robustness attribute to
-    // config.keySystemConfiguration.audioRobustness.
-    audio_capability->setRobustness(key_system_config->audioRobustness());
+    // If config.keySystemConfiguration.audio is present, set the robustness
+    // attribute to config.keySystemConfiguration.audio.robustness.
+    if (key_system_config->hasAudio())
+      audio_capability->setRobustness(key_system_config->audio()->robustness());
 
     eme_config->setAudioCapabilities(
         HeapVector<Member<MediaKeySystemMediaCapability>>(1, audio_capability));
@@ -795,9 +794,10 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
         MediaKeySystemMediaCapability::Create();
     // Set the contentType attribute to config.video.contentType.
     video_capability->setContentType(configuration->video()->contentType());
-    // Set the robustness attribute to
-    // config.keySystemConfiguration.videoRobustness.
-    video_capability->setRobustness(key_system_config->videoRobustness());
+    // If config.keySystemConfiguration.video is present, set the robustness
+    // attribute to config.keySystemConfiguration.video.robustness.
+    if (key_system_config->hasVideo())
+      video_capability->setRobustness(key_system_config->video()->robustness());
 
     eme_config->setVideoCapabilities(
         HeapVector<Member<MediaKeySystemMediaCapability>>(1, video_capability));

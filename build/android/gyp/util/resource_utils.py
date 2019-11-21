@@ -47,6 +47,15 @@ _ALL_RESOURCE_TYPES = {
     'xml'
 }
 
+AAPT_IGNORE_PATTERN = ':'.join([
+    '*OWNERS',  # Allow OWNERS files within res/
+    '*.py',  # PRESUBMIT.py sometimes exist.
+    '*.pyc',
+    '*~',  # Some editors create these as temp files.
+    '.*',  # Never makes sense to include dot(files/dirs).
+    '*.d.stamp',  # Ignore stamp files
+])
+
 
 def ToAndroidLocaleName(chromium_locale):
   """Convert an Chromium locale name into a corresponding Android one."""
@@ -154,6 +163,53 @@ def ToAndroidLocaleList(locale_list):
 # Represents a line from a R.txt file.
 _TextSymbolEntry = collections.namedtuple('RTextEntry',
     ('java_type', 'resource_type', 'name', 'value'))
+
+
+def _GenerateGlobs(pattern):
+  # This function processes the aapt ignore assets pattern into a list of globs
+  # to be used to exclude files using build_utils.MatchesGlob. It removes the
+  # '!', which is used by aapt to mean 'not chatty' so it does not output if the
+  # file is ignored (we dont output anyways, so it is not required). This
+  # function does not handle the <dir> and <file> prefixes used by aapt and are
+  # assumed not to be included in the pattern string.
+  return pattern.replace('!', '').split(':')
+
+
+def ExtractResourceDirsFromFileList(resource_files,
+                                    ignore_pattern=AAPT_IGNORE_PATTERN):
+  """Return a list of resource directories from a list of resource files."""
+  # Directory list order is important, cannot use set or other data structures
+  # that change order. This is because resource files of the same name in
+  # multiple res/ directories ellide one another (the last one passed is used).
+  # Thus the order must be maintained to prevent non-deterministic and possibly
+  # flakey builds.
+  resource_dirs = []
+  globs = _GenerateGlobs(ignore_pattern)
+  for resource_path in resource_files:
+    if build_utils.MatchesGlob(os.path.basename(resource_path), globs):
+      # Ignore non-resource files like OWNERS and the like.
+      continue
+    # Resources are always 1 directory deep under res/.
+    res_dir = os.path.dirname(os.path.dirname(resource_path))
+    if res_dir not in resource_dirs:
+      resource_dirs.append(res_dir)
+  return resource_dirs
+
+
+def IterResourceFilesInDirectories(directories,
+                                   ignore_pattern=AAPT_IGNORE_PATTERN):
+  globs = _GenerateGlobs(ignore_pattern)
+  for d in directories:
+    for root, _, files in os.walk(d):
+      for f in files:
+        archive_path = f
+        parent_dir = os.path.relpath(root, d)
+        if parent_dir != '.':
+          archive_path = os.path.join(parent_dir, f)
+        path = os.path.join(root, f)
+        if build_utils.MatchesGlob(archive_path, globs):
+          continue
+        yield path, archive_path
 
 
 def CreateResourceInfoFile(files_to_zip, zip_path):

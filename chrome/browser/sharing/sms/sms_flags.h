@@ -7,7 +7,8 @@
 
 #include "base/feature_list.h"
 
-// Feature to allow devices to receive the sms fetch request.
-extern const base::Feature kSmsFetchRequestHandler;
+// Feature to allow devices to send/receive the sms fetch request from/to a
+// remote device through the SharingService.
+extern const base::Feature kSmsReceiverCrossDevice;
 
 #endif  // CHROME_BROWSER_SHARING_SMS_SMS_FLAGS_H_

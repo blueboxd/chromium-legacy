@@ -58,7 +58,7 @@
       }
     }
 
-    var start = function() {
+    function start() {
       document.removeEventListener('animationstart', start, false);
       requestAnimationFrame(pause);
     }
@@ -69,9 +69,14 @@
     function pause() {
       paused = true;
       toggleClass('paused');
-      transform = getComputedStyle(document.getElementById('translate')).transform;
-      left = getComputedStyle(document.getElementById('left')).left;
-      requestAnimationFrame(resume);
+      // Transitioning the play state from running to paused is asynchronous.
+      // The animation is paused once the user agent signals that the animation
+      // is ready.
+      requestAnimationFrame(() => {
+        transform = getComputedStyle(document.getElementById('translate')).transform;
+        left = getComputedStyle(document.getElementById('left')).left;
+        requestAnimationFrame(resume);
+      });
     }
 
     function resume() {

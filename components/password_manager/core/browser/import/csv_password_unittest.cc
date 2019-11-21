@@ -114,7 +114,7 @@ TEST_P(CSVPasswordTestSuccess, Parse) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     CSVPasswordTestSuccess,
     ::testing::Values(
         TestCaseBuilder("all columns specified")
@@ -254,7 +254,7 @@ TEST_P(CSVPasswordTestFailure, Parse) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     CSVPasswordTestFailure,
     ::testing::Values(
         TestCaseBuilder("no columns specified")

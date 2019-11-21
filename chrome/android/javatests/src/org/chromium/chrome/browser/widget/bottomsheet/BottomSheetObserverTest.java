@@ -22,13 +22,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheetObserver}. */
@@ -230,22 +226,6 @@ public class BottomSheetObserverTest {
         mBottomSheetTestRule.setSheetOffsetFromBottom(midPeekFull);
         callbackHelper.waitForCallback(callbackCount, 1);
         assertEquals(0.5f, mObserver.getLastOffsetChangedValue(), MathUtils.EPSILON);
-    }
-
-    @Test
-    @MediumTest
-    public void testLoadUrlEvent() throws TimeoutException, ExecutionException {
-        int initialCount = mObserver.mLoadUrlCallbackHelper.getCallCount();
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mBottomSheetTestRule.getBottomSheet().loadUrl(
-                                new LoadUrlParams(UrlConstants.ABOUT_URL), false));
-
-        mObserver.mLoadUrlCallbackHelper.waitForCallback(initialCount);
-
-        assertEquals("onLoadUrl event should have been called a single time", initialCount + 1,
-                mObserver.mLoadUrlCallbackHelper.getCallCount());
     }
 
     @Test

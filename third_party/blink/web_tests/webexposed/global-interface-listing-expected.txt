@@ -2112,6 +2112,7 @@ interface Element : Node
     method replaceWith
     method requestFullscreen
     method requestPointerLock
+    method resetSubtreeRendered
     method scroll
     method scrollBy
     method scrollIntoView

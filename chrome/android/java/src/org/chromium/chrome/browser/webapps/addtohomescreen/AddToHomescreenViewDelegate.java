@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.webapps.addtohomescreen;
 
 /**
- * Used by {@link AddToHomescreenDialogView} to propagate view events to the business logic.
+ * Used by {@link AddToHomescreenDialogView} to propagate view events to {@link
+ * AddToHomescreenMediator}.
  */
-public interface AddToHomescreenViewDelegate {
+interface AddToHomescreenViewDelegate {
     /**
      * Called when the user accepts adding the item to the home screen with the provided title.
      */

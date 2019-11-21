@@ -1241,7 +1241,7 @@ TEST_P(ResponseValidationNativeExtensionBindingsSystemUnittest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ResponseValidationNativeExtensionBindingsSystemUnittest,
     testing::Bool());
 

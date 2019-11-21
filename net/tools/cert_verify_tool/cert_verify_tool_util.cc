@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include <Security/Security.h>

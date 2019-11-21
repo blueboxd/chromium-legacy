@@ -152,7 +152,7 @@ public class TabSuggestionMessageServiceUnitTest {
         TabSuggestion suggestion = new TabSuggestion(suggestedTabInfo, actionCode, "");
         List<TabSuggestion> tabSuggestions =
                 Collections.unmodifiableList(Arrays.asList(suggestion));
-        mMessageService.onNewSuggestion(tabSuggestions);
+        mMessageService.onNewSuggestion(tabSuggestions, null);
 
         return tabSuggestions;
     }

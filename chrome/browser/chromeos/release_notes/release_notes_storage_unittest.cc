@@ -56,7 +56,7 @@ class ReleaseNotesStorageTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ReleaseNotesStorageTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, ReleaseNotesStorageTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ReleaseNotesStorageTest, testing::Bool());
 
 TEST_P(ReleaseNotesStorageTest, ModifyLastRelease) {
   const bool should_show_notification = GetParam();

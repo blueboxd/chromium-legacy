@@ -40,6 +40,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/console_message.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_utils.h"
 #include "ipc/ipc_message.h"
 #include "net/http/http_response_headers.h"
@@ -124,12 +125,30 @@ void SuccessReportingCallback(
 bool IsSameOriginClientProviderHost(const GURL& origin,
                                     bool allow_reserved_client,
                                     ServiceWorkerProviderHost* host) {
+  // If |host| is in BackForwardCache, it should be skipped in iteration,
+  // because (1) hosts in BackForwardCache should never be exposed to web as
+  // clients and (2) hosts could be in an unknown state after eviction and
+  // before deletion.
+  if (IsBackForwardCacheEnabled() &&
+      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    if (host->IsInBackForwardCache())
+      return false;
+  }
   return host->IsProviderForClient() && host->url().GetOrigin() == origin &&
          (allow_reserved_client || host->is_execution_ready());
 }
 
 bool IsSameOriginWindowProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
+  // If |host| is in BackForwardCache, it should be skipped in iteration,
+  // because (1) hosts in BackForwardCache should never be exposed to web as
+  // clients and (2) hosts could be in an unknown state after eviction and
+  // before deletion.
+  if (IsBackForwardCacheEnabled() &&
+      ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    if (host->IsInBackForwardCache())
+      return false;
+  }
   return host->provider_type() ==
              blink::mojom::ServiceWorkerProviderType::kForWindow &&
          host->url().GetOrigin() == origin && host->is_execution_ready();

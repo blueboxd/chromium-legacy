@@ -82,7 +82,9 @@ test(function() {
 
 test(function() {
   var animation = finishedAnimation();
-  assert_equals(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
+  assert_times_equal(
+      animation.startTime,
+      document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
   assert_equals(animation.currentTime, 0);
   assert_false(animation.pending);
   assert_equals(animation.playState, 'finished');
@@ -118,7 +120,9 @@ test(function() {
 test(function() {
   var animation = idleAnimation();
   animation.finish();
-  assert_equals(animation.startTime, document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
+  assert_times_equal(
+      animation.startTime,
+      document.timeline.currentTime - (animation.playbackRate * animation.currentTime));
   assert_equals(animation.currentTime, 0);
   assert_false(animation.pending);
   assert_equals(animation.playState, 'finished');
@@ -225,13 +229,17 @@ test(function() {
   assert_equals(animation.playState, 'running');
 }, "Calling play() on a running animation");
 
-test(function() {
+async_test(function(t) {
   var animation = runningAnimation();
   animation.pause();
-  assert_unresolved(animation.startTime);
-  assert_times_equal(animation.currentTime, duration / 2);
   assert_true(animation.pending);
+  assert_times_equal(animation.currentTime, duration / 2);
   assert_equals(animation.playState, 'paused');
+  animation.ready.then(t.step_func_done(() => {
+    assert_equals(animation.startTime, null);
+    assert_false(animation.pending);
+    assert_equals(animation.playState, 'paused');
+  }));
 }, "Calling pause() on a running animation");
 
 test(function() {
@@ -364,13 +372,18 @@ test(function() {
   assert_equals(animation.playState, 'running');
 }, "Calling play() on a finished animation");
 
-test(function() {
+async_test(function(t) {
   var animation = finishedAnimation();
   animation.pause();
-  assert_unresolved(animation.startTime);
   assert_equals(animation.currentTime, 0);
   assert_true(animation.pending);
   assert_equals(animation.playState, 'paused');
+  animation.ready.then(t.step_func_done(() => {
+    assert_equals(animation.startTime, null);
+    assert_equals(animation.currentTime, 0);
+    assert_false(animation.pending);
+    assert_equals(animation.playState, 'paused');
+  }));
 }, "Calling pause() on a finished animation");
 
 test(function() {

@@ -723,7 +723,7 @@ class ResourcePrefetchPredictorPreconnectToRedirectTargetTest
       public ::testing::WithParamInterface<bool> {};
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ResourcePrefetchPredictorPreconnectToRedirectTargetTest,
     ::testing::Values(false, true));
 

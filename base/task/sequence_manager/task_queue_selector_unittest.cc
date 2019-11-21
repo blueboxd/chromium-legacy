@@ -823,7 +823,7 @@ std::string GetPriorityTestNameSuffix(
   return TaskQueue::PriorityToString(info.param);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          DisabledAntiStarvationLogicTaskQueueSelectorTest,
                          testing::Values(TaskQueue::kHighestPriority,
                                          TaskQueue::kVeryHighPriority,

@@ -248,7 +248,7 @@ TEST_P(DesksGestureHandlerTest, NoDoubleDeskChange) {
 }
 
 // Instantiate the parametrized tests.
-INSTANTIATE_TEST_SUITE_P(, WmGestureHandlerTest, ::testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, DesksGestureHandlerTest, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(All, WmGestureHandlerTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, DesksGestureHandlerTest, ::testing::Values(true));
 
 }  // namespace ash

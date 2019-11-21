@@ -1704,16 +1704,18 @@ TEST_P(TabletModeControllerScreenshotTest, NoCrashWhenExitingWithoutWaiting) {
   EXPECT_FALSE(IsScreenshotShown());
 }
 
-INSTANTIATE_TEST_SUITE_P(, TabletModeControllerTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All, TabletModeControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
                          TabletModeControllerInitedFromPowerManagerClientTest,
                          testing::Bool());
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TabletModeControllerForceTabletModeTest,
                          testing::Bool());
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TabletModeControllerForceClamshellModeTest,
                          testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, TabletModeControllerScreenshotTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         TabletModeControllerScreenshotTest,
+                         testing::Bool());
 
 }  // namespace ash

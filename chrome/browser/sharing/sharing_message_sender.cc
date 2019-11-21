@@ -9,6 +9,7 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
+#include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "content/public/browser/browser_task_traits.h"
 
@@ -75,7 +76,7 @@ void SharingMessageSender::SendMessageToDevice(
 
   message.set_sender_guid(local_device_info->guid());
   message.set_sender_device_name(
-      GetSharingDeviceNames(local_device_info).full_name);
+      send_tab_to_self::GetSharingDeviceNames(local_device_info).full_name);
 
   auto* sender_info = message.mutable_sender_info();
   sender_info->set_fcm_token(sharing_info->vapid_target_info.fcm_token);

@@ -393,7 +393,7 @@ class CachedFont {
     DCHECK(pattern);
     DCHECK(char_set);
     fallback_font_.name = GetFontName(pattern);
-    fallback_font_.filename = GetFontPath(pattern).AsUTF8Unsafe();
+    fallback_font_.filepath = GetFontPath(pattern);
     fallback_font_.ttc_index = GetFontTtcIndex(pattern);
     fallback_font_.is_bold = IsFontBold(pattern);
     fallback_font_.is_italic = IsFontItalic(pattern);

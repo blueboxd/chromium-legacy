@@ -39,11 +39,6 @@
 #include "ui/gfx/image/image_util.h"
 #include "url/url_constants.h"
 
-static std::ostream& operator<<(std::ostream& os,
-                                const AutocompleteResult::const_iterator& it) {
-  return os << static_cast<const AutocompleteMatch*>(&(*it));
-}
-
 namespace {
 
 const size_t kResultsPerProvider = 3;
@@ -588,7 +583,7 @@ TEST_F(AutocompleteProviderTest, Query) {
   EXPECT_EQ(
       std::min(AutocompleteResult::GetMaxMatches(), kResultsPerProvider * 2),
       result_.size());
-  ASSERT_NE(result_.end(), result_.default_match());
+  ASSERT_TRUE(result_.default_match());
   EXPECT_EQ(provider2, result_.default_match()->provider);
 }
 

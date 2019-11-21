@@ -26,7 +26,8 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) HomedirMethods {
  public:
   // Callbacks that are called back on the UI thread when the results of the
   // respective method calls are ready.
-  typedef base::Callback<void(bool success, MountError return_code)> Callback;
+  using Callback =
+      base::OnceCallback<void(bool success, MountError return_code)>;
 
   virtual ~HomedirMethods() {}
 
@@ -35,7 +36,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) HomedirMethods {
   virtual void CheckKeyEx(const Identification& id,
                           const AuthorizationRequest& auth,
                           const CheckKeyRequest& request,
-                          const Callback& callback) = 0;
+                          Callback callback) = 0;
 
   // Asks cryptohomed to try to add another key for the user identified by |id|
   // using |auth| to unlock the key.
@@ -44,7 +45,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) HomedirMethods {
   virtual void AddKeyEx(const Identification& id,
                         const AuthorizationRequest& auth,
                         const AddKeyRequest& request,
-                        const Callback& callback) = 0;
+                        Callback callback) = 0;
 
   // Asks cryptohomed to update the key for the user identified by |id| using
   // |auth| to unlock the key. Label for |auth| and the requested key have to be
@@ -53,21 +54,21 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) HomedirMethods {
   virtual void UpdateKeyEx(const Identification& id,
                            const AuthorizationRequest& auth,
                            const UpdateKeyRequest& request,
-                           const Callback& callback) = 0;
+                           Callback callback) = 0;
 
   // Asks cryptohomed to remove a specific key for the user identified by |id|
   // using |auth|.
   virtual void RemoveKeyEx(const Identification& id,
                            const AuthorizationRequest& auth,
                            const RemoveKeyRequest& request,
-                           const Callback& callback) = 0;
+                           Callback callback) = 0;
 
   // Asks cryptohomed to remove all keys except those whose labels are exempted
   // in MassRemoveKeysRequest, for the user identified by |id| using |auth|.
   virtual void MassRemoveKeys(const Identification& id,
                               const AuthorizationRequest& auth,
                               const MassRemoveKeysRequest& request,
-                              const Callback& callback) = 0;
+                              Callback callback) = 0;
 
   // Creates the global HomedirMethods instance.
   static void Initialize();

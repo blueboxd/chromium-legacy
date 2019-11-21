@@ -196,7 +196,8 @@ void AppServiceImpl::OpenNativeSettings(apps::mojom::AppType app_type,
 void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
                                      const std::string& app_id,
                                      apps::mojom::IntentFilterPtr intent_filter,
-                                     apps::mojom::IntentPtr intent) {
+                                     apps::mojom::IntentPtr intent,
+                                     bool from_publisher) {
   DCHECK(preferred_apps_.IsInitialized());
 
   preferred_apps_.AddPreferredApp(app_id, intent_filter);
@@ -209,6 +210,9 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
     subscriber->OnPreferredAppSet(app_id, intent_filter->Clone());
   }
 
+  if (from_publisher || !intent) {
+    return;
+  }
   auto iter = publishers_.find(app_type);
   if (iter == publishers_.end()) {
     return;

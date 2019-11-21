@@ -38,7 +38,7 @@ jumbo_component("x11") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//ui/events/ozone:events_ozone" ]
+    deps += [ "//ui/events/ozone" ]
   }
 
   if (use_x11) {

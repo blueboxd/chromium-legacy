@@ -326,6 +326,10 @@ template("write_build_config") {
       resource_dirs = rebase_path(invoker.resource_dirs, root_build_dir)
       args += [ "--resource-dirs=$resource_dirs" ]
     }
+    if (defined(invoker.res_sources_path)) {
+      _res_sources_path = rebase_path(invoker.res_sources_path, root_build_dir)
+      args += [ "--res-sources-path=$_res_sources_path" ]
+    }
     if (defined(invoker.proto_resources_path)) {
       _rebased_proto_resources =
           rebase_path(invoker.proto_resources_path, root_build_dir)
@@ -1839,17 +1843,13 @@ if (enable_java_templates) {
   #
   #   build_config: Path to the .build_config file corresponding to the target.
   #
-  #   resource_dirs:
+  #   resource_dirs (Deprecated):
+  #     ** This is deprecated, please specify files using |sources| parameter **
   #     List of directories containing Android resources, layout should be
   #     similar to what aapt -S <dir> expects.
   #
-  #   generated_resource_dirs: (optional)
-  #     List of directories containing generated resources.
-  #
-  #   generated_resource_files: (optional)
-  #     If generated_resources_dirs is not empty, must list all the files
-  #     within these directories (the directory must appear at the start of
-  #     the file path).
+  #   sources:
+  #     List of input resource files.
   #
   #   custom_package: (optional)
   #     Package name for the generated R.java source file. Optional if
@@ -1887,6 +1887,7 @@ if (enable_java_templates) {
       forward_variables_from(invoker,
                              [
                                "deps",
+                               "sources",
                                "testonly",
                                "visibility",
                              ])
@@ -1894,28 +1895,6 @@ if (enable_java_templates) {
 
       depfile = "$target_gen_dir/${invoker.target_name}.d"
       outputs = []
-      _all_resource_dirs = []
-      sources = []
-
-      if (defined(invoker.resource_dirs)) {
-        _all_resource_dirs += invoker.resource_dirs
-
-        # Speed up "gn gen" by short-circuiting the empty directory.
-        if (invoker.resource_dirs != [ "//build/android/empty" ] &&
-            invoker.resource_dirs != []) {
-          _sources_build_rel =
-              exec_script("//build/android/gyp/find.py",
-                          rebase_path(invoker.resource_dirs, root_build_dir),
-                          "list lines")
-          sources += rebase_path(_sources_build_rel, ".", root_build_dir)
-        }
-      }
-
-      if (defined(invoker.generated_resource_dirs)) {
-        assert(defined(invoker.generated_resource_files))
-        _all_resource_dirs += invoker.generated_resource_dirs
-        sources += invoker.generated_resource_files
-      }
 
       _android_aapt_path = android_default_aapt_path
 
@@ -1924,9 +1903,9 @@ if (enable_java_templates) {
         _android_aapt_path,
       ]
 
-      _rebased_all_resource_dirs =
-          rebase_path(_all_resource_dirs, root_build_dir)
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
+      _rebased_res_sources_path =
+          rebase_path(invoker.res_sources_path, root_build_dir)
 
       args = [
         "--depfile",
@@ -1937,6 +1916,7 @@ if (enable_java_templates) {
         "--dependencies-res-zips=@FileArg($_rebased_build_config:deps_info:dependency_zips)",
         "--extra-res-packages=@FileArg($_rebased_build_config:deps_info:extra_package_names)",
         "--extra-r-text-files=@FileArg($_rebased_build_config:deps_info:extra_r_text_files)",
+        "--res-sources-path=$_rebased_res_sources_path",
       ]
 
       if (defined(invoker.android_manifest)) {
@@ -1948,10 +1928,6 @@ if (enable_java_templates) {
           "--android-manifest",
           rebase_path(invoker.android_manifest, root_build_dir),
         ]
-      }
-
-      if (_rebased_all_resource_dirs != []) {
-        args += [ "--resource-dirs=$_rebased_all_resource_dirs" ]
       }
 
       if (defined(invoker.zip_path)) {

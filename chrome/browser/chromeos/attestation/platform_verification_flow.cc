@@ -36,7 +36,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_certificate.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
@@ -298,13 +298,13 @@ void PlatformVerificationFlow::OnCertificateReady(
   }
   bool is_expiring_soon = (expiry_status == EXPIRY_STATUS_EXPIRING_SOON);
   cryptohome::AsyncMethodCaller::DataCallback cryptohome_callback =
-      base::Bind(&PlatformVerificationFlow::OnChallengeReady, this, context,
-                 account_id, certificate_chain, is_expiring_soon);
+      base::BindOnce(&PlatformVerificationFlow::OnChallengeReady, this, context,
+                     account_id, certificate_chain, is_expiring_soon);
   std::string key_name = kContentProtectionKeyPrefix;
   key_name += context.service_id;
   async_caller_->TpmAttestationSignSimpleChallenge(
       KEY_USER, cryptohome::Identification(account_id), key_name,
-      context.challenge, cryptohome_callback);
+      context.challenge, std::move(cryptohome_callback));
 }
 
 void PlatformVerificationFlow::OnCertificateTimeout(

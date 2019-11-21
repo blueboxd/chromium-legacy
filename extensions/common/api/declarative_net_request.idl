@@ -217,7 +217,6 @@ namespace declarativeNetRequest {
     RuleAction action;
   };
 
-  [nodoc]
   enum SourceType {
     // The rule is specified in a JSON file within the extension's package.
     manifest,
@@ -226,7 +225,7 @@ namespace declarativeNetRequest {
     dynamic
   };
 
-  [nodoc]
+  // Uniquely describes a declarative rule specified by the extension.
   dictionary MatchedRule {
     // A matching rule's ID.
     long ruleId;
@@ -264,23 +263,44 @@ namespace declarativeNetRequest {
      MatchedRuleInfo[] rulesMatchedInfo;
   };
 
-  // TODO(crbug.com/1017934): Add documentation once the implementation is
-  // complete.
-  [nodoc]
   dictionary RequestDetails {
+    // The ID of the request. Request IDs are unique within a browser session.
     DOMString requestId;
+
+    // The URL of the request.
     DOMString url;
+
+    // The origin where the request was initiated. This does not change through
+    // redirects. If this is an opaque origin, the string 'null' will be used.
     DOMString? initiator;
+
+    // Standard HTTP method.
     DOMString method;
+
+    // The value 0 indicates that the request happens in the main frame; a
+    // positive value indicates the ID of a subframe in which the request
+    // happens. If the document of a (sub-)frame is loaded (<code>type</code> is
+    // <code>main_frame</code> or <code>sub_frame</code>), <code>frameId</code>
+    // indicates the ID of this frame, not the ID of the outer frame. Frame IDs
+    // are unique within a tab.
     long frameId;
+
+    // ID of frame that wraps the frame which sent the request. Set to -1 if no
+    // parent frame exists.
     long parentFrameId;
+
+    // The ID of the tab in which the request takes place. Set to -1 if the
+    // request isn't related to a tab.
     long tabId;
+
+    // The resource type of the request.
     ResourceType type;
   };
 
-  [nodoc]
   dictionary MatchedRuleInfoDebug {
     MatchedRule rule;
+
+    // Details about the request for which the rule was matched.
     RequestDetails request;
   };
 
@@ -380,9 +400,10 @@ namespace declarativeNetRequest {
   };
 
   interface Events {
-    // TODO(crbug.com/1017934): Add documentation once the implementation is
-    // complete.
-    [nodoc]
-    static void onRuleMatchedDebug(MatchedRuleInfoDebug event);
+    // Fired when a rule is matched with a request. Only available for unpacked
+    // extensions as this is intended to be used for debugging purposes only.
+    // |matched_rule_info|: The rule that has been matched along with
+    // information about the associated request.
+    static void onRuleMatchedDebug(MatchedRuleInfoDebug matched_rule_info);
   };
 };

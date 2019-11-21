@@ -154,6 +154,7 @@ void NavigatorContentUtils::registerProtocolHandler(
   LocalFrame* frame = navigator.GetFrame();
   if (!frame)
     return;
+
   Document* document = frame->GetDocument();
   DCHECK(document);
 
@@ -163,6 +164,12 @@ void NavigatorContentUtils::registerProtocolHandler(
   if (!VerifyCustomHandlerScheme(scheme, exception_state))
     return;
 
+  // Count usage; perhaps we can forbid this from cross-origin subframes as
+  // proposed in https://crbug.com/977083.
+  UseCounter::Count(
+      *document, frame->IsCrossOriginSubframe()
+                     ? WebFeature::kRegisterProtocolHandlerCrossOriginSubframe
+                     : WebFeature::kRegisterProtocolHandlerSameOriginAsTop);
   // Count usage; perhaps we can lock this to secure contexts.
   UseCounter::Count(*document,
                     document->IsSecureContext()

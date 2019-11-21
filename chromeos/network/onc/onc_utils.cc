@@ -48,7 +48,7 @@
 #include "crypto/symmetric_key.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/proxy_server.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"

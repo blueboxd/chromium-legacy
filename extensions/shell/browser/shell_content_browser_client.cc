@@ -346,18 +346,12 @@ bool ShellContentBrowserClient::HandleExternalProtocol(
   return false;
 }
 
-mojo::PendingRemote<network::mojom::URLLoaderFactory>
-ShellContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
+void ShellContentBrowserClient::OverrideURLLoaderFactoryParams(
     content::RenderProcessHost* process,
-    network::mojom::NetworkContext* network_context,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-        header_client,
     const url::Origin& origin,
-    const url::Origin& main_world_origin,
-    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
-  return URLLoaderFactoryManager::CreateFactory(
-      process, network_context, header_client, origin, main_world_origin,
-      network_isolation_key);
+    network::mojom::URLLoaderFactoryParams* factory_params) {
+  URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(process, origin,
+                                                          factory_params);
 }
 
 std::string ShellContentBrowserClient::GetUserAgent() {

@@ -414,16 +414,12 @@ SearchBox* GetSearchBoxForCurrentContext() {
 }
 
 base::Value CreateAutocompleteMatches(
-    const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches,
-    const blink::WebLocalFrame* frame) {
-  DCHECK(frame);
+    const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches) {
   base::Value list(base::Value::Type::LIST);
   for (const chrome::mojom::AutocompleteMatchPtr& match : matches) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetBoolKey("allowedToBeDefaultMatch",
                     match->allowed_to_be_default_match);
-    dict.SetBoolKey("canDisplay", frame->GetSecurityOrigin().CanDisplay(
-                                      GURL(match->destination_url)));
     dict.SetStringKey("contents", match->contents);
     base::Value contents_class(base::Value::Type::LIST);
     for (const auto& classification : match->contents_class) {
@@ -607,6 +603,8 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
   static void StopCapturingKeyStrokes();
   static void OpenAutocompleteMatch(int line,
                                     const std::string& url,
+                                    bool are_matches_showing,
+                                    double time_elapsed_since_last_focus,
                                     double button,
                                     bool alt_key,
                                     bool ctrl_key,
@@ -669,21 +667,25 @@ void SearchBoxBindings::DeleteAutocompleteMatch(int line) {
 }
 
 // static
-void SearchBoxBindings::OpenAutocompleteMatch(int line,
-                                              const std::string& url,
-                                              double button,
-                                              bool alt_key,
-                                              bool ctrl_key,
-                                              bool meta_key,
-                                              bool shift_key) {
+void SearchBoxBindings::OpenAutocompleteMatch(
+    int line,
+    const std::string& url,
+    bool are_matches_showing,
+    double time_elapsed_since_last_focus,
+    double button,
+    bool alt_key,
+    bool ctrl_key,
+    bool meta_key,
+    bool shift_key) {
   DCHECK_GE(line, 0);
   DCHECK_LE(line, 255);
   SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
 
-  search_box->OpenAutocompleteMatch(line, GURL(url), button, alt_key, ctrl_key,
-                                    meta_key, shift_key);
+  search_box->OpenAutocompleteMatch(line, GURL(url), are_matches_showing,
+                                    time_elapsed_since_last_focus, button,
+                                    alt_key, ctrl_key, meta_key, shift_key);
 }
 
 // static
@@ -1450,7 +1452,7 @@ void SearchBoxExtension::DispatchAutocompleteResultChanged(
     chrome::mojom::AutocompleteResultPtr result) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("input", result->input);
-  dict.SetKey("matches", CreateAutocompleteMatches(result->matches, frame));
+  dict.SetKey("matches", CreateAutocompleteMatches(result->matches));
 
   std::string json;
   base::JSONWriter::Write(dict, &json);

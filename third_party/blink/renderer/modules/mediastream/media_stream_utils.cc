@@ -25,7 +25,7 @@ void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
       blink::MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
   track.SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
-      native_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
+      native_source, blink::MediaStreamVideoSource::ConstraintsOnceCallback(),
       track.IsEnabled()));
 }
 

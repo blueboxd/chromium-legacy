@@ -40,6 +40,7 @@ FrameNavigationEntry::FrameNavigationEntry(
       initiator_origin_(initiator_origin),
       redirect_chain_(redirect_chain),
       page_state_(page_state),
+      bindings_(kInvalidBindings),
       method_(method),
       post_id_(post_id),
       blob_url_loader_factory_(std::move(blob_url_loader_factory)) {
@@ -58,6 +59,9 @@ scoped_refptr<FrameNavigationEntry> FrameNavigationEntry::Clone() const {
                     url_, committed_origin_, referrer_, initiator_origin_,
                     redirect_chain_, page_state_, method_, post_id_,
                     nullptr /* blob_url_loader_factory */);
+  // |bindings_| gets only updated through the SetBindings API, not through
+  // UpdateEntry, so make a copy of it explicitly here as part of cloning.
+  copy->bindings_ = bindings_;
   return copy;
 }
 
@@ -117,6 +121,13 @@ void FrameNavigationEntry::SetPageState(const PageState& page_state) {
 
   item_sequence_number_ = exploded_state.top.item_sequence_number;
   document_sequence_number_ = exploded_state.top.document_sequence_number;
+}
+
+void FrameNavigationEntry::SetBindings(int bindings) {
+  // Ensure this is set to a valid value, and that it stays the same once set.
+  CHECK_NE(bindings, kInvalidBindings);
+  CHECK(bindings_ == kInvalidBindings || bindings_ == bindings);
+  bindings_ = bindings;
 }
 
 scoped_refptr<network::ResourceRequestBody> FrameNavigationEntry::GetPostData(

@@ -346,7 +346,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   media_recorder_handler_ = nullptr;
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaRecorderHandlerTest,
                          ValuesIn(kMediaRecorderTestParams));
 

@@ -69,7 +69,6 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
 
   HeadlessBrowser::Options* options();
 
-  static void InitializeResourceBundle();
   static HeadlessContentMainDelegate* GetInstance();
 
   void InitLogging(const base::CommandLine& command_line);

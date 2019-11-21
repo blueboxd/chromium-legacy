@@ -1025,7 +1025,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/990240 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-rule-001.html [ Failure ]
 crbug.com/792446 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-float-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-none-001.xht [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-under-vertical-rl-scroll.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-001.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-002.xht [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-width-003.xht [ Crash Failure ]
@@ -1110,8 +1109,6 @@ crbug.com/874506 virtual/layout_ng_block_frag/fast/multicol/filter-in-second-col
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/first-line-in-float-below-next-column-top.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/first-line-in-float-with-margin.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/fixedpos-child-becomes-static.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flipped-blocks-border-after.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flipped-blocks-hit-test.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-after-break-after.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-avoidance.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-big-line.html [ Failure ]
@@ -1175,8 +1172,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/newmulticol/breaks-2
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/newmulticol/breaks-3-columns-3.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/newmulticol/fixed-height-fill-balance-2.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_block_frag/fast/multicol/newmulticol/fixed-height-fill-balance.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/newmulticol/hide-box-vertical-lr.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/newmulticol/hide-box-vertical-rl.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/newmulticol/list-item.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/newmulticol/orphans-and-widows-balance.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/outlines-at-column-boundaries.html [ Failure ]
@@ -1189,7 +1184,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/nested-m
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/overflow-across-columns.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/overflow-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/overflow-unsplittable.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/pageLogicalOffset-vertical.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/positioned-outside-of-columns.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/positioned-split.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/positive-leading.html [ Failure ]
@@ -1256,7 +1250,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/three-inner-rows.htm
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/transform-inside-opacity.html [ Failure ]
 crbug.com/874506 virtual/layout_ng_block_frag/fast/multicol/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/abspos-auto-position-on-line.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/break-properties.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/caret-range-anonymous-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/caret-range-anonymous-block-rtl.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/caret-range-outside-columns.html [ Timeout Failure ]
@@ -1280,7 +1273,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/offset-t
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/offset-top-and-left-nested.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/unsplittable-inline-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/abspos-auto-position-on-line.html [ Crash Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/break-properties.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/caret-range-anonymous-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/caret-range-anonymous-block-rtl.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-rl/caret-range-outside-columns.html [ Crash Failure ]
@@ -2601,7 +2593,6 @@ crbug.com/849859 external/wpt/css/css-animations/CSSAnimation-pausing.tentative.
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/CSSAnimation-pausing.tentative.html [ Failure ]
 crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
 crbug.com/849859 virtual/threaded/external/wpt/css/css-animations/Element-getAnimations-dynamic-changes.tentative.html [ Failure ]
-crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-blocking-stylesheet.html [ Pass Failure ]
 
@@ -2747,6 +2738,8 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.13 ] external/wpt/screen-capture/getdisplaymedia.https.html [ Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/screen-capture/getdisplaymedia.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
@@ -4537,11 +4530,6 @@ crbug.com/771492 [ Win ] external/wpt/css/css-tables/table-model-fixup-2.html [ 
 crbug.com/771492 [ Linux ] external/wpt/css/css-tables/table-model-fixup-2.html [ Failure ]
 crbug.com/771492 [ Mac ] external/wpt/css/css-tables/table-model-fixup-2.html [ Failure ]
 
-# Suspended WebRTC tests
-# Timeout due to events not firing
-crbug.com/781935 fast/mediastream/MediaStreamTrack-observer-iterate-no-crash.html [ Timeout ]
-crbug.com/781935 fast/mediastream/MediaStreamTrack.html [ Pass Failure Timeout ]
-
 crbug.com/807191 fast/media/mq-color-gamut-picture.html [ Pass Failure Timeout ]
 
 # Text rendering on Win7 failing image diffs, flakily.
@@ -5724,6 +5712,10 @@ crbug.com/630695 css3/filters/effect-blur-hw.html [ Pass Failure ]
 crbug.com/630695 css3/filters/effect-drop-shadow-hw.html [ Pass Failure ]
 crbug.com/630695 virtual/scalefactor200/css3/filters/effect-drop-shadow-hw.html [ Pass Failure ]
 
+# TODO (robertphillips): Remove after Skia roll and rebaseline
+crbug.com/630695 compositing/masks/mask-with-added-filters.html [ Pass Failure ]
+crbug.com/630695 compositing/masks/mask-with-removed-filters.html [ Pass Failure ]
+
 # Sheriff 2019-09-20
 crbug.com/1005128 crypto/subtle/abandon-crypto-operation2.html [ Pass Crash ]
 
@@ -5873,3 +5865,11 @@ crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_
 
 # Timeout media preload test until preloading media destinations gets enabled.
 crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]
+
+# Temporarily disabled to land call stack changes in devtools
+crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-change-variable.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger-pause/debugger-eval-while-paused.js [ Pass Failure ]
+
+# Sheriff 2019-11-20
+crbug.com/1026151 virtual/omt-worker-fetch/external/wpt/fetch/api/idlharness.any.sharedworker.html [ Timeout ]

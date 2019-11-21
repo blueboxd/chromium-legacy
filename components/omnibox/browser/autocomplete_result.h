@@ -91,9 +91,8 @@ class AutocompleteResult {
   const AutocompleteMatch& match_at(size_t index) const;
   AutocompleteMatch* match_at(size_t index);
 
-  // Get the default match for the query (not necessarily the first).  Returns
-  // end() if there is no default match.
-  const_iterator default_match() const { return default_match_; }
+  // Returns the default match if it exists, or nullptr otherwise.
+  const AutocompleteMatch* default_match() const;
 
   // Returns true if the top match is a verbatim search or URL match (see
   // IsVerbatimType() in autocomplete_match.h), and the next match is not also
@@ -127,7 +126,7 @@ class AutocompleteResult {
   void Swap(AutocompleteResult* other);
 
   // operator=() by another name.
-  void CopyFrom(const AutocompleteResult& rhs);
+  void CopyFrom(const AutocompleteResult& other);
 
 #if DCHECK_IS_ON()
   // Does a data integrity check on this result.
@@ -239,8 +238,6 @@ class AutocompleteResult {
   void DemoteOnDeviceSearchSuggestions();
 
   ACMatches matches_;
-
-  const_iterator default_match_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
 };

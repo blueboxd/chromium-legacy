@@ -3517,6 +3517,15 @@
         ],
         'test': 'dawn_end2end_tests',
       },
+      'dawn_end2end_skip_validation_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--skip-validation',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
     },
 
     # GPU gtests that test Dawn and integration with Chromium
@@ -3544,6 +3553,15 @@
           # Dawn test retries deliberately disabled to prevent flakiness.
           '--test-launcher-retry-limit=0',
           '--use-wire',
+        ],
+        'test': 'dawn_end2end_tests',
+      },
+      'dawn_end2end_skip_validation_tests': {
+        'desktop_args': [
+          '--use-gpu-in-tests',
+          # Dawn test retries deliberately disabled to prevent flakiness.
+          '--test-launcher-retry-limit=0',
+          '--skip-validation',
         ],
         'test': 'dawn_end2end_tests',
       },
@@ -3952,6 +3970,8 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--force_high_performance_gpu',
         ],
         'precommit_args': [
           # Gerrit issue ID
@@ -4568,6 +4588,9 @@
     'ozone_linux_gtests': {
       'services_unittests': {},
       'ozone_unittests': {},
+      'events_unittests': {
+	'experiment_percentage': 100,
+      },
       'ozone_x11_unittests': {},
       'headless_content_unittests': {
         'args': [

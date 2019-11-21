@@ -14,7 +14,4 @@ specific_include_rules = {
   "child_account_info_fetcher_android.cc": [
     "+components/signin/core/browser/android/jni_headers/ChildAccountInfoFetcher_jni.h",
   ],
-  "oauth2_token_service_delegate_android.cc": [
-    "+components/signin/core/browser/android/jni_headers/OAuth2TokenService_jni.h",
-  ],
 }

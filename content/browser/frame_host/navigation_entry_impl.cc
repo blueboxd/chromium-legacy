@@ -313,7 +313,6 @@ NavigationEntryImpl::NavigationEntryImpl(
                                          -1,
                                          std::move(blob_url_loader_factory)))),
       unique_id_(CreateUniqueEntryID()),
-      bindings_(kInvalidBindings),
       page_type_(PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
       title_(title),
@@ -445,13 +444,6 @@ void NavigationEntryImpl::set_site_instance(
     scoped_refptr<SiteInstanceImpl> site_instance) {
   // TODO(creis): Update all callers and remove this method.
   frame_tree_->frame_entry->set_site_instance(std::move(site_instance));
-}
-
-void NavigationEntryImpl::SetBindings(int bindings) {
-  // Ensure this is set to a valid value, and that it stays the same once set.
-  CHECK_NE(bindings, kInvalidBindings);
-  CHECK(bindings_ == kInvalidBindings || bindings_ == bindings);
-  bindings_ = bindings;
 }
 
 const base::string16& NavigationEntryImpl::GetTitleForDisplay() {
@@ -655,7 +647,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 
   // Copy most state over, unless cleared in ResetForCommit.
   // Don't copy unique_id_, otherwise it won't be unique.
-  copy->bindings_ = bindings_;
   copy->page_type_ = page_type_;
   copy->virtual_url_ = virtual_url_;
   copy->update_virtual_url_with_url_ = update_virtual_url_with_url_;

@@ -203,7 +203,7 @@ void FontServiceThread::OnMatchFamilyNameComplete(
   if (font_identity) {
     out_font_identity->fID = font_identity->id;
     out_font_identity->fTTCIndex = font_identity->ttc_index;
-    out_font_identity->fString = font_identity->str_representation.data();
+    out_font_identity->fString = font_identity->filepath.value().data();
     // TODO(erg): fStyle isn't set. This is rather odd, however it matches the
     // behaviour of the current Linux IPC version.
 

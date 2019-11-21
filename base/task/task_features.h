@@ -14,14 +14,13 @@ namespace base {
 struct Feature;
 
 extern const BASE_EXPORT Feature kAllTasksUserBlocking;
-extern const BASE_EXPORT Feature kMergeBlockingNonBlockingPools;
 
 // Under this feature, unused threads in ThreadGroup are only detached
 // if the total number of threads in the pool is above the initial capacity.
 extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
 
 // Under this feature, workers blocked with MayBlock are replaced immediately
-// instead of waiting for a threshold.
+// instead of waiting for a threshold in the foreground thread group.
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

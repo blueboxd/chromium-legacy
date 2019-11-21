@@ -99,7 +99,7 @@ class BLINK_PLATFORM_EXPORT WebAudioSourceProviderImpl
   PlaybackState state_;
 
   // Closure that calls OnSetFormat() on |client_| on the renderer thread.
-  base::Closure set_format_cb_;
+  base::OnceClosure set_format_cb_;
   // When set via setClient() it overrides |sink_| for consuming audio.
   WebAudioSourceProviderClient* client_;
 

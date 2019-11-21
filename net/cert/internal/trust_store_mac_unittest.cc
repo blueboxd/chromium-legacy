@@ -14,7 +14,7 @@
 #include "crypto/mac_security_services_lock.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/test_helpers.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/test_keychain_search_list_mac.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.preferences;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -58,7 +57,18 @@ public class ChromePreferenceManager {
     }
 
     private String successUploadKey(@ProcessType String process) {
-        return process.toLowerCase(Locale.US) + ChromePreferenceKeys.SUCCESS_UPLOAD_SUFFIX;
+        switch (process) {
+            case ProcessType.BROWSER:
+                return ChromePreferenceKeys.CRASH_UPLOAD_SUCCESS_BROWSER;
+            case ProcessType.RENDERER:
+                return ChromePreferenceKeys.CRASH_UPLOAD_SUCCESS_RENDERER;
+            case ProcessType.GPU:
+                return ChromePreferenceKeys.CRASH_UPLOAD_SUCCESS_GPU;
+            case ProcessType.OTHER:
+                return ChromePreferenceKeys.CRASH_UPLOAD_SUCCESS_OTHER;
+            default:
+                throw new IllegalArgumentException("Process type unknown: " + process);
+        }
     }
 
     /**
@@ -77,7 +87,18 @@ public class ChromePreferenceManager {
     }
 
     private String failureUploadKey(@ProcessType String process) {
-        return process.toLowerCase(Locale.US) + ChromePreferenceKeys.FAILURE_UPLOAD_SUFFIX;
+        switch (process) {
+            case ProcessType.BROWSER:
+                return ChromePreferenceKeys.CRASH_UPLOAD_FAILURE_BROWSER;
+            case ProcessType.RENDERER:
+                return ChromePreferenceKeys.CRASH_UPLOAD_FAILURE_RENDERER;
+            case ProcessType.GPU:
+                return ChromePreferenceKeys.CRASH_UPLOAD_FAILURE_GPU;
+            case ProcessType.OTHER:
+                return ChromePreferenceKeys.CRASH_UPLOAD_FAILURE_OTHER;
+            default:
+                throw new IllegalArgumentException("Process type unknown: " + process);
+        }
     }
 
     /**

@@ -382,6 +382,11 @@ SupervisedUserView::SupervisedUserView()
   SetVisible(Shell::Get()->session_controller()->IsUserSupervised());
   if (Shell::Get()->session_controller()->IsUserSupervised())
     SetTooltipText(GetSupervisedUserMessage());
+
+  // TODO(crbug/1026821) Add SupervisedUserView::ButtonPress() overload
+  // to show a similar ui to enterprise managed accounts. Disable button
+  // state for now.
+  SetState(ButtonState::STATE_DISABLED);
 }
 
 }  // namespace

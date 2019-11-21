@@ -194,7 +194,7 @@ TEST_P(ParameterizedDeclarativeContentActionTest, ShowAction) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ParameterizedDeclarativeContentActionTest,
     testing::Values(ExtensionBuilder::ActionType::BROWSER_ACTION,
                     ExtensionBuilder::ActionType::PAGE_ACTION));

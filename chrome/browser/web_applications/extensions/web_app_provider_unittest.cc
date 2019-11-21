@@ -49,7 +49,7 @@ TEST_P(WebAppProviderUnitTest, Registrar) {
   EXPECT_FALSE(registrar.IsInstalled("unknown"));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebAppProviderUnitTest,
                          ::testing::ValuesIn({ProviderType::kBookmarkApps,
                                               ProviderType::kWebApps}));

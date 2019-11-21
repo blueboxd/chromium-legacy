@@ -1592,22 +1592,13 @@ bool ChromeContentBrowserClient::
   return is_embedded_origin_secure && scheme == content::kChromeUIScheme;
 }
 
-mojo::PendingRemote<network::mojom::URLLoaderFactory>
-ChromeContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
+void ChromeContentBrowserClient::OverrideURLLoaderFactoryParams(
     content::RenderProcessHost* process,
-    network::mojom::NetworkContext* network_context,
-    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-        header_client,
     const url::Origin& origin,
-    const url::Origin& main_world_origin,
-    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
+    network::mojom::URLLoaderFactoryParams* factory_params) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  return ChromeContentBrowserClientExtensionsPart::
-      CreateURLLoaderFactoryForNetworkRequests(
-          process, network_context, header_client, origin, main_world_origin,
-          network_isolation_key);
-#else
-  return mojo::NullRemote();
+  ChromeContentBrowserClientExtensionsPart::OverrideURLLoaderFactoryParams(
+      process, origin, factory_params);
 #endif
 }
 

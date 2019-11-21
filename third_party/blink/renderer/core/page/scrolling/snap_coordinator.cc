@@ -36,8 +36,9 @@ LayoutBox* FindSnapContainer(const LayoutBox& origin_box) {
   Element* document_element = origin_box.GetDocument().documentElement();
   LayoutBox* box = origin_box.ContainingBlock();
   while (box && !box->HasOverflowClip() && !box->IsLayoutView() &&
-         box->GetNode() != document_element)
+         box->GetNode() != document_element) {
     box = box->ContainingBlock();
+  }
 
   // If we reach to document element then we dispatch to layout view.
   if (box && box->GetNode() == document_element)
@@ -67,10 +68,43 @@ cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
   return scroll_snap_type;
 }
 
+// Adding a snap container means that the element's descendant snap areas need
+// to be reassigned to it. First we find the snap container ancestor of the new
+// snap container, then check its snap areas to see if their closest ancestor is
+// changed to the new snap container.
+// E.g., if A1 and A2's ancestor, C2, is C1's descendant and becomes scrollable
+// then C2 becomes a snap container then the snap area assignments change:
+//  Before            After adding C2
+//       C1              C1
+//       |               |
+//   +-------+         +-----+
+//   |  |    |         C2    |
+//   A1 A2   A3      +---+   A3
+//                   |   |
+//                   A1  A2
+// The snap container data does not need to be updated because it will be
+// updated at the end of the layout.
 void SnapCoordinator::AddSnapContainer(LayoutBox& snap_container) {
-  // TODO(http://crbug.com/1007456): Reassign snap areas that should be assigned
-  // to this new snap container.
   snap_containers_.insert(&snap_container);
+
+  LayoutBox* ancestor_snap_container = FindSnapContainer(snap_container);
+  // If an ancestor doesn't exist then this means that the element is being
+  // attached now; this means that it won't have any descendants that are
+  // assigned to an ancestor snap container.
+  if (!ancestor_snap_container) {
+    DCHECK(!snap_container.Parent());
+    return;
+  }
+  SnapAreaSet* snap_areas = ancestor_snap_container->SnapAreas();
+  if (!snap_areas)
+    return;
+  Vector<LayoutBox*> snap_areas_to_reassign;
+  for (auto* snap_area : *snap_areas) {
+    if (FindSnapContainer(*snap_area) == &snap_container)
+      snap_areas_to_reassign.push_back(snap_area);
+  }
+  for (auto* snap_area : snap_areas_to_reassign)
+    snap_area->SetSnapContainer(&snap_container);
 }
 
 void SnapCoordinator::RemoveSnapContainer(LayoutBox& snap_container) {
@@ -137,6 +171,10 @@ void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
     return;
   }
 
+  // If there is no ancestor snap container then this means that this snap
+  // area is being detached. In the worst case, the layout view is the
+  // ancestor snap container, which should exist as long as the document is
+  // not destroyed.
   if (LayoutBox* new_container = FindSnapContainer(snap_area)) {
     snap_area.SetSnapContainer(new_container);
     // TODO(sunyunjia): consider keep the SnapAreas in a map so it is

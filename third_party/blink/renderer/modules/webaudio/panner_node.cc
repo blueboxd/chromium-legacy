@@ -99,6 +99,69 @@ PannerHandler::~PannerHandler() {
   Uninitialize();
 }
 
+// PannerNode needs a custom ProcessIfNecessary to get the process lock when
+// computing PropagatesSilence() to protect processing from changes happening to
+// the panning model.  This is very similar to AudioNode::ProcessIfNecessary.
+void PannerHandler::ProcessIfNecessary(uint32_t frames_to_process) {
+  DCHECK(Context()->IsAudioThread());
+
+  if (!IsInitialized())
+    return;
+
+  // Ensure that we only process once per rendering quantum.
+  // This handles the "fanout" problem where an output is connected to multiple
+  // inputs.  The first time we're called during this time slice we process, but
+  // after that we don't want to re-process, instead our output(s) will already
+  // have the results cached in their bus;
+  double current_time = Context()->currentTime();
+  if (last_processing_time_ != current_time) {
+    // important to first update this time because of feedback loops in the
+    // rendering graph.
+    last_processing_time_ = current_time;
+
+    PullInputs(frames_to_process);
+
+    bool silent_inputs = InputsAreSilent();
+
+    {
+      // Need to protect calls to PropagetesSilence (and Process) because the
+      // main threda may be changing the panning model that modifies the
+      // TailTime and LatencyTime methods called by PropagatesSilence.
+      MutexTryLocker try_locker(process_lock_);
+      if (try_locker.Locked()) {
+        if (silent_inputs && PropagatesSilence()) {
+          SilenceOutputs();
+          // AudioParams still need to be processed so that the value can be
+          // updated if there are automations or so that the upstream nodes get
+          // pulled if any are connected to the AudioParam.
+          ProcessOnlyAudioParams(frames_to_process);
+        } else {
+          // Unsilence the outputs first because the processing of the node may
+          // cause the outputs to go silent and we want to propagate that hint
+          // to the downstream nodes.  (For example, a Gain node with a gain of
+          // 0 will want to silence its output.)
+          UnsilenceOutputs();
+          Process(frames_to_process);
+        }
+      } else {
+        // We must be in the middle of changing the properties of the panner.
+        // Just output silence.
+        AudioBus* destination = Output(0).Bus();
+        destination->Zero();
+      }
+    }
+
+    if (!silent_inputs) {
+      // Update |last_non_silent_time| AFTER processing this block.
+      // Doing it before causes |PropagateSilence()| to be one render
+      // quantum longer than necessary.
+      last_non_silent_time_ =
+          (Context()->CurrentSampleFrame() + frames_to_process) /
+          static_cast<double>(Context()->sampleRate());
+    }
+  }
+}
+
 void PannerHandler::Process(uint32_t frames_to_process) {
   AudioBus* destination = Output(0).Bus();
 
@@ -114,10 +177,9 @@ void PannerHandler::Process(uint32_t frames_to_process) {
   }
 
   // The audio thread can't block on this lock, so we call tryLock() instead.
-  MutexTryLocker try_locker(process_lock_);
   MutexTryLocker try_listener_locker(Listener()->ListenerLock());
 
-  if (try_locker.Locked() && try_listener_locker.Locked()) {
+  if (try_listener_locker.Locked()) {
     if (!Context()->HasRealtimeConstraint() &&
         panning_model_ == Panner::kPanningModelHRTF) {
       // For an OfflineAudioContext, we need to make sure the HRTFDatabase

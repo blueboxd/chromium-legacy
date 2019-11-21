@@ -619,7 +619,7 @@ const FormatUrlForClipboardTestData kFormatUrlForClipboardTestData[]{
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     FormatUrlForClipboardTest,
     testing::ValuesIn(kFormatUrlForClipboardTestData),
     [](const testing::TestParamInfo<FormatUrlForClipboardTestData>&

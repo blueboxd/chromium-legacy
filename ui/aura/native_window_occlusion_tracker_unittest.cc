@@ -7,6 +7,7 @@
 #include <winuser.h>
 
 #include "base/win/scoped_gdi_object.h"
+#include "base/win/scoped_hdc.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -134,6 +135,19 @@ TEST_F(NativeWindowOcclusionTrackerTest, LayeredAlphaWindow) {
   COLORREF color_ref = RGB(1, 1, 1);
   SetLayeredWindowAttributes(hwnd, color_ref, alpha, flags);
   // Layered windows with alpha < 255 are not considered visible and opaque.
+  EXPECT_FALSE(CheckWindowVisibleAndFullyOpaque(hwnd, &win_rect));
+}
+
+TEST_F(NativeWindowOcclusionTrackerTest, UpdatedLayeredAlphaWindow) {
+  HWND hwnd = CreateNativeWindow(WS_EX_LAYERED);
+  gfx::Rect win_rect;
+  base::win::ScopedCreateDC hdc(::CreateCompatibleDC(nullptr));
+  BLENDFUNCTION blend = {AC_SRC_OVER, 0x00, 0xFF, AC_SRC_ALPHA};
+
+  ::UpdateLayeredWindow(hwnd, hdc.Get(), nullptr, nullptr, nullptr, nullptr,
+                        RGB(0xFF, 0xFF, 0xFF), &blend, ULW_OPAQUE);
+  // Layered windows set up with UpdateLayeredWindow instead of
+  // SetLayeredWindowAttributes should not be considered visible and opaque.
   EXPECT_FALSE(CheckWindowVisibleAndFullyOpaque(hwnd, &win_rect));
 }
 

@@ -45,11 +45,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   // ThreadLocalEventSink implementation:
   void AddTraceEvent(base::trace_event::TraceEvent* trace_event,
                      base::trace_event::TraceEventHandle* handle) override;
-  void UpdateDuration(const unsigned char* category_group_enabled,
-                      const char* name,
-                      base::trace_event::TraceEventHandle handle,
-                      int thread_id,
-                      bool explicit_timestamps,
+  void UpdateDuration(base::trace_event::TraceEventHandle handle,
                       const base::TimeTicks& now,
                       const base::ThreadTicks& thread_now,
                       base::trace_event::ThreadInstructionCount
@@ -97,6 +93,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   std::string thread_name_;
   perfetto::protos::pbzero::ThreadDescriptor::ChromeThreadType thread_type_ =
       perfetto::protos::pbzero::ThreadDescriptor::CHROME_THREAD_UNSPECIFIED;
+
+  base::trace_event::TraceEvent complete_event_stack_[kMaxCompleteEventDepth];
+  uint32_t current_stack_depth_ = 0;
 
   const bool privacy_filtering_enabled_;
 };

@@ -14,6 +14,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -98,10 +99,13 @@ WindowMiniView::WindowMiniView(aura::Window* source_window,
           kHorizontalLabelPaddingDp));
   AddChildViewOf(this, header_view_);
 
+  // Display the icon and title of the transient root.
+  aura::Window* transient_root = wm::GetTransientRoot(source_window);
+
   // Prefer kAppIconKey over kWindowIconKey as the app icon is typically larger.
-  gfx::ImageSkia* icon = source_window->GetProperty(aura::client::kAppIconKey);
+  gfx::ImageSkia* icon = transient_root->GetProperty(aura::client::kAppIconKey);
   if (!icon || icon->size().IsEmpty())
-    icon = source_window->GetProperty(aura::client::kWindowIconKey);
+    icon = transient_root->GetProperty(aura::client::kWindowIconKey);
   if (icon && !icon->size().IsEmpty()) {
     image_view_ = new views::ImageView();
     image_view_->SetImage(gfx::ImageSkiaOperations::CreateResizedImage(
@@ -110,7 +114,7 @@ WindowMiniView::WindowMiniView(aura::Window* source_window,
     AddChildViewOf(header_view_, image_view_);
   }
 
-  title_label_ = new views::Label(source_window->GetTitle());
+  title_label_ = new views::Label(transient_root->GetTitle());
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
   title_label_->SetEnabledColor(kLabelColor);
@@ -165,7 +169,7 @@ void WindowMiniView::OnWindowDestroying(aura::Window* window) {
 }
 
 void WindowMiniView::OnWindowTitleChanged(aura::Window* window) {
-  title_label_->SetText(window->GetTitle());
+  title_label_->SetText(wm::GetTransientRoot(window)->GetTitle());
 }
 
 }  // namespace ash

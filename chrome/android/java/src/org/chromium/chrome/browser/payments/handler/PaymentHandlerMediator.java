@@ -72,9 +72,6 @@ import org.chromium.ui.modelutil.PropertyModel;
     }
 
     @Override
-    public void onLoadUrl(String url) {}
-
-    @Override
     public void onSheetFullyPeeked() {}
 
     @Override

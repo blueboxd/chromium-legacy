@@ -205,8 +205,7 @@ bool HomeScreenController::GoHome(int64_t display_id) {
       for (auto* window : GetTransientTreeIterator(active_window)) {
         // Self-destructed when window transform animation is done.
         new WindowScaleAnimation(
-            window,
-            WindowScaleAnimation::WindowScaleType::kScaleDownToHomeScreen,
+            window, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
             window == active_window
                 ? base::make_optional(original_backdrop_mode)
                 : base::nullopt,

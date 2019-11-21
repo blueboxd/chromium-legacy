@@ -123,7 +123,7 @@ void FontServiceApp::MatchFamilyName(const std::string& family_name,
   mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
   identity->id = static_cast<uint32_t>(index);
   identity->ttc_index = result_identity.fTTCIndex;
-  identity->str_representation = result_identity.fString.c_str();
+  identity->filepath = path;
 
   mojom::TypefaceStylePtr style(mojom::TypefaceStyle::New());
   style->weight = result_style.weight();
@@ -153,12 +153,12 @@ void FontServiceApp::FallbackFontForCharacter(
   TRACE_EVENT0("fonts", "FontServiceApp::FallbackFontForCharacter");
 
   auto fallback_font = gfx::GetFallbackFontForChar(character, locale);
-  size_t index = FindOrAddPath(base::FilePath(fallback_font.filename));
+  size_t index = FindOrAddPath(fallback_font.filepath);
 
   mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
   identity->id = static_cast<uint32_t>(index);
   identity->ttc_index = fallback_font.ttc_index;
-  identity->str_representation = fallback_font.filename;
+  identity->filepath = fallback_font.filepath;
 
   std::move(callback).Run(std::move(identity), fallback_font.name,
                           fallback_font.is_bold, fallback_font.is_italic);
@@ -209,10 +209,9 @@ void FontServiceApp::MatchFontByPostscriptNameOrFullFontName(
       FontConfigLocalMatching::FindFontByPostscriptNameOrFullFontName(family);
   if (match_result) {
     uint32_t fontconfig_interface_id = FindOrAddPath(match_result->file_path);
-    mojom::FontIdentityPtr font_identity =
-        mojom::FontIdentityPtr(mojom::FontIdentity::New(
-            fontconfig_interface_id, match_result->ttc_index,
-            match_result->file_path.value()));
+    mojom::FontIdentityPtr font_identity(mojom::FontIdentity::New(
+        fontconfig_interface_id, match_result->ttc_index,
+        match_result->file_path));
     std::move(callback).Run(std::move(font_identity));
     return;
   }

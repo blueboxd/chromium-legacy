@@ -93,7 +93,7 @@ InkDropRippleTest::~InkDropRippleTest() = default;
 
 // Note: First argument is optional and intentionally left blank.
 // (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          InkDropRippleTest,
                          testing::Values(SQUARE_INK_DROP_RIPPLE,
                                          FLOOD_FILL_INK_DROP_RIPPLE));

@@ -322,9 +322,6 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNameBluetoothAddress, device->bluetooth_address));
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
-      kEasyUnlockKeyMetaNameBluetoothType,
-      static_cast<int64_t>(device->bluetooth_type)));
-  key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNamePsk, device->psk));
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNamePubKey, device->public_key));

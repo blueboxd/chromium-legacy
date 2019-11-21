@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/ui/ash/launcher/app_service_instance_registry_helper.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "ui/aura/env_observer.h"
@@ -64,6 +65,8 @@ class AppServiceAppWindowLauncherController
   using AuraWindowToAppWindow =
       std::map<aura::Window*, std::unique_ptr<AppWindowBase>>;
 
+  void SetWindowActivated(aura::Window* window, bool active);
+
   // Creates an AppWindow and updates its AppWindowLauncherItemController by
   // |window| and |shelf_id|.
   void RegisterAppWindow(aura::Window* window, const ash::ShelfID& shelf_id);
@@ -83,6 +86,8 @@ class AppServiceAppWindowLauncherController
   ScopedObserver<aura::Window, aura::WindowObserver> observed_windows_{this};
 
   apps::AppServiceProxy* proxy_ = nullptr;
+  std::unique_ptr<AppServiceInstanceRegistryHelper>
+      app_service_instance_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceAppWindowLauncherController);
 };

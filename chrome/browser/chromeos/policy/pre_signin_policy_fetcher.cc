@@ -178,8 +178,8 @@ void PreSigninPolicyFetcher::OnUnmountTemporaryUserHome(
   // Validate policy from session_manager.
   UserCloudPolicyValidator::StartValidation(
       CreateValidatorForCachedPolicy(std::move(policy)),
-      base::Bind(&PreSigninPolicyFetcher::OnCachedPolicyValidated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PreSigninPolicyFetcher::OnCachedPolicyValidated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PreSigninPolicyFetcher::OnCachedPolicyValidated(
@@ -245,8 +245,8 @@ void PreSigninPolicyFetcher::OnPolicyFetched(CloudPolicyClient* client) {
   // Validate fresh policy.
   UserCloudPolicyValidator::StartValidation(
       CreateValidatorForFetchedPolicy(std::move(fetched_policy_copy)),
-      base::Bind(&PreSigninPolicyFetcher::OnFetchedPolicyValidated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PreSigninPolicyFetcher::OnFetchedPolicyValidated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PreSigninPolicyFetcher::OnRegistrationStateChanged(

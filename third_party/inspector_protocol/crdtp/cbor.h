@@ -5,11 +5,8 @@
 #ifndef CRDTP_CBOR_H_
 #define CRDTP_CBOR_H_
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
-#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -142,12 +139,11 @@ class CRDTP_EXPORT EnvelopeEncoder {
 // that drives it. The handler will encode into |out|, and iff an error occurs
 // it will set |status| to an error and clear |out|. Otherwise, |status.ok()|
 // will be |true|.
-CRDTP_EXPORT std::unique_ptr<StreamingParserHandler> NewCBOREncoder(
+CRDTP_EXPORT std::unique_ptr<ParserHandler> NewCBOREncoder(
     std::vector<uint8_t>* out,
     Status* status);
-CRDTP_EXPORT std::unique_ptr<StreamingParserHandler> NewCBOREncoder(
-    std::string* out,
-    Status* status);
+CRDTP_EXPORT std::unique_ptr<ParserHandler> NewCBOREncoder(std::string* out,
+                                                           Status* status);
 
 // =============================================================================
 // cbor::CBORTokenizer - for parsing individual CBOR items
@@ -286,7 +282,7 @@ class CRDTP_EXPORT CBORTokenizer {
 // |out|. If an error occurs, sends |out->HandleError|, and parsing stops.
 // The client is responsible for discarding the already received information in
 // that case.
-CRDTP_EXPORT void ParseCBOR(span<uint8_t> bytes, StreamingParserHandler* out);
+CRDTP_EXPORT void ParseCBOR(span<uint8_t> bytes, ParserHandler* out);
 
 // =============================================================================
 // cbor::AppendString8EntryToMap - for limited in-place editing of messages

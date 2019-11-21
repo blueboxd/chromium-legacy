@@ -51,6 +51,10 @@ class FullscreenController : public KeyedService {
   virtual void IncrementDisabledCounter() = 0;
   virtual void DecrementDisabledCounter() = 0;
 
+  // Returns whether fullscreen is implemented by resizing the web view scroll
+  // view rather than setting the content inset.
+  virtual bool ResizesScrollView() const = 0;
+
   // FullscreenController isn't notified when the trait collection of the
   // browser is changed. This method is here to notify it.
   virtual void BrowserTraitCollectionChangedBegin() = 0;

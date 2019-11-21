@@ -67,11 +67,16 @@ bool RemoteDevice::operator==(const RemoteDevice& other) const {
 }
 
 bool RemoteDevice::operator<(const RemoteDevice& other) const {
-  // |public_key| is the only field guaranteed to be set and is also unique to
-  // each RemoteDevice. However, since it can contain null bytes, use
-  // GetDeviceId(), which cannot contain null bytes, to compare devices.
-  // TODO(https://crbug.com/1019206): Compare by Instance ID when v1 DeviceSync
-  // is deprecated.
+  // TODO(https://crbug.com/1019206): Only compare by Instance ID when v1
+  // DeviceSync is deprecated since it is guaranteed to be set in v2 DeviceSync.
+
+  if (!instance_id.empty() || !other.instance_id.empty())
+    return instance_id.compare(other.instance_id) < 0;
+
+  // |public_key| can contain null bytes, so use GetDeviceId(), which cannot
+  // contain null bytes, to compare devices.
+  // Note: Devices that do not have an Instance ID are v1 DeviceSync devices,
+  // which should have a public key.
   return GetDeviceId().compare(other.GetDeviceId()) < 0;
 }
 

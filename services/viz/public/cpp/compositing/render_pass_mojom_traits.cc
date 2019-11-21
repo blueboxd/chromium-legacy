@@ -15,17 +15,20 @@ bool StructTraits<viz::mojom::RenderPassDataView,
     Read(viz::mojom::RenderPassDataView data,
          std::unique_ptr<viz::RenderPass>* out) {
   *out = viz::RenderPass::Create();
-  CHECK(data.ReadOutputRect(&(*out)->output_rect));
-  CHECK(data.ReadDamageRect(&(*out)->damage_rect));
-  CHECK(data.ReadTransformToRootTarget(&(*out)->transform_to_root_target));
-  CHECK(data.ReadFilters(&(*out)->filters));
-  CHECK(data.ReadBackdropFilters(&(*out)->backdrop_filters));
-  CHECK(data.ReadBackdropFilterBounds(&(*out)->backdrop_filter_bounds));
-  CHECK(data.ReadColorSpace(&(*out)->color_space));
-  CHECK(data.ReadCopyRequests(&(*out)->copy_requests));
+  if (!data.ReadOutputRect(&(*out)->output_rect) ||
+      !data.ReadDamageRect(&(*out)->damage_rect) ||
+      !data.ReadTransformToRootTarget(&(*out)->transform_to_root_target) ||
+      !data.ReadFilters(&(*out)->filters) ||
+      !data.ReadBackdropFilters(&(*out)->backdrop_filters) ||
+      !data.ReadBackdropFilterBounds(&(*out)->backdrop_filter_bounds) ||
+      !data.ReadColorSpace(&(*out)->color_space) ||
+      !data.ReadCopyRequests(&(*out)->copy_requests)) {
+    return false;
+  }
   (*out)->id = data.id();
   // RenderPass ids are never zero.
-  CHECK((*out)->id);
+  if (!(*out)->id)
+    return false;
   (*out)->has_transparent_background = data.has_transparent_background();
   (*out)->cache_render_pass = data.cache_render_pass();
   (*out)->has_damage_from_contributing_content =
@@ -43,8 +46,10 @@ bool StructTraits<viz::mojom::RenderPassDataView,
 
     viz::DrawQuad* quad =
         AllocateAndConstruct(quad_state_data_view.tag(), &(*out)->quad_list);
-    CHECK(quad);
-    CHECK(quads.Read(i, quad));
+    if (!quad)
+      return false;
+    if (!quads.Read(i, quad))
+      return false;
 
     // Read the SharedQuadState.
     viz::mojom::SharedQuadStateDataView sqs_data_view;
@@ -53,10 +58,12 @@ bool StructTraits<viz::mojom::RenderPassDataView,
     // one.
     if (!sqs_data_view.is_null()) {
       last_sqs = (*out)->CreateAndAppendSharedQuadState();
-      CHECK(quad_data_view.ReadSqs(last_sqs));
+      if (!quad_data_view.ReadSqs(last_sqs))
+        return false;
     }
     quad->shared_quad_state = last_sqs;
-    CHECK(quad->shared_quad_state);
+    if (!quad->shared_quad_state)
+      return false;
   }
   return true;
 }

@@ -11,7 +11,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
-#include "base/task/task_features.h"
 #include "build/build_config.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
@@ -232,8 +231,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            features::kAllowActivationDelegationAttr, kUseFeatureState},
           {wf::EnableScriptStreamingOnPreload,
            features::kScriptStreamingOnPreload, kUseFeatureState},
-          {wf::EnableMergeBlockingNonBlockingPools,
-           base::kMergeBlockingNonBlockingPools, kUseFeatureState},
           {wf::EnableLazyFrameLoading, features::kLazyFrameLoading,
            kUseFeatureState},
           {wf::EnableLazyFrameVisibleLoadTimeMetrics,

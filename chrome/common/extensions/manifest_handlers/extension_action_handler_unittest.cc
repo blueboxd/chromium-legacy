@@ -298,7 +298,7 @@ TEST_P(ExtensionActionManifestTest, DefaultState) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionManifestTest,
                          testing::Values(TestActionType::kBrowserAction,
                                          TestActionType::kPageAction,

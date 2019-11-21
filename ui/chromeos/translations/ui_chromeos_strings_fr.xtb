@@ -690,7 +690,7 @@
 <translation id="9035012421917565900">Les éléments ne pourront pas être redéplacés vers "<ph name="DESTINATION_NAME" />". Cette action est donc irréversible.</translation>
 <translation id="9038620279323455325">Le nom "<ph name="FILE_NAME" />" est déjà attribué à un fichier. Veuillez en choisir un autre.</translation>
 <translation id="9064939804718829769">Transfert en cours…</translation>
-<translation id="9065203028668620118">Modifier</translation>
+<translation id="9065203028668620118">Édition</translation>
 <translation id="9099674669267916096">Nombre de pages</translation>
 <translation id="9110990317705400362">Nous recherchons constamment à rendre votre navigation plus sûre. Auparavant, vous pouviez être invité à ajouter une extension dans votre navigateur par n'importe quel site Web. Dans les dernières versions de Google Chrome, vous devez explicitement indiquer que vous souhaitez installer une extension en l'ajoutant via la page "Extensions". <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="912419004897138677">Codec</translation>

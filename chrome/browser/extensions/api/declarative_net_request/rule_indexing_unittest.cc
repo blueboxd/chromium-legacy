@@ -520,7 +520,7 @@ TEST_P(RuleIndexingTest, ExtensionWithIndexedRuleset) {
   LoadAndExpectSuccess(1 /* rules count */);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          RuleIndexingTest,
                          ::testing::Values(ExtensionLoadType::PACKED,
                                            ExtensionLoadType::UNPACKED));

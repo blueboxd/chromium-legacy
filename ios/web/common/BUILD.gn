@@ -75,6 +75,7 @@ source_set("unittests") {
     "//ios/web/public/navigation",
     "//net",
     "//testing/gtest",
+    "//ui/base",
     "//url",
   ]
 

@@ -57,7 +57,6 @@ import org.chromium.chrome.browser.suggestions.tile.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
@@ -67,7 +66,6 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
@@ -124,7 +122,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     public void onContentOffsetChanged(int offset) {}
 
     @Override
-    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {}
+    public void onControlsOffsetChanged(int topOffset, int bottomOffset, boolean needsAnimate) {
+        updateMargins();
+    }
 
     @Override
     public void onToggleOverlayVideoMode(boolean enabled) {}
@@ -319,11 +319,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             public void onPageLoadStarted(Tab tab, String url) {
                 saveLastScrollPosition();
             }
-
-            @Override
-            public void onBrowserControlsConstraintsUpdated(Tab tab, int constraints) {
-                updateMargins();
-            }
         };
         mTab.addObserver(mTabObserver);
 
@@ -433,10 +428,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 ((ViewGroup.MarginLayoutParams) view.getLayoutParams());
         if (layoutParams == null) return;
 
-        final @BrowserControlsState int constraints = TabBrowserControlsState.getConstraints(mTab);
-        layoutParams.bottomMargin = (constraints != BrowserControlsState.HIDDEN)
-                ? mFullscreenManager.getBottomControlsHeight()
-                : 0;
+        layoutParams.bottomMargin = mFullscreenManager.getBottomControlsHeight()
+                - mFullscreenManager.getBottomControlOffset();
 
         view.setLayoutParams(layoutParams);
 

@@ -138,6 +138,8 @@ void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
   CHECK(client->SetBooleanParameter(
       "FILTER_SYSCALLS",
       base::FeatureList::IsEnabled(features::kMacSyscallSandbox)));
+
+  CHECK(client->SetBooleanParameter("FILTER_SYSCALLS_DEBUG", false));
 }
 
 void SetupNetworkSandboxParameters(sandbox::SeatbeltExecClient* client) {

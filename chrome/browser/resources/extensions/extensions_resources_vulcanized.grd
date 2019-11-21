@@ -12,13 +12,12 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_EXTENSIONS_VULCANIZED_HTML"
-               file="${root_gen_dir}\chrome\browser\resources\extensions\vulcanized.html"
-               use_base_dir="false"
-               type="BINDATA"
+      <include name="IDR_EXTENSIONS_EXTENSIONS_HTML"
+               file="extensions.html"
+               type="chrome_html"
                compress="gzip" />
-      <include name="IDR_EXTENSIONS_CRISPER_JS"
-               file="${root_gen_dir}\chrome\browser\resources\extensions\extensions.js"
+      <include name="IDR_EXTENSIONS_EXTENSIONS_ROLLUP_JS"
+               file="${root_gen_dir}\chrome\browser\resources\extensions\extensions.rollup.js"
                use_base_dir="false"
                preprocess="true"
                type="BINDATA"

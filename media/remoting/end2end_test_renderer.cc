@@ -183,6 +183,11 @@ void End2EndTestRenderer::SetCdm(CdmContext* cdm_context,
   NOTIMPLEMENTED() << "Media Remoting doesn't support EME for now.";
 }
 
+void End2EndTestRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  courier_renderer_->SetLatencyHint(latency_hint);
+}
+
 void End2EndTestRenderer::Flush(base::OnceClosure flush_cb) {
   courier_renderer_->Flush(std::move(flush_cb));
 }

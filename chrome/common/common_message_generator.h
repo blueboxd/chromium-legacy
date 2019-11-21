@@ -6,11 +6,6 @@
 
 #include "chrome/common/instant_mojom_traits.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
-#undef CHROME_COMMON_MAC_APP_SHIM_PARAM_TRAITS_H_
-#include "chrome/common/mac/app_shim_param_traits.h"
-#ifndef CHROME_COMMON_MAC_APP_SHIM_PARAM_TRAITS_H_
-#error "Failed to include header chrome/common/mac/app_shim_param_traits.h"
-#endif
 #undef CHROME_COMMON_PRERENDER_MESSAGES_H_
 #include "chrome/common/prerender_messages.h"
 #ifndef CHROME_COMMON_PRERENDER_MESSAGES_H_

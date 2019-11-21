@@ -126,7 +126,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // Implementations of some functions from TabLifecycleUnitExternal. These are
   // actually called by an instance of TabLifecycleUnitExternalImpl.
-  bool IsMediaTab() const;
   bool IsAutoDiscardable() const;
   void SetAutoDiscardable(bool auto_discardable);
 
@@ -149,9 +148,8 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // Same as GetSource, but cast to the most derived type.
   TabLifecycleUnitSource* GetTabSource() const;
 
-  // Determines if the tab is a media tab, and populates an optional
-  // |decision_details| with full details.
-  bool IsMediaTabImpl(DecisionDetails* decision_details) const;
+  // Updates |decision_details| based on media usage by the tab.
+  void CheckMediaUsage(DecisionDetails* decision_details) const;
 
   // For non-urgent discarding, sends a request for freezing to occur prior to
   // discarding the tab.
@@ -180,24 +178,13 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   void DidStartLoading() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
-  // Indicates if freezing or discarding this tab would be noticeable by the
-  // user even if it isn't brought back to the foreground. Populates
-  // |decision_details| with full details. If |intervention_type| indicates that
-  // this is a proactive intervention then more heuristics will be
-  // applied.
-  void CheckIfTabIsUsedInBackground(DecisionDetails* decision_details,
-                                    InterventionType intervention_type) const;
+  // Updates |decision_details| based on device usage by the tab (USB or
+  // Bluetooth).
+  void CheckDeviceUsage(DecisionDetails* decision_details) const;
 
-  // Runs the freezing heuristics checks on this tab and store the decision
-  // details in |decision_details|. This doesn't check for potential background
-  // feature usage.
-  void CanFreezeHeuristicsChecks(DecisionDetails* decision_details) const;
-
-  // Runs the proactive discarding heuristics checks on this tab and store the
-  // decision details in |decision_details|. This doesn't check for potential
-  // background feature usage.
-  void CanProactivelyDiscardHeuristicsChecks(
-      DecisionDetails* decision_details) const;
+  // Updates |decision_details| based on freezing origin trial opt-in/opt-out
+  // for the tab.
+  void CheckFreezingOriginTrial(DecisionDetails* decision_details) const;
 
   // List of observers to notify when the discarded state or the auto-
   // discardable state of this tab changes.

@@ -242,7 +242,7 @@ TEST_F(ContentPasswordManagerDriverTest, NotInformAboutBlacklistedForm) {
   driver->FillPasswordForm(fill_data);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ContentPasswordManagerDriverTest,
                          testing::Values(true, false));
 

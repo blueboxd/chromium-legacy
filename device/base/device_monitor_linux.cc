@@ -69,8 +69,8 @@ void DeviceMonitorLinux::AddObserver(Observer* observer) {
 
   monitor_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
       monitor_fd_,
-      base::Bind(&DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking,
+                          base::Unretained(this)));
 }
 
 void DeviceMonitorLinux::RemoveObserver(Observer* observer) {

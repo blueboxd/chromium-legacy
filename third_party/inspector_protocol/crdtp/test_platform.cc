@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is Chromium specific, to make crdtp_test.cc work.  It will work
-// in the standalone (upstream) build, which uses mini_chromium as a dependency,
-// as well as in Chromium. In other code bases (e.g. v8), a custom file with
-// these two functions and appropriate
+// This file is Chromium specific, to make the tests work.  It will work
+// in the standalone (upstream) build, as well as in Chromium. In other code
+// bases (e.g. v8), a custom file with these two functions and with appropriate
 // includes may need to be provided, so it isn't necessarily part of a roll.
 
 #include "test_platform.h"
@@ -13,7 +12,6 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace crdtp {

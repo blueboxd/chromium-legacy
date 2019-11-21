@@ -36,11 +36,14 @@ const uint8_t GLTestHelper::kCheckClearValue;
 
 bool GLTestHelper::InitializeGL(gl::GLImplementation gl_impl) {
   if (gl_impl == gl::GLImplementation::kGLImplementationNone) {
-    if (!gl::init::InitializeGLNoExtensionsOneOff())
+    if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true))
       return false;
   } else {
-    if (!gl::init::InitializeGLOneOffImplementation(
-            gl_impl,
+    if (!gl::init::InitializeStaticGLBindingsImplementation(
+            gl_impl, /*fallback_to_software_gl*/ false))
+      return false;
+
+    if (!gl::init::InitializeGLOneOffPlatformImplementation(
             false,  // fallback_to_software_gl
             false,  // gpu_service_logging
             false,  // disable_gl_drawing

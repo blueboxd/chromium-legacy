@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/common/mac/app_shim.mojom.h"
-#include "chrome/common/mac/app_shim_param_traits.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -54,7 +53,7 @@ class AppShimController : public chrome::mojom::AppShim {
   // Called when the app is activated, e.g. by clicking on it in the dock, by
   // dropping a file on the dock icon, or by Cmd+Tabbing to it.
   // Returns whether the message was sent.
-  bool SendFocusApp(apps::AppShimFocusType focus_type,
+  bool SendFocusApp(chrome::mojom::AppShimFocusType focus_type,
                     const std::vector<base::FilePath>& files);
 
   // Called when a profile is selected from the profiles NSMenu.
@@ -73,7 +72,7 @@ class AppShimController : public chrome::mojom::AppShim {
   void BootstrapChannelError(uint32_t custom_reason,
                              const std::string& description);
   void OnShimConnectedResponse(
-      apps::AppShimLaunchResult result,
+      chrome::mojom::AppShimLaunchResult result,
       mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver);
 
   // chrome::mojom::AppShim implementation.
@@ -82,7 +81,8 @@ class AppShimController : public chrome::mojom::AppShim {
           receiver) override;
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override;
   void SetBadgeLabel(const std::string& badge_label) override;
-  void SetUserAttention(apps::AppShimAttentionType attention_type) override;
+  void SetUserAttention(
+      chrome::mojom::AppShimAttentionType attention_type) override;
   void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
                              profile_menu_items) override;
 

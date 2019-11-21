@@ -230,7 +230,7 @@ TEST_P(AudioPushFifoTest, PushArbitraryNumbersOfFramesAtATime) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AudioPushFifoTest,
                          ::testing::Values(
                              // 1 ms output chunks at common sample rates.

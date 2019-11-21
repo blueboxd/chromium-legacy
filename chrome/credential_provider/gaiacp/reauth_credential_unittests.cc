@@ -153,7 +153,7 @@ TEST_P(GcpReauthCredentialGetStringValueTest, FidDescription) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpReauthCredentialGetStringValueTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),
@@ -274,7 +274,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),

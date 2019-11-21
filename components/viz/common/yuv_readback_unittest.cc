@@ -546,7 +546,7 @@ TEST_P(YUVReadbackPixelTest, Test) {
 
 // First argument is intentionally empty.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     YUVReadbackPixelTest,
     ::testing::Combine(
         ::testing::Bool(),

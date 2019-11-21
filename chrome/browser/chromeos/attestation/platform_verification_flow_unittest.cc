@@ -153,10 +153,9 @@ class PlatformVerificationFlowTest : public ::testing::Test {
     ++fake_certificate_index_;
   }
 
-  void FakeSignChallenge(
-      const cryptohome::AsyncMethodCaller::DataCallback& callback) {
+  void FakeSignChallenge(cryptohome::AsyncMethodCaller::DataCallback callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, sign_challenge_success_,
+        FROM_HERE, base::BindOnce(std::move(callback), sign_challenge_success_,
                                   CreateFakeResponseProto()));
   }
 

@@ -40,6 +40,8 @@ std::tuple<bool /*success*/, int64_t /*scope_id*/> ParseScopeMetadataId(
     leveldb::Slice key,
     base::span<const uint8_t> scopes_prefix);
 
+std::string KeyToDebugString(base::span<const uint8_t> key_without_prefix);
+
 }  // namespace leveldb_scopes
 
 // This class helps the re-use of a common std::string buffer. All calls modify

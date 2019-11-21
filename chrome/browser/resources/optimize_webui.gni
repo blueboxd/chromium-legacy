@@ -37,8 +37,10 @@ template("optimize_webui") {
     depfile = "${target_gen_dir}/${target_name}.d"
 
     outputs = []
-    foreach(_out, invoker.html_out_files) {
-      outputs += [ "$target_gen_dir/$_out" ]
+    if (defined(invoker.html_out_files)) {
+      foreach(_out, invoker.html_out_files) {
+        outputs += [ "$target_gen_dir/$_out" ]
+      }
     }
     foreach(_out, invoker.js_out_files) {
       outputs += [ "$target_gen_dir/$_out" ]
@@ -59,13 +61,18 @@ template("optimize_webui") {
       rebase_path(depfile, root_build_dir),
     ]
 
-    args += [ "--html_in_files" ] + invoker.html_in_files
-    args += [ "--html_out_files" ] + invoker.html_out_files
-
     args += [ "--js_out_files" ] + invoker.js_out_files
 
     if (defined(invoker.excludes)) {
       args += [ "--exclude" ] + invoker.excludes
+    }
+
+    if (defined(invoker.html_in_files)) {
+      args += [ "--html_in_files" ] + invoker.html_in_files
+    }
+
+    if (defined(invoker.html_out_files)) {
+      args += [ "--html_out_files" ] + invoker.html_out_files
     }
 
     if (defined(invoker.insert_in_head)) {

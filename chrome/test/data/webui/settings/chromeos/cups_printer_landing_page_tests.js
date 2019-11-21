@@ -1210,12 +1210,20 @@ suite('CupsNearbyPrintersTests', function() {
           assertEquals(1, nearbyPrinterEntries.length);
           assertTrue(!!nearbyPrinterEntries[0].$$('#setupPrinterButton'));
 
+          // Force a failure with adding a discovered printer.
+          cupsPrintersBrowserProxy.setAddDiscoveredPrinterFailure(
+              discoveredPrinterList[0]);
+
           // Assert that clicking on the setup button shows the advanced
           // configuration dialog.
           clickSetupButton(nearbyPrinterEntries[0]);
 
           Polymer.dom.flush();
 
+          return cupsPrintersBrowserProxy.whenCalled('addDiscoveredPrinter');
+        })
+        .then(() => {
+          Polymer.dom.flush();
           addDialog = page.$$('#addPrinterDialog');
           manufacturerDialog =
               addDialog.$$('add-printer-manufacturer-model-dialog');

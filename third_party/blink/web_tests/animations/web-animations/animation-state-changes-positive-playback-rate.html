@@ -8,6 +8,7 @@
 <body>
 <script>
 'use strict';
+
 function createIdleAnimation(t) {
   var animation = createDiv(t).animate([], 100000);
   animation.cancel();
@@ -216,13 +217,18 @@ test(function(t) {
   assert_equals(animation.playState, 'running');
 }, "Setting play() on a running animation");
 
-test(function(t) {
+async_test(function(t) {
   var animation = createRunningAnimation(t);
   animation.pause();
-  assert_equals(animation.startTime, null);
+  assert_not_equals(animation.startTime, null);
   assert_equals(animation.currentTime, 0);
   assert_true(animation.pending);
   assert_equals(animation.playState, 'paused');
+  animation.ready.then(t.step_func_done(() => {
+    assert_equals(animation.startTime, null);
+    assert_greater_than_equal(animation.currentTime, 0);
+    assert_false(animation.pending);
+  }));
 }, "Setting pause() on a running animation");
 
 test(function(t) {
@@ -341,13 +347,18 @@ test(function(t) {
   assert_equals(animation.playState, 'running');
 }, "Calling play() on a finished animation");
 
-test(function(t) {
+async_test(function(t) {
   var animation = createFinishedAnimation(t);
   animation.pause();
-  assert_equals(animation.startTime, null);
+  assert_not_equals(animation.startTime, null);
   assert_equals(animation.currentTime, 100000);
   assert_true(animation.pending);
   assert_equals(animation.playState, 'paused');
+  animation.ready.then(t.step_func_done(() => {
+    assert_equals(animation.startTime, null);
+    assert_equals(animation.currentTime, 100000);
+    assert_false(animation.pending);
+  }));
 }, "Calling pause() on a finished animation");
 
 test(function(t) {
@@ -391,27 +402,21 @@ async_test(function(t) {
   animation.play();
   var animationCurrentTime = animation.currentTime;
   var timelineCurrentTime = document.timeline.currentTime;
-  animation.ready.then(() => {
-    t.step(() => {
-      assert_equals(animation.playState, 'running');
-      assert_greater_than_equal(animation.startTime, timelineCurrentTime);
-      assert_greater_than_equal(animation.currentTime, animationCurrentTime);
-    });
-    t.done();
-  });
+  animation.ready.then(t.step_func_done(() => {
+    assert_equals(animation.playState, 'running');
+    assert_greater_than_equal(animation.startTime, timelineCurrentTime);
+    assert_greater_than_equal(animation.currentTime, animationCurrentTime);
+  }));
 }, "PlayState is 'running' while playing a cancelled animation");
 
 async_test(function(t) {
   let animation = createRunningAnimation(t);
   animation.pause();
   let animationCurrentTime = animation.currentTime;
-  animation.ready.then(() => {
-    t.step(() => {
-      assert_equals(animation.playState, 'paused');
-      assert_equals(animation.startTime, null);
-      assert_greater_than_equal(animation.currentTime, animationCurrentTime);
-    });
-    t.done();
-  });
+  animation.ready.then(t.step_func_done(() => {
+    assert_equals(animation.playState, 'paused');
+    assert_equals(animation.startTime, null);
+    assert_greater_than_equal(animation.currentTime, animationCurrentTime);
+  }));
 }, "PlayState is 'running' while pausing a running animation");
 </script>

@@ -76,6 +76,15 @@ void ShowFeedbackPage(const Browser* browser,
                       const std::string& category_tag,
                       const std::string& extra_diagnostics);
 
+// Displays the Feedback ui.
+void ShowFeedbackPage(const GURL& page_url,
+                      Profile* profile,
+                      FeedbackSource source,
+                      const std::string& description_template,
+                      const std::string& description_placeholder_text,
+                      const std::string& category_tag,
+                      const std::string& extra_diagnostics);
+
 void ShowHelp(Browser* browser, HelpSource source);
 void ShowHelpForProfile(Profile* profile, HelpSource source);
 void LaunchReleaseNotes(Profile* profile);

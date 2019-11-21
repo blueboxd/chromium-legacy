@@ -65,14 +65,14 @@ void UserPolicySigninService::PrepareForUserCloudPolicyManagerShutdown() {
 void UserPolicySigninService::RegisterForPolicyWithAccountId(
     const std::string& username,
     const CoreAccountId& account_id,
-    const PolicyRegistrationCallback& callback) {
+    PolicyRegistrationCallback callback) {
   DCHECK(!account_id.empty());
 
   // Create a new CloudPolicyClient for fetching the DMToken.
   std::unique_ptr<CloudPolicyClient> policy_client =
       CreateClientForRegistrationOnly(username);
   if (!policy_client) {
-    callback.Run(std::string(), std::string());
+    std::move(callback).Run(std::string(), std::string());
     return;
   }
 
@@ -86,16 +86,16 @@ void UserPolicySigninService::RegisterForPolicyWithAccountId(
       enterprise_management::DeviceRegisterRequest::BROWSER);
   registration_helper_->StartRegistration(
       identity_manager(), account_id,
-      base::Bind(&UserPolicySigninService::CallPolicyRegistrationCallback,
-                 base::Unretained(this), base::Passed(&policy_client),
-                 callback));
+      base::BindOnce(&UserPolicySigninService::CallPolicyRegistrationCallback,
+                     base::Unretained(this), std::move(policy_client),
+                     std::move(callback)));
 }
 
 void UserPolicySigninService::CallPolicyRegistrationCallback(
     std::unique_ptr<CloudPolicyClient> client,
     PolicyRegistrationCallback callback) {
   registration_helper_.reset();
-  callback.Run(client->dm_token(), client->client_id());
+  std::move(callback).Run(client->dm_token(), client->client_id());
 }
 
 void UserPolicySigninService::OnPrimaryAccountSet(

@@ -20,7 +20,4 @@ extern const base::Feature kSharingQRCodeGenerator;
 // Feature flag to enable deriving VAPID key from Sync.
 extern const base::Feature kSharingDeriveVapidKey;
 
-// Feature flag to enable device renaming.
-extern const base::Feature kSharingRenameDevices;
-
 #endif  // CHROME_BROWSER_SHARING_FEATURES_H_

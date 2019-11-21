@@ -53,8 +53,8 @@ static inline double NullValue() {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
-static inline base::Optional<double> OptionalFromDoubleWithNull(double value) {
-  return IsNull(value) ? base::nullopt : base::Optional<double>(value);
+static inline base::Optional<double> ValueOrUnresolved(double a) {
+  return IsNull(a) ? base::nullopt : base::Optional<double>(a);
 }
 
 struct CORE_EXPORT Timing {

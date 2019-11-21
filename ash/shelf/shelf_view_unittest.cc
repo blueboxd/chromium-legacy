@@ -1501,7 +1501,7 @@ class HotseatShelfViewTest : public ShelfViewTest,
 };
 
 // Tests with both hotseat enabled and disabled.
-INSTANTIATE_TEST_SUITE_P(, HotseatShelfViewTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, HotseatShelfViewTest, testing::Bool());
 
 TEST_P(HotseatShelfViewTest, ShouldHideTooltipTest) {
   // TODO(https://crbug.com/1016823): Fix this test for the hotseat.
@@ -2875,7 +2875,7 @@ class ShelfViewMenuTest : public ShelfViewTest,
   DISALLOW_COPY_AND_ASSIGN(ShelfViewMenuTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, ShelfViewMenuTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ShelfViewMenuTest, testing::Bool());
 
 // Tests that menu anchor points are aligned with the shelf button bounds.
 TEST_P(ShelfViewMenuTest, ShelfViewMenuAnchorPoint) {

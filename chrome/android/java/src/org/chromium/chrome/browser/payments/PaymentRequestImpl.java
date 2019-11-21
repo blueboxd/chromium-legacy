@@ -237,6 +237,7 @@ public class PaymentRequestImpl
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             (a, b) -> (compareCompletablesByCompleteness(b, a));
 
+    private PaymentOptions mPaymentOptions;
     private boolean mRequestShipping;
     private boolean mRequestPayerName;
     private boolean mRequestPayerPhone;
@@ -381,6 +382,12 @@ public class PaymentRequestImpl
      * passed to the payment app.
      */
     private List<PaymentItem> mRawLineItems;
+
+    /**
+     * The raw shipping options, as it was received from the website. This data is passed to the
+     * payment app when the app is responsible for handling shipping address.
+     */
+    private List<PaymentShippingOption> mRawShippingOptions;
 
     /**
      * A mapping from method names to modifiers, which include modified totals and additional line
@@ -566,6 +573,7 @@ public class PaymentRequestImpl
             return;
         }
 
+        mPaymentOptions = options;
         mRequestShipping = options != null && options.requestShipping;
         mRequestPayerName = options != null && options.requestPayerName;
         mRequestPayerPhone = options != null && options.requestPayerPhone;
@@ -721,9 +729,8 @@ public class PaymentRequestImpl
         // Payment Request UI.
         mShouldSkipShowingPaymentRequestUi =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
-                && mMethodData.size() == 1 && !mRequestShipping && !mRequestPayerName
-                && !mRequestPayerPhone
-                && !mRequestPayerEmail
+                && mMethodData.size() == 1 && !shouldShowShippingSection()
+                && !shouldShowContactSection()
                 // Only allowing payment apps that own their own UIs.
                 // This excludes AutofillPaymentApp as its UI is rendered inline in
                 // the payment request UI, thus can't be skipped.
@@ -1441,6 +1448,13 @@ public class PaymentRequestImpl
             }
         }
 
+        if (details.shippingOptions != null) {
+            mRawShippingOptions =
+                    Collections.unmodifiableList(Arrays.asList(details.shippingOptions));
+        } else if (mRawShippingOptions == null) {
+            mRawShippingOptions = Collections.unmodifiableList(new ArrayList<>());
+        }
+
         updateInstrumentModifiedTotals();
 
         assert mRawTotal != null;
@@ -1970,8 +1984,9 @@ public class PaymentRequestImpl
 
         EditableOption selectedContact =
                 mContactSection != null ? mContactSection.getSelectedItem() : null;
-        mPaymentResponseHelper = new PaymentResponseHelper(
-                selectedShippingAddress, selectedShippingOption, selectedContact, this);
+        mPaymentResponseHelper = new PaymentResponseHelper(selectedShippingAddress,
+                selectedShippingOption, selectedContact, mInvokedPaymentInstrument, mPaymentOptions,
+                mSkipToGPayHelper != null, this);
 
         // Create maps that are subsets of mMethodData and mModifiers, that contain
         // the payment methods supported by the selected payment instrument. If the
@@ -2003,9 +2018,30 @@ public class PaymentRequestImpl
                     .setPaymentHandlerHost(mPaymentHandlerHost);
         }
 
+        // Create payment options for the invoked payment instrument.
+        PaymentOptions paymentOptions = new PaymentOptions();
+        paymentOptions.requestShipping =
+                mRequestShipping && mInvokedPaymentInstrument.handlesShippingAddress();
+        paymentOptions.requestPayerName =
+                mRequestPayerName && mInvokedPaymentInstrument.handlesPayerName();
+        paymentOptions.requestPayerPhone =
+                mRequestPayerPhone && mInvokedPaymentInstrument.handlesPayerPhone();
+        paymentOptions.requestPayerEmail =
+                mRequestPayerEmail && mInvokedPaymentInstrument.handlesPayerEmail();
+        paymentOptions.shippingType =
+                mRequestShipping && mInvokedPaymentInstrument.handlesShippingAddress()
+                ? mShippingType
+                : PaymentShippingType.SHIPPING;
+
+        // Redact shipping options if the selected instrument cannot handle shipping.
+        List<PaymentShippingOption> redactedShippingOptions =
+                mInvokedPaymentInstrument.handlesShippingAddress()
+                ? mRawShippingOptions
+                : Collections.unmodifiableList(new ArrayList<>());
         mInvokedPaymentInstrument.invokePaymentApp(mId, mMerchantName, mTopLevelOrigin,
                 mPaymentRequestOrigin, mCertificateChain, Collections.unmodifiableMap(methodData),
-                mRawTotal, mRawLineItems, Collections.unmodifiableMap(modifiers), this);
+                mRawTotal, mRawLineItems, Collections.unmodifiableMap(modifiers), paymentOptions,
+                redactedShippingOptions, this);
 
         mJourneyLogger.setEventOccurred(Event.PAY_CLICKED);
         boolean isAutofillPaymentInstrument = mInvokedPaymentInstrument.isAutofillInstrument();
@@ -2580,7 +2616,8 @@ public class PaymentRequestImpl
      * Called after retrieving instrument details.
      */
     @Override
-    public void onInstrumentDetailsReady(String methodName, String stringifiedDetails) {
+    public void onInstrumentDetailsReady(
+            String methodName, String stringifiedDetails, PayerData payerData) {
         assert methodName != null;
         assert stringifiedDetails != null;
 
@@ -2602,7 +2639,16 @@ public class PaymentRequestImpl
 
         mJourneyLogger.setEventOccurred(Event.RECEIVED_INSTRUMENT_DETAILS);
 
-        mPaymentResponseHelper.onInstrumentDetailsReceived(methodName, stringifiedDetails);
+        mPaymentResponseHelper.onInstrumentDetailsReceived(
+                methodName, stringifiedDetails, payerData);
+    }
+
+    /**
+     * Called after retrieving instrument details.
+     */
+    @Override
+    public void onInstrumentDetailsReady(String methodName, String stringifiedDetails) {
+        onInstrumentDetailsReady(methodName, stringifiedDetails, new PayerData());
     }
 
     @Override

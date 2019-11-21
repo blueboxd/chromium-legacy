@@ -180,7 +180,7 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // will only process once per rendering time quantum even if it's called
   // repeatedly.  This handles the case of "fanout" where an output is connected
   // to multiple AudioNode inputs.  Called from context's audio thread.
-  void ProcessIfNecessary(uint32_t frames_to_process);
+  virtual void ProcessIfNecessary(uint32_t frames_to_process);
 
   // Called when a new connection has been made to one of our inputs or the
   // connection number of channels has changed.  This potentially gives us
@@ -267,6 +267,14 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // Force all inputs to take any channel interpretation changes into account.
   void UpdateChannelsForInputs();
 
+  // The last time (context time) that his handler ran its Process() method.
+  // For each render quantum, we only want to process just once to handle fanout
+  // of this handler.
+  double last_processing_time_;
+
+  // The last time (context time) when this node did not have silent inputs.
+  double last_non_silent_time_;
+
  private:
   void SetNodeType(NodeType);
 
@@ -288,9 +296,6 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 
   Vector<std::unique_ptr<AudioNodeInput>> inputs_;
   Vector<std::unique_ptr<AudioNodeOutput>> outputs_;
-
-  double last_processing_time_;
-  double last_non_silent_time_;
 
   int connection_ref_count_;
 

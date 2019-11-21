@@ -51,8 +51,6 @@ chrome/browser/ui/ash/ash_util.h
 chrome/browser/ui/ash/multi_user/multi_user_util.h
 chrome/browser/ui/network_profile_bubble.h
 chrome/browser/ui/views/frame/browser_frame_header_ash.h
-chrome/common/mac/app_shim_launch.h
-chrome/common/mac/app_shim_param_traits.h
 chrome/install_static/chromium_install_modes.h
 chrome/install_static/install_constants.h
 chrome/install_static/install_details.h

@@ -11,7 +11,7 @@
 
 namespace ui {
 
-class GamepadObserver {
+class EVENTS_OZONE_EXPORT GamepadObserver {
  public:
   // Callback function when connected gamepad devices is updated.
   virtual void OnGamepadDevicesUpdated() {}

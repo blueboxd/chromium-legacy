@@ -283,6 +283,7 @@ crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/struct_017_to_024.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/struct_025_to_032.html [ Failure ]
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/struct_033_to_040.html [ Failure ]
+crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/ogles/GL/struct/struct_041_to_048.html [ Failure ]
 
 # Vulkan / Win / AMD / Passthrough command decoder
 crbug.com/angleproject/2898 [ win amd vulkan passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]

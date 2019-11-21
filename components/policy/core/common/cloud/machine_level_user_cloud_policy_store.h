@@ -61,7 +61,7 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyStore
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       std::unique_ptr<enterprise_management::PolicySigningKey> key,
       bool validate_in_background,
-      const UserCloudPolicyValidator::CompletionCallback& callback) override;
+      UserCloudPolicyValidator::CompletionCallback callback) override;
 
   DMToken machine_dm_token_;
   std::string machine_client_id_;

@@ -2688,7 +2688,7 @@ struct DumpAccessibilityTreeTestPassToString {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     PDFExtensionAccessibilityTreeDumpTest,
     ::testing::Range(
         size_t{0},

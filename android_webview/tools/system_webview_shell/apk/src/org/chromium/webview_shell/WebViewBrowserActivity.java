@@ -38,6 +38,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.PermissionRequest;
 import android.webkit.TracingConfig;
@@ -327,6 +328,11 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         WebView webview = new WebView(this);
         WebSettings settings = webview.getSettings();
         initializeSettings(settings);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Third party cookies are off by default on L+;
+            // turn them on for consistency with normal browsers.
+            CookieManager.getInstance().setAcceptThirdPartyCookies(webview, true);
+        }
 
         Matcher matcher = WEBVIEW_VERSION_PATTERN.matcher(settings.getUserAgentString());
         if (matcher.find()) {

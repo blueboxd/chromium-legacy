@@ -26,6 +26,7 @@ extern const char kOptimizationGuideServiceGetModelsURL[];
 extern const char kOptimizationGuideServiceAPIKey[];
 extern const char kPurgeOptimizationGuideStore[];
 extern const char kDisableFetchingHintsAtNavigationStartForTesting[];
+extern const char kDisableCheckingUserPermissionsForTesting[];
 
 // Returns whether the hint component should be processed.
 // Available hint components are only processed if a proto override isn't being
@@ -55,6 +56,11 @@ ParseComponentConfigFromCommandLine();
 // Returns true if fetching of hints in real-time at the time of navigation
 // start should be disabled. Returns true only in tests.
 bool DisableFetchingHintsAtNavigationStartForTesting();
+
+// Returns true if checking of the user's permissions to fetch hints from the
+// remote Optimization Guide Service should be ignored. Returns true only in
+// tests.
+bool ShouldOverrideCheckingUserPermissionsToFetchHintsForTesting();
 
 }  // namespace switches
 }  // namespace optimization_guide

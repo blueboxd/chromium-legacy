@@ -19,6 +19,7 @@ namespace blink {
 class DisplayLockSuspendedHandle;
 class Element;
 class DisplayLockScopedLogger;
+class StyleRecalcChange;
 
 enum class DisplayLockLifecycleTarget { kSelf, kChildren };
 enum class DisplayLockActivationReason {
@@ -62,6 +63,11 @@ enum class DisplayLockActivationReason {
 static_assert(static_cast<uint32_t>(DisplayLockActivationReason::kAny) <
                   std::numeric_limits<uint16_t>::max(),
               "DisplayLockActivationReason is too large");
+
+// Since we currently, and temporarily, support both CSS and attribute version,
+// we need to distinguish the two so that lack of CSS, for example, doesn't
+// unlock the attribute version and vice versa.
+enum class DisplayLockContextCreateMethod { kUnknown, kCSS, kAttribute };
 
 class CORE_EXPORT DisplayLockContext final
     : public GarbageCollected<DisplayLockContext>,
@@ -136,6 +142,12 @@ class CORE_EXPORT DisplayLockContext final
 
   // Set which reasons activate, as a mask of DisplayLockActivationReason enums.
   void SetActivatable(uint16_t activatable_mask);
+
+  // Returns true if this lock has been activated and the activation has not yet
+  // been cleared.
+  bool IsActivated() const;
+  // Clear the activated flag.
+  void ClearActivated();
 
   // Acquire the lock, should only be called when unlocked.
   void StartAcquire();
@@ -235,6 +247,26 @@ class CORE_EXPORT DisplayLockContext final
     needs_prepaint_subtree_walk_ = true;
   }
 
+  void SetMethod(DisplayLockContextCreateMethod method) { method_ = method; }
+  DisplayLockContextCreateMethod GetMethod() const {
+    DCHECK(method_ != DisplayLockContextCreateMethod::kUnknown);
+    return method_;
+  }
+
+  // Note that this returns true if there is no context at all, so in order to
+  // check whether this is strictly an attribute version, as opposed to a null
+  // context, one needs to compare context with nullptr first.
+  static bool IsAttributeVersion(DisplayLockContext* context) {
+    return !context ||
+           context->GetMethod() == DisplayLockContextCreateMethod::kAttribute;
+  }
+
+  // This is called by the style recalc code in lieu of
+  // MarkForStyleRecalcIfNeeded() in order to adjust the child change if we need
+  // to recalc children nodes here.
+  StyleRecalcChange AdjustStyleRecalcChangeForChildren(
+      StyleRecalcChange change);
+
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockBudgetTest;
@@ -330,6 +362,10 @@ class CORE_EXPORT DisplayLockContext final
   // register/unregister is required.
   void UpdateActivationObservationIfNeeded();
 
+  // This function is called from within a task to fire the activation event.
+  // Scheduled by CommitForActivationWithSignal.
+  void FireActivationEvent(Element* activated_element);
+
   std::unique_ptr<DisplayLockBudget> update_budget_;
 
   Member<ScriptPromiseResolver> update_resolver_;
@@ -371,6 +407,13 @@ class CORE_EXPORT DisplayLockContext final
 
   uint16_t activatable_mask_ =
       static_cast<uint16_t>(DisplayLockActivationReason::kAny);
+
+  bool is_activated_ = false;
+
+  DisplayLockContextCreateMethod method_ =
+      DisplayLockContextCreateMethod::kUnknown;
+
+  base::WeakPtrFactory<DisplayLockContext> weak_factory_{this};
 };
 
 }  // namespace blink

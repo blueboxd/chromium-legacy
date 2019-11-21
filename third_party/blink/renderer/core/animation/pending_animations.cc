@@ -77,18 +77,18 @@ bool PendingAnimations::Update(
         started_synchronized_on_compositor = true;
       }
 
-      if (animation->Playing() && animation->timeline() &&
-          animation->timeline()->IsActive()) {
-        if (!animation->startTime()) {
-          waiting_for_start_time.push_back(animation.Get());
-        } else if (animation->pending()) {
-          // A pending animation that already has a start time does not need to
-          // be synchronized with animations that are starting up. Nonetheless,
-          // it needs to notify the animation to resolve the ready promise and
-          // commit a pending change to the playback rate.
-          animation->NotifyCompositorStartTime(
-              animation->timeline()->CurrentTimeSeconds().value_or(0));
-        }
+      if (!animation->timeline() || !animation->timeline()->IsActive())
+        continue;
+
+      if (animation->Playing() && !animation->startTime()) {
+        waiting_for_start_time.push_back(animation.Get());
+      } else if (animation->pending()) {
+        // A pending animation that is not waiting on a start time does not need
+        // to be synchronized with animations that are starting up. Nonetheless,
+        // it needs to notify the animation to resolve the ready promise and
+        // commit the pending state.
+        animation->NotifyReady(
+            animation->timeline()->CurrentTimeSeconds().value_or(0));
       }
     } else {
       deferred.push_back(animation);
@@ -105,7 +105,7 @@ bool PendingAnimations::Update(
     for (auto& animation : waiting_for_start_time) {
       DCHECK(!animation->startTime());
       // TODO(crbug.com/916117): Handle start time of scroll-linked animations.
-      animation->NotifyCompositorStartTime(
+      animation->NotifyReady(
           animation->timeline()->CurrentTimeSeconds().value_or(0));
     }
   }
@@ -163,12 +163,11 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
       continue;
     }
     DCHECK(animation->timeline()->IsDocumentTimeline());
-    animation->NotifyCompositorStartTime(
-        monotonic_animation_start_time -
-        ToDocumentTimeline(animation->timeline())
-            ->ZeroTime()
-            .since_origin()
-            .InSecondsF());
+    animation->NotifyReady(monotonic_animation_start_time -
+                           ToDocumentTimeline(animation->timeline())
+                               ->ZeroTime()
+                               .since_origin()
+                               .InSecondsF());
   }
 }
 

@@ -60,7 +60,7 @@ class BrowserAssociatedInterface {
       : internal_state_(new InternalState(impl)) {
     filter->AddAssociatedInterface(
         Interface::Name_,
-        base::Bind(&InternalState::BindRequest, internal_state_),
+        base::BindRepeating(&InternalState::BindRequest, internal_state_),
         base::BindOnce(&InternalState::ClearBindings, internal_state_));
   }
 

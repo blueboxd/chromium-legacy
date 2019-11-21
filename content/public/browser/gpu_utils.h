@@ -17,7 +17,7 @@ namespace content {
 
 CONTENT_EXPORT const gpu::GpuPreferences GetGpuPreferencesFromCommandLine();
 
-CONTENT_EXPORT void StopGpuProcess(const base::Closure& callback);
+CONTENT_EXPORT void StopGpuProcess(base::OnceClosure callback);
 
 CONTENT_EXPORT gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory();
 

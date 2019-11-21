@@ -342,8 +342,8 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
                              CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   DeviceCloudPolicyValidator::StartValidation(
       std::move(validator),
-      base::Bind(&EnrollmentHandlerChromeOS::HandlePolicyValidationResult,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnrollmentHandlerChromeOS::HandlePolicyValidationResult,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
@@ -518,8 +518,8 @@ void EnrollmentHandlerChromeOS::OnOfflinePolicyBlobLoaded(
   validator->ValidateDomain(domain_);
   DeviceCloudPolicyValidator::StartValidation(
       std::move(validator),
-      base::Bind(&EnrollmentHandlerChromeOS::OnOfflinePolicyValidated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EnrollmentHandlerChromeOS::OnOfflinePolicyValidated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void EnrollmentHandlerChromeOS::OnOfflinePolicyValidated(

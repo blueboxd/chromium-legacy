@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/download/download_item_view.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +20,12 @@ TEST_F(DownloadItemViewDangerousDownloadLabelTest, AdjustTextAndGetSize) {
   base::string16 label_text = base::ASCIIToUTF16("short");
   views::Label label(label_text);
   label.SetMultiLine(true);
-  DownloadItemView::AdjustTextAndGetSize(&label);
+  base::RepeatingCallback<void(views::Label*, const base::string16&)>
+      update_text_and_style = base::BindRepeating(
+          [](views::Label* label, const base::string16& text) {
+            label->SetText(text);
+          });
+  DownloadItemView::AdjustTextAndGetSize(&label, update_text_and_style);
   EXPECT_EQ(label_text, label.GetText());
 
   // When we have multiple linebreaks that result in the same minimum width, we
@@ -28,7 +36,7 @@ TEST_F(DownloadItemViewDangerousDownloadLabelTest, AdjustTextAndGetSize) {
       "aaaa aaaa aaaa aaaa aaaa aaaa bb\n"
       "aaaa aaaa aaaa aaaa aaaa aaaa");
   label.SetText(label_text);
-  DownloadItemView::AdjustTextAndGetSize(&label);
+  DownloadItemView::AdjustTextAndGetSize(&label, update_text_and_style);
   EXPECT_EQ(expected_text, label.GetText());
 
   // If the label is a single word and extremely long, we should not break it
@@ -36,7 +44,7 @@ TEST_F(DownloadItemViewDangerousDownloadLabelTest, AdjustTextAndGetSize) {
   label_text = base::ASCIIToUTF16(
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   label.SetText(label_text);
-  DownloadItemView::AdjustTextAndGetSize(&label);
+  DownloadItemView::AdjustTextAndGetSize(&label, update_text_and_style);
   EXPECT_EQ(label_text, label.GetText());
 
   // Two lines have the same length.
@@ -46,7 +54,7 @@ TEST_F(DownloadItemViewDangerousDownloadLabelTest, AdjustTextAndGetSize) {
       "aaaa aaaa aaaa aaaa bb\n"
       "bb aaaa aaaa aaaa aaaa");
   label.SetText(label_text);
-  DownloadItemView::AdjustTextAndGetSize(&label);
+  DownloadItemView::AdjustTextAndGetSize(&label, update_text_and_style);
   EXPECT_EQ(expected_text, label.GetText());
 
   // Text begins with a very long word.
@@ -56,7 +64,7 @@ TEST_F(DownloadItemViewDangerousDownloadLabelTest, AdjustTextAndGetSize) {
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
       "aaaa aaaa");
   label.SetText(label_text);
-  DownloadItemView::AdjustTextAndGetSize(&label);
+  DownloadItemView::AdjustTextAndGetSize(&label, update_text_and_style);
   EXPECT_EQ(expected_text, label.GetText());
 
   // Text ends with a very long word.
@@ -66,6 +74,6 @@ TEST_F(DownloadItemViewDangerousDownloadLabelTest, AdjustTextAndGetSize) {
       "aaa aaaa\n"
       "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   label.SetText(label_text);
-  DownloadItemView::AdjustTextAndGetSize(&label);
+  DownloadItemView::AdjustTextAndGetSize(&label, update_text_and_style);
   EXPECT_EQ(expected_text, label.GetText());
 }

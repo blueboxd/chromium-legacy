@@ -87,15 +87,10 @@ class ChromeContentBrowserClientExtensionsPart
   static std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy(
       content::BrowserContext* browser_context);
 
-  static mojo::PendingRemote<network::mojom::URLLoaderFactory>
-  CreateURLLoaderFactoryForNetworkRequests(
+  static void OverrideURLLoaderFactoryParams(
       content::RenderProcessHost* process,
-      network::mojom::NetworkContext* network_context,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-          header_client,
       const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      const base::Optional<net::NetworkIsolationKey>& network_isolation_key);
+      network::mojom::URLLoaderFactoryParams* factory_params);
 
   static bool IsBuiltinComponent(content::BrowserContext* browser_context,
                                  const url::Origin& origin);

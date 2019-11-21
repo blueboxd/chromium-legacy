@@ -36,11 +36,10 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
+import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
-import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.WebApkUma;
@@ -55,7 +54,6 @@ import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
@@ -78,7 +76,7 @@ import java.util.HashMap;
 /**
  * Displays a webapp in a nearly UI-less Chrome (InfoBars still appear).
  */
-public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
+public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponent> {
     public static final String WEBAPP_SCHEME = "webapp";
 
     private static final String TAG = "WebappActivity";
@@ -89,8 +87,6 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
 
     private WebappInfo mWebappInfo;
 
-    private CustomTabToolbarCoordinator mToolbarCoordinator;
-    private CustomTabActivityNavigationController mNavigationController;
     private WebappActivityTabController mTabController;
     private SplashController mSplashController;
     private TabObserverRegistrar mTabObserverRegistrar;
@@ -175,14 +171,6 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
     @Override
     public @ChromeActivity.ActivityType int getActivityType() {
         return ChromeActivity.ActivityType.WEBAPP;
-    }
-
-    @Override
-    protected RootUiCoordinator createRootUiCoordinator() {
-        return new RootUiCoordinator(this, (toolbarManager) -> {
-            mToolbarCoordinator.onToolbarInitialized(toolbarManager);
-            mNavigationController.onToolbarInitialized(toolbarManager);
-        }, null, getShareDelegateSupplier());
     }
 
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {
@@ -450,11 +438,6 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
     }
 
     @Override
-    protected boolean handleBackPressed() {
-        return mNavigationController.navigateOnBack();
-    }
-
-    @Override
     protected void initDeferredStartupForActivity() {
         super.initDeferredStartupForActivity();
 
@@ -481,16 +464,6 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
     protected void onDeferredStartupWithNullStorage(
             WebappDisclosureSnackbarController disclosureSnackbarController) {
         // Overridden in WebApkActivity
-    }
-
-    @Override
-    protected int getControlContainerLayoutId() {
-        return R.layout.custom_tabs_control_container;
-    }
-
-    @Override
-    protected int getToolbarLayoutId() {
-        return R.layout.custom_tabs_toolbar;
     }
 
     @Override
@@ -778,11 +751,6 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
     @VisibleForTesting
     SplashController getSplashControllerForTests() {
         return mSplashController;
-    }
-
-    @Override
-    public int getControlContainerHeightResource() {
-        return R.dimen.custom_tabs_control_container_height;
     }
 
     @Override

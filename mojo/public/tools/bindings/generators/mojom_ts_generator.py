@@ -47,6 +47,7 @@ class Generator(generator.Generator):
     return {
       "module": self.module,
       "use_es_modules": use_es_modules,
+      "enums": self.module.enums,
    }
 
   @staticmethod

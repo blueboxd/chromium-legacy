@@ -203,7 +203,7 @@ class TestWaitForResults(unittest.TestCase):
             list(notarize.wait_for_results(uuids, test_config.TestConfig()))
 
         self.assertEqual(
-            "Timed out waiting for notarization requests: ['0c652bb4-7d44-4904-8c59-1ee86a376ece']",
+            "Timed out waiting for notarization requests: set(['0c652bb4-7d44-4904-8c59-1ee86a376ece'])",
             str(cm.exception))
 
         for call in kwargs['run_command_output'].mock_calls:
@@ -216,7 +216,7 @@ class TestWaitForResults(unittest.TestCase):
                 ]))
 
         total_time = sum([call[1][0] for call in kwargs['sleep'].mock_calls])
-        self.assertLess(total_time, 31 * 60)
+        self.assertLess(total_time, 61 * 60)
 
 
 class TestStaple(unittest.TestCase):

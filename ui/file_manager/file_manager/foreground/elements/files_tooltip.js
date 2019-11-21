@@ -182,6 +182,7 @@ var FilesTooltip = Polymer({
     this.style.left = `${Math.round(left)}px`;
 
     this.setAttribute('visible', true);
+    this.setAttribute('aria-hidden', 'false');
   },
 
   /**
@@ -195,6 +196,7 @@ var FilesTooltip = Polymer({
 
     this.visibleTooltipTarget_ = null;
     this.removeAttribute('visible');
+    this.setAttribute('aria-hidden', 'true');
   },
 
   /**

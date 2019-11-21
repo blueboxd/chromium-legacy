@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_P(DeviceWilcoDtcConfigurationExternalPolicyHandlerTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          DeviceWilcoDtcConfigurationExternalPolicyHandlerTest,
                          testing::Bool());
 }  // namespace policy

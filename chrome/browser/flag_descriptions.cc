@@ -1638,6 +1638,12 @@ const char kPassiveDocumentWheelEventListenersDescription[] =
     "Forces wheel, and mousewheel event listeners on document level targets "
     "(which haven't requested otherwise) to be treated as passive.";
 
+const char kPassiveMixedContentWarningName[] =
+    "Warning for Passive Mixed Content";
+const char kPassiveMixedContentWarningDescription[] =
+    "Causes a 'Not Secure' chip to be shown in the omnibox if a site contains "
+    "passive (aka optionally blockable) mixed content.";
+
 const char kPasswordEditingAndroidName[] = "Password editing for Android";
 const char kPasswordEditingAndroidDescription[] =
     "Adds the editing option for saved passwords.";
@@ -1983,6 +1989,10 @@ const char kSiteIsolationOptOutChoiceOptOut[] = "Disabled (not recommended)";
 const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =
     "Animate smoothly when scrolling page content.";
+
+const char kSmsReceiverCrossDeviceName[] = "SMS Receiver Cross Device";
+const char kSmsReceiverCrossDeviceDescription[] =
+    "Enable the SMS Receiver API to work across devices";
 
 const char kSpeculativeServiceWorkerStartOnQueryInputName[] =
     "Enable speculative start of a service worker when a search is predicted.";

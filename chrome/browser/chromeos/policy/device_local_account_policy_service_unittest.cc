@@ -503,8 +503,8 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   // also become ready after flushing all the pending tasks.
   EXPECT_CALL(service_observer_, OnPolicyUpdated(account_1_user_id_)).Times(2);
   broker->core()->service()->RefreshPolicy(
-      base::Bind(&DeviceLocalAccountPolicyServiceTest::OnRefreshDone,
-                 base::Unretained(this)));
+      base::BindOnce(&DeviceLocalAccountPolicyServiceTest::OnRefreshDone,
+                     base::Unretained(this)));
   FlushDeviceSettings();
   Mock::VerifyAndClearExpectations(&service_observer_);
   Mock::VerifyAndClearExpectations(this);

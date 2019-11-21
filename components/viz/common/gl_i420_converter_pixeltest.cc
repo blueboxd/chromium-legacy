@@ -122,6 +122,6 @@ TEST_P(GLI420ConverterPixelTest, ScaleAndConvert) {
 
 // Run the tests twice, once disallowing use of the MRT path, and once allowing
 // its use (auto-detecting whether the current platform supports it).
-INSTANTIATE_TEST_SUITE_P(, GLI420ConverterPixelTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, GLI420ConverterPixelTest, testing::Bool());
 
 }  // namespace viz

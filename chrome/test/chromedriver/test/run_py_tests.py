@@ -105,8 +105,6 @@ _OS_SPECIFIC_FILTER['win'] = [
     'ChromeDownloadDirTest.testFileDownloadWithGetHeadless',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=1026018
-    'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
@@ -115,9 +113,6 @@ _OS_SPECIFIC_FILTER['mac'] = [
     'ChromeDriverTest.testWindowFullScreen',
     # https://bugs.chromium.org/p/chromium/issues/detail?id=1025981
     'ChromeDriverSiteIsolation.testCanClickOOPIF',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=1026018
-    'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
-    'ChromeDriverTest.testNoSuchElementExceptionMessage',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [

@@ -1074,6 +1074,17 @@
           "keyCode": [80, 80]
         }
       }
+    },
+    {
+      "command": "resetTextToSpeechSettings",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [220],
+          "ctrlKey": [true],
+          "shiftKey": [true]
+        }
+      }
     }
   ]
 }

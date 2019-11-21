@@ -23,6 +23,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     private static final int MIN_CLOSE_SUGGESTIONS_THRESHOLD = 3;
 
     protected TabContextObserver mTabContextObserver;
+    protected TabSuggestionFeedback mTabSuggestionFeedback;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private List<TabSuggestionsFetcher> mTabSuggestionsFetchers;
     private List<TabSuggestion> mPrefetchedResults = new LinkedList<>();
@@ -113,8 +114,8 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
                 mPrefetchedResults.addAll(suggestions.tabSuggestions);
                 if (mRemainingFetchers == 0) {
                     for (TabSuggestionsObserver tabSuggestionsObserver : mTabSuggestionsObservers) {
-                        tabSuggestionsObserver.onNewSuggestion(
-                                aggregateResults(mPrefetchedResults));
+                        tabSuggestionsObserver.onNewSuggestion(aggregateResults(mPrefetchedResults),
+                                res -> onTabSuggestionFeedback(res));
                     }
                 }
             }
@@ -129,5 +130,11 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
     @Override
     public void removeObserver(TabSuggestionsObserver tabSuggestionsObserver) {
         mTabSuggestionsObservers.removeObserver(tabSuggestionsObserver);
+    }
+
+    public void onTabSuggestionFeedback(TabSuggestionFeedback tabSuggestionFeedback) {
+        // Record TabSuggestionFeedback for testing purposes
+        mTabSuggestionFeedback = tabSuggestionFeedback;
+        // TODO(crbug.com/1026068) log tab suggestion feedback
     }
 }

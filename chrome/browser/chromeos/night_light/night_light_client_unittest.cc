@@ -269,7 +269,7 @@ TEST_P(NightLightClientTest, TestTimezoneChanges) {
   EXPECT_EQ(GetTimezoneId(*timezone), client_.current_timezone_id());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          NightLightClientTest,
                          ::testing::Values(ScheduleType::kSunsetToSunrise,
                                            ScheduleType::kCustom));

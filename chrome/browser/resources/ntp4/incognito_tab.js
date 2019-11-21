@@ -12,13 +12,16 @@ window.addEventListener('load', function() {
   chrome.send('observeThemeChanges');
 
   cr.addWebUIListener('cookie-controls-changed', dict => {
-    $('cookie-controls-tooltip-icon-wrapper').hidden = !dict.enforced;
+    $('cookie-controls-tooltip-icon').hidden = !dict.enforced;
     $('cookie-controls-toggle').disabled = dict.enforced;
     $('cookie-controls-toggle').checked = dict.checked;
   });
   $('cookie-controls-toggle').addEventListener('change', event => {
     chrome.send('cookieControlsToggleChanged', [event.detail]);
   });
+  $('cookie-controls-tooltip-icon').onclick = () => {
+    window.location.href = 'chrome://settings/content/cookies';
+  };
   chrome.send('observeCookieControlsSettingsChanges');
 });
 

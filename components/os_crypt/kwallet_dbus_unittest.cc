@@ -120,7 +120,7 @@ class KWalletDBusTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     KWalletDBusTest,
     ::testing::Values(base::nix::DESKTOP_ENVIRONMENT_KDE4,
                       base::nix::DESKTOP_ENVIRONMENT_KDE5));

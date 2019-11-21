@@ -159,8 +159,8 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
   // Start validation.
   UserCloudPolicyValidator::StartValidation(
       std::move(validator),
-      base::Bind(&UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void UserCloudPolicyStoreChromeOS::OnPolicyToStoreValidated(
@@ -254,8 +254,8 @@ void UserCloudPolicyStoreChromeOS::ValidateRetrievedPolicy(
     std::unique_ptr<em::PolicyFetchResponse> policy) {
   UserCloudPolicyValidator::StartValidation(
       CreateValidatorForLoad(std::move(policy)),
-      base::Bind(&UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void UserCloudPolicyStoreChromeOS::OnRetrievedPolicyValidated(

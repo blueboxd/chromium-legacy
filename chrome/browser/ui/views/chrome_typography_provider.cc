@@ -70,19 +70,15 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
     font_weight = gfx::Font::Weight::SEMIBOLD;
   }
 
-  // Use a semibold style for emphasized text in body contexts, and ignore
-  // |style| otherwise.
   if (style == STYLE_EMPHASIZED || style == STYLE_EMPHASIZED_SECONDARY) {
-    switch (context) {
-      case CONTEXT_BODY_TEXT_SMALL:
-      case CONTEXT_BODY_TEXT_LARGE:
-      case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
-        font_weight = gfx::Font::Weight::SEMIBOLD;
-        break;
-
-      default:
-        break;
-    }
+    // Limit emphasizing text to contexts where it's obviously correct. If you
+    // hit this DCHECK, ensure it's sane and UX-approved to extend it to your
+    // new case (e.g. don't add CONTEXT_BUTTON_MD).
+    DCHECK(context == CONTEXT_BODY_TEXT_LARGE ||
+           context == CONTEXT_BODY_TEXT_SMALL ||
+           context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT ||
+           context == views::style::CONTEXT_LABEL);
+    font_weight = gfx::Font::Weight::SEMIBOLD;
   }
 
   if (style == STYLE_PRIMARY_MONOSPACED ||

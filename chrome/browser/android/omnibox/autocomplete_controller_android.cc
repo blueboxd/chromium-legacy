@@ -444,12 +444,9 @@ void AutocompleteControllerAndroid::NotifySuggestionsReceived(
   }
 
   // Get the inline-autocomplete text.
-  const AutocompleteResult::const_iterator default_match(
-      autocomplete_result.default_match());
   base::string16 inline_autocomplete_text;
-  if (default_match != autocomplete_result.end()) {
+  if (auto* default_match = autocomplete_result.default_match())
     inline_autocomplete_text = default_match->inline_autocompletion;
-  }
   ScopedJavaLocalRef<jstring> inline_text =
       ConvertUTF16ToJavaString(env, inline_autocomplete_text);
   jlong j_autocomplete_result =

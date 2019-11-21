@@ -273,6 +273,7 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
 
     const bool previews_only =
         window_dragging_state == WindowDraggingState::kFromShelf ||
+        window_dragging_state == WindowDraggingState::kFromTop ||
         SplitViewController::Get(GetWidget()->GetNativeWindow())
             ->InSplitViewMode();
     const bool can_dragged_window_be_snapped =

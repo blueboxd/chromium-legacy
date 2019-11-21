@@ -27,7 +27,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
  public:
   // Callback invoked once the policy refresh attempt has completed. Passed
   // bool parameter is true if the refresh was successful (no error).
-  using RefreshPolicyCallback = base::Callback<void(bool)>;
+  using RefreshPolicyCallback = base::OnceCallback<void(bool)>;
 
   // Callback invoked once the unregister attempt has completed. Passed bool
   // parameter is true if unregistering was successful (no error).
@@ -56,7 +56,7 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
 
   // Refreshes policy. |callback| will be invoked after the operation completes
   // or aborts because of errors.
-  virtual void RefreshPolicy(const RefreshPolicyCallback& callback);
+  virtual void RefreshPolicy(RefreshPolicyCallback callback);
 
   // Unregisters the device. |callback| will be invoked after the operation
   // completes or aborts because of errors. All pending refresh policy requests

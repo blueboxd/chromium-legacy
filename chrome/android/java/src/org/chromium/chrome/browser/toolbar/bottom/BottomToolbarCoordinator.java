@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
@@ -36,6 +37,10 @@ class BottomToolbarCoordinator {
 
     /** A provider that notifies components when the theme color changes.*/
     private final ThemeColorProvider mThemeColorProvider;
+
+    /** The overview mode manager. */
+    private OverviewModeBehavior mOverviewModeBehavior;
+    private OverviewModeObserver mOverviewModeObserver;
 
     /**
      * Build the coordinator that manages the bottom toolbar.
@@ -85,11 +90,16 @@ class BottomToolbarCoordinator {
             TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
             ViewGroup topToolbarRoot) {
         mBrowsingModeCoordinator.initializeWithNative(tabSwitcherListener, menuButtonHelper,
-                overviewModeBehavior, tabCountProvider, mThemeColorProvider,
-                incognitoStateProvider);
+                tabCountProvider, mThemeColorProvider, incognitoStateProvider);
         mTabSwitcherModeCoordinator = new TabSwitcherBottomToolbarCoordinator(mTabSwitcherModeStub,
                 topToolbarRoot, incognitoStateProvider, mThemeColorProvider, newTabClickListener,
-                closeTabsClickListener, menuButtonHelper, overviewModeBehavior, tabCountProvider);
+                closeTabsClickListener, menuButtonHelper, tabCountProvider);
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeObserver = new BottomToolbarAnimationCoordinator(
+                mBrowsingModeCoordinator, mTabSwitcherModeCoordinator);
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+        }
     }
 
     /**
@@ -137,6 +147,11 @@ class BottomToolbarCoordinator {
         if (mTabSwitcherModeCoordinator != null) {
             mTabSwitcherModeCoordinator.destroy();
             mTabSwitcherModeCoordinator = null;
+        }
+        if (mOverviewModeBehavior != null) {
+            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeBehavior = null;
+            mOverviewModeObserver = null;
         }
         mThemeColorProvider.destroy();
     }

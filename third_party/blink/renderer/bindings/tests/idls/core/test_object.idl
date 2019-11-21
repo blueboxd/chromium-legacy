@@ -52,7 +52,6 @@ interface TestObject {
     readonly attribute TestInterfaceEmpty readonlyTestInterfaceEmptyAttribute;
     readonly attribute long readonlyLongAttribute;
     // Basic types
-    attribute Date dateAttribute;
     attribute DOMString stringAttribute;
     attribute ByteString byteStringAttribute;
     attribute USVString usvStringAttribute;
@@ -228,7 +227,6 @@ interface TestObject {
 
     // Types
     // Basic types
-    Date dateMethod();
     DOMString stringMethod();
     ByteString byteStringMethod();
     USVString usvStringMethod();
@@ -245,7 +243,6 @@ interface TestObject {
     unsigned long long unsignedLongLongMethod();
     unsigned short unsignedShortMethod();
 
-    void voidMethodDateArg(Date dateArg);
     void voidMethodStringArg(DOMString stringArg);
     void voidMethodByteStringArg(ByteString stringArg);
     void voidMethodUSVStringArg(USVString usvStringArg);

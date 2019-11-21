@@ -72,7 +72,7 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
     web_source.SetPlatformSource(base::WrapUnique(video_source));
 
     return blink::MediaStreamVideoTrack::CreateVideoTrack(
-        video_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
+        video_source, blink::MediaStreamVideoSource::ConstraintsOnceCallback(),
         true);
   }
 

@@ -1295,8 +1295,8 @@ SkColorType ColorTypeForVisual(void* visual) {
     unsigned long green_mask;
     unsigned long blue_mask;
   } color_infos[] = {
-      {kRGB_565_SkColorType, 0x1f, 0x7e0, 0xf800},
-      {kARGB_4444_SkColorType, 0xf0, 0xf00, 0xf000},
+      {kRGB_565_SkColorType, 0xf800, 0x7e0, 0x1f},
+      {kARGB_4444_SkColorType, 0xf000, 0xf00, 0xf0},
       {kRGBA_8888_SkColorType, 0xff, 0xff00, 0xff0000},
       {kBGRA_8888_SkColorType, 0xff0000, 0xff00, 0xff},
       {kRGBA_1010102_SkColorType, 0x3ff, 0xffc00, 0x3ff00000},
@@ -1309,7 +1309,10 @@ SkColorType ColorTypeForVisual(void* visual) {
       return color_info.color_type;
     }
   }
-  LOG(FATAL) << "Unsupported visual: " << XVisualIDFromVisual(vis);
+  LOG(FATAL) << "Unsupported visual with rgb mask 0x" << std::hex
+             << vis->red_mask << ", 0x" << vis->green_mask << ", 0x"
+             << vis->blue_mask
+             << ".  Please report this to https://crbug.com/1025266";
   return kUnknown_SkColorType;
 }
 

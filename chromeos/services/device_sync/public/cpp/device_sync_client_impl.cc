@@ -116,6 +116,15 @@ void DeviceSyncClientImpl::SetSoftwareFeatureState(
                                         is_exclusive, std::move(callback));
 }
 
+void DeviceSyncClientImpl::SetFeatureStatus(
+    const std::string& device_instance_id,
+    multidevice::SoftwareFeature feature,
+    FeatureStatusChange status_change,
+    mojom::DeviceSync::SetFeatureStatusCallback callback) {
+  device_sync_->SetFeatureStatus(device_instance_id, feature, status_change,
+                                 std::move(callback));
+}
+
 void DeviceSyncClientImpl::FindEligibleDevices(
     multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {

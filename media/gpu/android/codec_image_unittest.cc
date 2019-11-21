@@ -49,8 +49,11 @@ class CodecImageTest : public testing::Test {
     ON_CALL(*codec_, DequeueOutputBuffer(_, _, _, _, _, _, _))
         .WillByDefault(Return(MEDIA_CODEC_OK));
 
-    gl::init::InitializeGLOneOffImplementation(gl::kGLImplementationEGLGLES2,
-                                               false, false, false, false);
+    gl::init::InitializeStaticGLBindingsImplementation(
+        gl::kGLImplementationEGLGLES2, false);
+    gl::init::InitializeGLOneOffPlatformImplementation(false, false, false,
+                                                       false);
+
     surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size(320, 240));
     surface_->Initialize();
     share_group_ = new gl::GLShareGroup();

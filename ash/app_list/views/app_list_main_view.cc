@@ -159,6 +159,16 @@ void AppListMainView::OnResultInstalled(SearchResult* result) {
   search_box_view_->ClearSearch();
 }
 
+// AppListModelObserver overrides:
+void AppListMainView::OnAppListStateChanged(AppListState new_state,
+                                            AppListState old_state) {
+  if (new_state == AppListState::kStateEmbeddedAssistant) {
+    search_box_view_->SetVisible(false);
+  } else {
+    search_box_view_->SetVisible(true);
+  }
+}
+
 void AppListMainView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   base::string16 raw_query = search_model_->search_box()->text();
   base::string16 query;

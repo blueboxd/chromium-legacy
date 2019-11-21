@@ -157,16 +157,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
       base::StringPiece scheme,
       bool is_embedded_origin_secure) override;
-  mojo::PendingRemote<network::mojom::URLLoaderFactory>
-  CreateURLLoaderFactoryForNetworkRequests(
+  void OverrideURLLoaderFactoryParams(
       content::RenderProcessHost* process,
-      network::mojom::NetworkContext* network_context,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-          header_client,
       const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      const base::Optional<net::NetworkIsolationKey>& network_isolation_key)
-      override;
+      network::mojom::URLLoaderFactoryParams* factory_params) override;
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
   void GetAdditionalViewSourceSchemes(

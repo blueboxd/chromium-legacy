@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -32,6 +33,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -91,7 +93,8 @@ public class TabSuggestionsOrchestratorTest {
         List<TabSuggestion> suggestions = new LinkedList<>();
         TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
             @Override
-            public void onNewSuggestion(List<TabSuggestion> tabSuggestions) {
+            public void onNewSuggestion(List<TabSuggestion> tabSuggestions,
+                    Callback<TabSuggestionFeedback> tabSuggestionFeedbackCallback) {
                 suggestions.addAll(tabSuggestions);
             }
 
@@ -125,7 +128,8 @@ public class TabSuggestionsOrchestratorTest {
         List<TabSuggestion> suggestions = new LinkedList<>();
         TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
             @Override
-            public void onNewSuggestion(List<TabSuggestion> tabSuggestions) {
+            public void onNewSuggestion(List<TabSuggestion> tabSuggestions,
+                    Callback<TabSuggestionFeedback> tabSuggestionFeedback) {
                 suggestions.addAll(tabSuggestions);
             }
 
@@ -134,5 +138,35 @@ public class TabSuggestionsOrchestratorTest {
         };
         tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
         Assert.assertEquals(0, suggestions.size());
+    }
+
+    @Test
+    public void testOrchestratorCallback() {
+        doReturn(1).when(mTabModelFilter).getCount();
+        doReturn(sTabs[0]).when(mTabModelFilter).getTabAt(eq(0));
+        TabSuggestionsOrchestrator tabSuggestionsOrchestrator =
+                new TabSuggestionsOrchestrator(mTabModelSelector, mDispatcher);
+        TabSuggestionsObserver tabSuggestionsObserver = new TabSuggestionsObserver() {
+            @Override
+            public void onNewSuggestion(List<TabSuggestion> tabSuggestions,
+                    Callback<TabSuggestionFeedback> tabSuggestionFeedback) {
+                tabSuggestionFeedback.onResult(new TabSuggestionFeedback(null,
+                        TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED, Arrays.asList(1), 1));
+            }
+
+            @Override
+            public void onTabSuggestionInvalidated() {}
+        };
+
+        tabSuggestionsOrchestrator.addObserver(tabSuggestionsObserver);
+        tabSuggestionsOrchestrator.mTabContextObserver.mTabModelObserver.didAddTab(null, 0);
+        Assert.assertNotNull(tabSuggestionsOrchestrator.mTabSuggestionFeedback);
+        Assert.assertEquals(tabSuggestionsOrchestrator.mTabSuggestionFeedback.tabSuggestionResponse,
+                TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED);
+        Assert.assertEquals(tabSuggestionsOrchestrator.mTabSuggestionFeedback.totalTabCount, 1);
+        Assert.assertEquals(
+                tabSuggestionsOrchestrator.mTabSuggestionFeedback.selectedTabIds.size(), 1);
+        Assert.assertEquals(
+                (int) tabSuggestionsOrchestrator.mTabSuggestionFeedback.selectedTabIds.get(0), 1);
     }
 }

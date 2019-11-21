@@ -66,8 +66,8 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   webui::SetupBundledWebUIDataSource(source, "extensions.js",
-                                     IDR_EXTENSIONS_CRISPER_JS,
-                                     IDR_EXTENSIONS_VULCANIZED_HTML);
+                                     IDR_EXTENSIONS_EXTENSIONS_ROLLUP_JS,
+                                     IDR_EXTENSIONS_EXTENSIONS_HTML);
 #else
   webui::SetupWebUIDataSource(
       source, base::make_span(kExtensionsResources, kExtensionsResourcesSize),

@@ -826,23 +826,10 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   // Position the children inside the box. We skip this if display-lock prevents
   // child layout.
   if (!LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
-    if (UNLIKELY(flow_thread)) {
+    if (UNLIKELY(flow_thread))
       PlaceChildrenInFlowThread(physical_fragment);
-    } else {
-      PhysicalOffset offset_from_start;
-      if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
-        // Need to include any block space that this container has used in
-        // previous fragmentainers. The offset of children will be relative to
-        // the container, in flow thread coordinates, i.e. the model where
-        // everything is represented as one single strip, rather than being
-        // sliced and translated into columns.
-
-        // TODO(mstensho): writing modes
-        if (previous_break_token)
-          offset_from_start.top = previous_break_token->ConsumedBlockSize();
-      }
-      PlaceChildrenInLayoutBox(physical_fragment, offset_from_start);
-    }
+    else
+      PlaceChildrenInLayoutBox(physical_fragment, previous_break_token);
   }
 
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_);
@@ -899,7 +886,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
 void NGBlockNode::PlaceChildrenInLayoutBox(
     const NGPhysicalBoxFragment& physical_fragment,
-    const PhysicalOffset& offset_from_start) {
+    const NGBlockBreakToken* previous_break_token) {
   LayoutBox* rendered_legend = nullptr;
   for (const auto& child_fragment : physical_fragment.Children()) {
     // Skip any line-boxes we have as children, this is handled within
@@ -911,8 +898,8 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     if (box_fragment.IsFirstForNode()) {
       if (box_fragment.IsRenderedLegend())
         rendered_legend = ToLayoutBox(box_fragment.GetMutableLayoutObject());
-      CopyChildFragmentPosition(box_fragment, child_fragment.Offset(),
-                                offset_from_start);
+      CopyChildFragmentPosition(box_fragment, child_fragment.offset,
+                                physical_fragment, previous_break_token);
     }
   }
 
@@ -935,61 +922,56 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
 
 void NGBlockNode::PlaceChildrenInFlowThread(
     const NGPhysicalBoxFragment& physical_fragment) {
-  LayoutUnit flowthread_offset;
+  const NGBlockBreakToken* previous_break_token = nullptr;
   for (const auto& child : physical_fragment.Children()) {
     if (child->GetLayoutObject() != box_) {
       DCHECK(child->GetLayoutObject()->IsColumnSpanAll());
-      CopyChildFragmentPosition(*child, child.offset);
+      CopyChildFragmentPosition(To<NGPhysicalBoxFragment>(*child), child.offset,
+                                physical_fragment);
       continue;
     }
     // Each anonymous child of a multicol container constitutes one column.
-
-    // TODO(mstensho): writing modes
-    PhysicalOffset offset(LayoutUnit(), flowthread_offset);
-
-    // Position each child node in the first column that they occur, relatively
-    // to the block-start of the flow thread.
+    // Position each child fragment in the first column that they occur,
+    // relatively to the block-start of the flow thread.
     const auto* column = To<NGPhysicalBoxFragment>(child.get());
-    PlaceChildrenInLayoutBox(*column, offset);
-    if (const auto* token = To<NGBlockBreakToken>(column->BreakToken()))
-      flowthread_offset = token->ConsumedBlockSize();
+    PlaceChildrenInLayoutBox(*column, previous_break_token);
+    previous_break_token = To<NGBlockBreakToken>(column->BreakToken());
   }
 }
 
 // Copies data back to the legacy layout tree for a given child fragment.
 void NGBlockNode::CopyChildFragmentPosition(
-    const NGPhysicalFragment& fragment,
-    const PhysicalOffset fragment_offset,
-    const PhysicalOffset additional_offset) {
-  LayoutBox* layout_box = ToLayoutBox(fragment.GetMutableLayoutObject());
+    const NGPhysicalBoxFragment& child_fragment,
+    PhysicalOffset offset,
+    const NGPhysicalBoxFragment& container_fragment,
+    const NGBlockBreakToken* previous_container_break_token) {
+  LayoutBox* layout_box = ToLayoutBox(child_fragment.GetMutableLayoutObject());
   if (!layout_box)
     return;
 
   DCHECK(layout_box->Parent()) << "Should be called on children only.";
 
-  // The containing block of |layout_box| on the legacy layout side is normally
-  // |box_|, but this is not an invariant. Among other things, it does not apply
-  // to list item markers and multicol container children. Multicol containiner
-  // children typically have their flow thread (not the multicol container
-  // itself) as their containing block, and we need to use the right containing
-  // block for inserting floats, flipping for writing modes, etc.
-  LayoutBlock* containing_block = layout_box->ContainingBlock();
-
-  // LegacyLayout flips vertical-rl horizontal coordinates before paint.
-  // NGLayout flips X location for LegacyLayout compatibility. horizontal_offset
-  // will be the offset from the left edge of the container to the left edge of
-  // the layout object, except when in vertical-rl: Then it will be the offset
-  // from the right edge of the container to the right edge of the layout
-  // object.
-  LayoutUnit horizontal_offset = fragment_offset.left + additional_offset.left;
-  bool has_flipped_x_axis =
-      containing_block->StyleRef().IsFlippedBlocksWritingMode();
-  if (has_flipped_x_axis) {
-    horizontal_offset = containing_block->Size().Width() - horizontal_offset -
-                        fragment.Size().width;
+  if (UNLIKELY(container_fragment.Style().IsFlippedBlocksWritingMode())) {
+    // Move the physical offset to the right side of the child fragment,
+    // relative to the right edge of the container fragment. This is the
+    // block-start offset in vertical-rl, and the legacy engine expects always
+    // expects the block offset to be relative to block-start.
+    offset.left = container_fragment.Size().width - offset.left -
+                  child_fragment.Size().width;
   }
-  layout_box->SetLocation(LayoutPoint(
-      horizontal_offset, fragment_offset.top + additional_offset.top));
+
+  if (UNLIKELY(previous_container_break_token)) {
+    // Add the amount of block-size previously (in previous fragmentainers)
+    // consumed by the container fragment. This will map the child's offset
+    // nicely into the flow thread coordinate system used by the legacy engine.
+    LayoutUnit consumed = previous_container_break_token->ConsumedBlockSize();
+    if (container_fragment.Style().IsHorizontalWritingMode())
+      offset.top += consumed;
+    else
+      offset.left += consumed;
+  }
+
+  layout_box->SetLocation(offset.ToLayoutPoint());
 }
 
 // For inline children, NG painters handles fragments directly, but there are

@@ -33,6 +33,8 @@ import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -294,6 +296,7 @@ public class AndroidPaymentApp
             final Map<String, PaymentMethodData> methodDataMap, final PaymentItem total,
             final List<PaymentItem> displayItems,
             final Map<String, PaymentDetailsModifier> modifiers,
+            final PaymentOptions paymentOptions, final List<PaymentShippingOption> shippingOptions,
             InstrumentDetailsCallback callback) {
         mInstrumentDetailsCallback = callback;
 
@@ -584,7 +587,10 @@ public class AndroidPaymentApp
             if (details == null) details = EMPTY_JSON_DATA;
             String methodName = data.getExtras().getString(EXTRA_RESPONSE_METHOD_NAME);
             if (methodName == null) methodName = "";
-            mInstrumentDetailsCallback.onInstrumentDetailsReady(methodName, details);
+            // TODO(crbug.com/1026667): Support payer data delegation for native apps instead of
+            // returning empty PayerData.
+            mInstrumentDetailsCallback.onInstrumentDetailsReady(
+                    methodName, details, new PayerData());
         }
         mInstrumentDetailsCallback = null;
     }

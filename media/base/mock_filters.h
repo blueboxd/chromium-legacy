@@ -98,6 +98,7 @@ class MockPipeline : public Pipeline {
   MOCK_METHOD1(SetPlaybackRate, void(double));
   MOCK_CONST_METHOD0(GetVolume, float());
   MOCK_METHOD1(SetVolume, void(float));
+  MOCK_METHOD1(SetLatencyHint, void(base::Optional<base::TimeDelta>));
 
   // TODO(sandersd): These should probably have setters too.
   MOCK_CONST_METHOD0(GetMediaTime, base::TimeDelta());
@@ -341,6 +342,7 @@ class MockRenderer : public Renderer {
                void(MediaResource* media_resource,
                     RendererClient* client,
                     PipelineStatusCallback& init_cb));
+  MOCK_METHOD1(SetLatencyHint, void(base::Optional<base::TimeDelta>));
   void Flush(base::OnceClosure flush_cb) { OnFlush(flush_cb); }
   MOCK_METHOD1(OnFlush, void(base::OnceClosure& flush_cb));
   MOCK_METHOD1(StartPlayingFrom, void(base::TimeDelta timestamp));

@@ -228,6 +228,14 @@ Status NavigationTracker::DetermineUnknownLoadingState() {
   std::unique_ptr<base::Value> result;
   Status status = web_view_->EvaluateScript(current_frame_id_,
                                             "document.readyState", &result);
+  if (loading_state_ == kNotLoading) {
+    // While calling EvaluateScript, some events may have arrived to indicate
+    // that the page has finished loading. These events can be generated after
+    // document.readyState is evaluated but processed by ChromeDriver before
+    // EvaluateScript returns. In this case, it is important to keep the state
+    // as not loading, to avoid deadlock.
+    return Status(kOk);
+  }
   if (status.code() == kNoSuchExecutionContext) {
     loading_state_ = kLoading;
     // result is not set in this case, so return here

@@ -43,6 +43,7 @@
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
+#include "chrome/browser/sharing/sms/sms_flags.h"
 #include "chrome/browser/sharing/webrtc/webrtc_flags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -1584,6 +1585,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsLinux | kOsCrOS | kOsWin | kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSmoothScrolling,
                                switches::kDisableSmoothScrolling)},
+    {"sms-receiver-cross-device",
+     flag_descriptions::kSmsReceiverCrossDeviceName,
+     flag_descriptions::kSmsReceiverCrossDeviceDescription, kOsAll,
+     FEATURE_VALUE_TYPE(kSmsReceiverCrossDevice)},
     {"fractional-scroll-offsets",
      flag_descriptions::kFractionalScrollOffsetsName,
      flag_descriptions::kFractionalScrollOffsetsDescription, kOsAll,
@@ -1676,7 +1681,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
     {"webui-tab-strip", flag_descriptions::kWebUITabStripName,
      flag_descriptions::kWebUITabStripDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kWebUITabStrip)},
+     SINGLE_VALUE_TYPE(switches::kWebUITabStrip)},
     {"webui-tab-strip-demo-options",
      flag_descriptions::kWebUITabStripDemoOptionsName,
      flag_descriptions::kWebUITabStripDemoOptionsDescription, kOsDesktop,
@@ -3864,7 +3869,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"sharing-rename-devices", flag_descriptions::kSharingRenameDevicesName,
      flag_descriptions::kSharingRenameDevicesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kSharingRenameDevices)},
+     FEATURE_VALUE_TYPE(send_tab_to_self::kSharingRenameDevices)},
 
 #if defined(OS_CHROMEOS)
     {"discover-app", flag_descriptions::kEnableDiscoverAppName,
@@ -4075,7 +4080,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kBuiltInModuleKvStorage)},
 
     {"native-file-system-api", flag_descriptions::kNativeFileSystemAPIName,
-     flag_descriptions::kNativeFileSystemAPIDescription, kOsAll,
+     flag_descriptions::kNativeFileSystemAPIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(blink::features::kNativeFileSystemAPI)},
 
     {"file-handling-api", flag_descriptions::kFileHandlingAPIName,
@@ -4803,6 +4808,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaAppDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kMediaApp)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"passive-mixed-content-warning",
+     flag_descriptions::kPassiveMixedContentWarningName,
+     flag_descriptions::kPassiveMixedContentWarningDescription, kOsAll,
+     FEATURE_VALUE_TYPE(security_state::features::kPassiveMixedContentWarning)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -17,7 +17,7 @@ const crypto::Aead::AeadAlgorithm kAllAlgorithms[]{
 
 class AeadTest : public testing::TestWithParam<crypto::Aead::AeadAlgorithm> {};
 
-INSTANTIATE_TEST_SUITE_P(, AeadTest, testing::ValuesIn(kAllAlgorithms));
+INSTANTIATE_TEST_SUITE_P(All, AeadTest, testing::ValuesIn(kAllAlgorithms));
 
 TEST_P(AeadTest, SealOpen) {
   crypto::Aead::AeadAlgorithm alg = GetParam();

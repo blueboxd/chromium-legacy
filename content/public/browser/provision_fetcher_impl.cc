@@ -36,8 +36,8 @@ void ProvisionFetcherImpl::Retrieve(const std::string& default_url,
   DVLOG(1) << __FUNCTION__ << ": " << default_url;
   provision_fetcher_->Retrieve(
       default_url, request_data,
-      base::Bind(&ProvisionFetcherImpl::OnResponse, weak_factory_.GetWeakPtr(),
-                 base::Passed(&callback)));
+      base::BindOnce(&ProvisionFetcherImpl::OnResponse,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ProvisionFetcherImpl::OnResponse(RetrieveCallback callback,

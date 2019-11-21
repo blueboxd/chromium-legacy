@@ -42,18 +42,29 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
         "/ssl/page_with_in_scope_and_cross_site_frame.html?url=" +
         cross_site_frame_url.spec());
     main_app_id_ = InstallPWA(app_url);
+
+    GURL sub_app_url = https_server()->GetURL("/ssl/blank_page.html");
+    auto sub_app_info = std::make_unique<WebApplicationInfo>();
+    sub_app_info->app_url = sub_app_url;
+    sub_app_info->scope = sub_app_url;
+    sub_app_info->open_as_window = true;
+    sub_app_id_ = InstallWebApp(std::move(sub_app_info));
+
     content::WebContents* web_contents = OpenApplication(main_app_id_);
-    // There should be exactly 3 frames:
+    // There should be exactly 4 frames:
     // 1) The main frame.
-    // 2) A cross site frame, on |cross_site_frame_url|.
-    // 3) A sub frame in the app's scope.
+    // 2) A frame containing a sub app.
+    // 3) A cross site frame, on |cross_site_frame_url|.
+    // 4) A sub frame in the app's scope.
     auto frames = web_contents->GetAllFrames();
-    ASSERT_EQ(3u, frames.size());
+    ASSERT_EQ(4u, frames.size());
 
     main_frame_ = web_contents->GetMainFrame();
     for (auto* frame : frames) {
-      if (url::IsSameOriginWith(frame->GetLastCommittedURL(),
-                                main_frame_->GetLastCommittedURL())) {
+      if (frame->GetLastCommittedURL() == sub_app_url) {
+        sub_app_frame_ = frame;
+      } else if (url::IsSameOriginWith(frame->GetLastCommittedURL(),
+                                       main_frame_->GetLastCommittedURL())) {
         in_scope_frame_ = frame;
       } else if (frame != main_frame_) {
         cross_site_frame_ = frame;
@@ -61,6 +72,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     }
 
     ASSERT_TRUE(main_frame_);
+    ASSERT_TRUE(sub_app_frame_);
     ASSERT_TRUE(in_scope_frame_);
     ASSERT_TRUE(cross_site_frame_);
 
@@ -121,9 +133,11 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
   }
 
   const AppId& main_app_id() { return main_app_id_; }
+  const AppId& sub_app_id() { return sub_app_id_; }
   const AppId& cross_site_app_id() { return cross_site_app_id_; }
 
   RenderFrameHost* main_frame_;
+  RenderFrameHost* sub_app_frame_;
   RenderFrameHost* in_scope_frame_;
   RenderFrameHost* cross_site_frame_;
 
@@ -134,6 +148,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
  private:
   AppId main_app_id_;
+  AppId sub_app_id_;
   AppId cross_site_app_id_;
   std::unique_ptr<base::RunLoop> awaiter_;
   badging::TestBadgeManagerDelegate* delegate_;
@@ -225,6 +240,51 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
   ASSERT_EQ(main_app_id(), changed_app_id_);
+  ASSERT_EQ(base::nullopt, last_badge_content_);
+}
+
+// Tests that changing the badge of a subframe with an app affects the
+// subframe's app.
+IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, SubFrameBadgeAffectsSubApp) {
+  ExecuteScriptAndWaitForBadgeChange("navigator.setExperimentalAppBadge()",
+                                     sub_app_frame_);
+  ASSERT_FALSE(was_cleared_);
+  ASSERT_TRUE(was_flagged_);
+  ASSERT_EQ(sub_app_id(), changed_app_id_);
+  ASSERT_EQ(base::nullopt, last_badge_content_);
+
+  ExecuteScriptAndWaitForBadgeChange("navigator.clearExperimentalAppBadge()",
+                                     sub_app_frame_);
+  ASSERT_TRUE(was_cleared_);
+  ASSERT_FALSE(was_flagged_);
+  ASSERT_EQ(sub_app_id(), changed_app_id_);
+  ASSERT_EQ(base::nullopt, last_badge_content_);
+}
+
+// Tests that setting a badge on a subframe with an app only effects the sub
+// app.
+IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeSubFrameAppViaNavigator) {
+  ExecuteScriptAndWaitForBadgeChange(
+      "window['sub-app'].navigator.setExperimentalAppBadge()", main_frame_);
+  ASSERT_FALSE(was_cleared_);
+  ASSERT_TRUE(was_flagged_);
+  ASSERT_EQ(sub_app_id(), changed_app_id_.value());
+  ASSERT_EQ(base::nullopt, last_badge_content_);
+}
+
+// Tests that setting a badge on a subframe via call() craziness sets the
+// subframe app's badge.
+IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeSubFrameAppViaCall) {
+  ExecuteScriptAndWaitForBadgeChange(
+      "const promise = "
+      "  window.navigator.setExperimentalAppBadge"
+      "    .call(window['sub-app'].navigator);"
+      "if (promise instanceof window.Promise)"
+      "  throw new Error('Should be an instance of the subframes Promise!')",
+      main_frame_);
+  ASSERT_FALSE(was_cleared_);
+  ASSERT_TRUE(was_flagged_);
+  ASSERT_EQ(sub_app_id(), changed_app_id_.value());
   ASSERT_EQ(base::nullopt, last_badge_content_);
 }
 

@@ -216,6 +216,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/webapps/WebappLauncherActivityTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebappRegistryTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenDialogViewTest.java",
+  "junit/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenMediatorTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/addtohomescreen/AddToHomescreenViewBinderTest.java",
   "junit/src/org/chromium/chrome/browser/webshare/SharedFileCollatorTest.java",
   "junit/src/org/chromium/chrome/browser/webshare/ShareServiceImplTest.java",

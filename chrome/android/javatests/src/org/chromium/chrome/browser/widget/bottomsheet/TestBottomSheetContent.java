@@ -17,6 +17,9 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /** A simple sheet content to test with. This only displays two empty white views. */
 public class TestBottomSheetContent implements BottomSheetContent {
+    /** The height of the toolbar for this test content. */
+    public static final int TOOLBAR_HEIGHT = 100;
+
     /** {@link CallbackHelper} to ensure the destroy method is called. */
     public final CallbackHelper destroyCallbackHelper = new CallbackHelper();
 
@@ -56,7 +59,7 @@ public class TestBottomSheetContent implements BottomSheetContent {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mToolbarView = new View(context);
             ViewGroup.LayoutParams params =
-                    new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 100);
+                    new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, TOOLBAR_HEIGHT);
             mToolbarView.setLayoutParams(params);
             mToolbarView.setBackground(new ColorDrawable(Color.WHITE));
 

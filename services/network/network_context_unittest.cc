@@ -1406,9 +1406,9 @@ TEST_F(NetworkContextTest, NotifyExternalCacheHit_Split) {
     network_context->NotifyExternalCacheHit(test_url, test_url.scheme(), key);
     EXPECT_EQ(i + 1, mock_cache.disk_cache()->GetExternalCacheHits().size());
 
-    // Since this is splitting the cache, the key also includes the top-level
-    // frame origin.
-    EXPECT_EQ(base::StrCat({"_dk_http://a.com ", test_url.spec()}),
+    // Since this is splitting the cache, the key also includes the network
+    // isolation key.
+    EXPECT_EQ(base::StrCat({"_dk_", key.ToString(), " ", test_url.spec()}),
               mock_cache.disk_cache()->GetExternalCacheHits().back());
   }
 }

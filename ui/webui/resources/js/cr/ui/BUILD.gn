@@ -99,7 +99,6 @@ js_library("focus_grid") {
     ":focus_row",
     "../..:assert",
     "../..:cr",
-    "../..:event_tracker",
   ]
 }
 
@@ -268,6 +267,7 @@ js_library("tree") {
 js_modulizer("modulize") {
   input_files = [
     "drag_wrapper.js",
+    "focus_grid.js",
     "focus_outline_manager.js",
     "focus_row.js",
     "focus_row_behavior.js",
@@ -292,6 +292,7 @@ js_type_check("ui_resources_modules") {
   is_polymer3 = true
   deps = [
     ":drag_wrapper.m",
+    ":focus_grid.m",
     ":focus_outline_manager.m",
     ":focus_row.m",
     ":focus_row_behavior.m",
@@ -305,6 +306,17 @@ js_type_check("ui_resources_modules") {
 js_library("drag_wrapper.m") {
   sources = [
     "$root_gen_dir/ui/webui/resources/js/cr/ui/drag_wrapper.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("focus_grid.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_grid.m.js",
+  ]
+  deps = [
+    ":focus_row.m",
+    "../..:assert.m",
   ]
   extra_deps = [ ":modulize" ]
 }

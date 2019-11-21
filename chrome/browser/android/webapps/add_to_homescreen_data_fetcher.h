@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DATA_FETCHER_H_
 #define CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DATA_FETCHER_H_
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -117,7 +116,9 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
 
   base::WeakPtrFactory<AddToHomescreenDataFetcher> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcher);
+  AddToHomescreenDataFetcher(const AddToHomescreenDataFetcher&) = delete;
+  AddToHomescreenDataFetcher& operator=(const AddToHomescreenDataFetcher&) =
+      delete;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_DATA_FETCHER_H_

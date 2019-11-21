@@ -154,6 +154,11 @@ void MojoRenderer::SetCdm(CdmContext* cdm_context,
                                                   base::Unretained(this)));
 }
 
+void MojoRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  // TODO(chcunningham): Proxy to remote renderer if needed.
+}
+
 void MojoRenderer::Flush(base::OnceClosure flush_cb) {
   DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());

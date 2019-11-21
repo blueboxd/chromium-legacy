@@ -38,6 +38,12 @@ namespace tracing {
 
 namespace {
 
+// To mark TraceEvent handles that have been added by Perfetto,
+// we use the chunk index so high that TraceLog would've asserted
+// at this point anyway.
+constexpr uint32_t kMagicChunkIndex =
+    base::trace_event::TraceBufferChunk::kMaxChunkIndex;
+
 // Replacement string for names of events with TRACE_EVENT_FLAG_COPY.
 const char* const kPrivacyFiltered = "PRIVACY_FILTERED";
 
@@ -181,12 +187,28 @@ void TrackEventThreadLocalEventSink::ClearIncrementalState() {
 void TrackEventThreadLocalEventSink::AddTraceEvent(
     base::trace_event::TraceEvent* trace_event,
     base::trace_event::TraceEventHandle* handle) {
-  char phase = trace_event->phase();
+  // TODO(eseckler): Support splitting COMPLETE events into BEGIN/END pairs.
+  // For now, we emit them as legacy events so that the generated JSON trace
+  // size remains small.
+  if (handle && trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE) {
+    // 'X' phase events are added through a scoped object and
+    // will have its duration updated when said object drops off
+    // the stack; keep a copy of the event around instead of
+    // writing it into SHM, until we have the duration.
+    // We can't keep the TraceEvent around in the scoped object
+    // itself as that causes a lot more codegen in the callsites
+    // and bloats the binary size too much (due to the increased
+    // sizeof() of the scoped object itself).
+    DCHECK_LT(current_stack_depth_, kMaxCompleteEventDepth);
+    if (current_stack_depth_ >= kMaxCompleteEventDepth) {
+      return;
+    }
 
-  // Split COMPLETE events into BEGIN/END pairs. We write the BEGIN here, and
-  // the END in UpdateDuration().
-  if (phase == TRACE_EVENT_PHASE_COMPLETE) {
-    phase = TRACE_EVENT_PHASE_BEGIN;
+    complete_event_stack_[current_stack_depth_] = std::move(*trace_event);
+    handle->event_index = ++current_stack_depth_;
+    handle->chunk_index = kMagicChunkIndex;
+    handle->chunk_seq = sink_id_;
+    return;
   }
 
   uint32_t flags = trace_event->flags();
@@ -209,14 +231,10 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
   const char* category_name =
       TraceLog::GetCategoryGroupName(trace_event->category_group_enabled());
-  InterningIndexEntry interned_category{};
-  // Don't write the category for END events that were split from a COMPLETE
-  // event to save trace size.
-  if (handle || phase != TRACE_EVENT_PHASE_END) {
-    interned_category = interned_event_categories_.LookupOrAdd(category_name);
-  }
+  InterningIndexEntry interned_category =
+      interned_event_categories_.LookupOrAdd(category_name);
 
-  InterningIndexEntry interned_name{};
+  InterningIndexEntry interned_name;
   const size_t kMaxSize = base::trace_event::TraceArguments::kMaxSize;
   InterningIndexEntry interned_annotation_names[kMaxSize] = {
       InterningIndexEntry{}};
@@ -228,74 +246,69 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   const char* log_message_body = nullptr;
   int line_number = 0;
 
-  // Don't write the name or arguments for END events that were split from a
-  // COMPLETE event to save trace size.
-  if (handle || phase != TRACE_EVENT_PHASE_END) {
-    if (copy_strings) {
-      if (!is_java_event && privacy_filtering_enabled_) {
-        interned_name = interned_event_names_.LookupOrAdd(kPrivacyFiltered);
-      } else {
-        interned_name =
-            interned_event_names_.LookupOrAdd(std::string(trace_event->name()));
-        for (size_t i = 0;
-             i < trace_event->arg_size() && trace_event->arg_name(i); ++i) {
-          interned_annotation_names[i] = interned_annotation_names_.LookupOrAdd(
-              std::string(trace_event->arg_name(i)));
-        }
-      }
+  if (copy_strings) {
+    if (!is_java_event && privacy_filtering_enabled_) {
+      interned_name = interned_event_names_.LookupOrAdd(kPrivacyFiltered);
     } else {
-      interned_name = interned_event_names_.LookupOrAdd(trace_event->name());
+      interned_name =
+          interned_event_names_.LookupOrAdd(std::string(trace_event->name()));
+      for (size_t i = 0;
+           i < trace_event->arg_size() && trace_event->arg_name(i); ++i) {
+        interned_annotation_names[i] = interned_annotation_names_.LookupOrAdd(
+            std::string(trace_event->arg_name(i)));
+      }
+    }
+  } else {
+    interned_name = interned_event_names_.LookupOrAdd(trace_event->name());
 
-      // TODO(eseckler): Remove special handling of typed events here once we
-      // support them in TRACE_EVENT macros.
+    // TODO(eseckler): Remove special handling of typed events here once we
+    // support them in TRACE_EVENT macros.
 
-      if (flags & TRACE_EVENT_FLAG_TYPED_PROTO_ARGS) {
-        if (trace_event->arg_size() == 2u) {
+    if (flags & TRACE_EVENT_FLAG_TYPED_PROTO_ARGS) {
+      if (trace_event->arg_size() == 2u) {
+        DCHECK_EQ(strcmp(category_name, kTaskExecutionEventCategory), 0);
+        DCHECK(strcmp(trace_event->name(), kTaskExecutionEventNames[0]) == 0 ||
+               strcmp(trace_event->name(), kTaskExecutionEventNames[1]) == 0 ||
+               strcmp(trace_event->name(), kTaskExecutionEventNames[2]) == 0);
+        // Double argument task execution event (src_file, src_func).
+        DCHECK_EQ(trace_event->arg_type(0), TRACE_VALUE_TYPE_STRING);
+        DCHECK_EQ(trace_event->arg_type(1), TRACE_VALUE_TYPE_STRING);
+        src_file = trace_event->arg_value(0).as_string;
+        src_func = trace_event->arg_value(1).as_string;
+      } else {
+        // arg_size == 1 enforced by the maximum number of parameter == 2.
+        DCHECK_EQ(trace_event->arg_size(), 1u);
+
+        if (trace_event->arg_type(0) == TRACE_VALUE_TYPE_STRING) {
+          // Single argument task execution event (src_file).
           DCHECK_EQ(strcmp(category_name, kTaskExecutionEventCategory), 0);
           DCHECK(
               strcmp(trace_event->name(), kTaskExecutionEventNames[0]) == 0 ||
               strcmp(trace_event->name(), kTaskExecutionEventNames[1]) == 0 ||
               strcmp(trace_event->name(), kTaskExecutionEventNames[2]) == 0);
-          // Double argument task execution event (src_file, src_func).
-          DCHECK_EQ(trace_event->arg_type(0), TRACE_VALUE_TYPE_STRING);
-          DCHECK_EQ(trace_event->arg_type(1), TRACE_VALUE_TYPE_STRING);
           src_file = trace_event->arg_value(0).as_string;
-          src_func = trace_event->arg_value(1).as_string;
         } else {
-          // arg_size == 1 enforced by the maximum number of parameter == 2.
-          DCHECK_EQ(trace_event->arg_size(), 1u);
+          DCHECK(trace_event->arg_type(0) == TRACE_VALUE_TYPE_CONVERTABLE);
+          DCHECK(strcmp(category_name, "log") == 0);
+          DCHECK(strcmp(trace_event->name(), "LogMessage") == 0);
+          const base::trace_event::LogMessage* value =
+              static_cast<base::trace_event::LogMessage*>(
+                  trace_event->arg_value(0).as_convertable);
+          src_file = value->file();
+          line_number = value->line_number();
+          log_message_body = value->message().c_str();
 
-          if (trace_event->arg_type(0) == TRACE_VALUE_TYPE_STRING) {
-            // Single argument task execution event (src_file).
-            DCHECK_EQ(strcmp(category_name, kTaskExecutionEventCategory), 0);
-            DCHECK(
-                strcmp(trace_event->name(), kTaskExecutionEventNames[0]) == 0 ||
-                strcmp(trace_event->name(), kTaskExecutionEventNames[1]) == 0 ||
-                strcmp(trace_event->name(), kTaskExecutionEventNames[2]) == 0);
-            src_file = trace_event->arg_value(0).as_string;
-          } else {
-            DCHECK_EQ(trace_event->arg_type(0), TRACE_VALUE_TYPE_CONVERTABLE);
-            DCHECK(strcmp(category_name, "log") == 0);
-            DCHECK(strcmp(trace_event->name(), "LogMessage") == 0);
-            const base::trace_event::LogMessage* value =
-                static_cast<base::trace_event::LogMessage*>(
-                    trace_event->arg_value(0).as_convertable);
-            src_file = value->file();
-            line_number = value->line_number();
-            log_message_body = value->message().c_str();
-
-            interned_log_message_body =
-                interned_log_message_bodies_.LookupOrAdd(value->message());
-          }  // else
-        }    // else
-        interned_source_location = interned_source_locations_.LookupOrAdd(
-            std::make_tuple(src_file, src_func, line_number));
-      } else if (!privacy_filtering_enabled_) {
-        for (size_t i = 0;
-             i < trace_event->arg_size() && trace_event->arg_name(i); ++i) {
-          interned_annotation_names[i] =
-              interned_annotation_names_.LookupOrAdd(trace_event->arg_name(i));
-        }
+          interned_log_message_body =
+              interned_log_message_bodies_.LookupOrAdd(value->message());
+        }  // else
+      }    // else
+      interned_source_location = interned_source_locations_.LookupOrAdd(
+          std::make_tuple(src_file, src_func, line_number));
+    } else if (!privacy_filtering_enabled_) {
+      for (size_t i = 0;
+           i < trace_event->arg_size() && trace_event->arg_name(i); ++i) {
+        interned_annotation_names[i] =
+            interned_annotation_names_.LookupOrAdd(trace_event->arg_name(i));
       }
     }
   }
@@ -354,9 +367,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
   }
 
   // TODO(eseckler): Split comma-separated category strings.
-  if (interned_category.id) {
-    track_event->add_category_iids(interned_category.id);
-  }
+  track_event->add_category_iids(interned_category.id);
 
   if (interned_log_message_body.id) {
     auto* log_message = track_event->set_log_message();
@@ -371,11 +382,9 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
   auto* legacy_event = track_event->set_legacy_event();
 
-  // TODO(eseckler): Set name on |track_event| instead.
-  if (interned_name.id) {
-    legacy_event->set_name_iid(interned_name.id);
-  }
+  legacy_event->set_name_iid(interned_name.id);
 
+  char phase = trace_event->phase();
   legacy_event->set_phase(phase);
 
   if (phase == TRACE_EVENT_PHASE_COMPLETE) {
@@ -476,8 +485,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
 
   // Emit any new interned data entries into the packet.
   perfetto::protos::pbzero::InternedData* interned_data = nullptr;
-
-  if (interned_category.id && !interned_category.was_emitted) {
+  if (!interned_category.was_emitted) {
     if (!interned_data) {
       interned_data = trace_packet->set_interned_data();
     }
@@ -486,7 +494,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     category_entry->set_name(category_name);
   }
 
-  if (interned_name.id && !interned_name.was_emitted) {
+  if (!interned_name.was_emitted) {
     if (!interned_data) {
       interned_data = trace_packet->set_interned_data();
     }
@@ -546,29 +554,41 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     interned_source_locations_.Clear();
     interned_log_message_bodies_.Clear();
   }
-
-#if defined(OS_ANDROID)
-  trace_event->SendToATrace();
-#endif
 }
 
 void TrackEventThreadLocalEventSink::UpdateDuration(
-    const unsigned char* category_group_enabled,
-    const char* name,
     base::trace_event::TraceEventHandle handle,
-    int thread_id,
-    bool explicit_timestamps,
     const base::TimeTicks& now,
     const base::ThreadTicks& thread_now,
     base::trace_event::ThreadInstructionCount thread_instruction_now) {
-  base::trace_event::TraceEvent new_trace_event(
-      thread_id, now, thread_now, thread_instruction_now, TRACE_EVENT_PHASE_END,
-      category_group_enabled, name, trace_event_internal::kGlobalScope,
-      trace_event_internal::kNoId /* id */,
-      trace_event_internal::kNoId /* bind_id */, nullptr,
-      explicit_timestamps ? TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP
-                          : TRACE_EVENT_FLAG_NONE);
-  AddTraceEvent(&new_trace_event, nullptr);
+  if (!handle.event_index || handle.chunk_index != kMagicChunkIndex ||
+      handle.chunk_seq != sink_id_) {
+    return;
+  }
+
+  DCHECK_GE(current_stack_depth_, 1u);
+  // During trace shutdown, as the list of enabled categories are
+  // non-monotonically shut down, there's the possibility that events higher in
+  // the stack will have their category disabled prior to events lower in the
+  // stack, hence we get misaligned here. In this case, as we know we're
+  // shutting down, we leave the events unfinished.
+  if (handle.event_index != current_stack_depth_) {
+    DCHECK(handle.event_index > 0 &&
+           handle.event_index < current_stack_depth_ &&
+           !base::trace_event::TraceLog::GetInstance()->IsEnabled());
+    current_stack_depth_ = std::min(
+        current_stack_depth_, static_cast<uint32_t>(handle.event_index - 1));
+    return;
+  }
+
+  current_stack_depth_--;
+  complete_event_stack_[current_stack_depth_].UpdateDuration(
+      now, thread_now, thread_instruction_now);
+  AddTraceEvent(&complete_event_stack_[current_stack_depth_], nullptr);
+
+#if defined(OS_ANDROID)
+  complete_event_stack_[current_stack_depth_].SendToATrace();
+#endif
 }
 
 void TrackEventThreadLocalEventSink::Flush() {

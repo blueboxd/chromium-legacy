@@ -157,8 +157,14 @@ public final class ChromePreferenceKeys {
     public static final String NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START =
             "ntp.signin_promo_suppression_period_start";
 
-    public static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
-    public static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
+    public static final String CRASH_UPLOAD_SUCCESS_BROWSER = "browser_crash_success_upload";
+    public static final String CRASH_UPLOAD_SUCCESS_RENDERER = "renderer_crash_success_upload";
+    public static final String CRASH_UPLOAD_SUCCESS_GPU = "gpu_crash_success_upload";
+    public static final String CRASH_UPLOAD_SUCCESS_OTHER = "other_crash_success_upload";
+    public static final String CRASH_UPLOAD_FAILURE_BROWSER = "browser_crash_failure_upload";
+    public static final String CRASH_UPLOAD_FAILURE_RENDERER = "renderer_crash_failure_upload";
+    public static final String CRASH_UPLOAD_FAILURE_GPU = "gpu_crash_failure_upload";
+    public static final String CRASH_UPLOAD_FAILURE_OTHER = "other_crash_failure_upload";
 
     public static final String VERIFIED_DIGITAL_ASSET_LINKS = "verified_digital_asset_links";
     public static final String TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES =
@@ -387,8 +393,14 @@ public final class ChromePreferenceKeys {
                 SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED,
                 NTP_SIGNIN_PROMO_DISMISSED,
                 NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START,
-                SUCCESS_UPLOAD_SUFFIX,
-                FAILURE_UPLOAD_SUFFIX,
+                CRASH_UPLOAD_SUCCESS_BROWSER,
+                CRASH_UPLOAD_SUCCESS_RENDERER,
+                CRASH_UPLOAD_SUCCESS_GPU,
+                CRASH_UPLOAD_SUCCESS_OTHER,
+                CRASH_UPLOAD_FAILURE_BROWSER,
+                CRASH_UPLOAD_FAILURE_RENDERER,
+                CRASH_UPLOAD_FAILURE_GPU,
+                CRASH_UPLOAD_FAILURE_OTHER,
                 VERIFIED_DIGITAL_ASSET_LINKS,
                 TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
                 SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP,
@@ -491,8 +503,14 @@ public final class ChromePreferenceKeys {
                 SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED,
                 NTP_SIGNIN_PROMO_DISMISSED,
                 NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START,
-                SUCCESS_UPLOAD_SUFFIX,
-                FAILURE_UPLOAD_SUFFIX,
+                CRASH_UPLOAD_SUCCESS_BROWSER,
+                CRASH_UPLOAD_SUCCESS_RENDERER,
+                CRASH_UPLOAD_SUCCESS_GPU,
+                CRASH_UPLOAD_SUCCESS_OTHER,
+                CRASH_UPLOAD_FAILURE_BROWSER,
+                CRASH_UPLOAD_FAILURE_RENDERER,
+                CRASH_UPLOAD_FAILURE_GPU,
+                CRASH_UPLOAD_FAILURE_OTHER,
                 VERIFIED_DIGITAL_ASSET_LINKS,
                 TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
                 SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP,

@@ -644,7 +644,7 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     SequenceManagerPerfTest,
     testing::Values(
         PerfTestType::kUseSequenceManagerWithMessagePump,

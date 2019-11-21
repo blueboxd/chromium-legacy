@@ -123,7 +123,7 @@ class CC_EXPORT FrameSequenceTracker {
     kReadyForTermination,
   };
 
-  static const char* const kFrameSequenceTrackerTypeNames[];
+  static const char* GetFrameSequenceTrackerTypeName(int type_index);
 
   ~FrameSequenceTracker();
 

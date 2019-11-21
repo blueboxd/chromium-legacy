@@ -24,12 +24,25 @@
         line-height: 16px;
         margin: auto;
         padding: 60px 32px 32px 32px;
-        width: var(--multidevice-setup-width, 768px);
+        width: var(--multidevice-setup-width, var(--default-ui-width));
       }
 
       iron-pages {
         overflow: var(--iron-pages-overflow, visible);
         padding: 0 32px;
+      }
+
+      /* On narrow screens, decrease width/padding. */
+      @media screen and (max-width: 767px) {
+        :host {
+          padding: 32px;
+          width: var(--narrow-ui-width);
+        }
+
+        button-bar {
+          margin-bottom: 32px;
+          margin-top: 24px;
+        }
       }
     </style>
     <iron-pages id="ironPages"

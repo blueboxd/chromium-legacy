@@ -347,8 +347,6 @@ jumbo_component("gfx") {
       "render_text.h",
       "render_text_harfbuzz.cc",
       "render_text_harfbuzz.h",
-      "render_text_mac.h",
-      "render_text_mac.mm",
       "text_utils_skia.cc",
       "vector_icon_types.h",
     ]
@@ -690,7 +688,6 @@ test("gfx_unittests") {
       "blit_unittest.cc",
       "break_list_unittest.cc",
       "canvas_unittest.cc",
-      "canvas_unittest_mac.mm",
       "codec/jpeg_codec_unittest.cc",
       "codec/png_codec_unittest.cc",
       "color_analysis_unittest.cc",

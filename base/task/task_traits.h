@@ -191,6 +191,9 @@ struct ThreadPool {};
 // (e.g. base::TaskPriority or content::BrowserTaskType) as long as those traits
 // are compatible with the current thread (e.g. cannot specify base::MayBlock()
 // on a non-blocking thread or alter base::TaskShutdownBehavior).
+//
+// Experimental: Further discussions are in progress for this API. Please
+// continue using SequencedTaskRunnerHandle::Get() in the mean time.
 struct CurrentThread {};
 
 // Describes metadata for a single task or a group of tasks.

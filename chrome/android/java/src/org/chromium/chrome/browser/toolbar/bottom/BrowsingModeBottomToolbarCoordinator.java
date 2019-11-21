@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.toolbar.bottom;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
-import android.view.ViewGroup;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ObservableSupplier;
@@ -15,7 +14,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.ThemeColorProvider;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.HomeButton;
@@ -49,8 +47,17 @@ public class BrowsingModeBottomToolbarCoordinator {
     /** The tab switcher button component that lives in the bottom toolbar. */
     private final TabSwitcherButtonCoordinator mTabSwitcherButtonCoordinator;
 
+    /** The tab switcher button view that lives in the bottom toolbar. */
+    private final TabSwitcherButtonView mTabSwitcherButtonView;
+
     /** The menu button that lives in the browsing mode bottom toolbar. */
     private final MenuButton mMenuButton;
+
+    /** The view group that includes all views shown on browsing mode */
+    private final BrowsingModeBottomToolbarLinearLayout mToolbarRoot;
+
+    /** The model for the browsing mode bottom toolbar that holds all of its state. */
+    private final BrowsingModeBottomToolbarModel mModel;
 
     /** The callback to be exectured when the share button on click listener is available. */
     private final Callback<OnClickListener> mShareButtonListenerSupplierCallback;
@@ -70,22 +77,22 @@ public class BrowsingModeBottomToolbarCoordinator {
             OnClickListener homeButtonListener, OnClickListener searchAcceleratorListener,
             ObservableSupplier<OnClickListener> shareButtonListenerSupplier,
             OnLongClickListener tabSwitcherLongClickListner) {
-        BrowsingModeBottomToolbarModel model = new BrowsingModeBottomToolbarModel();
+        mModel = new BrowsingModeBottomToolbarModel();
 
-        final ViewGroup toolbarRoot = root.findViewById(R.id.bottom_toolbar_browsing);
+        mToolbarRoot = root.findViewById(R.id.bottom_toolbar_browsing);
 
         PropertyModelChangeProcessor.create(
-                model, toolbarRoot, new BrowsingModeBottomToolbarViewBinder());
+                mModel, mToolbarRoot, new BrowsingModeBottomToolbarViewBinder());
 
-        mMediator = new BrowsingModeBottomToolbarMediator(model);
+        mMediator = new BrowsingModeBottomToolbarMediator(mModel);
 
-        mHomeButton = toolbarRoot.findViewById(R.id.home_button);
-        mHomeButton.setWrapperView(toolbarRoot.findViewById(R.id.home_button_wrapper));
+        mHomeButton = mToolbarRoot.findViewById(R.id.home_button);
+        mHomeButton.setWrapperView(mToolbarRoot.findViewById(R.id.home_button_wrapper));
         mHomeButton.setOnClickListener(homeButtonListener);
         mHomeButton.setActivityTabProvider(tabProvider);
 
-        mShareButton = toolbarRoot.findViewById(R.id.share_button);
-        mShareButton.setWrapperView(toolbarRoot.findViewById(R.id.share_button_wrapper));
+        mShareButton = mToolbarRoot.findViewById(R.id.share_button);
+        mShareButton.setWrapperView(mToolbarRoot.findViewById(R.id.share_button_wrapper));
         mShareButtonListenerSupplierCallback = shareButtonListener -> {
             mShareButton.setOnClickListener(shareButtonListener);
         };
@@ -93,24 +100,23 @@ public class BrowsingModeBottomToolbarCoordinator {
         mShareButtonListenerSupplier.addObserver(mShareButtonListenerSupplierCallback);
         mShareButton.setActivityTabProvider(tabProvider);
 
-        mSearchAccelerator = toolbarRoot.findViewById(R.id.search_accelerator);
+        mSearchAccelerator = mToolbarRoot.findViewById(R.id.search_accelerator);
         mSearchAccelerator.setWrapperView(
-                toolbarRoot.findViewById(R.id.search_accelerator_wrapper));
+                mToolbarRoot.findViewById(R.id.search_accelerator_wrapper));
         mSearchAccelerator.setOnClickListener(searchAcceleratorListener);
 
-        mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
+        mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(mToolbarRoot);
         // TODO(amaralp): Make this adhere to MVC framework.
-        TabSwitcherButtonView tabSwitcherButtonView =
-                toolbarRoot.findViewById(R.id.tab_switcher_button);
-        tabSwitcherButtonView.setWrapperView(
-                toolbarRoot.findViewById(R.id.tab_switcher_button_wrapper));
+        mTabSwitcherButtonView = mToolbarRoot.findViewById(R.id.tab_switcher_button);
+        mTabSwitcherButtonView.setWrapperView(
+                mToolbarRoot.findViewById(R.id.tab_switcher_button_wrapper));
 
         // TODO(lazzzis): Refactor the long click listener. Have to specify the handler view here
         //      in order to fix the anchor view of the long-tap menu
-        tabSwitcherButtonView.setOnLongClickListener(
-                (view) -> tabSwitcherLongClickListner.onLongClick(tabSwitcherButtonView));
-        mMenuButton = toolbarRoot.findViewById(R.id.menu_button_wrapper);
-        mMenuButton.setWrapperView(toolbarRoot.findViewById(R.id.labeled_menu_button_wrapper));
+        mTabSwitcherButtonView.setOnLongClickListener(
+                (view) -> tabSwitcherLongClickListner.onLongClick(mTabSwitcherButtonView));
+        mMenuButton = mToolbarRoot.findViewById(R.id.menu_button_wrapper);
+        mMenuButton.setWrapperView(mToolbarRoot.findViewById(R.id.labeled_menu_button_wrapper));
 
         tabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override
@@ -136,16 +142,13 @@ public class BrowsingModeBottomToolbarCoordinator {
      *                            tab switcher button is clicked.
      * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
      *                         menu button is clicked.
-     * @param overviewModeBehavior The overview mode manager.
      * @param tabCountProvider Updates the tab count number in the tab switcher button.
      * @param themeColorProvider Notifies components when theme color changes.
      * @param incognitoStateProvider Notifies components when incognito state changes.
      */
     void initializeWithNative(OnClickListener tabSwitcherListener,
-            AppMenuButtonHelper menuButtonHelper, OverviewModeBehavior overviewModeBehavior,
-            TabCountProvider tabCountProvider, ThemeColorProvider themeColorProvider,
-            IncognitoStateProvider incognitoStateProvider) {
-        mMediator.setOverviewModeBehavior(overviewModeBehavior);
+            AppMenuButtonHelper menuButtonHelper, TabCountProvider tabCountProvider,
+            ThemeColorProvider themeColorProvider, IncognitoStateProvider incognitoStateProvider) {
         mMediator.setThemeColorProvider(themeColorProvider);
 
         mHomeButton.setThemeColorProvider(themeColorProvider);
@@ -184,10 +187,53 @@ public class BrowsingModeBottomToolbarCoordinator {
     }
 
     /**
+     * @param enabled Whether to disable click events on the bottom toolbar. Setting true can also
+     *                prevent from all click events on toolbar and all children views on toolbar.
+     */
+    void setTouchEnabled(boolean enabled) {
+        mToolbarRoot.setTouchEnabled(enabled);
+    }
+
+    /**
+     * @param visible Whether to hide the tab switcher bottom toolbar
+     */
+    void setVisible(boolean visible) {
+        mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, visible);
+    }
+
+    /**
      * @return The browsing mode bottom toolbar's menu button.
      */
     MenuButton getMenuButton() {
         return mMenuButton;
+    }
+
+    /**
+     * @return The browsing mode bottom toolbar's share button.
+     */
+    ShareButton getShareButton() {
+        return mShareButton;
+    }
+
+    /**
+     * @return The browsing mode bottom toolbar's tab switcher button.
+     */
+    TabSwitcherButtonView getTabSwitcherButtonView() {
+        return mTabSwitcherButtonView;
+    }
+
+    /**
+     * @return The browsing mode bottom toolbar's search button.
+     */
+    SearchAccelerator getSearchAccelerator() {
+        return mSearchAccelerator;
+    }
+
+    /**
+     * @return The browsing mode bottom toolbar's home button.
+     */
+    HomeButton getHomeButton() {
+        return mHomeButton;
     }
 
     /**

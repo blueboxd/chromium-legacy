@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/macros.h"
@@ -22,6 +23,7 @@
 
 namespace chromeos {
 
+// This class is a singleton and should be accessed using |Get()|.
 // DlcserviceClient is used to communicate with the dlcservice daemon which
 // manages DLC (Downloadable Content) modules. DlcserviceClient will allow for
 // CrOS features to be installed and uninstalled at runtime of the system. If
@@ -37,6 +39,12 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
       const std::string& err,
       const dlcservice::DlcModuleList& dlc_module_list)>;
 
+  // The callback used for |Install()|, if the caller wants to listen in on the
+  // progress of their download/install. If the caller only cares for whether
+  // the install is complete or not, the caller can pass in |RepeatingCallback|
+  // that is a no-op.
+  using ProgressCallback = base::RepeatingCallback<void(double progress)>;
+
   // The callback used for |Uninstall()|, if the error is something other than
   // |dlcservice::kErrorNone| the call has failed.
   using UninstallCallback = base::OnceCallback<void(const std::string& err)>;
@@ -48,26 +56,26 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
       const std::string& err,
       const dlcservice::DlcModuleList& dlc_module_list)>;
 
-  class Observer : public base::CheckedObserver {
-   public:
-    // Observers should not dictate the finalization of install based purely on
-    // what's notified, but based on the callback passed to |Install()|.
-    virtual void OnProgressUpdate(double progress) = 0;
-  };
+  // The callback to use for |Install()|, if the caller wants to ignore the
+  // progress updates.
+  static const ProgressCallback IgnoreProgress;
 
-  virtual void AddObserver(Observer* obs) = 0;
-
-  virtual void RemoveObserver(Observer* obs) = 0;
-
-  virtual void NotifyProgressUpdateForTest(double progress) = 0;
-
+  // Installs all DLC(s) passed in while reporting progress through the progress
+  // callback and only calls install callback on install success/failure.
   virtual void Install(const dlcservice::DlcModuleList& dlc_module_list,
-                       InstallCallback callback) = 0;
+                       InstallCallback callback,
+                       ProgressCallback progress_callback) = 0;
 
+  // Uninstalls a single DLC and calls the callback with indication of
+  // success/failure.
   virtual void Uninstall(const std::string& dlc_id,
                          UninstallCallback callback) = 0;
 
+  // Provides the DLC(s) information such as id and root mount point.
   virtual void GetInstalled(GetInstalledCallback callback) = 0;
+
+  // During testing, can be used to mimic signals received back from dlcservice.
+  virtual void OnInstallStatusForTest(dbus::Signal* signal) = 0;
 
   // Creates and initializes the global instance. |bus| must not be nullptr.
   static void Initialize(dbus::Bus* bus);

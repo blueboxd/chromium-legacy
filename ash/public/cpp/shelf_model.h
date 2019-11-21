@@ -35,6 +35,23 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   static ShelfModel* Get();
   static void SetInstance(ShelfModel* shelf_model);
 
+  // Used to mark the current shelf model mutation as user-triggered, while
+  // the instance of this class is in scope.
+  class ScopedUserTriggeredMutation {
+   public:
+    explicit ScopedUserTriggeredMutation(ShelfModel* model) : model_(model) {
+      model_->current_mutation_is_user_triggered_++;
+    }
+
+    ~ScopedUserTriggeredMutation() {
+      model_->current_mutation_is_user_triggered_--;
+      DCHECK_GE(model_->current_mutation_is_user_triggered_, 0);
+    }
+
+   private:
+    ShelfModel* model_ = nullptr;
+  };
+
   ShelfModel();
   ~ShelfModel();
 
@@ -77,6 +94,12 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // Returns the ID of the currently active item, or an empty ShelfID if
   // nothing is currently active.
   const ShelfID& active_shelf_id() const { return active_shelf_id_; }
+
+  // Returns whether the mutation that is currently being made in the model
+  // was user-triggered.
+  bool is_current_mutation_user_triggered() const {
+    return current_mutation_is_user_triggered_ > 0;
+  }
 
   // Sets |shelf_id| to be the newly active shelf item.
   void SetActiveShelfID(const ShelfID& shelf_id);
@@ -146,6 +169,12 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // The shelf ID of the currently active shelf item, or an empty ID if
   // nothing is active.
   ShelfID active_shelf_id_;
+
+  // A counter to determine whether any mutation currently in progress in
+  // the model is the result of a manual user intervention. If a shelf item
+  // is added once an app has been installed, it is not considered a direct
+  // user interaction.
+  int current_mutation_is_user_triggered_ = 0;
 
   // Maps one app id to a set of all matching notification ids.
   std::map<std::string, std::set<std::string>> app_id_to_notification_id_;

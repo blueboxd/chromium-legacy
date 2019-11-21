@@ -1487,7 +1487,7 @@ component("ash") {
     "//ui/events:events_base",
     "//ui/events:gesture_detection",
     "//ui/events/devices",
-    "//ui/events/ozone:events_ozone",
+    "//ui/events/ozone",
     "//ui/message_center",
     "//ui/native_theme",
     "//ui/ozone",

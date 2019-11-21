@@ -55,7 +55,7 @@ std::unique_ptr<KeyedService> BuildTestSendTabToSelfSyncService(
 
 TargetDeviceInfo BuildTargetDeviceInfo(const std::string& device_name,
                                        const std::string& cache_guid) {
-  return TargetDeviceInfo(device_name, cache_guid,
+  return TargetDeviceInfo(device_name, device_name, cache_guid,
                           sync_pb::SyncEnums_DeviceType_TYPE_OTHER,
                           base::Time());
 }

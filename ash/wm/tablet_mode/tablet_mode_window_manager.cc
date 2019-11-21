@@ -248,6 +248,14 @@ bool TabletModeWindowManager::ShouldMinimizeTopWindowOnBack() {
   if (!window)
     return false;
 
+  // Do not minimize the window if it is in overview. This can avoid unnecessary
+  // window minimize animation.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  if (overview_controller->InOverviewSession() &&
+      overview_controller->overview_session()->IsWindowInOverview(window)) {
+    return false;
+  }
+
   const int app_type = window->GetProperty(aura::client::kAppType);
   if (app_type != static_cast<int>(AppType::BROWSER) &&
       app_type != static_cast<int>(AppType::CHROME_APP)) {
@@ -255,8 +263,10 @@ bool TabletModeWindowManager::ShouldMinimizeTopWindowOnBack() {
   }
 
   WindowState* window_state = WindowState::Get(window);
-  if (!window_state || !window_state->CanMinimize())
+  if (!window_state || !window_state->CanMinimize() ||
+      window_state->IsMinimized()) {
     return false;
+  }
 
   // Minimize the window if it is at the bottom page.
   return !shell->shell_delegate()->CanGoBack(window);

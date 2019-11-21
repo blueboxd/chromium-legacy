@@ -467,7 +467,7 @@ class HomeLauncherModeGestureHandlerTest
   DISALLOW_COPY_AND_ASSIGN(HomeLauncherModeGestureHandlerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          HomeLauncherModeGestureHandlerTest,
                          testing::Values(Mode::kSlideDownToHide,
                                          Mode::kSlideUpToShow));

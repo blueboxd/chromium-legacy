@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
+#include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
@@ -171,7 +172,8 @@ CanvasCaptureHandler::CreateCanvasCaptureHandler(
 
 void CanvasCaptureHandler::SendNewFrame(
     sk_sp<SkImage> image,
-    blink::WebGraphicsContext3DProvider* context_provider) {
+    base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
+        context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
   TRACE_EVENT0("webrtc", "CanvasCaptureHandler::SendNewFrame");
   if (!image)
@@ -209,7 +211,7 @@ void CanvasCaptureHandler::SendNewFrame(
   if (image->isOpaque()) {
     ReadYUVPixelsAsync(image, context_provider);
   } else {
-    ReadARGBPixelsAsync(image, context_provider);
+    ReadARGBPixelsAsync(image, context_provider->ContextProvider());
   }
 }
 
@@ -289,6 +291,7 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
     sk_sp<SkImage> image,
     blink::WebGraphicsContext3DProvider* context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  DCHECK(context_provider);
 
   const base::TimeTicks timestamp = base::TimeTicks::Now();
   const gfx::Size image_size(image->width(), image->height());
@@ -317,8 +320,10 @@ void CanvasCaptureHandler::ReadARGBPixelsAsync(
 
 void CanvasCaptureHandler::ReadYUVPixelsAsync(
     sk_sp<SkImage> image,
-    blink::WebGraphicsContext3DProvider* context_provider) {
+    base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper>
+        context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  DCHECK(context_provider);
 
   const base::TimeTicks timestamp = base::TimeTicks::Now();
   const gfx::Size image_size(image->width(), image->height());
@@ -337,12 +342,36 @@ void CanvasCaptureHandler::ReadYUVPixelsAsync(
   GrGLTextureInfo texture_info;
   const bool result = backend_texture.getGLTextureInfo(&texture_info);
   DCHECK(result);
-  DCHECK(context_provider->GetGLHelper());
+
+  // The YUV readback path only works for 2D textures.
+  GLuint texture_for_readback = texture_info.fID;
+  GLuint copy_texture = 0;
+  if (texture_info.fTarget != GL_TEXTURE_2D) {
+    auto* gl = context_provider->ContextProvider()->ContextGL();
+    int width = image->imageInfo().width();
+    int height = image->imageInfo().height();
+
+    gl->GenTextures(1, &copy_texture);
+    gl->BindTexture(GL_TEXTURE_2D, copy_texture);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
+                   GL_UNSIGNED_BYTE, nullptr);
+    gl->CopyTextureCHROMIUM(texture_info.fID, 0, GL_TEXTURE_2D, copy_texture, 0,
+                            GL_RGBA, GL_UNSIGNED_BYTE, 0, 0, 0);
+    image = nullptr;
+    texture_for_readback = copy_texture;
+  }
+
+  DCHECK(context_provider->ContextProvider()->GetGLHelper());
   viz::ReadbackYUVInterface* const yuv_reader =
-      context_provider->GetGLHelper()->GetReadbackPipelineYUV(
-          surface_origin != kTopLeft_GrSurfaceOrigin);
+      context_provider->ContextProvider()
+          ->GetGLHelper()
+          ->GetReadbackPipelineYUV(surface_origin != kTopLeft_GrSurfaceOrigin);
   yuv_reader->ReadbackYUV(
-      texture_info.fID, image_size, gfx::Rect(image_size),
+      texture_for_readback, image_size, gfx::Rect(image_size),
       output_frame->stride(media::VideoFrame::kYPlane),
       output_frame->visible_data(media::VideoFrame::kYPlane),
       output_frame->stride(media::VideoFrame::kUPlane),
@@ -350,8 +379,8 @@ void CanvasCaptureHandler::ReadYUVPixelsAsync(
       output_frame->stride(media::VideoFrame::kVPlane),
       output_frame->visible_data(media::VideoFrame::kVPlane), gfx::Point(0, 0),
       WTF::Bind(&CanvasCaptureHandler::OnYUVPixelsReadAsync,
-                weak_ptr_factory_.GetWeakPtr(), image, output_frame,
-                timestamp));
+                weak_ptr_factory_.GetWeakPtr(), image, copy_texture,
+                context_provider, output_frame, timestamp));
 }
 
 void CanvasCaptureHandler::OnARGBPixelsReadAsync(
@@ -384,10 +413,17 @@ void CanvasCaptureHandler::OnARGBPixelsReadAsync(
 
 void CanvasCaptureHandler::OnYUVPixelsReadAsync(
     sk_sp<SkImage> image,
+    GLuint copy_texture,
+    base::WeakPtr<blink::WebGraphicsContext3DProviderWrapper> context_provider,
     scoped_refptr<media::VideoFrame> yuv_frame,
     base::TimeTicks this_frame_ticks,
     bool success) {
   DCHECK_CALLED_ON_VALID_THREAD(main_render_thread_checker_);
+  if (copy_texture && context_provider) {
+    context_provider->ContextProvider()->ContextGL()->DeleteTextures(
+        1, &copy_texture);
+  }
+
   if (!success) {
     DLOG(ERROR) << "Couldn't read SkImage using async callback";
     return;
@@ -502,8 +538,8 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
 
   web_track->Initialize(webkit_source);
   web_track->SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
-      media_stream_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
-      true));
+      media_stream_source,
+      blink::MediaStreamVideoSource::ConstraintsOnceCallback(), true));
 }
 
 }  // namespace blink

@@ -49,12 +49,13 @@ js_library("cr_policy_pref_indicator") {
 }
 
 if (is_chromeos) {
+  # TODO(jonmann): These cr_policy_network_* libs should be moved to cr_components.
   js_library("cr_policy_network_behavior_mojo") {
     deps = [
       ":cr_policy_indicator_behavior",
-      "../../js/chromeos:onc_mojo",
       "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
       "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
+      "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     ]
   }
 

@@ -114,9 +114,8 @@ template("trichrome_library_apk_tmpl") {
           "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
         ]
         loadable_modules = [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
-        if (build_apk_secondary_abi &&
-            defined(invoker.include_32_bit_webview) &&
-            invoker.include_32_bit_webview) {
+        if (defined(invoker.include_32_bit_webview) &&
+            invoker.include_32_bit_webview && build_apk_secondary_abi) {
           secondary_native_lib_placeholders = [ "libdummy.so" ]
         }
       } else {

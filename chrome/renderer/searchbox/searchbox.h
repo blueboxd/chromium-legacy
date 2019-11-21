@@ -211,6 +211,8 @@ class SearchBox : public content::RenderFrameObserver,
   // browser to do the navigation.
   void OpenAutocompleteMatch(uint8_t line,
                              const GURL& url,
+                             bool are_matches_showing,
+                             double time_elapsed_since_last_focus,
                              double button,
                              bool alt_key,
                              bool ctrl_key,

@@ -511,6 +511,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 
   verify_details_->is_fatal_cert_error =
       IsCertStatusError(cert_status) &&
+      result != ERR_CERT_KNOWN_INTERCEPTION_BLOCKED &&
       transport_security_state_->ShouldSSLErrorsBeFatal(hostname_);
 
   if (result != OK) {

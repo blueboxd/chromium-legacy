@@ -525,6 +525,8 @@ class FakeRemoteDeviceProviderFactory
       const multidevice::RemoteDeviceList& initial_devices,
       signin::IdentityManager* identity_manager,
       FakeCryptAuthDeviceManagerFactory* fake_cryptauth_device_manager_factory,
+      FakeCryptAuthV2DeviceManagerFactory*
+          fake_cryptauth_v2_device_manager_factory,
       FakeCryptAuthEnrollmentManagerFactory*
           fake_cryptauth_enrollment_manager_factory,
       FakeCryptAuthV2EnrollmentManagerFactory*
@@ -533,6 +535,8 @@ class FakeRemoteDeviceProviderFactory
         identity_manager_(identity_manager),
         fake_cryptauth_device_manager_factory_(
             fake_cryptauth_device_manager_factory),
+        fake_cryptauth_v2_device_manager_factory_(
+            fake_cryptauth_v2_device_manager_factory),
         fake_cryptauth_enrollment_manager_factory_(
             fake_cryptauth_enrollment_manager_factory),
         fake_cryptauth_v2_enrollment_manager_factory_(
@@ -545,10 +549,13 @@ class FakeRemoteDeviceProviderFactory
   // RemoteDeviceProviderImpl::Factory:
   std::unique_ptr<RemoteDeviceProvider> BuildInstance(
       CryptAuthDeviceManager* device_manager,
+      CryptAuthV2DeviceManager* v2_device_manager,
       const CoreAccountId& user_account_id,
       const std::string& user_private_key) override {
     EXPECT_EQ(fake_cryptauth_device_manager_factory_->instance(),
               device_manager);
+    EXPECT_EQ(fake_cryptauth_v2_device_manager_factory_->instance(),
+              v2_device_manager);
     EXPECT_EQ(identity_manager_->GetPrimaryAccountId(), user_account_id);
     if (base::FeatureList::IsEnabled(features::kCryptAuthV2Enrollment)) {
       EXPECT_EQ(fake_cryptauth_v2_enrollment_manager_factory_->instance()
@@ -575,6 +582,8 @@ class FakeRemoteDeviceProviderFactory
 
   signin::IdentityManager* identity_manager_;
   FakeCryptAuthDeviceManagerFactory* fake_cryptauth_device_manager_factory_;
+  FakeCryptAuthV2DeviceManagerFactory*
+      fake_cryptauth_v2_device_manager_factory_;
   FakeCryptAuthEnrollmentManagerFactory*
       fake_cryptauth_enrollment_manager_factory_;
   FakeCryptAuthV2EnrollmentManagerFactory*
@@ -759,6 +768,7 @@ class DeviceSyncServiceTest
         std::make_unique<FakeRemoteDeviceProviderFactory>(
             test_devices_, identity_test_environment_->identity_manager(),
             fake_cryptauth_device_manager_factory_.get(),
+            fake_cryptauth_v2_device_manager_factory_.get(),
             fake_cryptauth_enrollment_manager_factory_.get(),
             fake_cryptauth_v2_enrollment_manager_factory_.get());
     RemoteDeviceProviderImpl::Factory::SetInstanceForTesting(
@@ -1966,7 +1976,7 @@ TEST_P(DeviceSyncServiceTest, GetDebugInfo) {
 
 // Runs tests four times with all possible combinations of v2 Enrollment and v2
 // DeviceSync flags.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          DeviceSyncServiceTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool()));

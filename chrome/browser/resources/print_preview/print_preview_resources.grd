@@ -133,11 +133,11 @@
                use_base_dir="false" type="BINDATA"/>
     </includes>
     <structures>
-      <structure name="IDR_PRINT_PREVIEW_HTML"
+      <structure name="IDR_PRINT_PREVIEW_PRINT_PREVIEW_HTML"
                  file="print_preview.html"
                  type="chrome_html"
                  preprocess="true" />
-      <structure name="IDR_PRINT_PREVIEW_JS"
+      <structure name="IDR_PRINT_PREVIEW_PRINT_PREVIEW_JS"
                  file="print_preview.js"
                  type="chrome_html"
                  preprocess="true" />

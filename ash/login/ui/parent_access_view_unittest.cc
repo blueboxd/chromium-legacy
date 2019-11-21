@@ -204,7 +204,7 @@ TEST_P(ParentAccessViewModifiersTest, CheckStrings) {
             test_api.description_label()->GetText());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ParentAccessViewModifiersTest,
                          testing::ValuesIn(kViewModifiersTestData));
 

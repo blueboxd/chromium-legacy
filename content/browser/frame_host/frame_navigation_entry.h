@@ -34,6 +34,9 @@ namespace content {
 class CONTENT_EXPORT FrameNavigationEntry
     : public base::RefCounted<FrameNavigationEntry> {
  public:
+  // The value of bindings() before it is set during commit.
+  enum : int { kInvalidBindings = -1 };
+
   FrameNavigationEntry();
   FrameNavigationEntry(
       const std::string& frame_unique_name,
@@ -156,6 +159,12 @@ class CONTENT_EXPORT FrameNavigationEntry
   void SetPageState(const PageState& page_state);
   const PageState& page_state() const { return page_state_; }
 
+  // Remember the set of bindings granted to this FrameNavigationEntry at the
+  // time of commit, to ensure that we do not grant it additional bindings if we
+  // navigate back to it in the future.  This can only be changed once.
+  void SetBindings(int bindings);
+  int bindings() const { return bindings_; }
+
   // The HTTP method used to navigate.
   const std::string& method() const { return method_; }
   void set_method(const std::string& method) { method_ = method; }
@@ -211,6 +220,8 @@ class CONTENT_EXPORT FrameNavigationEntry
   std::vector<GURL> redirect_chain_;
   // TODO(creis): Change this to FrameState.
   PageState page_state_;
+  // TODO(creis): Persist bindings_. https://crbug.com/173672.
+  int bindings_ = kInvalidBindings;
   std::string method_;
   int64_t post_id_;
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory_;

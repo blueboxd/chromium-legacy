@@ -2105,8 +2105,8 @@ TEST_P(TabletModeWindowManagerWithClamshellSplitViewTest,
   EXPECT_TRUE(home_screen_window->TargetVisibility());
 }
 
-INSTANTIATE_TEST_SUITE_P(, TabletModeWindowManagerTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All, TabletModeWindowManagerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
                          TabletModeWindowManagerWithClamshellSplitViewTest,
                          testing::Bool());
 

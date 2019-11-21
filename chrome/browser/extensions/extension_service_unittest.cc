@@ -7490,7 +7490,7 @@ TEST_P(ExternalExtensionPriorityTest, PolicyForegroundFetch) {
   service()->updater()->SetExtensionDownloaderForTesting(nullptr);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExternalExtensionPriorityTest,
                          testing::Values(Manifest::EXTERNAL_POLICY_DOWNLOAD,
                                          Manifest::EXTERNAL_COMPONENT,

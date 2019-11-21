@@ -342,7 +342,7 @@ class FileNetLogObserverBoundedTest : public ::testing::Test,
 };
 
 // Instantiates each FileNetLogObserverTest to use bounded and unbounded modes.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FileNetLogObserverTest,
                          ::testing::Values(true, false));
 

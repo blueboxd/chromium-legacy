@@ -1806,9 +1806,9 @@ void FakeGetCertificateCallbackTrue(
 
 void FakeEnterpriseChallenge(
     const std::string& challenge,
-    const cryptohome::AsyncMethodCaller::DataCallback& callback) {
+    cryptohome::AsyncMethodCaller::DataCallback callback) {
   if (challenge == GetTpmChallenge()) {
-    callback.Run(/*success=*/true, GetTpmResponse());
+    std::move(callback).Run(/*success=*/true, GetTpmResponse());
   } else {
     NOTREACHED();
   }
@@ -1825,9 +1825,10 @@ static_assert(
 
 void FakeEnterpriseChallengeWithDelay(
     const std::string& challenge,
-    const cryptohome::AsyncMethodCaller::DataCallback& callback) {
+    cryptohome::AsyncMethodCaller::DataCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(FakeEnterpriseChallenge, challenge, callback),
+      FROM_HERE,
+      base::BindOnce(FakeEnterpriseChallenge, challenge, std::move(callback)),
       kBuildResponseTaskDelay);
 }
 

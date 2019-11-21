@@ -188,7 +188,7 @@ TEST_P(NtpSnippetsCachedImageFetcherTest, FetchNonExistingImage) {
   Fetch("", false);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(NTP,
                          NtpSnippetsCachedImageFetcherTest,
                          testing::Values(TestType::kImageCallback,
                                          TestType::kImageDataCallback,

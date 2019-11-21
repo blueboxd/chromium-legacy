@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
+import org.chromium.base.Callback;
+
 import java.util.List;
 
 /**
@@ -13,10 +15,10 @@ public interface TabSuggestionsObserver {
     /**
      * Notify when we have new Tab Suggestions
      * @param tabSuggestions tab suggestions acquired
+     * @param tabSuggestionFeedback callback for providing feedback on the suggestions
      */
-    // TODO(crbug.com/1023699): Pass back callbacks for dismissed, accepted, and modified
-    // suggestion.
-    void onNewSuggestion(List<TabSuggestion> tabSuggestions);
+    void onNewSuggestion(List<TabSuggestion> tabSuggestions,
+            Callback<TabSuggestionFeedback> tabSuggestionFeedback);
 
     /**
      * Notify when a {@link TabContext} is no longer valid/representative of the user's tabs.

@@ -351,7 +351,7 @@ TEST_P(FormSaverImplSaveTest, FormDataSanitized) {
   EXPECT_TRUE(saved_field.css_classes.empty());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FormSaverImplSaveTest,
                          ::testing::Values(SaveOperation::kSave,
                                            SaveOperation::kUpdate,

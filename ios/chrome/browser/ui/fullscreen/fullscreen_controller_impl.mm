@@ -89,6 +89,10 @@ void FullscreenControllerImpl::DecrementDisabledCounter() {
   model_.DecrementDisabledCounter();
 }
 
+bool FullscreenControllerImpl::ResizesScrollView() const {
+  return model_.ResizesScrollView();
+}
+
 void FullscreenControllerImpl::BrowserTraitCollectionChangedBegin() {
   mediator_.SetIsBrowserTraitCollectionUpdating(true);
 }

@@ -1809,7 +1809,7 @@ TEST_F(WidgetScrollViewTest, CompositedScrollEvents) {
   EXPECT_EQ(gfx::ScrollOffset(0, 10), test_api.CurrentOffset());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WidgetScrollViewTestRTLAndLayers,
                          ::testing::Values(UiConfig::kLtr,
                                            UiConfig::kRtl,

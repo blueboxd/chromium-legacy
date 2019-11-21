@@ -91,8 +91,8 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
 
     public ToolbarCoordinator(Context context, ToolbarActionDelegate delegate,
             ToolbarListActionDelegate listActionDelegate,
-            SelectionDelegate<ListItem> selectionDelegate, boolean showOfflineHome,
-            boolean hasCloseButton, Tracker tracker) {
+            SelectionDelegate<ListItem> selectionDelegate, boolean hasCloseButton,
+            Tracker tracker) {
         mDelegate = delegate;
         mListActionDelegate = listActionDelegate;
 
@@ -101,9 +101,7 @@ public class ToolbarCoordinator implements SelectionObserver<ListItem> {
         mToolbar = mView.findViewById(R.id.download_toolbar);
         mShadow = mView.findViewById(R.id.shadow);
 
-        int titleResId =
-                showOfflineHome ? R.string.download_manager_offline_home : R.string.menu_downloads;
-        mToolbar.initialize(selectionDelegate, titleResId, R.id.normal_menu_group,
+        mToolbar.initialize(selectionDelegate, R.string.menu_downloads, R.id.normal_menu_group,
                 R.id.selection_mode_menu_group, hasCloseButton);
         mToolbar.setOnMenuItemClickListener(this ::onMenuItemClick);
 

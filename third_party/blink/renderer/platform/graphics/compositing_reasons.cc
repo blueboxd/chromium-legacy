@@ -155,7 +155,8 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "with no scrolling contents"},
     {CompositingReason::kLayerForDecoration, "layerForDecoration",
      "Layer painted on top of other layers as decoration"},
-
+    {CompositingReason::kLayerForOther, "layerForOther",
+     "Layer for link highlight, frame overlay, etc."},
 };
 
 }  // anonymous namespace

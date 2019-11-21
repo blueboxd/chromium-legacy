@@ -66,17 +66,14 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
                            const std::map<std::string, std::string>& options,
                            TestICMPCallback callback) override;
   void UploadCrashes() override;
-  void EnableDebuggingFeatures(
-      const std::string& password,
-      const EnableDebuggingCallback& callback) override;
-  void QueryDebuggingFeatures(
-      const QueryDevFeaturesCallback& callback) override;
-  void RemoveRootfsVerification(
-      const EnableDebuggingCallback& callback) override;
+  void EnableDebuggingFeatures(const std::string& password,
+                               EnableDebuggingCallback callback) override;
+  void QueryDebuggingFeatures(QueryDevFeaturesCallback callback) override;
+  void RemoveRootfsVerification(EnableDebuggingCallback callback) override;
   void WaitForServiceToBeAvailable(
       WaitForServiceToBeAvailableCallback callback) override;
   void SetOomScoreAdj(const std::map<pid_t, int32_t>& pid_to_oom_score_adj,
-                      const SetOomScoreAdjCallback& callback) override;
+                      SetOomScoreAdjCallback callback) override;
   void CupsAddManuallyConfiguredPrinter(
       const std::string& name,
       const std::string& uri,
@@ -87,7 +84,7 @@ class COMPONENT_EXPORT(DEBUG_DAEMON) FakeDebugDaemonClient
                                     CupsAddPrinterCallback callback) override;
   void CupsRemovePrinter(const std::string& name,
                          CupsRemovePrinterCallback callback,
-                         const base::Closure& error_callback) override;
+                         base::OnceClosure error_callback) override;
   void StartConcierge(ConciergeCallback callback) override;
   void StopConcierge(ConciergeCallback callback) override;
   void StartPluginVmDispatcher(const std::string& owner_id,

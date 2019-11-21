@@ -4,6 +4,22 @@
 
 import("//remoting/build/config/remoting_build.gni")
 
+if (icu_use_data_file) {
+  bundle_data("icu_data") {
+    sources = [
+      "$root_out_dir/icudtl.dat",
+    ]
+
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
+
+    public_deps = [
+      "//third_party/icu:icudata",
+    ]
+  }
+}
+
 source_set("constants") {
   defines = [
     "HOST_BUNDLE_NAME=\"" + me2me_host_bundle_name + "\"",
@@ -91,11 +107,6 @@ bundle_data("remoting_host_resources") {
   public_deps = [
     "//remoting/host/installer:credits",
   ]
-
-  if (icu_use_data_file) {
-    sources += [ "$root_out_dir/icudtl.dat" ]
-    public_deps += [ "//third_party/icu:icudata" ]
-  }
 }
 
 target("mac_app_bundle", "remoting_me2me_host") {
@@ -134,6 +145,10 @@ target("mac_app_bundle", "remoting_me2me_host") {
     "//remoting/host:remoting_infoplist_strings",
     "//remoting/resources:copy_locales",
   ]
+
+  if (icu_use_data_file) {
+    deps += [ ":icu_data" ]
+  }
 }
 
 foreach(locale, remoting_locales_with_underscores) {
@@ -180,6 +195,12 @@ bundle_data("remoting_native_messaging_host_resources") {
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
+
+  if (icu_use_data_file) {
+    deps = [
+      ":icu_data",
+    ]
+  }
 }
 
 target("mac_app_bundle", "remoting_native_messaging_host") {

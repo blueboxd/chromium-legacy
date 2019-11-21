@@ -37,7 +37,8 @@ You may not allocate an on-heap object on stack.
 Your class may need to have a tracing method. See [Tracing](#Tracing) for details.
 
 Your class will be automatically finalized as long as it is non-trivially destructible.
-Non-final classes are required to have a virtual destructor.
+Non-final classes that are not trivially destructible are required to have a virtual destructor.
+Trivially destructible classes should not have a destructor. Adding a destructor to such classes would make then non-trivially destructible and would hinder performance.
 Note that finalization is done at an arbitrary time after the object becomes unreachable.
 Any destructor executed within the finalization period *must not* touch any other on-heap object because destructors can be executed in any order.
 
@@ -55,10 +56,28 @@ class B : public A, public Q {
 
 // class C : public R, public A {
 //   BAD: A must be the first base class.
+//        If R is also garbage collected, A should be [GarbageCollectedMixin](#GarbageCollectedMixin).
 // };
 ```
 
 If a non-leftmost base class needs to retain an on-heap object, that base class needs to inherit from [GarbageCollectedMixin](#GarbageCollectedMixin). It's generally recommended to make *any* non-leftmost base class inherit from `GarbageCollectedMixin` because it's dangerous to save a pointer to a non-leftmost non-`GarbageCollectedMixin` subclass of an on-heap object.
+
+```c++
+P* raw_pointer;
+void someFunction(P* p) {
+  ...
+  raw_pointer = p;
+  ...
+}
+
+class A : public GarbageCollected<A>, public P {
+public:
+  void someMemberFunction()
+  {
+    someFunction(this); // DANGEROUS, a raw pointer to an on-heap object. Object might be collected, resulting in a dangling pointer and possible memory corruption.
+  }
+};
+```
 
 ### GarbageCollectedMixin
 
@@ -68,7 +87,7 @@ If a child class of `GarbageCollected<T>` has a non-leftmost base class deriving
 A class deriving from `GarbageCollectedMixin` can be treated similarly as garbage-collected classes.
 Specifically, it can have `Member<T>`s and `WeakMember<T>`s, and a tracing method.
 A pointer to such a class must be retained in the same smart pointer wrappers as a pointer to a garbage-collected class, such as `Member<T>` or `Persistent<T>`.
-The tracing method of a garbage-collected class, if any, must contain a delegating call for each mixin base class.
+The [tracing](#Tracing) method of a garbage-collected class, if any, must contain a delegating call for each mixin base class.
 
 ```c++
 class P : public GarbageCollectedMixin {
@@ -182,9 +201,11 @@ Especially, avoid defining a pre-finalizer in a class that can be allocated a lo
 
 ### STACK_ALLOCATED
 
-Class level annotation that should be used if the object is only stack allocated; it disallows use of `operator new`. Any garbage-collected objects should be kept as `Member<T>` references, but you do not need to define a `Trace()` method as they are on the stack, and automatically traced and kept alive should a conservative GC be required.
+Class level annotation that should be used if the object is only stack allocated; it disallows use of `operator new`. Any fields holding garbage-collected objects should use `Member<T>` references, but you do not need to define a `Trace()` method as they are on the stack, and automatically traced and kept alive should a conservative GC be required.
 
-Classes with this annotation do not need a `Trace()` method and must not inherit a garbage collected class.
+Classes with this annotation do not need a `Trace()` method and must not inherit a on-heap garbage collected class.
+
+Marking a class as STACK_ALLOCATED implicitly implies [DISALLOW_NEW](#DISALLOW_NEW).
 
 ### DISALLOW_NEW
 
@@ -205,7 +226,8 @@ On-heap objects must be retained by any of these, depending on the situation.
 
 ### Raw pointers
 
-On-stack references to on-heap objects must be raw pointers.
+Raw pointers to garbage-collected objects should be avoided as they may cause memory corruptions.
+An exception to this rule is on-stack references to on-heap objects (including function parameters and return types) which must be raw pointers.
 
 ```c++
 void someFunction() {
@@ -245,6 +267,15 @@ More specifically, `WeakMember<T>` should be used only if the owner of a weak me
 Otherwise, `Member<T>` should be used.
 
 You need to trace every `Member<T>` and `WeakMember<T>` in your class. See [Tracing](#Tracing).
+
+### UntracedMember
+
+`UntracedMember<T>` represents a reference to a garbage collected object which is ignored by Oilpan.
+
+Unlike 'Member<T>', 'UntracedMember<T>' will not keep an object alive. However, unlike 'WeakMember<T>', the reference will not be cleared (i.e. set to 'nullptr') if the referenced object dies.
+Furthermore, class fields of type 'UntracedMember<T>' should not be traced by the class' tracing method.
+
+Users should  use 'UntracedMember<T>' when implementing [custom weakness semantics](#Custom weak callbacks).
 
 ### Persistent, WeakPersistent, CrossThreadPersistent, CrossThreadWeakPersistent
 
@@ -291,7 +322,7 @@ are really necessary.
 
 ## Tracing
 
-A garbage-collected class may be required to have *a tracing method*, which lists up all the on-heap objects it has.
+A garbage-collected class is required to have *a tracing method*, which lists up all the on-heap objects it has.
 The tracing method is called when the garbage collector needs to determine (1) all the on-heap objects referred from a
 live object, and (2) all the weak handles that may be filled with `nullptr` later.
 
@@ -402,14 +433,14 @@ In addition to basic weak handling using `WeakMember<T>` Oilpan also supports:
 
 Like regular weakness, collections support weakness by putting references in `WeakMember<T>`.
 
-In sequence containers such as `HeapVector` the `WeakMember<T>` references are just cleared without adding any additional handling.
+In sequence containers such as `HeapVector` the `WeakMember<T>` references are just cleared without adding any additional handling (cleared references are not automatically removed from the container).
 
 In associative containers such as `HeapHashMap` or `HeapHashSet` Oilpan distinguishes between *pure weakness* and *mixed weakness*:
 - Pure weakness: All entries in such containers are wrapped in `WeakMember<T>`.
   Examples are `HeapHashSet<WeakMember<T>>` and `HeapHashMap<WeakMember<T>, WeakMember<U>>`.
 - Mixed weakness: Only some entries in such containers are wrapped in `WeakMember<T>`.
   This can only happen in `HeapHashMap`.
-  Examples are `HeapHashMap<WeakMember<T>, Member<U>>, HeapHashMap<Member<T>, WeakMember<U>>, and HeapHashMap<WeakMember<T>, int>.
+  Examples are `HeapHashMap<WeakMember<T>, Member<U>>, HeapHashMap<Member<T>, WeakMember<U>>, HeapHashMap<WeakMember<T>, int>, and HeapHashMap<int, WeakMember<T>>.
   Note that in the last example the type `int` is traced even though it does not support tracing.
 
 The semantics then are as follows:
@@ -424,8 +455,8 @@ There exist two helper methods on `blink::Visitor` to add such callbacks:
 - `RegisterWeakCallback`: Used to add custom weak callbacks of the form `void(void*, const blink::WeakCallbackInfo&)`.
 - `RegisterWeakCallbackMethod`: Helper for adding an instance method.
 
-Note that any custom weak callbacks should not be used to clear `WeakMember<T>` fields as such fields are automatically handled by Oilpan.
-Instead, users should wrap their managed fields in `UntracedMember<T>` indicating that Oilpan is ignoring those fields.
+Note that custom weak callbacks should not be used to clear `WeakMember<T>` fields as such fields are automatically handled by Oilpan.
+Instead, for managed fields that require custom weakness semantics, users should wrap such fields in `UntracedMember<T>` indicating that Oilpan is ignoring those fields.
 
 The following example shows how this can be used:
 

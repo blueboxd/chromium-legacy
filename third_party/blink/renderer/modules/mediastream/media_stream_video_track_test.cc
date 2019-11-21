@@ -85,7 +85,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   WebMediaStreamTrack CreateTrack() {
     const bool enabled = true;
     WebMediaStreamTrack track = MediaStreamVideoTrack::CreateVideoTrack(
-        mock_source_, WebPlatformMediaStreamSource::ConstraintsCallback(),
+        mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
         enabled);
     if (!source_started_) {
       mock_source_->StartMockedSource();
@@ -101,7 +101,7 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     const bool enabled = true;
     WebMediaStreamTrack track = MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_, adapter_settings, base::Optional<bool>(), false, 0.0,
-        WebPlatformMediaStreamSource::ConstraintsCallback(), enabled);
+        WebPlatformMediaStreamSource::ConstraintsOnceCallback(), enabled);
     if (!source_started_) {
       mock_source_->StartMockedSource();
       source_started_ = true;

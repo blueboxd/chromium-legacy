@@ -95,6 +95,7 @@ ErrorInfo ErrorInfo::CreateError(ErrorType error_type,
             IDS_CERT_ERROR_NOT_VALID_AT_THIS_TIME_DESCRIPTION);
       }
       break;
+    case CERT_KNOWN_INTERCEPTION_BLOCKED:
     case CERT_AUTHORITY_INVALID:
     case CERT_SYMANTEC_LEGACY:
       details =
@@ -221,6 +222,8 @@ ErrorInfo::ErrorType ErrorInfo::NetErrorToErrorType(int net_error) {
       return CERTIFICATE_TRANSPARENCY_REQUIRED;
     case net::ERR_CERT_SYMANTEC_LEGACY:
       return CERT_SYMANTEC_LEGACY;
+    case net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
+      return CERT_KNOWN_INTERCEPTION_BLOCKED;
     default:
       NOTREACHED();
       return UNKNOWN;
@@ -247,6 +250,7 @@ void ErrorInfo::GetErrorsForCertStatus(
       net::CERT_STATUS_VALIDITY_TOO_LONG,
       net::CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED,
       net::CERT_STATUS_SYMANTEC_LEGACY,
+      net::CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED,
   };
 
   const ErrorType kErrorTypes[] = {
@@ -263,6 +267,7 @@ void ErrorInfo::GetErrorsForCertStatus(
       CERT_VALIDITY_TOO_LONG,
       CERTIFICATE_TRANSPARENCY_REQUIRED,
       CERT_SYMANTEC_LEGACY,
+      CERT_KNOWN_INTERCEPTION_BLOCKED,
   };
   DCHECK(base::size(kErrorFlags) == base::size(kErrorTypes));
 

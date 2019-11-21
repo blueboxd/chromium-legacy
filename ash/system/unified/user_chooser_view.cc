@@ -25,6 +25,8 @@
 #include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -295,6 +297,14 @@ base::string16 UserItemButton::GetTooltipText(const gfx::Point& p) const {
     return base::string16();
   }
   return views::Button::GetTooltipText(p);
+}
+
+void UserItemButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // The button for the currently active user is not clickable.
+  if (user_index_ == 0)
+    node_data->role = ax::mojom::Role::kLabelText;
+  else
+    node_data->role = ax::mojom::Role::kButton;
 }
 
 void UserItemButton::ButtonPressed(views::Button* sender,

@@ -109,8 +109,9 @@ const char kUmaSelectDefaultSearchEngine[] =
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
   [super setEditing:editing animated:animated];
 
-  // Disable prepopulated engines in editing mode.
-  [self setPrepopulatedEnginesEnabled:!editing];
+  // Disable prepopulated engines and remove the checkmark in editing mode, and
+  // recover them in normal mode.
+  [self updatePrepopulatedEnginesForEditing:editing];
 }
 
 #pragma mark - ChromeTableViewController
@@ -505,9 +506,9 @@ const char kUmaSelectDefaultSearchEngine[] =
       }];
 }
 
-// Enables/Disables prepopulated engines by forbidding user interaction and
-// changing cells's alpha.
-- (void)setPrepopulatedEnginesEnabled:(BOOL)enabled {
+// Disables prepopulated engines and removes the checkmark in editing mode.
+// Enables engines and recovers the checkmark in normal mode.
+- (void)updatePrepopulatedEnginesForEditing:(BOOL)editing {
   NSArray<NSIndexPath*>* indexPaths =
       [self.tableViewModel indexPathsForItemType:ItemTypePrepopulatedEngine
                                sectionIdentifier:SectionIdentifierFirstList];
@@ -515,7 +516,13 @@ const char kUmaSelectDefaultSearchEngine[] =
     TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
     SearchEngineItem* engineItem =
         base::mac::ObjCCastStrict<SearchEngineItem>(item);
-    engineItem.enabled = enabled;
+    engineItem.enabled = !editing;
+    if (!editing && _firstList[indexPath.item] ==
+                        _templateURLService->GetDefaultSearchProvider()) {
+      engineItem.accessoryType = UITableViewCellAccessoryCheckmark;
+    } else {
+      engineItem.accessoryType = UITableViewCellAccessoryNone;
+    }
   }
   [self.tableView reloadRowsAtIndexPaths:indexPaths
                         withRowAnimation:UITableViewRowAnimationAutomatic];

@@ -120,7 +120,7 @@ class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
       run_loop_->Quit();
   }
   void OnShimFocus(AppShimHost* host,
-                   apps::AppShimFocusType focus_type,
+                   chrome::mojom::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}
   void OnShimSelectedProfile(AppShimHost* host,
                              const base::FilePath& profile_path) override {}

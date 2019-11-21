@@ -4,6 +4,8 @@
 
 static_library("core") {
   sources = [
+    "games_constants.cc",
+    "games_constants.h",
     "games_features.cc",
     "games_features.h",
     "games_prefs.cc",
@@ -12,6 +14,8 @@ static_library("core") {
     "games_service_impl.cc",
     "games_service_impl.h",
     "games_types.h",
+    "games_utils.cc",
+    "games_utils.h",
   ]
 
   deps = [

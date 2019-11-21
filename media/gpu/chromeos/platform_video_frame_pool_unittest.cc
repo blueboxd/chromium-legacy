@@ -102,7 +102,7 @@ class PlatformVideoFramePoolTest
   gfx::Size natural_size_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          PlatformVideoFramePoolTest,
                          testing::Values(PIXEL_FORMAT_I420,
                                          PIXEL_FORMAT_NV12,

@@ -114,6 +114,10 @@ bool MIMETypeRegistry::IsSupportedJavaScriptMIMEType(const String& mime_type) {
   return blink::IsSupportedJavascriptMimeType(ToLowerASCIIOrEmpty(mime_type));
 }
 
+bool MIMETypeRegistry::IsJSONMimeType(const String& mime_type) {
+  return blink::IsJSONMimeType(ToLowerASCIIOrEmpty(mime_type));
+}
+
 bool MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(
     const String& language) {
   // Mozilla 1.8 accepts javascript1.0 - javascript1.7, but WinIE 7 accepts only

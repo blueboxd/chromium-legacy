@@ -1,39 +1,39 @@
-    <style include="cr-hidden-style">
-      :host {
-        align-items: center;
-        display: flex;
-        min-height: 56px;
-      }
+<style include="cr-hidden-style">
+  :host {
+    align-items: center;
+    display: flex;
+    min-height: 56px;
+  }
 
-      #toolbar {
-        flex: 1;
-      }
+  #toolbar {
+    flex: 1;
+  }
 
-      cr-icon-button {
-        --cr-icon-button-fill-color-focus: var(--cr-toolbar-background-color);
-        justify-content: flex-end;
-        margin: 4px;
-      }
+  cr-icon-button {
+    --cr-icon-button-fill-color-focus: var(--cr-toolbar-background-color);
+    justify-content: flex-end;
+    margin: 4px;
+  }
 
-      @media (prefers-color-scheme: light) {
-        cr-icon-button {
-          --cr-icon-button-color: currentColor;
-        }
-      }
-    </style>
-    <cr-toolbar id="toolbar" page-name="$i18n{title}"
-        search-prompt="$i18n{search}" clear-label="$i18n{clearSearch}"
-        spinner-active="{{spinnerActive}}" on-search-changed="onSearchChanged_">
-      <cr-icon-button id="moreActions" iron-icon="cr:more-vert"
-          class="dropdown-trigger" title="$i18n{moreActions}"
-          on-click="onMoreActionsTap_" aria-haspopup="menu"></cr-icon-button>
-    </cr-toolbar>
-    <cr-action-menu id="moreActionsMenu"
-        role-description="$i18n{actionMenuDescription}">
-      <button class="dropdown-item clear-all" on-click="onClearAllTap_">
-        $i18n{clearAll}
-      </button>
-      <button class="dropdown-item" on-click="onOpenDownloadsFolderTap_">
-        $i18n{openDownloadsFolder}
-      </button>
-    </cr-action-menu>
+  @media (prefers-color-scheme: light) {
+    cr-icon-button {
+      --cr-icon-button-color: currentColor;
+    }
+  }
+</style>
+<cr-toolbar id="toolbar" page-name="$i18n{title}"
+    search-prompt="$i18n{search}" clear-label="$i18n{clearSearch}"
+    spinner-active="{{spinnerActive}}" on-search-changed="onSearchChanged_">
+  <cr-icon-button id="moreActions" iron-icon="cr:more-vert"
+      class="dropdown-trigger" title="$i18n{moreActions}"
+      on-click="onMoreActionsTap_" aria-haspopup="menu"></cr-icon-button>
+</cr-toolbar>
+<cr-action-menu id="moreActionsMenu"
+    role-description="$i18n{actionMenuDescription}">
+  <button class="dropdown-item clear-all" on-click="onClearAllTap_">
+    $i18n{clearAll}
+  </button>
+  <button class="dropdown-item" on-click="onOpenDownloadsFolderTap_">
+    $i18n{openDownloadsFolder}
+  </button>
+</cr-action-menu>

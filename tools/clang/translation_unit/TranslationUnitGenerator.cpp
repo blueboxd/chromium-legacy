@@ -248,8 +248,7 @@ class CompilationIndexerAction : public clang::PreprocessorFrontendAction {
 };
 
 void CompilationIndexerAction::ExecuteAction() {
-  vector<clang::FrontendInputFile> inputs =
-      getCompilerInstance().getFrontendOpts().Inputs;
+  auto inputs = getCompilerInstance().getFrontendOpts().Inputs;
   assert(inputs.size() == 1);
   main_source_file_ = inputs[0].getFile();
 

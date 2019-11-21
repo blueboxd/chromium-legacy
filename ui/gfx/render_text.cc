@@ -43,11 +43,6 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
-#if defined(OS_MACOSX)
-#include "third_party/skia/include/ports/SkTypeface_mac.h"
-#include "ui/gfx/render_text_mac.h"
-#endif  // defined(OS_MACOSX)
-
 namespace gfx {
 
 namespace {
@@ -538,11 +533,6 @@ std::unique_ptr<RenderText> RenderText::CreateHarfBuzzInstance() {
 
 // static
 std::unique_ptr<RenderText> RenderText::CreateFor(Typesetter typesetter) {
-#if defined(OS_MACOSX)
-  if (typesetter == Typesetter::NATIVE)
-    return std::make_unique<RenderTextMac>();
-
-#endif  // defined(OS_MACOSX)
   return CreateHarfBuzzInstance();
 }
 

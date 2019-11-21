@@ -71,7 +71,7 @@ TEST_F(RemoteCopyMessageHandlerTest, NotificationWithoutDeviceName) {
   EXPECT_EQ(GetClipboardText(), kText);
   EXPECT_EQ(
       l10n_util::GetStringUTF16(
-          IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE_UNKNOWN_DEVICE),
+          IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT_UNKNOWN_DEVICE),
       GetNotification().title());
   histograms_.ExpectUniqueSample(
       kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
@@ -83,7 +83,7 @@ TEST_F(RemoteCopyMessageHandlerTest, NotificationWithDeviceName) {
       base::DoNothing());
   EXPECT_EQ(GetClipboardText(), kText);
   EXPECT_EQ(l10n_util::GetStringFUTF16(
-                IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
+                IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT,
                 base::ASCIIToUTF16(kDeviceNameInMessage)),
             GetNotification().title());
   histograms_.ExpectUniqueSample(

@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "components/signin/core/browser/android/jni_headers/OAuth2TokenService_jni.h"
+#include "components/signin/internal/identity_manager/android/jni_headers/OAuth2TokenService_jni.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -95,7 +95,7 @@ void AndroidAccessTokenFetcher::Start(const std::string& client_id,
                      weak_factory_.GetWeakPtr())));
 
   // Call into Java to get a new token.
-  Java_OAuth2TokenService_getAccessTokenFromNative(
+  signin::Java_OAuth2TokenService_getAccessTokenFromNative(
       env, oauth2_token_service_delegate_->GetJavaObject(), j_username, j_scope,
       reinterpret_cast<intptr_t>(heap_callback.release()));
 }
@@ -152,9 +152,9 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
 
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> local_java_ref =
-      Java_OAuth2TokenService_create(env, reinterpret_cast<intptr_t>(this),
-                                     account_tracker_service_->GetJavaObject(),
-                                     account_manager_facade);
+      signin::Java_OAuth2TokenService_create(
+          env, reinterpret_cast<intptr_t>(this),
+          account_tracker_service_->GetJavaObject(), account_manager_facade);
   java_ref_.Reset(env, local_java_ref.obj());
 
   if (account_tracker_service_->GetMigrationState() ==
@@ -197,8 +197,8 @@ bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
   ScopedJavaLocalRef<jstring> j_account_id =
       ConvertUTF8ToJavaString(env, account_name);
   jboolean refresh_token_is_available =
-      Java_OAuth2TokenService_hasOAuth2RefreshToken(env, java_ref_,
-                                                    j_account_id);
+      signin::Java_OAuth2TokenService_hasOAuth2RefreshToken(env, java_ref_,
+                                                            j_account_id);
   return refresh_token_is_available == JNI_TRUE;
 }
 
@@ -236,7 +236,7 @@ std::vector<CoreAccountId> OAuth2TokenServiceDelegateAndroid::GetAccounts()
   std::vector<std::string> accounts;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_accounts =
-      Java_OAuth2TokenService_getAccounts(env);
+      signin::Java_OAuth2TokenService_getAccounts(env);
   ;
   // TODO(fgorski): We may decide to filter out some of the accounts.
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
@@ -253,7 +253,7 @@ OAuth2TokenServiceDelegateAndroid::GetSystemAccountNames() {
   std::vector<std::string> account_names;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> j_accounts =
-      Java_OAuth2TokenService_getSystemAccountNames(env, java_ref_);
+      signin::Java_OAuth2TokenService_getSystemAccountNames(env, java_ref_);
   base::android::AppendJavaStringArrayToStringVector(env, j_accounts,
                                                      &account_names);
   return account_names;
@@ -286,7 +286,7 @@ void OAuth2TokenServiceDelegateAndroid::SetAccounts(
   std::vector<std::string> str_ids(accounts.begin(), accounts.end());
   ScopedJavaLocalRef<jobjectArray> java_accounts(
       base::android::ToJavaArrayOfStrings(env, str_ids));
-  Java_OAuth2TokenService_setAccounts(env, java_accounts);
+  signin::Java_OAuth2TokenService_setAccounts(env, java_accounts);
 }
 
 std::unique_ptr<OAuth2AccessTokenFetcher>
@@ -317,7 +317,8 @@ void OAuth2TokenServiceDelegateAndroid::OnAccessTokenInvalidated(
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_access_token =
       ConvertUTF8ToJavaString(env, access_token);
-  Java_OAuth2TokenService_invalidateAccessToken(env, java_ref_, j_access_token);
+  signin::Java_OAuth2TokenService_invalidateAccessToken(env, java_ref_,
+                                                        j_access_token);
 }
 
 void OAuth2TokenServiceDelegateAndroid::
@@ -329,7 +330,7 @@ void OAuth2TokenServiceDelegateAndroid::
       primary_account_id.has_value()
           ? ConvertUTF8ToJavaString(env, primary_account_id->id)
           : nullptr;
-  Java_OAuth2TokenService_seedAndReloadAccountsWithPrimaryAccount(
+  signin::Java_OAuth2TokenService_seedAndReloadAccountsWithPrimaryAccount(
       env, java_ref_, j_account_id);
 }
 
@@ -510,6 +511,7 @@ CoreAccountId OAuth2TokenServiceDelegateAndroid::MapAccountNameToAccountId(
   return account_id;
 }
 
+namespace signin {
 // Called from Java when fetching of an OAuth2 token is finished. The
 // |authToken| param is only valid when |result| is true.
 void JNI_OAuth2TokenService_OnOAuth2TokenFetched(
@@ -533,3 +535,4 @@ void JNI_OAuth2TokenService_OnOAuth2TokenFetched(
   }
   heap_callback->Run(err, token, base::Time());
 }
+}  // namespace signin

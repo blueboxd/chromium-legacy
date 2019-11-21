@@ -700,6 +700,6 @@ IN_PROC_BROWSER_TEST_P(ChromeMimeHandlerViewCrossProcessTest,
   ASSERT_TRUE(GetGuestViewManager()->WaitForSingleGuestCreated());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ChromeMimeHandlerViewCrossProcessTest,
                          testing::Bool());

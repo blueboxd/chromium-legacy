@@ -233,14 +233,21 @@ def main():
     ]
     for pem_file, allowed_pems in config.get('LimitedSubjects', {}).iteritems()
   }
+  known_interception_spkis = [
+    pem_cert_file_to_spki_hash(pem_file).encode('base64').strip()
+    for pem_file in config.get('KnownInterceptionSPKIs', [])]
+  blocked_interception_spkis = [
+    pem_cert_file_to_spki_hash(pem_file).encode('base64').strip()
+    for pem_file in config.get('BlockedInterceptionSPKIs', [])]
   header_json = {
       'Version': 0,
       'ContentType': 'CRLSet',
       'Sequence': int(config.get("Sequence", 0)),
-      'DeltaFrom': 0,
       'NumParents': len(parents),
       'BlockedSPKIs': blocked_spkis,
       'LimitedSubjects': limited_subjects,
+      'KnownInterceptionSPKIs': known_interception_spkis,
+      'BlockedInterceptionSPKIs': blocked_interception_spkis
   }
   header = json.dumps(header_json)
   outfile.write(struct.pack('<H', len(header)))

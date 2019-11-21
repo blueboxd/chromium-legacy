@@ -112,7 +112,6 @@ class AffordanceView : public views::View {
     ripple_flags.setStyle(cc::PaintFlags::kFill_Style);
     ripple_flags.setColor(kRippleColor);
 
-    const bool is_activated = x_offset_ >= kDistanceForFullRadius;
     float ripple_radius = 0.f;
     if (state_ == BackGestureAffordance::State::COMPLETING) {
       const float burst_progress = gfx::Tween::CalculateValue(
@@ -120,7 +119,7 @@ class AffordanceView : public views::View {
       ripple_radius =
           kMaxRippleRadius +
           burst_progress * (kMaxBurstRippleRadius - kMaxRippleRadius);
-    } else if (is_activated) {
+    } else if (x_offset_ >= kDistanceForFullRadius) {
       const float factor = (kMaxRippleRadius - kFullRippleRadius) /
                            (kDistanceForMaxRadius - kDistanceForFullRadius);
       ripple_radius = (kFullRippleRadius - factor * kDistanceForFullRadius) +
@@ -132,6 +131,9 @@ class AffordanceView : public views::View {
     }
     canvas->DrawCircle(center_point, ripple_radius, ripple_flags);
 
+    const bool is_activated =
+        x_offset_ >= kDistanceForFullRadius ||
+        state_ == BackGestureAffordance::State::COMPLETING;
     // Draw the arrow background circle.
     cc::PaintFlags bg_flags;
     bg_flags.setAntiAlias(true);
@@ -234,7 +236,8 @@ void BackGestureAffordance::Complete() {
 }
 
 bool BackGestureAffordance::IsActivated() const {
-  return current_offset_ >= kDistanceForFullRadius;
+  return current_offset_ >= kDistanceForFullRadius ||
+         state_ == State::COMPLETING;
 }
 
 void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {

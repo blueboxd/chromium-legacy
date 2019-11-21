@@ -206,8 +206,6 @@ void AssistantPageView::OnShown() {
 
 void AssistantPageView::OnAnimationStarted(AppListState from_state,
                                            AppListState to_state) {
-  if (to_state != AppListState::kStateEmbeddedAssistant)
-    return;
   UpdatePageBoundsForState(to_state, contents_view()->GetContentsBounds(),
                            contents_view()->GetSearchBoxBounds(to_state));
 }

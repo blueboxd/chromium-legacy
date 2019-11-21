@@ -139,9 +139,15 @@ v8::MaybeLocal<v8::Value> ValueWrapperSyntheticModuleScript::EvaluationSteps(
       value_wrapper_synthetic_module_script =
           static_cast<const ValueWrapperSyntheticModuleScript*>(
               module_record_resolver->GetModuleScriptFromModuleRecord(module));
-  module->SetSyntheticModuleExport(
-      V8String(isolate, "default"),
+  v8::TryCatch try_catch(isolate);
+  v8::Maybe<bool> result = module->SetSyntheticModuleExport(
+      isolate, V8String(isolate, "default"),
       value_wrapper_synthetic_module_script->export_value_.NewLocal(isolate));
+
+  // Setting the default export should never fail.
+  DCHECK(!try_catch.HasCaught());
+  DCHECK(!result.IsNothing() && result.FromJust());
+
   return v8::Undefined(reinterpret_cast<v8::Isolate*>(isolate));
 }
 

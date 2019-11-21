@@ -272,6 +272,7 @@ Response BrowserHandler::GetHistograms(
   return Response::OK();
 }
 
+// static
 Response BrowserHandler::FindBrowserContext(
     const Maybe<std::string>& browser_context_id,
     BrowserContext** browser_context) {

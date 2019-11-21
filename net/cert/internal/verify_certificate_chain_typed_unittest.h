@@ -9,7 +9,7 @@
 #include "net/cert/internal/test_helpers.h"
 #include "net/cert/internal/trust_store.h"
 #include "net/cert/internal/verify_certificate_chain.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/der/input.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

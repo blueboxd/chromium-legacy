@@ -7,7 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "net/cert/internal/cert_errors.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

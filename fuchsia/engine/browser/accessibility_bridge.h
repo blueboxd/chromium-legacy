@@ -90,6 +90,10 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
   std::vector<uint32_t> to_delete_;
   bool commit_inflight_ = false;
 
+  // Maintain a map of callbacks as multiple hit test events can happen at once.
+  // These are keyed by the request_id field of ui::AXActionData.
+  base::flat_map<int, HitTestCallback> pending_hit_test_callbacks_;
+
   // The root id of |tree_|.
   int32_t root_id_ = 0;
 

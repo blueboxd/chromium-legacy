@@ -39,7 +39,7 @@ namespace remoting {
 class RpcBroker {
  public:
   using SendMessageCallback =
-      base::Callback<void(std::unique_ptr<std::vector<uint8_t>>)>;
+      base::RepeatingCallback<void(std::unique_ptr<std::vector<uint8_t>>)>;
   explicit RpcBroker(const SendMessageCallback& send_message_cb);
   ~RpcBroker();
 

@@ -36,7 +36,7 @@ source_set("shortcut_viewer") {
     "//ui/chromeos/search_box",
     "//ui/events:events_base",
     "//ui/events/devices",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone/layout",
     "//ui/views",
   ]
 }

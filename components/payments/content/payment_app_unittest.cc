@@ -142,7 +142,7 @@ class PaymentAppTest : public testing::TestWithParam<RequiredPaymentOptions>,
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     PaymentAppTest,
     ::testing::Values(
         RequiredPaymentOptions::kNone,

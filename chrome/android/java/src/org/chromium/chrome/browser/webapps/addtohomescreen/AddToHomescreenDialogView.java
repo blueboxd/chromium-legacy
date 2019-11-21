@@ -39,11 +39,11 @@ import org.chromium.ui.modelutil.PropertyModel;
  * data is not yet fetched, and accepting the dialog is disabled until all data is available and in
  * its place on the screen.
  */
-public class AddToHomescreenDialogView
-        implements View.OnClickListener, ModalDialogProperties.Controller {
+class AddToHomescreenDialogView implements View.OnClickListener, ModalDialogProperties.Controller {
     private PropertyModel mDialogModel;
     private ModalDialogManager mModalDialogManager;
-    private AddToHomescreenViewDelegate mDelegate;
+    @VisibleForTesting
+    protected AddToHomescreenViewDelegate mDelegate;
 
     private View mParentView;
     /**
@@ -62,7 +62,7 @@ public class AddToHomescreenDialogView
 
     private boolean mCanSubmit;
 
-    public AddToHomescreenDialogView(Context context, ModalDialogManager modalDialogManager,
+    AddToHomescreenDialogView(Context context, ModalDialogManager modalDialogManager,
             @StringRes int titleText, AddToHomescreenViewDelegate delegate) {
         assert delegate != null;
 

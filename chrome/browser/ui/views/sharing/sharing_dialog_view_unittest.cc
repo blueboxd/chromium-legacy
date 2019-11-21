@@ -222,7 +222,7 @@ TEST_F(SharingDialogViewTest, OriginView) {
   auto dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
   auto dialog = CreateDialogView(std::move(dialog_data));
   // No footnote by default if there is no initiating origin set.
-  EXPECT_EQ(nullptr, dialog->CreateFootnoteView());
+  EXPECT_EQ(nullptr, dialog->GetFootnoteViewForTesting());
 
   dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
   dialog_data.initiating_origin =
@@ -230,7 +230,7 @@ TEST_F(SharingDialogViewTest, OriginView) {
   dialog = CreateDialogView(std::move(dialog_data));
   // Origin should be shown in the footnote if the initiating origin does not
   // match the main frame origin.
-  EXPECT_NE(nullptr, dialog->CreateFootnoteView());
+  EXPECT_NE(nullptr, dialog->GetFootnoteViewForTesting());
 
   dialog_data = CreateDialogData(/*devices=*/1, /*apps=*/1);
   dialog_data.initiating_origin =
@@ -238,7 +238,7 @@ TEST_F(SharingDialogViewTest, OriginView) {
   dialog = CreateDialogView(std::move(dialog_data));
   // Origin should not be shown in the footnote if the initiating origin does
   // match the main frame origin.
-  EXPECT_EQ(nullptr, dialog->CreateFootnoteView());
+  EXPECT_EQ(nullptr, dialog->GetFootnoteViewForTesting());
 }
 
 TEST_F(SharingDialogViewTest, HelpTextContent) {
@@ -257,25 +257,25 @@ TEST_F(SharingDialogViewTest, HelpTextContent) {
   // Expect default help text if no initiating origin is set.
   auto dialog_data = CreateDialogData(/*devices=*/0, /*apps=*/1);
   auto dialog = CreateDialogView(std::move(dialog_data));
-  auto footnote_view = dialog->CreateFootnoteView();
+  views::View* footnote_view = dialog->GetFootnoteViewForTesting();
   EXPECT_EQ(expected_default,
-            static_cast<views::StyledLabel*>(footnote_view.get())->GetText());
+            static_cast<views::StyledLabel*>(footnote_view)->GetText());
 
   // Still expect the default help text if the initiating origin matches the
   // main frame origin.
   dialog_data = CreateDialogData(/*devices=*/0, /*apps=*/1);
   dialog_data.initiating_origin = current_origin;
   dialog = CreateDialogView(std::move(dialog_data));
-  footnote_view = dialog->CreateFootnoteView();
+  footnote_view = dialog->GetFootnoteViewForTesting();
   EXPECT_EQ(expected_default,
-            static_cast<views::StyledLabel*>(footnote_view.get())->GetText());
+            static_cast<views::StyledLabel*>(footnote_view)->GetText());
 
   // Expect the origin to be included in the help text if it does not match the
   // main frame origin.
   dialog_data = CreateDialogData(/*devices=*/0, /*apps=*/1);
   dialog_data.initiating_origin = other_origin;
   dialog = CreateDialogView(std::move(dialog_data));
-  footnote_view = dialog->CreateFootnoteView();
+  footnote_view = dialog->GetFootnoteViewForTesting();
   EXPECT_EQ(expected_origin,
-            static_cast<views::StyledLabel*>(footnote_view.get())->GetText());
+            static_cast<views::StyledLabel*>(footnote_view)->GetText());
 }

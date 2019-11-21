@@ -148,7 +148,7 @@ TEST_P(ExtensionActionManagerTest, TestDontOverrideIfDefaultsProvided) {
   EXPECT_EQ("Action!", action->GetTitle(ExtensionAction::kDefaultTabId));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionManagerTest,
                          testing::Values(ActionInfo::TYPE_ACTION,
                                          ActionInfo::TYPE_BROWSER,

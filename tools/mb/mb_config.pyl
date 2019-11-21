@@ -14,10 +14,10 @@
   # below). MB uses this dict to look up which config to use for a given bot.
   'masters': {
     'chrome': {
-      'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',
-      'chromeos-betty-pi-arc-google-rel': 'official_cros_chrome_sdk_headless_ozone',
-      'chromeos-eve-google-rel': 'official_cros_chrome_sdk_headless_ozone',
-      'chromeos-kevin-google-rel': 'official_cros_chrome_sdk_headless_ozone',
+      'chromeos-betty-google-rel': 'official_cros_chrome_sdk',
+      'chromeos-betty-pi-arc-google-rel': 'official_cros_chrome_sdk',
+      'chromeos-eve-google-rel': 'official_cros_chrome_sdk',
+      'chromeos-kevin-google-rel': 'official_cros_chrome_sdk',
       'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
       'linux-google-rel': 'official_goma',
       'mac-google-rel': 'official_goma',
@@ -95,12 +95,12 @@
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
 
       'chromeos-amd64-generic-asan-rel': 'cros_chrome_sdk_asan',
-      'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
+      'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
-      'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
       'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk',
-      'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-kevin-rel': 'cros_chrome_sdk',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },
@@ -203,9 +203,9 @@
 
       'android-code-coverage': 'android_release_bot_minimal_symbols_arm64_coverage',
       'android-code-coverage-native': 'android_release_bot_minimal_symbols_arm64_native_coverage',
-      'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
-      'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk_headless_ozone',
-      'chromeos-vm-code-coverage': 'cros_chrome_sdk_headless_ozone_coverage',
+      'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_dcheck_always_on',
+      'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk',
+      'chromeos-vm-code-coverage': 'cros_chrome_sdk_coverage',
       'linux-bfcache-debug': 'debug_bot',
       'linux-oor-cors-rel': 'release_bot_minimal_symbols',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
@@ -258,10 +258,10 @@
       'mac-archive-rel-goma-canary-localoutputcache': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-rel-goma-latest-localoutputcache': 'release_bot_mac_strip_minimal_symbols',
 
-      'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk_headless_ozone',
-      'chromeos-amd64-generic-rel-goma-latest': 'cros_chrome_sdk_headless_ozone',
-      'chromeos-amd64-generic-rel-goma-rbe-canary': 'cros_chrome_sdk_headless_ozone',
-      'chromeos-amd64-generic-rel-goma-rbe-latest': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-amd64-generic-rel-goma-canary': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel-goma-latest': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel-goma-rbe-canary': 'cros_chrome_sdk',
+      'chromeos-amd64-generic-rel-goma-rbe-latest': 'cros_chrome_sdk',
       'android-archive-dbg-goma-canary': 'android_without_codecs_debug_bot',
       'android-archive-dbg-goma-latest': 'android_without_codecs_debug_bot',
       'android-archive-dbg-goma-rbe-canary': 'android_without_codecs_debug_bot',
@@ -369,7 +369,7 @@
       'Chromium Android ARM 32-bit Goma RBE Prod (dbg) (clobber)': 'android_debug_static_bot',
 
       # RBE FYI
-      'chromeos-amd64-generic-rel (Goma RBE FYI)': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-amd64-generic-rel (Goma RBE FYI)': 'cros_chrome_sdk',
       'fuchsia-fyi-arm64-rel (Goma RBE FYI)': 'release_bot_fuchsia_arm64',
       'fuchsia-fyi-x64-rel (Goma RBE FYI)': 'release_bot_fuchsia',
     },
@@ -743,12 +743,12 @@
     },
 
     'tryserver.chrome': {
-      'chromeos-betty-chrome': 'official_cros_chrome_sdk_headless_ozone',
-      'chromeos-betty-pi-arc-chrome': 'official_cros_chrome_sdk_headless_ozone',
-      'chromeos-eve-chrome': 'official_cros_chrome_sdk_headless_ozone',
-      'chromeos-eve-compile-chrome': 'official_cros_chrome_sdk_headless_ozone',
-      'chromeos-kevin-chrome': 'official_cros_chrome_sdk_headless_ozone',
-      'chromeos-kevin-compile-chrome': 'official_cros_chrome_sdk_headless_ozone',
+      'chromeos-betty-chrome': 'official_cros_chrome_sdk',
+      'chromeos-betty-pi-arc-chrome': 'official_cros_chrome_sdk',
+      'chromeos-eve-chrome': 'official_cros_chrome_sdk',
+      'chromeos-eve-compile-chrome': 'official_cros_chrome_sdk',
+      'chromeos-kevin-chrome': 'official_cros_chrome_sdk',
+      'chromeos-kevin-compile-chrome': 'official_cros_chrome_sdk',
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',
       'win_chrome_official': 'official_goma_x86',
@@ -758,13 +758,13 @@
     'tryserver.chromium.chromiumos': {
       # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
       # and two kevin bots when the PFQ has it enabled.
-      'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
+      'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_cfi_thin_lto',
       'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
-      'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
       'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
-      'chromeos-arm-generic-rel': 'cros_chrome_sdk_dchecks_always_on',
-      'chromeos-kevin-compile-rel': 'cros_chrome_sdk_headless_ozone',
-      'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-arm-generic-rel': 'cros_chrome_sdk_dcheck_always_on',
+      'chromeos-kevin-compile-rel': 'cros_chrome_sdk',
+      'chromeos-kevin-rel': 'cros_chrome_sdk',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
@@ -1504,24 +1504,16 @@
       'cros_chrome_sdk', 'debug',
     ],
 
-    'cros_chrome_sdk_dchecks_always_on': [
+    'cros_chrome_sdk_dcheck_always_on': [
       'cros_chrome_sdk', 'dcheck_always_on',
     ],
 
-    'cros_chrome_sdk_headless_ozone': [
-      'cros_chrome_sdk', 'ozone_platform_headless',
+    'cros_chrome_sdk_coverage': [
+      'cros_chrome_sdk', 'use_clang_coverage',
     ],
 
-    'cros_chrome_sdk_headless_ozone_coverage': [
-      'cros_chrome_sdk', 'ozone_platform_headless', 'use_clang_coverage',
-    ],
-
-    'cros_chrome_sdk_headless_ozone_cfi_thin_lto': [
-      'cros_chrome_sdk', 'ozone_platform_headless', 'cfi_full', 'thin_lto',
-    ],
-
-    'cros_chrome_sdk_headless_ozone_dcheck_always_on': [
-      'cros_chrome_sdk', 'ozone_platform_headless', 'dcheck_always_on',
+    'cros_chrome_sdk_cfi_thin_lto': [
+      'cros_chrome_sdk', 'cfi_full', 'thin_lto',
     ],
 
     'dawn_tests_release_trybot': [
@@ -1853,9 +1845,6 @@
     # SDK when entering it.
     'official_cros_chrome_sdk': [
       'cros_chrome_sdk',
-    ],
-    'official_cros_chrome_sdk_headless_ozone': [
-      'cros_chrome_sdk', 'ozone_platform_headless',
     ],
 
     'official_goma': [
@@ -2212,6 +2201,7 @@
       # and that GYP_DEFINES has chromeos=1 and GN_ARGS has
       # target_os="chromeos" in it.
       'cros_passthrough': True,
+      'gn_args': 'ozone_platform_headless=true',
     },
 
     'dawn_tests': {
@@ -2431,10 +2421,6 @@
                   'ozone_platform_headless=true ozone_platform_x11=true '
                   'ozone_platform_gbm=true '
                   'use_xkbcommon=true use_ozone=true'),
-    },
-
-    'ozone_platform_headless': {
-      'gn_args': 'ozone_platform_headless=true',
     },
 
     # Used to pass the list of files to instrument for coverage to the compile

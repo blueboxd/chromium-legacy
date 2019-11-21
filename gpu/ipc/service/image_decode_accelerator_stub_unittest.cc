@@ -719,7 +719,7 @@ TEST_P(ImageDecodeAcceleratorStubTest, WaitForDiscardableHandleRegistration) {
 // TODO(andrescj): test the deletion of transfer cache entries.
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ImageDecodeAcceleratorStubTest,
     ::testing::Values(gfx::BufferFormat::YVU_420,
                       gfx::BufferFormat::YUV_420_BIPLANAR));

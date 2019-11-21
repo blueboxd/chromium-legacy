@@ -80,8 +80,12 @@ class BrowserStatusMonitor::LocalWebContentsObserver
 BrowserStatusMonitor::BrowserStatusMonitor(
     ChromeLauncherController* launcher_controller)
     : launcher_controller_(launcher_controller),
-      browser_tab_strip_tracker_(this, this, this) {
+      browser_tab_strip_tracker_(this, this, this),
+      app_service_instance_helper_(
+          std::make_unique<AppServiceInstanceRegistryHelper>(
+              launcher_controller->profile())) {
   DCHECK(launcher_controller_);
+  DCHECK(app_service_instance_helper_);
 }
 
 BrowserStatusMonitor::~BrowserStatusMonitor() {
@@ -225,6 +229,8 @@ void BrowserStatusMonitor::OnActiveTabChanged(
     UpdateBrowserItemState();
     SetShelfIDForBrowserWindowContents(browser, new_contents);
   }
+
+  app_service_instance_helper_->OnActiveTabChanged(old_contents, new_contents);
 }
 
 void BrowserStatusMonitor::OnTabReplaced(TabStripModel* tab_strip_model,
@@ -243,16 +249,20 @@ void BrowserStatusMonitor::OnTabReplaced(TabStripModel* tab_strip_model,
     SetShelfIDForBrowserWindowContents(browser, new_contents);
 
   AddWebContentsObserver(new_contents);
+
+  app_service_instance_helper_->OnTabReplaced(old_contents, new_contents);
 }
 
 void BrowserStatusMonitor::OnTabInserted(content::WebContents* contents) {
   UpdateAppItemState(contents, false /*remove*/);
   AddWebContentsObserver(contents);
+  app_service_instance_helper_->OnTabInserted(contents);
 }
 
 void BrowserStatusMonitor::OnTabClosing(content::WebContents* contents) {
   UpdateAppItemState(contents, true /*remove*/);
   RemoveWebContentsObserver(contents);
+  app_service_instance_helper_->OnTabClosing(contents);
 }
 
 void BrowserStatusMonitor::AddWebContentsObserver(

@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_P(SingleClientCustomPassphraseSyncTestWithUssTests,
   // be stable across different browser versions.
 
   // Default birthday determined by LoopbackServer.
-  const std::string kDefaultBirthday = "0";
+  const std::string kDefaultBirthday = GetFakeServer()->GetStoreBirthday();
   const std::string kSeparator("|");
   std::string base64_encoded_keystore_key;
   base::Base64Encode(keystore_keys.back(), &base64_encoded_keystore_key);

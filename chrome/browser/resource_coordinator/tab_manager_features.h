@@ -35,9 +35,9 @@ extern const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[];
 extern const char
     kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[];
 
-// The name of the |DisableHeuristicsProtections| parameter of the
+// The name of the |FreezingProtectMediaOnly| parameter of the
 // ProactiveTabFreezeAndDiscard feature.
-extern const char kProactiveTabFreezeAndDiscard_DisableHeuristicsParam[];
+extern const char kProactiveTabFreezeAndDiscard_FreezingProtectMediaOnlyParam[];
 
 // Parameters used by the proactive tab discarding feature.
 //
@@ -88,10 +88,6 @@ struct ProactiveTabFreezeAndDiscardParams {
   static constexpr base::FeatureParam<bool> kShouldPeriodicallyUnfreeze{
       &features::kProactiveTabFreezeAndDiscard,
       kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam, false};
-  static constexpr base::FeatureParam<bool>
-      kShouldProtectTabsSharingBrowsingInstance{
-          &features::kProactiveTabFreezeAndDiscard,
-          "ShouldProtectTabsSharingBrowsingInstance", true};
   // 50% of people cap out at 4 tabs, so for them proactive discarding won't
   // even be invoked. See Tabs.MaxTabsInADay.
   // TODO(chrisha): This should eventually be informed by the number of tabs
@@ -130,9 +126,9 @@ struct ProactiveTabFreezeAndDiscardParams {
   static constexpr base::FeatureParam<int> kRefreezeTimeout{
       &features::kProactiveTabFreezeAndDiscard, "RefreezeTimeout", 10};
 
-  static constexpr base::FeatureParam<bool> kDisableHeuristicsProtections{
+  static constexpr base::FeatureParam<bool> kFreezingProtectMediaOnly{
       &features::kProactiveTabFreezeAndDiscard,
-      kProactiveTabFreezeAndDiscard_DisableHeuristicsParam, false};
+      kProactiveTabFreezeAndDiscard_FreezingProtectMediaOnlyParam, false};
 
   // Whether tabs should be proactively discarded. When the
   // |kProactiveTabFreezeAndDiscard| feature is enabled and this is false, only
@@ -140,9 +136,6 @@ struct ProactiveTabFreezeAndDiscardParams {
   bool should_proactively_discard;
   // Whether frozen tabs should periodically be unfrozen to update their state.
   bool should_periodically_unfreeze;
-  // Whether tabs should be protected from freezing/discarding if they share
-  // their BrowsingInstance with another tab.
-  bool should_protect_tabs_sharing_browsing_instance;
   // Tab count (inclusive) beyond which the state transitions to MODERATE.
   // Intended to cover the majority of simple workflows and be small enough that
   // it is very unlikely that memory pressure will be encountered with this many
@@ -171,9 +164,8 @@ struct ProactiveTabFreezeAndDiscardParams {
   base::TimeDelta unfreeze_timeout;
   // Amount of time that a tab stays unfrozen before being frozen again.
   base::TimeDelta refreeze_timeout;
-  // Disable all the heuristics protections when doing a freezing or discarding
-  // intervention.
-  bool disable_heuristics_protections;
+  // Only media tabs are protected from freezing.
+  bool freezing_protect_media_only;
 };
 
 // Gets parameters for the proactive tab discarding feature. This does no

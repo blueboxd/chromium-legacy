@@ -61,6 +61,12 @@ TEST_F(StackTraceTest, OutputToStream) {
   ASSERT_TRUE(addresses);
   ASSERT_GT(frames_found, 5u) << "Too few frames found.";
 
+#if defined(OFFICIAL_BUILD) && defined(OS_MACOSX)
+  // Official Mac OS X builds contain enough information to unwind the stack,
+  // but not enough to symbolize the output.
+  return;
+#endif  // defined(OFFICIAL_BUILD) && defined(OS_MACOSX)
+
 #if defined(OS_FUCHSIA) || defined(OS_ANDROID)
   // Under Fuchsia and Android, StackTrace emits executable build-Ids and
   // address offsets which are symbolized on the test host system, rather than

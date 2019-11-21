@@ -33,21 +33,21 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
 
   void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
-      const DataCallback& callback) override {
+      DataCallback callback) override {
     CryptohomeClient::Get()->AsyncTpmAttestationCreateEnrollRequest(
         pca_type,
         base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        "Couldn't initiate async attestation enroll request."));
   }
 
   void AsyncTpmAttestationEnroll(chromeos::attestation::PrivacyCAType pca_type,
                                  const std::string& pca_response,
-                                 const Callback& callback) override {
+                                 Callback callback) override {
     CryptohomeClient::Get()->AsyncTpmAttestationEnroll(
         pca_type, pca_response,
         base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        "Couldn't initiate async attestation enroll."));
   }
 
@@ -56,13 +56,13 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
       const Identification& cryptohome_id,
       const std::string& request_origin,
-      const DataCallback& callback) override {
+      DataCallback callback) override {
     CryptohomeClient::Get()->AsyncTpmAttestationCreateCertRequest(
         pca_type, certificate_profile,
         CreateAccountIdentifierFromIdentification(cryptohome_id),
         request_origin,
         base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        "Couldn't initiate async attestation cert request."));
   }
 
@@ -71,13 +71,13 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       chromeos::attestation::AttestationKeyType key_type,
       const Identification& cryptohome_id,
       const std::string& key_name,
-      const DataCallback& callback) override {
+      DataCallback callback) override {
     CryptohomeClient::Get()->AsyncTpmAttestationFinishCertRequest(
         pca_response, key_type,
         CreateAccountIdentifierFromIdentification(cryptohome_id), key_name,
         base::BindOnce(
             &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-            weak_ptr_factory_.GetWeakPtr(), callback,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
             "Couldn't initiate async attestation finish cert request."));
   }
 
@@ -85,12 +85,12 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       chromeos::attestation::AttestationKeyType key_type,
       const Identification& cryptohome_id,
       const std::string& key_name,
-      const Callback& callback) override {
+      Callback callback) override {
     CryptohomeClient::Get()->TpmAttestationRegisterKey(
         key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
         key_name,
         base::BindOnce(&AsyncMethodCallerImpl::RegisterAsyncCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        "Couldn't initiate async attestation register key."));
   }
 
@@ -103,13 +103,13 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       chromeos::attestation::AttestationChallengeOptions options,
       const std::string& challenge,
       const std::string& key_name_for_spkac,
-      const DataCallback& callback) override {
+      DataCallback callback) override {
     CryptohomeClient::Get()->TpmAttestationSignEnterpriseChallenge(
         key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
         key_name, domain, device_id, options, challenge, key_name_for_spkac,
         base::BindOnce(
             &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-            weak_ptr_factory_.GetWeakPtr(), callback,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
             "Couldn't initiate async attestation enterprise challenge."));
   }
 
@@ -118,21 +118,21 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       const Identification& cryptohome_id,
       const std::string& key_name,
       const std::string& challenge,
-      const DataCallback& callback) override {
+      DataCallback callback) override {
     CryptohomeClient::Get()->TpmAttestationSignSimpleChallenge(
         key_type, CreateAccountIdentifierFromIdentification(cryptohome_id),
         key_name, challenge,
         base::BindOnce(
             &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
-            weak_ptr_factory_.GetWeakPtr(), callback,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
             "Couldn't initiate async attestation simple challenge."));
   }
 
  private:
   struct CallbackElement {
     CallbackElement() = default;
-    explicit CallbackElement(const AsyncMethodCaller::Callback& callback)
-        : callback(callback),
+    explicit CallbackElement(AsyncMethodCaller::Callback callback)
+        : callback(std::move(callback)),
           task_runner(base::ThreadTaskRunnerHandle::Get()) {}
     AsyncMethodCaller::Callback callback;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
@@ -140,16 +140,15 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
 
   struct DataCallbackElement {
     DataCallbackElement() = default;
-    explicit DataCallbackElement(
-        const AsyncMethodCaller::DataCallback& callback)
-        : data_callback(callback),
+    explicit DataCallbackElement(AsyncMethodCaller::DataCallback callback)
+        : data_callback(std::move(callback)),
           task_runner(base::ThreadTaskRunnerHandle::Get()) {}
     AsyncMethodCaller::DataCallback data_callback;
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   };
 
-  typedef std::unordered_map<int, CallbackElement> CallbackMap;
-  typedef std::unordered_map<int, DataCallbackElement> DataCallbackMap;
+  using CallbackMap = std::unordered_map<int, CallbackElement>;
+  using DataCallbackMap = std::unordered_map<int, DataCallbackElement>;
 
   // Handles the response for async calls.
   // Below is described how async calls work.
@@ -169,7 +168,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       return;
     }
     it->second.task_runner->PostTask(
-        FROM_HERE, base::BindOnce(it->second.callback, return_status,
+        FROM_HERE, base::BindOnce(std::move(it->second.callback), return_status,
                                   static_cast<MountError>(return_code)));
     callback_map_.erase(it);
   }
@@ -184,8 +183,8 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
       return;
     }
     it->second.task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(it->second.data_callback, return_status, return_data));
+        FROM_HERE, base::BindOnce(std::move(it->second.data_callback),
+                                  return_status, return_data));
     data_callback_map_.erase(it);
   }
 
@@ -195,7 +194,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
                              base::Optional<int> async_id) {
     if (!async_id.has_value()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback,
+          FROM_HERE, base::BindOnce(std::move(callback),
                                     false,  // return status
                                     cryptohome::MOUNT_ERROR_FATAL));
       return;
@@ -208,7 +207,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     VLOG(1) << "Adding handler for " << async_id.value();
     DCHECK_EQ(callback_map_.count(async_id.value()), 0U);
     DCHECK_EQ(data_callback_map_.count(async_id.value()), 0U);
-    callback_map_[async_id.value()] = CallbackElement(callback);
+    callback_map_[async_id.value()] = CallbackElement(std::move(callback));
   }
 
   // Registers a callback which is called when the result for AsyncXXX is ready.
@@ -217,7 +216,7 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
                                  base::Optional<int> async_id) {
     if (!async_id.has_value()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(callback,
+          FROM_HERE, base::BindOnce(std::move(callback),
                                     false,  // return status
                                     std::string()));
       return;
@@ -229,7 +228,8 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller,
     VLOG(1) << "Adding handler for " << async_id.value();
     DCHECK_EQ(callback_map_.count(async_id.value()), 0U);
     DCHECK_EQ(data_callback_map_.count(async_id.value()), 0U);
-    data_callback_map_[async_id.value()] = DataCallbackElement(callback);
+    data_callback_map_[async_id.value()] =
+        DataCallbackElement(std::move(callback));
   }
 
   CallbackMap callback_map_;

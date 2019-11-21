@@ -115,8 +115,19 @@ Polymer({
     this.updateProxy_();
   },
 
-  /** @private */
-  managedPropertiesChanged_: function() {
+  /**
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties|undefined} newValue
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties|undefined} oldValue
+   * @private
+   */
+  managedPropertiesChanged_: function(newValue, oldValue) {
+    if ((newValue && newValue.guid) != (oldValue && oldValue.guid)) {
+      // Clear saved manual properties and exclude domains if we're updating
+      // to show a different network.
+      this.savedManual_ = undefined;
+      this.savedExcludeDomains_ = undefined;
+    }
+
     if (this.proxyIsUserModified_) {
       return;  // Ignore update
     }

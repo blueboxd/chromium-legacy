@@ -49,11 +49,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/buildflag.h"
+#include "crypto/sha2.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/directory_listing.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/escape.h"
 #include "net/base/features.h"
+#include "net/base/hash_value.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -66,6 +68,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/base/url_util.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/crl_set.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -76,6 +79,7 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
+#include "net/cert/x509_util.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_monster.h"
@@ -9699,6 +9703,16 @@ static bool SystemSupportsOCSPStapling() {
 #endif
 }
 
+static bool SystemSupportsCRLSets() {
+  if (UsingBuiltinCertVerifier())
+    return true;
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return true;
+#endif
+}
+
 TEST_F(HTTPSOCSPTest, Valid) {
   if (!SystemSupportsOCSP()) {
     LOG(WARNING) << "Skipping test because system doesn't support OCSP";
@@ -10524,10 +10538,10 @@ TEST_F(HTTPSCRLSetTest, ExpiredCRLSetAndRevoked) {
 }
 
 TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
-#if defined(OS_ANDROID)
-  LOG(WARNING) << "Skipping test because system doesn't support CRLSets";
-  return;
-#endif
+  if (!SystemSupportsCRLSets()) {
+    LOG(WARNING) << "Skipping test because system doesn't support CRLSets";
+    return;
+  }
 
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_AUTO);
@@ -10550,10 +10564,10 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
 }
 
 TEST_F(HTTPSCRLSetTest, CRLSetRevokedBySubject) {
-#if defined(OS_ANDROID)
-  LOG(WARNING) << "Skipping test because system doesn't support CRLSets";
-  return;
-#endif
+  if (!SystemSupportsCRLSets()) {
+    LOG(WARNING) << "Skipping test because system doesn't support CRLSets";
+    return;
+  }
 
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_AUTO);
@@ -10598,6 +10612,218 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevokedBySubject) {
     // When the correct SPKI hash is specified, the connection should succeed
     // even though the subject is listed in the CRLSet.
     EXPECT_EQ(0u, cert_status & CERT_STATUS_ALL_ERRORS);
+  }
+}
+
+using HTTPSLocalCRLSetTest = TestWithTaskEnvironment;
+
+// Use a real CertVerifier to attempt to connect to the TestServer, and ensure
+// that when a CRLSet is provided that marks a given SPKI (the TestServer's
+// root SPKI) as known for interception, that it's adequately flagged.
+TEST_F(HTTPSLocalCRLSetTest, KnownInterceptionBlocked) {
+  // Configure the initial context.
+  std::unique_ptr<CertVerifier> cert_verifier =
+      CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
+
+  TestURLRequestContext context(/*delay_initialization=*/true);
+  context.set_cert_verifier(cert_verifier.get());
+  context.Init();
+
+  // Verify the connection succeeds without being flagged.
+  EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  https_server.SetSSLConfig(EmbeddedTestServer::CERT_OK_BY_INTERMEDIATE);
+  ASSERT_TRUE(https_server.Start());
+
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(
+        context.CreateRequest(https_server.GetURL("/"), DEFAULT_PRIORITY, &d,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_FALSE(d.request_failed());
+    EXPECT_FALSE(d.have_certificate_errors());
+    EXPECT_FALSE(req->ssl_info().cert_status &
+                 CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED);
+  }
+
+  // Configure a CRL that will mark |root_ca_cert| as a blocked interception
+  // root.
+  std::string crl_set_bytes;
+  scoped_refptr<CRLSet> crl_set;
+  ASSERT_TRUE(
+      base::ReadFileToString(GetTestCertsDirectory().AppendASCII(
+                                 "crlset_blocked_interception_by_root.raw"),
+                             &crl_set_bytes));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
+
+  CertVerifier::Config config_with_crlset;
+  config_with_crlset.crl_set = crl_set;
+  context.cert_verifier()->SetConfig(config_with_crlset);
+
+  // Verify the connection fails as being a known interception root.
+  {
+    TestDelegate d;
+    d.set_allow_certificate_errors(true);
+    std::unique_ptr<URLRequest> req(
+        context.CreateRequest(https_server.GetURL("/"), DEFAULT_PRIORITY, &d,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_FALSE(d.request_failed());
+    if (SystemSupportsCRLSets()) {
+      EXPECT_TRUE(d.have_certificate_errors());
+      EXPECT_FALSE(d.certificate_errors_are_fatal());
+      EXPECT_EQ(ERR_CERT_KNOWN_INTERCEPTION_BLOCKED, d.certificate_net_error());
+      EXPECT_TRUE(req->ssl_info().cert_status &
+                  CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED);
+    } else {
+      EXPECT_FALSE(d.have_certificate_errors());
+      EXPECT_TRUE(req->ssl_info().cert_status &
+                  CERT_STATUS_KNOWN_INTERCEPTION_DETECTED);
+    }
+  }
+}
+
+TEST_F(HTTPSLocalCRLSetTest, InterceptionBlockedAllowOverrideOnHSTS) {
+  constexpr char kHSTSHost[] = "include-subdomains-hsts-preloaded.test";
+  constexpr char kHSTSSubdomainWithKnownInterception[] =
+      "www.include-subdomains-hsts-preloaded.test";
+
+  EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK_BY_INTERMEDIATE);
+  https_server.ServeFilesFromSourceDirectory(base::FilePath(kTestFilePath));
+  ASSERT_TRUE(https_server.Start());
+
+  // Enable preloaded HSTS for |kHSTSHost|.
+  TransportSecurityState security_state;
+  security_state.EnableStaticPinsForTesting();
+  SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
+
+  // Configure the CertVerifier to simulate:
+  //   - For the test server host, that the certificate is issued by an
+  //     unknown authority; this SHOULD NOT be a fatal error when signaled
+  //     to the delegate.
+  //   - For |kHSTSHost|, that the certificate is issued by an unknown
+  //     authority; this SHOULD be a fatal error.
+  // Combined, these two states represent the baseline: non-fatal for non-HSTS
+  // hosts, fatal for HSTS host.
+  //   - For |kHSTSSubdomainWithKnownInterception|, that the certificate is
+  //     issued by a known interception cert. This SHOULD be an error, but
+  //     SHOULD NOT be a fatal error
+  MockCertVerifier cert_verifier;
+
+  scoped_refptr<X509Certificate> cert = https_server.GetCertificate();
+  ASSERT_TRUE(cert);
+
+  HashValue filler_hash;
+  ASSERT_TRUE(filler_hash.FromString(
+      "sha256/3333333333333333333333333333333333333333333="));
+
+  CertVerifyResult fake_result;
+  fake_result.verified_cert = cert;
+  fake_result.is_issued_by_known_root = false;
+
+  // Configure for the test server's default host.
+  CertVerifyResult test_result = fake_result;
+  test_result.public_key_hashes.push_back(filler_hash);
+  test_result.cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+  cert_verifier.AddResultForCertAndHost(
+      cert.get(), https_server.host_port_pair().host(), test_result,
+      ERR_CERT_AUTHORITY_INVALID);
+
+  // Configure for kHSTSHost.
+  CertVerifyResult sts_base_result = fake_result;
+  sts_base_result.public_key_hashes.push_back(filler_hash);
+  sts_base_result.cert_status |= CERT_STATUS_AUTHORITY_INVALID;
+  cert_verifier.AddResultForCertAndHost(cert.get(), kHSTSHost, sts_base_result,
+                                        ERR_CERT_AUTHORITY_INVALID);
+
+  // Configure for kHSTSSubdomainWithKnownInterception
+  CertVerifyResult sts_sub_result = fake_result;
+  // Compute the root cert's hash on the fly, to avoid hardcoding it within
+  // tests.
+  scoped_refptr<X509Certificate> root_cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "root_ca_cert.pem");
+  ASSERT_TRUE(root_cert);
+  base::StringPiece root_spki;
+  ASSERT_TRUE(asn1::ExtractSPKIFromDERCert(
+      x509_util::CryptoBufferAsStringPiece(root_cert->cert_buffer()),
+      &root_spki));
+  SHA256HashValue root_hash;
+  crypto::SHA256HashString(root_spki, &root_hash, sizeof(root_hash));
+  sts_sub_result.public_key_hashes.push_back(HashValue(root_hash));
+  sts_sub_result.cert_status |=
+      CERT_STATUS_REVOKED | CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED;
+  cert_verifier.AddResultForCertAndHost(
+      cert.get(), kHSTSSubdomainWithKnownInterception, sts_sub_result,
+      ERR_CERT_KNOWN_INTERCEPTION_BLOCKED);
+
+  // Configure the initial context.
+  TestURLRequestContext context(true);
+  context.set_transport_security_state(&security_state);
+  context.set_cert_verifier(&cert_verifier);
+  context.Init();
+
+  // Connect to the test server and see the certificate error flagged, but
+  // not fatal.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(
+        context.CreateRequest(https_server.GetURL("/"), DEFAULT_PRIORITY, &d,
+                              TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_TRUE(d.request_failed());
+    EXPECT_TRUE(d.have_certificate_errors());
+    EXPECT_FALSE(d.certificate_errors_are_fatal());
+    EXPECT_FALSE(req->ssl_info().cert_status &
+                 CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED);
+  }
+
+  // Connect to kHSTSHost and see the certificate errors are flagged, and are
+  // fatal.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        https_server.GetURL(kHSTSHost, "/"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_TRUE(d.request_failed());
+    EXPECT_TRUE(d.have_certificate_errors());
+    EXPECT_TRUE(d.certificate_errors_are_fatal());
+    EXPECT_FALSE(req->ssl_info().cert_status &
+                 CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED);
+  }
+
+  // Verify the connection fails as being a known interception root.
+  {
+    TestDelegate d;
+    d.set_allow_certificate_errors(true);
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        https_server.GetURL(kHSTSSubdomainWithKnownInterception, "/"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(1, d.response_started_count());
+    EXPECT_FALSE(d.request_failed());
+    EXPECT_TRUE(d.have_certificate_errors());
+    EXPECT_FALSE(d.certificate_errors_are_fatal());
+    EXPECT_EQ(ERR_CERT_KNOWN_INTERCEPTION_BLOCKED, d.certificate_net_error());
+    EXPECT_TRUE(req->ssl_info().cert_status &
+                CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED);
   }
 }
 #endif  // !defined(OS_IOS)

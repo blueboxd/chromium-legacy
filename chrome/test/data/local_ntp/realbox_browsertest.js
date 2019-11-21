@@ -235,41 +235,52 @@ test.realbox1.testReplyWithInlineAutocompletion = function() {
   assertEquals('world', realboxValue.substring(start, end));
 };
 
-// Ensures that deleting text from input informs the backend to prevent inline
-// autocompletion for the default match.
-test.realbox1.testDeleteWithInlineAutocompletion = function() {
+// Ensures that deleting text from the input, pasting text into the input, or
+// changing the input when caret is not at the end of the text informs the
+// backend to prevent inline autocompletion for the default match.
+test.realbox1.testPreventInlineAutocompletion = function() {
   test.realbox.realboxEl.value = 'supercal';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
   assertEquals(1, test.realbox.queries.length);
   assertEquals('supercal', test.realbox.queries[0].input);
   assertFalse(test.realbox.queries[0].preventInlineAutocomplete);
 
-  const match = test.realbox.getSearchMatch({
-    contents: 'supercal',
-    inlineAutocompletion: 'ifragilisticexpialidocious',
-  });
-  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
-    input: test.realbox.realboxEl.value,
-    matches: [match],
-  });
-
-  const realboxValue = test.realbox.realboxEl.value;
-  assertEquals('supercalifragilisticexpialidocious', realboxValue);
-
+  // Deleting text from input prevents inline autocompletion.
   test.realbox.realboxEl.value = 'superca';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
   assertEquals(2, test.realbox.queries.length);
   assertEquals('superca', test.realbox.queries[1].input);
   assertTrue(test.realbox.queries[1].preventInlineAutocomplete)
 
-  match.contents = 'superca';
-  match.inlineAutocompletion = '';
-  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
-    input: test.realbox.realboxEl.value,
-    matches: [match],
-  });
+  test.realbox.realboxEl.value = 'supercal';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+  assertEquals(3, test.realbox.queries.length);
+  assertEquals('supercal', test.realbox.queries[2].input);
+  assertFalse(test.realbox.queries[2].preventInlineAutocomplete);
 
-  assertEquals('superca', test.realbox.realboxEl.value);
+  // Pasting text into the input prevents inline autocompletion.
+  const pasteEvent = test.realbox.clipboardEvent('paste');
+  test.realbox.realboxEl.dispatchEvent(pasteEvent);
+  assertFalse(pasteEvent.defaultPrevented);
+  test.realbox.realboxEl.value = 'supercal';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+  assertEquals(4, test.realbox.queries.length);
+  assertEquals('supercal', test.realbox.queries[3].input);
+  assertTrue(test.realbox.queries[3].preventInlineAutocomplete);
+
+  test.realbox.realboxEl.value = 'supercali';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+  assertEquals(5, test.realbox.queries.length);
+  assertEquals('supercali', test.realbox.queries[4].input);
+  assertFalse(test.realbox.queries[4].preventInlineAutocomplete);
+
+  // If caret isn't at the end of the text inline autocompletion is prevented.
+  test.realbox.realboxEl.value = 'supercali';
+  test.realbox.realboxEl.setSelectionRange(0, 0);  // Move caret to beginning.
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+  assertEquals(6, test.realbox.queries.length);
+  assertEquals('supercali', test.realbox.queries[5].input);
+  assertTrue(test.realbox.queries[5].preventInlineAutocomplete);
 };
 
 test.realbox.testTypeInlineAutocompletion = function() {
@@ -743,6 +754,7 @@ test.realbox2.testRemoveIcon = function() {
 };
 
 test.realbox2.testPressEnterOnSelectedMatch = function() {
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {bubbles: true}));
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 
@@ -769,8 +781,8 @@ test.realbox2.testPressEnterOnSelectedMatch = function() {
   test.realbox.realboxEl.dispatchEvent(shiftEnter);
   assertTrue(shiftEnter.defaultPrevented);
 
-  assertTrue(clicked);
-  assertEquals(0, test.realbox.opens.length);
+  assertFalse(clicked);
+  assertEquals(1, test.realbox.opens.length);
 };
 
 test.realbox2.testPressEnterNoSelectedMatch = function() {
@@ -902,8 +914,8 @@ test.realbox2.testPressEnterAfterFocusout = function() {
   test.realbox.realboxEl.dispatchEvent(enter);
   assertTrue(enter.defaultPrevented);
 
-  assertTrue(clicked);
-  assertEquals(0, test.realbox.opens.length);
+  assertFalse(clicked);
+  assertEquals(1, test.realbox.opens.length);
 };
 
 test.realbox2.testInputAfterFocusoutPrefixMatches = function() {
@@ -1028,6 +1040,7 @@ test.realbox2.testArrowUpDownShowsMatchesWhenHidden = function() {
 
 // Test that trying to open e.g. chrome:// links goes through the mojo API.
 test.realbox2.testPrivilegedDestinationUrls = function() {
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {bubbles: true}));
   test.realbox.realboxEl.value = 'about';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
 

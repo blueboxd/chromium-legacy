@@ -14,11 +14,11 @@ namespace IPC {
 void IpcSecurityTestUtil::PwnMessageReceived(ChannelProxy* channel,
                                              const IPC::Message& message) {
   base::RunLoop run_loop;
-  base::Closure inject_message = base::Bind(
+  base::OnceClosure inject_message = base::BindOnce(
       base::IgnoreResult(&IPC::ChannelProxy::Context::OnMessageReceived),
       channel->context(), message);
   channel->context()->ipc_task_runner()->PostTaskAndReply(
-      FROM_HERE, inject_message, run_loop.QuitClosure());
+      FROM_HERE, std::move(inject_message), run_loop.QuitClosure());
   run_loop.Run();
 }
 

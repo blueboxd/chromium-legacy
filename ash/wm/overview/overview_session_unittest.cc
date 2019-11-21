@@ -1680,7 +1680,9 @@ class HotseatDisabledOverviewSessionTest : public OverviewSessionTest {
   DISALLOW_COPY_AND_ASSIGN(HotseatDisabledOverviewSessionTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, HotseatDisabledOverviewSessionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         HotseatDisabledOverviewSessionTest,
+                         testing::Bool());
 
 TEST_P(HotseatDisabledOverviewSessionTest,
        NoWindowsIndicatorPositionSplitview) {
@@ -5982,18 +5984,20 @@ TEST_P(SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
   EXPECT_FALSE(SplitViewController::Get(root_windows[1])->InSplitViewMode());
 }
 
-INSTANTIATE_TEST_SUITE_P(, OverviewSessionTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, OverviewSessionRoundedCornerTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, OverviewSessionNewLayoutTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, SplitViewOverviewSessionTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All, OverviewSessionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         OverviewSessionRoundedCornerTest,
+                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, OverviewSessionNewLayoutTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SplitViewOverviewSessionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
                          SplitViewOverviewSessionInClamshellTest,
                          testing::Bool());
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     SplitViewOverviewSessionInClamshellTestMultiDisplayOnly,
     testing::Values(true));
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          OverviewSessionWithDragFromShelfFeatureTest,
                          testing::Bool());
 

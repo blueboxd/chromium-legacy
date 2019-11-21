@@ -6282,14 +6282,15 @@ void LayoutBox::ClearSnapAreas() {
   }
 }
 
-void LayoutBox::AddSnapArea(const LayoutBox& snap_area) {
+void LayoutBox::AddSnapArea(LayoutBox& snap_area) {
   EnsureRareData().EnsureSnapAreas().insert(&snap_area);
 }
 
 void LayoutBox::RemoveSnapArea(const LayoutBox& snap_area) {
-  if (rare_data_ && rare_data_->snap_areas_) {
-    rare_data_->snap_areas_->erase(&snap_area);
-  }
+  // const_cast is safe here because we only need to modify the type to match
+  // the key type, and not actually mutate the object.
+  if (rare_data_ && rare_data_->snap_areas_)
+    rare_data_->snap_areas_->erase(const_cast<LayoutBox*>(&snap_area));
 }
 
 void LayoutBox::ReassignSnapAreas(LayoutBox& new_container) {

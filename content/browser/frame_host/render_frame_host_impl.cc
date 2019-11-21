@@ -5863,7 +5863,7 @@ bool RenderFrameHostImpl::CreateWebUI(const GURL& dest_url,
   // the past, make sure we're not granting it different bindings than it
   // had before. If so, note it and don't give it any bindings, to avoid a
   // potential privilege escalation.
-  if (entry_bindings != NavigationEntryImpl::kInvalidBindings &&
+  if (entry_bindings != FrameNavigationEntry::kInvalidBindings &&
       web_ui_->GetBindings() != entry_bindings) {
     RecordAction(base::UserMetricsAction("ProcessSwapBindingsMismatch_RVHM"));
     ClearWebUI();

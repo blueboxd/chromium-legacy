@@ -13,7 +13,6 @@
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "base/values.h"
-#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/top_host_provider.h"
 
 class PrefService;
@@ -57,17 +56,6 @@ class OptimizationGuideTopHostProvider
   // engagement service and transitions the blacklist state from kNotInitialized
   // to kInitialized.
   void InitializeHintsFetcherTopHostBlacklist();
-
-  // Return the current state of the HintsFetcherTopHostBlacklist held in the
-  // |kHintsFetcherTopHostBlacklistState| pref.
-  optimization_guide::prefs::HintsFetcherTopHostBlacklistState
-  GetCurrentBlacklistState() const;
-
-  // Transition the current HintsFetcherTopHostBlacklist state to |state| and
-  // validate the transition. The updated state is persisted in the
-  // |kHintsFetcherTopHostBlacklistState| pref.
-  void UpdateCurrentBlacklistState(
-      optimization_guide::prefs::HintsFetcherTopHostBlacklistState state);
 
   // |browser_context_| is used for interaction with the SiteEngagementService
   // and the embedder should guarantee that it is non-null during the lifetime

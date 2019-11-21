@@ -585,6 +585,10 @@ const std::set<std::string>& FakeServer::GetCommittedHistoryURLs() const {
   return committed_history_urls_;
 }
 
+std::string FakeServer::GetStoreBirthday() const {
+  return loopback_server_->GetStoreBirthday();
+}
+
 base::WeakPtr<FakeServer> FakeServer::AsWeakPtr() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return weak_ptr_factory_.GetWeakPtr();

@@ -106,6 +106,9 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
     case TabAlertState::USB_CONNECTED:
       icon = &kTabUsbConnectedIcon;
       break;
+    case TabAlertState::HID_CONNECTED:
+      icon = &vector_icons::kVideogameAssetIcon;
+      break;
     case TabAlertState::SERIAL_CONNECTED:
       // TODO(https://crbug.com/917204): This icon is too large to fit properly
       // as a tab indicator and should be replaced.

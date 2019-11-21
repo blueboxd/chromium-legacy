@@ -35,6 +35,15 @@ crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrol
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested-2.html [ Pass ]
 crbug.com/918155 virtual/prefer_compositing_to_lcd_text/scrollbars/overlay-scrollbar-over-child-layer-nested.html [ Pass ]
 
+# Missing composited layers for elements without visible contents.
+crbug.com/937573 compositing/geometry/foreground-layer.html [ Failure ]
+crbug.com/937573 compositing/geometry/limit-layer-bounds-opacity-transition.html [ Failure ]
+crbug.com/937573 compositing/geometry/limit-layer-bounds-overflow-root.html [ Failure ]
+crbug.com/937573 compositing/geometry/limit-layer-bounds-positioned-transition.html [ Failure ]
+crbug.com/937573 compositing/geometry/limit-layer-bounds-positioned.html [ Failure ]
+crbug.com/937573 compositing/geometry/limit-layer-bounds-transformed.html [ Failure ]
+crbug.com/937573 compositing/layer-creation/scroll-partial-update.html [ Failure ]
+
 Bug(none) virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
 Bug(none) virtual/android/rootscroller/fixed-chaining-with-implicit-pointer-events-none.html [ Failure ]
 Bug(none) virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Crash ]
@@ -46,34 +55,23 @@ crbug.com/1008501 compositing/culling/filter-occlusion-blur-large.html [ Failure
 crbug.com/1008501 compositing/culling/filter-occlusion-blur.html [ Failure ]
 crbug.com/1008501 compositing/reflections/deeply-nested-reflections.html [ Failure ]
 
-Bug(none) compositing/animation/hidden-composited.html [ Failure ]
-Bug(none) compositing/change-preferCompositingToLCDText-setting.html [ Failure ]
+# Wrong contentsOpaque or background color.
 Bug(none) compositing/contents-opaque/control-layer.html [ Failure ]
-Bug(none) compositing/contents-opaque/hidden-with-visible-child.html [ Failure ]
 Bug(none) compositing/contents-opaque/layer-opacity.html [ Failure ]
-Bug(none) compositing/draws-content/canvas-background-layer.html [ Failure ]
-Bug(none) compositing/draws-content/webgl-background-layer.html [ Failure ]
-Bug(none) compositing/geometry/bounds-clipped-composited-child.html [ Failure ]
-Bug(none) compositing/geometry/bounds-ignores-hidden.html [ Failure ]
-Bug(none) compositing/geometry/foreground-layer.html [ Failure ]
-Bug(none) compositing/geometry/limit-layer-bounds-opacity-transition.html [ Failure ]
-Bug(none) compositing/geometry/limit-layer-bounds-overflow-root.html [ Failure ]
-Bug(none) compositing/geometry/limit-layer-bounds-positioned-transition.html [ Failure ]
-Bug(none) compositing/geometry/limit-layer-bounds-positioned.html [ Failure ]
-Bug(none) compositing/geometry/limit-layer-bounds-transformed.html [ Failure ]
+# Flaky result of contentsOpqaue.
+Bug(none) paint/invalidation/window-resize/window-resize-child-background-image-fixed-centered.html [ Pass Failure ]
+
+# Needs to implement logic for CompositingReasons::kAssumedOverlap.
 Bug(none) compositing/layer-creation/overlap-animation-clipping.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-animation-container.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-animation.html [ Failure ]
+
+# Overlap testing seems inaccurate.
 Bug(none) compositing/layer-creation/overlap-transformed-3d.html [ Failure ]
-Bug(none) compositing/layer-creation/overlap-transformed-and-clipped.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-transformed-layer-with-transform-body.html [ Failure ]
-Bug(none) compositing/layer-creation/overlap-transformed-layer.html [ Failure ]
 Bug(none) compositing/layer-creation/overlap-transformed-preserved-3d.html [ Failure ]
-Bug(none) compositing/layer-creation/overlap-transforms.html [ Failure ]
-Bug(none) compositing/layer-creation/scroll-partial-update.html [ Failure ]
+
 Bug(none) compositing/masks/mask-with-removed-filters.html [ Failure ]
-crbug.com/979367 compositing/overflow/overflow-scroll-background-fractional-offset.html [ Failure ]
-Bug(none) compositing/overflow/overflow-scroll-content-fractional-offset.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-nested.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-transform.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to.html [ Failure ]
@@ -139,7 +137,6 @@ Bug(none) paint/invalidation/compositing/should-not-repaint-composited-opacity.h
 Bug(none) paint/invalidation/compositing/should-not-repaint-move-backface-hidden.html [ Failure ]
 Bug(none) paint/invalidation/scroll/iframe-scroll-repaint.html [ Failure ]
 Bug(none) paint/invalidation/scroll/repaint-composited-child-in-scrolled-container.html [ Failure ]
-Bug(none) paint/invalidation/position/layout-state-only-positioned.html [ Failure ]
 Bug(none) paint/invalidation/position/relative-positioned-movement-repaint.html [ Failure ]
 
 # Extra layer for fixed-position.
@@ -151,6 +148,10 @@ Bug(none) paint/invalidation/scroll/fixed-under-composited-fixed-scrolled.html [
 Bug(none) paint/invalidation/scroll/scroll-in-fixed-layer.html [ Failure ]
 
 # Other extra layers.
+Bug(none) compositing/geometry/bounds-clipped-composited-child.html [ Failure ]
+Bug(none) compositing/geometry/bounds-ignores-hidden.html [ Failure ]
+Bug(none) compositing/rtl/rtl-absolute-overflow-scrolled.html [ Failure ]
+Bug(none) compositing/rtl/rtl-fixed-overflow-scrolled.html [ Failure ]
 Bug(none) paint/invalidation/filters/filter-on-html-element-with-fixed-position-child.html [ Failure ]
 Bug(none) paint/invalidation/scroll/invalidate-caret-in-composited-scrolling-container.html [ Failure ]
 Bug(none) paint/invalidation/scroll/invalidate-caret-in-non-composited-scrolling-container.html [ Failure ]
@@ -170,20 +171,16 @@ Bug(none) paint/invalidation/compositing/iframe-inside-squashed-layer.html [ Fai
 Bug(none) paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
 
-# Subpixel or 1-pixel differences. May be real subpixel handling bugs.
-Bug(none) paint/invalidation/scroll/scroll-in-transformed-layer.html [ Failure ]
-Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ Failure ]
-Bug(none) external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
-Bug(none) external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
-
-# Invisible subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
-Bug(none) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
-Bug(none) fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
-Bug(none) fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
-Bug(none) fullscreen/rendering/backdrop-object.html [ Failure ]
-Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-003.html [ Failure ]
-Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
-Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
+# Subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
+Bug(benign) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
+Bug(benign) fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
+Bug(benign) fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
+Bug(benign) fullscreen/rendering/backdrop-object.html [ Failure ]
+Bug(benign) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-003.html [ Failure ]
+Bug(benign) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
+Bug(benign) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
+Bug(benign) external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
+Bug(benign) external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
 
 # Text failures due to layerization differences
 Bug(none) compositing/overflow/scroller-with-border-radius.html [ Failure ]
@@ -201,7 +198,6 @@ crbug.com/931486 compositing/squashing/squash-above-fixed-1.html [ Failure ]
 crbug.com/931486 compositing/squashing/squash-above-fixed-3.html [ Failure ]
 crbug.com/931486 paint/invalidation/compositing/pointer-events-composited-scrolling.html [ Failure ]
 crbug.com/931486 paint/invalidation/compositing/scrolling-neg-z-index-descendants.html [ Failure ]
-crbug.com/931486 paint/invalidation/flexbox/scrollbars-changed.html [ Failure ]
 crbug.com/931486 paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
 crbug.com/931486 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Failure ]
 crbug.com/931486 scrollbars/overlay-scrollbars-within-overflow-scroll.html [ Failure ]
@@ -244,9 +240,9 @@ Bug(none) http/tests/devtools/layers/layer-compositing-reasons.js [ Failure ]
 # Missing WheelEventHandler
 Bug(none) http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 
-# Scrollbar snapping issues
-crbug.com/979380 compositing/rtl/rtl-absolute-overflow-scrolled.html [ Failure ]
-crbug.com/979380 compositing/rtl/rtl-fixed-overflow-scrolled.html [ Failure ]
+# Scrollbar pixel snapping issues
+crbug.com/979380 compositing/overflow/overflow-scroll-background-fractional-offset.html [ Failure ]
+crbug.com/979380 compositing/overflow/overflow-scroll-content-fractional-offset.html [ Failure ]
 crbug.com/979380 compositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ]
 crbug.com/979380 compositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ]
 crbug.com/979380 fast/frames/transparent-scrollbar.html [ Failure ]

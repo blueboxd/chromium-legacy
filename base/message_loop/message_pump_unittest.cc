@@ -356,7 +356,7 @@ TEST_P(MessagePumpTest, NestedRunWithoutScheduleWorkInvokesDoWork) {
   message_pump_->Run(&delegate);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MessagePumpTest,
                          ::testing::Values(MessagePumpType::DEFAULT,
                                            MessagePumpType::UI,

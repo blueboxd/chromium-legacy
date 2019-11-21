@@ -130,6 +130,7 @@ public final class ErrorCodeConversionHelper {
 
             // The certificate errors are handled by onReceivedSslError
             // and don't need to be reported here.
+            case NetError.ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
             case NetError.ERR_CERT_COMMON_NAME_INVALID:
             case NetError.ERR_CERT_DATE_INVALID:
             case NetError.ERR_CERT_AUTHORITY_INVALID:

@@ -519,7 +519,7 @@ TEST_P(OverviewWindowDragControllerDesksPortraitTabletTest, DragAndDropInDesk) {
             drag_indicators()->current_window_dragging_state());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          OverviewWindowDragControllerDesksPortraitTabletTest,
                          testing::Bool());
 

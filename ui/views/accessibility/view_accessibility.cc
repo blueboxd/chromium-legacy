@@ -13,6 +13,7 @@
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/buildflags.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -289,6 +290,17 @@ Widget* ViewAccessibility::GetPreviousFocus() {
 
 gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
   return nullptr;
+}
+
+void ViewAccessibility::AnnounceText(const base::string16& text) {
+  Widget* const widget = view_->GetWidget();
+  if (!widget)
+    return;
+  auto* const root_view =
+      static_cast<internal::RootView*>(widget->GetRootView());
+  if (!root_view)
+    return;
+  root_view->AnnounceText(text);
 }
 
 gfx::NativeViewAccessible ViewAccessibility::GetFocusedDescendant() {

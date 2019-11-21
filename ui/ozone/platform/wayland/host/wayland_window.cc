@@ -306,6 +306,16 @@ void WaylandWindow::ApplyPendingBounds() {
   MaybeUpdateOpaqueRegion();
 }
 
+void WaylandWindow::SetPointerFocus(bool focus) {
+  has_pointer_focus_ = focus;
+
+  // Whenever the window gets the pointer focus back, we must reinitialize the
+  // cursor. Otherwise, it is invalidated whenever the pointer leaves the
+  // surface and is not restored by the Wayland compositor.
+  if (has_pointer_focus_ && bitmap_)
+    connection_->SetCursorBitmap(bitmap_->bitmaps(), bitmap_->hotspot());
+}
+
 void WaylandWindow::DispatchHostWindowDragMovement(
     int hittest,
     const gfx::Point& pointer_location_in_px) {

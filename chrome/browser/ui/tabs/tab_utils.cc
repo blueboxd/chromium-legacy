@@ -52,6 +52,9 @@ std::vector<TabAlertState> GetTabAlertStatesForContents(
   if (usb_tab_helper && usb_tab_helper->IsDeviceConnected())
     states.push_back(TabAlertState::USB_CONNECTED);
 
+  if (contents->IsConnectedToHidDevice())
+    states.push_back(TabAlertState::HID_CONNECTED);
+
   if (contents->IsConnectedToSerialPort())
     states.push_back(TabAlertState::SERIAL_CONNECTED);
 
@@ -101,6 +104,9 @@ base::string16 GetTabAlertStateText(const TabAlertState alert_state) {
     case TabAlertState::USB_CONNECTED:
       return l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED);
+    case TabAlertState::HID_CONNECTED:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_HID_CONNECTED);
     case TabAlertState::SERIAL_CONNECTED:
       return l10n_util::GetStringUTF16(
           IDS_TOOLTIP_TAB_ALERT_STATE_SERIAL_CONNECTED);

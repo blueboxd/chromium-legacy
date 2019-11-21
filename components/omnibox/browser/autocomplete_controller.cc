@@ -419,9 +419,8 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // dereference.
   if (base::FeatureList::IsEnabled(
           omnibox::kSpeculativeServiceWorkerStartOnQueryInput) &&
-      (input.type() == metrics::OmniboxInputType::QUERY) &&
-      !search_service_worker_signal_sent_ &&
-      (result_.default_match() != result_.end())) {
+      input.type() == metrics::OmniboxInputType::QUERY &&
+      !search_service_worker_signal_sent_ && result_.default_match()) {
     search_service_worker_signal_sent_ = true;
     provider_client_->StartServiceWorker(
         result_.default_match()->destination_url);
@@ -558,7 +557,7 @@ void AutocompleteController::UpdateResult(
 
   base::Optional<AutocompleteMatch> last_default_match;
   base::string16 last_default_associated_keyword;
-  if (result_.default_match() != result_.end()) {
+  if (result_.default_match()) {
     last_default_match = *result_.default_match();
     if (last_default_match->associated_keyword) {
       last_default_associated_keyword =
@@ -618,7 +617,7 @@ void AutocompleteController::UpdateResult(
   if (search_provider_)
     search_provider_->RegisterDisplayedAnswers(result_);
 
-  const bool default_is_valid = result_.default_match() != result_.end();
+  const bool default_is_valid = result_.default_match();
   base::string16 default_associated_keyword;
   if (default_is_valid &&
       result_.default_match()->associated_keyword) {

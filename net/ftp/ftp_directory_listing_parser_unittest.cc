@@ -176,7 +176,7 @@ const FtpTestParam kTestParams[] = {
     {"dir-listing-windows-2", OK},
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FtpDirectoryListingParserTest,
                          testing::ValuesIn(kTestParams),
                          TestName);

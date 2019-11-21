@@ -338,4 +338,46 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
             SiteInstance::GetSiteForURL(browser_context, blob_url));
 }
 
+// Verify that navigating back/forward between WebUI and an error page for a
+// failed WebUI navigation works correctly.
+IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
+                       SessionHistoryToFailedNavigation) {
+  GURL start_url(GetWebUIURL("web-ui/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+  EXPECT_EQ(start_url, shell()->web_contents()->GetLastCommittedURL());
+  EXPECT_EQ(BINDINGS_POLICY_WEB_UI,
+            shell()->web_contents()->GetMainFrame()->GetEnabledBindings());
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  GURL webui_error_url(GetWebUIURL("web-ui/error"));
+  EXPECT_FALSE(NavigateToURL(shell(), webui_error_url));
+  EXPECT_FALSE(root->current_frame_host()->web_ui());
+  EXPECT_EQ(0 /* no bindings */,
+            root->current_frame_host()->GetEnabledBindings());
+
+  GURL success_url(GetWebUIURL("web-ui/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), success_url));
+  EXPECT_EQ(success_url, shell()->web_contents()->GetLastCommittedURL());
+
+  {
+    TestFrameNavigationObserver observer(root);
+    shell()->web_contents()->GetController().GoBack();
+    observer.Wait();
+    EXPECT_FALSE(observer.last_navigation_succeeded());
+    EXPECT_FALSE(root->current_frame_host()->web_ui());
+  }
+
+  {
+    TestFrameNavigationObserver observer(root);
+    shell()->web_contents()->GetController().GoForward();
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_TRUE(root->current_frame_host()->web_ui());
+    EXPECT_EQ(success_url, observer.last_committed_url());
+  }
+}
+
 }  // namespace content

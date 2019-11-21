@@ -200,8 +200,8 @@ void SessionManagerOperation::ValidateDeviceSettings(
   } else {
     policy::DeviceCloudPolicyValidator::StartValidation(
         std::move(validator),
-        base::Bind(&SessionManagerOperation::ReportValidatorStatus,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&SessionManagerOperation::ReportValidatorStatus,
+                       weak_factory_.GetWeakPtr()));
   }
 }
 

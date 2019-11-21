@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_P(OverviewWindowDragTest, MAYBE_DragToSnap) {
   LeftSnapWaiter(active->window()->GetNativeWindow()).Wait();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          OverviewWindowDragTest,
                          ::testing::Combine(::testing::Values(2, 8),
                                             /*blank=*/testing::Bool()));

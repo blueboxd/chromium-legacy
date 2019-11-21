@@ -224,7 +224,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableAutoplayIgnoresWebAudio(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaControlsExpandGesture(bool);
   BLINK_PLATFORM_EXPORT static void EnableTranslateService(bool);
-  BLINK_PLATFORM_EXPORT static void EnableMergeBlockingNonBlockingPools(bool);
   BLINK_PLATFORM_EXPORT static void EnableGetDisplayMedia(bool);
   BLINK_PLATFORM_EXPORT static void EnableAllowSyncXHRInPageDismissal(bool);
   BLINK_PLATFORM_EXPORT static void EnableShadowDOMV0(bool);

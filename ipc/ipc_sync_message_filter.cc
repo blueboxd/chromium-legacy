@@ -73,8 +73,8 @@ bool SyncMessageFilter::Send(Message* message) {
   bool shutdown = false;
   scoped_refptr<mojo::SyncHandleRegistry> registry =
       mojo::SyncHandleRegistry::current();
-  auto on_shutdown_callback = base::Bind(&OnEventReady, &shutdown);
-  auto on_done_callback = base::Bind(&OnEventReady, &done);
+  auto on_shutdown_callback = base::BindRepeating(&OnEventReady, &shutdown);
+  auto on_done_callback = base::BindRepeating(&OnEventReady, &done);
   registry->RegisterEvent(shutdown_event_, on_shutdown_callback);
   registry->RegisterEvent(&done_event, on_done_callback);
 

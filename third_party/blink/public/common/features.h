@@ -146,6 +146,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kCacheStorageCodeCacheHintHeader;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kCacheStorageCodeCacheHintHeaderName;
 
+BLINK_COMMON_EXPORT extern const base::Feature kDispatchBeforeUnloadOnFreeze;
+
 }  // namespace features
 }  // namespace blink
 

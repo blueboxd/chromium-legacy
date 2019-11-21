@@ -17,26 +17,28 @@ const char kHintsFetcherLastFetchAttempt[] =
     "optimization_guide.hintsfetcher.last_fetch_attempt";
 
 // A dictionary pref that stores the set of hosts that cannot have hints fetched
-// for until visited again after DataSaver was enabled. If The hash of the host
-// is in the dictionary, then it is on the blacklist and should not be used, the
-// |value| in the key-value pair is not used.
-const char kHintsFetcherDataSaverTopHostBlacklist[] =
+// for until visited again after fetching from the remote Optimization Guide
+// Service was first allowed. If The hash of the host is in the dictionary, then
+// it is on the blacklist and should not be used, the |value| in the key-value
+// pair is not used.
+const char kHintsFetcherTopHostBlacklist[] =
     "optimization_guide.hintsfetcher.top_host_blacklist";
 
 // An integer pref that stores the state of the blacklist for the top host
-// provider for blacklisting hosts after DataSaver is enabled. The state maps to
-// the HintsFetcherTopHostBlacklistState enum.
-const char kHintsFetcherDataSaverTopHostBlacklistState[] =
+// provider for blacklisting hosts after fetching from the remote Optimization
+// Guide Service was first allowed. The state maps to the
+// HintsFetcherTopHostBlacklistState enum.
+const char kHintsFetcherTopHostBlacklistState[] =
     "optimization_guide.hintsfetcher.top_host_blacklist_state";
 
-// Time when the blacklist was last initialized. Recorded as seconds since
-// epoch.
-const char kTimeBlacklistLastInitialized[] =
+// Time when the top host blacklist was last initialized. Recorded as seconds
+// since epoch.
+const char kTimeHintsFetcherTopHostBlacklistLastInitialized[] =
     "optimization_guide.hintsfetcher.time_blacklist_last_initialized";
 
 // If a host has site engagement score less than the value stored in this pref,
 // then hints fetcher may not fetch hints for that host.
-const char kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore[] =
+const char kHintsFetcherTopHostBlacklistMinimumEngagementScore[] =
     "optimization_guide.hintsfetcher.top_host_blacklist_min_engagement_score";
 
 // A dictionary pref that stores hosts that have had hints successfully fetched
@@ -58,16 +60,16 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       kHintsFetcherLastFetchAttempt,
       base::Time().ToDeltaSinceWindowsEpoch().InMicroseconds(),
       PrefRegistry::LOSSY_PREF);
-  registry->RegisterDictionaryPref(kHintsFetcherDataSaverTopHostBlacklist,
+  registry->RegisterDictionaryPref(kHintsFetcherTopHostBlacklist,
                                    PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(kHintsFetcherHostsSuccessfullyFetched,
                                    PrefRegistry::LOSSY_PREF);
   registry->RegisterIntegerPref(
-      kHintsFetcherDataSaverTopHostBlacklistState,
+      kHintsFetcherTopHostBlacklistState,
       static_cast<int>(HintsFetcherTopHostBlacklistState::kNotInitialized),
       PrefRegistry::LOSSY_PREF);
-  registry->RegisterDoublePref(kTimeBlacklistLastInitialized, 0,
-                               PrefRegistry::LOSSY_PREF);
+  registry->RegisterDoublePref(kTimeHintsFetcherTopHostBlacklistLastInitialized,
+                               0, PrefRegistry::LOSSY_PREF);
 
   // Use a default value of MinTopHostEngagementScoreThreshold() for the
   // threshold. This ensures that the users for which this pref can't be
@@ -75,7 +77,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // pref was added to the code) use the default value for the site engagement
   // threshold.
   registry->RegisterDoublePref(
-      kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore,
+      kHintsFetcherTopHostBlacklistMinimumEngagementScore,
       optimization_guide::features::MinTopHostEngagementScoreThreshold(),
       PrefRegistry::LOSSY_PREF);
 

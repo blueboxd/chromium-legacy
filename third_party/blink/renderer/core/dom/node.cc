@@ -1516,6 +1516,15 @@ void Node::ClearFlatTreeNodeData() {
     data->Clear();
 }
 
+void Node::ClearFlatTreeNodeDataIfHostChanged(const ContainerNode& parent) {
+  if (FlatTreeNodeData* data = GetFlatTreeNodeData()) {
+    if (data->AssignedSlot() &&
+        data->AssignedSlot()->OwnerShadowHost() != &parent) {
+      data->Clear();
+    }
+  }
+}
+
 bool Node::IsDescendantOf(const Node* other) const {
   // Return true if other is an ancestor of this, otherwise false
   if (!other || isConnected() != other->isConnected())

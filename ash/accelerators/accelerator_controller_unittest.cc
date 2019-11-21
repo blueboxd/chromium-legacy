@@ -2096,7 +2096,7 @@ class MediaSessionAcceleratorTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     MediaSessionAcceleratorTest,
     testing::Values(
         MediaSessionAcceleratorTestConfig{true, MediaSessionAction::kPlay,

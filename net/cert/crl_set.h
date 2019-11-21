@@ -55,6 +55,11 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   Result CheckSubject(const base::StringPiece& asn1_subject,
                       const base::StringPiece& spki_hash) const;
 
+  // Returns true if |spki_hash|, the SHA256 of the SubjectPublicKeyInfo,
+  // is known to be used for interception by a party other than the device
+  // or machine owner.
+  bool IsKnownInterceptionKey(base::StringPiece spki_hash) const;
+
   // IsExpired returns true iff the current time is past the NotAfter time
   // specified in the CRLSet.
   bool IsExpired() const;
@@ -114,6 +119,10 @@ class NET_EXPORT CRLSet : public base::RefCountedThreadSafe<CRLSet> {
   // blocked_spkis_ contains the SHA256 hashes of SPKIs which are to be blocked
   // no matter where in a certificate chain they might appear.
   std::vector<std::string> blocked_spkis_;
+  // known_interception_spkis_ contains the SHA256 hashes of SPKIs which are
+  // known to be used for interception by a party other than the device or
+  // machine owner.
+  std::vector<std::string> known_interception_spkis_;
   // limited_subjects_ is a map from the SHA256 hash of an X.501 subject name
   // to a list of allowed SPKI hashes for certificates with that subject name.
   std::unordered_map<std::string, std::vector<std::string>> limited_subjects_;

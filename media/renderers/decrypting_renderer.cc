@@ -105,6 +105,11 @@ void DecryptingRenderer::SetCdm(CdmContext* cdm_context,
     InitializeRenderer(true);
 }
 
+void DecryptingRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  renderer_->SetLatencyHint(latency_hint);
+}
+
 void DecryptingRenderer::Flush(base::OnceClosure flush_cb) {
   renderer_->Flush(std::move(flush_cb));
 }

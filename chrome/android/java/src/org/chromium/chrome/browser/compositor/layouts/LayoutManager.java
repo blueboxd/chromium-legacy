@@ -650,13 +650,11 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         boolean canUseLiveTexture = tab.getWebContents() != null && !SadTab.isShowing(tab)
                 && !isNativePage && !tab.isHidden();
 
-        boolean needsUpdate = layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab),
-                shouldStall(tab), canUseLiveTexture,
-                ToolbarColors.getToolbarSceneLayerBackground(tab),
+        layoutTab.initFromHost(TabThemeColorHelper.getBackgroundColor(tab), shouldStall(tab),
+                canUseLiveTexture, ToolbarColors.getToolbarSceneLayerBackground(tab),
                 ToolbarColors.getTextBoxColorForToolbarBackground(
                         mContext.getResources(), tab, themeColor),
                 ToolbarColors.getTextBoxAlphaForToolbarBackground(tab));
-        if (needsUpdate) requestUpdate();
 
         mHost.requestRender();
     }

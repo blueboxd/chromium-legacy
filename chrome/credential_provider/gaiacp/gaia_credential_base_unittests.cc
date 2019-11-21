@@ -369,7 +369,7 @@ TEST_P(GcpGaiaCredentialBaseForceResetRegistryTest,
   ASSERT_EQ(S_OK, FinishLogonProcess(true, false, 0));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseForceResetRegistryTest,
                          ::testing::Values(0, 1, 2));
 
@@ -1444,7 +1444,7 @@ TEST_P(GcpGaiaCredentialBaseConsumerEmailTest, ConsumerEmailSignin) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseConsumerEmailTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Values(0, 1, 2),
@@ -1686,7 +1686,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBasePasswordRecoveryTest,
                          ::testing::Combine(::testing::Values(0, 1, 2),
                                             ::testing::Values(0, 1, 2),
@@ -1824,7 +1824,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
                          ::testing::Values(nullptr,
                                            L"",

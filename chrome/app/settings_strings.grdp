@@ -904,6 +904,9 @@
   <message name="IDS_SETTINGS_RETRY" desc="The label text of the retry button because there is an error.">
    Retry
   </message>
+  <message name="IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION" desc="A label to be read aloud by screen readers when a user focuses on a slider. A settings slider generally has a minimum value, a maximum value, and a fixed range of values in between. This label gives the user context for what the minimum and maximum values represent for that particular slider.">
+    Slider: <ph name="MIN_LABEL">$1<ex>Slowest</ex></ph> to <ph name="MAX_LABEL">$2<ex>Fastest</ex></ph>
+  </message>
 
   <!-- Autofill Page -->
   <message name="IDS_SETTINGS_AUTOFILL" desc="Name of the settings page which allows managing passwords, payment methods and addresses settings.">
@@ -1225,6 +1228,48 @@
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED" desc="Settings > Bluetooth > Text to show when Bluetooth configuration is controlled by the primary user.">
       Bluetooth configuration is controlled by <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_COMPUTER" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable computer device including its type.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Computer
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_PHONE" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable phone device including its type.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Phone
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_MODEM" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable modem device including its type.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Modem
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_AUDIO" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable audio device device including its type. These devices are typically speakers and headphones.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Audio device
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_CAR_AUDIO" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable car audio device including its type. These devices are typically a car's audio system.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Car Audio device
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_VIDEO" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable video device including its type. These devices are typically a monitor or some other type of video display.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Video device
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_PERIPHERAL" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable peripheral device including its type. This type is used for a generic external peripheral device.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Peripheral
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_JOYSTICK" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable joystick device including its type. A joystick is a move-able stick mounted on based that is used to provide input.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Joystick
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_GAMEPAD" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable gamepad device including its type. A gamepad is a two-handed control device where the fingers and thumbs are used to provide input.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Gamepad
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable keyboard device including its type.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Keyboard
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_MOUSE" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable mouse device including its type.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Mouse
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_TABLET" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable tablet device including its type.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Tablet
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD_MOUSE_COMBO" desc="Settings > Bluetooth: a11y accessibility description for a Bluetooth connectable keyboard and mouse combo device including its type.">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Keyboard and mouse combination
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_UNKNOWN" desc="Settings > Bluetooth: a11y accessibility description for a device type that is not one of the known/supported device types for Chrome OS">
+      <ph name="DEVICE_NAME">$1<ex>Device XYZ</ex></ph>, Unknown device type
     </message>
   </if>
 
@@ -4116,6 +4161,9 @@
     <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO" desc="The text on the existing photo, which was either taken by the webcam or read from a file.">
       Existing photo from camera or file
     </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_OLD_VIDEO" desc="The text on the existing video, which was either taken by the webcam or read from a file.">
+      Existing video from camera or file
+    </message>
   </if>
 
   <if expr="not chromeos">
@@ -4419,6 +4467,9 @@
     </message>
     <message name="IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_LABEL" desc="Label/description of the button which launches page which enables ChromeOS's parental controls.">
       Set up
+    </message>
+    <message name="IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_ROLE" desc="Role description of the button which launches page which enables ChromeOS's parental controls. Spoken aloud by screen readers when the Set Up button is focused">
+      Set up button
     </message>
   </if>
 

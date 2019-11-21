@@ -14,7 +14,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
+#include "content/browser/devtools/protocol/browser_handler.h"
+#include "content/browser/devtools/protocol/network.h"
+#include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -27,6 +31,10 @@
 
 namespace content {
 namespace protocol {
+
+using ClearCookiesCallback = Storage::Backend::ClearCookiesCallback;
+using GetCookiesCallback = Storage::Backend::GetCookiesCallback;
+using SetCookiesCallback = Storage::Backend::SetCookiesCallback;
 
 struct UsageListInitializer {
   const char* type;
@@ -48,6 +56,7 @@ UsageListInitializer initializers[] = {
 };
 
 namespace {
+
 void ReportUsageAndQuotaDataOnUIThread(
     std::unique_ptr<StorageHandler::GetUsageAndQuotaCallback> callback,
     blink::mojom::QuotaStatusCode code,
@@ -97,6 +106,7 @@ void GetUsageAndQuotaOnIOThread(
       origin, blink::mojom::StorageType::kTemporary,
       base::BindOnce(&GotUsageAndQuotaDataCallback, std::move(callback)));
 }
+
 }  // namespace
 
 // Observer that listens on the IO thread for cache storage notifications and
@@ -260,6 +270,69 @@ Response StorageHandler::Disable() {
   }
 
   return Response::OK();
+}
+
+void StorageHandler::GetCookies(Maybe<std::string> browser_context_id,
+                                std::unique_ptr<GetCookiesCallback> callback) {
+  StoragePartition* storage_partition = nullptr;
+  Response response = StorageHandler::FindStoragePartition(browser_context_id,
+                                                           &storage_partition);
+  if (!response.isSuccess()) {
+    callback->sendFailure(std::move(response));
+    return;
+  }
+
+  storage_partition->GetCookieManagerForBrowserProcess()->GetAllCookies(
+      base::BindOnce(
+          [](std::unique_ptr<GetCookiesCallback> callback,
+             const std::vector<net::CanonicalCookie>& cookies) {
+            callback->sendSuccess(NetworkHandler::BuildCookieArray(cookies));
+          },
+          std::move(callback)));
+}
+
+void StorageHandler::SetCookies(
+    std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
+    Maybe<std::string> browser_context_id,
+    std::unique_ptr<SetCookiesCallback> callback) {
+  StoragePartition* storage_partition = nullptr;
+  Response response = StorageHandler::FindStoragePartition(browser_context_id,
+                                                           &storage_partition);
+  if (!response.isSuccess()) {
+    callback->sendFailure(std::move(response));
+    return;
+  }
+
+  NetworkHandler::SetCookies(
+      storage_partition, std::move(cookies),
+      base::BindOnce(
+          [](std::unique_ptr<SetCookiesCallback> callback, bool success) {
+            if (success) {
+              callback->sendSuccess();
+            } else {
+              callback->sendFailure(
+                  Response::InvalidParams("Invalid cookie fields"));
+            }
+          },
+          std::move(callback)));
+}
+
+void StorageHandler::ClearCookies(
+    Maybe<std::string> browser_context_id,
+    std::unique_ptr<ClearCookiesCallback> callback) {
+  StoragePartition* storage_partition = nullptr;
+  Response response = StorageHandler::FindStoragePartition(browser_context_id,
+                                                           &storage_partition);
+  if (!response.isSuccess()) {
+    callback->sendFailure(std::move(response));
+    return;
+  }
+
+  storage_partition->GetCookieManagerForBrowserProcess()->DeleteCookies(
+      network::mojom::CookieDeletionFilter::New(),
+      base::BindOnce([](std::unique_ptr<ClearCookiesCallback> callback,
+                        uint32_t) { callback->sendSuccess(); },
+                     std::move(callback)));
 }
 
 void StorageHandler::ClearDataForOrigin(
@@ -426,6 +499,28 @@ void StorageHandler::NotifyIndexedDBContentChanged(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   frontend_->IndexedDBContentUpdated(origin, base::UTF16ToUTF8(database_name),
                                      base::UTF16ToUTF8(object_store_name));
+}
+
+Response StorageHandler::FindStoragePartition(
+    const Maybe<std::string>& browser_context_id,
+    StoragePartition** storage_partition) {
+  if (!browser_context_id.isJust()) {
+    if (!storage_partition_)
+      return Response::InvalidParams("Browser context not specified");
+    *storage_partition = storage_partition_;
+    return Response::OK();
+  }
+
+  BrowserContext* browser_context = nullptr;
+  Response response =
+      BrowserHandler::FindBrowserContext(browser_context_id, &browser_context);
+  if (!response.isSuccess())
+    return response;
+  *storage_partition =
+      BrowserContext::GetDefaultStoragePartition(browser_context);
+  if (!storage_partition_)
+    return Response::InternalError();
+  return Response::OK();
 }
 
 }  // namespace protocol

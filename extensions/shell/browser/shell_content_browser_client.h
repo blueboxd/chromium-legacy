@@ -104,16 +104,10 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       const base::Optional<url::Origin>& initiating_origin,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory)
       override;
-  mojo::PendingRemote<network::mojom::URLLoaderFactory>
-  CreateURLLoaderFactoryForNetworkRequests(
+  void OverrideURLLoaderFactoryParams(
       content::RenderProcessHost* process,
-      network::mojom::NetworkContext* network_context,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-          header_client,
       const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      const base::Optional<net::NetworkIsolationKey>& network_isolation_key)
-      override;
+      network::mojom::URLLoaderFactoryParams* factory_params) override;
   std::string GetUserAgent() override;
 
  protected:

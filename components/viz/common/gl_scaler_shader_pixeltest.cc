@@ -712,7 +712,7 @@ TEST_P(GLScalerShaderPixelTest, Export_PairwiseDeinterleave) {
   ExpectAreTheSameImage(expected_b, actual_b);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GLScalerShaderPixelTest,
                          testing::Combine(testing::Bool(), testing::Bool()));
 

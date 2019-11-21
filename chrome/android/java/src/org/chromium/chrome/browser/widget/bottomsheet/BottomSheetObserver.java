@@ -27,13 +27,6 @@ public interface BottomSheetObserver {
     void onSheetClosed(@StateChangeReason int reason);
 
     /**
-     * A notification that the sheet has begun loading a URL.
-     *
-     * @param url The URL being loaded.
-     */
-    void onLoadUrl(String url);
-
-    /**
      * An event for when the sheet's offset from the bottom of the screen changes.
      *
      * @param heightFraction The fraction of the way to the fully expanded state that the sheet

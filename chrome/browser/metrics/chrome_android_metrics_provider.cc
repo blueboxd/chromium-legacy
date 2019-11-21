@@ -40,6 +40,9 @@ void ChromeAndroidMetricsProvider::OnDidCreateMetricsLog() {
                               chrome::android::GetCustomTabsVisibleValue(),
                               chrome::android::CUSTOM_TABS_VISIBILITY_MAX);
   }
+  UMA_HISTOGRAM_ENUMERATION("CustomTabs.Experimental.Visible",
+                            chrome::android::GetCustomTabsVisibleValue(),
+                            chrome::android::CUSTOM_TABS_VISIBILITY_MAX);
 }
 
 void ChromeAndroidMetricsProvider::ProvideCurrentSessionData(

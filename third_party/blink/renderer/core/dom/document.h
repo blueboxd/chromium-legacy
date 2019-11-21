@@ -1198,6 +1198,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void EnqueueOverscrollEventForNode(Node* target,
                                      double delta_x,
                                      double delta_y);
+  void EnqueueDisplayLockActivationTask(base::OnceClosure);
   void EnqueueAnimationFrameTask(base::OnceClosure);
   void EnqueueAnimationFrameEvent(Event*);
   // Only one event for a target/event type combination will be dispatched per

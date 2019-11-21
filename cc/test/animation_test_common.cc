@@ -11,6 +11,7 @@
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
@@ -253,9 +254,8 @@ int AddScrollOffsetAnimationToAnimation(Animation* animation,
                                         gfx::ScrollOffset target_value,
                                         KeyframeEffectId effect_id) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve->SetInitialValue(initial_value);
 
   int id = AnimationIdProvider::NextKeyframeModelId();

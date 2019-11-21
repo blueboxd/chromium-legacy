@@ -50,6 +50,26 @@ TEST(MimeUtilTest, LookupTypes) {
   EXPECT_FALSE(IsSupportedMimeType("Application/X-JSON"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("application/vnd.doc;x=y+json"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("Application/VND.DOC;X=Y+JSON"));
+
+  EXPECT_TRUE(IsJSONMimeType("application/json"));
+  EXPECT_TRUE(IsJSONMimeType("text/json"));
+  EXPECT_TRUE(IsJSONMimeType("application/blah+json"));
+  EXPECT_TRUE(IsJSONMimeType("Application/JSON"));
+  EXPECT_TRUE(IsJSONMimeType("Text/JSON"));
+  EXPECT_TRUE(IsJSONMimeType("application/json;x=1"));
+  EXPECT_TRUE(IsJSONMimeType("application/blah+json;x=1"));
+  EXPECT_TRUE(IsJSONMimeType("text/json;x=1"));
+  EXPECT_FALSE(IsJSONMimeType("text/blah+json;x=1"));
+  EXPECT_FALSE(IsJSONMimeType("json"));
+  EXPECT_FALSE(IsJSONMimeType("+json"));
+  EXPECT_FALSE(IsJSONMimeType("application/"));
+  EXPECT_FALSE(IsJSONMimeType("application/jsonabcd"));
+  EXPECT_FALSE(IsJSONMimeType("application/blahjson"));
+  EXPECT_FALSE(IsJSONMimeType("application/blah+jsonabcd"));
+  EXPECT_FALSE(IsJSONMimeType("application/foo+json bar"));
+  EXPECT_FALSE(IsJSONMimeType("application/foo+jsonbar;a=b"));
+  EXPECT_FALSE(IsJSONMimeType("application/json+blah"));
+  EXPECT_FALSE(IsJSONMimeType("image/svg+json"));
 }
 
 }  // namespace blink

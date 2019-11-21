@@ -233,6 +233,10 @@ void FullCardRequest::OnDidGetRealPan(
   }
 }
 
+void FullCardRequest::OnFIDOVerificationCancelled() {
+  Reset();
+}
+
 void FullCardRequest::Reset() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   payments_client_->CancelRequest();

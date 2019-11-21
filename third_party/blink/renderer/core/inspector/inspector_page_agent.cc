@@ -223,7 +223,7 @@ static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
         TextResourceDecoderOptions::kHTMLContent, UTF8Encoding()));
   }
   if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
-      DOMImplementation::IsJSONMIMEType(mime_type)) {
+      MIMETypeRegistry::IsJSONMimeType(mime_type)) {
     return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));
   }

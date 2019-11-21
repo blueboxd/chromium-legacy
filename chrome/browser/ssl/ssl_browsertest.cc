@@ -32,6 +32,7 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -1751,6 +1752,182 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SymantecEnforcementIsNotDisabled) {
   EXPECT_FALSE(last_ssl_config_.symantec_enforcement_disabled);
   EXPECT_FALSE(CreateDefaultNetworkContextParams()
                    ->initial_ssl_config->symantec_enforcement_disabled);
+}
+
+// Test that CRLSets cause a certificate to be revoked and show an
+// interstitial.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestCRLSetRevoked) {
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(https_server_.Start());
+  }
+
+  std::string crl_set_bytes;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::ReadFileToString(
+        net::GetTestCertsDirectory().AppendASCII("crlset_by_leaf_spki.raw"),
+        &crl_set_bytes);
+  }
+  content::GetNetworkService()->UpdateCRLSet(
+      base::as_bytes(base::make_span(crl_set_bytes)));
+  content::FlushNetworkServiceInstanceForTesting();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+
+  WaitForInterstitial(browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(
+      browser()->tab_strip_model()->GetActiveWebContents()));
+
+  CheckAuthenticationBrokenState(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      net::CERT_STATUS_REVOKED, AuthState::SHOWING_INTERSTITIAL);
+}
+
+// Test that CRLSets configured to block MITM certificates cause the
+// known interception interstitial.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestCRLSetBlockedInterception) {
+  ASSERT_TRUE(https_server_.Start());
+
+  // Load a CRLSet that marks the root as a blocked MITM.
+  std::string crl_set_bytes;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::ReadFileToString(net::GetTestCertsDirectory().AppendASCII(
+                               "crlset_blocked_interception_by_root.raw"),
+                           &crl_set_bytes);
+  }
+  content::GetNetworkService()->UpdateCRLSet(
+      base::as_bytes(base::make_span(crl_set_bytes)));
+  content::FlushNetworkServiceInstanceForTesting();
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+
+  WaitForInterstitial(browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(
+      browser()->tab_strip_model()->GetActiveWebContents()));
+
+  CheckAuthenticationBrokenState(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      net::CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED | net::CERT_STATUS_REVOKED,
+      AuthState::SHOWING_INTERSTITIAL);
+
+  // Simulate clicking the learn more link.
+  SendInterstitialCommand(browser()->tab_strip_model()->GetActiveWebContents(),
+                          security_interstitials::CMD_OPEN_HELP_CENTER);
+  EXPECT_EQ(browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetVisibleURL()
+                .ref(),
+            base::NumberToString(net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED));
+}
+
+// Test that CRLSets configured to identify known MITM certificates do not
+// cause an interstitial unless the MITM certificate is blocked.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestCRLSetKnownInterception) {
+  ASSERT_TRUE(https_server_.Start());
+
+  // Load a CRLSet that marks the root as a known MITM.
+  std::string crl_set_bytes;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::ReadFileToString(net::GetTestCertsDirectory().AppendASCII(
+                               "crlset_known_interception_by_root.raw"),
+                           &crl_set_bytes);
+  }
+  content::GetNetworkService()->UpdateCRLSet(
+      base::as_bytes(base::make_span(crl_set_bytes)));
+  content::FlushNetworkServiceInstanceForTesting();
+
+  // Navigate to the page. It should not cause an interstitial, but should
+  // allow for the display of additional information that interception is
+  // happening.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/google.html"));
+  CheckAuthenticatedState(browser()->tab_strip_model()->GetActiveWebContents(),
+                          AuthState::NONE);
+
+  content::NavigationEntry* entry = browser()
+                                        ->tab_strip_model()
+                                        ->GetActiveWebContents()
+                                        ->GetController()
+                                        .GetVisibleEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_TRUE(entry->GetSSL().cert_status &
+              net::CERT_STATUS_KNOWN_INTERCEPTION_DETECTED);
+}
+
+// While TestCRLSetBlockedInterception and TestCRLSetKnownInterception use
+// a real CertVerifier in order to test that a real CRLSet is delivered and
+// processed, testing HSTS requires with a MockCertVerifier so that the
+// cert will match the intended hostname, and thus only fail because it's a
+// blocked MITM certificate. This requires using a CertVerifierBrowserTest,
+// which is not suitable for the previous tests because it does not test
+// CRLSets.
+class CRLSetInterceptionSSLUITest : public CertVerifierBrowserTest {
+ public:
+  CRLSetInterceptionSSLUITest()
+      : CertVerifierBrowserTest(),
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
+  void SetUpOnMainThread() override {
+    CertVerifierBrowserTest::SetUpOnMainThread();
+    SetHSTSForHostName(browser()->profile());
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+  }
+
+ protected:
+  net::EmbeddedTestServer https_server_;
+};
+
+IN_PROC_BROWSER_TEST_F(CRLSetInterceptionSSLUITest,
+                       KnownInterceptionWorksOnHSTS) {
+  ASSERT_TRUE(https_server_.Start());
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert = https_server_.GetCertificate();
+  verify_result.cert_status =
+      net::CERT_STATUS_REVOKED | net::CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED;
+
+  // Simulate verification returning that the certificate is a blocked
+  // interception certificate.
+  mock_cert_verifier()->AddResultForCertAndHost(
+      https_server_.GetCertificate(), kHstsTestHostName, verify_result,
+      net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL::Replacements replacements;
+  replacements.SetHostStr(kHstsTestHostName);
+  GURL url =
+      https_server_.GetURL("/ssl/google.html").ReplaceComponents(replacements);
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  WaitForInterstitial(tab);
+
+  CheckSecurityState(
+      tab,
+      net::CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED | net::CERT_STATUS_REVOKED,
+      security_state::DANGEROUS, AuthState::SHOWING_INTERSTITIAL);
+
+  ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(tab));
+
+  // Expect there to be a proceed link, even for HSTS.
+  int result = security_interstitials::CMD_ERROR;
+  const std::string javascript = base::StringPrintf(
+      "domAutomationController.send("
+      "(document.querySelector(\"#proceed-link\") === null) "
+      "? (%d) : (%d))",
+      security_interstitials::CMD_TEXT_NOT_FOUND,
+      security_interstitials::CMD_TEXT_FOUND);
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(tab->GetMainFrame(),
+                                                  javascript, &result));
+  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND, result);
 }
 
 class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
@@ -4326,7 +4503,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestLearnMoreLinkContainsErrorCode) {
                 ->GetActiveWebContents()
                 ->GetVisibleURL()
                 .ref(),
-            std::to_string(net::ERR_CERT_DATE_INVALID));
+            base::NumberToString(net::ERR_CERT_DATE_INVALID));
 }
 
 // Checks that interstitials are not used for subframe SSL errors. Regression

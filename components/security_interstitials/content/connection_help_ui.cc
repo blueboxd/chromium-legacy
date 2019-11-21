@@ -30,6 +30,8 @@ ConnectionHelpUI::ConnectionHelpUI(content::WebUI* web_ui)
                           net::ERR_CERT_AUTHORITY_INVALID);
   html_source->AddInteger("certWeakSignatureAlgorithm",
                           net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM);
+  html_source->AddInteger("certKnownInterceptionBlocked",
+                          net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED);
 
   html_source->AddLocalizedString("connectionHelpTitle",
                                   IDS_CONNECTION_HELP_TITLE);

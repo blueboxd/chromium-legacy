@@ -193,31 +193,32 @@ void BeginFirstWebContentsProfiling() {
 
   const BrowserList* browser_list = BrowserList::GetInstance();
 
-  Browser* visible_browser = nullptr;
+  content::WebContents* visible_contents = nullptr;
   for (Browser* browser : *browser_list) {
-    if (browser->window()->IsVisible()) {
-      visible_browser = browser;
-      break;
-    }
+    if (!browser->window()->IsVisible())
+      continue;
+
+    // The active WebContents may be hidden when the window height is small.
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    if (contents->GetVisibility() != content::Visibility::VISIBLE)
+      continue;
+
+    visible_contents = contents;
+    break;
   }
 
-  if (!visible_browser) {
+  if (!visible_contents) {
     RecordFinishReason(FinishReason::kAbandonNoInitiallyVisibleContent);
     return;
   }
 
-  const TabStripModel* tab_strip = visible_browser->tab_strip_model();
-  DCHECK(!tab_strip->empty());
-
-  content::WebContents* web_contents = tab_strip->GetActiveWebContents();
-  DCHECK(web_contents);
-  DCHECK_EQ(web_contents->GetVisibility(), content::Visibility::VISIBLE);
-
-  const bool single_tab = browser_list->size() == 1 && tab_strip->count() == 1;
+  const bool single_tab = browser_list->size() == 1 &&
+                          browser_list->get(0)->tab_strip_model()->count() == 1;
 
   // FirstWebContentsProfiler owns itself and is also bound to
-  // |web_contents|'s lifetime by observing WebContentsDestroyed().
-  new FirstWebContentsProfiler(web_contents,
+  // |visible_contents|'s lifetime by observing WebContentsDestroyed().
+  new FirstWebContentsProfiler(visible_contents,
                                single_tab ? WebContentsWorkload::SINGLE_TAB
                                           : WebContentsWorkload::MULTI_TABS);
 }

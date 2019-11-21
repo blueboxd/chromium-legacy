@@ -240,6 +240,14 @@ TEST_F(LoopbackServerTest, LoadSavedState) {
   // Expect to see the four top-level folders and the newly added bookmark!
   EXPECT_EQ(5, response.get_updates().entries_size());
   EXPECT_EQ(1U, ResponseToMap(response).count(id));
+
+  ClientToServerResponse response2;
+  EXPECT_TRUE(CallPostAndProcessHeaders(lcm_.get(), nullptr, get_updates_msg,
+                                        &response2));
+  EXPECT_EQ(SyncEnums::SUCCESS, response2.error_code());
+  ASSERT_TRUE(response2.has_get_updates());
+  ASSERT_TRUE(response2.has_store_birthday());
+  EXPECT_EQ(response2.store_birthday(), response.store_birthday());
 }
 
 TEST_F(LoopbackServerTest, CommitCommandUpdate) {

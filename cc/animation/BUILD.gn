@@ -32,6 +32,8 @@ cc_component("animation") {
     "keyframed_animation_curve.h",
     "scroll_offset_animation_curve.cc",
     "scroll_offset_animation_curve.h",
+    "scroll_offset_animation_curve_factory.cc",
+    "scroll_offset_animation_curve_factory.h",
     "scroll_offset_animations.cc",
     "scroll_offset_animations.h",
     "scroll_offset_animations_impl.cc",

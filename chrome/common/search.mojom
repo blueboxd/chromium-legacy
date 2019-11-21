@@ -184,10 +184,14 @@ interface EmbeddedSearch {
   // Called when a user dismisses a promo.
   BlocklistPromo(string promo_id);
 
-  // Handles navigation to a link that points to a chrome: url by calling the
-  // browser to do the navigation.
+  // Handles navigation to an autocomplete match (i.e. an item in the realbox's
+  // list of matches). Note: |url| is passed solely to verify that the browser
+  // and renderer are in sync; don't trust this content or use it for anything
+  // other than verification purposes (i.e. is the URL still the same?).
   OpenAutocompleteMatch(uint8 line,
                         url.mojom.Url url,
+                        bool are_matches_showing,
+                        double time_elapsed_since_last_focus,
                         double button,
                         bool alt_key,
                         bool ctrl_key,

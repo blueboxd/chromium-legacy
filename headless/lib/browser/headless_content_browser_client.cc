@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -244,6 +245,10 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
     command_line->AppendSwitch(::switches::kEnableThreadInstructionCount);
   }
 #endif
+}
+
+std::string HeadlessContentBrowserClient::GetApplicationLocale() {
+  return base::i18n::GetConfiguredLocale();
 }
 
 std::string HeadlessContentBrowserClient::GetAcceptLangs(

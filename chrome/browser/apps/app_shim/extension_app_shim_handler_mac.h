@@ -147,8 +147,9 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
 
   // Instructs the shim to request user attention. Returns false if there is no
   // shim for this window.
-  void RequestUserAttentionForWindow(extensions::AppWindow* app_window,
-                                     AppShimAttentionType attention_type);
+  void RequestUserAttentionForWindow(
+      extensions::AppWindow* app_window,
+      chrome::mojom::AppShimAttentionType attention_type);
 
   // AppShimHostBootstrap::Client:
   void OnShimProcessConnected(
@@ -162,7 +163,7 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
       base::OnceClosure terminated_callback) override;
   void OnShimProcessDisconnected(AppShimHost* host) override;
   void OnShimFocus(AppShimHost* host,
-                   AppShimFocusType focus_type,
+                   chrome::mojom::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override;
   void OnShimSelectedProfile(AppShimHost* host,
                              const base::FilePath& profile_path) override;

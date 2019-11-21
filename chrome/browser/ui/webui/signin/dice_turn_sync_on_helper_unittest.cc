@@ -145,10 +145,10 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
   void RegisterForPolicyWithAccountId(
       const std::string& username,
       const CoreAccountId& account_id,
-      const PolicyRegistrationCallback& callback) override {
+      PolicyRegistrationCallback callback) override {
     EXPECT_EQ(email_, username);
     EXPECT_EQ(account_id_, account_id);
-    callback.Run(dm_token_, client_id_);
+    std::move(callback).Run(dm_token_, client_id_);
   }
 
   // policy::UserPolicySigninServiceBase:
@@ -157,8 +157,8 @@ class FakeUserPolicySigninService : public policy::UserPolicySigninService {
       const std::string& dm_token,
       const std::string& client_id,
       scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory,
-      const PolicyFetchCallback& callback) override {
-    callback.Run(true);
+      PolicyFetchCallback callback) override {
+    std::move(callback).Run(true);
   }
 
  private:

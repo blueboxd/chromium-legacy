@@ -4,8 +4,8 @@
 
 /**
  * @fileoverview
- * 'CrPngBehavior' is a behavior to convert image sequences into animated
- * PNG images.
+ * 'CrPngBehavior' is a behavior to convert image sequences into APNG (animated
+ * PNG) images.
  */
 
 /**
@@ -206,6 +206,21 @@ const CrPngBehavior = {
                    return String.fromCharCode.apply(null, chunk);
                  })
                  .join(''));
+  },
+
+  /**
+   * Returns true if the data URL is an animated PNG image.  If the PNG is
+   * animated, then 'acTL' will have been set by convertImageSequenceToPng().
+   * acTL is the animation control chunk in the data stream of an animated PNG.
+   * If it exists we assume the image is animated, regardless of the number of
+   * frames. The offset is the PNG signature ( 8 bytes) + IHDR (25 bytes) + 4
+   * bytes of padding zeros. See https://wiki.mozilla.org/APNG_Specification
+   * @param {string} url An btoa encoded data URL for a PNG image.
+   * @return {boolean} True if data URL is an animated PNG image.
+   */
+  isEncodedPngDataUrlAnimated: function(url) {
+    const decoded = atob(url.substr('data:image/png;base64,'.length));
+    return decoded.substr(37, 4) == 'acTL';
   },
 
   /**

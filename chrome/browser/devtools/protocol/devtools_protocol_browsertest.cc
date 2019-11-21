@@ -150,6 +150,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   ASSERT_EQ(std::string("neutral"), *security_state);
   ASSERT_FALSE(
       params.FindPath("visibleSecurityState.certificateSecurityState"));
+  ASSERT_FALSE(params.FindPath("visibleSecurityState.safetyTipInfo"));
   const base::Value* security_state_issue_ids =
       params.FindListPath("visibleSecurityState.securityStateIssueIds");
   ASSERT_TRUE(std::find(security_state_issue_ids->GetList().begin(),
@@ -333,4 +334,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {
   const base::Value* security_state_issue_ids =
       params.FindListPath("visibleSecurityState.securityStateIssueIds");
   EXPECT_EQ(security_state_issue_ids->GetList().size(), 0u);
+
+  ASSERT_FALSE(params.FindPath("visibleSecurityState.safetyTipInfo"));
 }

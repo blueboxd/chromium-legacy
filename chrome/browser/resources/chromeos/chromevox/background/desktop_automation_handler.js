@@ -656,6 +656,10 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onSelection: function(evt) {
+    // Never process selection when interacting with gestures.
+    if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE)
+      return;
+
     // Invalidate any previous editable text handler state since some nodes,
     // like menuitems, can receive selection while focus remains on an editable
     // leading to braille output routing to the editable.

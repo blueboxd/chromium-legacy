@@ -17,6 +17,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayModel;
@@ -185,6 +186,10 @@ class AssistantOnboardingCoordinator {
         AutofillAssistantPreferencesUtil.setInitialPreferences(accept);
         AutofillAssistantMetrics.recordOnBoarding(
                 accept ? OnBoarding.OB_ACCEPTED : OnBoarding.OB_CANCELLED);
+        if (!accept) {
+            AutofillAssistantMetrics.recordDropOut(DropOutReason.DECLINED);
+        }
+
         callback.onResult(accept);
         hide();
     }

@@ -41,7 +41,7 @@ TEST(DOMImplementationTest, TextMIMEType) {
   EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json"));
   EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/jSON"));
   EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json;foo=2"));
-  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json  "));
+  EXPECT_FALSE(DOMImplementation::IsTextMIMEType("application/json  "));
   EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/+json"));
   EXPECT_TRUE(DOMImplementation::IsTextMIMEType(
       "application/x-javascript-like+json;a=2;c=4"));
@@ -53,8 +53,7 @@ TEST(DOMImplementationTest, TextMIMEType) {
   // Outside of RFC-2045 grammar, but robustly accept/allow.
   EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/x-what+json;"));
   EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json;"));
-  EXPECT_TRUE(DOMImplementation::IsTextMIMEType("application/json "));
-
+  EXPECT_FALSE(DOMImplementation::IsTextMIMEType("application/json "));
   EXPECT_FALSE(
       DOMImplementation::IsTextMIMEType("application/x-custom;a=a+json"));
   EXPECT_FALSE(

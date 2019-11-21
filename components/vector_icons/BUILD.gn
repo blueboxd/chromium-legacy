@@ -58,6 +58,7 @@ aggregate_vector_icons("components_vector_icons") {
     "settings.icon",
     "usb.icon",
     "videocam.icon",
+    "videogame_asset.icon",
     "warning.icon",
     "wifi_add.icon",
   ]

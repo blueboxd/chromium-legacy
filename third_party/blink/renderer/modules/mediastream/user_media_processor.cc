@@ -441,8 +441,8 @@ UserMediaProcessor::RequestInfo::CreateAndStartVideoTrack(
       native_source, video_capture_settings_.track_adapter_settings(),
       video_capture_settings_.noise_reduction(), is_video_content_capture_,
       video_capture_settings_.min_frame_rate(),
-      WTF::BindRepeating(&UserMediaProcessor::RequestInfo::OnTrackStarted,
-                         WrapWeakPersistent(this)),
+      WTF::Bind(&UserMediaProcessor::RequestInfo::OnTrackStarted,
+                WrapWeakPersistent(this)),
       true);
 }
 

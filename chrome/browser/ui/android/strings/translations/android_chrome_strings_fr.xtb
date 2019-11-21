@@ -1085,7 +1085,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vidéo}one{# vidéo}other{# vidéos}}</translation>
 <translation id="9050666287014529139">Phrase secrète</translation>
 <translation id="9063523880881406963">Désactiver "Voir version ordinateur"</translation>
-<translation id="9065203028668620118">Modifier</translation>
+<translation id="9065203028668620118">Édition</translation>
 <translation id="9070377983101773829">Démarrer la recherche vocale</translation>
 <translation id="9074336505530349563">Connectez-vous et activez la synchronisation pour obtenir des suggestions de contenu personnalisées de la part de Google</translation>
 <translation id="9086455579313502267">Impossible d'accéder au réseau.</translation>

@@ -3369,7 +3369,7 @@ IN_PROC_BROWSER_TEST_P(WebViewChannelTest,
             registry->rules_cache_delegate_for_testing()->type());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebViewChannelTest,
                          testing::Values(version_info::Channel::UNKNOWN,
                                          version_info::Channel::STABLE));

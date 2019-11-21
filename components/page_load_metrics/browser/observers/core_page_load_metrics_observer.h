@@ -78,6 +78,9 @@ extern const char kHistogramPageLoadCacheBytes[];
 extern const char kHistogramPageLoadNetworkBytesIncludingHeaders[];
 extern const char kHistogramPageLoadUnfinishedBytes[];
 
+extern const char kHistogramPageLoadCpuTotalUsage[];
+extern const char kHistogramPageLoadCpuTotalUsageForegrounded[];
+
 extern const char kHistogramLoadTypeTotalBytesForwardBack[];
 extern const char kHistogramLoadTypeNetworkBytesForwardBack[];
 extern const char kHistogramLoadTypeCacheBytesForwardBack[];
@@ -213,11 +216,12 @@ class CorePageLoadMetricsObserver
       content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
-
   void OnTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
-
+  void OnCpuTimingUpdate(
+      content::RenderFrameHost* subframe_rfh,
+      const page_load_metrics::mojom::CpuTiming& timing) override;
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle) override;
 
@@ -227,6 +231,7 @@ class CorePageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
   void RecordByteAndResourceHistograms(
       const page_load_metrics::mojom::PageLoadTiming& timing);
+  void RecordCpuUsageHistograms();
   void RecordForegroundDurationHistograms(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       base::TimeTicks app_background_time);
@@ -246,6 +251,10 @@ class CorePageLoadMetricsObserver
   // The number of prefilter bytes consumed by completed and partial network
   // requests for the page.
   int64_t network_bytes_including_headers_;
+
+  // The CPU usage attributed to this page.
+  base::TimeDelta total_cpu_usage_;
+  base::TimeDelta foreground_cpu_usage_;
 
   // Size of the redirect chain, which excludes the first URL.
   int redirect_chain_size_;

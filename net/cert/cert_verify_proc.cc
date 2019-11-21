@@ -532,6 +532,30 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     BestEffortCheckOCSP(ocsp_response, *verify_result->verified_cert,
                         &verify_result->ocsp_result);
   }
+
+  // Check to see if the connection is being intercepted.
+  if (crl_set) {
+    for (const auto& hash : verify_result->public_key_hashes) {
+      if (hash.tag() != HASH_VALUE_SHA256)
+        continue;
+      if (!crl_set->IsKnownInterceptionKey(base::StringPiece(
+              reinterpret_cast<const char*>(hash.data()), hash.size())))
+        continue;
+
+      if (verify_result->cert_status & CERT_STATUS_REVOKED) {
+        // If the chain was revoked, and a known MITM was present, signal that
+        // with a more meaningful error message.
+        verify_result->cert_status |= CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED;
+        rv = MapCertStatusToNetError(verify_result->cert_status);
+      } else {
+        // Otherwise, simply signal informatively. Both statuses are not set
+        // simultaneously.
+        verify_result->cert_status |= CERT_STATUS_KNOWN_INTERCEPTION_DETECTED;
+      }
+      break;
+    }
+  }
+
   std::vector<std::string> dns_names, ip_addrs;
   cert->GetSubjectAltName(&dns_names, &ip_addrs);
   if (HasNameConstraintsViolation(verify_result->public_key_hashes,

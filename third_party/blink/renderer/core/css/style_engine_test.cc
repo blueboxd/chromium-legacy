@@ -2369,7 +2369,7 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTree) {
             innermost_style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
-TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTreeCrash) {
+TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTree) {
   ScopedFlatTreeStyleRecalcForTest feature_scope(true);
 
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
@@ -2389,12 +2389,10 @@ TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTreeCrash) {
   UpdateAllLifecyclePhases();
 
   host2->appendChild(span);
-  EXPECT_EQ(span, GetStyleRecalcRoot());
+  EXPECT_FALSE(GetStyleRecalcRoot());
 
-  // Removing the span will fall back to using the host parent as the new style
-  // recalc root.
   span->remove();
-  EXPECT_EQ(host2, GetStyleRecalcRoot());
+  EXPECT_FALSE(GetStyleRecalcRoot());
 }
 
 TEST_F(StyleEngineTest, StyleRecalcRootInShadowTree) {

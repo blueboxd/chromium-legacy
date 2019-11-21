@@ -250,6 +250,19 @@ void ArcIntentHelperBridge::LaunchCameraApp(uint32_t intent_id,
   g_control_camera_app_delegate->LaunchCameraApp(queries.str());
 }
 
+void ArcIntentHelperBridge::OnIntentFiltersUpdatedForPackage(
+    const std::string& package_name,
+    std::vector<IntentFilter> filters) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  intent_filters_.erase(package_name);
+  if (filters.size() > 0)
+    intent_filters_[package_name] = std::move(filters);
+
+  for (auto& observer : observer_list_)
+    observer.OnIntentFiltersUpdated(package_name);
+}
+
 void ArcIntentHelperBridge::CloseCameraApp() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -269,6 +282,15 @@ void ArcIntentHelperBridge::IsChromeAppEnabled(
 
   NOTREACHED() << "Unknown chrome app";
   std::move(callback).Run(false);
+}
+
+void ArcIntentHelperBridge::OnPreferredAppsChanged(
+    std::vector<IntentFilter> added,
+    std::vector<IntentFilter> deleted) {
+  added_preferred_apps_ = std::move(added);
+  deleted_preferred_apps_ = std::move(deleted);
+  for (auto& observer : observer_list_)
+    observer.OnPreferredAppsChanged();
 }
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
@@ -370,16 +392,14 @@ ArcIntentHelperBridge::GetIntentFilterForPackage(
   return intent_filters_[package_name];
 }
 
-void ArcIntentHelperBridge::OnIntentFiltersUpdatedForPackage(
-    const std::string& package_name,
-    std::vector<IntentFilter> filters) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  intent_filters_.erase(package_name);
-  if (filters.size() > 0)
-    intent_filters_[package_name] = std::move(filters);
-
-  for (auto& observer : observer_list_)
-    observer.OnIntentFiltersUpdated(package_name);
+const std::vector<IntentFilter>&
+ArcIntentHelperBridge::GetAddedPreferredApps() {
+  return added_preferred_apps_;
 }
+
+const std::vector<IntentFilter>&
+ArcIntentHelperBridge::GetDeletedPreferredApps() {
+  return deleted_preferred_apps_;
+}
+
 }  // namespace arc

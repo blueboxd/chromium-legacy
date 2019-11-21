@@ -10,6 +10,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
+#include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
 
@@ -41,27 +42,26 @@ void ScrollOffsetAnimationsImpl::AutoScrollAnimationCreate(
     float autoscroll_velocity,
     base::TimeDelta animation_start_offset) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve =
-      ScrollOffsetAnimationCurve::Create(
-          target_offset, LinearTimingFunction::Create(),
-          ScrollOffsetAnimationCurve::DurationBehavior::CONSTANT_VELOCITY);
+      ScrollOffsetAnimationCurveFactory::CreateAnimation(
+          target_offset,
+          ScrollOffsetAnimationCurveFactory::ScrollType::kAutoScroll);
   curve->SetInitialValue(current_offset, base::TimeDelta(),
                          autoscroll_velocity);
   ScrollAnimationCreateInternal(element_id, std::move(curve),
                                 animation_start_offset);
 }
 
-void ScrollOffsetAnimationsImpl::ScrollAnimationCreate(
+void ScrollOffsetAnimationsImpl::MouseWheelScrollAnimationCreate(
     ElementId element_id,
     const gfx::ScrollOffset& target_offset,
     const gfx::ScrollOffset& current_offset,
     base::TimeDelta delayed_by,
     base::TimeDelta animation_start_offset) {
   std::unique_ptr<ScrollOffsetAnimationCurve> curve =
-      ScrollOffsetAnimationCurve::Create(
+      ScrollOffsetAnimationCurveFactory::CreateAnimation(
           target_offset,
-          CubicBezierTimingFunction::CreatePreset(
-              CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
-          ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
+          ScrollOffsetAnimationCurveFactory::ScrollType::kMouseWheel);
+
   curve->SetInitialValue(current_offset, delayed_by);
   ScrollAnimationCreateInternal(element_id, std::move(curve),
                                 animation_start_offset);

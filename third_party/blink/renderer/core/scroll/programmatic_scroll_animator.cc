@@ -66,7 +66,7 @@ void ProgrammaticScrollAnimator::AnimateToOffset(
   on_finish_ = std::move(on_finish);
   animation_curve_ = std::make_unique<CompositorScrollOffsetAnimationCurve>(
       CompositorOffsetFromBlinkOffset(target_offset_),
-      CompositorScrollOffsetAnimationCurve::kScrollDurationDeltaBased);
+      CompositorScrollOffsetAnimationCurve::ScrollType::kProgrammatic);
 
   scrollable_area_->RegisterForAnimation();
   if (!scrollable_area_->ScheduleAnimation()) {

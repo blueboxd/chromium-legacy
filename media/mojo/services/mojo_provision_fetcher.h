@@ -26,11 +26,11 @@ class MEDIA_MOJO_EXPORT MojoProvisionFetcher : public ProvisionFetcher {
   // ProvisionFetcher implementation:
   void Retrieve(const std::string& default_url,
                 const std::string& request_data,
-                const ResponseCB& response_cb) final;
+                ResponseCB response_cb) final;
 
  private:
   // Callback for mojo::Remote<mojom::ProvisionFetcher>::Retrieve().
-  void OnResponse(const ResponseCB& response_cb,
+  void OnResponse(ResponseCB response_cb,
                   bool success,
                   const std::string& response);
 

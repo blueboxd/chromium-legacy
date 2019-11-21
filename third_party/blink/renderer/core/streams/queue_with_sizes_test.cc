@@ -60,7 +60,7 @@ TEST_P(QueueWithSizesBadSizeTest, BadSizeThrowsException) {
   EXPECT_TRUE(queue->IsEmpty());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          QueueWithSizesBadSizeTest,
                          Values(-1,
                                 std::numeric_limits<double>::quiet_NaN(),

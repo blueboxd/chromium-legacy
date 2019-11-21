@@ -284,6 +284,7 @@ void TestDelegate::OnSSLCertificateError(URLRequest* request,
   // cancel the request.
   have_certificate_errors_ = true;
   certificate_errors_are_fatal_ = fatal;
+  certificate_net_error_ = net_error;
   if (allow_certificate_errors_)
     request->ContinueDespiteLastError();
   else

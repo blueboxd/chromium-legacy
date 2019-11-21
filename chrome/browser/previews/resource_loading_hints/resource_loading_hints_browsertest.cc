@@ -451,7 +451,7 @@ class ResourceLoadingHintsBrowserTest
 };
 
 // First parameter determines the test webpage that should be used.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ResourceLoadingHintsBrowserTest,
                          ::testing::Values(REGULAR_PAGE, PRELOAD_PAGE));
 

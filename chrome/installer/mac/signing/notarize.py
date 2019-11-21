@@ -115,9 +115,9 @@ def wait_for_results(uuids, config):
                     'Log file: {}.'.format(uuid, status, info[_LOG_FILE_URL]))
 
         if len(wait_set) > 0:
-            # Do not wait more than 30 minutes for all the operations to
+            # Do not wait more than 60 minutes for all the operations to
             # complete.
-            if total_sleep_time_seconds < 30 * 60:
+            if total_sleep_time_seconds < 60 * 60:
                 # No results were available, so wait and try again in some
                 # number of seconds. Do not wait more than 1 minute for any
                 # iteration.
@@ -127,7 +127,7 @@ def wait_for_results(uuids, config):
             else:
                 raise NotarizationError(
                     'Timed out waiting for notarization requests: {}'.format(
-                        uuids))
+                        wait_set))
 
 
 def staple(path):

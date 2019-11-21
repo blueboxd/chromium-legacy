@@ -338,6 +338,9 @@ void CastRenderer::SetCdm(::media::CdmContext* cdm_context,
   std::move(cdm_attached_cb).Run(true);
 }
 
+void CastRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {}
+
 void CastRenderer::Flush(base::OnceClosure flush_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   pipeline_->Flush(std::move(flush_cb));

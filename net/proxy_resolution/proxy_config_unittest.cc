@@ -207,7 +207,7 @@ ProxyConfigToValueTestCase GetTestCaseSingleProxyList() {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ProxyConfigToValueTest,
     testing::Values(GetTestCaseDirect(),
                     GetTestCaseAutoDetect(),

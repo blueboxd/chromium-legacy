@@ -132,8 +132,6 @@ static_library("common") {
     "instant_mojom_traits.h",
     "logging_chrome.cc",
     "logging_chrome.h",
-    "mac/app_shim_launch.h",
-    "mac/app_shim_param_traits.h",
     "mac/launchd.h",
     "mac/launchd.mm",
     "mac/service_management.h",

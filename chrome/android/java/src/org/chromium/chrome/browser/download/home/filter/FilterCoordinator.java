@@ -10,13 +10,11 @@ import android.view.View;
 import androidx.annotation.IntDef;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.filter.chips.ChipsCoordinator;
 import org.chromium.chrome.browser.offlinepages.prefetch.PrefetchConfiguration;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.download.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -53,8 +51,7 @@ public class FilterCoordinator {
      * Builds a new FilterCoordinator.
      * @param context The context to build the views and pull parameters from.
      */
-    public FilterCoordinator(Context context, OfflineItemFilterSource chipFilterSource,
-            DownloadManagerUiConfig config) {
+    public FilterCoordinator(Context context, OfflineItemFilterSource chipFilterSource) {
         mChipsProvider =
                 new FilterChipsProvider(context, type -> handleChipSelected(), chipFilterSource);
         mChipsCoordinator = new ChipsCoordinator(context, mChipsProvider);
@@ -66,7 +63,6 @@ public class FilterCoordinator {
         selectTab(TabType.FILES);
 
         mModel.set(FilterProperties.SHOW_TABS, isPrefetchTabEnabled());
-        setTabTitles(context, config.showOfflineHome);
 
         addPrefetchUserSettingsObserver();
     }
@@ -127,17 +123,6 @@ public class FilterCoordinator {
         }
 
         handleTabSelected(tabSelected);
-    }
-
-    /** Sets the tab titles. */
-    private void setTabTitles(Context context, boolean showOfflineHomeTabs) {
-        mModel.set(FilterProperties.FILES_TAB_TITLE,
-                context.getString(showOfflineHomeTabs ? R.string.menu_downloads
-                                                      : R.string.download_manager_files_tab));
-        mModel.set(FilterProperties.PREFETCH_TAB_TITLE,
-                context.getString(showOfflineHomeTabs
-                                ? R.string.download_manager_explore_offline
-                                : R.string.ntp_article_suggestions_section_header));
     }
 
     private void selectTab(@TabType int selectedTab) {

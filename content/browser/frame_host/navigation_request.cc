@@ -886,7 +886,7 @@ NavigationRequest::NavigationRequest(
       state_(NOT_STARTED),
       restore_type_(RestoreType::NONE),
       is_view_source_(false),
-      bindings_(NavigationEntryImpl::kInvalidBindings),
+      bindings_(FrameNavigationEntry::kInvalidBindings),
       response_should_be_rendered_(true),
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE),
       from_begin_navigation_(from_begin_navigation),
@@ -934,6 +934,7 @@ NavigationRequest::NavigationRequest(
     if (frame_navigation_entry) {
       source_site_instance_ = frame_navigation_entry->source_site_instance();
       dest_site_instance_ = frame_navigation_entry->site_instance();
+      bindings_ = frame_navigation_entry->bindings();
 
       // Handle history subframe navigations that require a source_site_instance
       // but do not have one set yet. This can happen when navigation entries
@@ -945,7 +946,6 @@ NavigationRequest::NavigationRequest(
     }
     network_isolation_key_ = entry->network_isolation_key();
     is_view_source_ = entry->IsViewSourceMode();
-    bindings_ = entry->bindings();
 
     // Ensure that we always have a |source_site_instance_| for navigations
     // that require it at this point. This is needed to ensure that data: URLs

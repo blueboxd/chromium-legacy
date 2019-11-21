@@ -171,25 +171,6 @@ bool DOMImplementation::IsXMLMIMEType(const String& mime_type) {
   return true;
 }
 
-bool DOMImplementation::IsJSONMIMEType(const String& mime_type) {
-  if (mime_type.StartsWithIgnoringASCIICase("application/json"))
-    return true;
-  if (mime_type.StartsWithIgnoringASCIICase("application/")) {
-    size_t subtype = mime_type.FindIgnoringASCIICase("+json", 12);
-    if (subtype != kNotFound) {
-      // Just check that a parameter wasn't matched.
-      size_t parameter_marker = mime_type.Find(";");
-      if (parameter_marker == kNotFound) {
-        unsigned end_subtype = static_cast<unsigned>(subtype) + 5;
-        return end_subtype == mime_type.length() ||
-               IsASCIISpace(mime_type[end_subtype]);
-      }
-      return parameter_marker > subtype;
-    }
-  }
-  return false;
-}
-
 static bool IsTextPlainType(const String& mime_type) {
   return mime_type.StartsWithIgnoringASCIICase("text/") &&
          !(EqualIgnoringASCIICase(mime_type, "text/html") ||
@@ -199,7 +180,8 @@ static bool IsTextPlainType(const String& mime_type) {
 
 bool DOMImplementation::IsTextMIMEType(const String& mime_type) {
   return MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
-         IsJSONMIMEType(mime_type) || IsTextPlainType(mime_type);
+         MIMETypeRegistry::IsJSONMimeType(mime_type) ||
+         IsTextPlainType(mime_type);
 }
 
 Document* DOMImplementation::createHTMLDocument(const String& title) {

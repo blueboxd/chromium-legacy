@@ -130,6 +130,7 @@ message CertLoggerRequest {
     ERR_CERT_NON_UNIQUE_NAME = 13;
     ERR_CERTIFICATE_TRANSPARENCY_REQUIRED = 14;
     ERR_CERT_SYMANTEC_LEGACY = 15;
+    ERR_CERT_KNOWN_INTERCEPTION_BLOCKED = 16;
   };
 
   // Certificate errors encountered (if any) when validating this
@@ -182,6 +183,7 @@ message CertLoggerRequest {
     STATUS_REV_CHECKING_ENABLED = 2;
     STATUS_SHA1_SIGNATURE_PRESENT = 3;
     STATUS_CT_COMPLIANCE_FAILED = 4;
+    STATUS_KNOWN_INTERCEPTION_DETECTED = 5;
   }
   // The non-error status results of validating the chain.
   repeated CertStatus cert_status = 14;

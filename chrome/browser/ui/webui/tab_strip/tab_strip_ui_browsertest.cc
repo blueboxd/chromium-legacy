@@ -6,16 +6,17 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/navigation_controller.h"
@@ -49,13 +50,9 @@ class TabStripUIBrowserTest : public InProcessBrowserTest {
     // In this test, we create our own TabStripUI instance with a mock
     // Embedder. Disable the production one to avoid conflicting with
     // it.
-    feature_override_.InitAndDisableFeature(features::kWebUITabStrip);
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        switches::kWebUITabStrip);
     InProcessBrowserTest::SetUp();
-  }
-
-  void TearDown() override {
-    InProcessBrowserTest::TearDown();
-    feature_override_.Reset();
   }
 
   void SetUpOnMainThread() override {

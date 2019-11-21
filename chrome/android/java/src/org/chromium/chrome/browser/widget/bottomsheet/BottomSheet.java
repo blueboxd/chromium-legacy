@@ -10,7 +10,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,16 +27,12 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.TabLoadStatus;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
-import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -52,8 +47,8 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
  * All the computation in this file is based off of the bottom of the screen instead of the top
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
-class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
-                                                 NativePageHost, View.OnLayoutChangeListener {
+class BottomSheet extends FrameLayout
+        implements BottomSheetSwipeDetector.SwipeableBottomSheet, View.OnLayoutChangeListener {
     /**
      * The fraction of the way to the next state the sheet must be swiped to animate there when
      * released. This is the value used when there are 3 active states. A smaller value here means
@@ -215,13 +210,6 @@ class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.Swipea
         endAnimations();
     }
 
-    /**
-     * Sets whether the {@link BottomSheet} and its children should react to touch events.
-     */
-    public void setTouchEnabled(boolean enabled) {
-        mIsTouchEnabled = enabled;
-    }
-
     /** Immediately end all animations and null the animators. */
     void endAnimations() {
         if (mSettleAnimator != null) mSettleAnimator.end();
@@ -331,22 +319,7 @@ class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.Swipea
                     // This shrinks the content size while retaining the default background color
                     // where the keyboard is appearing. If the sheet is not showing, resize the
                     // sheet to its default state.
-                    // Setting the padding is posted in a runnable for the sake of Android J.
-                    // See crbug.com/751013.
-                    final int finalPadding = keyboardHeight;
-                    post(new Runnable() {
-                        @Override
-                        public void run() {
-                            mBottomSheetContentContainer.setPadding(0, 0, 0, finalPadding);
-
-                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-                                // A layout on the toolbar holder is requested so that the toolbar
-                                // doesn't disappear under certain scenarios on Android J.
-                                // See crbug.com/751013.
-                                mToolbarHolder.requestLayout();
-                            }
-                        }
-                    });
+                    mBottomSheetContentContainer.setPadding(0, 0, 0, keyboardHeight);
                 }
 
                 if (previousHeight != mContainerHeight
@@ -405,44 +378,6 @@ class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.Swipea
         // previously.  This is required as a layout is not triggered when coming back to Chrome
         // with the keyboard previously shown.
         if (hasWindowFocus) requestLayout();
-    }
-
-    @Override
-    public int loadUrl(LoadUrlParams params, boolean incognito) {
-        for (BottomSheetObserver o : mObservers) o.onLoadUrl(params.getUrl());
-
-        int tabLoadStatus = TabLoadStatus.DEFAULT_PAGE_LOAD;
-
-        if (getActiveTab() != null) tabLoadStatus = getActiveTab().loadUrl(params);
-
-        return tabLoadStatus;
-    }
-
-    @Override
-    public boolean isIncognito() {
-        if (getActiveTab() == null) return false;
-        return getActiveTab().isIncognito();
-    }
-
-    @Override
-    public int getParentId() {
-        return Tab.INVALID_TAB_ID;
-    }
-
-    @Override
-    public Tab getActiveTab() {
-        return mTabSupplier != null ? mTabSupplier.get() : null;
-    }
-
-    @Override
-    public boolean isVisible() {
-        return mCurrentState != SheetState.PEEK;
-    }
-
-    @Override
-    public HistoryNavigationDelegate createHistoryNavigationDelegate() {
-        assert false : "BottomSheet does not need HistoryNavigationDelegate";
-        return null;
     }
 
     @Override
@@ -666,7 +601,7 @@ class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.Swipea
         // to have a peek state.
         @SheetState
         int minSwipableState = getMinSwipableSheetState();
-        if (isPeekStateEnabled() && !isSheetOpen() && mCurrentState != mTargetState) {
+        if (isPeekStateEnabled() && (!isSheetOpen() || mTargetState == SheetState.PEEK)) {
             minSwipableState = SheetState.PEEK;
         }
 
@@ -710,7 +645,7 @@ class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.Swipea
      * Deselects any text in the active tab's web contents and dismisses the text controls.
      */
     private void dismissSelectedText() {
-        Tab activeTab = getActiveTab();
+        Tab activeTab = mTabSupplier != null ? mTabSupplier.get() : null;
         if (activeTab == null) return;
 
         WebContents webContents = activeTab.getWebContents();

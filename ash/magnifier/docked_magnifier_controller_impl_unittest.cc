@@ -162,7 +162,7 @@ class DockedMagnifierTest : public NoSessionAshTestBase,
   DISALLOW_COPY_AND_ASSIGN(DockedMagnifierTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, DockedMagnifierTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, DockedMagnifierTest, ::testing::Bool());
 
 // Tests that the Fullscreen and Docked Magnifiers are mutually exclusive.
 // TODO(afakhry): Update this test to use ash::MagnificationController once

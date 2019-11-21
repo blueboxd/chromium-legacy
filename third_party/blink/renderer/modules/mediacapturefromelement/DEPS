@@ -8,6 +8,7 @@ include_rules = [
     "+cc/paint/paint_canvas.h",
     "+cc/paint/skia_paint_canvas.h",
     "+components/viz/common",
+    "+gpu/GLES2",
     "+media/base",
     "+media/capture",
     "+skia/ext/platform_canvas.h",

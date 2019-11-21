@@ -37,7 +37,7 @@
 #include "crypto/scoped_test_nss_db.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database_chromeos.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/test/cert_test_util.h"

@@ -8,6 +8,7 @@ import sys
 import unittest
 
 import checkxmlstyle
+import helpers
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))))
@@ -127,10 +128,24 @@ class ColorReferencesTest(unittest.TestCase):
   def testValidReferenceInColorResources(self):
     lines = ['<color name="color1">#61000000</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/java/res_test/colors.xml', lines)]
+    mock_input_api.files = [
+        MockFile(helpers.COLOR_PALETTE_RELATIVE_PATH, lines)]
     errors = checkxmlstyle._CheckColorReferences(
         mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
+
+  def testReferenceInSemanticColors(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile(helpers.COLOR_PALETTE_PATH,
+        ['<resources><color name="a">#f0f0f0</color></resources>']),
+      MockFile('ui/android/java/res/values/semantic_colors.xml',
+        ['<color name="b">@color/hello<color>',
+         '<color name="c">@color/a<color>'])
+    ]
+    errors = checkxmlstyle._CheckSemanticColorsReferences(
+      mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(errors))
 
 
 class DuplicateColorsTest(unittest.TestCase):
@@ -139,14 +154,15 @@ class DuplicateColorsTest(unittest.TestCase):
     lines = ['<color name="color1">#61000000</color>',
              '<color name="color2">#61000000</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/java/res_test/colors.xml', lines)]
+    mock_input_api.files = [
+        MockFile(helpers.COLOR_PALETTE_RELATIVE_PATH, lines)]
     errors = checkxmlstyle._CheckDuplicateColors(
         mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(2, len(errors[0].items))
-    self.assertEqual('  chrome/java/res_test/colors.xml:1',
+    self.assertEqual('  %s:1' % helpers.COLOR_PALETTE_RELATIVE_PATH,
                      errors[0].items[0].splitlines()[0])
-    self.assertEqual('  chrome/java/res_test/colors.xml:2',
+    self.assertEqual('  %s:2' % helpers.COLOR_PALETTE_RELATIVE_PATH,
                      errors[0].items[1].splitlines()[0])
 
   def testSucess(self):

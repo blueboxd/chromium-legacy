@@ -514,3 +514,11 @@ AbstractTts.prototype.getDefaultProperty = function(property) {
 AbstractTts.prototype.toggleSpeechOnOrOff = function() {
   return true;
 };
+
+
+/** @override */
+AbstractTts.prototype.resetTextToSpeechSettings = function() {
+  for (var [key, value] of Object.entries(this.propertyDefault)) {
+    this.ttsProperties[key] = value;
+  }
+};

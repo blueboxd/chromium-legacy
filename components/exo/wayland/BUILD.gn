@@ -161,7 +161,7 @@ source_set("wayland") {
     if (is_chromeos) {
       deps += [
         "//ash/public/cpp",
-        "//ui/events/ozone:events_ozone_layout",
+        "//ui/events/ozone/layout",
       ]
     }
   }

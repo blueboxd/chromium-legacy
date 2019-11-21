@@ -93,7 +93,7 @@ IN_PROC_BROWSER_TEST_P(OverviewAnimationsTest, EnterExit) {
       ash::OverviewAnimationState::kExitAnimationComplete);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          OverviewAnimationsTest,
                          ::testing::Combine(::testing::Values(2, 8),
                                             /*blank=*/testing::Bool(),

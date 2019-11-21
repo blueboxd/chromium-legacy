@@ -5,8 +5,10 @@
 package org.chromium.android_webview.devui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,10 +25,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.android_webview.common.CommandLineUtil;
+import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
 import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
+import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 
 import java.util.Date;
 import java.util.List;
@@ -36,6 +42,8 @@ import java.util.Locale;
  * An activity to show a list of recent WebView crashes.
  */
 public class CrashesListActivity extends Activity {
+    private static final String TAG = "WebViewDevTools";
+
     // Max number of crashes to show in the crashes list.
     private static final int MAX_CRASHES_NUMBER = 20;
 
@@ -97,6 +105,17 @@ public class CrashesListActivity extends Activity {
                 new WebViewPackageError(this, findViewById(R.id.crashes_list_activity_layout));
         // show the dialog once when the activity is created.
         mDifferentPackageError.showDialogIfDifferent();
+
+        final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
+                CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+        if (!enableMinidumpUploadingForTesting) {
+            PlatformServiceBridge.getInstance().queryMetricsSetting(enabled -> {
+                // enabled is a Boolean object and can be null.
+                if (!Boolean.TRUE.equals(enabled)) {
+                    showCrashConsentError(PlatformServiceBridge.getInstance().canUseGms());
+                }
+            });
+        }
     }
 
     @Override
@@ -295,6 +314,36 @@ public class CrashesListActivity extends Activity {
         mCrashListViewAdapter.notifyDataSetChanged();
         mCrashesSummaryView.setText(
                 String.format(Locale.US, "Crashes (%d)", mCrashInfoList.size()));
+    }
+
+    private void showCrashConsentError(boolean canUseGms) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setTitle("Error Showing Crashes");
+        if (canUseGms) {
+            dialogBuilder.setMessage(
+                    "Crash collection is disabled. Please turn on 'Usage & diagnostics' "
+                    + "to enable WebView crash collection.");
+            // Open Google Settings activity, "Usage & diagnostics" activity is not exported and
+            // cannot be opened directly.
+            Intent settingsIntent = new Intent("com.android.settings.action.EXTRA_SETTINGS");
+            List<ResolveInfo> intentResolveInfo =
+                    getPackageManager().queryIntentActivities(settingsIntent, 0);
+            // Show a button to open GMS settings activity only if it exists.
+            if (intentResolveInfo.size() > 0) {
+                dialogBuilder.setPositiveButton(
+                        "Settings", (dialog, id) -> startActivity(settingsIntent));
+            } else {
+                Log.e(TAG, "Cannot find GMS settings activity");
+            }
+        } else {
+            dialogBuilder.setMessage("Crash collection is not supported at the moment.");
+        }
+
+        new PersistentErrorView(this, PersistentErrorView.Type.ERROR)
+                .prependToLinearLayout(findViewById(R.id.crashes_list_activity_layout))
+                .setText("Crash collection is disabled. Tap for more info.")
+                .setDialog(dialogBuilder.create())
+                .show();
     }
 
     @Override

@@ -434,7 +434,7 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
 
   ScreenOrientationControllerTestApi orientation_api(
       Shell::Get()->screen_orientation_controller());
-  // Verify that everything is visible in state
+  // Verify that only snap preview in state
   // |SplitViewDragIndicators::WindowDraggingState::kFromTop| in landscape
   // orientation.
   ASSERT_EQ(OrientationLockType::kLandscapePrimary,
@@ -443,16 +443,15 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
       SplitViewDragIndicators::WindowDraggingState::kNoDrag);
   indicator->SetWindowDraggingState(
       SplitViewDragIndicators::WindowDraggingState::kFromTop);
-  check_helper(indicator.get(), all);
+  check_helper(indicator.get(), 0);
   indicator->SetWindowDraggingState(
       SplitViewDragIndicators::WindowDraggingState::kToSnapRight);
+  check_helper(indicator.get(), to_int(IndicatorType::kRightHighlight));
   indicator->SetWindowDraggingState(
       SplitViewDragIndicators::WindowDraggingState::kFromTop);
-  check_helper(indicator.get(), all);
+  check_helper(indicator.get(), 0);
 
-  const int right_with_text = to_int(IndicatorType::kRightHighlight) |
-                              to_int(IndicatorType::kRightText);
-  // Verify that only the bottom highlight is shown in state
+  // Verify that no drag-to-snap indicators are shown in state
   // |SplitViewDragIndicators::WindowDraggingState::kFromTop| in portrait
   // orientation.
   orientation_api.SetDisplayRotation(display::Display::ROTATE_270,
@@ -463,12 +462,12 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
       SplitViewDragIndicators::WindowDraggingState::kNoDrag);
   indicator->SetWindowDraggingState(
       SplitViewDragIndicators::WindowDraggingState::kFromTop);
-  check_helper(indicator.get(), right_with_text);
+  check_helper(indicator.get(), 0);
   indicator->SetWindowDraggingState(
       SplitViewDragIndicators::WindowDraggingState::kToSnapRight);
   indicator->SetWindowDraggingState(
       SplitViewDragIndicators::WindowDraggingState::kFromTop);
-  check_helper(indicator.get(), right_with_text);
+  check_helper(indicator.get(), 0);
 }
 
 }  // namespace ash

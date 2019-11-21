@@ -3716,6 +3716,8 @@ jumbo_static_library("ui") {
       "ash/assistant/proactive_suggestions_loader.h",
       "ash/launcher/app_service_app_window_launcher_controller.cc",
       "ash/launcher/app_service_app_window_launcher_controller.h",
+      "ash/launcher/app_service_instance_registry_helper.cc",
+      "ash/launcher/app_service_instance_registry_helper.h",
       "ash/launcher/app_window_base.cc",
       "ash/launcher/app_window_base.h",
       "ash/launcher/arc_app_shelf_id.cc",

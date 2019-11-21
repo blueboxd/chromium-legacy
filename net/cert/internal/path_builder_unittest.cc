@@ -17,7 +17,7 @@
 #include "net/cert/internal/trust_store_collection.h"
 #include "net/cert/internal/trust_store_in_memory.h"
 #include "net/cert/internal/verify_certificate_chain.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/der/input.h"
 #include "net/test/test_certificate_data.h"
 #include "testing/gmock/include/gmock/gmock.h"

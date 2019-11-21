@@ -72,7 +72,8 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
     app_shim_info->profile_path = profile()->GetPath().BaseName();
     app_shim_info->app_id = extension_id_;
     app_shim_info->app_url = GURL("https://example.com");
-    app_shim_info->launch_type = apps::APP_SHIM_LAUNCH_REGISTER_ONLY;
+    app_shim_info->launch_type =
+        chrome::mojom::AppShimLaunchType::kRegisterOnly;
     (new TestAppShimHostBootstrap)
         ->OnShimConnected(host.BindNewPipeAndPassReceiver(),
                           std::move(app_shim_info),
@@ -86,7 +87,7 @@ class AppShimQuitTest : public PlatformAppBrowserTest {
   }
 
   void DoShimLaunchDone(
-      apps::AppShimLaunchResult result,
+      chrome::mojom::AppShimLaunchResult result,
       mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

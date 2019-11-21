@@ -6,6 +6,21 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 
+<custom-style>
+<style is="custom-style">
+  html {
+    /* Default width of the main <multidevice-setup> element. */
+    --default-ui-width: 768px;
+
+    /*
+     * Narrow width of the main <multidevice-setup> element. Used on devices
+     * with small screen sizes.
+     */
+    --narrow-ui-width: 450px;
+  }
+</style>
+</custom-style>
+
 <dom-module id="multidevice-setup-shared">
   <template>
     <style include="iron-flex cr-shared-style md-select">

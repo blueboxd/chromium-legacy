@@ -144,9 +144,8 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     return MediaStreamVideoTrack::CreateVideoTrack(
         source_, adapter_settings, noise_reduction, is_screencast,
         min_frame_rate,
-        WTF::BindRepeating(
-            &MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
-            base::Unretained(this)),
+        WTF::Bind(&MediaStreamVideoCapturerSourceTest::OnConstraintsApplied,
+                  base::Unretained(this)),
         enabled);
   }
 

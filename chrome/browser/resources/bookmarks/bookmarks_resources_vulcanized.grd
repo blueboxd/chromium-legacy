@@ -11,9 +11,17 @@
     <output filename="bookmarks_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
-    <structures>
-      <structure name="IDR_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\bookmarks\vulcanized.html" use_base_dir="false" preprocess="true" type="chrome_html" compress="gzip" />
-      <structure name="IDR_BOOKMARKS_BOOKMARKS_ROLLUP_JS" file="${root_gen_dir}\chrome\browser\resources\bookmarks\bookmarks.js" use_base_dir="false" preprocess="true" type="chrome_html" compress="gzip" />
-    </structures>
+    <includes>
+      <include name="IDR_BOOKMARKS_BOOKMARKS_HTML"
+               file="bookmarks.html"
+               type="chrome_html"
+               compress="gzip" />
+      <include name="IDR_BOOKMARKS_BOOKMARKS_ROLLUP_JS"
+               file="${root_gen_dir}\chrome\browser\resources\bookmarks\bookmarks.rollup.js"
+               use_base_dir="false"
+               preprocess="true"
+               type="chrome_html"
+               compress="gzip" />
+    </includes>
   </release>
 </grit>

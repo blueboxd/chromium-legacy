@@ -24,7 +24,11 @@
 (define darwin-user-cache-dir "DARWIN_USER_CACHE_DIR")
 (define darwin-user-dir "DARWIN_USER_DIR")
 (define darwin-user-temp-dir "DARWIN_USER_TEMP_DIR")
+; There are two separate flags for syscall filtering to allow it
+; to be rolled out to one process type at a time, while still allowing
+; local development.
 (define filter-syscalls "FILTER_SYSCALLS")
+(define filter-syscalls-debug "FILTER_SYSCALLS_DEBUG")
 
 ; Backwards compatibility for 10.10.
 (if (not (defined? 'path))

@@ -30,7 +30,7 @@
       </template>
       <template is="dom-if" if="[[!isChild_]]">
         <div class="start settings-box-text">
-          <div id="label" aria-describedby="sub-label">
+          <div id="label" aria-hidden="true">
             $i18n{parentalControlsPageTitle}
           </div>
           <div class="secondary" id="sub-label" aria-hidden="true">
@@ -39,7 +39,8 @@
         </div>
         <div class="separator"></div>
         <cr-button on-click="handleSetupButtonClick_" disabled$="[[!online_]]"
-            aria-describedby="sub-label">
+            aria-labelledby="label" aria-describedby="sub-label"
+            aria-roledescription="$i18n{parentalControlsSetUpButtonRole}">
           $i18n{parentalControlsSetUpButtonLabel}
         </cr-button>
       </template>

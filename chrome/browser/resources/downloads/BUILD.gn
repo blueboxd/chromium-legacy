@@ -14,10 +14,8 @@ if (optimize_webui) {
 
   optimize_webui("build") {
     host = "downloads"
-    html_in_files = [ "downloads.html" ]
-    html_out_files = [ "vulcanized.html" ]
     input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
-    js_out_files = [ "downloads.js" ]
+    js_out_files = [ "downloads.rollup.js" ]
     js_module_in_files = [ "downloads.js" ]
     excludes = [
       "chrome://resources/js/cr.m.js",

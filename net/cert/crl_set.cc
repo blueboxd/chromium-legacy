@@ -34,10 +34,21 @@ namespace {
 //
 // header_bytes consists of a JSON dictionary with the following keys:
 //   Version (int): currently 0
-//   ContentType (string): "CRLSet" or "CRLSetDelta" (magic value)
-//   DeltaFrom (int32_t): if this is a delta update (see below), then this
-//       contains the sequence number of the base CRLSet.
+//   ContentType (string): "CRLSet" (magic value)
 //   Sequence (int32_t): the monotonic sequence number of this CRL set.
+//   NotAfter (optional) (double/int64_t): The number of seconds since the
+//     Unix epoch, after which, this CRLSet is expired.
+//   BlockedSPKIs (array of string): An array of Base64 encoded, SHA-256 hashed
+//     SubjectPublicKeyInfos that should be blocked.
+//   LimitedSubjects (object/map of string -> array of string): A map between
+//     the Base64-encoded SHA-256 hash of the DER-encoded Subject and the
+//     Base64-encoded SHA-256 hashes of the SubjectPublicKeyInfos that are
+//     allowed for that subject.
+//   KnownInterceptionSPKIs (array of string): An array of Base64-encoded
+//     SHA-256 hashed SubjectPublicKeyInfos known to be used for interception.
+//   BlockedInterceptionSPKIs (array of string): An array of Base64-encoded
+//     SHA-256 hashed SubjectPublicKeyInfos known to be used for interception
+//     and that should be actively blocked.
 //
 // ReadHeader reads the header (including length prefix) from |data| and
 // updates |data| to remove the header on return. Caller takes ownership of the
@@ -247,20 +258,44 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
     crl_set->crls_[std::move(spki_hash)] = std::move(blocked_serials);
   }
 
+  std::vector<std::string> blocked_interception_spkis;
   if (!CopyHashListFromHeader(header_dict.get(), "BlockedSPKIs",
                               &crl_set->blocked_spkis_) ||
       !CopyHashToHashesMapFromHeader(header_dict.get(), "LimitedSubjects",
-                                     &crl_set->limited_subjects_)) {
+                                     &crl_set->limited_subjects_) ||
+      !CopyHashListFromHeader(header_dict.get(), "KnownInterceptionSPKIs",
+                              &crl_set->known_interception_spkis_) ||
+      !CopyHashListFromHeader(header_dict.get(), "BlockedInterceptionSPKIs",
+                              &blocked_interception_spkis)) {
     return false;
   }
 
-  // Defines kSPKIBlockList.
+  // Add the BlockedInterceptionSPKIs to both lists; these are provided as
+  // a separate list to allow less data to be sent over the wire, even though
+  // they are duplicated in-memory.
+  crl_set->blocked_spkis_.insert(crl_set->blocked_spkis_.end(),
+                                 blocked_interception_spkis.begin(),
+                                 blocked_interception_spkis.end());
+  crl_set->known_interception_spkis_.insert(
+      crl_set->known_interception_spkis_.end(),
+      blocked_interception_spkis.begin(), blocked_interception_spkis.end());
+
+  // Defines kSPKIBlockList and kKnownInterceptionList
 #include "net/cert/cert_verify_proc_blocklist.inc"
   for (const auto& hash : kSPKIBlockList) {
     crl_set->blocked_spkis_.push_back(std::string(
         reinterpret_cast<const char*>(hash), crypto::kSHA256Length));
   }
+
+  for (const auto& hash : kKnownInterceptionList) {
+    crl_set->known_interception_spkis_.push_back(std::string(
+        reinterpret_cast<const char*>(hash), crypto::kSHA256Length));
+  }
+
+  // Sort, as these will be std::binary_search()'d.
   std::sort(crl_set->blocked_spkis_.begin(), crl_set->blocked_spkis_.end());
+  std::sort(crl_set->known_interception_spkis_.begin(),
+            crl_set->known_interception_spkis_.end());
 
   *out_crl_set = std::move(crl_set);
   return true;
@@ -315,6 +350,11 @@ CRLSet::Result CRLSet::CheckSerial(
   }
 
   return GOOD;
+}
+
+bool CRLSet::IsKnownInterceptionKey(base::StringPiece spki_hash) const {
+  return std::binary_search(known_interception_spkis_.begin(),
+                            known_interception_spkis_.end(), spki_hash);
 }
 
 bool CRLSet::IsExpired() const {

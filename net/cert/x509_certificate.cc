@@ -33,7 +33,7 @@
 #include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/internal/verify_name_match.h"
 #include "net/cert/internal/verify_signed_data.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "net/der/parser.h"
@@ -597,20 +597,8 @@ bool X509Certificate::GetPEMEncodedFromDER(base::StringPiece der_encoded,
                                            std::string* pem_encoded) {
   if (der_encoded.empty())
     return false;
-  std::string b64_encoded;
-  base::Base64Encode(der_encoded, &b64_encoded);
-  *pem_encoded = "-----BEGIN CERTIFICATE-----\n";
 
-  // Divide the Base-64 encoded data into 64-character chunks, as per
-  // 4.3.2.4 of RFC 1421.
-  static const size_t kChunkSize = 64;
-  size_t chunks = (b64_encoded.size() + (kChunkSize - 1)) / kChunkSize;
-  for (size_t i = 0, chunk_offset = 0; i < chunks;
-       ++i, chunk_offset += kChunkSize) {
-    pem_encoded->append(b64_encoded, chunk_offset, kChunkSize);
-    pem_encoded->append("\n");
-  }
-  pem_encoded->append("-----END CERTIFICATE-----\n");
+  *pem_encoded = PEMEncode(der_encoded, "CERTIFICATE");
   return true;
 }
 

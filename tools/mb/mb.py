@@ -218,6 +218,10 @@ class MetaBuildWrapper(object):
     AddCommonOptions(subp)
     subp.add_argument('target',
                       help='ninja target to build and run')
+    subp.add_argument('--force', default=False, action='store_true',
+                      help='Force the job to run. Ignores local checkout state;'
+                      ' by default, the tool doesn\'t trigger jobs if there are'
+                      ' local changes which are not present on Gerrit.')
     subp.set_defaults(func=self.CmdTry)
 
     subp = subps.add_parser(
@@ -386,8 +390,17 @@ class MetaBuildWrapper(object):
   def CmdTry(self):
     ninja_target = self.args.target
     if ninja_target.startswith('//'):
-      self.Print("Expected a nijna target like base_unittests, got %s" % target)
+      self.Print("Expected a ninja target like base_unittests, got %s" % (
+        ninja_target))
       return 1
+
+    _, out, _ = self.Run(['git', 'cl', 'diff', '--stat'], force_verbose=False)
+    if out:
+      self.Print("Your checkout appears to local changes which are not uploaded"
+                 " to Gerrit. Changes must be committed and uploaded to Gerrit"
+                 " to be tested using this tool.")
+      if not self.args.force:
+        return 1
 
     json_path = self.PathJoin(self.chromium_src_dir, 'out.json')
     try:

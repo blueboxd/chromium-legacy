@@ -236,7 +236,7 @@ void DeviceLocalAccountPolicyStore::Validate(
 
   if (validate_in_background) {
     UserCloudPolicyValidator::StartValidation(
-        std::move(validator), base::Bind(callback, key->as_string()));
+        std::move(validator), base::BindOnce(callback, key->as_string()));
   } else {
     validator->RunValidation();
 

@@ -94,6 +94,10 @@ class FullCardRequest final : public CardUnmaskDelegate {
       AutofillClient::PaymentsRpcResult result,
       payments::PaymentsClient::UnmaskResponseDetails& response_details);
 
+  // Called when verification is cancelled. This is used only by
+  // CreditCardFIDOAuthenticator to cancel the flow for opted-in users.
+  void OnFIDOVerificationCancelled();
+
   payments::PaymentsClient::UnmaskResponseDetails unmask_response_details()
       const {
     return unmask_response_details_;

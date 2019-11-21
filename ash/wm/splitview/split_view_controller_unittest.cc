@@ -4801,11 +4801,11 @@ TEST_P(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
   EXPECT_EQ(backdrop_window->bounds(), active_desk_container->bounds());
 }
 
-INSTANTIATE_TEST_SUITE_P(, SplitViewControllerTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, SplitViewTabDraggingTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All, SplitViewControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SplitViewTabDraggingTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
                          SplitViewTabDraggingTestWithClamshellSupport,
                          testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, SplitViewAppDraggingTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SplitViewAppDraggingTest, testing::Bool());
 
 }  // namespace ash

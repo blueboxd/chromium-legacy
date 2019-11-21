@@ -274,11 +274,6 @@ source_set("lib") {
     sources += [ "keycode_text_conversion_x.cc" ]
   }
 
-  # The X11 implementation uses part of Ozone implementation.
-  if (use_ozone || use_x11) {
-    sources += [ "keycode_text_conversion_ozone.cc" ]
-  }
-
   deps = [
     ":automation_client_lib",
     "//base",
@@ -299,10 +294,15 @@ source_set("lib") {
     "//ui/base",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
-    "//ui/events/ozone:events_ozone_layout",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  # The X11 implementation uses part of Ozone implementation.
+  if (use_ozone || use_x11) {
+    sources += [ "keycode_text_conversion_ozone.cc" ]
+    deps += [ "//ui/events/ozone/layout" ]
+  }
 
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]

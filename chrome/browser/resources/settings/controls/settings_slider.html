@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
 <link rel="import" href="../settings_vars_css.html">
+<link rel="import" href="../i18n_setup.html">
 
 <dom-module id="settings-slider">
   <template>
@@ -61,8 +62,12 @@
       <cr-slider id="slider" disabled$="[[disableSlider_]]" ticks="[[ticks]]"
           on-cr-slider-value-changed="onSliderChanged_" max="[[max]]"
           min="[[min]]" on-dragging-changed="onSliderChanged_"
-          on-updating-from-key="onSliderChanged_"></cr-slider>
-      <div id="labels" disabled$="[[disableSlider_]]">
+          on-updating-from-key="onSliderChanged_"
+          aria-roledescription$="[[getRoleDescription_()]]"
+          aria-label$="[[labelAria]]">
+      </cr-slider>
+      <!-- aria-hidden because role description on #slider contains min/max. -->
+      <div id="labels" disabled$="[[disableSlider_]]" aria-hidden="true">
         <div id="label-begin">[[labelMin]]</div>
         <div id="label-end">[[labelMax]]</div>
       </div>

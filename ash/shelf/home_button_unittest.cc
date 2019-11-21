@@ -87,7 +87,7 @@ class HomeButtonTest : public AshTestBase,
 };
 
 // The parameter indicates whether the kShelfHotseat feature is enabled.
-INSTANTIATE_TEST_SUITE_P(, HomeButtonTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, HomeButtonTest, testing::Bool());
 
 TEST_P(HomeButtonTest, SwipeUpToOpenFullscreenAppList) {
   Shelf* shelf = GetPrimaryShelf();
@@ -205,8 +205,6 @@ TEST_P(HomeButtonTest, ButtonPositionInTabletMode) {
 }
 
 TEST_P(HomeButtonTest, LongPressGesture) {
-  ui::ScopedAnimationDurationScaleMode animation_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 

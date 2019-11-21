@@ -22,9 +22,6 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
     private long mNativeTabBrowserControlsState; // Lazily initialized in |update|
     private BrowserControlsVisibilityDelegate mVisibilityDelegate;
 
-    /** The current browser controls constraints. -1 if not set. */
-    private @BrowserControlsState int mConstraints = -1;
-
     private int mTopControlsOffset;
     private int mBottomControlsOffset;
     private int mContentOffset;
@@ -206,13 +203,6 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
         }
         TabBrowserControlsStateJni.get().updateState(mNativeTabBrowserControlsState,
                 TabBrowserControlsState.this, mTab.getWebContents(), constraints, current, animate);
-        if (constraints == mConstraints) return;
-
-        mConstraints = constraints;
-        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onBrowserControlsConstraintsUpdated(mTab, constraints);
-        }
     }
 
     /**

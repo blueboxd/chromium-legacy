@@ -174,42 +174,47 @@ namespace {
 
 class DisplayLockStyleScope {
  public:
-  DisplayLockStyleScope(DisplayLockContext* context)
-      : context_(context),
-        should_update_self_(
-            !context ||
-            context->ShouldStyle(DisplayLockLifecycleTarget::kSelf)) {}
+  DisplayLockStyleScope(Element* element) : element_(element) {
+    // Note that we don't store context as a member of this scope, since it may
+    // get created as part of element self style recalc.
+    auto* context = element->GetDisplayLockContext();
+    should_update_self_ =
+        !context || context->ShouldStyle(DisplayLockLifecycleTarget::kSelf);
+  }
 
   ~DisplayLockStyleScope() {
-    if (!context_)
-      return;
-    if (did_update_children_)
-      context_->DidStyle(DisplayLockLifecycleTarget::kChildren);
+    if (auto* context = element_->GetDisplayLockContext()) {
+      if (did_update_children_)
+        context->DidStyle(DisplayLockLifecycleTarget::kChildren);
+    }
   }
 
   bool ShouldUpdateSelfStyle() const { return should_update_self_; }
   bool ShouldUpdateChildStyle() const {
-    // We can't calculate this on construction time, because the element might
-    // get unlocked after self-style calculation due to lack of containment,
-    // which might change the value of ShouldStyle(children).
-    return !context_ ||
-           context_->ShouldStyle(DisplayLockLifecycleTarget::kChildren);
+    // We can't calculate this on construction time, because the element's lock
+    // state may changes after self-style calculation ShouldStyle(children).
+    auto* context = element_->GetDisplayLockContext();
+    return !context ||
+           context->ShouldStyle(DisplayLockLifecycleTarget::kChildren);
   }
   void DidUpdateChildStyle() { did_update_children_ = true; }
   void DidUpdateSelfStyle() {
     DCHECK(should_update_self_);
-    if (context_)
-      context_->DidStyle(DisplayLockLifecycleTarget::kSelf);
+    if (auto* context = element_->GetDisplayLockContext())
+      context->DidStyle(DisplayLockLifecycleTarget::kSelf);
   }
 
   void NotifyUpdateWasBlocked(DisplayLockContext::StyleType style) {
     DCHECK(!ShouldUpdateChildStyle());
-    context_->NotifyStyleRecalcWasBlocked(style);
+    // The only way to be blocked here is if we have a display lock context.
+    DCHECK(element_->GetDisplayLockContext());
+
+    element_->GetDisplayLockContext()->NotifyStyleRecalcWasBlocked(style);
   }
 
  private:
-  UntracedMember<DisplayLockContext> context_;
-  const bool should_update_self_;
+  UntracedMember<Element> element_;
+  bool should_update_self_ = false;
   bool did_update_children_ = false;
 };
 
@@ -2403,7 +2408,9 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     } else if (RuntimeEnabledFeatures::DisplayLockingEnabled(
                    GetExecutionContext()) &&
                name == html_names::kRendersubtreeAttr &&
-               params.old_value != params.new_value) {
+               params.old_value != params.new_value &&
+               DisplayLockContext::IsAttributeVersion(
+                   GetDisplayLockContext())) {
       UseCounter::Count(GetDocument(), WebFeature::kRenderSubtreeAttribute);
 
       // This is needed to ensure that proper containment is put in place.
@@ -2421,7 +2428,8 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
             ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport);
       }
 
-      EnsureDisplayLockContext().SetActivatable(activation_mask);
+      EnsureDisplayLockContext(DisplayLockContextCreateMethod::kAttribute)
+          .SetActivatable(activation_mask);
       const bool should_be_invisible = tokens.Contains("invisible");
       if (should_be_invisible) {
         if (!GetDisplayLockContext()->IsLocked())
@@ -3023,7 +3031,7 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
 
-  DisplayLockStyleScope display_lock_style_scope(GetDisplayLockContext());
+  DisplayLockStyleScope display_lock_style_scope(this);
   if (!display_lock_style_scope.ShouldUpdateSelfStyle()) {
     display_lock_style_scope.NotifyUpdateWasBlocked(
         change.RecalcChildren()
@@ -3044,8 +3052,8 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
       child_change = child_change.ForceRecalcDescendants();
     ClearNeedsStyleRecalc();
   }
-  // We're done with self-style, notify so that containment checks etc for
-  // display locking can happen..
+
+  // We're done with self style, notify the display lock.
   display_lock_style_scope.DidUpdateSelfStyle();
 
   if (!display_lock_style_scope.ShouldUpdateChildStyle()) {
@@ -3254,6 +3262,18 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
     }
     child_change = ApplyComputedStyleDiff(child_change, diff);
     UpdateCallbackSelectors(old_style.get(), new_style.get());
+  }
+
+  if (auto* context = GetDisplayLockContext()) {
+    // If the context is unlocked, then we should ensure to adjust the child
+    // change for children, since this could be the first time we unlocked the
+    // context and as a result need to process more of the subtree than we would
+    // normally. Note that if this is not the first time, then
+    // AdjustTyleRecalcChangeForChildren() won't do any adjustments.
+    if (!DisplayLockContext::IsAttributeVersion(context) &&
+        !context->IsLocked()) {
+      child_change = context->AdjustStyleRecalcChangeForChildren(child_change);
+    }
   }
 
   if (new_style) {
@@ -4129,8 +4149,8 @@ void Element::focus(const FocusParams& params) {
     return;
   }
   // If script called focus(), then the type would be none. This means we are
-  // activating because of a script action (kUser). Otherwise, this is a
-  // viewport activation (kViewport).
+  // activating because of a script action (kScriptFocus). Otherwise, this is a
+  // user activation (kUserFocus).
   ActivateDisplayLockIfNeeded(params.type == kWebFocusTypeNone
                                   ? DisplayLockActivationReason::kScriptFocus
                                   : DisplayLockActivationReason::kUserFocus);
@@ -4743,9 +4763,12 @@ DisplayLockContext* Element::GetDisplayLockContext() const {
                        : nullptr;
 }
 
-DisplayLockContext& Element::EnsureDisplayLockContext() {
-  return *EnsureElementRareData().EnsureDisplayLockContext(
+DisplayLockContext& Element::EnsureDisplayLockContext(
+    DisplayLockContextCreateMethod method) {
+  auto& result = *EnsureElementRareData().EnsureDisplayLockContext(
       this, GetExecutionContext());
+  result.SetMethod(method);
+  return result;
 }
 
 ScriptPromise Element::updateRendering(ScriptState* script_state) {
@@ -4756,6 +4779,18 @@ ScriptPromise Element::updateRendering(ScriptState* script_state) {
   auto promise = resolver->Promise();
   resolver->Resolve();
   return promise;
+}
+
+void Element::resetSubtreeRendered() {
+  if (auto* context = GetDisplayLockContext()) {
+    context->ClearActivated();
+    // Note that we need to schedule a style invalidation since we may need to
+    // adjust the lock state, which happens during style recalc for
+    // CSS-render-subtree.
+    SetNeedsStyleRecalc(
+        kLocalStyleChange,
+        StyleChangeReasonForTracing::Create(style_change_reason::kDisplayLock));
+  }
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()

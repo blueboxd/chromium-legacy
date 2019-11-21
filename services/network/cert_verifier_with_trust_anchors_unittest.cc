@@ -145,7 +145,9 @@ class CertVerifierWithTrustAnchorsTest : public testing::TestWithParam<bool> {
   base::test::TaskEnvironment task_environment_;
 };
 
-INSTANTIATE_TEST_SUITE_P(, CertVerifierWithTrustAnchorsTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         CertVerifierWithTrustAnchorsTest,
+                         testing::Bool());
 
 TEST_P(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {
   // |test_server_cert_| is untrusted, so Verify() fails.

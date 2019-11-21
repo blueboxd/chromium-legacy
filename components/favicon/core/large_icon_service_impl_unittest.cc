@@ -677,7 +677,7 @@ TEST_P(LargeIconServiceGetterTest, ShouldRecordMatchesDespiteDifferentUrls) {
 // Every test will appear with suffix /0 (param false) and /1 (param true), e.g.
 //  LargeIconServiceGetterTest.FallbackSinceTooPicky/0: get image.
 //  LargeIconServiceGetterTest.FallbackSinceTooPicky/1: get raw bitmap.
-INSTANTIATE_TEST_SUITE_P(,  // Empty instatiation name.
+INSTANTIATE_TEST_SUITE_P(All,  // Empty instatiation name.
                          LargeIconServiceGetterTest,
                          ::testing::Values(false, true));
 

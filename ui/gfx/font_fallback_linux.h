@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -29,9 +30,7 @@ GFX_EXPORT void ClearAllFontFallbackCachesForTesting();
 // Previously blink::WebFontInfo::fallbackFontForChar.
 struct FallbackFontData {
   std::string name;
-  // TODO(etienneb): This field should be a base::FilePath and renamed
-  // |filepath|.
-  std::string filename;
+  base::FilePath filepath;
   int ttc_index = 0;
   bool is_bold = false;
   bool is_italic = false;

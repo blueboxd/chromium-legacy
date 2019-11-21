@@ -1166,6 +1166,15 @@ WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
  * Resize thumbnails grid and categories list to fit the new window size.
  */
 WallpaperManager.prototype.onResize_ = function() {
+  // Resize events should be ignored during preview mode, since the app
+  // should be fullscreen and transparent, hiding the elements that are
+  // otherwise redrawn when preview mode is off (when the picker should
+  // be visible).  While chrome.app.window.current().fullscreen() is
+  // running, the bit for chrome.app.window.current().isFullscreen() may
+  // not have been flipped on yet, causing placeWallpaperPicker_() to
+  // initiate an unintended early cancellation of preview mode.
+  if (this.isDuringPreview_())
+    return;
   this.placeWallpaperPicker_();
   this.wallpaperGrid_.redraw();
   this.categoriesList_.redraw();

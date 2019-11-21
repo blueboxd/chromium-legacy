@@ -972,6 +972,9 @@ extern const char kPassiveDocumentEventListenersDescription[];
 extern const char kPassiveDocumentWheelEventListenersName[];
 extern const char kPassiveDocumentWheelEventListenersDescription[];
 
+extern const char kPassiveMixedContentWarningName[];
+extern const char kPassiveMixedContentWarningDescription[];
+
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
 
@@ -1169,6 +1172,9 @@ extern const char kSiteSettingsDescription[];
 
 extern const char kSmoothScrollingName[];
 extern const char kSmoothScrollingDescription[];
+
+extern const char kSmsReceiverCrossDeviceName[];
+extern const char kSmsReceiverCrossDeviceDescription[];
 
 extern const char kSpeculativeServiceWorkerStartOnQueryInputName[];
 extern const char kSpeculativeServiceWorkerStartOnQueryInputDescription[];

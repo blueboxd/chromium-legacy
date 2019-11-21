@@ -127,7 +127,7 @@ void MachineLevelUserCloudPolicyFetcher::SetupRegistrationAndFetchPolicy(
   DCHECK(policy_manager_->IsClientRegistered());
 
   policy_manager_->core()->service()->RefreshPolicy(
-      base::BindRepeating(&OnPolicyFetchCompleted));
+      base::BindOnce(&OnPolicyFetchCompleted));
 }
 
 void MachineLevelUserCloudPolicyFetcher::

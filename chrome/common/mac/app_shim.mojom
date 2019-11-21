@@ -10,17 +10,44 @@ import "mojo/public/mojom/base/string16.mojom";
 import "ui/gfx/image/mojom/image.mojom";
 import "url/mojom/url.mojom";
 
-[Native]
-enum AppShimLaunchType;
+enum AppShimLaunchType {
+  // Process the app shim's LaunchAppmessage and associate the shim with the
+  // given profile and app id.
+  kRegisterOnly,
+  // Do the above and launch the app.
+  kNormal,
+};
 
-[Native]
-enum AppShimLaunchResult;
+enum AppShimLaunchResult {
+  // App launched successfully.
+  kSuccess,
+  // There is already a host registered for this app.
+  kDuplicateHost,
+  // The profile was not found.
+  kProfileNotFound,
+  // The app was not found.
+  kAppNotFound,
+  // The profile was locked.
+  kProfileLocked,
+  // The app shim did not pass code signing validation.
+  kFailedValidation,
+};
 
-[Native]
-enum AppShimFocusType;
+enum AppShimFocusType {
+  // Just focus the app.
+  kNormal,
+  // Focus the app or launch it if it has no windows open.
+  kReopen,
+  // Open the given file in the app.
+  kOpenFiles,
+};
 
-[Native]
-enum AppShimAttentionType;
+enum AppShimAttentionType {
+  // Removes any active attention request.
+  kCancel,
+  // Bounces the shim in the dock continuously.
+  kCritical,
+};
 
 // An entry in the profiles NSMenu.
 struct ProfileMenuItem {

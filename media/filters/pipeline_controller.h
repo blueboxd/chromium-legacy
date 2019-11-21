@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
@@ -128,6 +129,7 @@ class MEDIA_EXPORT PipelineController {
   void SetPlaybackRate(double playback_rate);
   float GetVolume() const;
   void SetVolume(float volume);
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint);
   base::TimeDelta GetMediaTime() const;
   Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
   base::TimeDelta GetMediaDuration() const;

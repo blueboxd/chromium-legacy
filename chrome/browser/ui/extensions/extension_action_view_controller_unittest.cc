@@ -406,7 +406,7 @@ TEST_P(ExtensionActionViewControllerGrayscaleTest,
   RunGrayscaleTest(PermissionType::kScriptableHost);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionViewControllerGrayscaleTest,
                          testing::Values(false, true));
 

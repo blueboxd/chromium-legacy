@@ -6726,7 +6726,7 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_LastFieldRationalized) {
   EXPECT_EQ(ADDRESS_HOME_STATE, forms[0]->field(5)->Type().GetStorableType());
 }
 
-INSTANTIATE_TEST_SUITE_P(, ParameterizedFormStructureTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedFormStructureTest, testing::Bool());
 
 // Tests that, when the flag is off, we will not set the predicted type to
 // unknown for fields that have no server data and autocomplete off, and when
@@ -6953,11 +6953,11 @@ class RationalizationFieldTypeRelationshipsTest
       public testing::WithParamInterface<
           RationalizationTypeRelationshipsTestParams> {};
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          RationalizationFieldTypeFilterTest,
                          testing::Values(PHONE_HOME_COUNTRY_CODE));
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          RationalizationFieldTypeRelationshipsTest,
                          testing::Values(
                              RationalizationTypeRelationshipsTestParams{

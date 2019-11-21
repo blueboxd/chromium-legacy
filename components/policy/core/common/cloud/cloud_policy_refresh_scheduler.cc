@@ -341,8 +341,8 @@ void CloudPolicyRefreshScheduler::PerformRefresh() {
     // and OnPolicyRefreshed() callbacks. Next refresh will be scheduled in
     // OnPolicyFetched().
     service_->RefreshPolicy(
-        base::BindRepeating(&CloudPolicyRefreshScheduler::OnPolicyRefreshed,
-                            base::Unretained(this)));
+        base::BindOnce(&CloudPolicyRefreshScheduler::OnPolicyRefreshed,
+                       base::Unretained(this)));
     return;
   }
 

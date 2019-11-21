@@ -294,12 +294,25 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     gl_initialized = false;
 #endif  // OS_LINUX
   }
-  if (!gl_initialized)
-    gl_initialized = gl::init::InitializeGLNoExtensionsOneOff();
+
   if (!gl_initialized) {
-    VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
-    return false;
+    gl_initialized = gl::init::InitializeStaticGLBindingsOneOff();
+
+    if (!gl_initialized) {
+      VLOG(1) << "gl::init::InitializeStaticGLBindingsOneOff failed";
+      return false;
+    }
+
+    if (gl::GetGLImplementation() != gl::kGLImplementationDisabled) {
+      gl_initialized =
+          gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ false);
+      if (!gl_initialized) {
+        VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
+        return false;
+      }
+    }
   }
+
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
   // Compute passthrough decoder status before ComputeGpuFeatureInfo below.
@@ -325,7 +338,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         return false;
 #else
         gl::init::ShutdownGL(true);
-        if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+        if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
           VLOG(1)
               << "gl::init::InitializeGLNoExtensionsOneOff with SwiftShader "
               << "failed";
@@ -544,7 +557,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   bool use_swiftshader = EnableSwiftShaderIfNeeded(
       command_line, gpu_feature_info_,
       gpu_preferences_.disable_software_rasterizer, needs_more_info);
-  if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+  if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
     VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
     return;
   }
@@ -559,7 +572,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
         gpu_preferences_.disable_software_rasterizer, false);
     if (use_swiftshader) {
       gl::init::ShutdownGL(true);
-      if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+      if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed "
                 << "with SwiftShader";
         return;
@@ -597,7 +610,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
         gpu_preferences_.disable_software_rasterizer, false);
     if (use_swiftshader) {
       gl::init::ShutdownGL(true);
-      if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+      if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
         VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed "
                 << "with SwiftShader";
         return;

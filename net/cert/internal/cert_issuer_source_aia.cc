@@ -7,7 +7,7 @@
 #include "base/strings/string_piece.h"
 #include "net/cert/cert_net_fetcher.h"
 #include "net/cert/internal/cert_errors.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_util.h"
 #include "url/gurl.h"
 

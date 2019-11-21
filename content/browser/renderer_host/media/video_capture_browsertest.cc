@@ -345,7 +345,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoCaptureBrowserTest,
                          Combine(Values(0, 1, 2),             // DeviceIndex
                                  Values(gfx::Size(640, 480),  // Resolution

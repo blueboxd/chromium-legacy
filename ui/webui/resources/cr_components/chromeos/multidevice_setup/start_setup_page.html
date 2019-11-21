@@ -84,6 +84,24 @@
       #multidevice-summary-message a {
         display: inline-block;
       }
+
+      /* On devices with small screens, use a single-column layout. */
+      @media screen and (max-width: 767px) {
+        #selector-and-details-container {
+          @apply --layout-vertical;
+          margin-top: 32px;
+        }
+
+        #feature-details-container {
+          border-inline-start: none;
+          margin-top: 32px;
+          padding-inline-start: inherit;
+        }
+
+        .feature-detail {
+          min-height: 45px;
+        }
+      }
     </style>
 
     <ui-page header-text="[[i18nDynamic(locale, 'startSetupPageHeader')]]"

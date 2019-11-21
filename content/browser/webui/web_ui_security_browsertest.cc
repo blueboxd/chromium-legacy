@@ -182,30 +182,24 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUICrossSiteSubframe) {
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
             child->current_frame_host()->GetSiteInstance());
 
-  // Using a browser-initiated navigation will create a pending
-  // NavigationEntry based on the first commit. In that case, the bindings
-  // saved on the NavigationEntry are from the main frame WebUI and are used
-  // for the navigation, which mismatch the ones being used by the subframe.
-  // Navigate the child frame through a renderer-initiated navigation for now
-  // until the browser-initiated path supports this scenario.
-  // TODO(nasko): Add coverage for browser-initiated navigations when they no
-  // longer have this limitation.
-  TestFrameNavigationObserver observer(child);
-  GURL child_frame_url(
-      GetWebUIURL("web-ui-subframe/title1.html?noxfo=true&bindings=" +
-                  base::NumberToString(BINDINGS_POLICY_MOJO_WEB_UI)));
-  EXPECT_TRUE(ExecJs(shell(),
-                     JsReplace("document.getElementById($1).src = $2;",
-                               "test_iframe", child_frame_url),
-                     EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
-  observer.Wait();
-  EXPECT_TRUE(observer.last_navigation_succeeded());
-  EXPECT_EQ(child_frame_url, observer.last_committed_url());
-  EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI,
-            child->current_frame_host()->GetEnabledBindings());
-
-  EXPECT_EQ(url::Origin::Create(child_frame_url),
-            child->current_frame_host()->GetLastCommittedOrigin());
+  // Navigate the subframe using renderer-initiated navigation.
+  {
+    TestFrameNavigationObserver observer(child);
+    GURL child_frame_url(
+        GetWebUIURL("web-ui-subframe/title2.html?noxfo=true&bindings=" +
+                    base::NumberToString(BINDINGS_POLICY_MOJO_WEB_UI)));
+    EXPECT_TRUE(ExecJs(shell(),
+                       JsReplace("document.getElementById($1).src = $2;",
+                                 "test_iframe", child_frame_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(child_frame_url, observer.last_committed_url());
+    EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI,
+              child->current_frame_host()->GetEnabledBindings());
+    EXPECT_EQ(url::Origin::Create(child_frame_url),
+              child->current_frame_host()->GetLastCommittedOrigin());
+  }
   EXPECT_EQ(GetWebUIURL("web-ui-subframe"),
             child->current_frame_host()->GetSiteInstance()->GetSiteURL());
   EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
@@ -216,6 +210,39 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest, WebUICrossSiteSubframe) {
             child->current_frame_host()->web_ui());
   EXPECT_NE(root->current_frame_host()->GetEnabledBindings(),
             child->current_frame_host()->GetEnabledBindings());
+
+  // Navigate once more using renderer-initiated navigation.
+  {
+    TestFrameNavigationObserver observer(child);
+    GURL child_frame_url(
+        GetWebUIURL("web-ui-subframe/title3.html?noxfo=true&bindings=" +
+                    base::NumberToString(BINDINGS_POLICY_MOJO_WEB_UI)));
+    EXPECT_TRUE(ExecJs(shell(),
+                       JsReplace("document.getElementById($1).src = $2;",
+                                 "test_iframe", child_frame_url),
+                       EXECUTE_SCRIPT_DEFAULT_OPTIONS, 1 /* world_id */));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(child_frame_url, observer.last_committed_url());
+    EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI,
+              child->current_frame_host()->GetEnabledBindings());
+    EXPECT_EQ(url::Origin::Create(child_frame_url),
+              child->current_frame_host()->GetLastCommittedOrigin());
+  }
+
+  // Navigate the subframe using browser-initiated navigation.
+  {
+    TestFrameNavigationObserver observer(child);
+    GURL child_frame_url(
+        GetWebUIURL("web-ui-subframe/title1.html?noxfo=true&bindings=" +
+                    base::NumberToString(BINDINGS_POLICY_MOJO_WEB_UI)));
+    NavigateFrameToURL(child, child_frame_url);
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+    EXPECT_EQ(child_frame_url, observer.last_committed_url());
+    EXPECT_EQ(BINDINGS_POLICY_MOJO_WEB_UI,
+              child->current_frame_host()->GetEnabledBindings());
+  }
 }
 
 // Verify that SiteInstance and WebUI reuse happens in subframes as well.

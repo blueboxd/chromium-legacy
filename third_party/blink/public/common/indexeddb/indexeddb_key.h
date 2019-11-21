@@ -70,6 +70,8 @@ class BLINK_COMMON_EXPORT IndexedDBKey {
   // auto-generated primary key.
   IndexedDBKey FillHoles(const IndexedDBKey&) const WARN_UNUSED_RESULT;
 
+  std::string DebugString() const;
+
  private:
   int CompareTo(const IndexedDBKey& other) const;
 

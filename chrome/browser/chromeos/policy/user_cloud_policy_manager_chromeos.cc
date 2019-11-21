@@ -449,10 +449,9 @@ void UserCloudPolicyManagerChromeOS::OnRegistrationStateChanged(
 
     // If we're blocked on the policy fetch, now is a good time to issue it.
     if (client()->is_registered()) {
-      service()->RefreshPolicy(
-          base::Bind(
-              &UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete,
-              base::Unretained(this)));
+      service()->RefreshPolicy(base::BindOnce(
+          &UserCloudPolicyManagerChromeOS::OnInitialPolicyFetchComplete,
+          base::Unretained(this)));
     } else {
       // If the client has switched to not registered, we bail out as this
       // indicates the cloud policy setup flow has been aborted.

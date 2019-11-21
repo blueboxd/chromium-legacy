@@ -28,10 +28,10 @@ js_library("internet_page") {
     "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",
-    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
   externs_list = [
     "$externs_path/chrome_send.js",
@@ -92,10 +92,10 @@ js_library("internet_subpage") {
     ":internet_page_browser_proxy",
     "..:route",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
   externs_list = [ "$externs_path/networking_private.js" ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
@@ -107,10 +107,10 @@ js_library("network_proxy_section") {
     "../controls:settings_checkbox",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:network_proxy",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js/chromeos:onc_mojo",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
 }
@@ -118,28 +118,28 @@ js_library("network_proxy_section") {
 js_library("network_summary") {
   deps = [
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/js:assert",
-    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
 }
 
 js_library("network_summary_item") {
   deps = [
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_strings",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
   extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
 }
 
 js_library("tether_connection_dialog") {
   deps = [
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
-    "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
 }

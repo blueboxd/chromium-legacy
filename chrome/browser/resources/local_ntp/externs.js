@@ -417,7 +417,6 @@ let ACMatchClassification;
 /**
  * @typedef {{
  *   allowedToBeDefaultMatch: boolean,
- *   canDisplay: boolean,
  *   contents: string,
  *   contentsClass: !Array<!ACMatchClassification>,
  *   description: string,
@@ -447,6 +446,8 @@ window.chrome.embeddedSearch.searchBox.autocompleteresultchanged;
 /**
  * @param {number} line
  * @param {string} url
+ * @param {boolean} areMatchesShowing
+ * @param {number} timeElapsedSinceLastFocus
  * @param {number} button
  * @param {boolean} altKey
  * @param {boolean} ctrlKey

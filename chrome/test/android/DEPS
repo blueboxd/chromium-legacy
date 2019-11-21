@@ -3,3 +3,7 @@ include_rules = [
   "+components/sync/android/java/src/org/chromium/components/sync/signin",
   "+components/sync/test/android/javatests/src/org/chromium/components/sync/test/util",
 ]
+
+specific_include_rules = {
+  "SigninTestUtil.java": ["+components/signin/public/identity_manager/android/java/src/org/chromium/components/signin/identitymanager/OAuth2TokenService.java"]
+}

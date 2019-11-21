@@ -18,7 +18,7 @@
 #include "base/test/task_environment.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_test_nss_db.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/ssl/client_cert_identity_test_util.h"

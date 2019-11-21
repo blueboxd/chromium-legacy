@@ -218,7 +218,7 @@ TEST_F(BiodClientTest, TestStartEnrollSession) {
   dbus::ObjectPath returned_path(kInvalidTestPath);
   client_->StartEnrollSession(
       kFakeId, kFakeLabel,
-      base::Bind(&test_utils::CopyObjectPath, &returned_path));
+      base::BindOnce(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(dbus::ObjectPath(), returned_path);
 
@@ -230,7 +230,7 @@ TEST_F(BiodClientTest, TestStartEnrollSession) {
   returned_path = dbus::ObjectPath(kInvalidTestPath);
   client_->StartEnrollSession(
       kFakeId, kFakeLabel,
-      base::Bind(&test_utils::CopyObjectPath, &returned_path));
+      base::BindOnce(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(dbus::ObjectPath(), returned_path);
 
@@ -245,7 +245,7 @@ TEST_F(BiodClientTest, TestStartEnrollSession) {
   returned_path = dbus::ObjectPath(kInvalidTestPath);
   client_->StartEnrollSession(
       kFakeId, kFakeLabel,
-      base::Bind(&test_utils::CopyObjectPath, &returned_path));
+      base::BindOnce(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kFakeObjectPath, returned_path);
 }
@@ -269,7 +269,7 @@ TEST_F(BiodClientTest, TestGetRecordsForUser) {
       dbus::ObjectPath(kInvalidTestPath)};
   client_->GetRecordsForUser(
       kFakeId,
-      base::Bind(&test_utils::CopyObjectPathArray, &returned_object_paths));
+      base::BindOnce(&test_utils::CopyObjectPathArray, &returned_object_paths));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kFakeObjectPaths, returned_object_paths);
 
@@ -280,7 +280,7 @@ TEST_F(BiodClientTest, TestGetRecordsForUser) {
   returned_object_paths = {dbus::ObjectPath(kInvalidTestPath)};
   client_->GetRecordsForUser(
       kFakeId,
-      base::Bind(&test_utils::CopyObjectPathArray, &returned_object_paths));
+      base::BindOnce(&test_utils::CopyObjectPathArray, &returned_object_paths));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(std::vector<dbus::ObjectPath>(), returned_object_paths);
 }
@@ -316,7 +316,7 @@ TEST_F(BiodClientTest, TestStartAuthentication) {
   AddMethodExpectation(biod::kBiometricsManagerStartAuthSessionMethod, nullptr);
   dbus::ObjectPath returned_path(kInvalidTestPath);
   client_->StartAuthSession(
-      base::Bind(&test_utils::CopyObjectPath, &returned_path));
+      base::BindOnce(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(dbus::ObjectPath(), returned_path);
 
@@ -327,7 +327,7 @@ TEST_F(BiodClientTest, TestStartAuthentication) {
                        std::move(bad_response));
   returned_path = dbus::ObjectPath(kInvalidTestPath);
   client_->StartAuthSession(
-      base::Bind(&test_utils::CopyObjectPath, &returned_path));
+      base::BindOnce(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(dbus::ObjectPath(), returned_path);
 
@@ -341,7 +341,7 @@ TEST_F(BiodClientTest, TestStartAuthentication) {
                        std::move(response));
   returned_path = dbus::ObjectPath(kInvalidTestPath);
   client_->StartAuthSession(
-      base::Bind(&test_utils::CopyObjectPath, &returned_path));
+      base::BindOnce(&test_utils::CopyObjectPath, &returned_path));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kFakeObjectPath, returned_path);
 }
@@ -357,8 +357,8 @@ TEST_F(BiodClientTest, TestRequestBiometricType) {
   // return this exact biometric type.
   biometric_type_ = biod::BIOMETRIC_TYPE_MAX;
   AddMethodExpectation(dbus::kDBusPropertiesGet, std::move(response));
-  client_->RequestType(
-      base::Bind(&BiodClientTest::GetBiometricType, base::Unretained(this)));
+  client_->RequestType(base::BindOnce(&BiodClientTest::GetBiometricType,
+                                      base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kFakeBiometricType, biometric_type_);
 
@@ -366,8 +366,8 @@ TEST_F(BiodClientTest, TestRequestBiometricType) {
   // type.
   biometric_type_ = biod::BIOMETRIC_TYPE_MAX;
   AddMethodExpectation(dbus::kDBusPropertiesGet, nullptr);
-  client_->RequestType(
-      base::Bind(&BiodClientTest::GetBiometricType, base::Unretained(this)));
+  client_->RequestType(base::BindOnce(&BiodClientTest::GetBiometricType,
+                                      base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(biod::BIOMETRIC_TYPE_UNKNOWN, biometric_type_);
 }
@@ -385,7 +385,8 @@ TEST_F(BiodClientTest, TestRequestRecordLabel) {
   std::string returned_label = kInvalidString;
   AddMethodExpectation(dbus::kDBusPropertiesGet, std::move(response));
   client_->RequestRecordLabel(
-      kFakeRecordPath, base::Bind(&test_utils::CopyString, &returned_label));
+      kFakeRecordPath,
+      base::BindOnce(&test_utils::CopyString, &returned_label));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kFakeLabel, returned_label);
 
@@ -393,7 +394,8 @@ TEST_F(BiodClientTest, TestRequestRecordLabel) {
   returned_label = kInvalidString;
   AddMethodExpectation(dbus::kDBusPropertiesGet, nullptr);
   client_->RequestRecordLabel(
-      kFakeRecordPath, base::Bind(&test_utils::CopyString, &returned_label));
+      kFakeRecordPath,
+      base::BindOnce(&test_utils::CopyString, &returned_label));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ("", returned_label);
 }

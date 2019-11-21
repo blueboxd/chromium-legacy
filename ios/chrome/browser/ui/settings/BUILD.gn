@@ -71,6 +71,7 @@ source_set("settings") {
     "voice_search_table_view_controller.mm",
   ]
   deps = [
+    ":constants",
     ":settings_root",
     "resources:app_icon_placeholder",
     "resources:encryption_error",
@@ -197,6 +198,15 @@ source_set("settings") {
     "LocalAuthentication.framework",
     "UIKit.framework",
   ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "settings_table_view_controller_constants.h",
+    "settings_table_view_controller_constants.mm",
+  ]
+  libs = [ "Foundation.framework" ]
 }
 
 source_set("test_support") {
@@ -354,8 +364,8 @@ source_set("eg_tests") {
   ]
 
   deps = [
+    ":constants",
     ":eg_test_support",
-    ":settings",
     "//base",
     "//base/test:test_support",
     "//build:branding_buildflags",

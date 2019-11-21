@@ -66,7 +66,7 @@ class FileSystemBrowserTest : public ContentBrowserTest,
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(, FileSystemBrowserTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, FileSystemBrowserTest, ::testing::Bool());
 
 class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
  public:
@@ -95,7 +95,7 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FileSystemBrowserTestWithLowQuota,
                          ::testing::Bool());
 

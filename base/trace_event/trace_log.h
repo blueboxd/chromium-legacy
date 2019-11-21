@@ -201,11 +201,7 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
                                                  TraceEventHandle* handle);
   using OnFlushFunction = void (*)();
   using UpdateDurationFunction =
-      void (*)(const unsigned char* category_group_enabled,
-               const char* name,
-               TraceEventHandle handle,
-               int thread_id,
-               bool explicit_timestamps,
+      void (*)(TraceEventHandle handle,
                const TimeTicks& now,
                const ThreadTicks& thread_now,
                ThreadInstructionCount thread_instruction_now);
@@ -296,8 +292,6 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
       const unsigned char* category_group_enabled,
       const char* name,
       TraceEventHandle handle,
-      int thread_id,
-      bool explicit_timestamps,
       const TimeTicks& now,
       const ThreadTicks& thread_now,
       ThreadInstructionCount thread_instruction_now);

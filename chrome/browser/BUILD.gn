@@ -3,12 +3,14 @@
 # found in the LICENSE file.
 
 import("//base/allocator/allocator.gni")
+import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
+import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
@@ -60,6 +62,11 @@ if (is_win) {
       "/DELAYLOAD:pdh.dll",  # The task manager is rarely used.
     ]
   }
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "ENABLE_KALEIDOSCOPE=$enable_kaleidoscope" ]
 }
 
 # This proto library is used for non-android NTPs below.
@@ -307,6 +314,8 @@ jumbo_static_library("browser") {
     "component_updater/crl_set_component_installer.h",
     "component_updater/file_type_policies_component_installer.cc",
     "component_updater/file_type_policies_component_installer.h",
+    "component_updater/games_component_installer.cc",
+    "component_updater/games_component_installer.h",
     "component_updater/mei_preload_component_installer.cc",
     "component_updater/mei_preload_component_installer.h",
     "component_updater/optimization_hints_component_installer.cc",
@@ -1112,6 +1121,8 @@ jumbo_static_library("browser") {
     "performance_manager/observers/isolation_context_metrics.h",
     "performance_manager/observers/metrics_collector.cc",
     "performance_manager/observers/metrics_collector.h",
+    "performance_manager/performance_manager_features.cc",
+    "performance_manager/performance_manager_features.h",
     "performance_manager/persistence/site_data/exponential_moving_average.cc",
     "performance_manager/persistence/site_data/exponential_moving_average.h",
     "performance_manager/persistence/site_data/feature_usage.h",
@@ -1923,6 +1934,7 @@ jumbo_static_library("browser") {
   deps = [
     ":active_use_util",
     ":availability_protos",
+    ":buildflags",
     ":expired_flags_list",
     ":ntp_background_proto",
     ":resource_prefetch_predictor_proto",
@@ -2679,12 +2691,14 @@ jumbo_static_library("browser") {
       "android/webapk/webapk_update_manager.cc",
       "android/webapk/webapk_web_manifest_checker.cc",
       "android/webapk/webapk_web_manifest_checker.h",
+      "android/webapps/add_to_homescreen_coordinator.cc",
+      "android/webapps/add_to_homescreen_coordinator.h",
       "android/webapps/add_to_homescreen_data_fetcher.cc",
       "android/webapps/add_to_homescreen_data_fetcher.h",
       "android/webapps/add_to_homescreen_installer.cc",
       "android/webapps/add_to_homescreen_installer.h",
-      "android/webapps/add_to_homescreen_manager.cc",
-      "android/webapps/add_to_homescreen_manager.h",
+      "android/webapps/add_to_homescreen_mediator.cc",
+      "android/webapps/add_to_homescreen_mediator.h",
       "android/webapps/add_to_homescreen_params.cc",
       "android/webapps/add_to_homescreen_params.h",
       "android/webapps/webapp_registry.cc",
@@ -2711,8 +2725,6 @@ jumbo_static_library("browser") {
       "autofill/manual_filling_view_interface.h",
       "banners/app_banner_manager_android.cc",
       "banners/app_banner_manager_android.h",
-      "banners/app_banner_ui_delegate_android.cc",
-      "banners/app_banner_ui_delegate_android.h",
       "chrome_browser_field_trials_mobile.cc",
       "chrome_browser_field_trials_mobile.h",
       "data_reduction_proxy/data_reduction_promo_infobar_delegate_android.cc",
@@ -4381,6 +4393,10 @@ jumbo_static_library("browser") {
       "ssl/captive_portal_metrics_recorder.cc",
       "ssl/captive_portal_metrics_recorder.h",
     ]
+  }
+
+  if (enable_kaleidoscope) {
+    deps += [ "//chrome/browser/media/kaleidoscope/internal" ]
   }
 
   if (enable_legacy_desktop_in_product_help) {

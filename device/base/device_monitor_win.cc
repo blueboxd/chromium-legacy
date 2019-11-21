@@ -47,8 +47,8 @@ class DeviceMonitorMessageWindow {
       g_message_window = new DeviceMonitorMessageWindow();
       if (g_message_window->Init()) {
         base::AtExitManager::RegisterTask(
-            base::Bind(&base::DeletePointer<DeviceMonitorMessageWindow>,
-                       base::Unretained(g_message_window)));
+            base::BindOnce(&base::DeletePointer<DeviceMonitorMessageWindow>,
+                           base::Unretained(g_message_window)));
       } else {
         delete g_message_window;
         g_message_window = nullptr;
@@ -83,8 +83,8 @@ class DeviceMonitorMessageWindow {
   bool Init() {
     window_.reset(new base::win::MessageWindow());
     if (!window_->CreateNamed(
-            base::Bind(&DeviceMonitorMessageWindow::HandleMessage,
-                       base::Unretained(this)),
+            base::BindRepeating(&DeviceMonitorMessageWindow::HandleMessage,
+                                base::Unretained(this)),
             base::string16(kWindowClassName))) {
       LOG(ERROR) << "Failed to create message window: " << kWindowClassName;
       return false;

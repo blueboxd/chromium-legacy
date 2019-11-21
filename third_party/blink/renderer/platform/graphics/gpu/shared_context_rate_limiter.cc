@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
@@ -22,14 +23,14 @@ SharedContextRateLimiter::SharedContextRateLimiter(unsigned max_pending_ticks)
   if (!context_provider_)
     return;
 
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-    std::unique_ptr<Extensions3DUtil> extensions_util =
-        Extensions3DUtil::Create(gl);
+  gpu::raster::RasterInterface* raster_interface =
+      context_provider_->RasterInterface();
+  if (raster_interface &&
+      raster_interface->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+    const auto& gpu_capabilities = context_provider_->GetCapabilities();
     // TODO(junov): when the GLES 3.0 command buffer is ready, we could use
     // fenceSync instead.
-    can_use_sync_queries_ =
-        extensions_util->SupportsExtension("GL_CHROMIUM_sync_query");
+    can_use_sync_queries_ = gpu_capabilities.sync_query;
   }
 }
 
@@ -37,24 +38,28 @@ void SharedContextRateLimiter::Tick() {
   if (!context_provider_)
     return;
 
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  if (!gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
+  gpu::raster::RasterInterface* raster_interface =
+      context_provider_->RasterInterface();
+  if (!raster_interface ||
+      raster_interface->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
     return;
 
   queries_.push_back(0);
   if (can_use_sync_queries_) {
-    gl->GenQueriesEXT(1, &queries_.back());
-    gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, queries_.back());
-    gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
+    raster_interface->GenQueriesEXT(1, &queries_.back());
+    raster_interface->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM,
+                                    queries_.back());
+    raster_interface->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
   }
   if (queries_.size() > max_pending_ticks_) {
     if (can_use_sync_queries_) {
       GLuint result;
-      gl->GetQueryObjectuivEXT(queries_.front(), GL_QUERY_RESULT_EXT, &result);
-      gl->DeleteQueriesEXT(1, &queries_.front());
+      raster_interface->GetQueryObjectuivEXT(queries_.front(),
+                                             GL_QUERY_RESULT_EXT, &result);
+      raster_interface->DeleteQueriesEXT(1, &queries_.front());
       queries_.pop_front();
     } else {
-      gl->Finish();
+      raster_interface->Finish();
       Reset();
     }
   }
@@ -64,11 +69,12 @@ void SharedContextRateLimiter::Reset() {
   if (!context_provider_)
     return;
 
-  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
-  if (can_use_sync_queries_ && gl &&
-      gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+  gpu::raster::RasterInterface* raster_interface =
+      context_provider_->RasterInterface();
+  if (can_use_sync_queries_ && raster_interface &&
+      raster_interface->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     while (!queries_.empty()) {
-      gl->DeleteQueriesEXT(1, &queries_.front());
+      raster_interface->DeleteQueriesEXT(1, &queries_.front());
       queries_.pop_front();
     }
   } else {

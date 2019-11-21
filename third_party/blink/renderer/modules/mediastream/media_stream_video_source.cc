@@ -51,7 +51,7 @@ void MediaStreamVideoSource::AddTrack(
     const VideoCaptureDeliverFrameCB& frame_callback,
     const VideoTrackSettingsCallback& settings_callback,
     const VideoTrackFormatCallback& format_callback,
-    const ConstraintsCallback& callback) {
+    ConstraintsOnceCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!base::Contains(tracks_, track));
   tracks_.push_back(track);
@@ -60,7 +60,7 @@ void MediaStreamVideoSource::AddTrack(
   pending_tracks_.push_back(PendingTrackInfo(
       track, frame_callback, settings_callback, format_callback,
       std::make_unique<VideoTrackAdapterSettings>(track_adapter_settings),
-      callback));
+      std::move(callback)));
 
   switch (state_) {
     case NEW: {
@@ -366,7 +366,7 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   std::vector<PendingTrackInfo> pending_track_descriptors;
   pending_track_descriptors.swap(pending_tracks_);
-  for (const auto& track_info : pending_track_descriptors) {
+  for (auto& track_info : pending_track_descriptors) {
     auto result = mojom::blink::MediaStreamRequestResult::OK;
     if (state_ != STARTED) {
       result =
@@ -385,7 +385,7 @@ void MediaStreamVideoSource::FinalizeAddPendingTracks() {
       OnLog(
           "MediaStreamVideoSource invoking callback indicating result of "
           "starting track.");
-      track_info.callback.Run(this, result, WebString());
+      std::move(track_info.callback).Run(this, result, WebString());
     } else {
       OnLog(
           "MediaStreamVideoSource dropping event indicating result of starting "
@@ -452,13 +452,13 @@ MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
     const VideoTrackSettingsCallback& settings_callback,
     const VideoTrackFormatCallback& format_callback,
     std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
-    const ConstraintsCallback& callback)
+    ConstraintsOnceCallback callback)
     : track(track),
       frame_callback(frame_callback),
       settings_callback(settings_callback),
       format_callback(format_callback),
       adapter_settings(std::move(adapter_settings)),
-      callback(callback) {}
+      callback(std::move(callback)) {}
 
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
     PendingTrackInfo&& other) = default;

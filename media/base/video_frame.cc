@@ -784,7 +784,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateTransparentFrame(
   const base::TimeDelta kZero;
   scoped_refptr<VideoFrame> frame =
       CreateFrame(PIXEL_FORMAT_I420A, size, gfx::Rect(size), size, kZero);
-  FillYUVA(frame.get(), kBlackY, kBlackUV, kBlackUV, kTransparentA);
+  if (frame)
+    FillYUVA(frame.get(), kBlackY, kBlackUV, kBlackUV, kTransparentA);
   return frame;
 }
 

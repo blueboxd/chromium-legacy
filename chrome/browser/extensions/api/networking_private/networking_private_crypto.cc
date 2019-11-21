@@ -14,7 +14,7 @@
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/internal/signature_algorithm.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 

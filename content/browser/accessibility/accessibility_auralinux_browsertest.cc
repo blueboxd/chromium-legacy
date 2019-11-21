@@ -7,6 +7,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_browsertest.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -1004,7 +1005,14 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 }
 #endif  //  defined(ATK_CHECK_VERSION) && ATK_CHECK_VERSION(2, 32, 0)
 
-IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestSetSelection) {
+#if defined(OS_LINUX)
+// Flaky on crbug.com/1026149
+#define MAYBE_TestSetSelection DISABLED_TestSetSelection
+#else
+#define MAYBE_TestSetSelection TestSetSelection
+#endif
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       MAYBE_TestSetSelection) {
   AtkText* atk_text = SetUpInputField();
 
   int start_offset, end_offset;

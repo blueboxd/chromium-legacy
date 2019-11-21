@@ -31,7 +31,7 @@
       <template is="dom-if"
           if="[[isDiscoveredPrinter_(printerEntry.printerType)]]">
         <cr-button id="setupPrinterButton"
-            on-click="onOpenManufacturerModelDialogTap_"
+            on-click="onAddDiscoveredPrinterTap_"
             aria-label$="[[getSetupButtonAria_()]]"
             aria-describedby="printerSubtext">
           $i18n{setupPrinter}

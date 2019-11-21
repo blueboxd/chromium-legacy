@@ -1278,34 +1278,46 @@ class PpdProviderImpl : public PpdProvider {
     }
 
     base::Optional<base::Value> ret_list = base::JSONReader::Read(buffer);
-    if (!ret_list.has_value() || !ret_list.value().is_list()) {
+    if (!ret_list.has_value()) {
+      LOG(ERROR) << "Failed to read contents of retrieved JSON";
+      return PpdProvider::INTERNAL_ERROR;
+    }
+
+    if (!ret_list.value().is_list()) {
+      LOG(ERROR) << "JSON object is not a list";
       return PpdProvider::INTERNAL_ERROR;
     }
 
     *top_list = std::move(ret_list.value().GetList());
     for (const auto& entry : *top_list) {
       if (!entry.is_list()) {
+        LOG(ERROR) << "Found unexpected non-list entry in JSON object";
         return PpdProvider::INTERNAL_ERROR;
       }
 
       // entry must start with |num_strings| strings
       base::span<const base::Value> list = entry.GetList();
       if (list.size() < num_strings) {
+        LOG(ERROR) << "List is smaller than expected";
         return PpdProvider::INTERNAL_ERROR;
       }
       for (size_t i = 0; i < num_strings; ++i) {
         if (!list[i].is_string()) {
+          LOG(ERROR) << "Found unexpected non-string value in list";
           return PpdProvider::INTERNAL_ERROR;
         }
       }
 
-      // entry may optionally have a last arg that must be a dict
-      if (list.size() > num_strings && !list[num_strings].is_dict()) {
+      // entry may not have more than |num_strings| strings and one dict
+      if (list.size() > num_strings + 1) {
+        LOG(ERROR) << "List is larger than expected";
         return PpdProvider::INTERNAL_ERROR;
       }
 
-      // entry may not have more than |num_strings| strings and one dict
-      if (list.size() > num_strings + 1) {
+      // entry may optionally have a last arg that must be a dict
+      if (list.size() == num_strings + 1 && !list[num_strings].is_dict()) {
+        LOG(ERROR) << "List size exceeds " << num_strings
+                   << " and final element is not a dictionary";
         return PpdProvider::INTERNAL_ERROR;
       }
     }

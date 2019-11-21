@@ -69,6 +69,12 @@ class NetworkHandler : public DevToolsDomainHandler,
   static bool AddInterceptedResourceType(
       const std::string& resource_type,
       base::flat_set<ResourceType>* intercepted_resource_types);
+  static std::unique_ptr<Array<Network::Cookie>> BuildCookieArray(
+      const std::vector<net::CanonicalCookie>& cookie_list);
+  static void SetCookies(
+      StoragePartition* storage_partition,
+      std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
+      base::OnceCallback<void(bool)> callback);
 
   void Wire(UberDispatcher* dispatcher) override;
   void SetRenderer(int render_process_id,

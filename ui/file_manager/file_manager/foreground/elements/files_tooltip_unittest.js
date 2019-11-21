@@ -113,6 +113,7 @@ function testHover(callback) {
             const label = tooltip.shadowRoot.querySelector('#label');
             assertEquals('Chocolate!', label.textContent.trim());
             assertTrue(!!tooltip.getAttribute('visible'));
+            assertEquals(tooltip.getAttribute('aria-hidden'), 'false');
             assertEquals('4px', tooltip.style.left);
             assertEquals('70px', tooltip.style.top);
 
@@ -157,6 +158,7 @@ function testClickHides(callback) {
           })
           .then(() => {
             assertFalse(!!tooltip.getAttribute('visible'));
+            assertEquals(tooltip.getAttribute('aria-hidden'), 'true');
           }),
       callback);
 }

@@ -1065,7 +1065,9 @@ TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(, IsolatedWorldCSPTest, testing::Values(true, false));
+INSTANTIATE_TEST_SUITE_P(All,
+                         IsolatedWorldCSPTest,
+                         testing::Values(true, false));
 
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   NavigateTo(KURL("https://www.example.com/"), "", "sandbox");

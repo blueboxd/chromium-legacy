@@ -21,8 +21,8 @@ MockCloudPolicyService::MockCloudPolicyService(CloudPolicyClient* client,
 MockCloudPolicyService::~MockCloudPolicyService() = default;
 
 void MockCloudPolicyService::InvokeRefreshPolicy(
-    const RefreshPolicyCallback& callback) {
-  CloudPolicyService::RefreshPolicy(callback);
+    RefreshPolicyCallback callback) {
+  CloudPolicyService::RefreshPolicy(std::move(callback));
 }
 
 MockCloudPolicyServiceObserver::MockCloudPolicyServiceObserver() = default;

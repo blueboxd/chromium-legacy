@@ -17,7 +17,9 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
+import org.chromium.payments.mojom.PaymentShippingOption;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -388,21 +390,22 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     public void invokePaymentApp(String id, String merchantName, String origin, String iframeOrigin,
             byte[][] unusedCertificateChain, Map<String, PaymentMethodData> methodData,
             PaymentItem total, List<PaymentItem> displayItems,
-            Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback) {
+            Map<String, PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
+            List<PaymentShippingOption> shippingOptions, InstrumentDetailsCallback callback) {
         assert mPaymentHandlerHost != null;
         if (mNeedsInstallation) {
             assert !mIsMicrotransaction;
             BitmapDrawable icon = (BitmapDrawable) getDrawableIcon();
             ServiceWorkerPaymentAppBridge.installAndInvokePaymentApp(mWebContents, origin,
                     iframeOrigin, id, new HashSet<>(methodData.values()), total,
-                    new HashSet<>(modifiers.values()), mPaymentHandlerHost, callback, mAppName,
-                    icon == null ? null : icon.getBitmap(), mSwUri, mScope, mUseCache,
-                    mMethodNames.toArray(new String[0])[0]);
+                    new HashSet<>(modifiers.values()), paymentOptions, shippingOptions,
+                    mPaymentHandlerHost, callback, mAppName, icon == null ? null : icon.getBitmap(),
+                    mSwUri, mScope, mUseCache, mMethodNames.toArray(new String[0])[0]);
         } else {
             ServiceWorkerPaymentAppBridge.invokePaymentApp(mWebContents, mRegistrationId,
                     mScope.toString(), origin, iframeOrigin, id, new HashSet<>(methodData.values()),
-                    total, new HashSet<>(modifiers.values()), mPaymentHandlerHost,
-                    mIsMicrotransaction, callback);
+                    total, new HashSet<>(modifiers.values()), paymentOptions, shippingOptions,
+                    mPaymentHandlerHost, mIsMicrotransaction, callback);
         }
     }
 

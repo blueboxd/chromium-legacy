@@ -111,17 +111,18 @@ void MachineLevelUserCloudPolicyStore::Validate(
     std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
     std::unique_ptr<enterprise_management::PolicySigningKey> key,
     bool validate_in_background,
-    const UserCloudPolicyValidator::CompletionCallback& callback) {
+    UserCloudPolicyValidator::CompletionCallback callback) {
   std::unique_ptr<UserCloudPolicyValidator> validator = CreateValidator(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_VALIDATED);
 
   ValidateKeyAndSignature(validator.get(), key.get(), std::string());
 
   if (validate_in_background) {
-    UserCloudPolicyValidator::StartValidation(std::move(validator), callback);
+    UserCloudPolicyValidator::StartValidation(std::move(validator),
+                                              std::move(callback));
   } else {
     validator->RunValidation();
-    callback.Run(validator.get());
+    std::move(callback).Run(validator.get());
   }
 }
 

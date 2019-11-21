@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, Text) {
   ASSERT_EQ(ui::kMimeTypeText, base::UTF16ToASCII(types[0]));
   ASSERT_EQ(kText, ReadClipboardText());
   ASSERT_EQ(l10n_util::GetStringFUTF16(
-                IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
+                IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT,
                 base::ASCIIToUTF16(kDeviceName)),
             GetNotification().title());
   histograms_.ExpectUniqueSample(
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
   ASSERT_EQ(2560, bitmap.width());
   ASSERT_EQ(1920, bitmap.height());
   ASSERT_EQ(l10n_util::GetStringFUTF16(
-                IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
+                IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT,
                 base::ASCIIToUTF16(kDeviceName)),
             GetNotification().title());
   histograms_.ExpectUniqueSample(

@@ -8,11 +8,13 @@ import android.content.Context;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabContext;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestion;
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionFeedback;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsObserver;
 import org.chromium.chrome.tab_ui.R;
 
@@ -146,7 +148,8 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
 
     // TabSuggestionObserver implementations.
     @Override
-    public void onNewSuggestion(List<TabSuggestion> tabSuggestions) {
+    public void onNewSuggestion(List<TabSuggestion> tabSuggestions,
+            Callback<TabSuggestionFeedback> tabSuggestionFeedback) {
         if (tabSuggestions.size() == 0) return;
 
         mCurrentBestTabSuggestion = tabSuggestions.get(0);

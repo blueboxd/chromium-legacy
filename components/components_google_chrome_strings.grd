@@ -79,8 +79,12 @@
     <file path="strings/components_google_chrome_strings_af.xtb" lang="af" />
     <file path="strings/components_google_chrome_strings_am.xtb" lang="am" />
     <file path="strings/components_google_chrome_strings_ar.xtb" lang="ar" />
+    <file path="strings/components_google_chrome_strings_as.xtb" lang="as" />
+    <file path="strings/components_google_chrome_strings_az.xtb" lang="az" />
+    <file path="strings/components_google_chrome_strings_be.xtb" lang="be" />
     <file path="strings/components_google_chrome_strings_bg.xtb" lang="bg" />
     <file path="strings/components_google_chrome_strings_bn.xtb" lang="bn" />
+    <file path="strings/components_google_chrome_strings_bs.xtb" lang="bs" />
     <file path="strings/components_google_chrome_strings_ca.xtb" lang="ca" />
     <file path="strings/components_google_chrome_strings_cs.xtb" lang="cs" />
     <file path="strings/components_google_chrome_strings_da.xtb" lang="da" />
@@ -90,35 +94,53 @@
     <file path="strings/components_google_chrome_strings_es.xtb" lang="es" />
     <file path="strings/components_google_chrome_strings_es-419.xtb" lang="es-419" />
     <file path="strings/components_google_chrome_strings_et.xtb" lang="et" />
+    <file path="strings/components_google_chrome_strings_eu.xtb" lang="eu" />
     <file path="strings/components_google_chrome_strings_fa.xtb" lang="fa" />
     <file path="strings/components_google_chrome_strings_fi.xtb" lang="fi" />
     <file path="strings/components_google_chrome_strings_fil.xtb" lang="fil" />
     <file path="strings/components_google_chrome_strings_fr.xtb" lang="fr" />
+    <file path="strings/components_google_chrome_strings_fr-CA.xtb" lang="fr-CA" />
+    <file path="strings/components_google_chrome_strings_gl.xtb" lang="gl" />
     <file path="strings/components_google_chrome_strings_gu.xtb" lang="gu" />
     <file path="strings/components_google_chrome_strings_hi.xtb" lang="hi" />
     <file path="strings/components_google_chrome_strings_hr.xtb" lang="hr" />
     <file path="strings/components_google_chrome_strings_hu.xtb" lang="hu" />
+    <file path="strings/components_google_chrome_strings_hy.xtb" lang="hy" />
     <file path="strings/components_google_chrome_strings_id.xtb" lang="id" />
+    <file path="strings/components_google_chrome_strings_is.xtb" lang="is" />
     <file path="strings/components_google_chrome_strings_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="strings/components_google_chrome_strings_iw.xtb" lang="he" />
     <file path="strings/components_google_chrome_strings_ja.xtb" lang="ja" />
+    <file path="strings/components_google_chrome_strings_ka.xtb" lang="ka" />
+    <file path="strings/components_google_chrome_strings_kk.xtb" lang="kk" />
+    <file path="strings/components_google_chrome_strings_km.xtb" lang="km" />
     <file path="strings/components_google_chrome_strings_kn.xtb" lang="kn" />
     <file path="strings/components_google_chrome_strings_ko.xtb" lang="ko" />
+    <file path="strings/components_google_chrome_strings_ky.xtb" lang="ky" />
+    <file path="strings/components_google_chrome_strings_lo.xtb" lang="lo" />
     <file path="strings/components_google_chrome_strings_lt.xtb" lang="lt" />
     <file path="strings/components_google_chrome_strings_lv.xtb" lang="lv" />
+    <file path="strings/components_google_chrome_strings_mk.xtb" lang="mk" />
     <file path="strings/components_google_chrome_strings_ml.xtb" lang="ml" />
+    <file path="strings/components_google_chrome_strings_mn.xtb" lang="mn" />
     <file path="strings/components_google_chrome_strings_mr.xtb" lang="mr" />
     <file path="strings/components_google_chrome_strings_ms.xtb" lang="ms" />
+    <file path="strings/components_google_chrome_strings_my.xtb" lang="my" />
+    <file path="strings/components_google_chrome_strings_ne.xtb" lang="ne" />
     <file path="strings/components_google_chrome_strings_nl.xtb" lang="nl" />
     <file path="strings/components_google_chrome_strings_no.xtb" lang="no" />
+    <file path="strings/components_google_chrome_strings_or.xtb" lang="or" />
+    <file path="strings/components_google_chrome_strings_pa.xtb" lang="pa" />
     <file path="strings/components_google_chrome_strings_pl.xtb" lang="pl" />
     <file path="strings/components_google_chrome_strings_pt-BR.xtb" lang="pt-BR" />
     <file path="strings/components_google_chrome_strings_pt-PT.xtb" lang="pt-PT" />
     <file path="strings/components_google_chrome_strings_ro.xtb" lang="ro" />
     <file path="strings/components_google_chrome_strings_ru.xtb" lang="ru" />
+    <file path="strings/components_google_chrome_strings_si.xtb" lang="si" />
     <file path="strings/components_google_chrome_strings_sk.xtb" lang="sk" />
     <file path="strings/components_google_chrome_strings_sl.xtb" lang="sl" />
+    <file path="strings/components_google_chrome_strings_sq.xtb" lang="sq" />
     <file path="strings/components_google_chrome_strings_sr.xtb" lang="sr" />
     <file path="strings/components_google_chrome_strings_sv.xtb" lang="sv" />
     <file path="strings/components_google_chrome_strings_sw.xtb" lang="sw" />
@@ -127,9 +149,13 @@
     <file path="strings/components_google_chrome_strings_th.xtb" lang="th" />
     <file path="strings/components_google_chrome_strings_tr.xtb" lang="tr" />
     <file path="strings/components_google_chrome_strings_uk.xtb" lang="uk" />
+    <file path="strings/components_google_chrome_strings_ur.xtb" lang="ur" />
+    <file path="strings/components_google_chrome_strings_uz.xtb" lang="uz" />
     <file path="strings/components_google_chrome_strings_vi.xtb" lang="vi" />
     <file path="strings/components_google_chrome_strings_zh-CN.xtb" lang="zh-CN" />
+    <file path="strings/components_google_chrome_strings_zh-HK.xtb" lang="zh-HK" />
     <file path="strings/components_google_chrome_strings_zh-TW.xtb" lang="zh-TW" />
+    <file path="strings/components_google_chrome_strings_zu.xtb" lang="zu" />
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">

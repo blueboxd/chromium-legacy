@@ -189,6 +189,14 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
   InitializeAudioRenderer();
 }
 
+void RendererImpl::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  DVLOG(1) << __func__;
+  DCHECK(!latency_hint || (*latency_hint >= base::TimeDelta()));
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  // TODO(chcunningham): Plumb to audio/video renderers in a follow up CL.
+}
+
 void RendererImpl::Flush(base::OnceClosure flush_cb) {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());

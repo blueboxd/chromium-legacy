@@ -4,4 +4,7 @@ ramyan@chromium.org
 sebsg@chromium.org
 tgupta@chromium.org
 
+# target_device_info is used by multiple sharing teams.
+per-file target_device_info.*=file://chrome/browser/sharing/OWNERS
+
 # COMPONENT: UI>Browser>Sharing

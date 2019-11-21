@@ -21364,6 +21364,7 @@ Called by update_net_error_codes.py.-->
   <int value="1414" label="VIRTUALKEYBOARDPRIVATE_SETAREATOREMAINONSCREEN"/>
   <int value="1415" label="TERMINALPRIVATE_GETSETTINGS"/>
   <int value="1416" label="TERMINALPRIVATE_SETSETTINGS"/>
+  <int value="1417" label="WEBSTOREPRIVATE_REQUESTEXTENSION"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25510,6 +25511,8 @@ Called by update_net_error_codes.py.-->
   <int value="3089" label="ARIADescriptionAttribute"/>
   <int value="3090" label="StrictMimeTypeChecksWouldBlockWorker"/>
   <int value="3091" label="ResourceTimingTaintedOriginFlagFail"/>
+  <int value="3092" label="RegisterProtocolHandlerSameOriginAsTop"/>
+  <int value="3093" label="RegisterProtocolHandlerCrossOriginSubframe"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35984,7 +35987,6 @@ from previous Chrome versions.
   <int value="-1768672408" label="ChromeDuplex:disabled"/>
   <int value="-1768308156" label="OmniboxDedupeGoogleDriveURLs:enabled"/>
   <int value="-1767470652" label="out-of-process-pdf"/>
-  <int value="-1766791501" label="WebUITabStrip:enabled"/>
   <int value="-1766648764" label="OmniboxShortBookmarkSuggestions:disabled"/>
   <int value="-1766162197" label="AppServiceInstanceRegistry:enabled"/>
   <int value="-1766129470" label="DataSaverLiteModeRebranding:disabled"/>
@@ -36190,6 +36192,7 @@ from previous Chrome versions.
   <int value="-1482730792" label="stop-in-background:enabled"/>
   <int value="-1482685863" label="enable-request-tablet-site"/>
   <int value="-1481990501" label="Windows10CustomTitlebar:disabled"/>
+  <int value="-1481918315" label="SmsReceiverCrossDevice:enabled"/>
   <int value="-1480926949" label="MaterialDesignBookmarks:enabled"/>
   <int value="-1480866718" label="ash-disable-login-dim-and-blur"/>
   <int value="-1478876902" label="disable-permission-action-reporting"/>
@@ -37517,6 +37520,7 @@ from previous Chrome versions.
   <int value="161694478" label="OmniboxNewAnswerLayout:enabled"/>
   <int value="168627257" label="AppServiceIntentHandling:disabled"/>
   <int value="173288154" label="PrintPdfAsImage:enabled"/>
+  <int value="173339199" label="SmsReceiverCrossDevice:disabled"/>
   <int value="174759256" label="LockScreenMediaControls:enabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="178693406" label="LockScreenMediaControls:disabled"/>
@@ -37605,6 +37609,7 @@ from previous Chrome versions.
   <int value="303252119" label="AutofillExpandedPopupViews:disabled"/>
   <int value="304901781" label="NewUsbBackend:enabled"/>
   <int value="306641800" label="AndroidSiteSettingsUIRefresh:disabled"/>
+  <int value="306834044" label="webui-tab-strip"/>
   <int value="307543404" label="disable-team-drives"/>
   <int value="307670929"
       label="enable-ambient-authentication-in-guest-session"/>
@@ -38099,7 +38104,6 @@ from previous Chrome versions.
   <int value="975104092" label="show-taps"/>
   <int value="976079108" label="TouchpadOverscrollHistoryNavigation:disabled"/>
   <int value="976278412" label="google-password-manager:enabled"/>
-  <int value="977968353" label="WebUITabStrip:disabled"/>
   <int value="978712907" label="PrintServerUi:disabled"/>
   <int value="979445973" label="OmniboxSpareRenderer:enabled"/>
   <int value="980396200" label="enable-new-korean-ime"/>
@@ -38285,6 +38289,7 @@ from previous Chrome versions.
   <int value="1198839129" label="OfflinePagesLivePageSharing:enabled"/>
   <int value="1201008500"
       label="EnableAmbientAuthenticationInIncognito:enabled"/>
+  <int value="1203795051" label="PassiveMixedContentWarning:enabled"/>
   <int value="1203821857" label="Vulkan:disabled"/>
   <int value="1205849612" label="enable-sync-synced-notifications"/>
   <int value="1209221384" label="enable-experimental-accessibility-features"/>
@@ -38462,6 +38467,7 @@ from previous Chrome versions.
       label="disable-minimize-on-second-launcher-item-click"/>
   <int value="1408139320" label="disable-zip-archiver-packer"/>
   <int value="1408331660" label="enhanced-bookmarks-experiment"/>
+  <int value="1409120591" label="PassiveMixedContentWarning:disabled"/>
   <int value="1409437197" label="OfflinePagesLimitlessPrefetching:enabled"/>
   <int value="1410697724" label="mediadrm-enable-non-compositing"/>
   <int value="1410846840"

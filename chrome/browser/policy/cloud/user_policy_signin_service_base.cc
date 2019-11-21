@@ -51,7 +51,7 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
     const std::string& dm_token,
     const std::string& client_id,
     scoped_refptr<network::SharedURLLoaderFactory> profile_url_loader_factory,
-    const PolicyFetchCallback& callback) {
+    PolicyFetchCallback callback) {
   std::unique_ptr<CloudPolicyClient> client =
       UserCloudPolicyManager::CreateCloudPolicyClient(
           device_management_service_, profile_url_loader_factory);
@@ -70,7 +70,7 @@ void UserPolicySigninServiceBase::FetchPolicyForSignedInUser(
   DCHECK(manager->IsClientRegistered());
 
   // Now initiate a policy fetch.
-  manager->core()->service()->RefreshPolicy(callback);
+  manager->core()->service()->RefreshPolicy(std::move(callback));
 }
 
 void UserPolicySigninServiceBase::OnPrimaryAccountCleared(

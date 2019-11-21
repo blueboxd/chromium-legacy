@@ -539,13 +539,17 @@ NET_ERROR(CERT_SYMANTEC_LEGACY, -215)
 // -216 was QUIC_CERT_ROOT_NOT_KNOWN which has been renumbered to not be in the
 // certificate error range.
 
+// The certificate is known to be used for interception by an entity other
+// the device owner.
+NET_ERROR(CERT_KNOWN_INTERCEPTION_BLOCKED, -217)
+
 // Add new certificate error codes here.
 //
 // Update the value of CERT_END whenever you add a new certificate error
 // code.
 
 // The value immediately past the last certificate error code.
-NET_ERROR(CERT_END, -217)
+NET_ERROR(CERT_END, -218)
 
 // The URL is invalid.
 NET_ERROR(INVALID_URL, -300)

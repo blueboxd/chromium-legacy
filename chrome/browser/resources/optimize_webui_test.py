@@ -51,13 +51,15 @@ class OptimizeWebUiTest(unittest.TestCase):
     self._out_folder = self._create_tmp_dir()
     args = [
       '--depfile', os.path.join(self._out_folder,'depfile.d'),
-      '--html_in_files', html_in_file,
-      '--html_out_files', html_out_file,
       '--host', 'fake-host',
       '--input', self._tmp_src_dir,
       '--js_out_files', js_out_file,
       '--out_folder', self._out_folder,
     ]
+    if (html_in_file):
+      args += [ '--html_in_files', html_in_file ];
+    if (html_out_file):
+      args += [ '--html_out_files', html_out_file ];
     if (js_module_in_file):
       args += [ '--js_module_in_files', js_module_in_file ];
     optimize_webui.main(args)
@@ -121,10 +123,10 @@ import './element_in_dir/element_in_dir.js';
     self.assertNotIn('element_in_dir.js', out_html)
     self.assertIn('got here!', out_html)
 
-  def _check_output_js(self):
-    fast_js = self._read_out_file('fast.js')
-    self.assertIn('yay', fast_js)
-    self.assertIn('hello from element_in_dir', fast_js)
+  def _check_output_js(self, output_js_name):
+    output_js = self._read_out_file(output_js_name)
+    self.assertIn('yay', output_js)
+    self.assertIn('hello from element_in_dir', output_js)
 
   def _check_output_depfile(self, has_html):
     depfile_d = self._read_out_file('depfile.d')
@@ -147,39 +149,32 @@ import './element_in_dir/element_in_dir.js';
     fast_html = self._read_out_file('fast.html')
     self._check_output_html(fast_html)
     self.assertIn('<script src="fast.js"></script>', fast_html)
-    self._check_output_js()
+    self._check_output_js('fast.js')
     self._check_output_depfile(True)
 
   def testV3SimpleOptimize(self):
     self._write_v3_files_to_src_dir()
     self._run_optimize(depfile='depfile.d',
-                       html_in_file='ui.html',
-                       html_out_file='fast.html',
-                       js_out_file='fast.js',
+                       html_in_file='',
+                       html_out_file='',
+                       js_out_file='ui.rollup.js',
                        js_module_in_file='ui.js')
 
-    fast_html = self._read_out_file('fast.html')
-    self.assertIn('<script type="module" src="fast.js"></script>', fast_html)
-    self.assertNotIn('<script type="module" src="ui.js"></script>', fast_html)
-    self._check_output_js()
+    self._check_output_js('ui.rollup.js')
     self._check_output_depfile(False)
 
   def testV3OptimizeWithResources(self):
     self._write_v3_files_with_resources_to_src_dir()
     self._run_optimize(depfile='depfile.d',
-                       html_in_file='ui.html',
-                       html_out_file='fast.html',
-                       js_out_file='fast.js',
+                       html_in_file='',
+                       html_out_file='',
+                       js_out_file='ui.rollup.js',
                        js_module_in_file='ui.js')
 
-    fast_html = self._read_out_file('fast.html')
-    self.assertIn('<script type="module" src="fast.js"></script>', fast_html)
-    self.assertNotIn('<script type="module" src="ui.js"></script>', fast_html)
-
-    fast_js = self._read_out_file('fast.js')
-    self.assertIn('yay', fast_js)
-    self.assertIn('hello from element_in_dir', fast_js)
-    self.assertIn('hello from shared resource', fast_js)
+    ui_rollup_js = self._read_out_file('ui.rollup.js')
+    self.assertIn('yay', ui_rollup_js)
+    self.assertIn('hello from element_in_dir', ui_rollup_js)
+    self.assertIn('hello from shared resource', ui_rollup_js)
 
     depfile_d = self._read_out_file('depfile.d')
     self.assertIn('element.js', depfile_d)

@@ -5,6 +5,7 @@
 module font_service.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 
 enum TypefaceSlant {
   ROMAN = 0,
@@ -22,12 +23,11 @@ struct TypefaceStyle {
 struct FontIdentity {
   uint32 id;
   int32 ttc_index;
-  // TODO(erg): So the string is supposed to be a path. However, the current
-  // chrome code goes out of its way to send this to the renderer process, and
-  // it is passed to blink, even though the openStream() IPC in chrome uses the
-  // id number instead. Do more investigation about what we need to do to plug
-  // this system path leak.
-  string str_representation;
+  // TODO(erg): The current chrome code goes out of its way to send this to the
+  // renderer process, and it is passed to blink, even though the openStream()
+  // IPC in chrome uses the id number instead. Do more investigation about what
+  // we need to do to plug this system path leak.
+  mojo_base.mojom.FilePath filepath;
 };
 
 enum RenderStyleSwitch {

@@ -396,7 +396,7 @@ class LookalikeUrlInterstitialPageBrowserTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     LookalikeUrlNavigationThrottleBrowserTest,
     ::testing::Values(UIStatus::kDisabled,
                       UIStatus::kEnabledForSiteEngagement,

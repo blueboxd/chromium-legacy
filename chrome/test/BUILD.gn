@@ -11,6 +11,7 @@ import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
+import("//chrome/browser/buildflags.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
@@ -26,7 +27,6 @@ import("//extensions/buildflags/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
-import("//remoting/remoting_enable.gni")
 import("//rlz/buildflags/buildflags.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -760,8 +760,6 @@ if (!is_android) {
       "//ppapi:copy_test_files2",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
-      "//remoting/webapp:browser_test_resources",
-      "//remoting/webapp:unit_tests",
       "//testing/buildbot/filters:browser_tests_filters",
       "//third_party/mesa_headers",
       "//third_party/widevine/cdm:widevine_test_license_server",
@@ -1025,6 +1023,7 @@ if (!is_android) {
       "../browser/notifications/scheduler/notification_schedule_service_browsertest.cc",
       "../browser/ntp_snippets/content_suggestions_service_factory_browsertest.cc",
       "../browser/ntp_tiles/ntp_tiles_browsertest.cc",
+      "../browser/optimization_guide/hints_fetcher_browsertest.cc",
       "../browser/optimization_guide/optimization_guide_keyed_service_browsertest.cc",
       "../browser/optimization_guide/prediction/prediction_manager_browsertest.cc",
       "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_browsertest.cc",
@@ -1082,7 +1081,6 @@ if (!is_android) {
       "../browser/prerender/prerender_test_utils.h",
       "../browser/previews/defer_all_script_browsertest.cc",
       "../browser/previews/defer_all_script_priority_browsertest.cc",
-      "../browser/previews/hints_fetcher_browsertest.cc",
       "../browser/previews/lazyload_browsertest.cc",
       "../browser/previews/previews_browsertest.cc",
       "../browser/previews/previews_lite_page_redirect_browsertest.cc",
@@ -2445,6 +2443,9 @@ if (!is_android) {
             [ "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc" ]
       }
     }
+    if (enable_kaleidoscope) {
+      deps += [ "../browser/media/kaleidoscope/internal:browser_tests" ]
+    }
     if (enable_legacy_desktop_in_product_help) {
       sources += [
         "../browser/feature_engagement/incognito_window/incognito_window_tracker_browsertest.cc",
@@ -2501,7 +2502,6 @@ if (!is_android) {
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
         "../browser/ui/views/ssl_client_certificate_selector_mac_browsertest.mm",
-        "../common/stack_sampling_browsertest.cc",
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
         # omitted from the build, but are still in use.
@@ -2536,10 +2536,6 @@ if (!is_android) {
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
       ]
-
-      if (target_cpu == "x64") {
-        sources += [ "../common/stack_sampling_browsertest.cc" ]
-      }
 
       configs += [ "//build/config/win:delayloads" ]
 
@@ -2660,34 +2656,6 @@ if (!is_android) {
         "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
       ]
-    }
-    if (enable_remoting) {
-      sources += [
-        "remoting/auth_browsertest.cc",
-        "remoting/fullscreen_browsertest.cc",
-        "remoting/it2me_browsertest.cc",
-        "remoting/key_code_conv.cc",
-        "remoting/key_code_conv.h",
-        "remoting/key_code_map.h",
-        "remoting/key_code_test_map.h",
-        "remoting/launch_browsertest.cc",
-        "remoting/me2me_browsertest.cc",
-        "remoting/page_load_notification_observer.cc",
-        "remoting/page_load_notification_observer.h",
-        "remoting/pin_browsertest.cc",
-        "remoting/qunit_browser_test_runner.cc",
-        "remoting/qunit_browser_test_runner.h",
-        "remoting/remote_desktop_browsertest.cc",
-        "remoting/remote_desktop_browsertest.h",
-        "remoting/remote_test_helper.cc",
-        "remoting/remote_test_helper.h",
-        "remoting/scrollbar_browsertest.cc",
-        "remoting/unauthenticated_browsertest.cc",
-        "remoting/waiter.cc",
-        "remoting/waiter.h",
-        "remoting/webapp_javascript_browsertest.cc",
-      ]
-      data_deps += [ "//remoting/webapp" ]
     }
 
     if (use_aura) {
@@ -2989,6 +2957,7 @@ test("unit_tests") {
     "../browser/complex_tasks/endpoint_fetcher/endpoint_fetcher_unittest.cc",
     "../browser/complex_tasks/task_tab_helper_unittest.cc",
     "../browser/component_updater/chrome_component_updater_configurator_unittest.cc",
+    "../browser/component_updater/games_component_installer_unittest.cc",
     "../browser/component_updater/optimization_hints_component_installer_unittest.cc",
     "../browser/component_updater/origin_trials_component_installer_unittest.cc",
     "../browser/component_updater/subresource_filter_component_installer_unittest.cc",
@@ -3617,6 +3586,10 @@ test("unit_tests") {
     ]
   }
 
+  if (enable_kaleidoscope) {
+    deps += [ "../browser/media/kaleidoscope/internal:unit_tests" ]
+  }
+
   if (enable_offline_pages) {
     sources += [
       "../browser/offline_pages/android/auto_fetch_page_load_watcher_unittest.cc",
@@ -4010,6 +3983,7 @@ test("unit_tests") {
       "//chrome/services/app_service:unit_tests",
       "//chrome/services/app_service/public/cpp:icon_loader_test_support",
       "//chrome/services/app_service/public/cpp:unit_tests",
+      "//chrome/services/local_search_service:unit_tests",
       "//components/chrome_cleaner/test:test_name_helper",
       "//components/feature_engagement/test:test_support",
       "//components/send_tab_to_self:test_support",
@@ -5764,6 +5738,11 @@ if (!is_android) {
 
     if (is_mac) {
       sources += [ "../browser/ui/find_bar/find_bar_platform_helper_mac_interactive_uitest.mm" ]
+
+      sources -= [
+        # TODO(crbug.com/1026820): Re-enable this test when history backend failures are addressed.
+        "../browser/ui/omnibox/omnibox_view_browsertest.cc",
+      ]
 
       data_deps += [
         "//chrome",

@@ -21,14 +21,14 @@ namespace ash {
 
 enum class BackdropWindowMode;
 
-// The class the does the dragged window scale-down animation to home screen or
+// The class the does the dragged window scale-down animation to shelf or
 // scale-up to restore to its original bounds after drag ends. The window will
-// be minimized after animation complete if we're heading to the home screen.
+// be minimized after animation complete if we're heading to the shelf.
 class WindowScaleAnimation : public ui::ImplicitAnimationObserver,
                              public aura::WindowObserver {
  public:
   enum class WindowScaleType {
-    kScaleDownToHomeScreen,
+    kScaleDownToShelf,
     kScaleUpToRestore,
   };
 
@@ -47,8 +47,8 @@ class WindowScaleAnimation : public ui::ImplicitAnimationObserver,
 
  private:
   // Returns the transform that should be applied to the dragged window if we
-  // should head to homescreen after dragging.
-  gfx::Transform GetWindowTransformToHomeScreen();
+  // should head to shelf after dragging.
+  gfx::Transform GetWindowTransformToShelf();
 
   aura::Window* window_;
   base::Optional<BackdropWindowMode> original_backdrop_mode_;

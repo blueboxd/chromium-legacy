@@ -94,8 +94,8 @@ class BackgroundSyncControllerImplTest : public testing::Test {
     return registration;
   }
 
-  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<BackgroundSyncControllerImpl> controller_;
 

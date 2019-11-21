@@ -41,6 +41,7 @@ const struct NetErrorMapping {
     {net::ERR_CERT_COMMON_NAME_INVALID, "ssl.cert.name_invalid"},
     {net::ERR_CERT_DATE_INVALID, "ssl.cert.date_invalid"},
     {net::ERR_CERT_AUTHORITY_INVALID, "ssl.cert.authority_invalid"},
+    {net::ERR_CERT_KNOWN_INTERCEPTION_BLOCKED, "ssl.cert.authority_invalid"},
     {net::ERR_CERT_REVOKED, "ssl.cert.revoked"},
     {net::ERR_CERT_INVALID, "ssl.cert.invalid"},
     {net::ERR_EMPTY_RESPONSE, "http.response.empty"},

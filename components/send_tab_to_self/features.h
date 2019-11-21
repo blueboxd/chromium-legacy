@@ -20,6 +20,9 @@ extern const base::Feature kSendTabToSelfBroadcast;
 // of whether they have the sync feature enabled.
 extern const base::Feature kSendTabToSelfWhenSignedIn;
 
+// Feature flag to enable device renaming.
+extern const base::Feature kSharingRenameDevices;
+
 // Returns whether the receiving components of the feature is enabled on this
 // device. This is different from IsReceivingEnabled in SendTabToSelfUtil
 // because it doesn't rely on the SendTabToSelfSyncService to be actively up and

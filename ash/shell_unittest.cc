@@ -637,7 +637,7 @@ TEST_P(NoDuplicateShellContainerIdsTest, ValidateContainersIds) {
   ExpectAllContainers();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          NoDuplicateShellContainerIdsTest,
                          ::testing::Values(false, true));
 

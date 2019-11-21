@@ -154,7 +154,7 @@
   "declarativeNetRequest.onRuleMatchedDebug": {
     "dependencies": ["permission:declarativeNetRequest", "permission:declarativeNetRequestFeedback"],
     "contexts": ["blessed_extension"],
-    "channel": "trunk",
+    "channel": "beta",
     "location": "unpacked"
   },
   "declarativeNetRequest.setActionCountAsBadgeText": {

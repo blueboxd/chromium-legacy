@@ -50,9 +50,8 @@ class FakeCryptAuthV2DeviceManager : public CryptAuthV2DeviceManager {
     return force_device_sync_now_requests_;
   }
 
-  void set_synced_devices(
-      const CryptAuthDeviceRegistry::InstanceIdToDeviceMap& synced_devices) {
-    synced_devices_ = synced_devices;
+  CryptAuthDeviceRegistry::InstanceIdToDeviceMap& synced_devices() {
+    return synced_devices_;
   }
 
   void set_time_to_next_attempt(
@@ -68,6 +67,10 @@ class FakeCryptAuthV2DeviceManager : public CryptAuthV2DeviceManager {
   void FinishNextForcedDeviceSync(
       const CryptAuthDeviceSyncResult& device_sync_result,
       base::Time device_sync_finish_time);
+
+  // Make these functions public for testing.
+  using CryptAuthV2DeviceManager::NotifyDeviceSyncFinished;
+  using CryptAuthV2DeviceManager::NotifyDeviceSyncStarted;
 
  private:
   bool has_started_ = false;

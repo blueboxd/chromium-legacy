@@ -99,9 +99,6 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
         ComputeIsClickableLeaf(i, event_data->node_data, node_data_index_map);
     tree_map_[id] = std::make_unique<AccessibilityNodeInfoDataWrapper>(
         this, node, is_clickable_leaf);
-
-    if (tree_map_[id]->IsFocused())
-      focused_id_ = id;
   }
 
   // Assuming |nodeData| is in pre-order, compute cached bounds in post-order to
@@ -117,7 +114,12 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   }
 
   // Calculate the focused ID.
-  if (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED) {
+  if (event_data->event_type == AXEventType::VIEW_FOCUSED) {
+    AccessibilityInfoDataWrapper* focused_node =
+        GetFromId(event_data->source_id);
+    if (focused_node)
+      focused_id_ = event_data->source_id;
+  } else if (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED) {
     // When accessibility window changed, a11y event of WINDOW_CONTENT_CHANGED
     // is fired from Android multiple times.
     // The event of WINDOW_STATE_CHANGED is fired only once for each window
@@ -127,24 +129,21 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     if (IsValid(new_focus))
       focused_id_ = new_focus->GetId();
   }
-
   if (!focused_id_.has_value()) {
-    if (root_id_.has_value()) {
-      AccessibilityInfoDataWrapper* root = GetRoot();
-      // TODO (sarakato): Add proper fix once cause of invalid node is known.
-      if (!IsValid(root)) {
-        return;
-      } else if (root->IsNode()) {
-        focused_id_ = root_id_;
-      } else {
-        std::vector<AccessibilityInfoDataWrapper*> children;
-        root->GetChildren(&children);
-        if (!children.empty()) {
-          for (size_t i = 0; i < children.size(); ++i) {
-            if (children[i]->IsNode()) {
-              focused_id_ = children[i]->GetId();
-              break;
-            }
+    AccessibilityInfoDataWrapper* root = GetRoot();
+    // TODO (sarakato): Add proper fix once cause of invalid node is known.
+    if (!IsValid(root)) {
+      return;
+    } else if (root->IsNode()) {
+      focused_id_ = root_id_;
+    } else {
+      std::vector<AccessibilityInfoDataWrapper*> children;
+      root->GetChildren(&children);
+      if (!children.empty()) {
+        for (size_t i = 0; i < children.size(); ++i) {
+          if (children[i]->IsNode()) {
+            focused_id_ = children[i]->GetId();
+            break;
           }
         }
       }

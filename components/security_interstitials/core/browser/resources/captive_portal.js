@@ -2,4 +2,4 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var CAPTIVEPORTAL_CMD_OPEN_LOGIN_PAGE = 'openLoginPage';
+const CAPTIVEPORTAL_CMD_OPEN_LOGIN_PAGE = 'openLoginPage';

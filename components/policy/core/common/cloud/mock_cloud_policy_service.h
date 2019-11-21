@@ -19,11 +19,11 @@ class MockCloudPolicyService : public CloudPolicyService {
   MockCloudPolicyService(CloudPolicyClient* client, CloudPolicyStore* store);
   ~MockCloudPolicyService() override;
 
-  MOCK_METHOD1(RefreshPolicy, void(const RefreshPolicyCallback&));
+  MOCK_METHOD1(RefreshPolicy, void(RefreshPolicyCallback));
 
  private:
   // Invokes real RefreshPolicy() method.
-  void InvokeRefreshPolicy(const RefreshPolicyCallback& callback);
+  void InvokeRefreshPolicy(RefreshPolicyCallback callback);
 
   DISALLOW_COPY_AND_ASSIGN(MockCloudPolicyService);
 };

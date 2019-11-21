@@ -78,6 +78,9 @@ void FlingingRenderer::SetCdm(media::CdmContext* cdm_context,
   NOTREACHED();
 }
 
+void FlingingRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {}
+
 void FlingingRenderer::Flush(base::OnceClosure flush_cb) {
   DVLOG(2) << __func__;
   // There is nothing to reset, we can no-op the call.

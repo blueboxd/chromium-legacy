@@ -72,7 +72,7 @@ class WaylandWindow : public PlatformWindowLinux,
   void ApplyPendingBounds();
 
   // Set whether this window has pointer focus and should dispatch mouse events.
-  void set_pointer_focus(bool focus) { has_pointer_focus_ = focus; }
+  void SetPointerFocus(bool focus);
   bool has_pointer_focus() const { return has_pointer_focus_; }
 
   // Set whether this window has keyboard focus and should dispatch key events.

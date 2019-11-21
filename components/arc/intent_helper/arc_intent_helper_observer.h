@@ -20,6 +20,8 @@ class ArcIntentHelperObserver {
   // package whose filters were changed.
   virtual void OnIntentFiltersUpdated(
       const base::Optional<std::string>& package_name) = 0;
+  // Called when the preferred apps changed in ARC.
+  virtual void OnPreferredAppsChanged() {}
 };
 
 }  // namespace arc

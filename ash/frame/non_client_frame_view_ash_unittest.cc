@@ -866,7 +866,7 @@ TEST_P(NonClientFrameViewAshFrameColorTest, WideFrameInitialColor) {
 }
 
 // Run frame color tests with and without custom WindowStateDelegate.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          NonClientFrameViewAshFrameColorTest,
                          testing::Bool());
 

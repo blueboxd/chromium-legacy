@@ -520,6 +520,15 @@ Cada item da lista da política é uma string que contém um código de extensã
 
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="1852294065645015766">Permitir reprodução automática de mídia</translation>
+<translation id="1853782273088286010">Controla se o cliente DNS integrado é usado no <ph name="PRODUCT_NAME" />.
+
+      Isso não afeta quais servidores DNS são usados, somente a pilha de software que é usada para se comunicar com eles. Por exemplo, se um sistema operacional é configurado para usar um servidor DNS empresarial, o mesmo servidor pode ser usado pelo cliente DNS integrado. No entanto, é possível que o cliente DNS integrado interaja com servidores de maneiras diferentes usando protocolos de DNS mais modernos, como DNS sobre TLS.
+
+      Se esta política for definida como verdadeira, o cliente DNS integrado será usado, se disponível.
+
+      Se esta política for definida como falsa, o cliente DNS integrado nunca será usado.
+
+      Se esta política não for definida, o cliente DNS integrado será ativado por padrão no MacOS; no Android, quando nem o DNS privado nem a VPN estiverem ativados; e no ChromeOS, e os usuários poderão decidir se o cliente DNS integrado será usado pela edição de chrome://flags ou pela especificação da sinalização de uma linha de comando.</translation>
 <translation id="1857152770025485173">Esta política evita que o usuário carregue páginas da Web de URLs que constam em listas de proibições. A lista de proibições fornece uma relação de padrões de URL que especificam quais URLs serão incluídos na lista.
 
       Um padrão de URL precisa ser formatado de acordo com https://www.chromium.org/administrators/url-blacklist-filter-format.
@@ -1369,6 +1378,13 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           Esta política é opcional. Se não for definida, não ocorrerá substituição do termo de pesquisa.
 
           Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="3049248142961638857">Determina o nome do host do dispositivo usado em solicitações de DHCP.
+
+      Se esta política for definida como uma string não vazia, essa string será usada como nome do host do dispositivo durante a solicitação de DHCP.
+
+      A string pode conter variáveis <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />, <ph name="LOCATION_PLACEHOLDER" /> que serão substituídas por valores no dispositivo antes de serem usadas como nome do host. A substituição resultante precisa ser um nome de host válido (em conformidade com a RFC 1035, seção 3.1).
+
+      Se esta política não for definida ou o valor depois da substituição não for um nome de host válido, nenhum nome de host será definido na solicitação de DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740">Permite desativar a otimização da descoberta automática de proxies da Web (WPAD, na sigla em inglês) no <ph name="PRODUCT_NAME" />.
 
@@ -2612,6 +2628,11 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
           Esta política está disponível apenas em instâncias do Windows associadas a um domínio <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="5208240613060747912">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultNotificationsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
+<translation id="5212118847531454979">Permite definir o período, em milissegundos, em que os usuários são notificados de que o <ph name="PRODUCT_NAME" /> ou um dispositivo <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado para aplicar uma atualização pendente.
+
+      Nesse período, o usuário será informado várias vezes sobre a necessidade de atualização. Para dispositivos <ph name="PRODUCT_OS_NAME" />, uma notificação de reinicialização é exibida na bandeja do sistema de acordo com a política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Para navegadores <ph name="PRODUCT_NAME" />, o menu do app muda para indicar que uma reinicialização é necessária após o decorrer de um terço do período de notificação. Essa notificação muda de cor após dois terços do período de notificação e muda mais uma vez quando todo o período de notificação é concluído. As outras notificações ativadas pela política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguem essa mesma programação.
+
+      Se a política não for definida, o período padrão de 604.800.000 milissegundos (uma semana) será usado.</translation>
 <translation id="5212810195096589189">Especificar permissão para CLI de VM</translation>
 <translation id="5213038356678567351">Sites que nunca acionarão uma troca de navegador.</translation>
 <translation id="5219844027738217407">Em apps Android, esta política afeta somente o microfone. Quando esta política é definida como true, o microfone é silenciado para todos os apps Android, sem exceções.</translation>
@@ -2864,6 +2885,9 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Se não for especificada, a política não modificará o URL do termo-semente "Variações".</translation>
 <translation id="5561811616825571914">Seleciona certificados de cliente automaticamente para esses sites na tela de login</translation>
+<translation id="5564865786900450806">Remove o aviso que é exibido quando o <ph name="PRODUCT_NAME" /> é executado em um computador ou sistema operacional com o qual não é mais compatível.
+
+      Se esta política for definida como falsa ou não definida, os avisos aparecerão nesses computadores e sistemas operacionais incompatíveis.</translation>
 <translation id="5565178130821694365">É necessário digitar a senha a cada dois dias (48 horas)</translation>
 <translation id="5566210228171064229">Permitir impressão com e sem PIN</translation>
 <translation id="556865034069957245">Esta política controla a disponibilidade do modo de tela cheia, em que toda a IU do <ph name="PRODUCT_NAME" /> fica oculta enquanto apenas o conteúdo da Web se encontra visível.
@@ -4407,6 +4431,9 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Se você desativar essa configuração, haverá a busca de metatags nas páginas.
 
           Se esta política não for configurada, haverá a busca de metatags nas páginas.</translation>
+<translation id="829641334878002866">Permite definir o período, em milissegundos, entre a primeira notificação de que o dispositivo <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado para aplicar uma atualização pendente e o fim do período especificado pela política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Se esta política não for definida, o período padrão de 259.200.000 milissegundos (três dias) será usado para dispositivos <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8300455783946254851">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando o uso de uma conexão via dispositivo móvel está configurada como "true". Nesse caso, os dados são sincronizados no Google Drive apenas quando a conexão é via WiFi ou Ethernet.
 
           Se não está configurado ou está definida como "False", os usuários podem transferir arquivos para o Google Drive por conexões via celular.</translation>

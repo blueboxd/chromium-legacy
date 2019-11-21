@@ -67,7 +67,7 @@ class BackButtonTest : public AshTestBase,
 };
 
 // The parameter indicates whether the kShelfHotseat feature is enabled.
-INSTANTIATE_TEST_SUITE_P(, BackButtonTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, BackButtonTest, testing::Bool());
 
 // Verify that the back button is visible in tablet mode.
 TEST_P(BackButtonTest, Visibility) {

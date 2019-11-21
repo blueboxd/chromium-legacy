@@ -688,7 +688,7 @@ void AnimationHost::ImplOnlyScrollAnimationCreate(
     base::TimeDelta delayed_by,
     base::TimeDelta animation_start_offset) {
   DCHECK(scroll_offset_animations_impl_);
-  scroll_offset_animations_impl_->ScrollAnimationCreate(
+  scroll_offset_animations_impl_->MouseWheelScrollAnimationCreate(
       element_id, target_offset, current_offset, delayed_by,
       animation_start_offset);
 }

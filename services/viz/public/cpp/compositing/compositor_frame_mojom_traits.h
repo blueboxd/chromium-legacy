@@ -29,9 +29,7 @@ struct StructTraits<viz::mojom::CompositorFrameDataView, viz::CompositorFrame> {
 
   static const viz::RenderPassList& passes(const viz::CompositorFrame& input) {
     DCHECK(!input.render_pass_list.empty());
-    // TODO(samans): Change this back to a DCHECK once we figure out the cause.
-    // https://crbug.com/1022565 https://crbug.com/979564
-    CHECK(!input.render_pass_list.back()->output_rect.size().IsEmpty());
+    DCHECK(!input.render_pass_list.back()->output_rect.size().IsEmpty());
     return input.render_pass_list;
   }
 

@@ -140,8 +140,7 @@ class WindowCycleItemView : public WindowMiniView {
 
   gfx::Size CalculatePreferredSize() const override {
     gfx::Size size = GetSizeForPreviewArea();
-    const int header_height = title_label()->GetPreferredSize().height();
-    size.Enlarge(0, header_height);
+    size.Enlarge(0, WindowMiniView::kHeaderHeightDp);
     return size;
   }
 

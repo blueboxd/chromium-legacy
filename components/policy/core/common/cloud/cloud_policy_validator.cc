@@ -289,34 +289,35 @@ CloudPolicyValidatorBase::CloudPolicyValidatorBase(
 // static
 void CloudPolicyValidatorBase::PostValidationTask(
     std::unique_ptr<CloudPolicyValidatorBase> validator,
-    const base::Closure& completion_callback) {
+    base::OnceClosure completion_callback) {
   const auto task_runner = validator->background_task_runner_;
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&CloudPolicyValidatorBase::PerformValidation,
                      std::move(validator), base::ThreadTaskRunnerHandle::Get(),
-                     completion_callback));
+                     std::move(completion_callback)));
 }
 
 // static
 void CloudPolicyValidatorBase::PerformValidation(
     std::unique_ptr<CloudPolicyValidatorBase> self,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& completion_callback) {
+    base::OnceClosure completion_callback) {
   // Run the validation activities on this thread.
   self->RunValidation();
 
   // Report completion on |task_runner|.
   task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&CloudPolicyValidatorBase::ReportCompletion,
-                                std::move(self), completion_callback));
+      FROM_HERE,
+      base::BindOnce(&CloudPolicyValidatorBase::ReportCompletion,
+                     std::move(self), std::move(completion_callback)));
 }
 
 // static
 void CloudPolicyValidatorBase::ReportCompletion(
     std::unique_ptr<CloudPolicyValidatorBase> self,
-    const base::Closure& completion_callback) {
-  completion_callback.Run();
+    base::OnceClosure completion_callback) {
+  std::move(completion_callback).Run();
 }
 
 void CloudPolicyValidatorBase::RunValidation() {

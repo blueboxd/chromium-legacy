@@ -4,6 +4,7 @@
 
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_coding.h"
 
+#include <sstream>
 #include <utility>
 
 #include "base/big_endian.h"
@@ -17,6 +18,11 @@ void EncodeBigEndianFixed64(uint64_t number, std::string* output) {
   size_t start_index = output->size();
   output->resize(output->size() + sizeof(uint64_t));
   base::WriteBigEndian(&(*output)[start_index], number);
+}
+
+base::StringPiece MakeStringPiece(base::span<const uint8_t> bytes) {
+  return base::StringPiece(reinterpret_cast<const char*>(bytes.data()),
+                           bytes.size());
 }
 
 }  // namespace
@@ -47,6 +53,60 @@ std::tuple<bool, int64_t> ParseScopeMetadataId(
   bool decode_success = DecodeVarInt(&part, &scope_id);
   DCHECK_GE(scope_id, 0);
   return std::make_tuple(decode_success, scope_id);
+}
+
+std::string KeyToDebugString(base::span<const uint8_t> key_without_prefix) {
+  std::stringstream result;
+  result << "{";
+  if (key_without_prefix.empty()) {
+    result << "<Empty Scopes Key>}";
+    return result.str();
+  }
+  char type_byte = key_without_prefix[0];
+  base::StringPiece key_after_type =
+      MakeStringPiece(key_without_prefix.subspan(1));
+  switch (type_byte) {
+    case kGlobalMetadataByte:
+      result << "GlobalMetadata";
+      break;
+    case kScopesMetadataByte: {
+      result << "ScopesMetadataByte, scope: ";
+      if (key_without_prefix.empty()) {
+        result << "<No Scope Number>";
+        break;
+      }
+      int64_t scope_id = 0;
+      if (!DecodeVarInt(&key_after_type, &scope_id)) {
+        result << "<Invalid Scope Number>";
+        break;
+      }
+      result << scope_id;
+      break;
+    }
+    case kLogByte: {
+      result << "LogByte, scope: ";
+      if (key_without_prefix.empty()) {
+        result << "<No Scope Number>";
+        break;
+      }
+      int64_t scope_id = 0;
+      if (!DecodeVarInt(&key_after_type, &scope_id)) {
+        result << "<Invalid Scope Number>, <Error>";
+        break;
+      }
+      result << scope_id << ", seq_num: ";
+      int64_t seq_num = 0;
+      if (key_after_type.size() < sizeof(seq_num)) {
+        result << "<Invalid Seq Num>";
+        break;
+      }
+      base::ReadBigEndian(key_after_type.data(), &seq_num);
+      result << seq_num;
+      break;
+    }
+  }
+  result << "}";
+  return result.str();
 }
 
 }  // namespace leveldb_scopes

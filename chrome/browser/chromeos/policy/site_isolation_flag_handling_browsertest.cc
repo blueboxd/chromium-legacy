@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
   EXPECT_EQ(GetParam().expected_switches_for_user, switches_for_user);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SiteIsolationFlagHandlingTest,
                          ::testing::ValuesIn(kTestCases));
 

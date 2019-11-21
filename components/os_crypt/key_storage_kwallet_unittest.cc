@@ -263,7 +263,7 @@ class KeyStorageKWalletFailuresTest
   DISALLOW_COPY_AND_ASSIGN(KeyStorageKWalletFailuresTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          KeyStorageKWalletFailuresTest,
                          ::testing::Values(CANNOT_READ, CANNOT_CONTACT));
 

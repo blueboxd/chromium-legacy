@@ -543,9 +543,6 @@ void HttpProtocolHandlerCore::SetLoadFlags() {
   DCHECK(thread_checker_.CalledOnValidThread());
   int load_flags = LOAD_NORMAL;
 
-  if (![request_ HTTPShouldHandleCookies])
-    load_flags |= LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES;
-
   switch ([request_ cachePolicy]) {
     case NSURLRequestReloadIgnoringLocalAndRemoteCacheData:
       load_flags |= LOAD_BYPASS_CACHE;
@@ -607,6 +604,7 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
 
   [client_ didCreateNativeRequest:net_request_];
   SetLoadFlags();
+  net_request_->set_allow_credentials([request_ HTTPShouldHandleCookies]);
 
   // https://crbug.com/979324 If the application app sets HTTPBody, then system
   // creates new NSInputStream every time HTTPBodyStream is called. Get the

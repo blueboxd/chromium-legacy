@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 
 namespace {
@@ -55,6 +56,11 @@ bool IsUserConsentedToAnonymousDataCollectionAndAllowedToFetchHints(
 }  // namespace
 
 bool IsUserPermittedToFetchHints(Profile* profile) {
+  if (optimization_guide::switches::
+          ShouldOverrideCheckingUserPermissionsToFetchHintsForTesting()) {
+    return true;
+  }
+
   if (profile->IsIncognitoProfile())
     return false;
 

@@ -106,10 +106,7 @@ Polymer({
   },
 
   /** @private {?function(!Event)} */
-  boundOnCanExecute_: null,
-
-  /** @private {?function(!Event)} */
-  boundOnCommand_: null,
+  boundOnKeyDown_: null,
 
   /** @override */
   created: function() {
@@ -118,18 +115,14 @@ Polymer({
 
   /** @override */
   attached: function() {
-    cr.ui.decorate('command', cr.ui.Command);
-    this.boundOnCanExecute_ = this.onCanExecute_.bind(this);
-    this.boundOnCommand_ = this.onCommand_.bind(this);
-
-    document.addEventListener('canExecute', this.boundOnCanExecute_);
-    document.addEventListener('command', this.boundOnCommand_);
+    this.boundOnKeyDown_ = e => this.onKeyDown_(e);
+    document.addEventListener('keydown', this.boundOnKeyDown_);
   },
 
   /** @override */
   detached: function() {
-    document.removeEventListener('canExecute', this.boundOnCanExecute_);
-    document.removeEventListener('command', this.boundOnCommand_);
+    document.removeEventListener('keydown', this.boundOnKeyDown_);
+    this.boundOnKeyDown_ = null;
   },
 
   onFirstRender: function() {
@@ -226,32 +219,43 @@ Polymer({
   },
 
   /**
-   * @param {Event} e
+   * @param {!KeyboardEvent} e
    * @private
    */
-  onCanExecute_: function(e) {
-    e = /** @type {cr.ui.CanExecuteEvent} */ (e);
-    switch (e.command.id) {
-      case 'delete-command':
-        e.canExecute = this.$.toolbar.count > 0;
-        break;
-      case 'select-all-command':
-        e.canExecute = !this.$.toolbar.searchField.isSearchFocused() &&
-            !this.syncedTabsSelected_(this.selectedPage_);
-        break;
+  onKeyDown_: function(e) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') &&
+        !(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+      this.onDeleteCommand_();
+      return;
+    }
+
+    if (e.key === 'a' && !e.altKey && !e.shiftKey) {
+      let hasTriggerModifier = e.ctrlKey && !e.metaKey;
+      // <if expr="is_macosx">
+      hasTriggerModifier = !e.ctrlKey && e.metaKey;
+      // </if>
+      if (hasTriggerModifier) {
+        this.onSelectAllCommand_();
+        e.preventDefault();
+      }
     }
   },
 
-  /**
-   * @param {Event} e
-   * @private
-   */
-  onCommand_: function(e) {
-    if (e.command.id == 'delete-command') {
-      this.deleteSelected();
-    } else if (e.command.id == 'select-all-command') {
-      this.selectOrUnselectAll();
+  /** @private */
+  onDeleteCommand_: function() {
+    if (this.$.toolbar.count == 0) {
+      return;
     }
+    this.deleteSelected();
+  },
+
+  /** @private */
+  onSelectAllCommand_: function() {
+    if (this.$.toolbar.searchField.isSearchFocused() ||
+        this.syncedTabsSelected_(this.selectedPage_)) {
+      return;
+    }
+    this.selectOrUnselectAll();
   },
 
   /**

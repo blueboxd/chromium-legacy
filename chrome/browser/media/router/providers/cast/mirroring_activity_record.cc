@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
+#include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
@@ -48,6 +49,8 @@ MirroringActivityRecord::MirroringActivityRecord(
     int target_tab_id,
     const CastSinkExtraData& cast_data,
     mojom::MediaRouter* media_router,
+    MediaSinkServiceBase* media_sink_service,
+    CastActivityManagerBase* activity_manager,
     OnStopCallback callback)
     : ActivityRecord(route, app_id, message_handler, session_tracker),
       channel_id_(cast_data.cast_channel_id),
@@ -55,6 +58,8 @@ MirroringActivityRecord::MirroringActivityRecord(
       // once the Presentation API 1UA mode is supported.
       mirroring_type_(target_tab_id == -1 ? MirroringType::kDesktop
                                           : MirroringType::kTab),
+      media_sink_service_(media_sink_service),
+      activity_manager_(activity_manager),
       on_stop_(std::move(callback)) {
   // TODO(jrw): Detect and report errors.
 
@@ -191,8 +196,14 @@ void MirroringActivityRecord::SendStopSessionMessageToReceiver(
     const base::Optional<std::string>& client_id,
     const std::string& hash_token,
     MediaRouteProvider::TerminateRouteCallback callback) {
-  // TODO(jrw): What, if anything, should happen here?
-  std::move(callback).Run(base::nullopt, RouteRequestResult::ResultCode::OK);
+  const std::string& sink_id = route_.media_sink_id();
+  const MediaSinkInternal* sink = media_sink_service_->GetSinkById(sink_id);
+  DCHECK(sink);
+  DCHECK(session_id_);
+  message_handler_->StopSession(
+      sink->cast_data().cast_channel_id, *session_id_, client_id,
+      activity_manager_->MakeResultCallbackForRoute(route_.media_route_id(),
+                                                    std::move(callback)));
 }
 
 void MirroringActivityRecord::HandleLeaveSession(const std::string& client_id) {

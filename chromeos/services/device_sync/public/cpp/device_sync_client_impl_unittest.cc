@@ -20,6 +20,7 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/device_sync/device_sync_impl.h"
 #include "chromeos/services/device_sync/fake_device_sync.h"
+#include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/public/cpp/fake_client_app_metadata_provider.h"
 #include "chromeos/services/device_sync/public/cpp/fake_gcm_device_info_provider.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
@@ -345,6 +346,25 @@ class DeviceSyncClientImplTest : public testing::Test {
     EXPECT_EQ(expected_result_code, set_software_feature_state_result_code_);
   }
 
+  void CallSetFeatureStatus(mojom::NetworkRequestResult expected_result_code) {
+    base::RunLoop run_loop;
+
+    client_->SetFeatureStatus(
+        test_remote_device_ref_list_[0].instance_id(),
+        multidevice::SoftwareFeature::kBetterTogetherHost,
+        FeatureStatusChange::kEnableExclusively,
+        base::BindOnce(&DeviceSyncClientImplTest::OnSetFeatureStatusCompleted,
+                       base::Unretained(this), run_loop.QuitClosure()));
+
+    SendPendingMojoMessages();
+
+    fake_device_sync_->InvokePendingSetFeatureStatusCallback(
+        expected_result_code);
+    run_loop.Run();
+
+    EXPECT_EQ(expected_result_code, set_feature_status_result_code_);
+  }
+
   void CallFindEligibleDevices(
       mojom::NetworkRequestResult expected_result_code,
       multidevice::RemoteDeviceList expected_eligible_devices,
@@ -478,6 +498,7 @@ class DeviceSyncClientImplTest : public testing::Test {
   base::Optional<bool> force_sync_now_completed_success_;
   base::Optional<mojom::NetworkRequestResult>
       set_software_feature_state_result_code_;
+  base::Optional<mojom::NetworkRequestResult> set_feature_status_result_code_;
   std::tuple<mojom::NetworkRequestResult,
              multidevice::RemoteDeviceRefList,
              multidevice::RemoteDeviceRefList>
@@ -503,6 +524,12 @@ class DeviceSyncClientImplTest : public testing::Test {
       base::OnceClosure callback,
       mojom::NetworkRequestResult result_code) {
     set_software_feature_state_result_code_ = result_code;
+    std::move(callback).Run();
+  }
+
+  void OnSetFeatureStatusCompleted(base::OnceClosure callback,
+                                   mojom::NetworkRequestResult result_code) {
+    set_feature_status_result_code_ = result_code;
     std::move(callback).Run();
   }
 
@@ -708,6 +735,12 @@ TEST_F(DeviceSyncClientImplTest, TestSetSoftwareFeatureState) {
   SetupClient();
 
   CallSetSoftwareFeatureState(mojom::NetworkRequestResult::kSuccess);
+}
+
+TEST_F(DeviceSyncClientImplTest, TestSetFeatureStatus) {
+  SetupClient();
+
+  CallSetFeatureStatus(mojom::NetworkRequestResult::kSuccess);
 }
 
 TEST_F(DeviceSyncClientImplTest, TestFindEligibleDevices_NoErrorCode) {

@@ -115,7 +115,7 @@ source_set("wayland") {
 
   import("//ui/base/ui_features.gni")
   if (use_xkbcommon) {
-    configs += [ "//ui/events/ozone:xkbcommon" ]
+    configs += [ "//ui/events/ozone/layout:xkbcommon" ]
   }
 
   deps = [
@@ -137,9 +137,9 @@ source_set("wayland") {
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/events/keycodes:xkb",
-    "//ui/events/ozone:events_ozone",
-    "//ui/events/ozone:events_ozone_evdev",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone",
+    "//ui/events/ozone/evdev",
+    "//ui/events/ozone/layout",
     "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx:memory_buffer",
@@ -290,7 +290,7 @@ source_set("wayland_unittests") {
     "//ui/base",
     "//ui/base:buildflags",
     "//ui/base/ime/linux",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone/layout",
     "//ui/ozone:platform",
     "//ui/ozone:test_support",
     "//ui/ozone/common/linux:drm",

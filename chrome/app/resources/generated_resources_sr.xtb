@@ -3453,7 +3453,7 @@
 <translation id="6055392876709372977">PKCS #1 SHA-256 са RSA шифровањем</translation>
 <translation id="6056710589053485679">Поново учитај нормално</translation>
 <translation id="6057381398996433816">Овом сајту је забрањено да користи сензоре за покрет и светло.</translation>
-<translation id="6058567592298841668">Прикључи виртуелну машину: <ph name="PLUGIN_VM_NAME" /></translation>
+<translation id="6058567592298841668">Виртуелна машина за додатну компоненту: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Хијерархија сертификата</translation>
 <translation id="6059925163896151826">USB уређаји</translation>
 <translation id="6061882183774845124">Пошаљите линк на своје уређаје</translation>
@@ -5506,7 +5506,7 @@
 <translation id="9023015617655685412">Обележи ову картицу...</translation>
 <translation id="9024127637873500333">&amp;Отвори на новој картици</translation>
 <translation id="9024158959543687197">Грешка при учитавању дељене датотеке. Проверите URL дељења датотека и пробајте поново.</translation>
-<translation id="9024885274934357065">Уређај је откључан помоћу Smart Lock-а. Притисните Enter да бисте откључали.</translation>
+<translation id="9024885274934357065">Уређај се откључава помоћу Smart Lock-а. Притисните Enter да бисте откључали.</translation>
 <translation id="9026731007018893674">преузимање</translation>
 <translation id="9026852570893462412">Ово може да потраје неколико минута. Преузима се виртуелна машина.</translation>
 <translation id="9027459031423301635">Отвори линк у новој &amp;картици</translation>

@@ -23,10 +23,6 @@ class BLINK_PLATFORM_EXPORT WebPlatformMediaStreamSource {
   using SourceStoppedCallback =
       base::OnceCallback<void(const WebMediaStreamSource& source)>;
 
-  using ConstraintsCallback =
-      base::Callback<void(WebPlatformMediaStreamSource* source,
-                          mojom::MediaStreamRequestResult result,
-                          const WebString& result_name)>;
   using ConstraintsRepeatingCallback =
       base::RepeatingCallback<void(WebPlatformMediaStreamSource* source,
                                    mojom::MediaStreamRequestResult result,

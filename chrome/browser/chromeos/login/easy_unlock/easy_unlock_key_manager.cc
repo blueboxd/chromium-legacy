@@ -93,8 +93,6 @@ void EasyUnlockKeyManager::DeviceDataToRemoteDeviceDictionary(
     const EasyUnlockDeviceKeyData& data,
     base::DictionaryValue* dict) {
   dict->SetString(key_names::kKeyBluetoothAddress, data.bluetooth_address);
-  dict->SetInteger(key_names::kKeyBluetoothType,
-                   static_cast<int>(data.bluetooth_type));
   dict->SetString(key_names::kKeyPsk, data.psk);
   std::unique_ptr<base::DictionaryValue> permit_record(
       new base::DictionaryValue);
@@ -122,19 +120,6 @@ bool EasyUnlockKeyManager::RemoteDeviceDictionaryToDeviceData(
       !dict.GetString(key_names::kKeyPermitId, &public_key) ||
       !dict.GetString(key_names::kKeyPsk, &psk)) {
     return false;
-  }
-
-  // TODO(tengs): Move this conditional up once we can be certain that the
-  // dictionary will contain the Bluetooth type key.
-  int bluetooth_type_as_int;
-  if (dict.GetInteger(key_names::kKeyBluetoothType, &bluetooth_type_as_int)) {
-    if (bluetooth_type_as_int >= EasyUnlockDeviceKeyData::NUM_BLUETOOTH_TYPES) {
-      PA_LOG(ERROR) << "Invalid Bluetooth type: " << bluetooth_type_as_int;
-    } else {
-      data->bluetooth_type =
-          static_cast<EasyUnlockDeviceKeyData::BluetoothType>(
-              bluetooth_type_as_int);
-    }
   }
 
   std::string serialized_beacon_seeds;

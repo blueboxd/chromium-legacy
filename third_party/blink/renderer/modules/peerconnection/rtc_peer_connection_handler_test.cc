@@ -366,7 +366,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         static_cast<size_t>(1));
     video_tracks[0] = blink::MediaStreamVideoTrack::CreateVideoTrack(
         native_video_source,
-        blink::MediaStreamVideoSource::ConstraintsCallback(), true);
+        blink::MediaStreamVideoSource::ConstraintsOnceCallback(), true);
 
     blink::WebMediaStream local_stream;
     local_stream.Initialize(blink::WebString::FromUTF8(stream_label),

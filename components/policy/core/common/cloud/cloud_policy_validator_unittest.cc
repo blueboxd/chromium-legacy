@@ -90,8 +90,8 @@ class CloudPolicyValidatorTest : public testing::Test {
         .WillOnce(check_action);
     UserCloudPolicyValidator::StartValidation(
         std::move(validator),
-        base::Bind(&CloudPolicyValidatorTest::ValidationCompletion,
-                   base::Unretained(this)));
+        base::BindOnce(&CloudPolicyValidatorTest::ValidationCompletion,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(this);
   }

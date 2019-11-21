@@ -13,22 +13,22 @@ import org.chromium.ui.modelutil.PropertyModel;
 /**
  * Contains the properties that an add-to-homescreen {@link PropertyModel} can have.
  */
-public class AddToHomescreenProperties {
-    public static final PropertyModel.WritableObjectPropertyKey<String> TITLE =
+class AddToHomescreenProperties {
+    static final PropertyModel.WritableObjectPropertyKey<String> TITLE =
             new PropertyModel.WritableObjectPropertyKey<>();
-    public static final PropertyModel.WritableObjectPropertyKey<String> URL =
+    static final PropertyModel.WritableObjectPropertyKey<String> URL =
             new PropertyModel.WritableObjectPropertyKey<>();
-    public static final PropertyModel.WritableObjectPropertyKey<Pair<Bitmap, Boolean>> ICON =
+    static final PropertyModel.WritableObjectPropertyKey<Pair<Bitmap, Boolean>> ICON =
             new PropertyModel.WritableObjectPropertyKey<>();
-    public static final PropertyModel.WritableIntPropertyKey TYPE =
+    static final PropertyModel.WritableIntPropertyKey TYPE =
             new PropertyModel.WritableIntPropertyKey();
-    public static final PropertyModel.WritableBooleanPropertyKey CAN_SUBMIT =
+    static final PropertyModel.WritableBooleanPropertyKey CAN_SUBMIT =
             new PropertyModel.WritableBooleanPropertyKey();
-    public static final PropertyModel.WritableObjectPropertyKey<String> NATIVE_INSTALL_BUTTON_TEXT =
+    static final PropertyModel.WritableObjectPropertyKey<String> NATIVE_INSTALL_BUTTON_TEXT =
             new PropertyModel.WritableObjectPropertyKey<>();
-    public static final PropertyModel.WritableFloatPropertyKey NATIVE_APP_RATING =
+    static final PropertyModel.WritableFloatPropertyKey NATIVE_APP_RATING =
             new PropertyModel.WritableFloatPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = {
+    static final PropertyKey[] ALL_KEYS = {
             TITLE, URL, ICON, TYPE, CAN_SUBMIT, NATIVE_INSTALL_BUTTON_TEXT, NATIVE_APP_RATING};
 }

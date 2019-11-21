@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +32,66 @@ bool IsHostBlacklisted(const base::DictionaryValue* top_host_blacklist,
     return false;
   return top_host_blacklist->FindKey(
       optimization_guide::HashHostForDictionary(host));
+}
+
+// Return the current state of the HintsFetcherTopHostBlacklist held in the
+// |kHintsFetcherTopHostBlacklistState| pref.
+optimization_guide::prefs::HintsFetcherTopHostBlacklistState
+GetCurrentBlacklistState(PrefService* pref_service) {
+  return static_cast<
+      optimization_guide::prefs::HintsFetcherTopHostBlacklistState>(
+      pref_service->GetInteger(
+          optimization_guide::prefs::kHintsFetcherTopHostBlacklistState));
+}
+
+// Updates the state of the HintsFetcherTopHostBlacklist to |new_state|.
+void UpdateCurrentBlacklistState(
+    PrefService* pref_service,
+    optimization_guide::prefs::HintsFetcherTopHostBlacklistState new_state) {
+  optimization_guide::prefs::HintsFetcherTopHostBlacklistState current_state =
+      GetCurrentBlacklistState(pref_service);
+  DCHECK_EQ(
+      new_state == optimization_guide::prefs::
+                       HintsFetcherTopHostBlacklistState::kInitialized,
+      current_state == optimization_guide::prefs::
+                           HintsFetcherTopHostBlacklistState::kNotInitialized &&
+          new_state == optimization_guide::prefs::
+                           HintsFetcherTopHostBlacklistState::kInitialized);
+
+  DCHECK_EQ(
+      new_state ==
+          optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty,
+      current_state == optimization_guide::prefs::
+                           HintsFetcherTopHostBlacklistState::kInitialized &&
+          new_state == optimization_guide::prefs::
+                           HintsFetcherTopHostBlacklistState::kEmpty);
+
+  // Any state can go to not initialized, so no need to check here.
+
+  if (current_state == new_state)
+    return;
+
+  // TODO(mcrouse): Add histogram to record the blacklist state change.
+  pref_service->SetInteger(
+      optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
+      static_cast<int>(new_state));
+}
+
+// Resets the state of the HintsFetcherTopHostBlacklist held in the
+// kHintsFetcherTopHostBlacklistState| pref to
+// |optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kNotInitialized|.
+void ResetTopHostBlacklistState(PrefService* pref_service) {
+  if (GetCurrentBlacklistState(pref_service) ==
+      optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+          kNotInitialized) {
+    return;
+  }
+  DictionaryPrefUpdate blacklist_pref(
+      pref_service, optimization_guide::prefs::kHintsFetcherTopHostBlacklist);
+  blacklist_pref->Clear();
+  UpdateCurrentBlacklistState(
+      pref_service, optimization_guide::prefs::
+                        HintsFetcherTopHostBlacklistState::kNotInitialized);
 }
 
 }  // namespace
@@ -62,14 +123,13 @@ void OptimizationGuideTopHostProvider::
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(browser_context_);
-  DCHECK_EQ(GetCurrentBlacklistState(),
+  DCHECK_EQ(GetCurrentBlacklistState(pref_service_),
             optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
                 kNotInitialized);
-  DCHECK(
-      pref_service_
-          ->GetDictionary(
-              optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist)
-          ->empty());
+  DCHECK(pref_service_
+             ->GetDictionary(
+                 optimization_guide::prefs::kHintsFetcherTopHostBlacklist)
+             ->empty());
 
   Profile* profile = Profile::FromBrowserContext(browser_context_);
   SiteEngagementService* engagement_service =
@@ -88,7 +148,8 @@ void OptimizationGuideTopHostProvider::
             });
 
   pref_service_->SetDouble(
-      optimization_guide::prefs::kTimeBlacklistLastInitialized,
+      optimization_guide::prefs::
+          kTimeHintsFetcherTopHostBlacklistLastInitialized,
       time_clock_->Now().ToDeltaSinceWindowsEpoch().InSecondsF());
 
   // Set the minimum engagement score to -1.0f. This ensures that in the default
@@ -97,7 +158,7 @@ void OptimizationGuideTopHostProvider::
   // does not disqualify |this| from requesting hints for any host.
   pref_service_->SetDouble(
       optimization_guide::prefs::
-          kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore,
+          kHintsFetcherTopHostBlacklistMinimumEngagementScore,
       -1.0f);
 
   for (const auto& detail : engagement_details) {
@@ -111,7 +172,7 @@ void OptimizationGuideTopHostProvider::
       // the threshold is not included in the hints fetcher request.
       pref_service_->SetDouble(
           optimization_guide::prefs::
-              kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore,
+              kHintsFetcherTopHostBlacklistMinimumEngagementScore,
           std::min(detail.total_score + 0.001f,
                    optimization_guide::features::
                        MinTopHostEngagementScoreThreshold()));
@@ -126,13 +187,12 @@ void OptimizationGuideTopHostProvider::
       "OnInitialize",
       top_host_blacklist->size());
 
-  pref_service_->Set(
-      optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist,
-      *top_host_blacklist);
+  pref_service_->Set(optimization_guide::prefs::kHintsFetcherTopHostBlacklist,
+                     *top_host_blacklist);
 
   UpdateCurrentBlacklistState(
-      optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
-          kInitialized);
+      pref_service_, optimization_guide::prefs::
+                         HintsFetcherTopHostBlacklistState::kInitialized);
 }
 
 // static
@@ -141,22 +201,28 @@ void OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
   if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
     return;
 
-  PrefService* pref_service =
-      Profile::FromBrowserContext(
-          navigation_handle->GetWebContents()->GetBrowserContext())
-          ->GetPrefs();
+  Profile* profile = Profile::FromBrowserContext(
+      navigation_handle->GetWebContents()->GetBrowserContext());
+  PrefService* pref_service = profile->GetPrefs();
 
-  if (pref_service->GetInteger(
-          optimization_guide::prefs::
-              kHintsFetcherDataSaverTopHostBlacklistState) !=
-      static_cast<int>(optimization_guide::prefs::
-                           HintsFetcherTopHostBlacklistState::kInitialized)) {
+  bool is_user_permitted_to_fetch_hints = IsUserPermittedToFetchHints(profile);
+  if (!is_user_permitted_to_fetch_hints) {
+    // User toggled state during the session. Make sure the blacklist is
+    // cleared.
+    ResetTopHostBlacklistState(pref_service);
+    return;
+  }
+  DCHECK(is_user_permitted_to_fetch_hints);
+
+  // Only proceed to update the blacklist if we have a blacklist to update.
+  if (GetCurrentBlacklistState(pref_service) !=
+      optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
+          kInitialized) {
     return;
   }
 
   DictionaryPrefUpdate blacklist_pref(
-      pref_service,
-      optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist);
+      pref_service, optimization_guide::prefs::kHintsFetcherTopHostBlacklist);
   if (!blacklist_pref->FindKey(optimization_guide::HashHostForDictionary(
           navigation_handle->GetURL().host()))) {
     return;
@@ -166,57 +232,10 @@ void OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
   if (blacklist_pref->empty()) {
     blacklist_pref->Clear();
     pref_service->SetInteger(
-        optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklistState,
+        optimization_guide::prefs::kHintsFetcherTopHostBlacklistState,
         static_cast<int>(optimization_guide::prefs::
                              HintsFetcherTopHostBlacklistState::kEmpty));
   }
-}
-
-optimization_guide::prefs::HintsFetcherTopHostBlacklistState
-OptimizationGuideTopHostProvider::GetCurrentBlacklistState() const {
-  return static_cast<
-      optimization_guide::prefs::HintsFetcherTopHostBlacklistState>(
-      pref_service_->GetInteger(
-          optimization_guide::prefs::
-              kHintsFetcherDataSaverTopHostBlacklistState));
-}
-
-void OptimizationGuideTopHostProvider::UpdateCurrentBlacklistState(
-    optimization_guide::prefs::HintsFetcherTopHostBlacklistState new_state) {
-  optimization_guide::prefs::HintsFetcherTopHostBlacklistState current_state =
-      GetCurrentBlacklistState();
-  // TODO(mcrouse): Change to DCHECK_NE.
-  DCHECK_EQ(
-      new_state == optimization_guide::prefs::
-                       HintsFetcherTopHostBlacklistState::kInitialized,
-      current_state == optimization_guide::prefs::
-                           HintsFetcherTopHostBlacklistState::kNotInitialized &&
-          new_state == optimization_guide::prefs::
-                           HintsFetcherTopHostBlacklistState::kInitialized);
-
-  DCHECK_EQ(
-      new_state ==
-          optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty,
-      current_state == optimization_guide::prefs::
-                           HintsFetcherTopHostBlacklistState::kInitialized &&
-          new_state == optimization_guide::prefs::
-                           HintsFetcherTopHostBlacklistState::kEmpty);
-
-  DCHECK_EQ(new_state == optimization_guide::prefs::
-                             HintsFetcherTopHostBlacklistState::kNotInitialized,
-            current_state == optimization_guide::prefs::
-                                 HintsFetcherTopHostBlacklistState::kEmpty &&
-                new_state ==
-                    optimization_guide::prefs::
-                        HintsFetcherTopHostBlacklistState::kNotInitialized);
-
-  if (current_state == new_state)
-    return;
-
-  // TODO(mcrouse): Add histogram to record the blacklist state change.
-  pref_service_->SetInteger(
-      optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklistState,
-      static_cast<int>(new_state));
 }
 
 std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
@@ -225,19 +244,29 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
   DCHECK(browser_context_);
   DCHECK(pref_service_);
 
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+
+  // The user toggled state during the session. Return empty.
+  if (!IsUserPermittedToFetchHints(profile))
+    return std::vector<std::string>();
+
   // It's possible that the blacklist is initialized but
-  // kTimeBlacklistLastInitialized pref is not populated. This may happen since
-  // the logic to populate kTimeBlacklistLastInitialized pref was added in a
-  // later Chrome version. In that case, set kTimeBlacklistLastInitialized to
-  // the conservative value of current time.
+  // kTimeHintsFetcherTopHostBlacklistLastInitialized pref is not populated.
+  // This may happen since the logic to populate
+  // kTimeHintsFetcherTopHostBlacklistLastInitialized pref was added in a later
+  // Chrome version. In that case, set
+  // kTimeHintsFetcherTopHostBlacklistLastInitialized to the conservative value
+  // of current time.
   if (pref_service_->GetDouble(
-          optimization_guide::prefs::kTimeBlacklistLastInitialized) == 0) {
+          optimization_guide::prefs::
+              kTimeHintsFetcherTopHostBlacklistLastInitialized) == 0) {
     pref_service_->SetDouble(
-        optimization_guide::prefs::kTimeBlacklistLastInitialized,
+        optimization_guide::prefs::
+            kTimeHintsFetcherTopHostBlacklistLastInitialized,
         time_clock_->Now().ToDeltaSinceWindowsEpoch().InSecondsF());
   }
 
-  if (GetCurrentBlacklistState() ==
+  if (GetCurrentBlacklistState(pref_service_) ==
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
           kNotInitialized) {
     InitializeHintsFetcherTopHostBlacklist();
@@ -245,15 +274,14 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
   }
 
   // Create SiteEngagementService to request site engagement scores.
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
   SiteEngagementService* engagement_service =
       SiteEngagementService::Get(profile);
 
   const base::DictionaryValue* top_host_blacklist = nullptr;
-  if (GetCurrentBlacklistState() !=
+  if (GetCurrentBlacklistState(pref_service_) !=
       optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty) {
     top_host_blacklist = pref_service_->GetDictionary(
-        optimization_guide::prefs::kHintsFetcherDataSaverTopHostBlacklist);
+        optimization_guide::prefs::kHintsFetcherTopHostBlacklist);
     UMA_HISTOGRAM_COUNTS_1000(
         "OptimizationGuide.HintsFetcher.TopHostProvider.BlacklistSize."
         "OnRequest",
@@ -262,6 +290,7 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
     // from the blacklist should check and update the pref state.
     if (top_host_blacklist->size() == 0) {
       UpdateCurrentBlacklistState(
+          pref_service_,
           optimization_guide::prefs::HintsFetcherTopHostBlacklistState::kEmpty);
       top_host_blacklist = nullptr;
     }
@@ -285,7 +314,8 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
   base::Time blacklist_initialized_time =
       base::Time::FromDeltaSinceWindowsEpoch(
           base::TimeDelta::FromSecondsD(pref_service_->GetDouble(
-              optimization_guide::prefs::kTimeBlacklistLastInitialized)));
+              optimization_guide::prefs::
+                  kTimeHintsFetcherTopHostBlacklistLastInitialized)));
 
   base::TimeDelta duration_since_blacklist_initialized =
       (time_clock_->Now() - blacklist_initialized_time);
@@ -308,7 +338,7 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
         detail.total_score <
             pref_service_->GetDouble(
                 optimization_guide::prefs::
-                    kHintsFetcherDataSaverTopHostBlacklistMinimumEngagementScore)) {
+                    kHintsFetcherTopHostBlacklistMinimumEngagementScore)) {
       return top_hosts;
     }
     if (!IsHostBlacklisted(top_host_blacklist, detail.origin.host())) {

@@ -233,7 +233,7 @@ class DeferAllScriptPriorityBrowserTest
 };
 
 // Parameter is true if the test should be run with defer feature enabled.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          DeferAllScriptPriorityBrowserTest,
                          ::testing::Bool());
 

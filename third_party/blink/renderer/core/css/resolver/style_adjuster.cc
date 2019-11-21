@@ -518,6 +518,59 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   }
 }
 
+static void AdjustStateForRenderSubtree(ComputedStyle& style,
+                                        Element* element) {
+  if (!element)
+    return;
+
+  bool should_be_invisible = style.RenderSubtreeInvisible();
+  auto* context = element->GetDisplayLockContext();
+
+  // Return early if there's no context and no render-subtree invisible token.
+  if (!should_be_invisible && !context)
+    return;
+
+  // If we're using an attribute version of display locking, then also abort.
+  if (context && DisplayLockContext::IsAttributeVersion(context))
+    return;
+
+  // Create a context if we need to be invisible.
+  if (should_be_invisible && !context) {
+    context = &element->EnsureDisplayLockContext(
+        DisplayLockContextCreateMethod::kCSS);
+  }
+  DCHECK(context);
+
+  uint16_t activation_mask =
+      static_cast<uint16_t>(DisplayLockActivationReason::kAny);
+  if (style.RenderSubtreeSkipActivation()) {
+    activation_mask = 0;
+  } else if (style.RenderSubtreeSkipViewportActivation()) {
+    activation_mask &=
+        ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport);
+  }
+
+  // Propagate activatable style to context.
+  context->SetActivatable(activation_mask);
+
+  if (should_be_invisible) {
+    // Add containment to style if we're invisible.
+    auto contain =
+        style.Contain() | kContainsStyle | kContainsLayout | kContainsSize;
+    style.SetContain(contain);
+
+    // If we're unlocked and unactivated, then we should lock the context. Note
+    // that we do this here, since locking the element means we can skip styling
+    // the subtree.
+    if (!context->IsLocked() && !context->IsActivated())
+      context->StartAcquire();
+  } else {
+    context->ClearActivated();
+    if (context->IsLocked())
+      context->StartCommit();
+  }
+}
+
 void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
                                         Element* element) {
   DCHECK(state.LayoutParentStyle());
@@ -586,6 +639,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       contain |= kContainsPaint;
     style.SetContain(contain);
   }
+
+  if (RuntimeEnabledFeatures::CSSRenderSubtreeEnabled())
+    AdjustStateForRenderSubtree(style, element);
 
   if (style.IsColorInternalText()) {
     style.ResolveInternalTextColor(

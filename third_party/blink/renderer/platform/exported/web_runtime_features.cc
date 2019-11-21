@@ -622,10 +622,6 @@ void WebRuntimeFeatures::EnableBackgroundFetch(bool enable) {
   RuntimeEnabledFeatures::SetBackgroundFetchEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableMergeBlockingNonBlockingPools(bool enable) {
-  RuntimeEnabledFeatures::SetMergeBlockingNonBlockingPoolsEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableGetDisplayMedia(bool enable) {
   RuntimeEnabledFeatures::SetGetDisplayMediaEnabled(enable);
 }

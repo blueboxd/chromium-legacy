@@ -295,8 +295,8 @@ TEST_P(FeedUserClassifierEventTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,  // An empty prefix for the parametrized tests names (no need to
-       // distinguish the only instance we make here).
+    All,  // An empty prefix for the parametrized tests names (no need to
+          // distinguish the only instance we make here).
     FeedUserClassifierEventTest,
     testing::Values(
         std::make_pair(UserClassifier::Event::kSuggestionsViewed,

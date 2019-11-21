@@ -27,9 +27,10 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
  public:
   // A callback type which is called back on the UI thread when the results of
   // method calls are ready.
-  typedef base::Callback<void(bool success, MountError return_code)> Callback;
-  typedef base::Callback<void(bool success, const std::string& data)>
-      DataCallback;
+  using Callback =
+      base::OnceCallback<void(bool success, MountError return_code)>;
+  using DataCallback =
+      base::OnceCallback<void(bool success, const std::string& data)>;
 
   virtual ~AsyncMethodCaller() {}
 
@@ -38,7 +39,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
   // to the Privacy CA of type |pca_type|.
   virtual void AsyncTpmAttestationCreateEnrollRequest(
       chromeos::attestation::PrivacyCAType pca_type,
-      const DataCallback& callback) = 0;
+      DataCallback callback) = 0;
 
   // Asks cryptohomed to asynchronously finish an attestation enrollment.
   // |pca_response| is the response to the enrollment request emitted by the
@@ -46,7 +47,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
   virtual void AsyncTpmAttestationEnroll(
       chromeos::attestation::PrivacyCAType pca_type,
       const std::string& pca_response,
-      const Callback& callback) = 0;
+      Callback callback) = 0;
 
   // Asks cryptohomed to asynchronously create an attestation certificate
   // request according to |certificate_profile|.  Some profiles require that the
@@ -60,7 +61,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
       const Identification& user_id,
       const std::string& request_origin,
-      const DataCallback& callback) = 0;
+      DataCallback callback) = 0;
 
   // Asks cryptohomed to asynchronously finish an attestation certificate
   // request.  On success the data sent to |callback| is a certificate chain
@@ -75,7 +76,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
       chromeos::attestation::AttestationKeyType key_type,
       const Identification& user_id,
       const std::string& key_name,
-      const DataCallback& callback) = 0;
+      DataCallback callback) = 0;
 
   // Asks cryptohomed to asynchronously register the attestation key specified
   // by |key_type| and |key_name|.  If |key_type| is KEY_USER, a |user_id| must
@@ -85,7 +86,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
       chromeos::attestation::AttestationKeyType key_type,
       const Identification& user_id,
       const std::string& key_name,
-      const Callback& callback) = 0;
+      Callback callback) = 0;
 
   // Asks cryptohomed to asynchronously sign an enterprise challenge with the
   // key specified by |key_type| and |key_name|.  The |domain| and |device_id|
@@ -106,7 +107,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
       chromeos::attestation::AttestationChallengeOptions options,
       const std::string& challenge,
       const std::string& key_name_for_spkac,
-      const DataCallback& callback) = 0;
+      DataCallback callback) = 0;
 
   // Asks cryptohomed to asynchronously sign a simple challenge with the key
   // specified by |key_type| and |key_name|.  |challenge| can be any arbitrary
@@ -119,7 +120,7 @@ class COMPONENT_EXPORT(CHROMEOS_CRYPTOHOME) AsyncMethodCaller {
       const Identification& user_id,
       const std::string& key_name,
       const std::string& challenge,
-      const DataCallback& callback) = 0;
+      DataCallback callback) = 0;
 
   // Creates the global AsyncMethodCaller instance.
   static void Initialize();

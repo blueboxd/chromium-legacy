@@ -15,44 +15,44 @@ namespace {
 
 // Maps |component| to constants defined in
 // https://w3c.github.io/webrtc-pc/#dom-rtcicecomponent
-blink::WebString CandidateComponentToWebString(int component) {
+String CandidateComponentToString(int component) {
   if (component == cricket::ICE_CANDIDATE_COMPONENT_RTP)
-    return blink::WebString::FromASCII("rtp");
+    return String("rtp");
   if (component == cricket::ICE_CANDIDATE_COMPONENT_RTCP)
-    return blink::WebString::FromASCII("rtcp");
-  return blink::WebString();
+    return String("rtcp");
+  return String();
 }
 
 // Maps |type| to constants defined in
 // https://w3c.github.io/webrtc-pc/#rtcicecandidatetype-enum
-blink::WebString CandidateTypeToWebString(const std::string& type) {
+String CandidateTypeToString(const std::string& type) {
   if (type == cricket::LOCAL_PORT_TYPE)
-    return blink::WebString::FromASCII("host");
+    return String("host");
   if (type == cricket::STUN_PORT_TYPE)
-    return blink::WebString::FromASCII("srflx");
+    return String("srflx");
   if (type == cricket::PRFLX_PORT_TYPE)
-    return blink::WebString::FromASCII("prflx");
+    return String("prflx");
   if (type == cricket::RELAY_PORT_TYPE)
-    return blink::WebString::FromASCII("relay");
-  return blink::WebString();
+    return String("relay");
+  return String();
 }
 
 }  // namespace
 
 // static
 scoped_refptr<RTCIceCandidatePlatform> RTCIceCandidatePlatform::Create(
-    WebString candidate,
-    WebString sdp_mid,
+    String candidate,
+    String sdp_mid,
     base::Optional<uint16_t> sdp_m_line_index,
-    WebString username_fragment) {
+    String username_fragment) {
   return base::AdoptRef(new RTCIceCandidatePlatform(
       std::move(candidate), std::move(sdp_mid), std::move(sdp_m_line_index),
       std::move(username_fragment)));
 }
 
 scoped_refptr<RTCIceCandidatePlatform> RTCIceCandidatePlatform::Create(
-    WebString candidate,
-    WebString sdp_mid,
+    String candidate,
+    String sdp_mid,
     int sdp_m_line_index) {
   return base::AdoptRef(new RTCIceCandidatePlatform(
       std::move(candidate), std::move(sdp_mid),
@@ -61,10 +61,10 @@ scoped_refptr<RTCIceCandidatePlatform> RTCIceCandidatePlatform::Create(
 }
 
 RTCIceCandidatePlatform::RTCIceCandidatePlatform(
-    WebString candidate,
-    WebString sdp_mid,
+    String candidate,
+    String sdp_mid,
     base::Optional<uint16_t> sdp_m_line_index,
-    WebString username_fragment)
+    String username_fragment)
     : candidate_(std::move(candidate)),
       sdp_mid_(std::move(sdp_mid)),
       sdp_m_line_index_(std::move(sdp_m_line_index)),
@@ -73,8 +73,8 @@ RTCIceCandidatePlatform::RTCIceCandidatePlatform(
 }
 
 RTCIceCandidatePlatform::RTCIceCandidatePlatform(
-    WebString candidate,
-    WebString sdp_mid,
+    String candidate,
+    String sdp_mid,
     base::Optional<uint16_t> sdp_m_line_index)
     : candidate_(std::move(candidate)),
       sdp_mid_(std::move(sdp_mid)),
@@ -87,24 +87,24 @@ void RTCIceCandidatePlatform::PopulateFields(bool use_username_from_candidate) {
   if (!webrtc::ParseCandidate(candidate_.Utf8(), &c, nullptr, true))
     return;
 
-  foundation_ = blink::WebString::FromUTF8(c.foundation());
-  component_ = CandidateComponentToWebString(c.component());
+  foundation_ = String::FromUTF8(c.foundation().data());
+  component_ = CandidateComponentToString(c.component());
   priority_ = c.priority();
-  protocol_ = blink::WebString::FromUTF8(c.protocol());
+  protocol_ = String::FromUTF8(c.protocol().data());
   if (!c.address().IsNil()) {
-    address_ = blink::WebString::FromUTF8(c.address().HostAsURIString());
+    address_ = String::FromUTF8(c.address().HostAsURIString().data());
     port_ = c.address().port();
   }
-  type_ = CandidateTypeToWebString(c.type());
-  tcp_type_ = blink::WebString::FromUTF8(c.tcptype());
+  type_ = CandidateTypeToString(c.type());
+  tcp_type_ = String::FromUTF8(c.tcptype().data());
   if (!c.related_address().IsNil()) {
     related_address_ =
-        blink::WebString::FromUTF8(c.related_address().HostAsURIString());
+        String::FromUTF8(c.related_address().HostAsURIString().data());
     related_port_ = c.related_address().port();
   }
 
   if (use_username_from_candidate)
-    username_fragment_ = blink::WebString::FromUTF8(c.username());
+    username_fragment_ = String::FromUTF8(c.username().data());
 }
 
 }  // namespace blink

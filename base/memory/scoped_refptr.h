@@ -236,6 +236,11 @@ class scoped_refptr {
     return ptr_;
   }
 
+  scoped_refptr& operator=(std::nullptr_t) {
+    reset();
+    return *this;
+  }
+
   scoped_refptr& operator=(T* p) { return *this = scoped_refptr(p); }
 
   // Unified assignment operator.

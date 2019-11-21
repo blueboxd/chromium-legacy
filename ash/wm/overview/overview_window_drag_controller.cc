@@ -616,23 +616,15 @@ gfx::Rect OverviewWindowDragController::GetWorkAreaOfDisplayBeingDraggedIn()
 
 bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
     const gfx::PointF& event_location) {
-  auto snap_position = GetSnapPosition(event_location);
-  const bool inverted = !IsCurrentScreenOrientationPrimary();
-  // Note: in some orientations SplitViewController::LEFT is not physically on
-  // the left/top.
-  const bool on_the_left_or_top =
-      (!inverted && snap_position == SplitViewController::LEFT) ||
-      (inverted && snap_position == SplitViewController::RIGHT);
-
   // Snap the window if it is less than |kDistanceFromEdgeDp| from the edge.
   const bool landscape = IsCurrentScreenOrientationLandscape();
   gfx::Rect area = GetWorkAreaOfDisplayBeingDraggedIn();
   area.Inset(kDistanceFromEdgeDp, kDistanceFromEdgeDp);
   const gfx::Point event_location_i = gfx::ToRoundedPoint(event_location);
-  if ((landscape && (event_location_i.x() < area.x() ||
-                     event_location_i.x() > area.right())) ||
-      (!landscape && (event_location_i.y() < area.y() ||
-                      event_location_i.y() > area.bottom()))) {
+  if (landscape ? event_location_i.x() < area.x() ||
+                      event_location_i.x() > area.right()
+                : event_location_i.y() < area.y() ||
+                      event_location_i.y() > area.bottom()) {
     return true;
   }
 
@@ -650,6 +642,7 @@ bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
     return true;
   }
 
+  const auto snap_position = GetSnapPosition(event_location);
   if (snap_position == SplitViewController::NONE) {
     // If the event started in a snap region, but has since moved out set
     // |started_in_snap_region_| to false. |event_location| is guarenteed to not
@@ -665,7 +658,7 @@ bool OverviewWindowDragController::ShouldUpdateDragIndicatorsOrSnap(
   // physically on the right/bottom side of the device, check that
   // |distance_scalar| is greater than
   // |kMinimumDragDistanceAlreadyInSnapRegionDp|.
-  return on_the_left_or_top
+  return IsPhysicalLeftOrTop(snap_position)
              ? distance_scalar <= -kMinimumDragDistanceAlreadyInSnapRegionDp
              : distance_scalar >= kMinimumDragDistanceAlreadyInSnapRegionDp;
 }
@@ -676,9 +669,6 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
   DCHECK(should_allow_split_view_);
   gfx::Rect area = GetWorkAreaOfDisplayBeingDraggedIn();
 
-  const bool is_landscape = IsCurrentScreenOrientationLandscape();
-  const bool is_primary = IsCurrentScreenOrientationPrimary();
-
   // If split view mode is active at the moment, and dragging an overview window
   // to snap it to a position that already has a snapped window in place, we
   // should show the preview window as soon as the window past the split divider
@@ -687,13 +677,14 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
       SplitViewController::Get(GetRootWindowBeingDraggedIn());
   if (split_view_controller->InSplitViewMode()) {
     const int position =
-        gfx::ToRoundedInt(is_landscape ? location_in_screen.x() - area.x()
-                                       : location_in_screen.y() - area.y());
+        gfx::ToRoundedInt(IsCurrentScreenOrientationLandscape()
+                              ? location_in_screen.x() - area.x()
+                              : location_in_screen.y() - area.y());
     SplitViewController::SnapPosition default_snap_position =
         split_view_controller->default_snap_position();
     // If we're trying to snap to a position that already has a snapped window:
     const bool is_default_snap_position_left_or_top =
-        is_primary == (default_snap_position == SplitViewController::LEFT);
+        IsPhysicalLeftOrTop(default_snap_position);
     const bool is_drag_position_left_or_top =
         position < split_view_controller->divider_position();
     if (is_default_snap_position_left_or_top == is_drag_position_left_or_top)

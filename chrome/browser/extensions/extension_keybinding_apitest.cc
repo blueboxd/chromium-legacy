@@ -1093,6 +1093,6 @@ IN_PROC_BROWSER_TEST_P(IncognitoCommandsApiTest, IncognitoMode) {
       base::Contains(test_observer.dispatched_events(), "commands.onCommand"));
 }
 
-INSTANTIATE_TEST_SUITE_P(, IncognitoCommandsApiTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, IncognitoCommandsApiTest, testing::Bool());
 
 }  // namespace extensions

@@ -142,6 +142,11 @@ CommandStore.CMD_WHITELIST = {
     category: 'controlling_speech'
   },
   'openChromeVoxMenus': {announce: false, msgId: 'menus_title'},
+  'resetTextToSpeechSettings': {
+    announce: false,
+    msgId: 'reset_tts_settings',
+    category: 'controlling_speech'
+  },
   'decreaseTtsRate': {
     announce: false,
     msgId: 'decrease_tts_rate',

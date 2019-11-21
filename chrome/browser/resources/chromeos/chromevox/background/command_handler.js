@@ -1008,6 +1008,9 @@ CommandHandler.onCommand = function(command) {
           .withQueueMode(QueueMode.CATEGORY_FLUSH)
           .go();
       return false;
+    case 'resetTextToSpeechSettings':
+      ChromeVox.tts.resetTextToSpeechSettings();
+      return false;
     default:
       return true;
   }

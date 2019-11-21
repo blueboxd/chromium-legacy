@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var mobileNav = false;
+let mobileNav = false;
 
 /**
  * For small screen mobile the navigation buttons are moved
  * below the advanced text.
  */
 function onResize() {
-  var helpOuterBox = document.querySelector('#details');
-  var mainContent = document.querySelector('#main-content');
-  var mediaQuery = '(min-width: 240px) and (max-width: 420px) and ' +
+  const helpOuterBox = document.querySelector('#details');
+  const mainContent = document.querySelector('#main-content');
+  const mediaQuery = '(min-width: 240px) and (max-width: 420px) and ' +
       '(min-height: 401px), ' +
       '(max-height: 560px) and (min-height: 240px) and ' +
       '(min-width: 421px)';
 
-  var detailsHidden = helpOuterBox.classList.contains(HIDDEN_CLASS);
-  var runnerContainer = document.querySelector('.runner-container');
+  const detailsHidden = helpOuterBox.classList.contains(HIDDEN_CLASS);
+  const runnerContainer = document.querySelector('.runner-container');
 
   // Check for change in nav status.
   if (mobileNav != window.matchMedia(mediaQuery).matches) {

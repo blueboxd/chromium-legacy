@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 
+#include "base/base64.h"
 #include "base/base64url.h"
 #include "base/big_endian.h"
 #include "base/bind.h"
@@ -170,7 +171,8 @@ class GCMEncryptionProviderTest : public ::testing::Test {
   // in ASSERT_NO_FATAL_FAILURE.
   void TestEncryptionRoundTrip(const std::string& app_id,
                                const std::string& authorized_entity,
-                               GCMMessageCryptographer::Version version);
+                               GCMMessageCryptographer::Version version,
+                               bool use_internal_raw_data_for_draft08 = false);
 
   // Performs a test encryption feature without creating proper keys. Must wrap
   // this in ASSERT_NO_FATAL_FAILURE.
@@ -212,21 +214,21 @@ TEST_F(GCMEncryptionProviderTest, IsEncryptedMessage) {
 
   IncomingMessage single_header_message;
   single_header_message.data["encryption"] = "";
-  EXPECT_FALSE(encryption_provider()->IsEncryptedMessage(
-                   single_header_message));
+  EXPECT_FALSE(
+      encryption_provider()->IsEncryptedMessage(single_header_message));
 
   IncomingMessage double_header_message;
   double_header_message.data["encryption"] = "";
   double_header_message.data["crypto-key"] = "";
-  EXPECT_FALSE(encryption_provider()->IsEncryptedMessage(
-                   double_header_message));
+  EXPECT_FALSE(
+      encryption_provider()->IsEncryptedMessage(double_header_message));
 
   IncomingMessage double_header_with_data_message;
   double_header_with_data_message.data["encryption"] = "";
   double_header_with_data_message.data["crypto-key"] = "";
   double_header_with_data_message.raw_data = "foo";
   EXPECT_TRUE(encryption_provider()->IsEncryptedMessage(
-                  double_header_with_data_message));
+      double_header_with_data_message));
 
   IncomingMessage draft08_message;
   draft08_message.data["content-encoding"] = "aes128gcm";
@@ -493,7 +495,8 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalInstanceIDToken) {
 void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
     const std::string& app_id,
     const std::string& authorized_entity,
-    GCMMessageCryptographer::Version version) {
+    GCMMessageCryptographer::Version version,
+    bool use_internal_raw_data_for_draft08) {
   // Performs a full round-trip of the encryption feature, including getting a
   // public/private key-key and performing the cryptographic operations. This
   // is more of an integration test than a unit test.
@@ -580,7 +583,13 @@ void GCMEncryptionProviderTest::TestEncryptionRoundTrip(
       ASSERT_EQ(GCMEncryptionResult::ENCRYPTED_DRAFT_08, encryption_result());
 
       message.data["content-encoding"] = "aes128gcm";
-      message.raw_data = encrypted_message();
+      if (use_internal_raw_data_for_draft08) {
+        std::string raw_data_base64;
+        base::Base64Encode(encrypted_message(), &raw_data_base64);
+        message.data["_googRawData"] = raw_data_base64;
+      } else {
+        message.raw_data = encrypted_message();
+      }
       break;
     }
   }
@@ -643,6 +652,16 @@ TEST_F(GCMEncryptionProviderTest, EncryptionRoundTripDraft08) {
   ASSERT_NO_FATAL_FAILURE(
       TestEncryptionRoundTrip(kExampleAppId, kExampleAuthorizedEntity,
                               GCMMessageCryptographer::Version::DRAFT_08));
+}
+
+TEST_F(GCMEncryptionProviderTest, EncryptionRoundTripDraft08InternalRawData) {
+  // GCMEncryptionProvider::DecryptMessage should succeed when the message was
+  // encrypted following raft-ietf-webpush-encryption-08 with raw_data base64
+  // encoded in message data.
+  ASSERT_NO_FATAL_FAILURE(
+      TestEncryptionRoundTrip(kExampleAppId, kExampleAuthorizedEntity,
+                              GCMMessageCryptographer::Version::DRAFT_08,
+                              /*use_internal_raw_data_for_draft08=*/true));
 }
 
 TEST_F(GCMEncryptionProviderTest, EncryptionNoKeys) {

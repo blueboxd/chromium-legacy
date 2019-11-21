@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/containers/span.h"
+#include "chrome/browser/media/router/providers/openscreen/platform/network_util.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_family.h"
@@ -89,44 +90,6 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
           policy_exception_justification: "Not implemented."
         })");
 
-const net::IPAddress ToChromeNetAddress(const IPAddress& address) {
-  switch (address.version()) {
-    case IPAddress::Version::kV4: {
-      std::array<uint8_t, IPAddress::kV4Size> bytes_v4;
-      address.CopyToV4(bytes_v4.data());
-      return net::IPAddress(bytes_v4.data(), bytes_v4.size());
-    }
-    case IPAddress::Version::kV6: {
-      std::array<uint8_t, IPAddress::kV6Size> bytes_v6;
-      address.CopyToV6(bytes_v6.data());
-      return net::IPAddress(bytes_v6.data(), bytes_v6.size());
-    }
-  }
-}
-
-const net::IPEndPoint ToChromeNetEndpoint(const IPEndpoint& endpoint) {
-  return net::IPEndPoint(ToChromeNetAddress(endpoint.address), endpoint.port);
-}
-
-IPAddress::Version ToOpenScreenVersion(const net::AddressFamily family) {
-  switch (family) {
-    case net::AddressFamily::ADDRESS_FAMILY_IPV6:
-      return IPAddress::Version::kV6;
-    case net::AddressFamily::ADDRESS_FAMILY_IPV4:
-      return IPAddress::Version::kV4;
-
-    case net::AddressFamily::ADDRESS_FAMILY_UNSPECIFIED:
-      NOTREACHED();
-      return IPAddress::Version::kV4;
-  }
-}
-
-const IPEndpoint ToOpenScreenEndpoint(const net::IPEndPoint& endpoint) {
-  const IPAddress::Version version = ToOpenScreenVersion(endpoint.GetFamily());
-  return IPEndpoint{IPAddress{version, endpoint.address().bytes().data()},
-                    endpoint.port()};
-}
-
 }  // namespace
 
 ChromeUdpSocket::ChromeUdpSocket(
@@ -154,7 +117,7 @@ IPEndpoint ChromeUdpSocket::GetLocalEndpoint() const {
 }
 
 void ChromeUdpSocket::Bind() {
-  udp_socket_->Bind(ToChromeNetEndpoint(local_endpoint_),
+  udp_socket_->Bind(network_util::ToChromeNetEndpoint(local_endpoint_),
                     nullptr /* socket_options */,
                     base::BindOnce(&ChromeUdpSocket::BindCallback,
                                    weak_ptr_factory_.GetWeakPtr()));
@@ -170,7 +133,7 @@ void ChromeUdpSocket::SetMulticastOutboundInterface(
 void ChromeUdpSocket::JoinMulticastGroup(
     const IPAddress& address,
     openscreen::platform::NetworkInterfaceIndex ifindex) {
-  const auto join_address = ToChromeNetAddress(address);
+  const auto join_address = network_util::ToChromeNetAddress(address);
   udp_socket_->JoinGroup(join_address,
                          base::BindOnce(&ChromeUdpSocket::JoinGroupCallback,
                                         weak_ptr_factory_.GetWeakPtr()));
@@ -179,7 +142,7 @@ void ChromeUdpSocket::JoinMulticastGroup(
 void ChromeUdpSocket::SendMessage(const void* data,
                                   size_t length,
                                   const IPEndpoint& dest) {
-  const auto send_to_address = ToChromeNetEndpoint(dest);
+  const auto send_to_address = network_util::ToChromeNetEndpoint(dest);
   base::span<const uint8_t> data_span(static_cast<const uint8_t*>(data),
                                       length);
 
@@ -212,7 +175,8 @@ void ChromeUdpSocket::OnReceived(
               std::back_inserter(packet));
     packet.set_socket(this);
     if (source_endpoint) {
-      packet.set_source(ToOpenScreenEndpoint(source_endpoint.value()));
+      packet.set_source(
+          network_util::ToOpenScreenEndpoint(source_endpoint.value()));
     }
     client_->OnRead(this, std::move(packet));
   }
@@ -240,7 +204,7 @@ void ChromeUdpSocket::BindCallback(
   }
 
   if (address) {
-    local_endpoint_ = ToOpenScreenEndpoint(address.value());
+    local_endpoint_ = network_util::ToOpenScreenEndpoint(address.value());
     if (pending_listener_.is_valid()) {
       listener_.Bind(std::move(pending_listener_));
     }

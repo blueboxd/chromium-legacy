@@ -145,6 +145,8 @@ class SearchTabHelper : public content::WebContentsObserver,
   void BlocklistPromo(const std::string& promo_id) override;
   void OpenAutocompleteMatch(uint8_t line,
                              const GURL& url,
+                             bool are_matches_showing,
+                             double time_elapsed_since_last_focus,
                              double button,
                              bool alt_key,
                              bool ctrl_key,
@@ -196,6 +198,7 @@ class SearchTabHelper : public content::WebContentsObserver,
   chrome_colors::ChromeColorsService* chrome_colors_service_;
 
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
+  base::TimeTicks time_of_first_autocomplete_query_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

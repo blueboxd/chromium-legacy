@@ -28,6 +28,20 @@ declare_args() {
   # Set to false to workaround http://crbug.com/966676 and
   # http://crbug.com/966687.
   libcxx_natvis_include = true
+
+  # When set, enables C++ iterator debugging in debug builds. Iterator
+  # debugging is always off in release builds (technically, this flag affects
+  # the "debug" config, which is always available but applied by default only
+  # in debug builds).
+  #
+  # Iterator debugging is generally useful for catching bugs. But it can
+  # introduce extra locking to check the state of an iterator against the state
+  # of the current object. For iterator- and thread-heavy code, this can
+  # significantly slow execution - two orders of magnitude slowdown has been
+  # seen (crbug.com/903553) and iterator debugging also slows builds by making
+  # generation of snapshot_blob.bin take ~40-60 s longer. Therefore this
+  # defaults to off.
+  enable_iterator_debugging = false
 }
 
 use_custom_libcxx =

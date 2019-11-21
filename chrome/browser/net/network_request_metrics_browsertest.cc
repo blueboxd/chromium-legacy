@@ -609,7 +609,7 @@ IN_PROC_BROWSER_TEST_P(NetworkRequestMetricsBrowserTest, FileURLSuccess) {
                   NetworkAccessed::kNoNetworkAccessed);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          NetworkRequestMetricsBrowserTest,
                          testing::Values(RequestType::kMainFrame,
                                          RequestType::kSubFrame,

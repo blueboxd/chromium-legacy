@@ -43,6 +43,14 @@ void FakeDeviceSyncClient::SetSoftwareFeatureState(
   set_software_feature_state_callback_queue_.push(std::move(callback));
 }
 
+void FakeDeviceSyncClient::SetFeatureStatus(
+    const std::string& device_instance_id,
+    multidevice::SoftwareFeature feature,
+    FeatureStatusChange status_change,
+    mojom::DeviceSync::SetFeatureStatusCallback callback) {
+  set_feature_status_callback_queue_.push(std::move(callback));
+}
+
 void FakeDeviceSyncClient::FindEligibleDevices(
     multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
@@ -69,6 +77,10 @@ int FakeDeviceSyncClient::GetForceSyncNowCallbackQueueSize() {
 
 int FakeDeviceSyncClient::GetSetSoftwareFeatureStateCallbackQueueSize() {
   return set_software_feature_state_callback_queue_.size();
+}
+
+int FakeDeviceSyncClient::GetSetFeatureStatusCallbackQueueSize() {
+  return set_feature_status_callback_queue_.size();
 }
 
 int FakeDeviceSyncClient::GetFindEligibleDevicesCallbackQueueSize() {
@@ -98,6 +110,13 @@ void FakeDeviceSyncClient::InvokePendingSetSoftwareFeatureStateCallback(
   std::move(set_software_feature_state_callback_queue_.front())
       .Run(result_code);
   set_software_feature_state_callback_queue_.pop();
+}
+
+void FakeDeviceSyncClient::InvokePendingSetFeatureStatusCallback(
+    mojom::NetworkRequestResult result_code) {
+  DCHECK(set_feature_status_callback_queue_.size() > 0);
+  std::move(set_feature_status_callback_queue_.front()).Run(result_code);
+  set_feature_status_callback_queue_.pop();
 }
 
 void FakeDeviceSyncClient::InvokePendingFindEligibleDevicesCallback(

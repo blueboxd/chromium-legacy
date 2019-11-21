@@ -49,13 +49,13 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
   // |callback| is invoked when the registration is complete.
   void StartRegistration(signin::IdentityManager* identity_manager,
                          const CoreAccountId& account_id,
-                         const base::Closure& callback);
+                         base::OnceClosure callback);
 
   // Starts the device registration with an token enrollment process.
   // |callback| is invoked when the registration is complete.
   void StartRegistrationWithEnrollmentToken(const std::string& token,
                                             const std::string& client_id,
-                                            const base::Closure& callback);
+                                            base::OnceClosure callback);
 
  private:
   class IdentityManagerHelper;
@@ -89,7 +89,7 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   CloudPolicyClient* client_;
   enterprise_management::DeviceRegisterRequest::Type registration_type_;
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyClientRegistrationHelper);
 };

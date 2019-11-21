@@ -13,9 +13,9 @@ import org.chromium.ui.modelutil.PropertyModel;
 /**
  * Binds an add-to-homescreen {@link PropertyModel} with a {@link AddToHomescreenDialogView}.
  */
-public class AddToHomescreenViewBinder {
-    public static void bind(PropertyModel model,
-            AddToHomescreenDialogView addToHomescreenDialogView, PropertyKey propertyKey) {
+class AddToHomescreenViewBinder {
+    static void bind(PropertyModel model, AddToHomescreenDialogView addToHomescreenDialogView,
+            PropertyKey propertyKey) {
         if (propertyKey.equals(AddToHomescreenProperties.TITLE)) {
             addToHomescreenDialogView.setTitle(model.get(AddToHomescreenProperties.TITLE));
         } else if (propertyKey.equals(AddToHomescreenProperties.URL)) {

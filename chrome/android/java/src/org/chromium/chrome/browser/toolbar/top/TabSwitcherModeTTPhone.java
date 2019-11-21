@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.toolbar.IncognitoToggleTabLayout;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
@@ -160,8 +161,8 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         boolean showZoomingAnimation = FeatureUtilities.isGridTabSwitcherEnabled()
                 && TabFeatureUtilities.isTabToGtsAnimationEnabled();
         long duration = showZoomingAnimation
-                ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
-                : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
+                ? ToolbarManager.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
+                : ToolbarManager.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
 
         mVisiblityAnimator =
                 ObjectAnimator.ofFloat(this, View.ALPHA, inTabSwitcherMode ? 1.0f : 0.0f);

@@ -79,6 +79,35 @@ base::ThreadLocalStorage::Slot& DangerousPatternTLS() {
   return *dangerous_pattern_tls;
 }
 
+// Allow middle dot (U+00B7) only on Catalan domains when between two 'l's, to
+// permit the Catalan character ela geminada to be expressed.
+// See https://tools.ietf.org/html/rfc5892#appendix-A.3 for details.
+bool HasUnsafeMiddleDot(const icu::UnicodeString& label_string,
+                        base::StringPiece top_level_domain) {
+  int last_index = 0;
+  while (true) {
+    int index = label_string.indexOf("·", last_index);
+    if (index < 0) {
+      break;
+    }
+    DCHECK_LT(index, label_string.length());
+    if (top_level_domain != "cat") {
+      // Non-Catalan domains cannot contain middle dot.
+      return true;
+    }
+    // Middle dot at the beginning or end.
+    if (index == 0 || index == label_string.length() - 1) {
+      return true;
+    }
+    // Middle dot not surrounded by an 'l'.
+    if (label_string[index - 1] != 'l' || label_string[index + 1] != 'l') {
+      return true;
+    }
+    last_index = index + 1;
+  }
+  return false;
+}
+
 #include "components/url_formatter/spoof_checks/top_domains/domains-trie-inc.cc"
 
 // All the domains in the above file have 4 or fewer labels.
@@ -154,6 +183,15 @@ IDNSpoofChecker::IDNSpoofChecker() {
       icu::UnicodeSet(UNICODE_STRING_SIMPLE("[[:Cyrl:]]"), status);
   cyrillic_letters_.freeze();
 
+  // These characters are, or look like, digits. A domain label entirely made of
+  // digit-lookalikes or digits is blocked.
+  digits_ = icu::UnicodeSet(UNICODE_STRING_SIMPLE("[0-9]"), status);
+  digits_.freeze();
+  digit_lookalikes_ = icu::UnicodeSet(
+      icu::UnicodeString::fromUTF8("[θ२২੨੨૨೩೭շзҙӡउওਤ੩૩౩ဒვპ੫丩ㄐճ৪੪୫૭୨౨]"),
+      status);
+  digit_lookalikes_.freeze();
+
   DCHECK(U_SUCCESS(status));
   // This set is used to determine whether or not to apply a slow
   // transliteration to remove diacritics to a given hostname before the
@@ -190,6 +228,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
       UTRANS_FORWARD, parse_error, status));
 
   // Supplement the Unicode confusable list by the following mapping.
+  //  NOTE: Adding a digit-lookalike? Add it to digit_lookalikes_ above, too.
   //   - {U+00E6 (æ), U+04D5 (ӕ)}  => "ae"
   //   - {U+03FC (ϼ), U+048F (ҏ)} => p
   //   - {U+0127 (ħ), U+043D (н), U+045B (ћ), U+04A3 (ң), U+04A5 (ҥ),
@@ -303,6 +342,11 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
       label_string.indexOf("ə") != -1)
     return false;
 
+  // Disallow middle dot (U+00B7) when unsafe.
+  if (HasUnsafeMiddleDot(label_string, top_level_domain)) {
+    return false;
+  }
+
   // If there's no script mixing, the input is regarded as safe without any
   // extra check unless it falls into one of three categories:
   //   - contains Kana letter exceptions
@@ -326,6 +370,10 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
                                     top_level_domain_unicode) ||
            !IsMadeOfLatinAlikeCyrillic(label_string);
   }
+
+  // Disallow domains that contain only numbers and number-spoofs.
+  if (IsDigitLookalike(label_string))
+    return false;
 
   // Additional checks for |label| with multiple scripts, one of which is Latin.
   // Disallow non-ASCII Latin letters to mix with a non-Latin script.
@@ -605,6 +653,23 @@ bool IDNSpoofChecker::IsMadeOfLatinAlikeCyrillic(
   }
   return !cyrillic_in_label.isEmpty() &&
          cyrillic_letters_latin_alike_.containsAll(cyrillic_in_label);
+}
+
+bool IDNSpoofChecker::IsDigitLookalike(const icu::UnicodeString& label) {
+  bool has_lookalike_char = false;
+  icu::StringCharacterIterator it(label);
+  for (it.setToStart(); it.hasNext();) {
+    const UChar32 c = it.next32PostInc();
+    if (digits_.contains(c)) {
+      continue;
+    }
+    if (digit_lookalikes_.contains(c)) {
+      has_lookalike_char = true;
+      continue;
+    }
+    return false;
+  }
+  return has_lookalike_char;
 }
 
 bool IDNSpoofChecker::IsCyrillicTopLevelDomain(

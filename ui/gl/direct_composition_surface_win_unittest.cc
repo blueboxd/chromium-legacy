@@ -109,7 +109,7 @@ class DirectCompositionSurfaceTest : public testing::Test {
  protected:
   void SetUp() override {
     // Without this, the following check always fails.
-    gl::init::InitializeGLNoExtensionsOneOff();
+    gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true);
     if (!QueryDirectCompositionDevice(QueryD3D11DeviceObjectFromANGLE())) {
       LOG(WARNING)
           << "GL implementation not using DirectComposition, skipping test.";

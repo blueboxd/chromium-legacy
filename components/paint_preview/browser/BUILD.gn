@@ -7,6 +7,8 @@ import("//testing/test.gni")
 if (!is_ios) {
   static_library("browser") {
     sources = [
+      "compositor_utils.cc",
+      "compositor_utils.h",
       "file_manager.cc",
       "file_manager.h",
       "hit_tester.cc",
@@ -18,8 +20,11 @@ if (!is_ios) {
     deps = [
       "//base",
       "//cc/base",
+      "//components/discardable_memory/service",
+      "//components/strings:components_strings",
       "//content/public/browser",
       "//mojo/public/cpp/base",
+      "//mojo/public/cpp/bindings",
       "//third_party/blink/public:blink_headers",
       "//third_party/blink/public/common",
       "//third_party/zlib/google:zip",
@@ -31,6 +36,7 @@ if (!is_ios) {
       "//components/paint_preview/common",
       "//components/paint_preview/common/mojom",
       "//components/paint_preview/common/proto",
+      "//components/services/paint_preview_compositor/public/mojom",
     ]
   }
 

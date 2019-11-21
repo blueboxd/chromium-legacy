@@ -51,7 +51,7 @@ class CSSPaintValueTest : public RenderingTest,
   // that in a Setup method.
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CSSPaintValueTest,
                          Values(0,
                                 kCSSPaintAPIArguments,

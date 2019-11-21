@@ -75,7 +75,7 @@ class VideoTrackRecorderTest
     blink_track_.Initialize(blink_source_);
 
     track_ = new MediaStreamVideoTrack(
-        mock_source_, WebPlatformMediaStreamSource::ConstraintsCallback(),
+        mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
         true /* enabled */);
     blink_track_.SetPlatformTrack(base::WrapUnique(track_));
 
@@ -413,7 +413,7 @@ TEST_F(VideoTrackRecorderTest, ReleasesFrame) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoTrackRecorderTest,
                          ::testing::Combine(ValuesIn(kTrackRecorderTestCodec),
                                             ValuesIn(kTrackRecorderTestSize),

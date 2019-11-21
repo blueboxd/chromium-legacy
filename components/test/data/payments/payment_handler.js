@@ -75,6 +75,8 @@ async function launch() { // eslint-disable-line no-unused-vars
   }
 }
 
+var paymentOptions = null;
+
 /**
  * Creates a payment request with required information and calls request.show()
  * to invoke payment sheet UI. To ensure that UI gets shown two payment methods
@@ -83,6 +85,7 @@ async function launch() { // eslint-disable-line no-unused-vars
  * @return {string} The 'success' or error message.
  */
 function paymentRequestWithOptions(options) { // eslint-disable-line no-unused-vars, max-len
+  paymentOptions = options;
   try {
     const request = new PaymentRequest([{
           supportedMethods: methodName,
@@ -110,9 +113,42 @@ function paymentRequestWithOptions(options) { // eslint-disable-line no-unused-v
       },
       options);
 
-    request.show();
+    request.show().then(validatePaymentResponse).catch(function(err) {
+      return err.toString();
+    });
     return 'success';
   } catch (e) {
     return e.toString();
   }
+}
+
+/**
+ * Validates the response received from payment handler.
+ * @param {Object} response The response received from payment handler.
+ */
+function validatePaymentResponse(response) {
+  var isValid = true;
+  if (paymentOptions.requestShipping) {
+    isValid = ('freeShippingOption' === response.shippingOption) &&
+        ('Reston' === response.shippingAddress.city) &&
+        ('US' === response.shippingAddress.country) &&
+        ('20190' === response.shippingAddress.postalCode) &&
+        ('VA' === response.shippingAddress.region);
+  }
+
+  isValid = isValid &&
+      (!paymentOptions.requestPayerName ||
+       ('John Smith' === response.payerName)) &&
+      (!paymentOptions.requestPayerEmail ||
+       ('smith@gmail.com' === response.payerEmail)) &&
+      (!paymentOptions.requestPayerPhone ||
+       ('+15555555555' === response.payerPhone));
+
+  response.complete(isValid ? 'success' : 'fail')
+      .then(() => {
+        return 'success';
+      })
+      .catch(function(err) {
+        return err.toString();
+      });
 }

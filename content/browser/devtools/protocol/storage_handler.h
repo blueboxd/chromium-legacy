@@ -42,6 +42,20 @@ class StorageHandler : public DevToolsDomainHandler,
       const String& origin,
       std::unique_ptr<GetUsageAndQuotaCallback> callback) override;
 
+  // Cookies management
+  void GetCookies(
+      Maybe<std::string> browser_context_id,
+      std::unique_ptr<Storage::Backend::GetCookiesCallback> callback) override;
+
+  void SetCookies(
+      std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
+      Maybe<std::string> browser_context_id,
+      std::unique_ptr<Storage::Backend::SetCookiesCallback> callback) override;
+
+  void ClearCookies(Maybe<std::string> browser_context_id,
+                    std::unique_ptr<Storage::Backend::ClearCookiesCallback>
+                        callback) override;
+
   // Ignores all double calls to track an origin.
   Response TrackCacheStorageForOrigin(const std::string& origin) override;
   Response UntrackCacheStorageForOrigin(const std::string& origin) override;
@@ -64,6 +78,9 @@ class StorageHandler : public DevToolsDomainHandler,
   void NotifyIndexedDBContentChanged(const std::string& origin,
                                      const base::string16& database_name,
                                      const base::string16& object_store_name);
+
+  Response FindStoragePartition(const Maybe<std::string>& browser_context_id,
+                                StoragePartition** storage_partition);
 
   std::unique_ptr<Storage::Frontend> frontend_;
   StoragePartition* storage_partition_;

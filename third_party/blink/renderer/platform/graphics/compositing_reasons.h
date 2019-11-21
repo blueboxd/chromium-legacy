@@ -68,7 +68,8 @@ using CompositingReasons = uint64_t;
   also needs to be a layer if anything else in the subtree is composited. */  \
   V(Root)                                                                     \
                                                                               \
-  /* CompositedLayerMapping internal hierarchy reasons. */                    \
+  /* CompositedLayerMapping internal hierarchy reasons. Some of them are also \
+  used in CompositeAfterPaint. */                                             \
   V(LayerForAncestorClip)                                                     \
   V(LayerForDescendantClip)                                                   \
   V(LayerForHorizontalScrollbar)                                              \
@@ -86,7 +87,9 @@ using CompositingReasons = uint64_t;
   V(LayerForAncestorClippingMask)                                             \
   V(LayerForScrollingBlockSelection)                                          \
   /* Composited layer painted on top of all other layers as decoration. */    \
-  V(LayerForDecoration)
+  V(LayerForDecoration)                                                       \
+  /* Used in CompositeAfterPaint for link highlight, frame overlay, etc. */   \
+  V(LayerForOther)
 
 class PLATFORM_EXPORT CompositingReason {
   DISALLOW_NEW();

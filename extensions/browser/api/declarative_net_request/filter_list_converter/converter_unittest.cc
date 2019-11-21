@@ -116,7 +116,7 @@ TEST_P(FilterListConverterTest, Convert) {
   TestConversion(filter_list_rules, expected_result, GetParam());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          FilterListConverterTest,
                          ::testing::Values(WriteType::kExtension,
                                            WriteType::kJSONRuleset));

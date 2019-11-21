@@ -8,17 +8,8 @@
 #include <string>
 
 namespace syncer {
-class DeviceInfo;
 class SyncService;
 }  // namespace syncer
-
-struct SharingDeviceNames {
-  std::string full_name;
-  std::string short_name;
-};
-
-// Returns full and short names for |device|.
-SharingDeviceNames GetSharingDeviceNames(const syncer::DeviceInfo* device);
 
 // Returns true if required sync feature is enabled.
 bool IsSyncEnabledForSharing(syncer::SyncService* sync_service);

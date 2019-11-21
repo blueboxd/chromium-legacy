@@ -764,7 +764,7 @@ TEST_P(Vp9ParserTest, VerifyFirstFrame) {
             fhdr.uncompressed_header_size);
 }
 
-INSTANTIATE_TEST_SUITE_P(, Vp9ParserTest, ::testing::ValuesIn(kTestParams));
+INSTANTIATE_TEST_SUITE_P(All, Vp9ParserTest, ::testing::ValuesIn(kTestParams));
 
 TEST_F(Vp9ParserTest, CheckColorSpace) {
   Vp9FrameHeader fhdr{};

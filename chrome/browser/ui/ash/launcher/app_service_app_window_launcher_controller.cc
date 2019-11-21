@@ -9,22 +9,28 @@
 #include "ash/public/cpp/window_properties.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "extensions/common/constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
 
 AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
     ChromeLauncherController* owner)
-    : AppWindowLauncherController(owner) {
+    : AppWindowLauncherController(owner),
+      proxy_(apps::AppServiceProxyFactory::GetForProfile(owner->profile())),
+      app_service_instance_helper_(
+          std::make_unique<AppServiceInstanceRegistryHelper>(
+              owner->profile())) {
   aura::Env::GetInstance()->AddObserver(this);
-  proxy_ = apps::AppServiceProxyFactory::GetForProfile(owner->profile());
   DCHECK(proxy_);
-  Observer::Observe(&proxy_->InstanceRegistry());
+  DCHECK(app_service_instance_helper_);
+  Observe(&proxy_->InstanceRegistry());
 }
 
 AppServiceAppWindowLauncherController::
@@ -63,12 +69,9 @@ void AppServiceAppWindowLauncherController::OnWindowPropertyChanged(
       apps::mojom::AppType::kBuiltIn)
     return;
 
-  std::vector<std::unique_ptr<apps::Instance>> deltas;
-  std::unique_ptr<apps::Instance> instance =
-      std::make_unique<apps::Instance>(shelf_id.app_id, window);
-  instance->SetLaunchId(shelf_id.launch_id);
-  deltas.push_back(std::move(instance));
-  proxy_->InstanceRegistry().OnInstances(std::move(deltas));
+  app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
+                                            shelf_id.launch_id,
+                                            apps::InstanceState::kUnknown);
 
   RegisterAppWindow(window, shelf_id);
 }
@@ -80,25 +83,32 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
   if (!observed_windows_.IsObserving(window))
     return;
 
-  ash::ShelfID shelf_id =
-      ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+  ash::ShelfID shelf_id;
+  if (!proxy_->InstanceRegistry().ForOneInstance(
+          window, [&shelf_id](const apps::InstanceUpdate& update) {
+            shelf_id = ash::ShelfID(update.AppId(), update.LaunchId());
+          })) {
+    shelf_id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+  }
 
-  std::vector<std::unique_ptr<apps::Instance>> deltas;
-  std::unique_ptr<apps::Instance> instance;
+  std::string app_id, launch_id;
 
   if (shelf_id.IsNull()) {
     if (!plugin_vm::IsPluginVmWindow(window))
       return;
+    app_id = plugin_vm::kPluginVmAppId;
     shelf_id = ash::ShelfID(plugin_vm::kPluginVmAppId);
-    instance =
-        std::make_unique<apps::Instance>(plugin_vm::kPluginVmAppId, window);
   } else {
-    instance = std::make_unique<apps::Instance>(shelf_id.app_id, window);
-    instance->SetLaunchId(shelf_id.launch_id);
+    if (proxy_->AppRegistryCache().GetAppType(shelf_id.app_id) ==
+        apps::mojom::AppType::kUnknown) {
+      return;
+    }
+    app_id = shelf_id.app_id;
+    launch_id = shelf_id.launch_id;
   }
 
-  // Update |state|. The app must be started, and running state. If visible, set
-  // it as |kVisible|, otherwise, clear the visible bit.
+  // Update |state|. The app must be started, and running state. If visible,
+  // set it as |kVisible|, otherwise, clear the visible bit.
   apps::InstanceState state = apps::InstanceState::kUnknown;
   proxy_->InstanceRegistry().ForOneInstance(
       window,
@@ -109,12 +119,10 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanging(
                           state | apps::InstanceState::kVisible)
                     : static_cast<apps::InstanceState>(
                           state & ~(apps::InstanceState::kVisible));
-  instance->UpdateState(state, base::Time::Now());
 
-  deltas.push_back(std::move(instance));
-  proxy_->InstanceRegistry().OnInstances(std::move(deltas));
+  app_service_instance_helper_->OnInstances(app_id, window, launch_id, state);
 
-  if (!visible)
+  if (!visible || shelf_id.app_id == extension_misc::kChromeAppId)
     return;
 
   RegisterAppWindow(window, shelf_id);
@@ -125,19 +133,11 @@ void AppServiceAppWindowLauncherController::OnWindowDestroying(
   DCHECK(observed_windows_.IsObserving(window));
   observed_windows_.Remove(window);
 
-  DCHECK(proxy_);
   ash::ShelfID shelf_id =
       ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
-  if (proxy_->AppRegistryCache().GetAppType(shelf_id.app_id) !=
-      apps::mojom::AppType::kUnknown) {
     // Delete the instance from InstanceRegistry.
-    std::vector<std::unique_ptr<apps::Instance>> deltas;
-    std::unique_ptr<apps::Instance> instance =
-        std::make_unique<apps::Instance>(shelf_id.app_id, window);
-    instance->UpdateState(apps::InstanceState::kDestroyed, base::Time::Now());
-    deltas.push_back(std::move(instance));
-    proxy_->InstanceRegistry().OnInstances(std::move(deltas));
-  }
+  app_service_instance_helper_->OnInstances(
+      shelf_id.app_id, window, std::string(), apps::InstanceState::kDestroyed);
 
   auto app_window_it = aura_window_to_app_window_.find(window);
   if (app_window_it == aura_window_to_app_window_.end())
@@ -155,60 +155,15 @@ void AppServiceAppWindowLauncherController::OnWindowActivated(
   AppWindowLauncherController::OnWindowActivated(reason, new_active,
                                                  old_active);
 
-  if (!new_active)
-    return;
-
-  // For |gained_active| window, set the activate bit.
-  ash::ShelfID shelf_id =
-      ash::ShelfID::Deserialize(new_active->GetProperty(ash::kShelfIDKey));
-  if (!shelf_id.IsNull()) {
-    std::vector<std::unique_ptr<apps::Instance>> deltas;
-    std::unique_ptr<apps::Instance> instance =
-        std::make_unique<apps::Instance>(shelf_id.app_id, new_active);
-
-    apps::InstanceState state = apps::InstanceState::kUnknown;
-    proxy_->InstanceRegistry().ForOneInstance(
-        new_active, [&state](const apps::InstanceUpdate& update) {
-          state = update.State();
-        });
-    state = static_cast<apps::InstanceState>(
-        state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
-    state =
-        static_cast<apps::InstanceState>(state | apps::InstanceState::kActive);
-    instance->UpdateState(state, base::Time::Now());
-    deltas.push_back(std::move(instance));
-    proxy_->InstanceRegistry().OnInstances(std::move(deltas));
-  }
-
-  if (!old_active)
-    return;
-
-  // For |lost_active| window , clear the activate bit.
-  shelf_id =
-      ash::ShelfID::Deserialize(old_active->GetProperty(ash::kShelfIDKey));
-  if (shelf_id.IsNull())
-    return;
-
-  std::vector<std::unique_ptr<apps::Instance>> deltas;
-  std::unique_ptr<apps::Instance> instance =
-      std::make_unique<apps::Instance>(shelf_id.app_id, old_active);
-
-  apps::InstanceState state = apps::InstanceState::kUnknown;
-  proxy_->InstanceRegistry().ForOneInstance(
-      old_active,
-      [&state](const apps::InstanceUpdate& update) { state = update.State(); });
-  state = static_cast<apps::InstanceState>(
-      state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
-  state =
-      static_cast<apps::InstanceState>(state & ~apps::InstanceState::kActive);
-  instance->UpdateState(state, base::Time::Now());
-  deltas.push_back(std::move(instance));
-  proxy_->InstanceRegistry().OnInstances(std::move(deltas));
+  SetWindowActivated(new_active, /*active*/ true);
+  SetWindowActivated(old_active, /*active*/ false);
 }
 
 void AppServiceAppWindowLauncherController::OnInstanceUpdate(
     const apps::InstanceUpdate& update) {
   aura::Window* window = update.Window();
+  if (!observed_windows_.IsObserving(window))
+    return;
 
   // This is the first update for the given window.
   if (update.StateIsNull() &&
@@ -233,6 +188,38 @@ void AppServiceAppWindowLauncherController::OnInstanceUpdate(
 void AppServiceAppWindowLauncherController::OnInstanceRegistryWillBeDestroyed(
     apps::InstanceRegistry* instance_registry) {
   Observe(nullptr);
+}
+
+void AppServiceAppWindowLauncherController::SetWindowActivated(
+    aura::Window* window,
+    bool active) {
+  if (!window)
+    return;
+
+  // If the instance is exist, get the current app_id, launch_id and state.
+  ash::ShelfID shelf_id;
+  apps::InstanceState state = apps::InstanceState::kUnknown;
+  bool instance_exist = proxy_->InstanceRegistry().ForOneInstance(
+      window, [&shelf_id, &state](const apps::InstanceUpdate& update) {
+        shelf_id = ash::ShelfID(update.AppId(), update.LaunchId());
+        state = update.State();
+      });
+  if (!instance_exist) {
+    shelf_id = ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
+  }
+
+  // When sets the instance active state, the instance should be in started and
+  // running state.
+  state = static_cast<apps::InstanceState>(
+      state | apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+
+  state = (active)
+              ? static_cast<apps::InstanceState>(state |
+                                                 apps::InstanceState::kActive)
+              : static_cast<apps::InstanceState>(state &
+                                                 ~apps::InstanceState::kActive);
+  app_service_instance_helper_->OnInstances(shelf_id.app_id, window,
+                                            std::string(), state);
 }
 
 void AppServiceAppWindowLauncherController::RegisterAppWindow(

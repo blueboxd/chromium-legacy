@@ -49,7 +49,7 @@ TEST_F(SystemSaltGetterTest, GetSystemSalt) {
   FakeCryptohomeClient::Get()->SetServiceIsAvailable(false);
   std::string system_salt;
   SystemSaltGetter::Get()->GetSystemSalt(
-      base::Bind(&CopySystemSalt, &system_salt));
+      base::BindOnce(&CopySystemSalt, &system_salt));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(system_salt.empty());  // System salt is not returned yet.
 

@@ -618,6 +618,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   void SetRenderProcessId(int process_id);
 
+  void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
+  void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
+
   // Unique among all provider hosts.
   const int provider_id_;
 

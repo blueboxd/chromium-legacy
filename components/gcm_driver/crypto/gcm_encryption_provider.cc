@@ -4,6 +4,7 @@
 
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/base64.h"
@@ -30,6 +31,7 @@ namespace {
 const char kEncryptionProperty[] = "encryption";
 const char kContentEncodingProperty[] = "content-encoding";
 const char kCryptoKeyProperty[] = "crypto-key";
+const char kInternalRawData[] = "_googRawData";
 
 // Content coding name defined by ietf-httpbis-encryption-encoding.
 const char kContentCodingAes128Gcm[] = "aes128gcm";
@@ -107,8 +109,8 @@ void GCMEncryptionProvider::RemoveEncryptionInfo(
   key_store_->RemoveKeys(app_id, authorized_entity, std::move(callback));
 }
 
-bool GCMEncryptionProvider::IsEncryptedMessage(const IncomingMessage& message)
-    const {
+bool GCMEncryptionProvider::IsEncryptedMessage(
+    const IncomingMessage& message) const {
   // Messages that explicitly specify their content coding to be "aes128gcm"
   // indicate that they use draft-ietf-webpush-encryption-08.
   auto content_encoding_iter = message.data.find(kContentEncodingProperty);
@@ -146,20 +148,27 @@ void GCMEncryptionProvider::DecryptMessage(
     // The message follows encryption per draft-ietf-webpush-encryption-08. Use
     // the binary header of the message to derive the values.
 
-    MessagePayloadParser parser(message.raw_data);
-    if (!parser.IsValid()) {
-      DLOG(ERROR) << "Unable to parse the message's binary header";
-      callback.Run(parser.GetFailureReason(),
-                   CreateMessageWithId(message.message_id));
-      return;
+    auto parser = std::make_unique<MessagePayloadParser>(message.raw_data);
+    if (!parser->IsValid()) {
+      // Attempt to parse base64 encoded internal raw data.
+      auto raw_data_iter = message.data.find(kInternalRawData);
+      std::string raw_data;
+      if (raw_data_iter == message.data.end() ||
+          !base::Base64Decode(raw_data_iter->second, &raw_data) ||
+          !(parser = std::make_unique<MessagePayloadParser>(raw_data))
+               ->IsValid()) {
+        DLOG(ERROR) << "Unable to parse the message's binary header";
+        callback.Run(parser->GetFailureReason(),
+                     CreateMessageWithId(message.message_id));
+        return;
+      }
     }
 
-    salt = parser.salt();
-    public_key = parser.public_key();
-    record_size = parser.record_size();
-    ciphertext = parser.ciphertext();
+    salt = parser->salt();
+    public_key = parser->public_key();
+    record_size = parser->record_size();
+    ciphertext = parser->ciphertext();
     version = GCMMessageCryptographer::Version::DRAFT_08;
-
   } else {
     // The message follows encryption per draft-ietf-webpush-encryption-03. Use
     // the Encryption and Crypto-Key header values to derive the values.
@@ -242,7 +251,7 @@ void GCMEncryptionProvider::DecryptMessage(
                      message.collapse_key, message.sender_id, std::move(salt),
                      std::move(public_key), record_size, std::move(ciphertext),
                      version, callback));
-}
+}  // namespace gcm
 
 void GCMEncryptionProvider::EncryptMessage(const std::string& app_id,
                                            const std::string& authorized_entity,
@@ -292,7 +301,6 @@ void GCMEncryptionProvider::DecryptMessageWithKey(
     callback.Run(GCMDecryptionResult::NO_KEYS, CreateMessageWithId(message_id));
     return;
   }
-
 
   std::string shared_secret;
   if (!ComputeSharedP256Secret(*key, public_key, &shared_secret)) {

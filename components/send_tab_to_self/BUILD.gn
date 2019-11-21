@@ -27,10 +27,12 @@ static_library("send_tab_to_self") {
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/send_tab_to_self/proto:send_tab_to_self_proto",
+    "//components/strings",
     "//components/sync",
     "//components/sync_device_info",
     "//components/version_info",
     "//google_apis",
+    "//ui/base",
     "//url",
   ]
   public_deps = [
@@ -66,6 +68,7 @@ source_set("unit_tests") {
     "features_unittest.cc",
     "send_tab_to_self_bridge_unittest.cc",
     "send_tab_to_self_entry_unittest.cc",
+    "target_device_info_unittest.cc",
   ]
   deps = [
     ":send_tab_to_self",

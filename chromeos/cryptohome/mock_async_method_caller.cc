@@ -51,32 +51,27 @@ void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
 }
 
 void MockAsyncMethodCaller::DoCallback(Callback callback) {
-  callback.Run(success_, return_code_);
+  std::move(callback).Run(success_, return_code_);
 }
 
-void MockAsyncMethodCaller::FakeCreateEnrollRequest(
-    const DataCallback& callback) {
-  callback.Run(success_, kFakeAttestationEnrollRequest);
+void MockAsyncMethodCaller::FakeCreateEnrollRequest(DataCallback callback) {
+  std::move(callback).Run(success_, kFakeAttestationEnrollRequest);
 }
 
-void MockAsyncMethodCaller::FakeCreateCertRequest(
-    const DataCallback& callback) {
-  callback.Run(success_, kFakeAttestationCertRequest);
+void MockAsyncMethodCaller::FakeCreateCertRequest(DataCallback callback) {
+  std::move(callback).Run(success_, kFakeAttestationCertRequest);
 }
 
-void MockAsyncMethodCaller::FakeFinishCertRequest(
-    const DataCallback& callback) {
-  callback.Run(success_, kFakeAttestationCert);
+void MockAsyncMethodCaller::FakeFinishCertRequest(DataCallback callback) {
+  std::move(callback).Run(success_, kFakeAttestationCert);
 }
 
-void MockAsyncMethodCaller::FakeGetSanitizedUsername(
-    const DataCallback& callback) {
-  callback.Run(success_, kFakeSanitizedUsername);
+void MockAsyncMethodCaller::FakeGetSanitizedUsername(DataCallback callback) {
+  std::move(callback).Run(success_, kFakeSanitizedUsername);
 }
 
-void MockAsyncMethodCaller::FakeEnterpriseChallenge(
-    const DataCallback& callback) {
-  callback.Run(success_, kFakeChallengeResponse);
+void MockAsyncMethodCaller::FakeEnterpriseChallenge(DataCallback callback) {
+  std::move(callback).Run(success_, kFakeChallengeResponse);
 }
 
 }  // namespace cryptohome

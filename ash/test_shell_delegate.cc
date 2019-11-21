@@ -30,7 +30,11 @@ AccessibilityDelegate* TestShellDelegate::CreateAccessibilityDelegate() {
 }
 
 bool TestShellDelegate::CanGoBack(gfx::NativeWindow window) const {
-  return true;
+  return can_go_back_;
+}
+
+void TestShellDelegate::SetCanGoBack(bool can_go_back) {
+  can_go_back_ = can_go_back;
 }
 
 }  // namespace ash

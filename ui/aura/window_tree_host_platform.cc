@@ -23,7 +23,6 @@
 #include "ui/events/event.h"
 #include "ui/events/keyboard_hook.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 #include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
@@ -38,6 +37,8 @@
 
 #if defined(USE_X11)
 #include "ui/platform_window/x11/x11_window.h"  // nogncheck
+#else
+#include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 #endif
 
 namespace aura {
@@ -162,7 +163,7 @@ bool WindowTreeHostPlatform::IsKeyLocked(ui::DomCode dom_code) {
 
 base::flat_map<std::string, std::string>
 WindowTreeHostPlatform::GetKeyboardLayoutMap() {
-#if !defined(X11)
+#if !defined(USE_X11)
   return ui::GenerateDomKeyboardLayoutMap();
 #else
   NOTIMPLEMENTED();
@@ -226,24 +227,8 @@ void WindowTreeHostPlatform::OnDamageRect(const gfx::Rect& damage_rect) {
 void WindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
   TRACE_EVENT0("input", "WindowTreeHostPlatform::DispatchEvent");
   ui::EventDispatchDetails details = SendEventToSink(event);
-  if (details.dispatcher_destroyed) {
+  if (details.dispatcher_destroyed)
     event->SetHandled();
-    return;
-  }
-
-  // Reset the cursor on ET_MOUSE_EXITED, so that when the mouse re-enters the
-  // window, the cursor is updated correctly.
-  if (event->type() == ui::ET_MOUSE_EXITED) {
-    client::CursorClient* cursor_client = client::GetCursorClient(window());
-    if (cursor_client) {
-      // The cursor-change needs to happen through the CursorClient so that
-      // other external states are updated correctly, instead of just changing
-      // |current_cursor_| here.
-      cursor_client->SetCursor(ui::CursorType::kNone);
-      DCHECK(cursor_client->IsCursorLocked() ||
-             ui::CursorType::kNone == current_cursor_.native_type());
-    }
-  }
 }
 
 void WindowTreeHostPlatform::OnCloseRequest() {

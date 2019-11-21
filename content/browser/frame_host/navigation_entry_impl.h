@@ -82,9 +82,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   static std::unique_ptr<NavigationEntryImpl> FromNavigationEntry(
       std::unique_ptr<NavigationEntry> entry);
 
-  // The value of bindings() before it is set during commit.
-  enum : int { kInvalidBindings = -1 };
-
   NavigationEntryImpl();
   NavigationEntryImpl(
       scoped_refptr<SiteInstanceImpl> instance,
@@ -295,12 +292,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
         source_site_instance.get());
   }
 
-  // Remember the set of bindings granted to this NavigationEntry at the time
-  // of commit, to ensure that we do not grant it additional bindings if we
-  // navigate back to it in the future.  This can only be changed once.
-  void SetBindings(int bindings);
-  int bindings() const { return bindings_; }
-
   void set_page_type(PageType page_type) { page_type_ = page_type; }
 
   bool has_virtual_url() const { return !virtual_url_.is_empty(); }
@@ -434,8 +425,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
 
   // See the accessors above for descriptions.
   int unique_id_;
-  // TODO(creis): Persist bindings_. http://crbug.com/173672.
-  int bindings_;
   PageType page_type_;
   GURL virtual_url_;
   bool update_virtual_url_with_url_;

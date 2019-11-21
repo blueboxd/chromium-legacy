@@ -145,25 +145,53 @@ CreateCertificateSecurityState(
   return certificate_security_state;
 }
 
+std::unique_ptr<protocol::Security::SafetyTipInfo> CreateSafetyTipInfo(
+    const security_state::SafetyTipInfo& safety_tip_info) {
+  switch (safety_tip_info.status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
+      return protocol::Security::SafetyTipInfo::Create()
+          .SetSafetyTipStatus(
+              protocol::Security::SafetyTipStatusEnum::BadReputation)
+          .Build();
+
+    case security_state::SafetyTipStatus::kLookalike:
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
+      return protocol::Security::SafetyTipInfo::Create()
+          .SetSafetyTipStatus(
+              protocol::Security::SafetyTipStatusEnum::Lookalike)
+          .SetSafeUrl(safety_tip_info.safe_url.spec())
+          .Build();
+
+    case security_state::SafetyTipStatus::kBadKeyword:
+      NOTREACHED();
+      return nullptr;
+
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
+      return nullptr;
+  }
+}
+
 std::unique_ptr<protocol::Security::VisibleSecurityState>
-CreateVisibleSecurityState(const security_state::VisibleSecurityState& state,
-                           content::WebContents* web_contents) {
+CreateVisibleSecurityState(content::WebContents* web_contents) {
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
+  auto state = helper->GetVisibleSecurityState();
   std::string security_state = SecurityLevelToProtocolSecurityState(
-      helper->GetSecurityLevel(), state.url);
+      helper->GetSecurityLevel(), state->url);
 
   bool scheme_is_cryptographic =
-      security_state::IsSchemeCryptographic(state.url);
-  bool malicious_content = state.malicious_content_status !=
+      security_state::IsSchemeCryptographic(state->url);
+  bool malicious_content = state->malicious_content_status !=
                            security_state::MALICIOUS_CONTENT_STATUS_NONE;
   bool insecure_input_events =
-      state.insecure_input_events.insecure_field_edited;
+      state->insecure_input_events.insecure_field_edited;
 
   bool secure_origin = scheme_is_cryptographic;
   if (!scheme_is_cryptographic)
-    secure_origin = content::IsOriginSecure(state.url);
+    secure_origin = content::IsOriginSecure(state->url);
 
   std::vector<std::string> security_state_issue_ids;
   if (!secure_origin)
@@ -173,22 +201,22 @@ CreateVisibleSecurityState(const security_state::VisibleSecurityState& state,
         kSchemeIsNotCryptographicSecurityStateIssueId);
   if (malicious_content)
     security_state_issue_ids.push_back(kMalicousContentSecurityStateIssueId);
-  if (state.displayed_mixed_content)
+  if (state->displayed_mixed_content)
     security_state_issue_ids.push_back(
         kDisplayedMixedContentSecurityStateIssueId);
-  if (state.contained_mixed_form)
+  if (state->contained_mixed_form)
     security_state_issue_ids.push_back(kContainedMixedFormSecurityStateIssueId);
-  if (state.ran_mixed_content)
+  if (state->ran_mixed_content)
     security_state_issue_ids.push_back(kRanMixedContentSecurityStateIssueId);
-  if (state.displayed_content_with_cert_errors)
+  if (state->displayed_content_with_cert_errors)
     security_state_issue_ids.push_back(
         kDisplayedContentWithCertErrorsSecurityStateIssueId);
-  if (state.ran_content_with_cert_errors)
+  if (state->ran_content_with_cert_errors)
     security_state_issue_ids.push_back(
         kRanContentWithCertErrorSecurityStateIssueId);
-  if (state.pkp_bypassed)
+  if (state->pkp_bypassed)
     security_state_issue_ids.push_back(kPkpBypassedSecurityStateIssueId);
-  if (state.is_error_page)
+  if (state->is_error_page)
     security_state_issue_ids.push_back(kIsErrorPageSecurityStateIssueId);
   if (insecure_input_events)
     security_state_issue_ids.push_back(
@@ -202,11 +230,16 @@ CreateVisibleSecurityState(const security_state::VisibleSecurityState& state,
                   security_state_issue_ids))
           .Build();
 
-  if (state.connection_status != 0) {
-    auto certificate_security_state = CreateCertificateSecurityState(state);
+  if (state->connection_status != 0) {
+    auto certificate_security_state = CreateCertificateSecurityState(*state);
     visible_security_state->SetCertificateSecurityState(
         std::move(certificate_security_state));
   }
+
+  auto safety_tip_info = CreateSafetyTipInfo(state->safety_tip_info);
+  if (safety_tip_info)
+    visible_security_state->SetSafetyTipInfo(std::move(safety_tip_info));
+
   return visible_security_state;
 }
 
@@ -244,8 +277,6 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
   if (!enabled_)
     return;
 
-  auto state = security_state::GetVisibleSecurityState(web_contents());
-  auto visible_security_state =
-      CreateVisibleSecurityState(*state.get(), web_contents());
+  auto visible_security_state = CreateVisibleSecurityState(web_contents());
   frontend_->VisibleSecurityStateChanged(std::move(visible_security_state));
 }

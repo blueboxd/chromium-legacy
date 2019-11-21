@@ -490,7 +490,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AssociatedUserValidatorUserAccessBlockingTest,
     ::testing::Combine(::testing::Values(CPUS_INVALID,
                                          CPUS_LOGON,

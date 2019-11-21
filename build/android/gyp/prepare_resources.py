@@ -38,10 +38,10 @@ def _ParseArgs(args):
   input_opts.add_argument(
       '--aapt-path', required=True, help='Path to the Android aapt tool')
 
-  input_opts.add_argument('--resource-dirs',
-                        default='[]',
-                        help='A list of input directories containing resources '
-                             'for this target.')
+  input_opts.add_argument(
+      '--res-sources-path',
+      required=True,
+      help='Path to a list of input resources for this target.')
 
   input_opts.add_argument(
       '--shared-resources',
@@ -77,19 +77,27 @@ def _ParseArgs(args):
 
   resource_utils.HandleCommonOptions(options)
 
-  options.resource_dirs = build_utils.ParseGnList(options.resource_dirs)
+  with open(options.res_sources_path) as f:
+    options.sources = [line.strip() for line in f.readlines()]
+  options.resource_dirs = resource_utils.ExtractResourceDirsFromFileList(
+      options.sources)
 
   return options
 
 
-def _GenerateGlobs(pattern):
-  # This function processes the aapt ignore assets pattern into a list of globs
-  # to be used to exclude files on the python side. It removes the '!', which is
-  # used by aapt to mean 'not chatty' so it does not output if the file is
-  # ignored (we dont output anyways, so it is not required). This function does
-  # not handle the <dir> and <file> prefixes used by aapt and are assumed not to
-  # be included in the pattern string.
-  return pattern.replace('!', '').split(':')
+def _CheckAllFilesListed(resource_files, resource_dirs):
+  resource_files = set(resource_files)
+  missing_files = []
+  for path, _ in resource_utils.IterResourceFilesInDirectories(resource_dirs):
+    if path not in resource_files:
+      missing_files.append(path)
+
+  if missing_files:
+    sys.stderr.write('Error: Found files not listed in the sources list of '
+                     'the BUILD.gn target:\n')
+    for path in missing_files:
+      sys.stderr.write('{}\n'.format(path))
+    sys.exit(1)
 
 
 def _ZipResources(resource_dirs, zip_path, ignore_pattern):
@@ -100,22 +108,13 @@ def _ZipResources(resource_dirs, zip_path, ignore_pattern):
   # files that should not be part of the final resource zip.
   files_to_zip = dict()
   files_to_zip_without_generated = dict()
-  globs = _GenerateGlobs(ignore_pattern)
-  for d in resource_dirs:
-    for root, _, files in os.walk(d):
-      for f in files:
-        archive_path = f
-        parent_dir = os.path.relpath(root, d)
-        if parent_dir != '.':
-          archive_path = os.path.join(parent_dir, f)
-        path = os.path.join(root, f)
-        if build_utils.MatchesGlob(archive_path, globs):
-          continue
-        # We want the original resource dirs in the .info file rather than the
-        # generated overridden path.
-        if not path.startswith('/tmp'):
-          files_to_zip_without_generated[archive_path] = path
-        files_to_zip[archive_path] = path
+  for path, archive_path in resource_utils.IterResourceFilesInDirectories(
+      resource_dirs, ignore_pattern):
+    # We want the original resource dirs in the .info file rather than the
+    # generated overridden path.
+    if not path.startswith('/tmp'):
+      files_to_zip_without_generated[archive_path] = path
+    files_to_zip[archive_path] = path
   resource_utils.CreateResourceInfoFile(files_to_zip_without_generated,
                                         zip_path)
   build_utils.DoZip(files_to_zip.iteritems(), zip_path)
@@ -145,7 +144,7 @@ def _GenerateRTxt(options, dep_subdirs, gen_dir):
   for j in options.include_resources:
     package_command += ['-I', j]
 
-  ignore_pattern = _AAPT_IGNORE_PATTERN
+  ignore_pattern = resource_utils.AAPT_IGNORE_PATTERN
   if options.strip_drawables:
     ignore_pattern += ':*drawable*'
   package_command += [
@@ -183,7 +182,7 @@ def _GenerateResourcesZip(output_resource_zip, input_resource_dirs,
     input_resource_dirs: A list of input resource directories.
   """
 
-  ignore_pattern = _AAPT_IGNORE_PATTERN
+  ignore_pattern = resource_utils.AAPT_IGNORE_PATTERN
   if strip_drawables:
     ignore_pattern += ':*drawable*'
   _ZipResources(input_resource_dirs, output_resource_zip, ignore_pattern)
@@ -191,6 +190,8 @@ def _GenerateResourcesZip(output_resource_zip, input_resource_dirs,
 
 def _OnStaleMd5(options):
   with resource_utils.BuildContext() as build:
+    if options.sources:
+      _CheckAllFilesListed(options.sources, options.resource_dirs)
     if options.r_text_in:
       r_txt_path = options.r_text_in
     else:

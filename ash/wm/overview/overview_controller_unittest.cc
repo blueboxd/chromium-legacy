@@ -569,7 +569,7 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     OverviewControllerTestWithDragFromShelfToHomeOrOverview,
     testing::Bool());
 

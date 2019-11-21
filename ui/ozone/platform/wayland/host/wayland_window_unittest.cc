@@ -610,12 +610,12 @@ TEST_P(WaylandWindowTest, CanDispatchMouseEventDefault) {
 }
 
 TEST_P(WaylandWindowTest, CanDispatchMouseEventFocus) {
-  // set_pointer_focus(true) requires a WaylandPointer.
+  // SetPointerFocus(true) requires a WaylandPointer.
   wl_seat_send_capabilities(server_.seat()->resource(),
                             WL_SEAT_CAPABILITY_POINTER);
   Sync();
   ASSERT_TRUE(connection_->pointer());
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
   EXPECT_TRUE(window_->CanDispatchEvent(&test_mouse_event_));
 }
 
@@ -736,13 +736,13 @@ TEST_P(WaylandWindowTest, OnAcceleratedWidgetDestroy) {
 TEST_P(WaylandWindowTest, CanCreateMenuWindow) {
   MockPlatformWindowDelegate menu_window_delegate;
 
-  // set_pointer_focus(true) requires a WaylandPointer.
+  // SetPointerFocus(true) requires a WaylandPointer.
   wl_seat_send_capabilities(
       server_.seat()->resource(),
       WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_TOUCH);
   Sync();
   ASSERT_TRUE(connection_->pointer() && connection_->touch());
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
 
   std::unique_ptr<WaylandWindow> menu_window;
   EXPECT_TRUE(CreateWaylandWindowWithParams(
@@ -751,7 +751,7 @@ TEST_P(WaylandWindowTest, CanCreateMenuWindow) {
 
   Sync();
 
-  window_->set_pointer_focus(false);
+  window_->SetPointerFocus(false);
   window_->set_touch_focus(false);
 
   EXPECT_FALSE(CreateWaylandWindowWithParams(
@@ -803,7 +803,7 @@ TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNonNested) {
                             WL_SEAT_CAPABILITY_POINTER);
   Sync();
   ASSERT_TRUE(connection_->pointer());
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
 
   // Make sure the events are sent to the menu window despite the pointer focus
   // on the main window. Typically, it's the menu controller, which must get all
@@ -839,7 +839,7 @@ TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNested) {
                             WL_SEAT_CAPABILITY_POINTER);
   Sync();
   ASSERT_TRUE(connection_->pointer());
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
 
   // In case of nested menu windows, it is the main menu window, which must
   // receive all the events.

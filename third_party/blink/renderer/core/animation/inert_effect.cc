@@ -41,7 +41,7 @@ InertEffect::InertEffect(KeyframeEffectModelBase* model,
     : AnimationEffect(timing),
       model_(model),
       paused_(paused),
-      inherited_time_(OptionalFromDoubleWithNull(inherited_time)) {}
+      inherited_time_(ValueOrUnresolved(inherited_time)) {}
 
 void InertEffect::Sample(HeapVector<Member<Interpolation>>& result) const {
   UpdateInheritedTime(inherited_time_, kTimingUpdateOnDemand);

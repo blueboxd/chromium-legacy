@@ -2720,6 +2720,18 @@ class AXPosition {
       return true;
     }
 
+    // Treat moving to a different role as a format break
+    ax::mojom::Role current_role = move_from.GetRole();
+    ax::mojom::Role next_role = move_to.GetRole();
+    if (current_role != next_role) {
+      // Limit role breaks to headings only to emphasize text-style differences
+      // over role differences
+      if (current_role == ax::mojom::Role::kHeading ||
+          next_role == ax::mojom::Role::kHeading) {
+        return true;
+      }
+    }
+
     // Stop moving when text styles differ.
     return move_from.AsLeafTextPosition()->GetTextStyles() !=
            move_to.AsLeafTextPosition()->GetTextStyles();

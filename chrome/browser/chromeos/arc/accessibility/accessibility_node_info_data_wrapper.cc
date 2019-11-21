@@ -61,10 +61,6 @@ bool AccessibilityNodeInfoDataWrapper::IsVisibleToUser() const {
   return GetProperty(AXBooleanProperty::VISIBLE_TO_USER);
 }
 
-bool AccessibilityNodeInfoDataWrapper::IsFocused() const {
-  return GetProperty(AXBooleanProperty::FOCUSED);
-}
-
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
   // An important node with a non-generic role and:
   // - actionable nodes

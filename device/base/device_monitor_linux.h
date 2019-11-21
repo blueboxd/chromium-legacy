@@ -23,7 +23,7 @@ namespace device {
 // connected/disconnected devices. This class is *NOT* thread-safe.
 class DEVICE_BASE_EXPORT DeviceMonitorLinux {
  public:
-  typedef base::Callback<void(udev_device* device)> EnumerateCallback;
+  typedef base::RepeatingCallback<void(udev_device* device)> EnumerateCallback;
 
   class Observer {
    public:

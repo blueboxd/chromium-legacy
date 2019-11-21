@@ -197,6 +197,7 @@ class TestDelegate : public URLRequest::Delegate {
   bool certificate_errors_are_fatal() const {
     return certificate_errors_are_fatal_;
   }
+  int certificate_net_error() const { return certificate_net_error_; }
   bool auth_required_called() const { return auth_required_; }
   bool response_completed() const { return response_completed_; }
   int request_status() const { return request_status_; }
@@ -247,6 +248,7 @@ class TestDelegate : public URLRequest::Delegate {
   bool request_failed_ = false;
   bool have_certificate_errors_ = false;
   bool certificate_errors_are_fatal_ = false;
+  int certificate_net_error_ = 0;
   bool auth_required_ = false;
   std::string data_received_;
   bool response_completed_ = false;

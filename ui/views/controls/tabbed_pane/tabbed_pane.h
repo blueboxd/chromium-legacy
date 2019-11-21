@@ -24,7 +24,7 @@ class TabStrip;
 namespace test {
 class TabbedPaneAccessibilityMacTest;
 class TabbedPaneTest;
-}
+}  // namespace test
 
 // TabbedPane is a view that shows tabs. When the user clicks on a tab, the
 // associated view is displayed.
@@ -81,10 +81,10 @@ class VIEWS_EXPORT TabbedPane : public View {
   }
 
   // Selects the tab at |index|, which must be valid.
-  void SelectTabAt(size_t index);
+  void SelectTabAt(size_t index, bool animate = true);
 
   // Selects |tab| (the tabstrip view, not its content) if it is valid.
-  void SelectTab(Tab* tab);
+  void SelectTab(Tab* tab, bool animate = true);
 
   // Gets the orientation of the tab alignment.
   Orientation GetOrientation() const;
@@ -210,7 +210,7 @@ class TabStrip : public View, public gfx::AnimationDelegate {
   // Called by TabStrip when the selected tab changes. This function is only
   // called if |from_tab| is not null, i.e., there was a previously selected
   // tab.
-  void OnSelectedTabChanged(Tab* from_tab, Tab* to_tab);
+  void OnSelectedTabChanged(Tab* from_tab, Tab* to_tab, bool animate = true);
 
   Tab* GetSelectedTab() const;
   Tab* GetTabAtDeltaFromSelected(int delta) const;

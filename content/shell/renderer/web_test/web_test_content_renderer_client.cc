@@ -22,7 +22,6 @@
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
-#include "content/shell/renderer/web_test/test_media_stream_renderer_factory.h"
 #include "content/shell/renderer/web_test/test_websocket_handshake_throttle_provider.h"
 #include "content/shell/renderer/web_test/web_test_render_frame_observer.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/blink.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/web/web_plugin_params.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -79,8 +79,7 @@ void WebTestContentRendererClient::RenderViewCreated(RenderView* render_view) {
 
 std::unique_ptr<blink::WebMediaStreamRendererFactory>
 WebTestContentRendererClient::CreateMediaStreamRendererFactory() {
-  return std::unique_ptr<blink::WebMediaStreamRendererFactory>(
-      new TestMediaStreamRendererFactory());
+  return blink::CreateWebMediaStreamRendererFactory();
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>

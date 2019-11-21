@@ -538,7 +538,7 @@ IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementEnrollmentTest, MAYBE_Test) {
 #endif
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(ChromeBrowserCloudManagementEnrollmentTest,
                          ChromeBrowserCloudManagementEnrollmentTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),
@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyPolicyFetchTest, Test) {
 //  get an error. There should be no more cloud policy applied.
 //  3) Start Chrome without DM token. Chrome will register itself and fetch
 //  policy after it.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(MachineLevelUserCloudPolicyPolicyFetchTest,
                          MachineLevelUserCloudPolicyPolicyFetchTest,
                          ::testing::Values(kDMToken, kInvalidDMToken, ""));
 

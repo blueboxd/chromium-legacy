@@ -54,7 +54,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
-#include "chrome/common/mac/app_shim_param_traits.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
@@ -478,7 +477,7 @@ const Extension* ExtensionAppShimHandler::MaybeGetAppForBrowser(
 
 void ExtensionAppShimHandler::RequestUserAttentionForWindow(
     AppWindow* app_window,
-    AppShimAttentionType attention_type) {
+    chrome::mojom::AppShimAttentionType attention_type) {
   Profile* profile = Profile::FromBrowserContext(app_window->browser_context());
   AppShimHost* host = FindHost(profile, app_window->extension_id());
   if (host && !host->UsesRemoteViews())
@@ -667,7 +666,8 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesRetrieved(
   if (profile_paths.empty()) {
     LOG(ERROR) << "App " << bootstrap->GetAppId()
                << " installed for no profiles.";
-    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
+    bootstrap->OnFailedToConnectToHost(
+        chrome::mojom::AppShimLaunchResult::kProfileNotFound);
     return;
   }
 
@@ -677,7 +677,8 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesRetrieved(
 
   if (delegate_->IsProfileLockedForPath(profile_path)) {
     LOG(WARNING) << "Requested profile is locked.  Showing User Manager.";
-    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_PROFILE_LOCKED);
+    bootstrap->OnFailedToConnectToHost(
+        chrome::mojom::AppShimLaunchResult::kProfileLocked);
     delegate_->LaunchUserManager();
     return;
   }
@@ -696,15 +697,17 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndAppLoaded(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Early-out if the profile or extension failed to load.
   if (!profile) {
-    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
+    bootstrap->OnFailedToConnectToHost(
+        chrome::mojom::AppShimLaunchResult::kProfileNotFound);
     return;
   }
   if (!extension) {
-    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_APP_NOT_FOUND);
+    bootstrap->OnFailedToConnectToHost(
+        chrome::mojom::AppShimLaunchResult::kAppNotFound);
     return;
   }
   std::string app_id = bootstrap->GetAppId();
-  AppShimLaunchType launch_type = bootstrap->GetLaunchType();
+  chrome::mojom::AppShimLaunchType launch_type = bootstrap->GetLaunchType();
   std::vector<base::FilePath> files = bootstrap->GetLaunchFiles();
 
   ProfileState* profile_state =
@@ -720,10 +723,12 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndAppLoaded(
       // app_id) pair, then focus the windows for the existing process, and
       // close the new process.
       OnShimFocus(host,
-                  launch_type == APP_SHIM_LAUNCH_NORMAL ? APP_SHIM_FOCUS_REOPEN
-                                                        : APP_SHIM_FOCUS_NORMAL,
+                  launch_type == chrome::mojom::AppShimLaunchType::kNormal
+                      ? chrome::mojom::AppShimFocusType::kReopen
+                      : chrome::mojom::AppShimFocusType::kNormal,
                   files);
-      bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_DUPLICATE_HOST);
+      bootstrap->OnFailedToConnectToHost(
+          chrome::mojom::AppShimLaunchResult::kDuplicateHost);
       return;
     }
     if (IsAcceptablyCodeSigned(bootstrap->GetAppShimPid())) {
@@ -733,19 +738,21 @@ void ExtensionAppShimHandler::OnShimProcessConnectedAndAppLoaded(
       // signature, reject the connection and re-launch the shim. The internal
       // re-launch will likely fail, whereupon the shim will be recreated.
       LOG(ERROR) << "The attaching app shim's code signature is invalid.";
-      bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_FAILED_VALIDATION);
+      bootstrap->OnFailedToConnectToHost(
+          chrome::mojom::AppShimLaunchResult::kFailedValidation);
       host->LaunchShim();
     }
   } else {
     // If it's an app that has a shim to launch it but shouldn't use a host
     // (e.g, a hosted app that opens in a tab), terminate the shim, but still
     // launch the app (that is, open the relevant browser tabs).
-    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_DUPLICATE_HOST);
+    bootstrap->OnFailedToConnectToHost(
+        chrome::mojom::AppShimLaunchResult::kDuplicateHost);
   }
 
   // If this is not a register-only launch, then launch the app (that is, open
   // a browser window for it).
-  if (launch_type == APP_SHIM_LAUNCH_NORMAL)
+  if (launch_type == chrome::mojom::AppShimLaunchType::kNormal)
     delegate_->LaunchApp(profile, extension, files);
 }
 
@@ -801,7 +808,7 @@ void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
 
 void ExtensionAppShimHandler::OnShimFocus(
     AppShimHost* host,
-    AppShimFocusType focus_type,
+    chrome::mojom::AppShimFocusType focus_type,
     const std::vector<base::FilePath>& files) {
   // This path is only for legacy apps (which are perforce single-profile).
   if (host->UsesRemoteViews())
@@ -821,8 +828,9 @@ void ExtensionAppShimHandler::OnShimFocus(
       (*it)->GetBaseWindow()->Show();
   }
 
-  if (focus_type == APP_SHIM_FOCUS_NORMAL ||
-      (focus_type == APP_SHIM_FOCUS_REOPEN && !windows.empty())) {
+  if (focus_type == chrome::mojom::AppShimFocusType::kNormal ||
+      (focus_type == chrome::mojom::AppShimFocusType::kReopen &&
+       !windows.empty())) {
     return;
   }
   delegate_->LaunchApp(profile, extension, files);

@@ -263,15 +263,7 @@ gfx::Rect GetGridBoundsInScreen(aura::Window* root_window,
   else
     bounds.set_height(min_length);
 
-  // The |opposite_position| will be physically on the left or top of the screen
-  // (depending on whether the orientation is landscape or portrait
-  //  respectively), if |opposite_position| is left AND current orientation is
-  // primary, OR |opposite_position| is right AND current orientation is not
-  // primary. This is an X-NOR condition.
-  const bool primary = IsCurrentScreenOrientationPrimary();
-  const bool left_or_top =
-      (primary == (opposite_position == SplitViewController::LEFT));
-  if (left_or_top) {
+  if (IsPhysicalLeftOrTop(opposite_position)) {
     // If we are shifting to the left or top we need to update the origin as
     // well.
     const int offset = min_length - current_length;

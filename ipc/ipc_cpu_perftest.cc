@@ -84,7 +84,7 @@ class PerfCpuLogger {
 MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
   MojoPerfTestClient client;
   int rv = mojo::core::test::MultiprocessTestHelper::RunClientMain(
-      base::Bind(&MojoPerfTestClient::Run, base::Unretained(&client)),
+      base::BindOnce(&MojoPerfTestClient::Run, base::Unretained(&client)),
       true /* pass_pipe_ownership_to_main */);
 
   base::RunLoop run_loop;
@@ -286,8 +286,9 @@ class MojoSteadyPingPongTest : public mojo::core::test::MojoTestBase {
       params_ = params;
       payload_ = std::string(params.message_size, 'a');
 
-      ping_receiver_->Ping("hello", base::Bind(&MojoSteadyPingPongTest::OnHello,
-                                               base::Unretained(this)));
+      ping_receiver_->Ping("hello",
+                           base::BindOnce(&MojoSteadyPingPongTest::OnHello,
+                                          base::Unretained(this)));
       base::RunLoop run_loop;
       quit_closure_ = run_loop.QuitWhenIdleClosure();
       run_loop.Run();
@@ -361,8 +362,9 @@ class MojoSteadyPingPongTest : public mojo::core::test::MojoTestBase {
   }
 
   void SendPing() {
-    ping_receiver_->Ping(payload_, base::Bind(&MojoSteadyPingPongTest::OnPong,
-                                              base::Unretained(this)));
+    ping_receiver_->Ping(payload_,
+                         base::BindOnce(&MojoSteadyPingPongTest::OnPong,
+                                        base::Unretained(this)));
   }
 
   static int RunPingPongClient(MojoHandle mp) {

@@ -115,7 +115,7 @@ TEST_P(CanvasPainterTest, PaintPixelCanvasEnabled) {
   CheckPaintedShape(bitmap, shape_bounds, shape_color, device_scale_factor());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CanvasPainterTest,
                          ::testing::Values(1.f, 1.25f, 1.5f, 1.6f, 2.f, 2.25f));
 }  // namespace ui

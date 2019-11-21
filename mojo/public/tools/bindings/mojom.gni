@@ -72,6 +72,7 @@ mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
 mojom_generator_sources = [
   "$mojom_generator_root/generators/mojom_cpp_generator.py",
   "$mojom_generator_root/generators/mojom_js_generator.py",
+  "$mojom_generator_root/generators/mojom_ts_generator.py",
   "$mojom_generator_root/generators/mojom_java_generator.py",
   "$mojom_generator_root/pylib/mojom/__init__.py",
   "$mojom_generator_root/pylib/mojom/error.py",

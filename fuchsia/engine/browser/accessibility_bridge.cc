@@ -10,6 +10,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "fuchsia/engine/browser/ax_tree_converter.h"
+#include "ui/accessibility/ax_action_data.h"
 
 using fuchsia::accessibility::semantics::SemanticTree;
 
@@ -116,8 +117,24 @@ uint32_t AccessibilityBridge::ConvertToFuchsiaNodeId(int32_t ax_node_id) {
 
 void AccessibilityBridge::AccessibilityEventReceived(
     const content::AXEventNotificationDetails& details) {
+  // Updates to AXTree must be applied first.
   for (const ui::AXTreeUpdate& update : details.updates) {
     tree_.Unserialize(update);
+  }
+
+  // Events to fire after tree has been updated.
+  for (const ui::AXEvent& event : details.events) {
+    if (event.event_type == ax::mojom::Event::kHitTestResult) {
+      if (pending_hit_test_callbacks_.find(event.action_request_id) !=
+          pending_hit_test_callbacks_.end()) {
+        fuchsia::accessibility::semantics::Hit hit;
+        hit.set_node_id(ConvertToFuchsiaNodeId(event.id));
+
+        // Run the pending callback with the hit.
+        pending_hit_test_callbacks_[event.action_request_id](std::move(hit));
+        pending_hit_test_callbacks_.erase(event.action_request_id);
+      }
+    }
   }
 }
 
@@ -130,7 +147,16 @@ void AccessibilityBridge::OnAccessibilityActionRequested(
 
 void AccessibilityBridge::HitTest(fuchsia::math::PointF local_point,
                                   HitTestCallback callback) {
-  NOTIMPLEMENTED();
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kHitTest;
+  gfx::Point point;
+  point.set_x(local_point.x);
+  point.set_y(local_point.y);
+  action_data.target_point = point;
+  action_data.hit_test_event_to_fire = ax::mojom::Event::kHitTestResult;
+  pending_hit_test_callbacks_[action_data.request_id] = std::move(callback);
+
+  web_contents_->GetMainFrame()->AccessibilityPerformAction(action_data);
 }
 
 void AccessibilityBridge::OnSemanticsModeChanged(

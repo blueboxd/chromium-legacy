@@ -394,6 +394,13 @@ void CreditCardAccessManager::Authenticate(bool get_unmask_details_returned) {
 #if defined(OS_IOS)
     NOTREACHED();
 #else
+    // If |is_authentication_in_progress_| is false, it means the process has
+    // been cancelled via the verify pending dialog. Do not run
+    // CreditCardFIDOAuthenticator::Authenticate in this case (should not fall
+    // back to CVC auth either).
+    if (!is_authentication_in_progress_)
+      return;
+
     DCHECK(unmask_details_.fido_request_options.is_dict());
     GetOrCreateFIDOAuthenticator()->Authenticate(
         card_, weak_ptr_factory_.GetWeakPtr(), form_parsed_timestamp_,
@@ -526,7 +533,7 @@ void CreditCardAccessManager::ShowVerifyPendingDialog() {
 }
 
 void CreditCardAccessManager::OnDidCancelCardVerification() {
-  payments_client_->CancelRequest();
+  GetOrCreateFIDOAuthenticator()->CancelVerification();
   unmask_details_request_in_progress_ = false;
   is_authentication_in_progress_ = false;
 }

@@ -8,11 +8,13 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -95,6 +97,13 @@ void AppMenuModelAdapter::ExecuteCommand(int id, int mouse_event_flags) {
 void AppMenuModelAdapter::OnMenuClosed(views::MenuItemView* menu) {
   DCHECK_NE(base::TimeTicks(), menu_open_time_);
   RecordHistogramOnMenuClosed();
+
+  // No |widget_owner_| in tests.
+  if (widget_owner_ && widget_owner_->GetRootView()) {
+    widget_owner_->GetRootView()->NotifyAccessibilityEvent(
+        ax::mojom::Event::kMenuEnd,
+        /*send_native_event=*/true);
+  }
 
   if (on_menu_closed_callback_)
     std::move(on_menu_closed_callback_).Run();

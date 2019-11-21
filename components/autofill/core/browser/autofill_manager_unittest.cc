@@ -7973,18 +7973,20 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(All, OnFocusOnFormFieldTest, testing::Bool());
 
 #if defined(OS_IOS) || defined(OS_ANDROID)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SuggestionMatchingTest,
                          testing::Values(std::make_tuple(0, ""),
                                          std::make_tuple(1, "show-all"),
                                          std::make_tuple(1, "show-one")));
 #else
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SuggestionMatchingTest,
                          testing::Values(std::make_tuple(0, ""),
                                          std::make_tuple(1, "")));
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)
 
-INSTANTIATE_TEST_SUITE_P(, CreditCardSuggestionMatchingTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         CreditCardSuggestionMatchingTest,
+                         testing::Bool());
 
 }  // namespace autofill

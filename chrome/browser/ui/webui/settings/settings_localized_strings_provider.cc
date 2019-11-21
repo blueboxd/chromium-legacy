@@ -249,6 +249,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"captionsColorCyan", IDS_SETTINGS_CAPTIONS_COLOR_CYAN},
     {"captionsColorMagenta", IDS_SETTINGS_CAPTIONS_COLOR_MAGENTA},
     {"captionsDefaultSetting", IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING},
+    {"settingsSliderRoleDescription",
+      IDS_SETTINGS_SLIDER_MIN_MAX_ARIA_ROLE_DESCRIPTION},
 #if defined(OS_CHROMEOS)
     {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
     {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
@@ -732,6 +734,8 @@ void AddParentalControlStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PARENTAL_CONTROLS_PAGE_CONNECT_TO_INTERNET_LABEL},
       {"parentalControlsSetUpButtonLabel",
        IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_LABEL},
+      {"parentalControlsSetUpButtonRole",
+       IDS_SETTINGS_PARENTAL_CONTROLS_SET_UP_BUTTON_ROLE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -813,6 +817,34 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetoothRemove", IDS_SETTINGS_BLUETOOTH_REMOVE},
       {"bluetoothPrimaryUserControlled",
        IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED},
+      {"bluetoothDeviceType_computer",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_COMPUTER},
+      {"bluetoothDeviceType_chone",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_PHONE},
+      {"bluetoothDeviceType_modem",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_MODEM},
+      {"bluetoothDeviceType_audio",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_AUDIO},
+      {"bluetoothDeviceType_carAudio",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_CAR_AUDIO},
+      {"bluetoothDeviceType_video",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_VIDEO},
+      {"bluetoothDeviceType_peripheral",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_PERIPHERAL},
+      {"bluetoothDeviceType_joystick",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_JOYSTICK},
+      {"bluetoothDeviceType_gamepad",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_GAMEPAD},
+      {"bluetoothDeviceType_keyboard",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD},
+      {"bluetoothDeviceType_mouse",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_MOUSE},
+      {"bluetoothDeviceType_tablet",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_TABLET},
+      {"bluetoothDeviceType_keyboardMouseCombo",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_KEYBOARD_MOUSE_COMBO},
+      {"bluetoothDeviceType_unknown",
+       IDS_SETTINGS_BLUETOOTH_ACCESSIBILITY_DEVICE_TYPE_UNKNOWN},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -1930,11 +1962,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "passwordsLeakDetectionEnabled",
       base::FeatureList::IsEnabled(password_manager::features::kLeakDetection));
 
-  ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
+  ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   html_source->AddString(
       "undoDescription",
       l10n_util::GetStringFUTF16(IDS_UNDO_DESCRIPTION,
-                                 undoAccelerator.GetShortcutText()));
+                                 undo_accelerator.GetShortcutText()));
 
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
@@ -2129,6 +2161,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"chooseFile", IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE},
     {"profilePhoto", IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO},
     {"oldPhoto", IDS_SETTINGS_CHANGE_PICTURE_OLD_PHOTO},
+    {"oldVideo", IDS_SETTINGS_CHANGE_PICTURE_OLD_VIDEO},
     {"previewAltText", IDS_SETTINGS_CHANGE_PICTURE_PREVIEW_ALT},
     {"authorCreditText", IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_CREDIT_TEXT},
     {"photoCaptureAccessibleText", IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT},

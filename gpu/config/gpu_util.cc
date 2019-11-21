@@ -636,7 +636,7 @@ bool InitializeGLThreadSafe(base::CommandLine* command_line,
   }
   if (gl::GetGLImplementation() == gl::kGLImplementationNone) {
     // Some tests initialize bindings by themselves.
-    if (!gl::init::InitializeGLNoExtensionsOneOff()) {
+    if (!gl::init::InitializeGLNoExtensionsOneOff(/*init_bindings*/ true)) {
       VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
       return false;
     }

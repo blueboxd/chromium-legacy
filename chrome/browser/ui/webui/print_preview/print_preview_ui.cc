@@ -399,12 +399,12 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   webui::SetupBundledWebUIDataSource(source, "print_preview.js",
                                      IDR_PRINT_PREVIEW_PRINT_PREVIEW_ROLLUP_JS,
-                                     IDR_PRINT_PREVIEW_VULCANIZED_HTML);
+                                     IDR_PRINT_PREVIEW_PRINT_PREVIEW_HTML);
 #else
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kPrintPreviewResources, kPrintPreviewResourcesSize),
-      kGeneratedPath, IDR_PRINT_PREVIEW_HTML);
+      kGeneratedPath, IDR_PRINT_PREVIEW_PRINT_PREVIEW_HTML);
 #endif
   AddPrintPreviewStrings(source);
   SetupPrintPreviewPlugin(source);

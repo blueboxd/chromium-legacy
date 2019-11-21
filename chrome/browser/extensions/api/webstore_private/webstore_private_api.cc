@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -35,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/gpu_feature_checker.h"
 #include "content/public/browser/storage_partition.h"
@@ -71,6 +73,7 @@ namespace IsPendingCustodianApproval =
     api::webstore_private::IsPendingCustodianApproval;
 namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
 namespace LaunchEphemeralApp = api::webstore_private::LaunchEphemeralApp;
+namespace RequestExtension = api::webstore_private::RequestExtension;
 namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
 
 namespace {
@@ -173,6 +176,37 @@ void SetWebstoreLogin(Profile* profile, const std::string& login) {
 
 void RecordWebstoreExtensionInstallResult(bool success) {
   UMA_HISTOGRAM_BOOLEAN("Webstore.ExtensionInstallResult", success);
+}
+
+api::webstore_private::ExtensionInstallStatus
+ConvertExtensionInstallStatusForAPI(ExtensionInstallStatus status) {
+  switch (status) {
+    case kCanRequest:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_CAN_REQUEST;
+    case kRequestPending:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_REQUEST_PENDING;
+    case kBlockedByPolicy:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_BLOCKED_BY_POLICY;
+    case kInstallable:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_INSTALLABLE;
+    case kEnabled:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_ENABLED;
+    case kDisabled:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_DISABLED;
+    case kTerminated:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_TERMINATED;
+    case kBlacklisted:
+      return api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_BLACKLISTED;
+  }
+  return api::webstore_private::EXTENSION_INSTALL_STATUS_NONE;
 }
 
 }  // namespace
@@ -755,43 +789,51 @@ WebstorePrivateGetExtensionStatusFunction::Run() {
   ExtensionInstallStatus status =
       GetWebstoreExtensionInstallStatus(extension_id, profile);
   api::webstore_private::ExtensionInstallStatus api_status =
-      api::webstore_private::EXTENSION_INSTALL_STATUS_NONE;
-  switch (status) {
-    case kCanRequest:
-      api_status = api::webstore_private::ExtensionInstallStatus::
-          EXTENSION_INSTALL_STATUS_CAN_REQUEST;
-      break;
-    case kRequestPending:
-      api_status = api::webstore_private::ExtensionInstallStatus::
-          EXTENSION_INSTALL_STATUS_REQUEST_PENDING;
-      break;
-    case kBlockedByPolicy:
-      api_status = api::webstore_private::ExtensionInstallStatus::
-          EXTENSION_INSTALL_STATUS_BLOCKED_BY_POLICY;
-      break;
-    case kInstallable:
-      api_status = api::webstore_private::ExtensionInstallStatus::
-          EXTENSION_INSTALL_STATUS_INSTALLABLE;
-      break;
-    case kEnabled:
-      api_status = api::webstore_private::ExtensionInstallStatus::
-          EXTENSION_INSTALL_STATUS_ENABLED;
-      break;
-    case kDisabled:
-      api_status = api::webstore_private::ExtensionInstallStatus::
-          EXTENSION_INSTALL_STATUS_DISABLED;
-      break;
-    case kTerminated:
-      api_status = api::webstore_private::ExtensionInstallStatus::
-          EXTENSION_INSTALL_STATUS_TERMINATED;
-      break;
-    case kBlacklisted:
-      api_status = api::webstore_private::ExtensionInstallStatus::
-          EXTENSION_INSTALL_STATUS_BLACKLISTED;
-      break;
-  }
+      ConvertExtensionInstallStatusForAPI(status);
   return RespondNow(
       OneArgument(GetExtensionStatus::Results::Create(api_status)));
+}
+
+WebstorePrivateRequestExtensionFunction::
+    WebstorePrivateRequestExtensionFunction() = default;
+WebstorePrivateRequestExtensionFunction::
+    ~WebstorePrivateRequestExtensionFunction() = default;
+
+ExtensionFunction::ResponseAction
+WebstorePrivateRequestExtensionFunction::Run() {
+  std::unique_ptr<RequestExtension::Params> params(
+      RequestExtension::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const ExtensionId& extension_id = params->id;
+
+  if (!crx_file::id_util::IdIsValid(extension_id))
+    return RespondNow(Error(kWebstoreInvalidIdError));
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  ExtensionInstallStatus status =
+      GetWebstoreExtensionInstallStatus(extension_id, profile);
+  if (status == kCanRequest) {
+    AddExtensionToPendingList(extension_id);
+    // Query the new extension install status again. It should be changed from
+    // kCanRequest to kRequestPending if the id has been added into pending list
+    // successfully.
+    status = GetWebstoreExtensionInstallStatus(extension_id, profile);
+    DCHECK_EQ(kRequestPending, status);
+  }
+
+  api::webstore_private::ExtensionInstallStatus api_status =
+      ConvertExtensionInstallStatusForAPI(status);
+  return RespondNow(OneArgument(RequestExtension::Results::Create(api_status)));
+}
+
+void WebstorePrivateRequestExtensionFunction::AddExtensionToPendingList(
+    const ExtensionId& id) {
+  ListPrefUpdate pending_list_update(
+      Profile::FromBrowserContext(browser_context())->GetPrefs(),
+      prefs::kCloudExtensionRequestIds);
+  DCHECK(!base::Contains(pending_list_update->GetList(), base::Value(id)));
+  pending_list_update->GetList().push_back(base::Value(id));
 }
 
 }  // namespace extensions

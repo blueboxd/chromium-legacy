@@ -241,7 +241,12 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     Vector<wtf_size_t> paint_chunk_indices;
     PropertyTreeState property_tree_state;
     FloatPoint offset_of_decomposited_transforms;
-    bool requires_own_layer;
+
+    enum {
+      kRequiresOwnLayer,
+      kOverlap,
+      kOther,
+    } compositing_type;
   };
 
   void DecompositeTransforms(const PaintArtifact&);
@@ -329,6 +334,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       const Vector<const EffectPaintPropertyNode*>&);
 
   cc::PropertyTrees* GetPropertyTreesForDirectUpdate();
+
+  CompositingReasons GetCompositingReasons(const PendingLayer& layer,
+                                           const PendingLayer* previous_layer,
+                                           const PaintArtifact&) const;
 
   // For notifying blink of composited scrolling.
   base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks_;

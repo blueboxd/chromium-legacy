@@ -214,30 +214,30 @@ class BiodClientImpl : public BiodClient {
     biod_proxy_ = bus_->GetObjectProxy(biod::kBiodServiceName, fpc_bio_path);
 
     biod_proxy_->SetNameOwnerChangedCallback(
-        base::Bind(&BiodClientImpl::NameOwnerChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&BiodClientImpl::NameOwnerChangedReceived,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     biod_proxy_->ConnectToSignal(
         biod::kBiometricsManagerInterface,
         biod::kBiometricsManagerEnrollScanDoneSignal,
-        base::Bind(&BiodClientImpl::EnrollScanDoneReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BiodClientImpl::EnrollScanDoneReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BiodClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
 
     biod_proxy_->ConnectToSignal(
         biod::kBiometricsManagerInterface,
         biod::kBiometricsManagerAuthScanDoneSignal,
-        base::Bind(&BiodClientImpl::AuthScanDoneReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BiodClientImpl::AuthScanDoneReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BiodClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
 
     biod_proxy_->ConnectToSignal(
         biod::kBiometricsManagerInterface,
         biod::kBiometricsManagerSessionFailedSignal,
-        base::Bind(&BiodClientImpl::SessionFailedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&BiodClientImpl::SessionFailedReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&BiodClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }

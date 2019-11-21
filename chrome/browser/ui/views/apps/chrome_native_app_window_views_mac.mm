@@ -167,8 +167,8 @@ void ChromeNativeAppWindowViewsMac::Restore() {
 
 void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
   apps::ExtensionAppShimHandler::Get()->RequestUserAttentionForWindow(
-      app_window(), flash ? apps::APP_SHIM_ATTENTION_CRITICAL
-                          : apps::APP_SHIM_ATTENTION_CANCEL);
+      app_window(), flash ? chrome::mojom::AppShimAttentionType::kCritical
+                          : chrome::mojom::AppShimAttentionType::kCancel);
 }
 
 void ChromeNativeAppWindowViewsMac::OnWidgetCreated(views::Widget* widget) {

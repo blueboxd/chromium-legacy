@@ -214,6 +214,6 @@ IN_PROC_BROWSER_TEST_P(WindowResizeTest, Multi) {
   generator->Wait();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WindowResizeTest,
                          ::testing::Combine(/*ntp=*/testing::Bool()));

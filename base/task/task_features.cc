@@ -11,12 +11,6 @@ namespace base {
 const Feature kAllTasksUserBlocking{"AllTasksUserBlocking",
                                     FEATURE_DISABLED_BY_DEFAULT};
 
-// This experiment no longer has any impact, but remains enabled by default
-// because script streamer depends on it.
-// TODO(etiennep): Cleanup this experiment.
-const Feature kMergeBlockingNonBlockingPools = {
-    "MergeBlockingNonBlockingPools", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const Feature kNoDetachBelowInitialCapacity = {
     "NoDetachBelowInitialCapacity", base::FEATURE_DISABLED_BY_DEFAULT};
 

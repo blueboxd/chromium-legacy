@@ -89,9 +89,10 @@ class VIEWS_EXPORT ViewAccessibility {
 
   virtual gfx::NativeViewAccessible GetNativeObject();
   virtual void NotifyAccessibilityEvent(ax::mojom::Event event_type) {}
-#if defined(OS_MACOSX)
-  virtual void AnnounceText(base::string16& text) {}
-#endif
+
+  // Causes the screen reader to announce |text|. If the current user is not
+  // using a screen reader, has no effect.
+  virtual void AnnounceText(const base::string16& text);
 
   virtual const ui::AXUniqueId& GetUniqueId() const;
 

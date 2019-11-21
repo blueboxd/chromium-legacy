@@ -1151,6 +1151,7 @@ crbug.com/982194 fast/forms/time-multiple-fields/time-multiple-fields-mouse-even
 crbug.com/982194 fast/forms/time-multiple-fields/time-multiple-fields-spinbutton-change-and-input-events.html [ Failure ]
 crbug.com/982194 fast/forms/time-multiple-fields/time-multiple-fields-spinbutton-click-in-iframe.html [ Failure ]
 crbug.com/982194 fast/forms/time-multiple-fields/time-multiple-fields-wheel-event.html [ Failure ]
+crbug.com/1026712 fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer-hour.html [ Timeout ]
 crbug.com/982194 fast/forms/type-after-focus-rule-shrink-width.html [ Timeout ]
 crbug.com/982194 fast/forms/week-multiple-fields/week-multiple-fields-clearbutton-change-and-input-events.html [ Failure ]
 crbug.com/982194 fast/forms/week-multiple-fields/week-multiple-fields-mouse-events.html [ Failure ]

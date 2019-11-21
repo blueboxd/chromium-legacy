@@ -51,7 +51,6 @@ source_set("ppapi_plugin_sources") {
   deps = [
     "//base",
     "//components/discardable_memory/client",
-    "//components/services/font/public/cpp:cpp",
     "//content:export",
     "//content/child",
     "//content/public/child:child_sources",
@@ -71,6 +70,10 @@ source_set("ppapi_plugin_sources") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_linux) {
+    deps += [ "//components/services/font/public/cpp" ]
+  }
 
   if (is_win) {
     deps += [ "//ui/display" ]

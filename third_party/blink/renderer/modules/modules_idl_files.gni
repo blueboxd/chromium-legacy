@@ -650,6 +650,7 @@ modules_dictionary_idl_files =
           "locks/lock_options.idl",
           "manifest/image_resource.idl",
           "media_capabilities/audio_configuration.idl",
+          "media_capabilities/key_system_track_configuration.idl",
           "media_capabilities/media_configuration.idl",
           "media_capabilities/media_capabilities_decoding_info.idl",
           "media_capabilities/media_capabilities_info.idl",

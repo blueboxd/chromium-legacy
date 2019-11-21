@@ -12,6 +12,7 @@ Polymer({
 
   behaviors: [
     settings.RouteObserverBehavior,
+    CrPngBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
   ],
@@ -63,6 +64,9 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /** @private */
+    oldImageLabel_: String,
   },
 
   listeners: {
@@ -145,6 +149,9 @@ Polymer({
    * @private
    */
   receiveOldImage_: function(imageInfo) {
+    this.oldImageLabel_ = this.i18n(
+        CrPngBehavior.isEncodedPngDataUrlAnimated(imageInfo.url) ? 'oldVideo' :
+                                                                   'oldPhoto');
     this.oldImagePending_ = false;
     this.pictureList_.setOldImageUrl(imageInfo.url, imageInfo.index);
   },

@@ -84,13 +84,6 @@ bool AreEqualOrNull(double a, double b) {
   return a == b;
 }
 
-base::Optional<double> ValueOrUnresolved(double a) {
-  base::Optional<double> value;
-  if (!IsNull(a))
-    value = a;
-  return value;
-}
-
 double Max(base::Optional<double> a, double b) {
   if (a.has_value())
     return std::max(a.value(), b);
@@ -458,9 +451,6 @@ bool Animation::PreCommit(
     int compositor_group,
     const PaintArtifactCompositor* paint_artifact_compositor,
     bool start_on_compositor) {
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand,
-                                    kDoNotSetCompositorPending);
-
   bool soft_change =
       compositor_state_ &&
       (Paused() || compositor_state_->playback_rate != EffectivePlaybackRate());
@@ -488,16 +478,6 @@ bool Animation::PreCommit(
   }
 
   DCHECK(!compositor_state_ || compositor_state_->start_time);
-
-  if (!should_start) {
-    // TODO(crbug.com/960944): Move handling of committing a pause to an
-    // animation to pending_animations.cc, consistent with the handling of
-    // animation starts.
-    current_time_pending_ = false;
-    pending_pause_ = false;
-    pending_play_ = false;
-    ApplyPendingPlaybackRate();
-  }
 
   if (should_start) {
     compositor_group_ = compositor_group;
@@ -532,90 +512,19 @@ void Animation::PostCommit(double timeline_time) {
   }
 }
 
-void Animation::NotifyCompositorStartTime(double timeline_time) {
-  // Complete the start time notification prior to updating the compositor
-  // state in order to ensure a correct start time for the compositor state
-  // without the need to duplicate the calculations.
-  NotifyStartTime(timeline_time);
-  if (compositor_state_) {
-    DCHECK_EQ(compositor_state_->pending_action, kStart);
+void Animation::NotifyReady(double ready_time) {
+  // Complete the pending updates prior to updating the compositor state in
+  // order to ensure a correct start time for the compositor state without the
+  // need to duplicate the calculations.
+  if (pending_play_)
+    CommitPendingPlay(ready_time);
+  else if (pending_pause_)
+    CommitPendingPause(ready_time);
+
+  if (compositor_state_ && compositor_state_->pending_action == kStart) {
     DCHECK(!compositor_state_->start_time);
     compositor_state_->pending_action = kNone;
     compositor_state_->start_time = start_time_;
-  }
-}
-
-// Refer to Step 8.3 'pending play task' in
-// https://drafts.csswg.org/web-animations/#playing-an-animation-section.
-// TODO(crbug.com/960944): Rename to NotifyReady.  The current name implies that
-// a start time is being sent, rather than that the animation is ready to sync
-// the start time.
-void Animation::NotifyStartTime(double ready_time) {
-  DCHECK(!IsNull(ready_time));
-  DCHECK(start_time_ || hold_time_);
-  pending_play_ = false;
-  current_time_pending_ = false;
-
-  if (Playing()) {
-    // Update hold and start time.
-    if (timeline_ && timeline_->IsScrollTimeline()) {
-      // Special handling for scroll timelines.  The start time is always zero
-      // when the animation is playing. This forces the current time to match
-      // the timeline time. TODO(crbug.com/916117): Resolve in spec.
-      start_time_ = 0;
-      ApplyPendingPlaybackRate();
-      if (playback_rate_ != 0)
-        hold_time_ = base::nullopt;
-    } else if (hold_time_) {
-      // A: If animation’s hold time is resolved,
-      // A.1. Apply any pending playback rate on animation.
-      // A.2. Let new start time be the result of evaluating:
-      //        ready time - hold time / playback rate for animation.
-      //      If the playback rate is zero, let new start time be simply ready
-      //      time.
-      // A.3. Set the start time of animation to new start time.
-      // A.4. If animation’s playback rate is not 0, make animation’s hold time
-      //      unresolved.
-      ApplyPendingPlaybackRate();
-      if (playback_rate_ == 0) {
-        start_time_ = ready_time;
-      } else {
-        start_time_ = ready_time - hold_time_.value() / playback_rate_;
-        hold_time_ = base::nullopt;
-      }
-    } else if (start_time_ && pending_playback_rate_) {
-      // B: If animation’s start time is resolved and animation has a pending
-      //    playback rate,
-      // B.1. Let current time to match be the result of evaluating:
-      //        (ready time - start time) × playback rate for animation.
-      // B.2 Apply any pending playback rate on animation.
-      // B.3 If animation’s playback rate is zero, let animation’s hold time be
-      //     current time to match.
-      // B.4 Let new start time be the result of evaluating:
-      //       ready time - current time to match / playback rate for animation.
-      //     If the playback rate is zero, let new start time be simply ready
-      //     time.
-      // B.5 Set the start time of animation to new start time.
-      double current_time_to_match =
-          (ready_time - start_time_.value()) * playback_rate_;
-      ApplyPendingPlaybackRate();
-      if (playback_rate_ == 0) {
-        hold_time_ = current_time_to_match;
-        start_time_ = ready_time;
-      } else {
-        start_time_ = ready_time - current_time_to_match / playback_rate_;
-      }
-    }
-
-    // 8.4 Resolve animation’s current ready promise with animation.
-    if (ready_promise_ &&
-        ready_promise_->GetState() == AnimationPromise::kPending)
-      ResolvePromiseMaybeAsync(ready_promise_.Get());
-
-    // 8.5 Run the procedure to update an animation’s finished state for
-    //     animation with the did seek flag set to false, and the synchronously
-    //     notify flag set to false.
-    UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
   }
 
   // Avoid marking this animation as outdated needlessly when a start time is
@@ -628,8 +537,114 @@ void Animation::NotifyStartTime(double ready_time) {
   internal_play_state_ = CalculatePlayState();
   animation_play_state_ = CalculateAnimationPlayState();
 
-  // Notify of change from pending to running state.
+  // Notify of change to play state.
   NotifyProbe();
+}
+
+// Microtask for planing an animation.
+// Refer to Step 8.3 'pending play task' in
+// https://drafts.csswg.org/web-animations/#playing-an-animation-section.
+void Animation::CommitPendingPlay(double ready_time) {
+  DCHECK(!IsNull(ready_time));
+  DCHECK(start_time_ || hold_time_);
+  DCHECK(pending_play_);
+  pending_play_ = false;
+  current_time_pending_ = false;
+
+  // Update hold and start time.
+  if (timeline_ && timeline_->IsScrollTimeline()) {
+    // Special handling for scroll timelines.  The start time is always zero
+    // when the animation is playing. This forces the current time to match
+    // the timeline time. TODO(crbug.com/916117): Resolve in spec.
+    start_time_ = 0;
+    ApplyPendingPlaybackRate();
+    if (playback_rate_ != 0)
+      hold_time_ = base::nullopt;
+  } else if (hold_time_) {
+    // A: If animation’s hold time is resolved,
+    // A.1. Apply any pending playback rate on animation.
+    // A.2. Let new start time be the result of evaluating:
+    //        ready time - hold time / playback rate for animation.
+    //      If the playback rate is zero, let new start time be simply ready
+    //      time.
+    // A.3. Set the start time of animation to new start time.
+    // A.4. If animation’s playback rate is not 0, make animation’s hold time
+    //      unresolved.
+    ApplyPendingPlaybackRate();
+    if (playback_rate_ == 0) {
+      start_time_ = ready_time;
+    } else {
+      start_time_ = ready_time - hold_time_.value() / playback_rate_;
+      hold_time_ = base::nullopt;
+    }
+  } else if (start_time_ && pending_playback_rate_) {
+    // B: If animation’s start time is resolved and animation has a pending
+    //    playback rate,
+    // B.1. Let current time to match be the result of evaluating:
+    //        (ready time - start time) × playback rate for animation.
+    // B.2 Apply any pending playback rate on animation.
+    // B.3 If animation’s playback rate is zero, let animation’s hold time be
+    //     current time to match.
+    // B.4 Let new start time be the result of evaluating:
+    //       ready time - current time to match / playback rate for animation.
+    //     If the playback rate is zero, let new start time be simply ready
+    //     time.
+    // B.5 Set the start time of animation to new start time.
+    double current_time_to_match =
+        (ready_time - start_time_.value()) * playback_rate_;
+    ApplyPendingPlaybackRate();
+    if (playback_rate_ == 0) {
+      hold_time_ = current_time_to_match;
+      start_time_ = ready_time;
+    } else {
+      start_time_ = ready_time - current_time_to_match / playback_rate_;
+    }
+  }
+
+  // 8.4 Resolve animation’s current ready promise with animation.
+  if (ready_promise_ &&
+      ready_promise_->GetState() == AnimationPromise::kPending)
+    ResolvePromiseMaybeAsync(ready_promise_.Get());
+
+  // 8.5 Run the procedure to update an animation’s finished state for
+  //     animation with the did seek flag set to false, and the synchronously
+  //     notify flag set to false.
+  UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
+}
+
+// Microtask for pausing an animation.
+// Refer to step 7 'pending pause task' in
+// https://drafts.csswg.org/web-animations-1/#pausing-an-animation-section
+void Animation::CommitPendingPause(double ready_time) {
+  // TODO(crbug.com/960944): Deprecate.
+  internal_play_state_ = kUnset;
+
+  DCHECK(pending_pause_);
+  pending_pause_ = false;
+
+  // 1. Let ready time be the time value of the timeline associated with
+  //    animation at the moment when the user agent completed processing
+  //    necessary to suspend playback of animation’s associated effect.
+  // 2. If animation’s start time is resolved and its hold time is not resolved,
+  //    let animation’s hold time be the result of evaluating
+  //    (ready time - start time) × playback rate.
+  if (start_time_ && !hold_time_)
+    hold_time_ = (ready_time - start_time_.value()) * playback_rate_;
+
+  // 3. Apply any pending playback rate on animation.
+  // 4. Make animation’s start time unresolved.
+  ApplyPendingPlaybackRate();
+  start_time_ = base::nullopt;
+
+  // 5. Resolve animation’s current ready promise with animation.
+  if (ready_promise_ &&
+      ready_promise_->GetState() == AnimationPromise::kPending)
+    ResolvePromiseMaybeAsync(ready_promise_.Get());
+
+  // 6. Run the procedure to update an animation’s finished state for animation
+  //    with the did seek flag set to false (continuous), and the synchronously
+  //    notify flag set to false.
+  UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
 }
 
 bool Animation::Affects(const Element& element,
@@ -826,11 +841,7 @@ Animation::AnimationPlayState Animation::CalculateAnimationPlayState() const {
   //    * both the start time of animation is unresolved and it does not have a
   //      pending play task,
   //    then paused.
-  // TODO(crbug.com/958433): Presently using a paused_ flag that tracks an
-  // animation being in a paused state (including a pending pause). The above
-  // rules do not yet work verbatim due to subtle timing discrepancies on when
-  // start_time gets resolved.
-  if (paused_)
+  if (pending_pause_ || (!start_time_ && !pending_play_))
     return kPaused;
 
   // 3.  For animation, current time is resolved and either of the following
@@ -859,6 +870,11 @@ void Animation::ResetPendingTasks() {
   // web-animtions spec.
 }
 
+// ----------------------------------------------
+// Pause methods.
+// ----------------------------------------------
+
+// https://drafts.csswg.org/web-animations/#pausing-an-animation-section
 void Animation::pause(ExceptionState& exception_state) {
   // TODO(crbug.com/916117): Implement pause for scroll-linked animations.
   if (timeline_ && timeline_->IsScrollTimeline()) {
@@ -867,59 +883,80 @@ void Animation::pause(ExceptionState& exception_state) {
         "Scroll-linked WebAnimation currently does not support pause.");
     return;
   }
-  if (paused_)
+
+  // 1. If animation has a pending pause task, abort these steps.
+  // 2. If the play state of animation is paused, abort these steps.
+  if (pending_pause_ || CalculateAnimationPlayState() == kPaused)
     return;
 
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
-
-  double new_current_time = CurrentTimeInternal();
-  if (CalculatePlayState() == kIdle || IsNull(new_current_time)) {
-    if (playback_rate_ < 0 &&
-        EffectEnd() == std::numeric_limits<double>::infinity()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kInvalidStateError,
-          "Cannot pause, Animation has infinite target effect end.");
-      return;
+  // 3.  If the animation’s current time is unresolved, perform the steps
+  //     according to the first matching condition from below:
+  // 3a. If animation’s playback rate is ≥ 0,
+  //       Let animation’s hold time be zero.
+  // 3b. Otherwise,
+  //       If associated effect end for animation is positive infinity, throw an
+  //       "InvalidStateError" DOMException and abort these steps. Otherwise,
+  //       let animation’s hold time be associated effect end.
+  double current_time = CurrentTimeInternal();
+  if (IsNull(current_time)) {
+    if (playback_rate_ >= 0) {
+      hold_time_ = 0;
+    } else {
+      if (EffectEnd() == std::numeric_limits<double>::infinity()) {
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kInvalidStateError,
+            "Cannot play reversed Animation with infinite target effect end.");
+        return;
+      }
+      hold_time_ = EffectEnd();
     }
-    new_current_time = playback_rate_ < 0 ? EffectEnd() : 0;
   }
 
-  internal_play_state_ = kUnset;
+  // 4. Let has pending ready promise be a boolean flag that is initially false.
+  // 5. If animation has a pending play task, cancel that task and let has
+  //    pending ready promise be true.
+  // 6. If has pending ready promise is false, set animation’s current ready
+  //    promise to a new promise in the relevant Realm of animation.
+  if (pending_play_)
+    pending_play_ = false;
+  else if (ready_promise_)
+    ready_promise_->Reset();
 
-  // We use two paused flags to indicate that the play state is paused, but that
-  // the pause has not taken affect yet (pending). On the next async update,
-  // paused will remain in affect, but the pending_pause_ flag will reset. The
-  // pending pause can be interrupted via another change to the play state ahead
-  // of the asynchronous update.
-  // TODO(crbug.com/958433): We should not require the paused_ flag based on the
-  // algorithm for determining play state in the spec. Currently, timing issues
-  // prevent direct adoption of the algorithm in the spec.
-  // (https://drafts.csswg.org/web-animations/#play-states).
-  paused_ = true;
+  // 7. Schedule a task to be executed at the first possible moment after the
+  //    user agent has performed any processing necessary to suspend the
+  //    playback of animation’s associated effect, if any.
   pending_pause_ = true;
   pending_play_ = false;
 
-  current_time_pending_ = true;
-  SetCurrentTimeInternal(new_current_time, kTimingUpdateOnDemand);
+  // TODO(crbug.com/958433): Deprecate.
+  paused_ = true;
+  internal_play_state_ = kUnset;
+
+  SetOutdated();
+  SetCompositorPending(false);
+
+  // 8. Run the procedure to update an animation’s finished state for animation
+  //    with the did seek flag set to false (continuous) , and thesynchronously
+  //    notify flag set to false.
+  UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
+
+  // TODO(crbug.com/958433): Deprecate.
+  internal_play_state_ = CalculatePlayState();
+  animation_play_state_ = CalculateAnimationPlayState();
+
+  NotifyProbe();
 }
 
+// ----------------------------------------------
+// Play methods.
+// ----------------------------------------------
+
+// Refer to the unpause operation in the following spec:
+// https://drafts.csswg.org/css-animations-1/#animation-play-state
 void Animation::Unpause() {
-  if (!paused_)
+  if (CalculateAnimationPlayState() != kPaused)
     return;
-
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
-
-  current_time_pending_ = true;
-  UnpauseInternal();
-}
-
-void Animation::UnpauseInternal() {
-  if (!paused_)
-    return;
-  paused_ = false;
-  pending_pause_ = false;
-  pending_play_ = true;
-  SetCurrentTimeInternal(CurrentTimeInternal(), kTimingUpdateOnDemand);
+  PlayInternal(AutoRewind::kDisabled, ASSERT_NO_EXCEPTION);
 }
 
 // https://drafts.csswg.org/web-animations/#programming-interface.
@@ -1245,14 +1282,6 @@ void Animation::CommitFinishNotification() {
   QueueFinishedEvent();
 }
 
-void Animation::CommitAllUpdatesForTesting(double ready_time) {
-  if (pending_play_)
-    NotifyStartTime(ready_time);
-  pending_play_ = false;
-  pending_pause_ = false;
-  ApplyPendingPlaybackRate();
-}
-
 // https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation
 void Animation::updatePlaybackRate(double playback_rate,
                                    ExceptionState& exception_state) {
@@ -1350,7 +1379,7 @@ ScriptPromise Animation::ready(ScriptState* script_state) {
   if (!ready_promise_) {
     ready_promise_ = MakeGarbageCollected<AnimationPromise>(
         ExecutionContext::From(script_state), this, AnimationPromise::kReady);
-    if (PlayStateInternal() != kPending)
+    if (!pending())
       ready_promise_->Resolve(this);
   }
   return ready_promise_->Promise(script_state->World());
@@ -1630,7 +1659,7 @@ bool Animation::Update(TimingUpdateReason reason) {
     base::Optional<double> inherited_time =
         idle || !timeline_->CurrentTime()
             ? base::nullopt
-            : OptionalFromDoubleWithNull(CurrentTimeInternal());
+            : ValueOrUnresolved(CurrentTimeInternal());
 
     // Special case for end-exclusivity when playing backwards.
     if (inherited_time == 0 && EffectivePlaybackRate() < 0)
@@ -1873,9 +1902,11 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
 
     if (old_play_state == kPending) {
       animation_->ResetPendingTasks();
-      animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
+      if (animation_->ready_promise_->GetState() == AnimationPromise::kPending)
+        animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
     } else if (new_play_state == kPending) {
-      animation_->ready_promise_->Reset();
+      if (animation_->ready_promise_->GetState() != AnimationPromise::kPending)
+        animation_->ready_promise_->Reset();
     }
   }
 
@@ -1935,8 +1966,15 @@ void Animation::PauseForTesting(double pause_time) {
     ToKeyframeEffect(content_.Get())
         ->PauseAnimationForTestingOnCompositor(CurrentTimeInternal());
   }
+
+  // Do not wait for animation ready to lock in the hold time. Otherwise,
+  // the pause won't take effect until the next frame and the hold time will
+  // potentially drift.
   is_paused_for_testing_ = true;
-  pause();
+  pending_pause_ = false;
+  pending_play_ = false;
+  hold_time_ = pause_time;
+  start_time_ = base::nullopt;
 }
 
 void Animation::SetEffectSuppressed(bool suppressed) {

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -169,6 +170,10 @@ class DisplayLockContextTest : public testing::Test,
                    DisplayLockContext* context) {
     ASSERT_TRUE(context->update_budget_);
     context->update_budget_ = std::move(budget);
+  }
+
+  bool ReattachWasBlocked(DisplayLockContext* context) {
+    return context->reattach_layout_tree_was_blocked_;
   }
 
   const int FAKE_FIND_ID = 1;
@@ -620,6 +625,65 @@ TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   EXPECT_FALSE(element->ChildNeedsStyleRecalc());
   EXPECT_FALSE(element->NeedsReattachLayoutTree());
   EXPECT_TRUE(element->ChildNeedsReattachLayoutTree());
+}
+
+TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChangeCSS) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #container {
+      width: 100px;
+      height: 100px;
+      contain: style layout paint;
+    }
+    .bg {
+      background: blue;
+    }
+    .locked {
+      render-subtree: invisible skip-activation;
+    }
+    </style>
+    <body><div class=locked id="container"><b>t</b>esting<div id=inner></div></div></body>
+  )HTML");
+  auto* element = GetDocument().getElementById("container");
+  auto* inner = GetDocument().getElementById("inner");
+
+  // Sanity checks to ensure the element is locked.
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle(
+      DisplayLockLifecycleTarget::kChildren));
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout(
+      DisplayLockLifecycleTarget::kChildren));
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint(
+      DisplayLockLifecycleTarget::kChildren));
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+
+  EXPECT_TRUE(ReattachWasBlocked(element->GetDisplayLockContext()));
+  // Note that we didn't create a layout object for inner, since the layout tree
+  // attachment was blocked.
+  EXPECT_FALSE(inner->GetLayoutObject());
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+
+  element->classList().Remove("locked");
+
+  // Class list changed, so we should need self style change.
+  EXPECT_TRUE(element->NeedsStyleRecalc());
+  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+  // Because we upgraded our style change, we created a layout object for inner.
+  EXPECT_TRUE(inner->GetLayoutObject());
 }
 
 TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
@@ -1509,7 +1573,8 @@ TEST_F(DisplayLockContextRenderingTest, FrameDocumentRemovedWhileAcquire) {
   auto* target = ChildDocument().getElementById("target");
   GetDocument().getElementById("frame")->remove();
 
-  target->EnsureDisplayLockContext().StartAcquire();
+  target->EnsureDisplayLockContext(DisplayLockContextCreateMethod::kAttribute)
+      .StartAcquire();
 }
 
 TEST_F(DisplayLockContextRenderingTest,

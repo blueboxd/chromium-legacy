@@ -51,8 +51,8 @@ class GLOutputSurface : public OutputSurface {
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override {}
   gfx::OverlayTransform GetDisplayTransform() override;
   base::ScopedClosureRunner GetCacheBackBufferCb() override;
-
   gpu::SurfaceHandle GetSurfaceHandle() const override;
+  void FlushForTesting() override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }

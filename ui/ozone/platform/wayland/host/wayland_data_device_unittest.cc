@@ -234,7 +234,7 @@ TEST_P(WaylandDataDeviceManagerTest, IsSelectionOwner) {
 
 TEST_P(WaylandDataDeviceManagerTest, StartDrag) {
   bool restored_focus = window_->has_pointer_focus();
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
 
   // The client starts dragging.
   OSExchangeData os_exchange_data;
@@ -258,12 +258,12 @@ TEST_P(WaylandDataDeviceManagerTest, StartDrag) {
   data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeUtf8,
                                                 std::move(callback));
   run_loop.Run();
-  window_->set_pointer_focus(restored_focus);
+  window_->SetPointerFocus(restored_focus);
 }
 
 TEST_P(WaylandDataDeviceManagerTest, StartDragWithWrongMimeType) {
   bool restored_focus = window_->has_pointer_focus();
-  window_->set_pointer_focus(true);
+  window_->SetPointerFocus(true);
 
   // The client starts dragging offering data with wl::kTextMimeTypeUtf8
   // mime type.
@@ -289,7 +289,7 @@ TEST_P(WaylandDataDeviceManagerTest, StartDragWithWrongMimeType) {
   data_device_manager_->data_source()->ReadData(ui::kMimeTypeText,
                                                 std::move(callback));
   run_loop.Run();
-  window_->set_pointer_focus(restored_focus);
+  window_->SetPointerFocus(restored_focus);
 }
 
 TEST_P(WaylandDataDeviceManagerTest, ReceiveDrag) {

@@ -519,7 +519,7 @@ class SequenceManagerTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     SequenceManagerTest,
     testing::Values(
         std::make_pair(TestType::kMockTaskRunner,

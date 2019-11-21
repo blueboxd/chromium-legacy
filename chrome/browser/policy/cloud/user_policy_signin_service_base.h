@@ -54,13 +54,13 @@ class UserPolicySigninServiceBase : public KeyedService,
   // The callback invoked once policy registration is complete. Passed
   // |dm_token| and |client_id| parameters are empty if policy registration
   // failed.
-  typedef base::Callback<void(const std::string& dm_token,
-                              const std::string& client_id)>
+  typedef base::OnceCallback<void(const std::string& dm_token,
+                                  const std::string& client_id)>
       PolicyRegistrationCallback;
 
   // The callback invoked once policy fetch is complete. Passed boolean
   // parameter is set to true if the policy fetch succeeded.
-  typedef base::Callback<void(bool)> PolicyFetchCallback;
+  typedef base::OnceCallback<void(bool)> PolicyFetchCallback;
 
   // Creates a UserPolicySigninServiceBase associated with the passed |profile|.
   UserPolicySigninServiceBase(
@@ -82,7 +82,7 @@ class UserPolicySigninServiceBase : public KeyedService,
       const std::string& dm_token,
       const std::string& client_id,
       scoped_refptr<network::SharedURLLoaderFactory> profile_url_loader_factory,
-      const PolicyFetchCallback& callback);
+      PolicyFetchCallback callback);
 
   // signin::IdentityManager::Observer implementation:
   void OnPrimaryAccountCleared(

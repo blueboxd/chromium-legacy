@@ -64,7 +64,7 @@ enum BackgroundRectType { kBackgroundClipRect, kBackgroundKnownOpaqueRect };
 
 enum ShouldComputePreferred { kComputeActual, kComputePreferred };
 
-using SnapAreaSet = HashSet<const LayoutBox*>;
+using SnapAreaSet = HashSet<LayoutBox*>;
 
 struct LayoutBoxRareData {
   USING_FAST_MALLOC(LayoutBoxRareData);
@@ -1778,7 +1778,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutRectOutsets margin_box_outsets_;
 
-  void AddSnapArea(const LayoutBox&);
+  void AddSnapArea(LayoutBox&);
   void RemoveSnapArea(const LayoutBox&);
 
   // Returns true when the current recursive scroll into visible could propagate

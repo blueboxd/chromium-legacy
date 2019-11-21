@@ -276,7 +276,7 @@ bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
 
 bool SharingDeviceRegistration::IsSmsFetcherSupported() const {
 #if defined(OS_ANDROID)
-  return base::FeatureList::IsEnabled(kSmsFetchRequestHandler);
+  return base::FeatureList::IsEnabled(kSmsReceiverCrossDevice);
 #endif
 
   return false;

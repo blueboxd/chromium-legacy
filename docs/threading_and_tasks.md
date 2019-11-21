@@ -243,83 +243,21 @@ sequenced_task_runner->PostTask(FROM_HERE, base::BindOnce(&TaskB));
 
 ### Posting to the Current (Virtual) Thread
 
-The preferred way of posting to the current thread is via the
-`base::CurrentThread` trait.
+The preferred way of posting to the current (virtual) thread is via
+`base::SequencedTaskRunnerHandle::Get()`.
 
 ```cpp
 // The task will run on the current (virtual) thread's default task queue.
-base::PostTask(FROM_HERE, {base::CurrentThread()}, base::BindOnce(&Task));
+base::SequencedTaskRunnerHandle::Get()->PostTask(
+    FROM_HERE, base::BindOnce(&Task);
 ```
 
-You can optionally specify additional traits. This is important because some
-threads such as the Browser UI thread, Browser IO thread and the Blink main
-thread have multiple task queues funneled onto the same thread and the default
-priority may not be suitable your task.
-
-E.g. you can explicitly set the priority:
-
-```cpp
-// The task will run on the current (virtual) thread's best effort queue.
-// NOTE only the Browser UI and Browser IO threads support task priority (for
-// now), other (virtual) threads will silently ignore traits used in combination
-// with `base::CurrentThread`.
-base::PostTask(FROM_HERE,
-               {base::CurrentThread(), base::TaskPriority::BEST_EFFORT},
-               base::BindOnce(&Task));
-```
-
-The `base::SequencedTaskRunner` to which the current task was posted can be
-obtained via
-[`base::GetContinuationTaskRunner()`](https://cs.chromium.org/chromium/src/base/task/post_task.h).
-
-On some threads there is only one task runner so the current sequence is the
-same as the current thread. That's not the case in the Browser UI, Browser IO or
-Blink main threads. Additionally the notion of the current sequence doesn't
-exist for parallel threadpool tasks or when there's no task running, and
-`base::GetContinuationTaskRunner()` will DCHECK in those circumstances.
-
-*** note
-**NOTE:** While its invalid to call `base::GetContinuationTaskRunner()` from a
-parallel task, it is valid from a sequenced or a single-threaded task. I.e. from
-a `base::SequencedTaskRunner` or a `base::SingleThreadTaskRunner`.
-***
-
-```cpp
-// The task will run after any task that has already been posted
-// to the SequencedTaskRunner to which the current task was posted
-// (in particular, it will run after the current task completes).
-// It is also guaranteed that it won’t run concurrently with any
-// task posted to that SequencedTaskRunner.
-base::GetContinuationTaskRunner()->
-    PostTask(FROM_HERE, base::BindOnce(&Task));
-```
-
-You can also obtain the current thread's default task runner via the
-`base::CurrentThread` trait, however you can specify additional traits. This is
-important because some threads such as the Browser UI thread and the Blink main
-thread have multiple task queues funneled onto the same thread and the default
-priority may not suit your task.  E.g. you can explicitly set the priority:
-
-```cpp
-// The task will run on the current (virtual) thread's best effort queue.
-// NOTE only the Browser UI and Browser IO threads support task priority, other
-// (virtual) threads will silently ignore traits used in combination with
-// `base::CurrentThread`.
-base::PostTask(FROM_HERE,
-               {base::CurrentThread(), base::TaskPriority::BEST_EFFORT},
-               base::BindOnce(&Task));
-```
-
-If you need to obtain a task runner with these traits you can do so via
- `base::CreateSequencedTaskRunner()`.
-
-```cpp
-// Tasks posted to |task_runner| will run on the current (virtual) thread's best
-// effort queue.
-auto task_runner = base::CreateSequencedTaskRunner(
-     {base::CurrentThread(), base::TaskPriority::BEST_EFFORT});
-```
-
+Note that SequencedTaskRunnerHandle::Get() returns the default queue for the
+current virtual thread. On threads with multiple task queues (e.g.
+BrowserThread::UI) this can be a different queue than the one the current task
+belongs to. The "current" task runner is intentionally not exposed via a static
+getter. Either you know it already and can post to it directly or you don't and
+the only sensible destination is the default queue.
 
 ## Using Sequences Instead of Locks
 
@@ -520,17 +458,6 @@ base::PostTask(
 // This task will run on the Browser UI thread.
 base::PostTask(
     FROM_HERE, {content::BrowserThread::UI},
-    base::BindOnce(...));
-
-// This task will run on the current virtual thread (sequence).
-base::PostTask(
-    FROM_HERE, {base::CurrentThread()},
-    base::BindOnce(...));
-
-// This task will run on the current virtual thread (sequence) with best effort
-// priority.
-base::PostTask(
-    FROM_HERE, {base::CurrentThread(), base::TaskPriority::BEST_EFFORT},
     base::BindOnce(...));
 ```
 
@@ -812,39 +739,6 @@ class Foo {
 
 Note that this still allows removing all layers of plumbing between //chrome and
 that component since unit tests will use the leaf layer directly.
-
-## Old APIs
-
-The codebase contains several old APIs for retrieving the current thread and
-current sequence's task runners. These are being migrated to new APIs and
-shouldn't be used in new code.
-
-[`base::ThreadTaskRunnerHandle`](https://cs.chromium.org/chromium/src/base/threading/thread_task_runner_handle.h)
-returns the default task runner for the current thread. All call sites will be
-migrated to use base::CurrentThread instead.
-
-```cpp
-// The task will run on the current thread in the future.
-base::ThreadTaskRunnerHandle::Get()->PostTask(
-    FROM_HERE, base::BindOnce(&Task));
-```
-
-[`base::SequencedTaskRunnerHandle::Get()`](https://cs.chromium.org/chromium/src/base/threading/sequenced_task_runner_handle.h)
-returns either the thread's default task runner (Browser UI thread, Browser IO
-thread, Blink mail thread) or in a sequenced thread pool task it returns the
-current sequence. All call sites will be migrated to either use
-base::CurrentThread or `base::GetContinuationTaskRunner()` depending on the
-callsite.
-
-```cpp
-// The task will run after any task that has already been posted
-// to the SequencedTaskRunner to which the current task was posted
-// (in particular, it will run after the current task completes).
-// It is also guaranteed that it won’t run concurrently with any
-// task posted to that SequencedTaskRunner.
-base::SequencedTaskRunnerHandle::Get()->
-    PostTask(FROM_HERE, base::BindOnce(&Task));
-```
 
 ## FAQ
 See [Threading and Tasks FAQ](threading_and_tasks_faq.md) for more examples.

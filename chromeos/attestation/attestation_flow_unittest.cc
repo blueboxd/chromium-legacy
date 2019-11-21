@@ -36,7 +36,7 @@ namespace attestation {
 namespace {
 
 void AsyncCallbackFalse(cryptohome::AsyncMethodCaller::Callback callback) {
-  callback.Run(false, cryptohome::MOUNT_ERROR_NONE);
+  std::move(callback).Run(false, cryptohome::MOUNT_ERROR_NONE);
 }
 
 }  // namespace
@@ -539,9 +539,9 @@ TEST_F(AttestationFlowTest, GetCertificate_CertRequestBadRequest) {
       .Times(1);
   EXPECT_CALL(async_caller, AsyncTpmAttestationFinishCertRequest(_, _, _, _, _))
       .Times(1)
-      .WillOnce(WithArgs<4>(Invoke(
-          [](const cryptohome::AsyncMethodCaller::DataCallback& callback) {
-            callback.Run(false, "");
+      .WillOnce(WithArgs<4>(
+          Invoke([](cryptohome::AsyncMethodCaller::DataCallback callback) {
+            std::move(callback).Run(false, "");
           })));
 
   StrictMock<MockObserver> observer;

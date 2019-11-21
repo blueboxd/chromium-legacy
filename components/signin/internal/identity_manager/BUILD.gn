@@ -71,6 +71,7 @@ source_set("identity_manager") {
 
   if (is_android) {
     deps += [
+      "android:jni_headers",
       "//components/signin/core/browser/android:jni_headers",
       "//components/signin/internal/base",
     ]

@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/util/process_version.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
-import("//build/util/process_version.gni")
 
 executable("vr_testapp") {
   testonly = true
@@ -36,7 +36,7 @@ executable("vr_testapp") {
     "//ui/display/types",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone/layout",
     "//ui/gl/init",
     "//ui/ozone",
     "//ui/platform_window",

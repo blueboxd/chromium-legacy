@@ -679,20 +679,6 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfSharingBrowsingInstance) {
   EXPECT_FALSE(decision_details.IsPositive());
   EXPECT_EQ(DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE,
             decision_details.FailureReason());
-
-  {
-    GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting()
-        ->should_protect_tabs_sharing_browsing_instance = false;
-    decision_details.Clear();
-    EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
-    EXPECT_TRUE(decision_details.IsPositive());
-
-    decision_details.Clear();
-
-    EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
-        LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
-    EXPECT_TRUE(decision_details.IsPositive());
-  }
 }
 
 TEST_F(TabLifecycleUnitTest, CannotDiscardIfEnterpriseOptOutUsed) {
@@ -765,7 +751,7 @@ TEST_F(TabLifecycleUnitTest, ReloadingAFrozenTabUnfreezeIt) {
   EXPECT_NE(LifecycleUnitState::FROZEN, tab_lifecycle_unit.GetState());
 }
 
-TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
+TEST_F(TabLifecycleUnitTest, FreezingProtectMediaOnly) {
   TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());
@@ -777,11 +763,6 @@ TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
   EXPECT_TRUE(decision_details.IsPositive());
   decision_details.Clear();
 
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
-      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
-  EXPECT_TRUE(decision_details.IsPositive());
-  decision_details.Clear();
-
   // Use one of the heuristics on the tab to prevent it from being frozen or
   // discarded.
   ScopedEnterpriseOptOut enterprise_opt_out;
@@ -790,23 +771,14 @@ TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
   EXPECT_FALSE(decision_details.IsPositive());
   decision_details.Clear();
 
-  EXPECT_FALSE(tab_lifecycle_unit.CanDiscard(
-      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
-  EXPECT_FALSE(decision_details.IsPositive());
-  decision_details.Clear();
-
-  // Disable the heuristics and check that the tab can now be safely discarded.
-  base::AutoReset<bool> disable_heuristics_protections(
+  // Set the param to only protect media tabs and verify that the tab can now be
+  // frozen.
+  base::AutoReset<bool> freezing_protect_media_only(
       &GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting()
-           ->disable_heuristics_protections,
+           ->freezing_protect_media_only,
       true);
 
   EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
-  EXPECT_TRUE(decision_details.IsPositive());
-  decision_details.Clear();
-
-  EXPECT_TRUE(tab_lifecycle_unit.CanDiscard(
-      LifecycleUnitDiscardReason::PROACTIVE, &decision_details));
   EXPECT_TRUE(decision_details.IsPositive());
   decision_details.Clear();
 }

@@ -34,6 +34,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "services/network/public/mojom/websocket.mojom-forward.h"
@@ -121,7 +122,6 @@ class ClientCertIdentity;
 using ClientCertIdentityList = std::vector<std::unique_ptr<ClientCertIdentity>>;
 class ClientCertStore;
 class HttpResponseHeaders;
-class NetworkIsolationKey;
 class SSLCertRequestInfo;
 class SSLInfo;
 class URLRequest;
@@ -365,32 +365,23 @@ class CONTENT_EXPORT ContentBrowserClient {
       base::StringPiece scheme,
       bool is_embedded_origin_secure);
 
-  // Called to create a URLLoaderFactory for network requests in the following
-  // cases:
-  // - The default factory to be used by a frame.  In this case
-  //   both |origin| and |main_world_origin| are the origin being
-  //   committed in the frame (or the last origin committed in the frame).
-  // - An isolated-world-specific factory to be used by a frame.  This happens
-  //   for origins covered via
+  // This method allows the //content embedder to override |factory_params| with
+  // |origin|-specific properties (e.g. with relaxed Cross-Origin Read Blocking
+  // enforcement as needed by some extensions, or with extension-specific CORS
+  // exclusions).
+  //
+  // This method may be called in the following cases:
+  // - The default factory to be used by a frame or worker.  In this case both
+  //   the |origin| and |request_initiator_site_lock| are the origin of the
+  //   frame or worker (or the origin that is being committed in the frame).
+  // - An isolated-world-specific factory for origins covered via
   //   RenderFrameHost::MarkIsolatedWorldAsRequiringSeparateURLLoaderFactory.
   //   In this case |origin| is the origin of the isolated world and the
-  //   |main_world_origin| is the origin committed in the frame.
-  //
-  // This method allows the //content embedder to provide a URLLoaderFactory
-  // with |origin|-specific properties (e.g. with relaxed
-  // Cross-Origin Read Blocking enforcement as needed by some extensions).
-  //
-  // If the embedder doesn't want to override the URLLoaderFactory for the given
-  // |origin|, then it should return a mojo::NullRemote().
-  virtual mojo::PendingRemote<network::mojom::URLLoaderFactory>
-  CreateURLLoaderFactoryForNetworkRequests(
+  //   |request_initiator_site_lock| is the origin committed in the frame.
+  virtual void OverrideURLLoaderFactoryParams(
       RenderProcessHost* process,
-      network::mojom::NetworkContext* network_context,
-      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-          header_client,
       const url::Origin& origin,
-      const url::Origin& main_world_origin,
-      const base::Optional<net::NetworkIsolationKey>& network_isolation_key);
+      network::mojom::URLLoaderFactoryParams* factory_params);
 
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may

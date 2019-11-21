@@ -129,6 +129,13 @@ const IDNTestCase kIdnCases[] = {
     {"xn---123-kbjl2j0bl2k.in", L"\x0939\x093f\x0928\x094d\x0926\x0940-123.in",
      true},
 
+    // Block mixed numeric + numeric lookalike (12.com, using U+0577).
+    {"xn--1-9dd.com", L"1\x0577.com", false},
+    // Block mixed numeric lookalike + numeric (੨0.com, uses U+0A68).
+    {"xn--0-6ee.com", L"\x0a680.com", false},
+    // Block fully numeric lookalikes (৪੨.com using U+09EA and U+0A68).
+    {"xn--47b6w.com", L"\x09ea\x0a68.com", false},
+
     // URL test with mostly numbers and one confusable character
     // Georgian 'd' 4000.com
     {"xn--4000-pfr.com",
@@ -366,9 +373,10 @@ const IDNTestCase kIdnCases[] = {
     // 3) ѕсоре-рау.com with ѕсоре and рау in Cyrillic.
     {"xn----8sbn9akccw8m.com",
      L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.com", false},
-    // 4) ѕсоре·рау.com with scope and pay in Cyrillic and U+00B7 between them.
-    {"xn--uba29ona9akccw8m.com",
-     L"\x0455\x0441\x043e\x0440\x0435\u00b7\x0440\x0430\x0443.com", false},
+    // 4) ѕсоре1рау.com with scope and pay in Cyrillic and a non-letter between
+    // them.
+    {"xn--1-8sbn9akccw8m.com",
+     L"\x0455\x0441\x043e\x0440\x0435\x0031\x0440\x0430\x0443.com", false},
 
     // The same as above three, but in IDN TLD (рф).
     // 1) ѕсоре.рф  with ѕсоре in Cyrillic.
@@ -382,9 +390,10 @@ const IDNTestCase kIdnCases[] = {
     // 3) ѕсоре-рау.рф with ѕсоре and рау in Cyrillic.
     {"xn----8sbn9akccw8m.xn--p1ai",
      L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.\x0440\x0444", true},
-    // 4) ѕсоре·рау.com with scope and pay in Cyrillic and U+00B7 between them.
-    {"xn--uba29ona9akccw8m.xn--p1ai",
-     L"\x0455\x0441\x043e\x0440\x0435\u00b7\x0440\x0430\x0443.\x0440\x0444",
+    // 4) ѕсоре1рау.com with scope and pay in Cyrillic and a non-letter between
+    // them.
+    {"xn--1-8sbn9akccw8m.xn--p1ai",
+     L"\x0455\x0441\x043e\x0440\x0435\x0031\x0440\x0430\x0443.\x0440\x0444",
      true},
 
     // Same as above three, but in .ru TLD.
@@ -398,9 +407,10 @@ const IDNTestCase kIdnCases[] = {
     // 3) ѕсоре-рау.ru with ѕсоре and рау in Cyrillic.
     {"xn----8sbn9akccw8m.ru",
      L"\x0455\x0441\x043e\x0440\x0435-\x0440\x0430\x0443.ru", true},
-    // 4) ѕсоре·рау.ru with scope and pay in Cyrillic and U+00B7 between them.
-    {"xn--uba29ona9akccw8m.ru",
-     L"\x0455\x0441\x043e\x0440\x0435\u00b7\x0440\x0430\x0443.ru", true},
+    // 4) ѕсоре1рау.com with scope and pay in Cyrillic and a non-letter between
+    // them.
+    {"xn--1-8sbn9akccw8m.ru",
+     L"\x0455\x0441\x043e\x0440\x0435\x0031\x0440\x0430\x0443.ru", true},
 
     // ѕсоре-рау.한국 with ѕсоре and рау in Cyrillic. The label will remain
     // punycode while the TLD will be decoded.
@@ -1131,6 +1141,16 @@ const IDNTestCase kIdnCases[] = {
     // U+0259 (ə) is only allowed under the .az TLD.
     {"xn--xample-vyc.com", L"əxample.com", false},
     {"xn--xample-vyc.az", L"əxample.az", true},
+
+    // U+00B7 is only allowed on Catalan domains between two l's.
+    {"xn--googlecom-5pa.com", L"google·com.com", false},
+    {"xn--ll-0ea.com", L"l·l.com", false},
+    {"xn--ll-0ea.cat", L"l·l.cat", true},
+    {"xn--al-0ea.cat", L"a·l.cat", false},
+    {"xn--la-0ea.cat", L"l·a.cat", false},
+    {"xn--l-fda.cat", L"·l.cat", false},
+    {"xn--l-gda.cat", L"l·.cat", false},
+
 };  // namespace
 
 namespace test {

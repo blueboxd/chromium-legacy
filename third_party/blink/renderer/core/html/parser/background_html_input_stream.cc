@@ -70,11 +70,12 @@ void BackgroundHTMLInputStream::InvalidateCheckpointsBefore(
       last_invalid_checkpoint.number_of_segments_already_appended;
 
   for (wtf_size_t i = first_valid_checkpoint_index_;
-       i < new_first_valid_checkpoint_index; ++i)
+       i < new_first_valid_checkpoint_index; ++i) {
+    total_checkpoint_token_count_ -=
+        checkpoints_[i].tokens_extracted_since_previous_checkpoint;
     checkpoints_[i].Clear();
+  }
   first_valid_checkpoint_index_ = new_first_valid_checkpoint_index;
-
-  UpdateTotalCheckpointTokenCount();
 }
 
 void BackgroundHTMLInputStream::RewindTo(HTMLInputCheckpoint checkpoint_index,

@@ -18,7 +18,6 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chrome/test/remoting/remote_test_helper.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/core/features.h"

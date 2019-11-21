@@ -430,5 +430,12 @@ const base::Feature kCacheStorageCodeCacheHintHeader{
 const base::FeatureParam<std::string> kCacheStorageCodeCacheHintHeaderName{
     &kCacheStorageCodeCacheHintHeader, "name", "x-CacheStorageCodeCacheHint"};
 
+// When enabled, the beforeunload handler is dispatched when a frame is frozen.
+// This allows the browser to know whether discarding the frame could result in
+// lost user data, at the cost of extra CPU usage. The feature will be removed
+// once we have determine whether the CPU cost is acceptable.
+const base::Feature kDispatchBeforeUnloadOnFreeze{
+    "DispatchBeforeUnloadOnFreeze", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

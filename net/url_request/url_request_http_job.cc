@@ -872,7 +872,8 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     TransportSecurityState* state = context->transport_security_state();
     NotifySSLCertificateError(
         result, transaction_->GetResponseInfo()->ssl_info,
-        state->ShouldSSLErrorsBeFatal(request_info_.url.host()));
+        state->ShouldSSLErrorsBeFatal(request_info_.url.host()) &&
+            result != ERR_CERT_KNOWN_INTERCEPTION_BLOCKED);
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     NotifyCertificateRequested(
         transaction_->GetResponseInfo()->cert_request_info.get());

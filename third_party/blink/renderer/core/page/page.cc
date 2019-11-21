@@ -21,6 +21,8 @@
 
 #include "third_party/blink/renderer/core/page/page.h"
 
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -541,13 +543,17 @@ void Page::SetLifecycleState(PageLifecycleState state) {
   }
 
   if (next_state) {
+    const bool dispatch_before_unload_on_freeze =
+        base::FeatureList::IsEnabled(features::kDispatchBeforeUnloadOnFreeze);
     for (Frame* frame = main_frame_.Get(); frame;
          frame = frame->Tree().TraverseNext()) {
       if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
         // TODO(chrisha): Determine if dispatching the before unload
         // makes sense and if so put it into a specification.
-        if (next_state == mojom::FrameLifecycleState::kFrozen)
+        if (dispatch_before_unload_on_freeze &&
+            next_state == mojom::FrameLifecycleState::kFrozen) {
           local_frame->DispatchBeforeUnloadEventForFreeze();
+        }
         local_frame->SetLifecycleState(next_state.value());
       }
     }

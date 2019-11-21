@@ -52,6 +52,9 @@ const char kPurgeOptimizationGuideStore[] = "purge-optimization-guide-store";
 const char kDisableFetchingHintsAtNavigationStartForTesting[] =
     "disable-fetching-hints-at-navigation-start";
 
+const char kDisableCheckingUserPermissionsForTesting[] =
+    "disable-checking-optimization-guide-user-permissions";
+
 bool IsHintComponentProcessingDisabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kHintsProtoOverride);
 }
@@ -117,7 +120,12 @@ ParseComponentConfigFromCommandLine() {
 bool DisableFetchingHintsAtNavigationStartForTesting() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(
-      switches::kDisableFetchingHintsAtNavigationStartForTesting);
+      kDisableFetchingHintsAtNavigationStartForTesting);
+}
+
+bool ShouldOverrideCheckingUserPermissionsToFetchHintsForTesting() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(kDisableCheckingUserPermissionsForTesting);
 }
 
 }  // namespace switches

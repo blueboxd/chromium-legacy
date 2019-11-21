@@ -317,7 +317,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   TabDialogs::CreateForWebContents(web_contents);
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (base::FeatureList::IsEnabled(features::kTabHoverCardImages) ||
-      base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebUITabStrip)) {
 #else
   if (base::FeatureList::IsEnabled(features::kTabHoverCardImages)) {
 #endif

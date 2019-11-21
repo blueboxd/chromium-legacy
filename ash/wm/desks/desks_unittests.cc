@@ -2716,7 +2716,7 @@ TEST_F(DesksAcceleratorsTest, CannotMoveAlwaysOnTopWindows) {
 // - Reusing containers when desks are removed and created.
 
 // Instantiate the parametrized tests.
-INSTANTIATE_TEST_SUITE_P(, DesksTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, DesksTest, ::testing::Bool());
 
 }  // namespace
 

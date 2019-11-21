@@ -2559,55 +2559,44 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
   DCHECK(!main_world_origin.has_value() ||
          main_world_origin->scheme() != kGuestScheme);
 
-  network::mojom::NetworkContext* network_context =
-      storage_partition_impl_->GetNetworkContext();
-  mojo::PendingRemote<network::mojom::URLLoaderFactory>
-      embedder_provided_factory;
-  if (main_world_origin.has_value()) {
-    embedder_provided_factory =
-        GetContentClient()->browser()->CreateURLLoaderFactoryForNetworkRequests(
-            this, network_context, &header_client, origin,
-            main_world_origin.value(), network_isolation_key);
-  }
-  if (embedder_provided_factory) {
-    mojo::FusePipes(std::move(receiver), std::move(embedder_provided_factory));
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = GetID();
+  params->request_initiator_site_lock = main_world_origin;
+  params->disable_web_security =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity);
+  // If |network_isolation_key| does not have a value, we do not initialize
+  // the URLLoaderFactory with a NetworkIsolationKey.
+  if (network_isolation_key)
+    params->network_isolation_key = network_isolation_key.value();
+
+  params->is_trusted = is_trusted;
+
+  params->header_client = std::move(header_client);
+  params->cross_origin_embedder_policy = embedder_policy;
+
+  if (params->disable_web_security) {
+    // --disable-web-security also disables Cross-Origin Read Blocking (CORB).
+    params->is_corb_enabled = false;
+  } else if (preferences &&
+             preferences->allow_universal_access_from_file_urls &&
+             main_world_origin.has_value() &&
+             main_world_origin->scheme() == url::kFileScheme) {
+    // allow_universal_access_from_file_urls disables CORB (via
+    // |is_corb_enabled|) and CORS (via |disable_web_security|) for requests
+    // made from a file: |origin|.
+    params->is_corb_enabled = false;
+    params->disable_web_security = true;
   } else {
-    network::mojom::URLLoaderFactoryParamsPtr params =
-        network::mojom::URLLoaderFactoryParams::New();
-    params->process_id = GetID();
-    params->request_initiator_site_lock = main_world_origin;
-    params->disable_web_security =
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableWebSecurity);
-    // If |network_isolation_key| does not have a value, we do not initialize
-    // the URLLoaderFactory with a NetworkIsolationKey.
-    if (network_isolation_key)
-      params->network_isolation_key = network_isolation_key.value();
-
-    params->is_trusted = is_trusted;
-
-    params->header_client = std::move(header_client);
-    params->cross_origin_embedder_policy = embedder_policy;
-
-    if (params->disable_web_security) {
-      // --disable-web-security also disables Cross-Origin Read Blocking (CORB).
-      params->is_corb_enabled = false;
-    } else if (preferences &&
-               preferences->allow_universal_access_from_file_urls &&
-               main_world_origin.has_value() &&
-               main_world_origin->scheme() == url::kFileScheme) {
-      // allow_universal_access_from_file_urls disables CORB (via
-      // |is_corb_enabled|) and CORS (via |disable_web_security|) for requests
-      // made from a file: |origin|.
-      params->is_corb_enabled = false;
-      params->disable_web_security = true;
-    } else {
-      params->is_corb_enabled = true;
-    }
-
-    network_context->CreateURLLoaderFactory(std::move(receiver),
-                                            std::move(params));
+    params->is_corb_enabled = true;
   }
+
+  GetContentClient()->browser()->OverrideURLLoaderFactoryParams(this, origin,
+                                                                params.get());
+
+  storage_partition_impl_->GetNetworkContext()->CreateURLLoaderFactory(
+      std::move(receiver), std::move(params));
 }
 
 bool RenderProcessHostImpl::MayReuseHost() {

@@ -489,7 +489,7 @@ IN_PROC_BROWSER_TEST_P(ClickToCallPolicyTest, RunTest) {
     EXPECT_FALSE(extracted.has_value());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ClickToCallPolicyTest,
                          ::testing::Values(ClickToCallPolicy::kNotConfigured,
                                            ClickToCallPolicy::kFalse,

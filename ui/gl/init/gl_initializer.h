@@ -12,8 +12,11 @@ namespace init {
 
 // Performs platform dependent one-off GL initialization, calling into the
 // appropriate GLSurface code to initialize it. To perform one-off GL
-// initialization you should use InitializeGLOneOff() or for tests possibly
-// InitializeGLOneOffImplementation() instead.
+// initialization you should use InitializeGLOneOff() or
+// InitializeStaticGLBindingsOneOff() +
+// InitializeGLNoExtensionsOneOff(). For tests possibly
+// InitializeStaticGLBindingsImplementation() +
+// InitializeGLOneOffPlatformImplementation() instead.
 bool InitializeGLOneOffPlatform();
 
 // Initializes a particular GL implementation.

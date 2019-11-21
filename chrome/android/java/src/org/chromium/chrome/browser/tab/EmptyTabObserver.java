@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.net.NetError;
 
 /**
@@ -147,10 +146,6 @@ public class EmptyTabObserver implements TabObserver {
 
     @Override
     public void onNavigationEntriesDeleted(Tab tab) {}
-
-    @Override
-    public void onBrowserControlsConstraintsUpdated(
-            Tab tab, @BrowserControlsState int constraints) {}
 
     @Override
     public void onFindResultAvailable(FindNotificationDetails result) {}

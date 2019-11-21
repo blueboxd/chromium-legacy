@@ -18,16 +18,18 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
                   viz::CompositorFrameMetadata>::
     Read(viz::mojom::CompositorFrameMetadataDataView data,
          viz::CompositorFrameMetadata* out) {
-  // TODO(samans): Replace CHECKs with early-outs once we find out the cause for
-  // deserialization failures. https://crbug.com/979564
-  CHECK_GT(data.device_scale_factor(), 0);
+  if (data.device_scale_factor() <= 0)
+    return false;
   out->device_scale_factor = data.device_scale_factor();
-  CHECK(data.ReadRootScrollOffset(&out->root_scroll_offset));
+  if (!data.ReadRootScrollOffset(&out->root_scroll_offset))
+    return false;
 
   out->page_scale_factor = data.page_scale_factor();
-  CHECK(data.ReadScrollableViewportSize(&out->scrollable_viewport_size));
+  if (!data.ReadScrollableViewportSize(&out->scrollable_viewport_size))
+    return false;
 
-  CHECK(data.frame_token());
+  if (data.frame_token() == 0u)
+    return false;
   out->frame_token = data.frame_token();
 
   out->may_contain_video = data.may_contain_video();
@@ -43,16 +45,15 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
 #endif
 
-  CHECK(data.ReadLatencyInfo(&out->latency_info));
-  CHECK(data.ReadReferencedSurfaces(&out->referenced_surfaces));
-  CHECK(data.ReadDeadline(&out->deadline));
-  CHECK(data.ReadActivationDependencies(&out->activation_dependencies));
-  CHECK(data.ReadBeginFrameAck(&out->begin_frame_ack));
-  CHECK(data.ReadLocalSurfaceIdAllocationTime(
-      &out->local_surface_id_allocation_time));
-  CHECK(!out->local_surface_id_allocation_time.is_null());
-  CHECK(data.ReadPreferredFrameInterval(&out->preferred_frame_interval));
-  return true;
+  return data.ReadLatencyInfo(&out->latency_info) &&
+         data.ReadReferencedSurfaces(&out->referenced_surfaces) &&
+         data.ReadDeadline(&out->deadline) &&
+         data.ReadActivationDependencies(&out->activation_dependencies) &&
+         data.ReadBeginFrameAck(&out->begin_frame_ack) &&
+         data.ReadLocalSurfaceIdAllocationTime(
+             &out->local_surface_id_allocation_time) &&
+         !out->local_surface_id_allocation_time.is_null() &&
+         data.ReadPreferredFrameInterval(&out->preferred_frame_interval);
 }
 
 }  // namespace mojo

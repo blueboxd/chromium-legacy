@@ -235,9 +235,7 @@ testing::AssertionResult ToolbarActionsBarUnitTest::VerifyToolbarOrder(
           "overflow bar error:\n" << overflow_bar_error;
 }
 
-// Note: First argument is optional and intentionally left blank.
-// (it's a prefix for the generated test cases)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ToolbarActionsBarUnitTest,
                          testing::Values(false, true));
 

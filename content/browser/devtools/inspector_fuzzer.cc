@@ -22,7 +22,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // stuff with another CBOR encoder, just because it's conveniently available.
   std::vector<uint8_t> encoded;
   crdtp::Status status;
-  std::unique_ptr<crdtp::StreamingParserHandler> encoder =
+  std::unique_ptr<crdtp::ParserHandler> encoder =
       crdtp::cbor::NewCBOREncoder(&encoded, &status);
 
   crdtp::cbor::ParseCBOR(fuzz, encoder.get());

@@ -103,20 +103,6 @@ void EasyUnlockGetKeysOperation::OnGetKeyData(
         device.bluetooth_address = *entry.bytes;
       else
         NOTREACHED();
-    } else if (entry.name == kEasyUnlockKeyMetaNameBluetoothType) {
-      if (entry.number) {
-        if (*entry.number >=
-            static_cast<int64_t>(
-                EasyUnlockDeviceKeyData::NUM_BLUETOOTH_TYPES)) {
-          PA_LOG(ERROR) << "Invalid Bluetooth type: " << *entry.number;
-        } else {
-          device.bluetooth_type =
-              static_cast<EasyUnlockDeviceKeyData::BluetoothType>(
-                  *entry.number);
-        }
-      } else {
-        NOTREACHED();
-      }
     } else if (entry.name == kEasyUnlockKeyMetaNamePubKey) {
       if (entry.bytes)
         device.public_key = *entry.bytes;

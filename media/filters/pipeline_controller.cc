@@ -380,6 +380,12 @@ void PipelineController::SetVolume(float volume) {
   pipeline_->SetVolume(volume);
 }
 
+void PipelineController::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {
+  DCHECK(!latency_hint || (*latency_hint >= base::TimeDelta()));
+  pipeline_->SetLatencyHint(latency_hint);
+}
+
 base::TimeDelta PipelineController::GetMediaTime() const {
   return pipeline_->GetMediaTime();
 }

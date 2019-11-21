@@ -6327,7 +6327,7 @@ class SpdyNetworkTransactionPushHeaderTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SpdyNetworkTransactionPushHeaderTest,
                          ::testing::ValuesIn(push_header_test_cases));
 
@@ -6534,7 +6534,7 @@ class SpdyNetworkTransactionPushUrlTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SpdyNetworkTransactionPushUrlTest,
                          ::testing::ValuesIn(push_url_test_cases));
 

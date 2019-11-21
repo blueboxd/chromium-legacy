@@ -434,7 +434,7 @@ TEST_P(VideoUtilRotationTest, Rotate) {
   EXPECT_EQ(memcmp(dest, GetParam().target, size), 0);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoUtilRotationTest,
                          testing::ValuesIn(kVideoRotationTestData));
 

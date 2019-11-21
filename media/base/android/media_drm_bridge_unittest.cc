@@ -68,8 +68,9 @@ class ProvisionFetcherWrapper : public ProvisionFetcher {
   // ProvisionFetcher implementation.
   void Retrieve(const std::string& default_url,
                 const std::string& request_data,
-                const ResponseCB& response_cb) override {
-    provision_fetcher_->Retrieve(default_url, request_data, response_cb);
+                ResponseCB response_cb) override {
+    provision_fetcher_->Retrieve(default_url, request_data,
+                                 std::move(response_cb));
   }
 
  private:
@@ -97,7 +98,7 @@ class MediaDrmBridgeTest : public ProvisionFetcher, public testing::Test {
   MOCK_METHOD3(Retrieve,
                void(const std::string& default_url,
                     const std::string& request_data,
-                    const ResponseCB& response_cb));
+                    ResponseCB response_cb));
 
   void Provision() {
     media_drm_bridge_->Provision(base::BindOnce(

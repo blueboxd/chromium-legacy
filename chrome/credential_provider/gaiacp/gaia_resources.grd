@@ -5,8 +5,12 @@
     <file path="strings/gaia_resources_af.xtb" lang="af" />
     <file path="strings/gaia_resources_am.xtb" lang="am" />
     <file path="strings/gaia_resources_ar.xtb" lang="ar" />
+    <file path="strings/gaia_resources_as.xtb" lang="as" />
+    <file path="strings/gaia_resources_az.xtb" lang="az" />
+    <file path="strings/gaia_resources_be.xtb" lang="be" />
     <file path="strings/gaia_resources_bg.xtb" lang="bg" />
     <file path="strings/gaia_resources_bn.xtb" lang="bn" />
+    <file path="strings/gaia_resources_bs.xtb" lang="bs" />
     <file path="strings/gaia_resources_ca.xtb" lang="ca" />
     <file path="strings/gaia_resources_cs.xtb" lang="cs" />
     <file path="strings/gaia_resources_da.xtb" lang="da" />
@@ -16,35 +20,53 @@
     <file path="strings/gaia_resources_es.xtb" lang="es" />
     <file path="strings/gaia_resources_es-419.xtb" lang="es-419" />
     <file path="strings/gaia_resources_et.xtb" lang="et" />
+    <file path="strings/gaia_resources_eu.xtb" lang="eu" />
     <file path="strings/gaia_resources_fa.xtb" lang="fa" />
     <file path="strings/gaia_resources_fi.xtb" lang="fi" />
     <file path="strings/gaia_resources_fil.xtb" lang="fil" />
     <file path="strings/gaia_resources_fr.xtb" lang="fr" />
+    <file path="strings/gaia_resources_fr-CA.xtb" lang="fr-CA" />
+    <file path="strings/gaia_resources_gl.xtb" lang="gl" />
     <file path="strings/gaia_resources_gu.xtb" lang="gu" />
     <file path="strings/gaia_resources_hi.xtb" lang="hi" />
     <file path="strings/gaia_resources_hr.xtb" lang="hr" />
     <file path="strings/gaia_resources_hu.xtb" lang="hu" />
+    <file path="strings/gaia_resources_hy.xtb" lang="hy" />
     <file path="strings/gaia_resources_id.xtb" lang="id" />
+    <file path="strings/gaia_resources_is.xtb" lang="is" />
     <file path="strings/gaia_resources_it.xtb" lang="it" />
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="strings/gaia_resources_iw.xtb" lang="he" />
     <file path="strings/gaia_resources_ja.xtb" lang="ja" />
+    <file path="strings/gaia_resources_ka.xtb" lang="ka" />
+    <file path="strings/gaia_resources_kk.xtb" lang="kk" />
+    <file path="strings/gaia_resources_km.xtb" lang="km" />
     <file path="strings/gaia_resources_kn.xtb" lang="kn" />
     <file path="strings/gaia_resources_ko.xtb" lang="ko" />
+    <file path="strings/gaia_resources_ky.xtb" lang="ky" />
+    <file path="strings/gaia_resources_lo.xtb" lang="lo" />
     <file path="strings/gaia_resources_lt.xtb" lang="lt" />
     <file path="strings/gaia_resources_lv.xtb" lang="lv" />
+    <file path="strings/gaia_resources_mk.xtb" lang="mk" />
     <file path="strings/gaia_resources_ml.xtb" lang="ml" />
+    <file path="strings/gaia_resources_mn.xtb" lang="mn" />
     <file path="strings/gaia_resources_mr.xtb" lang="mr" />
     <file path="strings/gaia_resources_ms.xtb" lang="ms" />
+    <file path="strings/gaia_resources_my.xtb" lang="my" />
+    <file path="strings/gaia_resources_ne.xtb" lang="ne" />
     <file path="strings/gaia_resources_nl.xtb" lang="nl" />
     <file path="strings/gaia_resources_no.xtb" lang="no" />
+    <file path="strings/gaia_resources_or.xtb" lang="or" />
+    <file path="strings/gaia_resources_pa.xtb" lang="pa" />
     <file path="strings/gaia_resources_pl.xtb" lang="pl" />
     <file path="strings/gaia_resources_pt-BR.xtb" lang="pt-BR" />
     <file path="strings/gaia_resources_pt-PT.xtb" lang="pt-PT" />
     <file path="strings/gaia_resources_ro.xtb" lang="ro" />
     <file path="strings/gaia_resources_ru.xtb" lang="ru" />
+    <file path="strings/gaia_resources_si.xtb" lang="si" />
     <file path="strings/gaia_resources_sk.xtb" lang="sk" />
     <file path="strings/gaia_resources_sl.xtb" lang="sl" />
+    <file path="strings/gaia_resources_sq.xtb" lang="sq" />
     <file path="strings/gaia_resources_sr.xtb" lang="sr" />
     <file path="strings/gaia_resources_sv.xtb" lang="sv" />
     <file path="strings/gaia_resources_sw.xtb" lang="sw" />
@@ -53,9 +75,13 @@
     <file path="strings/gaia_resources_th.xtb" lang="th" />
     <file path="strings/gaia_resources_tr.xtb" lang="tr" />
     <file path="strings/gaia_resources_uk.xtb" lang="uk" />
+    <file path="strings/gaia_resources_ur.xtb" lang="ur" />
+    <file path="strings/gaia_resources_uz.xtb" lang="uz" />
     <file path="strings/gaia_resources_vi.xtb" lang="vi" />
     <file path="strings/gaia_resources_zh-CN.xtb" lang="zh-CN" />
+    <file path="strings/gaia_resources_zh-HK.xtb" lang="zh-HK" />
     <file path="strings/gaia_resources_zh-TW.xtb" lang="zh-TW" />
+    <file path="strings/gaia_resources_zu.xtb" lang="zu" />
   </translations>
   <release seq="1">
     <messages fallback_to_english="true">

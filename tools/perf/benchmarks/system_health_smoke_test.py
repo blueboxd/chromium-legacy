@@ -282,38 +282,30 @@ def GenerateBenchmarkOptions(output_dir, benchmark_cls):
   return options
 
 
-def load_tests(loader, standard_tests, pattern):
-  del loader, standard_tests, pattern  # unused
-  suite = progress_reporter.TestSuite()
+def _create_story_set(benchmark_class):
+  # HACK: these options should be derived from GetRunOptions which are
+  # the resolved options from run_tests' arguments. However, options is only
+  # parsed during test time which happens after load_tests are called.
+  # Since none of our system health benchmarks creates stories based on
+  # command line options, it should be ok to pass options=None to
+  # CreateStorySet.
+  return benchmark_class().CreateStorySet(options=None)
+
+
+def validate_smoke_test_name_versions():
   benchmark_classes = GetSystemHealthBenchmarksToSmokeTest()
   assert benchmark_classes, 'This list should never be empty'
   names_stories_to_smoke_tests = []
   for benchmark_class in benchmark_classes:
-
-    # HACK: these options should be derived from GetRunOptions which are
-    # the resolved options from run_tests' arguments. However, options is only
-    # parsed during test time which happens after load_tests are called.
-    # Since none of our system health benchmarks creates stories based on
-    # command line options, it should be ok to pass options=None to
-    # CreateStorySet.
-    stories_set = benchmark_class().CreateStorySet(options=None)
-
-    # Prefetch WPR archive needed by the stories set to avoid race condition
-    # when feching them when tests are run in parallel.
-    # See crbug.com/700426 for more details.
-    story_names = [s.name for s in stories_set if not s.is_local]
-    stories_set.wpr_archive_info.DownloadArchivesIfNeeded(
-        story_names=story_names)
+    stories_set = _create_story_set(benchmark_class)
 
     for story_to_smoke_test in stories_set.stories:
+      # TODO: combine the tag check logic in _create_story_set
       # Per crbug.com/1019383 we don't have many device cycles to work with on
       # Android, so let's just run the most important stories.
       if (benchmark_class.Name() == 'system_health.memory_mobile' and
           'health_check' not in story_to_smoke_test.tags):
         continue
-      suite.addTest(
-          _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test))
-
       names_stories_to_smoke_tests.append(
           benchmark_class.Name() + '/' + story_to_smoke_test.name)
 
@@ -334,6 +326,34 @@ def load_tests(loader, standard_tests, pattern):
         'list or remove them to save CQ capacity (see crbug.com/893615)). '
         'You can use crbug.com/878390 for the disabling reference.'
         '[StoryName] : [StoryVersion1],[StoryVersion2]...\n%s' % (msg))
+
+  return
+
+
+def load_tests(loader, standard_tests, pattern):
+  del loader, standard_tests, pattern  # unused
+  suite = progress_reporter.TestSuite()
+  benchmark_classes = GetSystemHealthBenchmarksToSmokeTest()
+  assert benchmark_classes, 'This list should never be empty'
+  validate_smoke_test_name_versions()
+  for benchmark_class in benchmark_classes:
+    stories_set = _create_story_set(benchmark_class)
+
+    # Prefetch WPR archive needed by the stories set to avoid race condition
+    # when fetching them when tests are run in parallel.
+    # See crbug.com/700426 for more details.
+    story_names = [s.name for s in stories_set if not s.is_local]
+    stories_set.wpr_archive_info.DownloadArchivesIfNeeded(
+        story_names=story_names)
+
+    for story_to_smoke_test in stories_set:
+      # Per crbug.com/1019383 we don't have many device cycles to work with on
+      # Android, so let's just run the most important stories.
+      if (benchmark_class.Name() == 'system_health.memory_mobile' and
+          'health_check' not in story_to_smoke_test.tags):
+        continue
+      suite.addTest(
+          _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test))
 
   return suite
 

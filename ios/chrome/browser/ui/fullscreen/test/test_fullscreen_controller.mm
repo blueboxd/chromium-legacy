@@ -60,6 +60,10 @@ void TestFullscreenController::DecrementDisabledCounter() {
     model_->DecrementDisabledCounter();
 }
 
+bool TestFullscreenController::ResizesScrollView() const {
+  return model_->ResizesScrollView();
+}
+
 void TestFullscreenController::BrowserTraitCollectionChangedBegin() {}
 
 void TestFullscreenController::BrowserTraitCollectionChangedEnd() {}

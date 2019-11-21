@@ -1697,7 +1697,7 @@ void TranslateBubbleView::SwitchTabForViewState(
     // tabbed pane events otherwise it'll trigger an additional translation as
     // if the user had clicked the tabs.
     tabbed_pane_->set_listener(nullptr);
-    tabbed_pane_->SelectTabAt(1);
+    tabbed_pane_->SelectTabAt(1, false);
     tabbed_pane_->set_listener(this);
   } else if (view_state == TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE &&
              tabbed_pane_->GetSelectedTabIndex() != 0) {

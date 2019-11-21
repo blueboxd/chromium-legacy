@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -47,6 +48,37 @@ class MouseEnterExitEvent : public ui::MouseEvent {
 };
 
 }  // namespace
+
+// Used by RootView to create a hidden child that can be used to make screen
+// reader announcements on platforms that don't have a reliable system API call
+// to do that.
+//
+// We use a separate view because the RootView itself supplies the widget's
+// accessible name and cannot serve double-duty (the inability for views to make
+// their own announcements without changing their accessible name or description
+// is the reason this system exists at all).
+class AnnounceTextView : public View {
+ public:
+  ~AnnounceTextView() override = default;
+
+  void Announce(const base::string16& text) {
+    // TODO(crbug.com/1024898): Use kLiveRegionChanged when supported across
+    // screen readers and platforms. See bug for details.
+    announce_text_ = text;
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  }
+
+  // View:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    // TODO(crbug.com/1024898): Use live regions (do not use alerts).
+    // May require setting kLiveStatus, kContainerLiveStatus to "polite".
+    node_data->role = ax::mojom::Role::kAlert;
+    node_data->SetName(announce_text_);
+  }
+
+ private:
+  base::string16 announce_text_;
+};
 
 // This event handler receives events in the pre-target phase and takes care of
 // the following:
@@ -226,6 +258,21 @@ void RootView::DeviceScaleFactorChanged(float old_device_scale_factor,
                                         float new_device_scale_factor) {
   View::PropagateDeviceScaleFactorChanged(old_device_scale_factor,
                                           new_device_scale_factor);
+}
+
+// Accessibility ---------------------------------------------------------------
+
+void RootView::AnnounceText(const base::string16& text) {
+#if defined(OS_MACOSX)
+  // MacOSX has its own API for making announcements; see AnnounceText()
+  // override in ax_platform_node_mac.[h|mm]
+  NOTREACHED();
+#else
+  DCHECK(GetWidget());
+  if (!announce_view_)
+    announce_view_ = AddChildView(std::make_unique<AnnounceTextView>());
+  announce_view_->Announce(text);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -598,6 +645,14 @@ void RootView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void RootView::UpdateParentLayer() {
   if (layer())
     ReparentLayer(widget_->GetLayer());
+}
+
+void RootView::Layout() {
+  View::Layout();
+  // TODO(crbug.com/1026461): when FillLayout derives from LayoutManagerBase,
+  // just ignore the announce view instead of forcing it to zero size.
+  if (announce_view_)
+    announce_view_->SetSize({0, 0});
 }
 
 ////////////////////////////////////////////////////////////////////////////////

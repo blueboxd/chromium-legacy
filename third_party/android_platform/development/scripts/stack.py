@@ -139,7 +139,7 @@ def UnzipSymbols(symbolfile, symdir=None):
     return (symdir, symdir)
 
 
-def main(argv):
+def main(argv, test_symbolizer=None):
   try:
     options, arguments = getopt.getopt(argv, "", [
         "packed-relocation-adjustments", "no-packed-relocation-adjustments",
@@ -236,8 +236,8 @@ def main(argv):
       print ("Searching for Chrome symbols from within: "
              + ':'.join((os.path.normpath(d) for d in chrome_search_path)))
       stack_core.ConvertTrace(lines, load_vaddrs, more_info,
-                              fallback_monochrome, arch_defined, symbolizer,
-                              apks_directory)
+                              fallback_monochrome, arch_defined,
+                              test_symbolizer or symbolizer, apks_directory)
 
   if rootdir:
     # be a good citizen and clean up...os.rmdir and os.removedirs() don't work

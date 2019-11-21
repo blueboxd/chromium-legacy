@@ -425,6 +425,7 @@ void InputMethodController::Clear() {
 void InputMethodController::ContextDestroyed(Document*) {
   Clear();
   composition_range_ = nullptr;
+  active_edit_context_ = nullptr;
 }
 
 void InputMethodController::DidAttachDocument(Document* document) {

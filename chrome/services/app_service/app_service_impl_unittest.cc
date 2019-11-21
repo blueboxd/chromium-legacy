@@ -314,9 +314,9 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   EXPECT_EQ(base::nullopt,
             sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
 
-  impl.AddPreferredApp(apps::mojom::AppType::kUnknown, kAppId2,
-                       std::move(intent_filter),
-                       apps_util::CreateIntentFromUrl(filter_url));
+  impl.AddPreferredApp(
+      apps::mojom::AppType::kUnknown, kAppId2, std::move(intent_filter),
+      apps_util::CreateIntentFromUrl(filter_url), /*from_publisher=*/true);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));

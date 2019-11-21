@@ -40,6 +40,8 @@ Polymer({
 
     max: Number,
 
+    labelAria: String,
+
     labelMin: String,
 
     labelMax: String,
@@ -168,5 +170,14 @@ Polymer({
     if (this.pref.value != tickValue) {
       this.set('pref.value', tickValue);
     }
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getRoleDescription_: function() {
+    return loadTimeData.getStringF('settingsSliderRoleDescription',
+      this.labelMin, this.labelMax);
   },
 });

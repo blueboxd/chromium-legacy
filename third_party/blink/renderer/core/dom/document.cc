@@ -5635,6 +5635,10 @@ EventListener* Document::GetWindowAttributeEventListener(
   return dom_window->GetAttributeEventListener(event_type);
 }
 
+void Document::EnqueueDisplayLockActivationTask(base::OnceClosure task) {
+  EnsureScriptedAnimationController().EnqueueTask(std::move(task));
+}
+
 void Document::EnqueueAnimationFrameTask(base::OnceClosure task) {
   EnsureScriptedAnimationController().EnqueueTask(std::move(task));
 }

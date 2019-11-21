@@ -87,11 +87,14 @@ interface AppService {
 
   // Set app identified by |app_id| as preferred app for |intent_filter|.
   // |intent| is needed to set the preferred app in ARC.
+  // If the request is |from_publisher|, we would not sync the preferred
+  // app back to the publisher.
   AddPreferredApp(
       AppType app_type,
       string app_id,
       IntentFilter intent_filter,
-      Intent intent);
+      Intent? intent,
+      bool from_publisher);
 
   // Remove all preference setting for an |app_id|.
   RemovePreferredApp(AppType app_type, string app_id);

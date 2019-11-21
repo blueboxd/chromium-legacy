@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_P(ScreenRotationTest, RotateInTabletOverview) {
 // TODO(oshima): Support split screen in tablet mode.
 // TODO(oshima): Support overview mode.
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ScreenRotationTest,
                          ::testing::Combine(::testing::Values(2, 8),
                                             /*blank=*/testing::Bool()));

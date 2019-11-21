@@ -643,8 +643,11 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       <html>
       <body>
         <div>plain 1</div><div>plain 2</div>
-        <div style="font-style: italic">italic 1</div>
+        <div role="heading">plain heading</div>
+        <div role="article" style="font-style: italic">italic 1</div>
         <div style="font-style: italic">italic 2</div>
+        <h1>heading</h1>
+        <h1>heading</h1>
         <div style="font-weight: bold">bold 1</div>
         <div style="font-weight: bold">bold 2</div>
       </body>
@@ -668,30 +671,49 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
       /*count*/ 1,
       /*expected_text*/
-      L"plain 1\nplain 2\nitalic 1\nitalic 2",
+      L"plain 1\nplain 2\nplain heading",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/
+      L"plain 1\nplain 2\nplain heading\nitalic 1\nitalic 2",
       /*expected_count*/ 1);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
       /*count*/ -1,
-      /*expected_text*/ L"plain 1\nplain 2\n",
+      /*expected_text*/ L"plain 1\nplain 2\nplain heading\n",
       /*expected_count*/ -1);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
       /*count*/ 1,
       /*expected_text*/
-      L"plain 1\nplain 2\nitalic 1\nitalic 2",
+      L"plain 1\nplain 2\nplain heading\nitalic 1\nitalic 2",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/
+      L"plain 1\nplain 2\nplain heading\nitalic 1\nitalic 2\nheading",
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
+      /*count*/ 1,
+      /*expected_text*/
+      L"plain 1\nplain 2\nplain heading\nitalic 1\nitalic 2\nheading\nheading",
       /*expected_count*/ 1);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
       /*count*/ 5,
       /*expected_text*/
-      L"plain 1\nplain 2\nitalic 1\nitalic 2\nbold 1\nbold 2",
+      L"plain 1\nplain 2\nplain heading\nitalic 1\nitalic 2"
+      L"\nheading\nheading\nbold 1\nbold 2",
       /*expected_count*/ 1);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
-      /*count*/ -4,
+      /*count*/ -8,
       /*expected_text*/ L"",
-      /*expected_count*/ -3);
+      /*expected_count*/ -6);
   EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
       text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Format,
       /*count*/ 1,

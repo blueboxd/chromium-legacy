@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
@@ -54,6 +55,7 @@ namespace views {
 class ImageButton;
 class Label;
 class MdTextButton;
+class StyledLabel;
 }
 
 // Represents a single download item on the download shelf. Encompasses an icon,
@@ -115,6 +117,9 @@ class DownloadItemView : public views::InkDropHostView,
 
   // views::AnimationDelegateViews implementation.
   void AnimationProgressed(const gfx::Animation* animation) override;
+
+  // Adds styling to the filename in |label|, if present.
+  void StyleFilenameInLabel(views::StyledLabel* label);
 
  protected:
   // views::View:
@@ -254,7 +259,11 @@ class DownloadItemView : public views::InkDropHostView,
   // line (if short), or broken across two lines.  In the latter case,
   // linebreaks near the middle of the string and sets the label's text
   // accordingly.  Returns the preferred size for the label.
-  static gfx::Size AdjustTextAndGetSize(views::Label* label);
+  template <typename T>
+  static gfx::Size AdjustTextAndGetSize(
+      T* label,
+      base::RepeatingCallback<void(T*, const base::string16&)>
+          update_text_and_style);
 
   // Reenables the item after it has been disabled when a user clicked it to
   // open the downloaded file.
@@ -377,7 +386,7 @@ class DownloadItemView : public views::InkDropHostView,
   views::ImageButton* dropdown_button_ = nullptr;
 
   // Dangerous mode label.
-  views::Label* dangerous_download_label_;
+  views::StyledLabel* dangerous_download_label_;
 
   // Whether the dangerous mode label has been sized yet.
   bool dangerous_download_label_sized_;
@@ -411,7 +420,7 @@ class DownloadItemView : public views::InkDropHostView,
   base::FilePath last_download_item_path_;
 
   // Deep scanning mode label.
-  views::Label* deep_scanning_label_ = nullptr;
+  views::StyledLabel* deep_scanning_label_ = nullptr;
 
   // Deep scanning open now button.
   views::MdTextButton* open_now_button_ = nullptr;

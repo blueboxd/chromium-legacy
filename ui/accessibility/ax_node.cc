@@ -795,7 +795,9 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
       return item_role == ax::mojom::Role::kListBoxOption;
     case ax::mojom::Role::kMenuListPopup:
       return item_role == ax::mojom::Role::kMenuListOption ||
-             item_role == ax::mojom::Role::kMenuItem;
+             item_role == ax::mojom::Role::kMenuItem ||
+             item_role == ax::mojom::Role::kMenuItemRadio ||
+             item_role == ax::mojom::Role::kMenuItemCheckBox;
     case ax::mojom::Role::kRadioGroup:
       return item_role == ax::mojom::Role::kRadioButton;
     case ax::mojom::Role::kDescriptionList:

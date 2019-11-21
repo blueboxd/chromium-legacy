@@ -108,6 +108,10 @@ class CreditCardFIDOAuthenticator
   // Ensures that local user opt-in pref is in-sync with payments server.
   void SyncUserOptIn(AutofillClient::UnmaskDetails& unmask_details);
 
+  // Cancel the ongoing verification process. Used to reset states in this class
+  // and in the FullCardRequest if any.
+  void CancelVerification();
+
   // Retrieves the strike database for offering FIDO authentication.
   FidoAuthenticationStrikeDatabase*
   GetOrCreateFidoAuthenticationStrikeDatabase();

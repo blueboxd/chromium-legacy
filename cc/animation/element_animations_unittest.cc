@@ -13,6 +13,7 @@
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/test/animation_test_common.h"
@@ -266,9 +267,8 @@ TEST_F(ElementAnimationsTest,
 
   // Animation with initial value set.
   std::unique_ptr<ScrollOffsetAnimationCurve> curve_fixed(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve_fixed->SetInitialValue(initial_value);
   const int animation1_id = 1;
   std::unique_ptr<KeyframeModel> animation_fixed(KeyframeModel::Create(
@@ -284,9 +284,8 @@ TEST_F(ElementAnimationsTest,
 
   // Animation without initial value set.
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   const int animation2_id = 2;
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), animation2_id, 1, TargetProperty::SCROLL_OFFSET));
@@ -894,9 +893,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
 
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
@@ -965,9 +963,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionOnImplOnly) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve->SetInitialValue(initial_value);
   double duration_in_seconds = curve->Duration().InSecondsF();
 
@@ -1067,9 +1064,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetTransitionNoImplProvider) {
   gfx::ScrollOffset initial_value(500.f, 100.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
 
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
@@ -1146,9 +1142,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
   // First test the 1-argument version of RemoveKeyframeModel.
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
 
   int keyframe_model_id = 1;
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
@@ -1177,9 +1172,8 @@ TEST_F(ElementAnimationsTest, ScrollOffsetRemovalClearsScrollDelta) {
                    ->scroll_offset_animation_was_interrupted());
 
   // Now, test the 2-argument version of RemoveKeyframeModel.
-  curve = ScrollOffsetAnimationCurve::Create(
-      target_value, CubicBezierTimingFunction::CreatePreset(
-                        CubicBezierTimingFunction::EaseType::EASE_IN_OUT));
+  curve = ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+      target_value);
   keyframe_model = KeyframeModel::Create(std::move(curve), keyframe_model_id, 0,
                                          TargetProperty::SCROLL_OFFSET);
   keyframe_model->set_needs_synchronized_start_time(true);
@@ -1270,9 +1264,8 @@ TEST_F(ElementAnimationsTest,
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve->SetInitialValue(initial_value);
   TimeDelta duration = curve->Duration();
   std::unique_ptr<KeyframeModel> to_add(KeyframeModel::Create(
@@ -2054,9 +2047,8 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
   std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-      ScrollOffsetAnimationCurve::Create(
-          target_value, CubicBezierTimingFunction::CreatePreset(
-                            CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+      ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+          target_value));
   curve->SetInitialValue(initial_value);
   std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
       std::move(curve), keyframe_model_id, 0, TargetProperty::SCROLL_OFFSET));

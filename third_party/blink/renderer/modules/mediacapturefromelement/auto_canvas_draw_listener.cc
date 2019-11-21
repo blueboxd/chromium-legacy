@@ -18,8 +18,7 @@ AutoCanvasDrawListener::AutoCanvasDrawListener(
 void AutoCanvasDrawListener::SendNewFrame(
     sk_sp<SkImage> image,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider) {
-  handler_->SendNewFrame(
-      image, context_provider ? context_provider->ContextProvider() : nullptr);
+  handler_->SendNewFrame(image, context_provider);
 }
 
 bool AutoCanvasDrawListener::NeedsNewFrame() const {

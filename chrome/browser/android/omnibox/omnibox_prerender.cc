@@ -84,9 +84,8 @@ void OmniboxPrerender::PrerenderMaybe(
   if (!profile)
     return;
 
-  const AutocompleteResult::const_iterator default_match(
-      autocomplete_result->default_match());
-  if (default_match == autocomplete_result->end())
+  auto* default_match = autocomplete_result->default_match();
+  if (!default_match)
     return;
 
   AutocompleteActionPredictor* action_predictor =

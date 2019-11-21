@@ -241,7 +241,7 @@ TEST_P(HttpCredentialCleanerTest, ReportHttpMigrationMetrics) {
   task_environment.RunUntilIdle();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          HttpCredentialCleanerTest,
                          ::testing::ValuesIn(kCases));
 

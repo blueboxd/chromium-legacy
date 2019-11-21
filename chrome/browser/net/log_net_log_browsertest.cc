@@ -86,7 +86,7 @@ class LogNetLogTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(LogNetLogTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LogNetLogTest,
                          ::testing::Values(nullptr, "IncludeSensitive"));
 

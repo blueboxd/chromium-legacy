@@ -33,65 +33,65 @@ class HomedirMethodsImpl : public HomedirMethods {
   void CheckKeyEx(const Identification& id,
                   const cryptohome::AuthorizationRequest& auth,
                   const cryptohome::CheckKeyRequest& request,
-                  const Callback& callback) override {
+                  Callback callback) override {
     chromeos::CryptohomeClient::Get()->CheckKeyEx(
         CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void AddKeyEx(const Identification& id,
                 const AuthorizationRequest& auth,
                 const AddKeyRequest& request,
-                const Callback& callback) override {
+                Callback callback) override {
     chromeos::CryptohomeClient::Get()->AddKeyEx(
         CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void RemoveKeyEx(const Identification& id,
                    const AuthorizationRequest& auth,
                    const RemoveKeyRequest& request,
-                   const Callback& callback) override {
+                   Callback callback) override {
     chromeos::CryptohomeClient::Get()->RemoveKeyEx(
         CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void UpdateKeyEx(const Identification& id,
                    const AuthorizationRequest& auth,
                    const UpdateKeyRequest& request,
-                   const Callback& callback) override {
+                   Callback callback) override {
     chromeos::CryptohomeClient::Get()->UpdateKeyEx(
         CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void MassRemoveKeys(const Identification& id,
                       const AuthorizationRequest& auth,
                       const MassRemoveKeysRequest& request,
-                      const Callback& callback) override {
+                      Callback callback) override {
     chromeos::CryptohomeClient::Get()->MassRemoveKeys(
         CreateAccountIdentifierFromIdentification(id), auth, request,
         base::BindOnce(&HomedirMethodsImpl::OnBaseReplyCallback,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  private:
-  void OnBaseReplyCallback(const Callback& callback,
-                           base::Optional<BaseReply> reply) {
+  void OnBaseReplyCallback(Callback callback, base::Optional<BaseReply> reply) {
     if (!reply.has_value()) {
-      callback.Run(false, MOUNT_ERROR_FATAL);
+      std::move(callback).Run(false, MOUNT_ERROR_FATAL);
       return;
     }
     if (reply->has_error() && reply->error() != CRYPTOHOME_ERROR_NOT_SET) {
-      callback.Run(false, CryptohomeErrorToMountError(reply->error()));
+      std::move(callback).Run(false,
+                              CryptohomeErrorToMountError(reply->error()));
       return;
     }
-    callback.Run(true, MOUNT_ERROR_NONE);
+    std::move(callback).Run(true, MOUNT_ERROR_NONE);
   }
 
   base::WeakPtrFactory<HomedirMethodsImpl> weak_ptr_factory_{this};

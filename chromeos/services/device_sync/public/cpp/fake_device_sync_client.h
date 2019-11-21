@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -31,12 +32,15 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
   int GetForceEnrollmentNowCallbackQueueSize();
   int GetForceSyncNowCallbackQueueSize();
   int GetSetSoftwareFeatureStateCallbackQueueSize();
+  int GetSetFeatureStatusCallbackQueueSize();
   int GetFindEligibleDevicesCallbackQueueSize();
   int GetGetDebugInfoCallbackQueueSize();
 
   void InvokePendingForceEnrollmentNowCallback(bool success);
   void InvokePendingForceSyncNowCallback(bool success);
   void InvokePendingSetSoftwareFeatureStateCallback(
+      mojom::NetworkRequestResult result_code);
+  void InvokePendingSetFeatureStatusCallback(
       mojom::NetworkRequestResult result_code);
   void InvokePendingFindEligibleDevicesCallback(
       mojom::NetworkRequestResult result_code,
@@ -75,6 +79,11 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
       bool enabled,
       bool is_exclusive,
       mojom::DeviceSync::SetSoftwareFeatureStateCallback callback) override;
+  void SetFeatureStatus(
+      const std::string& device_instance_id,
+      multidevice::SoftwareFeature feature,
+      FeatureStatusChange status_change,
+      mojom::DeviceSync::SetFeatureStatusCallback callback) override;
   void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
   void GetDevicesActivityStatus(
@@ -90,6 +99,8 @@ class FakeDeviceSyncClient : public DeviceSyncClient {
       force_sync_now_callback_queue_;
   std::queue<mojom::DeviceSync::SetSoftwareFeatureStateCallback>
       set_software_feature_state_callback_queue_;
+  std::queue<mojom::DeviceSync::SetFeatureStatusCallback>
+      set_feature_status_callback_queue_;
   std::queue<FindEligibleDevicesCallback> find_eligible_devices_callback_queue_;
   std::queue<mojom::DeviceSync::GetDevicesActivityStatusCallback>
       get_devices_activity_status_callback_queue_;

@@ -31,81 +31,78 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_ICE_CANDIDATE_PLATFORM_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
-// TODO(crbug.com/787254): Switch away from using WebString.
 class PLATFORM_EXPORT RTCIceCandidatePlatform final
-    : public base::RefCountedThreadSafe<RTCIceCandidatePlatform> {
+    : public WTF::ThreadSafeRefCounted<RTCIceCandidatePlatform> {
  public:
-  REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
-
   // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid| and
   // |sdp_m_line_index|. If |sdp_m_line_index| is negative, it is
   // considered as having no value.
-  static scoped_refptr<RTCIceCandidatePlatform> Create(WebString candidate,
-                                                       WebString sdp_mid,
+  static scoped_refptr<RTCIceCandidatePlatform> Create(String candidate,
+                                                       String sdp_mid,
                                                        int sdp_m_line_index);
 
   // Creates a new RTCIceCandidatePlatform using |candidate|, |sdp_mid|,
   // |sdp_m_line_index|, and |username_fragment|.
   static scoped_refptr<RTCIceCandidatePlatform> Create(
-      WebString candidate,
-      WebString sdp_mid,
+      String candidate,
+      String sdp_mid,
       base::Optional<uint16_t> sdp_m_line_index,
-      WebString username_fragment);
+      String username_fragment);
 
-  const WebString& Candidate() const { return candidate_; }
-  const WebString& SdpMid() const { return sdp_mid_; }
+  const String& Candidate() const { return candidate_; }
+  const String& SdpMid() const { return sdp_mid_; }
   const base::Optional<uint16_t>& SdpMLineIndex() const {
     return sdp_m_line_index_;
   }
-  const WebString& Foundation() const { return foundation_; }
-  const WebString& Component() const { return component_; }
+  const String& Foundation() const { return foundation_; }
+  const String& Component() const { return component_; }
   const base::Optional<uint32_t>& Priority() const { return priority_; }
-  const WebString& Address() const { return address_; }
-  const WebString Protocol() const { return protocol_; }
+  const String& Address() const { return address_; }
+  const String Protocol() const { return protocol_; }
   const base::Optional<uint16_t>& Port() const { return port_; }
-  const WebString& Type() const { return type_; }
-  const WebString& TcpType() const { return tcp_type_; }
-  const WebString& RelatedAddress() const { return related_address_; }
+  const String& Type() const { return type_; }
+  const String& TcpType() const { return tcp_type_; }
+  const String& RelatedAddress() const { return related_address_; }
   const base::Optional<uint16_t>& RelatedPort() const { return related_port_; }
-  const WebString& UsernameFragment() const { return username_fragment_; }
+  const String& UsernameFragment() const { return username_fragment_; }
 
  private:
-  friend class base::RefCountedThreadSafe<RTCIceCandidatePlatform>;
+  friend class WTF::ThreadSafeRefCounted<RTCIceCandidatePlatform>;
 
-  RTCIceCandidatePlatform(WebString candidate,
-                          WebString sdp_mid,
+  RTCIceCandidatePlatform(String candidate,
+                          String sdp_mid,
                           base::Optional<uint16_t> sdp_m_line_index);
 
-  RTCIceCandidatePlatform(WebString candidate,
-                          WebString sdp_mid,
+  RTCIceCandidatePlatform(String candidate,
+                          String sdp_mid,
                           base::Optional<uint16_t> sdp_m_line_index,
-                          WebString username_fragment);
+                          String username_fragment);
 
   void PopulateFields(bool use_username_from_candidate);
 
   ~RTCIceCandidatePlatform() = default;
 
-  WebString candidate_;
-  WebString sdp_mid_;
+  String candidate_;
+  String sdp_mid_;
   base::Optional<uint16_t> sdp_m_line_index_;
-  WebString foundation_;
-  WebString component_;
+  String foundation_;
+  String component_;
   base::Optional<uint32_t> priority_;
-  WebString address_;
-  WebString protocol_;
+  String address_;
+  String protocol_;
   base::Optional<uint16_t> port_;
-  WebString type_;
-  WebString tcp_type_;
-  WebString related_address_;
+  String type_;
+  String tcp_type_;
+  String related_address_;
   base::Optional<uint16_t> related_port_;
-  WebString username_fragment_;
+  String username_fragment_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCIceCandidatePlatform);
 };

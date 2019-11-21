@@ -23,6 +23,8 @@ group("telemetry_chrome_test") {
     data_deps += [
       "//android_webview/test:webview_instrumentation_apk",
       "//chrome/android:chrome_public_apk",
+      "//weblayer/shell/android:weblayer_support_apk",
+      "//weblayer/shell/android:weblayer_shell_apk",
     ]
 
     if (enable_chrome_android_internal) {

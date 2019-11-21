@@ -17,8 +17,7 @@ namespace blink {
 class LayoutBox;
 
 // Snap Coordinator keeps track of snap containers and all of their associated
-// snap areas. It also contains the logic to generate the list of valid snap
-// positions for a given snap container.
+// snap areas.
 //
 // Snap container:
 //   A scroll container that has 'scroll-snap-type' value other

@@ -385,7 +385,7 @@ class UpgradeDetectorImplTimerTest : public UpgradeDetectorImplTest,
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorImplTimerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          UpgradeDetectorImplTimerTest,
                          ::testing::Values(0,           // Default period of 7d.
                                            86400000,    // 1d.

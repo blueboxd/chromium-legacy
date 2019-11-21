@@ -11,6 +11,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/sharing/sharing_utils.h"
+#include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
@@ -60,7 +61,7 @@ std::unique_ptr<syncer::DeviceInfo> SharingDeviceSourceSync::GetDeviceByGuid(
     return nullptr;
 
   device_info->set_client_name(
-      GetSharingDeviceNames(device_info.get()).full_name);
+      send_tab_to_self::GetSharingDeviceNames(device_info.get()).full_name);
   return device_info;
 }
 
@@ -117,19 +118,21 @@ SharingDeviceSourceSync::RenameAndDeduplicateDevices(
                      device2->last_updated_timestamp();
             });
 
-  std::unordered_map<syncer::DeviceInfo*, SharingDeviceNames> device_names_map;
+  std::unordered_map<syncer::DeviceInfo*, send_tab_to_self::SharingDeviceNames>
+      device_names_map;
   std::unordered_set<std::string> full_names;
   std::unordered_map<std::string, int> short_names_counter;
 
   // To prevent adding candidates with same full name as local device.
-  full_names.insert(
-      GetSharingDeviceNames(local_device_info_provider_->GetLocalDeviceInfo())
-          .full_name);
+  full_names.insert(send_tab_to_self::GetSharingDeviceNames(
+                        local_device_info_provider_->GetLocalDeviceInfo())
+                        .full_name);
   // To prevent M78- instances of Chrome with same device model from showing up.
   full_names.insert(*personalizable_local_device_name_);
 
   for (const auto& device : devices) {
-    SharingDeviceNames device_names = GetSharingDeviceNames(device.get());
+    send_tab_to_self::SharingDeviceNames device_names =
+        send_tab_to_self::GetSharingDeviceNames(device.get());
 
     // Only insert the first occurrence of each device name.
     auto inserted = full_names.insert(device_names.full_name);
@@ -147,7 +150,7 @@ SharingDeviceSourceSync::RenameAndDeduplicateDevices(
     if (it == device_names_map.end())
       return true;
 
-    const SharingDeviceNames& device_names = it->second;
+    const send_tab_to_self::SharingDeviceNames& device_names = it->second;
     bool unique_short_name = short_names_counter[device_names.short_name] == 1;
     device->set_client_name(unique_short_name ? device_names.short_name
                                               : device_names.full_name);

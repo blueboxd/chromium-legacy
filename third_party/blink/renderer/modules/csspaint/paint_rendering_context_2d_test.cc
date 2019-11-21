@@ -87,13 +87,12 @@ TEST(PaintRenderingContext2DTest, setTransformWithDeviceScaleFactor) {
   EXPECT_TRUE(matrix->isIdentity());
   ctx->setTransform(2.1, 2.5, 1.4, 2.3, 20, 50);
   matrix = ctx->getTransform();
-  double epsilon = 0.000001;
-  EXPECT_NEAR(matrix->a(), 2.1 / device_scale_factor, epsilon);
-  EXPECT_NEAR(matrix->b(), 2.5 / device_scale_factor, epsilon);
-  EXPECT_NEAR(matrix->c(), 1.4 / device_scale_factor, epsilon);
-  EXPECT_NEAR(matrix->d(), 2.3 / device_scale_factor, epsilon);
-  EXPECT_NEAR(matrix->e(), 20 / device_scale_factor, epsilon);
-  EXPECT_NEAR(matrix->f(), 50 / device_scale_factor, epsilon);
+  EXPECT_FLOAT_EQ(matrix->a(), 2.1);
+  EXPECT_FLOAT_EQ(matrix->b(), 2.5);
+  EXPECT_FLOAT_EQ(matrix->c(), 1.4);
+  EXPECT_FLOAT_EQ(matrix->d(), 2.3);
+  EXPECT_FLOAT_EQ(matrix->e(), 20);
+  EXPECT_FLOAT_EQ(matrix->f(), 50);
 }
 
 TEST(PaintRenderingContext2DTest, setTransformWithDefaultDeviceScaleFactor) {

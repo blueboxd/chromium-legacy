@@ -13,21 +13,10 @@ FakeDlcserviceClient::FakeDlcserviceClient() = default;
 
 FakeDlcserviceClient::~FakeDlcserviceClient() = default;
 
-void FakeDlcserviceClient::AddObserver(Observer* obs) {
-  VLOG(1) << "Requesting to add observer.";
-}
-
-void FakeDlcserviceClient::RemoveObserver(Observer* obs) {
-  VLOG(1) << "Requesting to remove observer.";
-}
-
-void FakeDlcserviceClient::NotifyProgressUpdateForTest(double progress) {
-  NOTREACHED();
-}
-
 void FakeDlcserviceClient::Install(
     const dlcservice::DlcModuleList& dlc_module_list,
-    InstallCallback callback) {
+    InstallCallback callback,
+    ProgressCallback progress_callback) {
   VLOG(1) << "Requesting to install DLC(s).";
   std::move(callback).Run(dlcservice::kErrorNone, dlcservice::DlcModuleList());
 }
@@ -41,6 +30,10 @@ void FakeDlcserviceClient::Uninstall(const std::string& dlc_id,
 void FakeDlcserviceClient::GetInstalled(GetInstalledCallback callback) {
   VLOG(1) << "Requesting to get installed DLC(s).";
   std::move(callback).Run(dlcservice::kErrorNone, dlcservice::DlcModuleList());
+}
+
+void FakeDlcserviceClient::OnInstallStatusForTest(dbus::Signal* signal) {
+  NOTREACHED();
 }
 
 }  // namespace chromeos

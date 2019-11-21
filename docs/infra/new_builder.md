@@ -322,9 +322,9 @@ reach out to infra-dev@chromium.org or [file a bug][19]!
 [5]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests
 [6]: /infra/config
 [7]: https://luci-config.appspot.com/schemas/projects:cr-buildbucket.cfg
-[8]: /infra/config/cr-buildbucket.cfg
+[8]: /infra/config/generated/cr-buildbucket.cfg
 [9]: http://luci-config.appspot.com/schemas/projects:luci-milo.cfg
-[10]: /infra/config/luci-milo.cfg
+[10]: /infra/config/generated/luci-milo.cfg
 [11]: https://chromium.googlesource.com/infra/luci/luci-go/+/master/scheduler/appengine/messages/config.proto
 [12]: /infra/config/luci-scheduler.cfg
 [13]: /tools/mb/README.md

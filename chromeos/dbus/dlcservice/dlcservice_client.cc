@@ -105,38 +105,25 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   ~DlcserviceClientImpl() override = default;
 
-  void AddObserver(Observer* obs) override { observers_.AddObserver(obs); }
-
-  void RemoveObserver(Observer* obs) override {
-    observers_.RemoveObserver(obs);
-  }
-
-  void NotifyProgressUpdateForTest(double progress) override {
-    NotifyProgressUpdate(progress);
-  }
-
   void Install(const dlcservice::DlcModuleList& dlc_module_list,
-               InstallCallback callback) override {
-    if (!service_available_) {
+               InstallCallback install_callback,
+               ProgressCallback progress_callback) override {
+    if (!service_available_ || task_running_) {
       pending_tasks_.emplace_back(base::BindOnce(
           &DlcserviceClientImpl::Install, weak_ptr_factory_.GetWeakPtr(),
-          std::move(dlc_module_list), std::move(callback)));
+          std::move(dlc_module_list), std::move(install_callback),
+          std::move(progress_callback)));
       return;
     }
 
-    if (install_callback_holder_.has_value()) {
-      pending_installs_.emplace_back(base::BindOnce(
-          &DlcserviceClientImpl::Install, weak_ptr_factory_.GetWeakPtr(),
-          std::move(dlc_module_list), std::move(callback)));
-      return;
-    }
-
+    TaskStarted();
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kInstallMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendProtoAsArrayOfBytes(dlc_module_list);
 
-    install_callback_holder_ = std::move(callback);
+    progress_callback_holder_ = std::move(progress_callback);
+    install_callback_holder_ = std::move(install_callback);
 
     VLOG(1) << "Requesting to install DLC(s).";
     dlcservice_proxy_->CallMethodWithErrorResponse(
@@ -147,13 +134,14 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   void Uninstall(const std::string& dlc_id,
                  UninstallCallback callback) override {
-    if (!service_available_) {
+    if (!service_available_ || task_running_) {
       pending_tasks_.emplace_back(base::BindOnce(
           &DlcserviceClientImpl::Uninstall, weak_ptr_factory_.GetWeakPtr(),
           dlc_id, std::move(callback)));
       return;
     }
 
+    TaskStarted();
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kUninstallMethod);
     dbus::MessageWriter writer(&method_call);
@@ -167,13 +155,14 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
   void GetInstalled(GetInstalledCallback callback) override {
-    if (!service_available_) {
+    if (!service_available_ || task_running_) {
       pending_tasks_.emplace_back(
           base::BindOnce(&DlcserviceClientImpl::GetInstalled,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
       return;
     }
 
+    TaskStarted();
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kGetInstalledMethod);
 
@@ -182,6 +171,10 @@ class DlcserviceClientImpl : public DlcserviceClient {
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DlcserviceClientImpl::OnGetInstalled,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void OnInstallStatusForTest(dbus::Signal* signal) override {
+    OnInstallStatus(signal);
   }
 
   void Init(dbus::Bus* bus) {
@@ -200,10 +193,34 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
  private:
-  // Notify to observers the progress of DLC(s) download/install.
-  void NotifyProgressUpdate(double progress) {
-    for (Observer& obs : observers_)
-      obs.OnProgressUpdate(progress);
+  // Set the indication that an operation is being performed, which consists of
+  // either |Install()|, |Uninstall()|, or |GetInstalled()|. Should always be
+  // called after calling dlcservice in platform.
+  void TaskStarted() { task_running_ = true; }
+
+  void TaskEnded() { task_running_ = false; }
+
+  void CheckAndRunPendingTask() {
+    TaskEnded();
+    if (!pending_tasks_.empty()) {
+      std::move(pending_tasks_.front()).Run();
+      pending_tasks_.pop_front();
+    }
+  }
+
+  void SendProgress(const dlcservice::InstallStatus& install_status) {
+    const double progress = install_status.progress();
+    VLOG(2) << "Install in progress: " << progress;
+    if (progress_callback_holder_.has_value())
+      progress_callback_holder_.value().Run(progress);
+  }
+
+  void SendCompleted(const dlcservice::InstallStatus& install_status) {
+    progress_callback_holder_.reset();
+    base::Optional<InstallCallback> install_callback;
+    std::swap(install_callback, install_callback_holder_);
+    std::move(install_callback.value())
+        .Run(install_status.error_code(), install_status.dlc_module_list());
   }
 
   void OnInstallStatus(dbus::Signal* signal) {
@@ -216,26 +233,17 @@ class DlcserviceClientImpl : public DlcserviceClient {
       return;
     }
 
-    auto SendSignal = [this, &install_status]() {
-      base::Optional<InstallCallback> install_callback;
-      std::swap(install_callback, install_callback_holder_);
-      std::move(install_callback.value())
-          .Run(install_status.error_code(), install_status.dlc_module_list());
-    };
-
     switch (install_status.status()) {
       case dlcservice::Status::COMPLETED:
         VLOG(1) << "DLC(s) install successful.";
-        SendSignal();
+        SendCompleted(install_status);
         break;
       case dlcservice::Status::RUNNING: {
-        const double progress = install_status.progress();
-        VLOG(2) << "Install in progress: " << progress;
         // TODO(kimjae): Currently, update_engine delegate's two actions.
         // Specifically the Download action and Post Install Runner action,
         // which means that progress will go from 0 -> 1 two complete cycles.
         // This can be easily handled either here or inside dlcservice daemon.
-        NotifyProgressUpdate(progress);
+        SendProgress(install_status);
         // Need to return here since we don't want to try starting another
         // pending install from the queue (would waste time checking).
         return;
@@ -243,7 +251,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
       case dlcservice::Status::FAILED:
         LOG(ERROR) << "Failed to install with error code: "
                    << install_status.error_code();
-        SendSignal();
+        SendCompleted(install_status);
         break;
       default:
         NOTREACHED();
@@ -252,10 +260,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
     // Try to run a pending install since we have complete/failed the current
     // install, but do not waste trying to run a pending install when the
     // current install is running at the moment.
-    if (!pending_installs_.empty()) {
-      std::move(pending_installs_.front()).Run();
-      pending_installs_.pop_front();
-    }
+    CheckAndRunPendingTask();
   }
 
   void OnInstallStatusConnected(const std::string& interface,
@@ -266,11 +271,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
     // that came in before dlcservice daemon was available.
     if (success) {
       service_available_ = true;
-      std::vector<base::OnceClosure> callbacks;
-      callbacks.swap(pending_tasks_);
-      for (auto&& callback : callbacks) {
-        std::move(callback).Run();
-      }
+      CheckAndRunPendingTask();
     } else {
       LOG(ERROR) << "Failed to connect to install status signal.";
       pending_tasks_.clear();
@@ -281,11 +282,11 @@ class DlcserviceClientImpl : public DlcserviceClient {
     if (response)
       return;
 
-    base::Optional<InstallCallback> install_callback;
-    std::swap(install_callback, install_callback_holder_);
-    std::move(install_callback.value())
-        .Run(DlcserviceErrorResponseHandler(err_response).get_err(),
-             dlcservice::DlcModuleList());
+    dlcservice::InstallStatus install_status;
+    install_status.set_error_code(
+        DlcserviceErrorResponseHandler(err_response).get_err());
+    SendCompleted(install_status);
+    CheckAndRunPendingTask();
   }
 
   void OnUninstall(UninstallCallback callback,
@@ -293,11 +294,11 @@ class DlcserviceClientImpl : public DlcserviceClient {
                    dbus::ErrorResponse* err_response) {
     if (response) {
       std::move(callback).Run(dlcservice::kErrorNone);
-      return;
+    } else {
+      std::move(callback).Run(
+          DlcserviceErrorResponseHandler(err_response).get_err());
     }
-
-    std::move(callback).Run(
-        DlcserviceErrorResponseHandler(err_response).get_err());
+    CheckAndRunPendingTask();
   }
 
   void OnGetInstalled(GetInstalledCallback callback,
@@ -307,12 +308,12 @@ class DlcserviceClientImpl : public DlcserviceClient {
     if (response && dbus::MessageReader(response).PopArrayOfBytesAsProto(
                         &dlc_module_list)) {
       std::move(callback).Run(dlcservice::kErrorNone, dlc_module_list);
-      return;
+    } else {
+      std::move(callback).Run(
+          DlcserviceErrorResponseHandler(err_response).get_err(),
+          dlcservice::DlcModuleList());
     }
-
-    std::move(callback).Run(
-        DlcserviceErrorResponseHandler(err_response).get_err(),
-        dlcservice::DlcModuleList());
+    CheckAndRunPendingTask();
   }
 
   dbus::ObjectProxy* dlcservice_proxy_;
@@ -320,19 +321,19 @@ class DlcserviceClientImpl : public DlcserviceClient {
   // True after dlcservice's D-Bus service has become available.
   bool service_available_ = false;
 
+  // Whether any task is currently in progress. Can be used to decide whether to
+  // queue up incoming requests.
+  bool task_running_ = false;
+
   // The cached callback to call on a finished |Install()|.
   base::Optional<InstallCallback> install_callback_holder_;
 
-  // A list of postponed calls to dlcservice to install only used after
-  // the dlcservice is already available.
-  std::deque<base::OnceClosure> pending_installs_;
+  // The cached callback to call on during progress of |Install()|.
+  base::Optional<ProgressCallback> progress_callback_holder_;
 
   // A list of postponed calls to dlcservice to be called after it becomes
-  // available.
-  std::vector<base::OnceClosure> pending_tasks_;
-
-  // The list holding observers that want to listen in on certain events.
-  base::ObserverList<Observer> observers_;
+  // available or after the currently running task completes.
+  std::deque<base::OnceClosure> pending_tasks_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
@@ -340,6 +341,9 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   DISALLOW_COPY_AND_ASSIGN(DlcserviceClientImpl);
 };
+
+const DlcserviceClient::ProgressCallback DlcserviceClient::IgnoreProgress =
+    base::BindRepeating([](double) {});
 
 DlcserviceClient::DlcserviceClient() {
   CHECK(!g_instance);

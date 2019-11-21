@@ -14,7 +14,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.OAuth2TokenService;
 
 /**
  * IdentityManager provides access to native IdentityManager's public API to java components.

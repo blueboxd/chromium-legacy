@@ -9,7 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/cert/internal/cert_errors.h"
-#include "net/cert/pem_tokenizer.h"
+#include "net/cert/pem.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
 #include "testing/gtest/include/gtest/gtest.h"

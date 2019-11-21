@@ -795,6 +795,7 @@ class CORE_EXPORT Node : public EventTarget {
   FlatTreeNodeData* GetFlatTreeNodeData() const;
   FlatTreeNodeData& EnsureFlatTreeNodeData();
   void ClearFlatTreeNodeData();
+  void ClearFlatTreeNodeDataIfHostChanged(const ContainerNode& parent);
 
   virtual bool WillRespondToMouseMoveEvents();
   virtual bool WillRespondToMouseClickEvents();

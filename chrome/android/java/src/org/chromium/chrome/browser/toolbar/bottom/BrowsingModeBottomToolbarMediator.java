@@ -11,9 +11,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
-import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
@@ -32,7 +30,6 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
 
     /** The model for the browsing mode bottom toolbar that holds all of its state. */
     private final BrowsingModeBottomToolbarModel mModel;
-    private final OverviewModeObserver mOverviewModeObserver;
 
     /** The overview mode manager. */
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -47,30 +44,11 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
      */
     BrowsingModeBottomToolbarMediator(BrowsingModeBottomToolbarModel model) {
         mModel = model;
-        mOverviewModeObserver = new EmptyOverviewModeObserver() {
-            @Override
-            public void onOverviewModeStartedShowing(boolean showToolbar) {
-                mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, false);
-            }
-
-            @Override
-            public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
-                mModel.set(BrowsingModeBottomToolbarModel.IS_VISIBLE, true);
-            }
-        };
     }
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
         mThemeColorProvider = themeColorProvider;
         mThemeColorProvider.addThemeColorObserver(this);
-    }
-
-    void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-        }
-        mOverviewModeBehavior = overviewModeBehavior;
-        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     /**
@@ -103,10 +81,6 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
      * Clean up anything that needs to be when the bottom toolbar is destroyed.
      */
     void destroy() {
-        if (mOverviewModeBehavior != null) {
-            mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-            mOverviewModeBehavior = null;
-        }
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeThemeColorObserver(this);
             mThemeColorProvider = null;

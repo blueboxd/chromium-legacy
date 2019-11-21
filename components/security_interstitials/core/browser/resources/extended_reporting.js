@@ -5,14 +5,14 @@
 'use strict';
 
 // Other constants defined in security_interstitial_page.h.
-var SB_BOX_CHECKED = 'boxchecked';
-var SB_DISPLAY_CHECK_BOX = 'displaycheckbox';
+const SB_BOX_CHECKED = 'boxchecked';
+const SB_DISPLAY_CHECK_BOX = 'displaycheckbox';
 
 // This sets up the Extended Safe Browsing Reporting opt-in, either for
 // reporting malware or invalid certificate chains. Does nothing if the
 // interstitial type is not SAFEBROWSING or SSL or CAPTIVE_PORTAL.
 function setupExtendedReportingCheckbox() {
-  var interstitialType = loadTimeData.getString('type');
+  const interstitialType = loadTimeData.getString('type');
   if (interstitialType != 'SAFEBROWSING' && interstitialType != 'SSL' &&
       interstitialType != 'CAPTIVE_PORTAL') {
     return;
@@ -26,10 +26,10 @@ function setupExtendedReportingCheckbox() {
   $('opt-in-checkbox').checked = loadTimeData.getBoolean(SB_BOX_CHECKED);
   $('extended-reporting-opt-in').classList.remove('hidden');
 
-  var billing = interstitialType == 'SAFEBROWSING' &&
+  const billing = interstitialType == 'SAFEBROWSING' &&
                     loadTimeData.getBoolean('billing');
 
-  var className = 'ssl-opt-in';
+  let className = 'ssl-opt-in';
   if (interstitialType == 'SAFEBROWSING' && !billing) {
     className = 'safe-browsing-opt-in';
   }

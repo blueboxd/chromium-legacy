@@ -78,7 +78,8 @@ class AppServiceImpl : public apps::mojom::AppService {
   void AddPreferredApp(apps::mojom::AppType app_type,
                        const std::string& app_id,
                        apps::mojom::IntentFilterPtr intent_filter,
-                       apps::mojom::IntentPtr intent) override;
+                       apps::mojom::IntentPtr intent,
+                       bool from_publisher) override;
   void RemovePreferredApp(apps::mojom::AppType app_type,
                           const std::string& app_id) override;
 

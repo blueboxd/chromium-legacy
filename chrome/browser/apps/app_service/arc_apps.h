@@ -104,6 +104,7 @@ class ArcApps : public KeyedService,
   // arc::ArcIntentHelperObserver overrides.
   void OnIntentFiltersUpdated(
       const base::Optional<std::string>& package_name) override;
+  void OnPreferredAppsChanged() override;
 
   void LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,
                          int32_t size_hint_in_dip,

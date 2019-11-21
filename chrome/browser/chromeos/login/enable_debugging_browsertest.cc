@@ -53,35 +53,32 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
     FakeDebugDaemonClient::SetDebuggingFeaturesStatus(featues_mask);
   }
 
-  void EnableDebuggingFeatures(
-      const std::string& password,
-      const EnableDebuggingCallback& callback) override {
+  void EnableDebuggingFeatures(const std::string& password,
+                               EnableDebuggingCallback callback) override {
     FakeDebugDaemonClient::EnableDebuggingFeatures(
-        password, base::Bind(&TestDebugDaemonClient::OnEnableDebuggingFeatures,
-                             base::Unretained(this), callback));
+        password,
+        base::BindOnce(&TestDebugDaemonClient::OnEnableDebuggingFeatures,
+                       base::Unretained(this), std::move(callback)));
   }
 
-  void RemoveRootfsVerification(
-      const DebugDaemonClient::EnableDebuggingCallback& callback) override {
+  void RemoveRootfsVerification(EnableDebuggingCallback callback) override {
     FakeDebugDaemonClient::RemoveRootfsVerification(
-        base::Bind(&TestDebugDaemonClient::OnRemoveRootfsVerification,
-                   base::Unretained(this), callback));
+        base::BindOnce(&TestDebugDaemonClient::OnRemoveRootfsVerification,
+                       base::Unretained(this), std::move(callback)));
   }
 
-  void QueryDebuggingFeatures(
-      const DebugDaemonClient::QueryDevFeaturesCallback& callback) override {
+  void QueryDebuggingFeatures(QueryDevFeaturesCallback callback) override {
     LOG(WARNING) << "QueryDebuggingFeatures";
     FakeDebugDaemonClient::QueryDebuggingFeatures(
-        base::Bind(&TestDebugDaemonClient::OnQueryDebuggingFeatures,
-                   base::Unretained(this), callback));
+        base::BindOnce(&TestDebugDaemonClient::OnQueryDebuggingFeatures,
+                       base::Unretained(this), std::move(callback)));
   }
 
-  void OnRemoveRootfsVerification(
-      const DebugDaemonClient::EnableDebuggingCallback& original_callback,
-      bool succeeded) {
+  void OnRemoveRootfsVerification(EnableDebuggingCallback original_callback,
+                                  bool succeeded) {
     LOG(WARNING) << "OnRemoveRootfsVerification: succeeded = " << succeeded;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(original_callback, succeeded));
+        FROM_HERE, base::BindOnce(std::move(original_callback), succeeded));
     if (runner_.get())
       runner_->Quit();
     else
@@ -90,14 +87,14 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
     num_remove_protection_++;
   }
 
-  void OnQueryDebuggingFeatures(
-      const DebugDaemonClient::QueryDevFeaturesCallback& original_callback,
-      bool succeeded,
-      int feature_mask) {
+  void OnQueryDebuggingFeatures(QueryDevFeaturesCallback original_callback,
+                                bool succeeded,
+                                int feature_mask) {
     LOG(WARNING) << "OnQueryDebuggingFeatures: succeeded = " << succeeded
                  << ", feature_mask = " << feature_mask;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(original_callback, succeeded, feature_mask));
+        FROM_HERE,
+        base::BindOnce(std::move(original_callback), succeeded, feature_mask));
     if (runner_.get())
       runner_->Quit();
     else
@@ -106,13 +103,12 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
     num_query_debugging_features_++;
   }
 
-  void OnEnableDebuggingFeatures(
-      const DebugDaemonClient::EnableDebuggingCallback& original_callback,
-      bool succeeded) {
+  void OnEnableDebuggingFeatures(EnableDebuggingCallback original_callback,
+                                 bool succeeded) {
     LOG(WARNING) << "OnEnableDebuggingFeatures: succeeded = " << succeeded
                  << ", feature_mask = ";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(original_callback, succeeded));
+        FROM_HERE, base::BindOnce(std::move(original_callback), succeeded));
     if (runner_.get())
       runner_->Quit();
     else

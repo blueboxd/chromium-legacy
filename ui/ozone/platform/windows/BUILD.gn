@@ -26,7 +26,7 @@ source_set("windows") {
     "//ui/base",
     "//ui/display/fake",
     "//ui/events",
-    "//ui/events/ozone:events_ozone_layout",
+    "//ui/events/ozone/layout",
     "//ui/events/platform",
     "//ui/gfx/geometry",
     "//ui/gl",

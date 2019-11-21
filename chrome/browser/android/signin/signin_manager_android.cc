@@ -187,7 +187,7 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
 
   user_policy_signin_service_->RegisterForPolicyWithAccountId(
       account.email, account.account_id,
-      base::AdaptCallbackForRepeating(base::BindOnce(
+      base::BindOnce(
           [](RegisterPolicyWithAccountCallback callback,
              const std::string& dm_token, const std::string& client_id) {
             base::Optional<ManagementCredentials> credentials;
@@ -196,7 +196,7 @@ void SigninManagerAndroid::RegisterPolicyWithAccount(
             }
             std::move(callback).Run(credentials);
           },
-          std::move(callback))));
+          std::move(callback)));
 }
 
 void SigninManagerAndroid::FetchAndApplyCloudPolicy(

@@ -929,7 +929,13 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 
 void WebMediaPlayerImpl::SetLatencyHint(double seconds) {
   DVLOG(1) << __func__ << "(" << seconds << ")";
-  // TODO(chcunningham): Plumb to the pipeline.
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  base::Optional<base::TimeDelta> latency_hint;
+  if (std::isfinite(seconds)) {
+    DCHECK_GE(seconds, 0);
+    latency_hint = base::TimeDelta::FromSecondsD(seconds);
+  }
+  pipeline_controller_->SetLatencyHint(latency_hint);
 }
 
 void WebMediaPlayerImpl::OnRequestPictureInPicture() {

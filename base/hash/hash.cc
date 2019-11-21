@@ -17,19 +17,6 @@ namespace base {
 
 namespace {
 
-// Used to make the output of base::FastHash() and base::HashInts()
-// non-deterministic between runs, to prevent inadvertent dependencies
-// on the underlying implementation.
-template <typename T>
-T Scramble(T input) {
-#if DCHECK_IS_ON()
-  static const T seed = RandUint64();
-  return input ^ seed;
-#else
-  return input;
-#endif
-}
-
 size_t FastHashImpl(base::span<const uint8_t> data) {
   // We use the updated CityHash within our namespace (not the deprecated
   // version from third_party/smhasher).
@@ -100,6 +87,28 @@ size_t HashInts64Impl(uint64_t value1, uint64_t value2) {
   size_t high_bits =
       static_cast<size_t>(hash64 >> (8 * (sizeof(uint64_t) - sizeof(size_t))));
   return high_bits;
+}
+
+// The random seed is used to perturb the output of base::FastHash() and
+// base::HashInts() so that it is only deterministic within the lifetime of a
+// process. This prevents inadvertent dependencies on the underlying
+// implementation, e.g. anything that persists the hash value and expects it to
+// be unchanging will break.
+//
+// Note: this is the same trick absl uses to generate a random seed. This is
+// more robust than using base::RandBytes(), which can fail inside a sandboxed
+// environment. Note that without ASLR, the seed won't be quite as random...
+#if DCHECK_IS_ON()
+constexpr const void* kSeed = &kSeed;
+#endif
+
+template <typename T>
+T Scramble(T input) {
+#if DCHECK_IS_ON()
+  return HashInts64Impl(input, reinterpret_cast<uintptr_t>(kSeed));
+#else
+  return input;
+#endif
 }
 
 }  // namespace

@@ -3857,11 +3857,13 @@ gfx::Rect AXPlatformNodeAuraLinux::GetExtentsRelativeToAtkCoordinateType(
       extents.Offset(window_origin);
       break;
     }
+#if defined(ATK_230)
     case ATK_XY_PARENT: {
       gfx::Vector2d parent_origin = -GetParentOriginInScreenCoordinates();
       extents.Offset(parent_origin);
       break;
     }
+#endif
   }
 
   return extents;
@@ -4558,8 +4560,10 @@ gfx::Point AXPlatformNodeAuraLinux::ConvertPointToScreenCoordinates(
   switch (atk_coord_type) {
     case ATK_XY_WINDOW:
       return point + GetParentFrameOriginInScreenCoordinates();
+#if defined(ATK_230)
     case ATK_XY_PARENT:
       return point + GetParentOriginInScreenCoordinates();
+#endif
     case ATK_XY_SCREEN:
     default:
       return point;

@@ -181,7 +181,7 @@
           </then>
           <else>
             <include name="IDR_HISTORY_APP_HTML" file="resources\history\app.html" type="BINDATA" />
-            <include name="IDR_HISTORY_APP_JS" file="resources\history\app.js" type="BINDATA" />
+            <include name="IDR_HISTORY_APP_JS" file="resources\history\app.js" preprocess="true" type="BINDATA" />
             <include name="IDR_HISTORY_BROWSER_SERVICE_HTML" file="resources\history\browser_service.html" type="BINDATA" />
             <include name="IDR_HISTORY_BROWSER_SERVICE_JS" file="resources\history\browser_service.js" type="BINDATA" />
             <include name="IDR_HISTORY_HISTORY_ITEM_HTML" file="resources\history\history_item.html" type="BINDATA" />

@@ -5,8 +5,8 @@
 // This is the shared code for the new (Chrome 37) security interstitials. It is
 // used for both SSL interstitials and Safe Browsing interstitials.
 
-var expandedDetails = false;
-var keyPressState = 0;
+let expandedDetails = false;
+let keyPressState = 0;
 
 /**
  * This allows errors to be skippped by typing a secret phrase into the page.
@@ -16,7 +16,7 @@ function handleKeypress(e) {
   // HTTPS errors are serious and should not be ignored. For testing purposes,
   // other approaches are both safer and have fewer side-effects.
   // See https://goo.gl/ZcZixP for more details.
-  var BYPASS_SEQUENCE = window.atob('dGhpc2lzdW5zYWZl');
+  const BYPASS_SEQUENCE = window.atob('dGhpc2lzdW5zYWZl');
   if (BYPASS_SEQUENCE.charCodeAt(keyPressState) == e.keyCode) {
     keyPressState++;
     if (keyPressState == BYPASS_SEQUENCE.length) {
@@ -40,18 +40,18 @@ function handleKeypress(e) {
 function appendDebuggingField(title, value, fixedWidth) {
   // The values input here are not trusted. Never use innerHTML on these
   // values!
-  var spanTitle = document.createElement('span');
+  const spanTitle = document.createElement('span');
   spanTitle.classList.add('debugging-title');
   spanTitle.innerText = title + ': ';
 
-  var spanValue = document.createElement('span');
+  const spanValue = document.createElement('span');
   spanValue.classList.add('debugging-content');
   if (fixedWidth) {
     spanValue.classList.add('debugging-content-fixed-width');
   }
   spanValue.innerText = value;
 
-  var pElem = document.createElement('p');
+  const pElem = document.createElement('p');
   pElem.classList.add('debugging-content');
   pElem.appendChild(spanTitle);
   pElem.appendChild(spanValue);
@@ -63,18 +63,18 @@ function toggleDebuggingInfo() {
 }
 
 function setupEvents() {
-  var overridable = loadTimeData.getBoolean('overridable');
-  var interstitialType = loadTimeData.getString('type');
-  var ssl = interstitialType == 'SSL';
-  var captivePortal = interstitialType == 'CAPTIVE_PORTAL';
-  var badClock = ssl && loadTimeData.getBoolean('bad_clock');
-  var lookalike = interstitialType == 'LOOKALIKE';
-  var billing = interstitialType == 'SAFEBROWSING' &&
+  const overridable = loadTimeData.getBoolean('overridable');
+  const interstitialType = loadTimeData.getString('type');
+  const ssl = interstitialType == 'SSL';
+  const captivePortal = interstitialType == 'CAPTIVE_PORTAL';
+  const badClock = ssl && loadTimeData.getBoolean('bad_clock');
+  const lookalike = interstitialType == 'LOOKALIKE';
+  const billing = interstitialType == 'SAFEBROWSING' &&
                     loadTimeData.getBoolean('billing');
-  var originPolicy = interstitialType == "ORIGIN_POLICY";
-  var blockedInterception = interstitialType == "BLOCKED_INTERCEPTION";
-  var hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
-  var showRecurrentErrorParagraph = loadTimeData.getBoolean(
+  const originPolicy = interstitialType == "ORIGIN_POLICY";
+  const blockedInterception = interstitialType == "BLOCKED_INTERCEPTION";
+  const hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
+  const showRecurrentErrorParagraph = loadTimeData.getBoolean(
     'show_recurrent_error_paragraph');
 
   if (loadTimeData.valueExists('darkModeAvailable') &&
@@ -136,8 +136,8 @@ function setupEvents() {
   }
 
   if (lookalike) {
-    var proceedButton = 'proceed-button';
-    var dontProceedLink = 'dont-proceed-link';
+    const proceedButton = 'proceed-button';
+    const dontProceedLink = 'dont-proceed-link';
     $(proceedButton).classList.remove(HIDDEN_CLASS);
 
     $(proceedButton).textContent = loadTimeData.getString('proceedButtonText');
@@ -152,7 +152,7 @@ function setupEvents() {
   }
 
   if (overridable) {
-    var overrideElement = billing ? 'proceed-button' : 'proceed-link';
+    const overrideElement = billing ? 'proceed-button' : 'proceed-link';
     // Captive portal page isn't overridable.
     $(overrideElement).addEventListener('click', function(event) {
       sendCommand(SecurityInterstitialCommandId.CMD_PROCEED);
@@ -193,7 +193,7 @@ function setupEvents() {
     $('details-button').classList.add('hidden');
   } else {
     $('details-button').addEventListener('click', function(event) {
-      var hiddenDetails = $('details').classList.toggle(HIDDEN_CLASS);
+      const hiddenDetails = $('details').classList.toggle(HIDDEN_CLASS);
 
       if (mobileNav) {
         // Details appear over the main content on small screens.

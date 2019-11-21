@@ -42,6 +42,12 @@ class CorePageLoadMetricsObserverTest
     page_load_metrics::PageLoadMetricsObserverContentTestHarness::SetUp();
     page_load_metrics::LargestContentfulPaintHandler::SetTestMode(true);
   }
+
+  void OnCpuTimingUpdate(RenderFrameHost* render_frame_host,
+                         base::TimeDelta cpu_time_spent) {
+    page_load_metrics::mojom::CpuTiming cpu_timing(cpu_time_spent);
+    tester()->SimulateCpuTimingUpdate(cpu_timing, render_frame_host);
+  }
 };
 
 TEST_F(CorePageLoadMetricsObserverTest, NoMetrics) {
@@ -625,6 +631,21 @@ TEST_F(CorePageLoadMetricsObserverTest, BytesAndResourcesCounted) {
       internal::kHistogramNetworkCompletedResources, 1);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramCacheCompletedResources, 1);
+}
+
+TEST_F(CorePageLoadMetricsObserverTest, CpuUsageCounted) {
+  NavigateAndCommit(GURL(kDefaultTestUrl));
+  OnCpuTimingUpdate(web_contents()->GetMainFrame(),
+                    base::TimeDelta::FromMilliseconds(750));
+  web_contents()->WasHidden();  // Set the web contents as backgrounded.
+  OnCpuTimingUpdate(web_contents()->GetMainFrame(),
+                    base::TimeDelta::FromMilliseconds(250));
+  NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  tester()->histogram_tester().ExpectUniqueSample(
+      internal::kHistogramPageLoadCpuTotalUsage, 1000, 1);
+  tester()->histogram_tester().ExpectUniqueSample(
+      internal::kHistogramPageLoadCpuTotalUsageForegrounded, 750, 1);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, FirstMeaningfulPaint) {

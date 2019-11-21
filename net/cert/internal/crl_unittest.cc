@@ -115,7 +115,7 @@ struct PrintTestName {
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CheckCRLTest,
                          ::testing::ValuesIn(kTestParams),
                          PrintTestName());

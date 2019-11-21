@@ -83,7 +83,6 @@ namespace protocol {
 
 namespace {
 
-using ProtocolCookieArray = Array<Network::Cookie>;
 using GetCookiesCallback = Network::Backend::GetCookiesCallback;
 using GetAllCookiesCallback = Network::Backend::GetAllCookiesCallback;
 using SetCookieCallback = Network::Backend::SetCookieCallback;
@@ -145,16 +144,6 @@ std::unique_ptr<Network::Cookie> BuildCookie(
   return devtools_cookie;
 }
 
-std::unique_ptr<ProtocolCookieArray> BuildCookieArray(
-    const std::vector<net::CanonicalCookie>& cookie_list) {
-  auto cookies = std::make_unique<ProtocolCookieArray>();
-
-  for (const net::CanonicalCookie& cookie : cookie_list)
-    cookies->emplace_back(BuildCookie(cookie));
-
-  return cookies;
-}
-
 class CookieRetrieverNetworkService
     : public base::RefCounted<CookieRetrieverNetworkService> {
  public:
@@ -189,7 +178,7 @@ class CookieRetrieverNetworkService
   }
 
   ~CookieRetrieverNetworkService() {
-    auto cookies = std::make_unique<ProtocolCookieArray>();
+    auto cookies = std::make_unique<Array<Network::Cookie>>();
     for (const auto& entry : all_cookies_)
       cookies->emplace_back(BuildCookie(entry.second));
     callback_->sendSuccess(std::move(cookies));
@@ -835,6 +824,17 @@ NetworkHandler::~NetworkHandler() {
 }
 
 // static
+std::unique_ptr<Array<Network::Cookie>> NetworkHandler::BuildCookieArray(
+    const std::vector<net::CanonicalCookie>& cookie_list) {
+  auto cookies = std::make_unique<Array<Network::Cookie>>();
+
+  for (const net::CanonicalCookie& cookie : cookie_list)
+    cookies->emplace_back(BuildCookie(cookie));
+
+  return cookies;
+}
+
+// static
 net::Error NetworkHandler::NetErrorFromString(const std::string& error,
                                               bool* ok) {
   *ok = true;
@@ -1128,7 +1128,7 @@ void NetworkHandler::GetAllCookies(
       base::BindOnce(
           [](std::unique_ptr<GetAllCookiesCallback> callback,
              const std::vector<net::CanonicalCookie>& cookies) {
-            callback->sendSuccess(BuildCookieArray(cookies));
+            callback->sendSuccess(NetworkHandler::BuildCookieArray(cookies));
           },
           std::move(callback)));
 }
@@ -1176,14 +1176,11 @@ void NetworkHandler::SetCookie(const std::string& name,
           &SetCookieCallback::sendSuccess, std::move(callback))));
 }
 
+// static
 void NetworkHandler::SetCookies(
+    StoragePartition* storage_partition,
     std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
-    std::unique_ptr<SetCookiesCallback> callback) {
-  if (!storage_partition_) {
-    callback->sendFailure(Response::InternalError());
-    return;
-  }
-
+    base::OnceCallback<void(bool)> callback) {
   std::vector<std::unique_ptr<net::CanonicalCookie>> net_cookies;
   for (const std::unique_ptr<Network::CookieParam>& cookie : *cookies) {
     std::unique_ptr<net::CanonicalCookie> net_cookie =
@@ -1193,18 +1190,16 @@ void NetworkHandler::SetCookies(
             cookie->GetSecure(false), cookie->GetHttpOnly(false),
             cookie->GetSameSite(""), cookie->GetExpires(-1));
     if (!net_cookie) {
-      callback->sendFailure(Response::InvalidParams("Invalid cookie fields"));
+      std::move(callback).Run(false);
       return;
     }
     net_cookies.push_back(std::move(net_cookie));
   }
 
   base::RepeatingClosure barrier_closure = base::BarrierClosure(
-      net_cookies.size(),
-      base::BindOnce(&SetCookiesCallback::sendSuccess, std::move(callback)));
+      net_cookies.size(), base::BindOnce(std::move(callback), true));
 
-  auto* cookie_manager =
-      storage_partition_->GetCookieManagerForBrowserProcess();
+  auto* cookie_manager = storage_partition->GetCookieManagerForBrowserProcess();
   net::CookieOptions options;
   options.set_include_httponly();
   // Permit it to set a SameSite cookie if it wants to.
@@ -1218,6 +1213,28 @@ void NetworkHandler::SetCookies(
                net::CanonicalCookie::CookieInclusionStatus) { callback.Run(); },
             barrier_closure));
   }
+}
+
+void NetworkHandler::SetCookies(
+    std::unique_ptr<protocol::Array<Network::CookieParam>> cookies,
+    std::unique_ptr<SetCookiesCallback> callback) {
+  if (!storage_partition_) {
+    callback->sendFailure(Response::InternalError());
+    return;
+  }
+
+  NetworkHandler::SetCookies(
+      storage_partition_, std::move(cookies),
+      base::BindOnce(
+          [](std::unique_ptr<SetCookiesCallback> callback, bool success) {
+            if (success) {
+              callback->sendSuccess();
+            } else {
+              callback->sendFailure(
+                  Response::InvalidParams("Invalid cookie fields"));
+            }
+          },
+          std::move(callback)));
 }
 
 void NetworkHandler::DeleteCookies(

@@ -186,13 +186,10 @@ public class LayoutTab {
      * @param shouldStall           Whether the tab should display a desaturated thumbnail and
      *                              wait for the content layer to load.
      * @param canUseLiveTexture     Whether the tab can use a live texture when being displayed.
-     * @return True if the init requires the compositor to update.
      */
-    public boolean initFromHost(int backgroundColor, boolean shouldStall, boolean canUseLiveTexture,
+    public void initFromHost(int backgroundColor, boolean shouldStall, boolean canUseLiveTexture,
             int toolbarBackgroundColor, int textBoxBackgroundColor, float textBoxAlpha) {
         mBackgroundColor = backgroundColor;
-
-        boolean needsUpdate = false;
 
         mToolbarBackgroundColor = toolbarBackgroundColor;
         mTextBoxBackgroundColor = textBoxBackgroundColor;
@@ -200,8 +197,6 @@ public class LayoutTab {
         mShouldStall = shouldStall;
         mCanUseLiveTexture = canUseLiveTexture;
         mInitFromHostCalled = true;
-
-        return needsUpdate;
     }
 
     /**
@@ -683,9 +678,9 @@ public class LayoutTab {
             return null;
         }
         mClosePlacement.set(0, 0, CLOSE_BUTTON_WIDTH_DP, CLOSE_BUTTON_WIDTH_DP);
-        if (mCloseButtonIsOnRight)
+        if (mCloseButtonIsOnRight) {
             mClosePlacement.offset(getFinalContentWidth() - mClosePlacement.width(), 0.f);
-
+        }
         if (mClosePlacement.bottom > getFinalContentHeight()
                 || mClosePlacement.right > getFinalContentWidth()) {
             return null;

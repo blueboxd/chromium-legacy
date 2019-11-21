@@ -303,7 +303,7 @@
     },
     {
       name: "CloneableNativeFileSystemHandles",
-      status: "experimental",
+      status: {"Android": "test", "default": "experimental"},
       // NativeFileSystem is in Origin Trial, which doesn't support having
       // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
       // depends_on: ["NativeFileSystem"]
@@ -1020,9 +1020,6 @@
       name: "MediaSourceStable",
       status: "stable",
     },
-    {
-      name: "MergeBlockingNonBlockingPools",
-    },
     // Support for META tag for setting color-scheme used for opting into dark
     // UA theming and opting out of forced dark mode.
     // https://drafts.csswg.org/css-color-adjust/#color-scheme-meta
@@ -1069,7 +1066,7 @@
       // Also enabled when blink::features::kNativeFileSystemAPI is overridden
       // on the command line (or via chrome://flags).
       name: "NativeFileSystem",
-      status: "experimental",
+      status: {"Android": "test", "default": "experimental"},
       origin_trial_feature_name: "NativeFileSystem",
       origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
@@ -1559,7 +1556,8 @@
     {
       name: "SmsReceiver",
       origin_trial_feature_name: "SmsReceiver",
-      status: {"Android": "experimental", "default": "test"},
+      origin_trial_os: ["android"],
+      status: {"default": "experimental"},
     },
     // Used as argument in attribute of stable-release functions/interfaces
     // where a runtime-enabled feature name is required for correct IDL syntax.

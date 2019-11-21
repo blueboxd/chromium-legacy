@@ -156,9 +156,18 @@ static_library("router") {
         "providers/openscreen/network_service_quic_packet_writer.h",
         "providers/openscreen/platform/chrome_task_runner.cc",
         "providers/openscreen/platform/chrome_task_runner.h",
+        "providers/openscreen/platform/chrome_tls_client_connection.cc",
+        "providers/openscreen/platform/chrome_tls_client_connection.h",
+        "providers/openscreen/platform/chrome_tls_connection_factory.cc",
+        "providers/openscreen/platform/chrome_tls_connection_factory.h",
         "providers/openscreen/platform/chrome_udp_socket.cc",
         "providers/openscreen/platform/chrome_udp_socket.h",
         "providers/openscreen/platform/logging.cc",
+        "providers/openscreen/platform/mojo_data_pump.cc",
+        "providers/openscreen/platform/mojo_data_pump.h",
+        "providers/openscreen/platform/network_data_pump.h",
+        "providers/openscreen/platform/network_util.cc",
+        "providers/openscreen/platform/network_util.h",
         "providers/openscreen/platform/time.cc",
         "providers/openscreen/platform/trace_logging_platform.cc",
       ]
@@ -287,6 +296,9 @@ source_set("unittests") {
     sources += [
       "providers/openscreen/discovery/open_screen_listener_unittest.cc",
       "providers/openscreen/network_service_quic_packet_writer_unittest.cc",
+      "providers/openscreen/platform/chrome_tls_client_connection_unittest.cc",
+      "providers/openscreen/platform/chrome_tls_connection_factory_unittest.cc",
+      "providers/openscreen/platform/mojo_data_pump_unittest.cc",
     ]
   }
 

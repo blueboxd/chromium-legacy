@@ -60,8 +60,8 @@ struct RemoteDevice {
 
   bool operator==(const RemoteDevice& other) const;
 
-  // Compares devices via their public keys. Note that this function is
-  // necessary in order to use |RemoteDevice| as a key of a std::map.
+  // If at least one of the RemoteDevices has an Instance ID, compare by that;
+  // otherwise, compare by public key.
   bool operator<(const RemoteDevice& other) const;
 };
 

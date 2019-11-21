@@ -646,6 +646,12 @@ void AppListView::InitWidget(gfx::NativeView parent) {
   widget->GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
 
   widget->GetNativeView()->AddObserver(this);
+
+  // Directs A11y focus ring from search box view to AppListView's descendants
+  // (like ExpandArrowView) without focusing on the whole app list window when
+  // using search + arrow button.
+  search_box_view_->GetViewAccessibility().OverrideNextFocus(GetWidget());
+  search_box_view_->GetViewAccessibility().OverridePreviousFocus(GetWidget());
 }
 
 void AppListView::InitChildWidget() {
@@ -680,6 +686,12 @@ void AppListView::InitChildWidget() {
   search_box_widget->SetFocusTraversableParentView(search_box_focus_host);
   search_box_widget->SetFocusTraversableParent(
       GetWidget()->GetFocusTraversable());
+
+  // Directs A11y focus ring from AppListView's descendants (like
+  // ExpandArrowView) to search box view without focusing on the whole app list
+  // window when using search + arrow button.
+  GetViewAccessibility().OverrideNextFocus(search_box_widget);
+  GetViewAccessibility().OverridePreviousFocus(search_box_widget);
 }
 
 void AppListView::Show(bool is_side_shelf, bool is_tablet_mode) {

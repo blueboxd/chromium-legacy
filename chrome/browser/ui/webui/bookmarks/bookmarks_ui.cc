@@ -56,7 +56,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   webui::SetupBundledWebUIDataSource(source, "bookmarks.js",
                                      IDR_BOOKMARKS_BOOKMARKS_ROLLUP_JS,
-                                     IDR_BOOKMARKS_VULCANIZED_HTML);
+                                     IDR_BOOKMARKS_BOOKMARKS_HTML);
 #else
   webui::SetupWebUIDataSource(
       source, base::make_span(kBookmarksResources, kBookmarksResourcesSize),
@@ -67,10 +67,10 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   // NOTE: the undo shortcut is also defined in bookmarks/command_manager.js
   // TODO(crbug/893033): de-duplicate shortcut by moving all shortcut
   // definitions from JS to C++.
-  ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
+  ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
                                            IDS_UNDO_DESCRIPTION,
-                                           undoAccelerator.GetShortcutText()));
+                                           undo_accelerator.GetShortcutText()));
 
   // Localized strings (alphabetical order).
   static constexpr LocalizedString kStrings[] = {

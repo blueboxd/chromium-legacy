@@ -1833,8 +1833,8 @@ TYPED_TEST(VideoRendererPixelTest, SimpleYUVRectBlack) {
 }
 
 // First argument (test case prefix) is intentionally left empty.
-INSTANTIATE_TEST_SUITE_P(, VideoGLRendererPixelHiLoTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(, VideoSkiaRendererPixelHiLoTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, VideoGLRendererPixelHiLoTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, VideoSkiaRendererPixelHiLoTest, testing::Bool());
 
 TYPED_TEST(VideoRendererPixelTest, SimpleYUVJRect) {
   gfx::Rect rect(this->device_viewport_size_);

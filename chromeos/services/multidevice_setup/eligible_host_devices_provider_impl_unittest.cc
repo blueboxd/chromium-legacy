@@ -258,7 +258,7 @@ TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
   EXPECT_EQ(test_devices()[3], eligible_devices[3]);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MultiDeviceSetupEligibleHostDevicesProviderImplTest,
                          testing::Bool());
 

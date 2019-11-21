@@ -394,7 +394,8 @@ void ThreadGroupImpl::Start(
   DCHECK(workers_.empty());
 
   in_start().may_block_without_delay =
-      FeatureList::IsEnabled(kMayBlockWithoutDelay);
+      FeatureList::IsEnabled(kMayBlockWithoutDelay) &&
+      priority_hint_ == ThreadPriority::NORMAL;
   in_start().may_block_threshold =
       may_block_threshold ? may_block_threshold.value()
                           : (priority_hint_ == ThreadPriority::NORMAL

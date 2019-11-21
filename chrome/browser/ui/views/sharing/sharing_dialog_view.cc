@@ -156,7 +156,7 @@ std::unique_ptr<views::View> MaybeCreateImageView(
   return image_view;
 }
 
-std::unique_ptr<views::View> CreateFootnoteView(
+std::unique_ptr<views::View> CreateHelpOrOriginView(
     const SharingDialogData& data,
     content::WebContents* web_contents,
     views::StyledLabelListener* listener) {
@@ -181,7 +181,7 @@ SharingDialogView::SharingDialogView(views::View* anchor_view,
       data_(std::move(data)) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::SetFootnoteView(
-      ::CreateFootnoteView(data_, web_contents, this));
+      CreateHelpOrOriginView(data_, web_contents, this));
 }
 
 SharingDialogView::~SharingDialogView() = default;

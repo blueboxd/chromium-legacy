@@ -41,12 +41,12 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   // receive video frames when the source delivers frames to the track.
   static blink::WebMediaStreamTrack CreateVideoTrack(
       MediaStreamVideoSource* source,
-      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
   static blink::WebMediaStreamTrack CreateVideoTrack(
       const blink::WebString& id,
       MediaStreamVideoSource* source,
-      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
   static blink::WebMediaStreamTrack CreateVideoTrack(
       MediaStreamVideoSource* source,
@@ -54,7 +54,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
       const base::Optional<bool>& noise_reduction,
       bool is_screencast,
       const base::Optional<double>& min_frame_rate,
-      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
 
   static MediaStreamVideoTrack* GetVideoTrack(
@@ -63,7 +63,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
   // Constructors for video tracks.
   MediaStreamVideoTrack(
       MediaStreamVideoSource* source,
-      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
   MediaStreamVideoTrack(
       MediaStreamVideoSource* source,
@@ -71,7 +71,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoTrack
       const base::Optional<bool>& noise_reduction,
       bool is_screen_cast,
       const base::Optional<double>& min_frame_rate,
-      const MediaStreamVideoSource::ConstraintsCallback& callback,
+      MediaStreamVideoSource::ConstraintsOnceCallback callback,
       bool enabled);
   ~MediaStreamVideoTrack() override;
 

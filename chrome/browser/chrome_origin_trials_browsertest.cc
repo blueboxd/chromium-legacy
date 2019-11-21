@@ -124,7 +124,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOriginTrialsDisabledFeaturesTest,
   EXPECT_EQ(GetParam().expected_switch, actual);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ChromeOriginTrialsDisabledFeaturesTest,
                          ::testing::ValuesIn(kDisabledFeaturesTests));
 
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_P(ChromeOriginTrialsDisabledTokensTest,
   EXPECT_EQ(GetParam().expected_switch, actual);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ChromeOriginTrialsDisabledTokensTest,
                          ::testing::ValuesIn(kDisabledTokensTests));
 

@@ -2364,7 +2364,7 @@ TEST_P(ResponseAnalyzerTest, CORBProtectionLogging) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ResponseAnalyzerTest,
                          ::testing::ValuesIn(kScenarios));
 

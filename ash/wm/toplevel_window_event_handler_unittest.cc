@@ -17,10 +17,12 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test_shell_delegate.h"
 #include "ash/window_factory.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -29,6 +31,7 @@
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -1030,7 +1033,7 @@ class ToplevelWindowEventHandlerBackGestureTest : public AshTestBase {
 
     feature_list_.InitAndEnableFeature(
         ash::features::kSwipingFromLeftEdgeToGoBack);
-    top_window_ = CreateTestWindow();
+    top_window_ = CreateAppWindow(gfx::Rect(), AppType::BROWSER);
     TabletModeControllerTestApi().EnterTabletMode();
   }
 
@@ -1078,6 +1081,8 @@ class ToplevelWindowEventHandlerBackGestureTest : public AshTestBase {
     ui::Event::DispatcherApi(&event).set_target(top_window_.get());
     ash::Shell::Get()->toplevel_window_event_handler()->OnTouchEvent(&event);
   }
+
+  aura::Window* top_window() { return top_window_.get(); }
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -1157,12 +1162,26 @@ TEST_F(ToplevelWindowEventHandlerBackGestureTest, GoBackInOverviewMode) {
   ui::TestAcceleratorTarget target_back_press, target_back_release;
   RegisterBackPressAndRelease(&target_back_press, &target_back_release);
 
+  ash_test_helper()->test_shell_delegate()->SetCanGoBack(false);
+  ASSERT_FALSE(WindowState::Get(top_window())->IsMinimized());
+  ASSERT_TRUE(TabletModeWindowManager::ShouldMinimizeTopWindowOnBack());
+  GetEventGenerator()->GestureScrollSequence(
+      gfx::Point(0, 100), gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
+      base::TimeDelta::FromMilliseconds(100), 3);
+  // Should trigger window minimize instead of go back.
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+  EXPECT_TRUE(WindowState::Get(top_window())->IsMinimized());
+
+  WindowState::Get(top_window())->Unminimize();
+  ASSERT_FALSE(WindowState::Get(top_window())->IsMinimized());
   auto* shell = Shell::Get();
   shell->overview_controller()->StartOverview();
   ASSERT_TRUE(shell->overview_controller()->InOverviewSession());
   GetEventGenerator()->GestureScrollSequence(
       gfx::Point(0, 100), gfx::Point(kSwipingDistanceForGoingBack + 10, 100),
       base::TimeDelta::FromMilliseconds(100), 3);
+  // Should trigger go back instead of minimize the window since it is in
+  // overview mode.
   EXPECT_EQ(1, target_back_release.accelerator_count());
 }
 

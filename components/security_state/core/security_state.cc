@@ -54,6 +54,12 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
   return input_events.insecure_field_edited ? DANGEROUS : WARNING;
 }
 
+SecurityLevel GetSecurityLevelForDisplayedMixedContent() {
+  if (base::FeatureList::IsEnabled(features::kPassiveMixedContentWarning))
+    return kDisplayedInsecureContentWarningLevel;
+  return kDisplayedInsecureContentLevel;
+}
+
 std::string GetHistogramSuffixForSecurityLevel(
     security_state::SecurityLevel level) {
   switch (level) {
@@ -214,8 +220,11 @@ SecurityLevel GetSecurityLevel(
   DCHECK(!visible_security_state.ran_mixed_content);
   DCHECK(!visible_security_state.ran_content_with_cert_errors);
 
+  if (visible_security_state.displayed_mixed_content) {
+    return GetSecurityLevelForDisplayedMixedContent();
+  }
+
   if (visible_security_state.contained_mixed_form ||
-      visible_security_state.displayed_mixed_content ||
       visible_security_state.displayed_content_with_cert_errors) {
     return kDisplayedInsecureContentLevel;
   }
@@ -367,6 +376,11 @@ bool ShouldDowngradeNeutralStyling(
   // mixed content. These pages currently use the NONE security state, but
   // this is undergoing a refactor.
   if (security_level == security_state::NONE && scheme_is_cryptographic)
+    return true;
+
+  // data: URLs should continue to have danger warnings even though data: is
+  // considered a secure origin.
+  if (url.SchemeIs(url::kDataScheme))
     return true;
 
   // The info icon should be used on non-HTTPS secure origins, but other

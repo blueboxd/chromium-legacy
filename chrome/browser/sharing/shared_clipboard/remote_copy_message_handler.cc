@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/guid.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,6 +56,24 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
             policy_exception_justification:
               "Can be controlled via Chrome sign-in."
           })");
+
+base::string16 GetTextNotificationTitle(const std::string& device_name) {
+  return device_name.empty()
+             ? l10n_util::GetStringUTF16(
+                   IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT_UNKNOWN_DEVICE)
+             : l10n_util::GetStringFUTF16(
+                   IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_TEXT_CONTENT,
+                   base::UTF8ToUTF16(device_name));
+}
+
+base::string16 GetImageNotificationTitle(const std::string& device_name) {
+  return device_name.empty()
+             ? l10n_util::GetStringUTF16(
+                   IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT_UNKNOWN_DEVICE)
+             : l10n_util::GetStringFUTF16(
+                   IDS_SHARING_REMOTE_COPY_NOTIFICATION_TITLE_IMAGE_CONTENT,
+                   base::UTF8ToUTF16(device_name));
+}
 }  // namespace
 
 RemoteCopyMessageHandler::RemoteCopyMessageHandler(Profile* profile)
@@ -100,7 +118,7 @@ void RemoteCopyMessageHandler::HandleText(const std::string& text) {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(base::UTF8ToUTF16(text));
   }
-  ShowNotification();
+  ShowNotification(GetTextNotificationTitle(device_name_));
   Finish(RemoteCopyHandleMessageResult::kSuccessHandledText);
 }
 
@@ -169,7 +187,7 @@ void RemoteCopyMessageHandler::OnImageDecoded(const SkBitmap& decoded_image) {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteImage(decoded_image);
   }
-  ShowNotification();
+  ShowNotification(GetImageNotificationTitle(device_name_));
   Finish(RemoteCopyHandleMessageResult::kSuccessHandledImage);
 }
 
@@ -177,27 +195,20 @@ void RemoteCopyMessageHandler::OnDecodeImageFailed() {
   Finish(RemoteCopyHandleMessageResult::kFailureDecodeImageFailed);
 }
 
-void RemoteCopyMessageHandler::ShowNotification() {
+void RemoteCopyMessageHandler::ShowNotification(const base::string16& title) {
   std::string notification_id = base::GenerateGUID();
 
-  // TODO(mvanouwerkerk): Adjust notification text and icon once we have mocks.
-  base::string16 notification_title =
-      device_name_.empty()
-          ? l10n_util::GetStringUTF16(
-                IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE_UNKNOWN_DEVICE)
-          : l10n_util::GetStringFUTF16(
-                IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
-                base::UTF8ToUTF16(device_name_));
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.vector_small_image = &kSendTabToSelfIcon;
 
   message_center::Notification notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      notification_title,
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
       l10n_util::GetStringUTF16(
-          IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_DESCRIPTION),
+          IDS_SHARING_REMOTE_COPY_NOTIFICATION_DESCRIPTION),
       /*icon=*/gfx::Image(),
       /*display_source=*/base::string16(),
       /*origin_url=*/GURL(), message_center::NotifierId(),
-      message_center::RichNotificationData(),
+      rich_notification_data,
       /*delegate=*/nullptr);
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(

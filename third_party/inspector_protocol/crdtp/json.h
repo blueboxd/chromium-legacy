@@ -5,14 +5,7 @@
 #ifndef CRDTP_JSON_H_
 #define CRDTP_JSON_H_
 
-#include <algorithm>
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <limits>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "export.h"
 #include "json_platform.h"
@@ -30,11 +23,11 @@ namespace json {
 // Except for calling the HandleError routine at any time, the client
 // code must call the Handle* methods in an order in which they'd occur
 // in valid JSON; otherwise we may crash (the code uses assert).
-CRDTP_EXPORT std::unique_ptr<StreamingParserHandler> NewJSONEncoder(
+CRDTP_EXPORT std::unique_ptr<ParserHandler> NewJSONEncoder(
     const Platform* platform,
     std::vector<uint8_t>* out,
     Status* status);
-CRDTP_EXPORT std::unique_ptr<StreamingParserHandler>
+CRDTP_EXPORT std::unique_ptr<ParserHandler>
 NewJSONEncoder(const Platform* platform, std::string* out, Status* status);
 
 // =============================================================================
@@ -43,10 +36,10 @@ NewJSONEncoder(const Platform* platform, std::string* out, Status* status);
 
 CRDTP_EXPORT void ParseJSON(const Platform& platform,
                             span<uint8_t> chars,
-                            StreamingParserHandler* handler);
+                            ParserHandler* handler);
 CRDTP_EXPORT void ParseJSON(const Platform& platform,
                             span<uint16_t> chars,
-                            StreamingParserHandler* handler);
+                            ParserHandler* handler);
 
 // =============================================================================
 // json::ConvertCBORToJSON, json::ConvertJSONToCBOR - for transcoding

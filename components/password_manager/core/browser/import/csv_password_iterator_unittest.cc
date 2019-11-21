@@ -49,8 +49,8 @@ TEST(CSVPasswordIteratorTest, Operations) {
   EXPECT_NE(dummy, iter);
   CSVPasswordIterator same_as_iter(kColMap, kCSV);
   EXPECT_EQ(same_as_iter, iter);
-  const std::string kCSVCopy(kCSV);
-  CSVPasswordIterator same_looking(kColMap, kCSVCopy);
+  const CSVPassword::ColumnMap kColMapCopy = kColMap;
+  CSVPasswordIterator same_looking(kColMapCopy, kCSV);
   EXPECT_NE(same_looking, iter);
   CSVPasswordIterator old = iter++;
   EXPECT_NE(old, iter);

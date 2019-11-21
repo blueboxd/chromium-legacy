@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview A composite TTS sends allows ChromeVox to use
- * multiple TTS engines at the same time.
+ * @fileoverview A composite TTS allows ChromeVox to use multiple TTS engines at
+ * the same time.
  *
  */
 
@@ -124,4 +124,11 @@ CompositeTts.prototype.toggleSpeechOnOrOff = function() {
     value = value || engine.toggleSpeechOnOrOff();
   });
   return value;
+};
+
+/** @override */
+CompositeTts.prototype.resetTextToSpeechSettings = function() {
+  this.ttsEngines_.forEach(function(engine) {
+    engine.resetTextToSpeechSettings();
+  });
 };

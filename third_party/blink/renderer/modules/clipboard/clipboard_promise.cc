@@ -282,7 +282,12 @@ void ClipboardPromise::RequestPermission(
   DCHECK(permission == mojom::blink::PermissionName::CLIPBOARD_READ ||
          permission == mojom::blink::PermissionName::CLIPBOARD_WRITE);
 
-  if (!IsFocusedDocument(ExecutionContext::From(script_state_))) {
+  ExecutionContext* context = ExecutionContext::From(script_state_);
+  DCHECK(context);
+  const Document& document = *To<Document>(context);
+  DCHECK(document.IsSecureContext());  // [SecureContext] in IDL
+
+  if (!document.hasFocus()) {
     script_promise_resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotAllowedError, "Document is not focused."));
     return;
@@ -314,14 +319,6 @@ scoped_refptr<base::SingleThreadTaskRunner> ClipboardPromise::GetTaskRunner() {
   // Get the User Interaction task runner, as Async Clipboard API calls require
   // user interaction, as specified in https://w3c.github.io/clipboard-apis/
   return GetExecutionContext()->GetTaskRunner(TaskType::kUserInteraction);
-}
-
-bool ClipboardPromise::IsFocusedDocument(ExecutionContext* context) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(context);
-  DCHECK(context->IsSecureContext());  // [SecureContext] in IDL
-  Document* doc = To<Document>(context);
-  return doc && doc->hasFocus();
 }
 
 void ClipboardPromise::Trace(blink::Visitor* visitor) {

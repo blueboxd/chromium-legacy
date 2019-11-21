@@ -819,7 +819,8 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
   }
 
   remote_device_provider_ = RemoteDeviceProviderImpl::Factory::NewInstance(
-      cryptauth_device_manager_.get(), primary_account_info_.account_id,
+      cryptauth_device_manager_.get(), cryptauth_v2_device_manager_.get(),
+      primary_account_info_.account_id,
       cryptauth_enrollment_manager_->GetUserPrivateKey());
   remote_device_provider_->AddObserver(this);
 

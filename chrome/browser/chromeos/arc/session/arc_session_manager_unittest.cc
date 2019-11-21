@@ -1104,7 +1104,7 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ArcSessionManagerPolicyTest,
     // testing::Values is incompatible with move-only types, hence ints are used
     // as a proxy for base::Value.
@@ -1301,7 +1301,7 @@ class ArcSessionOobeOptInNegotiatorTest
   DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ArcSessionOobeOptInNegotiatorTest,
                          ::testing::Values(true, false));
 
@@ -1460,7 +1460,7 @@ class ArcSessionRetryTest
   DISALLOW_COPY_AND_ASSIGN(ArcSessionRetryTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ArcSessionRetryTest,
                          ::testing::ValuesIn(kRetryTestCases));
 

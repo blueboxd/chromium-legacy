@@ -10,6 +10,7 @@ mojom("test_interfaces") {
   testonly = true
   sources = [
     "constants.test-mojom",
+    "enums.test-mojom",
     "module.test-mojom",
   ]
   use_typescript_sources = true

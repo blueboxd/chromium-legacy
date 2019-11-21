@@ -36,6 +36,7 @@ class UserItemButton : public views::Button, public views::ButtonListener {
 
   // views::Button:
   base::string16 GetTooltipText(const gfx::Point& p) const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

@@ -617,3 +617,36 @@ python crlsetutil.py -o ../certificates/crlset_by_leaf_subject_no_spki.raw \
   }
 }
 CRLSETBYLEAFSUBJECTNOSPKI
+
+## Mark a given root as blocked for interception.
+python crlsetutil.py -o \
+  ../certificates/crlset_blocked_interception_by_root.raw \
+<<CRLSETINTERCEPTIONBYROOT
+{
+  "BlockedInterceptionSPKIs": [
+    "../certificates/root_ca_cert.pem"
+  ]
+}
+CRLSETINTERCEPTIONBYROOT
+
+## Mark a given intermediate as blocked for interception.
+python crlsetutil.py -o \
+  ../certificates/crlset_blocked_interception_by_intermediate.raw \
+<<CRLSETINTERCEPTIONBYINTERMEDIATE
+{
+  "BlockedInterceptionSPKIs": [
+    "../certificates/intermediate_ca_cert.pem"
+  ]
+}
+CRLSETINTERCEPTIONBYINTERMEDIATE
+
+## Mark a given root as known for interception, but not blocked.
+python crlsetutil.py -o \
+  ../certificates/crlset_known_interception_by_root.raw \
+<<CRLSETINTERCEPTIONBYROOT
+{
+  "KnownInterceptionSPKIs": [
+    "../certificates/root_ca_cert.pem"
+  ]
+}
+CRLSETINTERCEPTIONBYROOT

@@ -438,7 +438,7 @@ public class AccountManagerFacade {
      * @return The OAuth2 access token as a string.
      */
     @WorkerThread
-    String getAccessToken(Account account, String scope) throws AuthException {
+    public String getAccessToken(Account account, String scope) throws AuthException {
         assert account != null;
         assert scope != null;
         // TODO(bsazonov): Rename delegate's getAuthToken to getAccessToken.
@@ -451,7 +451,7 @@ public class AccountManagerFacade {
      * @param accessToken The access token to invalidate.
      */
     @WorkerThread
-    void invalidateAccessToken(String accessToken) throws AuthException {
+    public void invalidateAccessToken(String accessToken) throws AuthException {
         assert accessToken != null;
         // TODO(bsazonov): Rename delegate's invalidateAuthToken to invalidateAccessToken.
         mDelegate.invalidateAuthToken(accessToken);

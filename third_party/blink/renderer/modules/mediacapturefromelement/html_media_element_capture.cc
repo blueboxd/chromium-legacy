@@ -66,7 +66,7 @@ bool AddVideoTrackToMediaStream(
       media::VideoFacingMode::MEDIA_VIDEO_FACING_NONE,
       false /* is_device_capture */));
   web_media_stream->AddTrack(MediaStreamVideoTrack::CreateVideoTrack(
-      media_stream_source, MediaStreamVideoSource::ConstraintsCallback(),
+      media_stream_source, MediaStreamVideoSource::ConstraintsOnceCallback(),
       true));
   return true;
 }

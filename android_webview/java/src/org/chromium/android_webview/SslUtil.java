@@ -30,6 +30,7 @@ class SslUtil {
                 return new SslError(SslError.SSL_IDMISMATCH, cert, url);
             case NetError.ERR_CERT_DATE_INVALID:
                 return new SslError(SslError.SSL_DATE_INVALID, cert, url);
+            case NetError.ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
             case NetError.ERR_CERT_AUTHORITY_INVALID:
                 return new SslError(SslError.SSL_UNTRUSTED, cert, url);
             default:

@@ -97,10 +97,10 @@ CloudPolicyClientRegistrationHelper::~CloudPolicyClientRegistrationHelper() {
 void CloudPolicyClientRegistrationHelper::StartRegistration(
     signin::IdentityManager* identity_manager,
     const CoreAccountId& account_id,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DVLOG(1) << "Starting registration process with account_id";
   DCHECK(!client_->is_registered());
-  callback_ = callback;
+  callback_ = std::move(callback);
   client_->AddObserver(this);
 
   identity_manager_helper_.reset(new IdentityManagerHelper());
@@ -113,10 +113,10 @@ void CloudPolicyClientRegistrationHelper::StartRegistration(
 void CloudPolicyClientRegistrationHelper::StartRegistrationWithEnrollmentToken(
     const std::string& token,
     const std::string& client_id,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   DVLOG(1) << "Starting registration process with enrollment token";
   DCHECK(!client_->is_registered());
-  callback_ = callback;
+  callback_ = std::move(callback);
   client_->AddObserver(this);
   client_->RegisterWithToken(token, client_id);
 }
@@ -201,7 +201,7 @@ void CloudPolicyClientRegistrationHelper::RequestCompleted() {
     client_->RemoveObserver(this);
     // |client_| may be freed by the callback so clear it now.
     client_ = nullptr;
-    callback_.Run();
+    std::move(callback_).Run();
   }
 }
 

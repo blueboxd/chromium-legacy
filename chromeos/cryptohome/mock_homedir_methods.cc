@@ -34,14 +34,12 @@ void MockHomedirMethods::SetUp(bool success, MountError return_code) {
       WithArgs<3>(Invoke(this, &MockHomedirMethods::DoCallback)));
 }
 
-void MockHomedirMethods::DoCallback(const Callback& callback) {
-  callback.Run(success_, return_code_);
+void MockHomedirMethods::DoCallback(Callback callback) {
+  std::move(callback).Run(success_, return_code_);
 }
 
-void MockHomedirMethods::DoAddKeyCallback(const Callback& callback) {
-  callback.Run(success_, return_code_);
-  if (!on_add_key_called_.is_null())
-    on_add_key_called_.Run();
+void MockHomedirMethods::DoAddKeyCallback(Callback callback) {
+  std::move(callback).Run(success_, return_code_);
 }
 
 }  // namespace cryptohome

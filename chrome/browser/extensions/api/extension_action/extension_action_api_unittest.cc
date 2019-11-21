@@ -101,7 +101,7 @@ TEST_P(ExtensionActionAPIUnitTest, MultiIcons) {
   EXPECT_EQ("icon38.png", icons.Get(38, ExtensionIconSet::MATCH_EXACTLY));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionAPIUnitTest,
                          testing::Values(TestActionType::kBrowser,
                                          TestActionType::kPage));

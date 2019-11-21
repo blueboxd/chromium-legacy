@@ -58,12 +58,10 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
                 getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
         mPermissionDelegate =
                 new ActivityAndroidPermissionDelegate(new WeakReference<Activity>(this));
-        DownloadManagerUiConfig config =
-                new DownloadManagerUiConfig.Builder()
-                        .setIsOffTheRecord(isOffTheRecord)
-                        .setIsSeparateActivity(true)
-                        .setShowOfflineHome(DownloadUtils.shouldShowOfflineHome())
-                        .build();
+        DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder()
+                                                 .setIsOffTheRecord(isOffTheRecord)
+                                                 .setIsSeparateActivity(true)
+                                                 .build();
 
         mModalDialogManager = new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);

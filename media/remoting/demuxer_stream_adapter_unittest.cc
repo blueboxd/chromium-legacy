@@ -36,9 +36,9 @@ class MockDemuxerStreamAdapter {
       DemuxerStream* demuxer_stream,
       mojom::RemotingDataStreamSenderPtrInfo stream_sender_info,
       mojo::ScopedDataPipeProducerHandle producer_handle) {
-    rpc_broker_.reset(
-        new RpcBroker(base::Bind(&MockDemuxerStreamAdapter::OnSendMessageToSink,
-                                 weak_factory_.GetWeakPtr())));
+    rpc_broker_.reset(new RpcBroker(
+        base::BindRepeating(&MockDemuxerStreamAdapter::OnSendMessageToSink,
+                            weak_factory_.GetWeakPtr())));
     demuxer_stream_adapter_.reset(new DemuxerStreamAdapter(
         std::move(main_task_runner), std::move(media_task_runner), name,
         demuxer_stream, rpc_broker_->GetWeakPtr(),

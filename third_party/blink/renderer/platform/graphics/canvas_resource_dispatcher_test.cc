@@ -280,5 +280,7 @@ const TestParams kTestCases[] = {
     {true, false},
     {true, true}};
 
-INSTANTIATE_TEST_SUITE_P(, CanvasResourceDispatcherTest, ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(All,
+                         CanvasResourceDispatcherTest,
+                         ValuesIn(kTestCases));
 }  // namespace blink

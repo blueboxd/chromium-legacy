@@ -6,9 +6,12 @@
 #import <XCTest/XCTest.h>
 
 #include "base/bind.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "components/variations/variations_http_header_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_app_interface.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -40,6 +43,11 @@ const char kPage2[] = "This is the second page";
 const char kPage2Title[] = "Title 2";
 const char kPage2URL[] = "/page2.html";
 
+// Web page to try X-Client-Data header.
+const char kHeaderPageURL[] = "/page3.html";
+const char kHeaderPageSuccess[] = "header found!";
+const char kHeaderPageFailure[] = "header failure";
+
 // Provides responses for the different pages.
 std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     const net::test_server::HttpRequest& request) {
@@ -58,6 +66,15 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
     http_response->set_content(
         "<html><head><title>" + std::string(kPage2Title) +
         "</title></head><body>" + std::string(kPage2) + "</body></html>");
+    return std::move(http_response);
+  }
+
+  if (request.relative_url == kHeaderPageURL) {
+    std::string result = kHeaderPageFailure;
+    if (request.headers.find("X-Client-Data") != request.headers.end()) {
+      result = kHeaderPageSuccess;
+    }
+    http_response->set_content("<html><body>" + result + "</body></html>");
     return std::move(http_response);
   }
 
@@ -108,6 +125,56 @@ id<GREYMatcher> SearchCopiedTextButton() {
 }
 
 }  //  namespace
+
+@interface OmniboxTestCase : ChromeTestCase
+@end
+
+@implementation OmniboxTestCase
+
+- (void)setUp {
+  [super setUp];
+
+  // Start a server to be able to navigate to a web page.
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+}
+
+// Tests that the XClientData header is sent when navigating to
+// https://google.com through the omnibox.
+- (void)testXClientData {
+  // Rewrite the google URL to localhost URL.
+  [OmniboxAppInterface rewriteGoogleURLToLocalhost];
+
+  // Force variations to send the requests.
+  GREYAssertEqual(
+      variations::VariationsHttpHeaderProvider::ForceIdsResult::SUCCESS,
+      variations::VariationsHttpHeaderProvider::GetInstance()
+          ->ForceVariationIds(
+              /*variation_ids=*/{"100"}, /*command_line_variation_ids=*/""),
+      @"Variation not enabled.");
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+      performAction:grey_tap()];
+  [ChromeEarlGrey
+      waitForSufficientlyVisibleElementWithMatcher:chrome_test_util::Omnibox()];
+
+  // The headers are only sent with https requests.
+  GURL::Replacements httpsReplacements;
+  httpsReplacements.SetSchemeStr(url::kHttpsScheme);
+
+  NSString* URL = base::SysUTF8ToNSString(
+      self.testServer->GetURL("www.google.com", kHeaderPageURL)
+          .ReplaceComponents(httpsReplacements)
+          .spec());
+
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      performAction:grey_typeText([NSString stringWithFormat:@"%@\n", URL])];
+
+  [ChromeEarlGrey waitForWebStateContainingText:kHeaderPageSuccess];
+}
+
+@end
 
 #pragma mark - Steady state tests
 

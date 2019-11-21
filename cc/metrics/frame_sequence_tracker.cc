@@ -18,9 +18,9 @@
 // This macro is used with DCHECK to provide addition debug info.
 #if DCHECK_IS_ON()
 #define TRACKER_TRACE_STREAM frame_sequence_trace_
-#define TRACKER_DCHECK_MSG                                      \
-  " in " << kFrameSequenceTrackerTypeNames[this->type_]         \
-         << " tracker: " << frame_sequence_trace_.str() << " (" \
+#define TRACKER_DCHECK_MSG                                                 \
+  " in " << GetFrameSequenceTrackerTypeName(static_cast<int>(this->type_)) \
+         << " tracker: " << frame_sequence_trace_.str() << " ("            \
          << frame_sequence_trace_.str().size() << ")";
 #else
 #define TRACKER_TRACE_STREAM EAT_STREAM_PARAMETERS
@@ -29,17 +29,29 @@
 
 namespace cc {
 
-constexpr const char* FrameSequenceTracker::kFrameSequenceTrackerTypeNames[] = {
-    [FrameSequenceTrackerType::kCompositorAnimation] = "CompositorAnimation",
-    [FrameSequenceTrackerType::kMainThreadAnimation] = "MainThreadAnimation",
-    [FrameSequenceTrackerType::kPinchZoom] = "PinchZoom",
-    [FrameSequenceTrackerType::kRAF] = "RAF",
-    [FrameSequenceTrackerType::kTouchScroll] = "TouchScroll",
-    [FrameSequenceTrackerType::kUniversal] = "Universal",
-    [FrameSequenceTrackerType::kVideo] = "Video",
-    [FrameSequenceTrackerType::kWheelScroll] = "WheelScroll",
-    [FrameSequenceTrackerType::kMaxType] = "",
-};
+const char* FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
+    int type_index) {
+  switch (type_index) {
+    case static_cast<int>(FrameSequenceTrackerType::kCompositorAnimation):
+      return "CompositorAnimation";
+    case static_cast<int>(FrameSequenceTrackerType::kMainThreadAnimation):
+      return "MainThreadAnimation";
+    case static_cast<int>(FrameSequenceTrackerType::kPinchZoom):
+      return "PinchZoom";
+    case static_cast<int>(FrameSequenceTrackerType::kRAF):
+      return "RAF";
+    case static_cast<int>(FrameSequenceTrackerType::kTouchScroll):
+      return "TouchScroll";
+    case static_cast<int>(FrameSequenceTrackerType::kUniversal):
+      return "Universal";
+    case static_cast<int>(FrameSequenceTrackerType::kVideo):
+      return "Video";
+    case static_cast<int>(FrameSequenceTrackerType::kWheelScroll):
+      return "WheelScroll";
+    default:
+      return "";
+  }
+}
 
 namespace {
 
@@ -53,8 +65,7 @@ enum class ThreadType {
   kSlower,
 };
 
-constexpr int kBuiltinSequenceNum =
-    base::size(FrameSequenceTracker::kFrameSequenceTrackerTypeNames);
+constexpr int kBuiltinSequenceNum = FrameSequenceTrackerType::kMaxType + 1;
 constexpr int kMaximumHistogramIndex = 3 * kBuiltinSequenceNum;
 
 int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
@@ -66,22 +77,22 @@ int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
 }
 
 std::string GetCheckerboardingHistogramName(FrameSequenceTrackerType type) {
-  return base::StrCat(
-      {"Graphics.Smoothness.Checkerboarding.",
-       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[type]});
+  return base::StrCat({"Graphics.Smoothness.Checkerboarding.",
+                       FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
+                           static_cast<int>(type))});
 }
 
 std::string GetThroughputHistogramName(FrameSequenceTrackerType type,
                                        const char* thread_name) {
-  return base::StrCat(
-      {"Graphics.Smoothness.Throughput.", thread_name, ".",
-       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[type]});
+  return base::StrCat({"Graphics.Smoothness.Throughput.", thread_name, ".",
+                       FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
+                           static_cast<int>(type))});
 }
 
 std::string GetFrameSequenceLengthHistogramName(FrameSequenceTrackerType type) {
-  return base::StrCat(
-      {"Graphics.Smoothness.FrameSequenceLength.",
-       FrameSequenceTracker::kFrameSequenceTrackerTypeNames[type]});
+  return base::StrCat({"Graphics.Smoothness.FrameSequenceLength.",
+                       FrameSequenceTracker::GetFrameSequenceTrackerTypeName(
+                           static_cast<int>(type))});
 }
 
 }  // namespace
@@ -229,8 +240,7 @@ FrameSequenceTracker::FrameSequenceTracker(FrameSequenceTrackerType type)
   DCHECK_LT(type_, FrameSequenceTrackerType::kMaxType);
   TRACE_EVENT_ASYNC_BEGIN1(
       "cc,benchmark", "FrameSequenceTracker", this, "name",
-      TRACE_STR_COPY(
-          FrameSequenceTracker::kFrameSequenceTrackerTypeNames[type_]));
+      TRACE_STR_COPY(GetFrameSequenceTrackerTypeName(static_cast<int>(type_))));
 }
 
 FrameSequenceTracker::~FrameSequenceTracker() {
@@ -512,7 +522,7 @@ void FrameSequenceTracker::UpdateTrackedFrameData(TrackedFrameData* frame_data,
                                                   uint64_t sequence_number) {
   if (frame_data->previous_sequence &&
       frame_data->previous_source == source_id) {
-    uint8_t current_latency = sequence_number - frame_data->previous_sequence;
+    uint32_t current_latency = sequence_number - frame_data->previous_sequence;
     frame_data->previous_sequence_delta = current_latency;
   } else {
     frame_data->previous_sequence_delta = 1;

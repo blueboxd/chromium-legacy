@@ -697,7 +697,7 @@ TEST(TimerTest, ContinuationReset) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TimerTestWithThreadType,
                          testing::ValuesIn(testing_main_threads));
 

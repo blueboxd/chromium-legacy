@@ -66,6 +66,7 @@
   "ignore-gpu-blacklist",
   "ignore-previews-blocklist",
   "in-product-help-demo-mode-choice",
+  "instant-tethering",
   "list-all-display-modes",
   "load-media-router-component-extension",
   "media-router-cast-allow-all-ips",

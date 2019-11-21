@@ -165,10 +165,7 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
 }
 
 void OmniboxPopupModel::ResetToInitialState() {
-  const AutocompleteResult& result = this->result();
-  size_t new_line = kNoMatch;
-  if (result.default_match() != result.end())
-    new_line = result.default_match() - result.begin();
+  size_t new_line = result().default_match() ? 0 : kNoMatch;
   SetSelectedLine(new_line, true, false);
   view_->OnDragCanceled();
 }
@@ -248,14 +245,8 @@ void OmniboxPopupModel::OnResultChanged() {
   size_t old_selected_line = selected_line_;
   has_selected_match_ = false;
 
-  if (result.default_match() == result.end()) {
-    selected_line_ = kNoMatch;
-    selected_line_state_ = NORMAL;
-  } else {
-    // TODO(tommycli): The default match is always in the first position. After
-    // we cement these semantics, we should just set selected_line_ to 0.
-    selected_line_ =
-        static_cast<size_t>(result.default_match() - result.begin());
+  if (result.default_match()) {
+    selected_line_ = 0;
 
     // If selected line state was |BUTTON_FOCUSED| and nothing has changed,
     // leave it.
@@ -267,6 +258,9 @@ void OmniboxPopupModel::OnResultChanged() {
         result.match_at(selected_line_).destination_url != old_focused_url_;
     if (!has_focused_match || has_changed)
       selected_line_state_ = NORMAL;
+  } else {
+    selected_line_ = kNoMatch;
+    selected_line_state_ = NORMAL;
   }
 
   bool popup_was_open = view_->IsOpen();

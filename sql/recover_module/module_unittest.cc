@@ -281,7 +281,7 @@ TEST_P(RecoverModuleColumnTypeMappingTest, StrictNotNull) {
   EXPECT_FALSE(column_info.is_auto_incremented);
 }
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     RecoverModuleColumnTypeMappingTest,
     ::testing::Values(std::make_tuple("TEXT", "TEXT", false),
                       std::make_tuple("INTEGER", "INTEGER", false),

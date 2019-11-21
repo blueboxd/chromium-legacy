@@ -210,6 +210,8 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
 
   const std::set<std::string>& GetCommittedHistoryURLs() const;
 
+  std::string GetStoreBirthday() const;
+
   // Returns the current FakeServer as a WeakPtr.
   base::WeakPtr<FakeServer> AsWeakPtr();
 

@@ -99,6 +99,8 @@ class ArcIntentHelperBridge : public KeyedService,
   void CloseCameraApp() override;
   void IsChromeAppEnabled(arc::mojom::ChromeApp app,
                           IsChromeAppEnabledCallback callback) override;
+  void OnPreferredAppsChanged(std::vector<IntentFilter> added,
+                              std::vector<IntentFilter> deleted) override;
 
   // Retrieves icons for the |activities| and calls |callback|.
   // See ActivityIconLoader::GetActivityIcons() for more details.
@@ -132,6 +134,10 @@ class ArcIntentHelperBridge : public KeyedService,
   const std::vector<IntentFilter>& GetIntentFilterForPackage(
       const std::string& package_name);
 
+  const std::vector<IntentFilter>& GetAddedPreferredApps();
+
+  const std::vector<IntentFilter>& GetDeletedPreferredApps();
+
  private:
   THREAD_CHECKER(thread_checker_);
 
@@ -152,6 +158,12 @@ class ArcIntentHelperBridge : public KeyedService,
 
   // Schemes that ARC is known to send via OnOpenUrl.
   const std::set<std::string> allowed_arc_schemes_;
+
+  // The preferred app added in ARC.
+  std::vector<IntentFilter> added_preferred_apps_;
+
+  // The preferred app deleted in ARC.
+  std::vector<IntentFilter> deleted_preferred_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperBridge);
 };

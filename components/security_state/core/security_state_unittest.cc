@@ -582,12 +582,18 @@ TEST(SecurityStateTest, ShouldDowngradeNeutralStyling) {
       security_state::NONE, GURL("chrome://test"),
       base::BindRepeating(&IsOriginSecure)));
 
-  // Returns true for HTTP and some mixed content.
+  // Returns true for HTTP, some mixed content, and insecure schemes.
   EXPECT_TRUE(security_state::ShouldDowngradeNeutralStyling(
       security_state::WARNING, GURL("http://scheme-is-not-cryptographic.test"),
       base::BindRepeating(&IsOriginSecure)));
   EXPECT_TRUE(security_state::ShouldDowngradeNeutralStyling(
       security_state::NONE, GURL("https://mixed-content.test"),
+      base::BindRepeating(&IsOriginSecure)));
+  EXPECT_TRUE(security_state::ShouldDowngradeNeutralStyling(
+      security_state::WARNING, GURL(kDataUrl),
+      base::BindRepeating(&IsOriginSecure)));
+  EXPECT_TRUE(security_state::ShouldDowngradeNeutralStyling(
+      security_state::WARNING, GURL(kFtpUrl),
       base::BindRepeating(&IsOriginSecure)));
 }
 

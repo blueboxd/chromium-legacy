@@ -1214,8 +1214,8 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTimeoutTest, XHRMergeTimeout) {
       OAuth2LoginManager::SessionRestoreState::SESSION_RESTORE_FAILED);
 }
 
-INSTANTIATE_TEST_SUITE_P(, MergeSessionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, MergeSessionTest, testing::Bool());
 
-INSTANTIATE_TEST_SUITE_P(, MergeSessionTimeoutTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, MergeSessionTimeoutTest, testing::Bool());
 
 }  // namespace chromeos

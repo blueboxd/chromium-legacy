@@ -69,6 +69,7 @@ class CastRenderer : public ::media::Renderer,
                   ::media::PipelineStatusCallback init_cb) final;
   void SetCdm(::media::CdmContext* cdm_context,
               ::media::CdmAttachedCB cdm_attached_cb) final;
+  void SetLatencyHint(base::Optional<base::TimeDelta> latency_hint) final;
   void Flush(base::OnceClosure flush_cb) final;
   void StartPlayingFrom(base::TimeDelta time) final;
   void SetPlaybackRate(double playback_rate) final;

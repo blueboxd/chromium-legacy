@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/events/devices/gamepad_device.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "ui/events/ozone/events_ozone_export.h"
 #include "ui/events/ozone/gamepad/gamepad_observer.h"
 
 namespace base {
@@ -21,7 +21,7 @@ struct DefaultSingletonTraits;
 
 namespace ui {
 
-class EVENTS_OZONE_EVDEV_EXPORT GamepadProviderOzone {
+class EVENTS_OZONE_EXPORT GamepadProviderOzone {
  public:
   // Get the GamepadProviderOzone instance.
   static GamepadProviderOzone* GetInstance();

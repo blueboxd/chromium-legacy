@@ -354,7 +354,11 @@ void ShelfWidget::DelegateView::UpdateDragHandle() {
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   UpdateOpaqueBackground();
-  shelf_widget_->status_area_widget()->UpdateCollapseState();
+
+  // The StatusAreaWidget could be gone before this is called during display
+  // tear down.
+  if (shelf_widget_->status_area_widget())
+    shelf_widget_->status_area_widget()->UpdateCollapseState();
 }
 
 views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {

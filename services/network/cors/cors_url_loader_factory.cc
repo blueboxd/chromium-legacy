@@ -235,9 +235,12 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     case InitiatorLockCompatibility::kIncorrectLock:
       // Requests from the renderer need to always specify a correct initiator.
       NOTREACHED();
-      // TODO(lukasza): https://crbug.com/920634: Report bad message and return
-      // false below.
-      break;
+      debug::ScopedOriginCrashKey initiator_lock_crash_key(
+          debug::GetRequestInitiatorSiteLockCrashKey(),
+          request_initiator_site_lock_);
+      mojo::ReportBadMessage(
+          "CorsURLLoaderFactory: lock VS initiator mismatch");
+      return false;
   }
 
   if (context) {

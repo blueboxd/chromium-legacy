@@ -210,6 +210,7 @@ struct VisibleSecurityState {
 // display and run mixed content. They are used to coordinate the
 // treatment of mixed content with other security UI elements.
 constexpr SecurityLevel kDisplayedInsecureContentLevel = NONE;
+constexpr SecurityLevel kDisplayedInsecureContentWarningLevel = WARNING;
 constexpr SecurityLevel kRanInsecureContentLevel = DANGEROUS;
 
 // Returns true if the given |url|'s origin should be considered secure.

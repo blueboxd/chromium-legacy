@@ -427,11 +427,10 @@ TEST_P(GcpCredentialProviderSetSerializationTest, CheckAutoLogon) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     GcpCredentialProviderSetSerializationTest,
     ::testing::Combine(::testing::Bool(),
                        ::testing::Values(CPUS_UNLOCK_WORKSTATION, CPUS_LOGON)));
-
 
 // Check that reauth credentials only exist when the token handle for the
 // associated user is no longer valid and internet is available.
@@ -504,7 +503,7 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpCredentialProviderWithGaiaUsersTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),
@@ -617,7 +616,7 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          GcpCredentialProviderWithADUsersTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),
@@ -768,7 +767,7 @@ TEST_P(GcpCredentialProviderAvailableCredentialsTest, AvailableCredentials) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     GcpCredentialProviderAvailableCredentialsTest,
     ::testing::Combine(::testing::Bool(),
                        ::testing::Values(CPUS_UNLOCK_WORKSTATION, CPUS_LOGON),

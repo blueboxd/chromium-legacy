@@ -14,8 +14,10 @@ audio {
   }
 key_system_config {
     key_system: 'com.widevine.alpha'
-    video_robustness: 'HW_SECURE_ALL'
     distinctive_identifier: REQUIRED
     persistent_state: REQUIRED
     session_types: [PERSISTENT_LICENSE]
+  }
+key_system_video_config {
+    robustness: 'HW_SECURE_ALL'
   }

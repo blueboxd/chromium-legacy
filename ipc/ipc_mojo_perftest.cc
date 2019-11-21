@@ -270,7 +270,7 @@ TEST_F(MojoChannelPerfTest, ChannelProxySyncPing) {
 MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
   MojoPerfTestClient client;
   int rv = mojo::core::test::MultiprocessTestHelper::RunClientMain(
-      base::Bind(&MojoPerfTestClient::Run, base::Unretained(&client)),
+      base::BindOnce(&MojoPerfTestClient::Run, base::Unretained(&client)),
       true /* pass_pipe_ownership_to_main */);
 
   base::RunLoop run_loop;
@@ -295,8 +295,9 @@ class MojoInterfacePerfTest : public mojo::core::test::MojoTestBase {
     LockThreadAffinity thread_locker(kSharedCore);
     std::vector<PingPongTestParams> params = GetDefaultTestParams();
     for (size_t i = 0; i < params.size(); i++) {
-      ping_receiver_->Ping("hello", base::Bind(&MojoInterfacePerfTest::OnPong,
-                                               base::Unretained(this)));
+      ping_receiver_->Ping("hello",
+                           base::BindOnce(&MojoInterfacePerfTest::OnPong,
+                                          base::Unretained(this)));
       message_count_ = count_down_ = params[i].message_count();
       payload_ = std::string(params[i].message_size(), 'a');
 
@@ -336,8 +337,9 @@ class MojoInterfacePerfTest : public mojo::core::test::MojoTestBase {
       perf_logger_.reset();
       base::RunLoop::QuitCurrentWhenIdleDeprecated();
     } else {
-      ping_receiver_->Ping(payload_, base::Bind(&MojoInterfacePerfTest::OnPong,
-                                                base::Unretained(this)));
+      ping_receiver_->Ping(payload_,
+                           base::BindOnce(&MojoInterfacePerfTest::OnPong,
+                                          base::Unretained(this)));
     }
   }
 
@@ -441,8 +443,8 @@ class MojoInterfacePassingPerfTest : public mojo::core::test::MojoTestBase {
     LockThreadAffinity thread_locker(kSharedCore);
     for (size_t i = 0; i < params.size(); ++i) {
       driver_remote_->Init(
-          base::Bind(&MojoInterfacePassingPerfTest::OnInitCallback,
-                     base::Unretained(this)));
+          base::BindOnce(&MojoInterfacePassingPerfTest::OnInitCallback,
+                         base::Unretained(this)));
       rounds_ = count_down_ = params[i].rounds();
       num_interfaces_ = params[i].num_interfaces();
 
@@ -480,8 +482,8 @@ class MojoInterfacePassingPerfTest : public mojo::core::test::MojoTestBase {
 
       driver_remote_->GetAssociatedPingReceiver(
           std::move(receivers),
-          base::Bind(&MojoInterfacePassingPerfTest::OnGetReceiverCallback,
-                     base::Unretained(this)));
+          base::BindOnce(&MojoInterfacePassingPerfTest::OnGetReceiverCallback,
+                         base::Unretained(this)));
     } else {
       std::vector<mojo::Remote<mojom::PingReceiver>> remotes(num_interfaces_);
 
@@ -495,8 +497,8 @@ class MojoInterfacePassingPerfTest : public mojo::core::test::MojoTestBase {
 
       driver_remote_->GetPingReceiver(
           std::move(receivers),
-          base::Bind(&MojoInterfacePassingPerfTest::OnGetReceiverCallback,
-                     base::Unretained(this)));
+          base::BindOnce(&MojoInterfacePassingPerfTest::OnGetReceiverCallback,
+                         base::Unretained(this)));
     }
   }
 
@@ -771,10 +773,12 @@ class CallbackPerfTest : public testing::Test {
   void RunSingleThreadNoPostTaskPingPongServer() {
     LockThreadAffinity thread_locker(kSharedCore);
     std::vector<PingPongTestParams> params = GetDefaultTestParams();
-    base::Callback<void(const std::string&, int,
-                        const base::Callback<void(const std::string&, int)>&)>
-        ping = base::Bind(&CallbackPerfTest::SingleThreadPingNoPostTask,
-                          base::Unretained(this));
+    base::RepeatingCallback<void(
+        const std::string&, int,
+        base::OnceCallback<void(const std::string&, int)>)>
+        ping =
+            base::BindRepeating(&CallbackPerfTest::SingleThreadPingNoPostTask,
+                                base::Unretained(this));
     for (size_t i = 0; i < params.size(); i++) {
       payload_ = std::string(params[i].message_size(), 'a');
       std::string test_name =
@@ -783,8 +787,8 @@ class CallbackPerfTest : public testing::Test {
       perf_logger_.reset(new base::PerfTimeLogger(test_name.c_str()));
       for (int j = 0; j < params[i].message_count(); ++j) {
         ping.Run(payload_, j,
-                 base::Bind(&CallbackPerfTest::SingleThreadPongNoPostTask,
-                            base::Unretained(this)));
+                 base::BindOnce(&CallbackPerfTest::SingleThreadPongNoPostTask,
+                                base::Unretained(this)));
       }
       perf_logger_.reset();
     }
@@ -793,8 +797,8 @@ class CallbackPerfTest : public testing::Test {
   void SingleThreadPingNoPostTask(
       const std::string& value,
       int i,
-      const base::Callback<void(const std::string&, int)>& pong) {
-    pong.Run(value, i);
+      base::OnceCallback<void(const std::string&, int)> pong) {
+    std::move(pong).Run(value, i);
   }
 
   void SingleThreadPongNoPostTask(const std::string& value, int i) {}

@@ -68,31 +68,37 @@ static_library("dom_keyboard_layout") {
   public = [
     "keycodes/dom/dom_keyboard_layout.h",
     "keycodes/dom/dom_keyboard_layout_manager.h",
-    "keycodes/dom/dom_keyboard_layout_map.h",
   ]
 
   sources = [
     "keycodes/dom/dom_keyboard_layout.cc",
     "keycodes/dom/dom_keyboard_layout_manager.cc",
-    "keycodes/dom/dom_keyboard_layout_map_base.cc",
-    "keycodes/dom/dom_keyboard_layout_map_base.h",
   ]
+
+  deps = [
+    ":dom_keycode_converter",
+    ":events_base",
+    "//base",
+  ]
+
+  if (is_win || is_mac || use_ozone) {
+    public += [ "keycodes/dom/dom_keyboard_layout_map.h" ]
+
+    sources += [
+      "keycodes/dom/dom_keyboard_layout_map_base.cc",
+      "keycodes/dom/dom_keyboard_layout_map_base.h",
+    ]
+  }
 
   # Make sure we don't compile two versions of dom_keyboard_layout_map*
   if (is_mac) {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_mac.mm" ]
   } else if (is_win) {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_win.cc" ]
-  } else {
+  } else if (use_ozone) {
     sources += [ "keycodes/dom/dom_keyboard_layout_map_ozone.cc" ]
+    deps += [ "//ui/events/ozone/layout" ]
   }
-
-  deps = [
-    ":dom_keycode_converter",
-    ":events_base",
-    "//base",
-    "//ui/events/ozone:events_ozone_layout",
-  ]
 
   if (!is_ios) {
     deps += [ "//ipc:param_traits" ]
@@ -306,7 +312,7 @@ jumbo_component("events") {
       "ozone/events_ozone.cc",
       "ozone/keyboard_hook_ozone.cc",
     ]
-    deps += [ "//ui/events/ozone:events_ozone_layout" ]
+    deps += [ "//ui/events/ozone/layout" ]
   }
 
   if (use_aura) {
@@ -541,7 +547,6 @@ if (!is_ios) {
       "gesture_detection/velocity_tracker_unittest.cc",
       "gestures/blink/web_gesture_curve_impl_unittest.cc",
       "gestures/fling_curve_unittest.cc",
-      "keycodes/dom/dom_keyboard_layout_map_unittest.cc",
       "keycodes/dom/keycode_converter_unittest.cc",
       "keycodes/keyboard_code_conversion_unittest.cc",
       "keycodes/platform_key_map_win_unittest.cc",
@@ -619,40 +624,8 @@ if (!is_ios) {
       sources += [ "devices/device_data_manager_unittest.cc" ]
     }
 
-    if (use_ozone && (is_linux || is_chromeos)) {
-      sources += [
-        "ozone/chromeos/cursor_controller_unittest.cc",
-        "ozone/evdev/event_converter_evdev_impl_unittest.cc",
-        "ozone/evdev/event_converter_test_util.cc",
-        "ozone/evdev/event_converter_test_util.h",
-        "ozone/evdev/event_device_info_unittest.cc",
-        "ozone/evdev/event_device_test_util.cc",
-        "ozone/evdev/event_device_test_util.h",
-        "ozone/evdev/gamepad_event_converter_evdev_unittest.cc",
-        "ozone/evdev/input_injector_evdev_unittest.cc",
-        "ozone/evdev/tablet_event_converter_evdev_unittest.cc",
-        "ozone/evdev/testing/fake_cursor_delegate_evdev.h",
-        "ozone/evdev/touch_event_converter_evdev_unittest.cc",
-        "ozone/evdev/touch_filter/false_touch_finder_unittest.cc",
-        "ozone/evdev/touch_filter/heuristic_stylus_palm_detection_filter_unittest.cc",
-        "ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_unittest.cc",
-        "ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util_unittest.cc",
-        "ozone/evdev/touch_filter/open_palm_detection_filter_unittest.cc",
-        "ozone/evdev/touch_filter/palm_detection_filter_factory_unittest.cc",
-      ]
-
-      if (use_xkbcommon) {
-        sources += [
-          "ozone/layout/keyboard_layout_engine_unittest.cc",
-          "ozone/layout/xkb/xkb_keyboard_layout_engine_unittest.cc",
-        ]
-      }
-
-      deps += [
-        "//ui/events/ozone:events_ozone",
-        "//ui/events/ozone:events_ozone_evdev",
-        "//ui/events/ozone:events_ozone_layout",
-      ]
+    if (use_ozone) {
+      deps += [ "//ui/events/ozone:unittests" ]
     }
 
     if (use_aura) {
@@ -673,6 +646,11 @@ if (!is_ios) {
     if (is_fuchsia) {
       sources += [ "fuchsia/input_event_dispatcher_unittest.cc" ]
       deps += [ "//third_party/fuchsia-sdk/sdk:ui_input" ]
+    }
+
+    if (is_win || is_mac || use_ozone) {
+      sources += [ "keycodes/dom/dom_keyboard_layout_map_unittest.cc" ]
+      deps += [ ":dom_keyboard_layout" ]
     }
   }
 }

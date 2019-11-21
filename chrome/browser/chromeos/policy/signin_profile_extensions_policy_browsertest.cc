@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
           kNotWhitelistedExtensionId));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SigninProfileExtensionsPolicyPerChannelTest,
                          testing::Values(version_info::Channel::UNKNOWN,
                                          version_info::Channel::CANARY,

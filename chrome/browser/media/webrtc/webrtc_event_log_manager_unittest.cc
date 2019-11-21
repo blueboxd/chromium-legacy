@@ -3902,7 +3902,7 @@ TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
   EXPECT_EQ(OnWebRtcEventLogWrite(key, "log"), std::make_pair(false, false));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
                          ::testing::Bool());
 

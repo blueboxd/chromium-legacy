@@ -127,7 +127,6 @@ js_library("app") {
     "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer",
     "//ui/webui/resources/js:find_shortcut_behavior",
     "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js/cr/ui:command",
   ]
 }
 

@@ -172,7 +172,7 @@ class MediaNotificationBackgroundBlackWhiteTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaNotificationBackgroundBlackWhiteTest,
                          testing::Values(SK_ColorBLACK, SK_ColorWHITE));
 
@@ -353,7 +353,9 @@ class MediaNotificationBackgroundRTLTest
   base::test::ScopedCommandLine command_line_;
 };
 
-INSTANTIATE_TEST_SUITE_P(, MediaNotificationBackgroundRTLTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         MediaNotificationBackgroundRTLTest,
+                         testing::Bool());
 
 TEST_P(MediaNotificationBackgroundRTLTest, BoundsSanityCheck) {
   // The test notification will have a width of 200 and a height of 50.

@@ -132,6 +132,6 @@ IN_PROC_BROWSER_TEST_P(LauncherDragTest, Close) {
   shell_test_api.WaitForLauncherAnimationState(ash::AppListViewState::kClosed);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LauncherDragTest,
                          /*tablet_mode=*/::testing::Bool());

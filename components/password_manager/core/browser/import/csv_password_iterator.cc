@@ -68,18 +68,13 @@ CSVPasswordIterator CSVPasswordIterator::operator++(int) {
 bool CSVPasswordIterator::operator==(const CSVPasswordIterator& other) const {
   // There is no need to compare |password_|, because it is determined by |map_|
   // and |csv_row_|.
-  return
-      // Checking StringPiece::data() equality instead of just StringPiece has
-      // two reasons: (1) flagging the case when, e.g., two identical lines in
-      // one CSV blob would otherwise cause the corresponding iterators look the
-      // same, and (2) efficiency. StringPiece::size() is not checked on the
-      // assumption that always the whole row is contained in |csv_row_|.
-      csv_row_.data() == other.csv_row_.data() &&
-      // The column map should reference the same map if the iterators come from
-      // the same sequence, and iterators from different sequences are not
-      // considered equal. Therefore the maps' addresses are checked instead of
-      // their contents.
-      map_ == other.map_;
+
+  return csv_row_ == other.csv_row_ && csv_rest_ == other.csv_rest_ &&
+         // The column map should reference the same map if the iterators come
+         // from the same sequence, and iterators from different sequences are
+         // not considered equal. Therefore the maps' addresses are checked
+         // instead of their contents.
+         map_ == other.map_;
 }
 
 base::StringPiece ConsumeCSVLine(base::StringPiece* input) {

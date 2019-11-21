@@ -1379,7 +1379,7 @@ const double kTestRates[] = {
     60,       72, 90,    100, 120,      144, 240,      300,
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoRendererAlgorithmCadenceTest,
                          ::testing::Combine(::testing::ValuesIn(kDisplayRates),
                                             ::testing::ValuesIn(kTestRates)));

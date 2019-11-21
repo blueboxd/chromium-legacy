@@ -122,6 +122,7 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
           {media::kRecordMediaEngagementScores,
+           history::HistoryService::kHistoryServiceUsesTaskScheduler,
            media::kMediaEngagementHTTPSOnly},
           {});
     } else {
@@ -155,13 +156,16 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
                                        std::move(backend_runner)));
   }
 
+  // Properly shuts down the HistoryService associated with |profile()| and then
+  // creates new one that will run using the |backend_runner|.
   void RestartHistoryService(
       scoped_refptr<base::SequencedTaskRunner> backend_runner) {
-    history::HistoryService* history_old = HistoryServiceFactory::GetForProfile(
-        profile(), ServiceAccessType::IMPLICIT_ACCESS);
-    history_old->Shutdown();
+    // Triggers destruction of the existing HistoryService and waits for all
+    // cleanup work to be done.
+    profile()->BlockUntilHistoryBackendDestroyed();
 
-    HistoryServiceFactory::ShutdownForProfile(profile());
+    // Force the creation of a new HistoryService that runs its backend on
+    // |backend_runner|.
     ConfigureHistoryService(std::move(backend_runner));
     history::HistoryService* history = HistoryServiceFactory::GetForProfile(
         profile(), ServiceAccessType::IMPLICIT_ACCESS);
@@ -176,13 +180,14 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
 
   void TearDown() override {
     service_->Shutdown();
-    ChromeRenderViewHostTestHarness::TearDown();
 
     // Tests that run a history service that uses the mock task runner for
     // backend processing will post tasks there during TearDown. Run them now to
     // avoid leaks.
     mock_time_task_runner_->RunUntilIdle();
     service_.reset();
+
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   void AdvanceClock() {
@@ -611,10 +616,13 @@ TEST_P(MediaEngagementServiceTest, CleanUpDatabaseWhenHistoryIsExpired) {
   // Expire history older than |threshold|.
   MediaEngagementChangeWaiter waiter(profile());
   RestartHistoryService(mock_time_task_runner_);
-  // First, run the task that schedules backend initialization.
-  mock_time_task_runner_->RunUntilIdle();
-  // Now, fast forward time to ensure that the expiration job is completed. 30
-  // seconds is the value of kExpirationDelaySec.
+
+  // From this point profile() is using a new HistoryService that runs on
+  // mock time.
+
+  // Now, fast forward time to ensure that the expiration job is completed. This
+  // will start by triggering the backend initialization. 30 seconds is the
+  // value of kExpirationDelaySec.
   mock_time_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(30));
   waiter.Wait();
 

@@ -51,8 +51,6 @@ extern const base::Feature kUseTextForUpdateButton;
 extern const base::Feature kWebFooterExperiment;
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-extern const base::Feature kWebUITabStrip;
-
 extern const base::Feature kWebUITabStripDemoOptions;
 #endif  // defined(ENABLE_WEBUI_TAB_STRIP)
 

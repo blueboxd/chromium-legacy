@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
@@ -21,12 +22,12 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/aura/window.h"
@@ -181,7 +182,8 @@ WebUITabStripContainerView::~WebUITabStripContainerView() {
 }
 
 bool WebUITabStripContainerView::UseTouchableTabStrip() {
-  return base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kWebUITabStrip) &&
          ui::MaterialDesignController::touch_ui();
 }
 

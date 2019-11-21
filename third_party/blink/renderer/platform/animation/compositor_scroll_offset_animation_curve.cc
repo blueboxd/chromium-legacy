@@ -6,38 +6,19 @@
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/timing_function.h"
 
 using blink::CompositorScrollOffsetAnimationCurve;
-using DurationBehavior = cc::ScrollOffsetAnimationCurve::DurationBehavior;
 
 namespace blink {
 
-static DurationBehavior GetDurationBehavior(
-    CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior
-        web_duration_behavior) {
-  switch (web_duration_behavior) {
-    case CompositorScrollOffsetAnimationCurve::kScrollDurationDeltaBased:
-      return DurationBehavior::DELTA_BASED;
-
-    case CompositorScrollOffsetAnimationCurve::kScrollDurationConstant:
-      return DurationBehavior::CONSTANT;
-
-    case CompositorScrollOffsetAnimationCurve::kScrollDurationInverseDelta:
-      return DurationBehavior::INVERSE_DELTA;
-  }
-  NOTREACHED();
-  return DurationBehavior::DELTA_BASED;
-}
-
 CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
     FloatPoint target_value,
-    ScrollDurationBehavior duration_behavior)
-    : curve_(cc::ScrollOffsetAnimationCurve::Create(
+    ScrollType scroll_type)
+    : curve_(cc::ScrollOffsetAnimationCurveFactory::CreateAnimation(
           gfx::ScrollOffset(target_value.X(), target_value.Y()),
-          cc::CubicBezierTimingFunction::CreatePreset(
-              CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
-          GetDurationBehavior(duration_behavior))) {}
+          scroll_type)) {}
 
 CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
     cc::ScrollOffsetAnimationCurve* curve)

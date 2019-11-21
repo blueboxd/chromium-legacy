@@ -60,7 +60,7 @@ class POLICY_EXPORT DesktopCloudPolicyStore : public UserCloudPolicyStoreBase {
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       std::unique_ptr<enterprise_management::PolicySigningKey> key,
       bool validate_in_background,
-      const UserCloudPolicyValidator::CompletionCallback& callback) = 0;
+      UserCloudPolicyValidator::CompletionCallback callback) = 0;
 
   // Validate the |cached_key| with the |owning_domain|.
   void ValidateKeyAndSignature(
@@ -132,7 +132,7 @@ class POLICY_EXPORT UserCloudPolicyStore : public DesktopCloudPolicyStore {
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       std::unique_ptr<enterprise_management::PolicySigningKey> key,
       bool validate_in_background,
-      const UserCloudPolicyValidator::CompletionCallback& callback) override;
+      UserCloudPolicyValidator::CompletionCallback callback) override;
 
   // The account id from signin for validation of the policy.
   AccountId account_id_;

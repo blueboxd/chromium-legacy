@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_P(SplitViewTest, ResizeWithOverview) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SplitViewTest,
                          ::testing::Combine(/*ntp=*/testing::Bool(),
                                             /*touch=*/testing::Bool()));

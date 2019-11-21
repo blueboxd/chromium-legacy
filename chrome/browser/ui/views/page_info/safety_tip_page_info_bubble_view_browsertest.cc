@@ -342,7 +342,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SafetyTipPageInfoBubbleViewBrowserTest,
                          ::testing::Values(UIStatus::kDisabled,
                                            UIStatus::kEnabled,

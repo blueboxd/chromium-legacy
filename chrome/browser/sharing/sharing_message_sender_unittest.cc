@@ -10,6 +10,7 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
+#include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_device_info/fake_local_device_info_provider.h"
@@ -223,8 +224,9 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
             fake_device_info_sync_service_.GetLocalDeviceInfoProvider()
                 ->GetLocalDeviceInfo();
         ASSERT_EQ(local_device->guid(), message.sender_guid());
-        ASSERT_EQ(GetSharingDeviceNames(local_device).full_name,
-                  message.sender_device_name());
+        ASSERT_EQ(
+            send_tab_to_self::GetSharingDeviceNames(local_device).full_name,
+            message.sender_device_name());
         ASSERT_TRUE(local_device->sharing_info().has_value());
         ASSERT_EQ(kSenderVapidFcmToken, message.sender_info().fcm_token());
         ASSERT_EQ(kSenderP256dh, message.sender_info().p256dh());

@@ -885,7 +885,7 @@ class MenuControllerTest : public ViewsTestBase,
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, MenuControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, MenuControllerTest, testing::Bool());
 
 #if defined(USE_X11)
 // Tests that an event targeter which blocks events will be honored by the menu

@@ -66,7 +66,6 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
       base::OnceCallback<void(::blink::mojom::PermissionStatus)> callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
-  bool IsFocusedDocument(ExecutionContext*);
 
   Member<ScriptState> script_state_;
   Member<ScriptPromiseResolver> script_promise_resolver_;

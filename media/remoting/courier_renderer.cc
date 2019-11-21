@@ -158,6 +158,9 @@ void CourierRenderer::SetCdm(CdmContext* cdm_context,
   NOTIMPLEMENTED();
 }
 
+void CourierRenderer::SetLatencyHint(
+    base::Optional<base::TimeDelta> latency_hint) {}
+
 void CourierRenderer::Flush(base::OnceClosure flush_cb) {
   VLOG(2) << __func__;
   DCHECK(media_task_runner_->BelongsToCurrentThread());

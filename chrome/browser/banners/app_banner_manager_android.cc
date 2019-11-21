@@ -16,11 +16,10 @@
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
-#include "chrome/browser/android/webapps/add_to_homescreen_installer.h"
+#include "chrome/browser/android/webapps/add_to_homescreen_coordinator.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_params.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/banners/app_banner_ui_delegate_android.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/common/chrome_features.h"
@@ -204,7 +203,6 @@ void AppBannerManagerAndroid::ResetCurrentPageData() {
   AppBannerManager::ResetCurrentPageData();
   native_app_data_.Reset();
   native_app_package_ = "";
-  ui_delegate_ = nullptr;
 }
 
 void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
@@ -226,7 +224,7 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
     a2hs_params->native_app_package_name = native_app_package_;
   }
 
-  ui_delegate_ = AppBannerUiDelegateAndroid::Create(
+  bool was_shown = AddToHomescreenCoordinator::ShowForAppBanner(
       weak_factory_.GetWeakPtr(), std::move(a2hs_params),
       base::Bind(&AppBannerManagerAndroid::RecordEventForAppBanner,
                  weak_factory_.GetWeakPtr()));
@@ -237,7 +235,7 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
     HideAmbientBadge();
   }
 
-  if (ui_delegate_->ShowDialog()) {
+  if (was_shown) {
     if (native_app_data_.is_null()) {
       ReportStatus(SHOWING_WEB_APP_BANNER);
     } else {

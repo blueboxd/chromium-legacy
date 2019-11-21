@@ -687,7 +687,7 @@ class NetworkServiceRestartForWorkerBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          NetworkServiceRestartForWorkerBrowserTest,
                          ::testing::Values(false, true));
 

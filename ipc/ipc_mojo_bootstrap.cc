@@ -170,8 +170,8 @@ class ChannelAssociatedGroupController
         task_runner_));
     connector_->set_incoming_receiver(&dispatcher_);
     connector_->set_connection_error_handler(
-        base::Bind(&ChannelAssociatedGroupController::OnPipeError,
-                   base::Unretained(this)));
+        base::BindRepeating(&ChannelAssociatedGroupController::OnPipeError,
+                            base::Unretained(this)));
     connector_->set_enforce_errors_from_incoming_receiver(false);
     connector_->SetWatcherHeapProfilerTag("IPC Channel");
     if (quota_checker_)

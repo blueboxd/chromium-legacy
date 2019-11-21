@@ -400,13 +400,13 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
   std::vector<MockWrite> writes_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebSocketStreamCreateTest,
                          Values(BASIC_HANDSHAKE_STREAM));
 
 using WebSocketMultiProtocolStreamCreateTest = WebSocketStreamCreateTest;
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebSocketMultiProtocolStreamCreateTest,
                          Values(BASIC_HANDSHAKE_STREAM,
                                 HTTP2_HANDSHAKE_STREAM));
@@ -429,7 +429,7 @@ class WebSocketStreamCreateExtensionTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebSocketStreamCreateExtensionTest,
                          Values(BASIC_HANDSHAKE_STREAM,
                                 HTTP2_HANDSHAKE_STREAM));
@@ -511,7 +511,7 @@ class WebSocketStreamCreateBasicAuthTest : public WebSocketStreamCreateTest {
   CommonAuthTestHelper helper_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebSocketStreamCreateBasicAuthTest,
                          Values(BASIC_HANDSHAKE_STREAM));
 
@@ -523,7 +523,7 @@ class WebSocketStreamCreateDigestAuthTest : public WebSocketStreamCreateTest {
   CommonAuthTestHelper helper_;
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          WebSocketStreamCreateDigestAuthTest,
                          Values(BASIC_HANDSHAKE_STREAM));
 

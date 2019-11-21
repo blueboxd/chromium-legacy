@@ -52,8 +52,10 @@ android_library("devui_java") {
   deps = [
     ":devui_resources",
     ":system_webview_manifest",
+    "//android_webview:common_commandline_java",
     "//android_webview:common_crash_java",
     "//android_webview:common_java",
+    "//android_webview:common_platform_services_java",
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",

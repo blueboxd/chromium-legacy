@@ -41,7 +41,7 @@ enum class DomCode;
 enum class StylusState;
 
 #if !defined(USE_EVDEV)
-#error Missing dependency on ui/events/ozone:events_ozone_evdev
+#error Missing dependency on ui/events/ozone/evdev
 #endif
 
 // Ozone events implementation for the Linux input subsystem ("evdev").

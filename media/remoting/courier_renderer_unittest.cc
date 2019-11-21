@@ -252,8 +252,9 @@ class CourierRendererTest : public testing::Test {
     EXPECT_CALL(*render_client_, OnPipelineStatus(_)).Times(1);
     DCHECK(renderer_);
     // Redirect RPC message for simulate receiver scenario
-    controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
-        &CourierRendererTest::RpcMessageResponseBot, base::Unretained(this)));
+    controller_->GetRpcBroker()->SetMessageCallbackForTesting(
+        base::BindRepeating(&CourierRendererTest::RpcMessageResponseBot,
+                            base::Unretained(this)));
     RunPendingTasks();
     renderer_->Initialize(
         media_resource_.get(), render_client_.get(),
@@ -261,8 +262,9 @@ class CourierRendererTest : public testing::Test {
                        base::Unretained(render_client_.get())));
     RunPendingTasks();
     // Redirect RPC message back to save for later check.
-    controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
-        &CourierRendererTest::OnSendMessageToSink, base::Unretained(this)));
+    controller_->GetRpcBroker()->SetMessageCallbackForTesting(
+        base::BindRepeating(&CourierRendererTest::OnSendMessageToSink,
+                            base::Unretained(this)));
     RunPendingTasks();
   }
 
@@ -283,8 +285,9 @@ class CourierRendererTest : public testing::Test {
     controller_->OnMetadataChanged(DefaultMetadata());
 
     // Redirect RPC message to CourierRendererTest::OnSendMessageToSink().
-    controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
-        &CourierRendererTest::OnSendMessageToSink, base::Unretained(this)));
+    controller_->GetRpcBroker()->SetMessageCallbackForTesting(
+        base::BindRepeating(&CourierRendererTest::OnSendMessageToSink,
+                            base::Unretained(this)));
 
     renderer_.reset(new CourierRenderer(base::ThreadTaskRunnerHandle::Get(),
                                         controller_->GetWeakPtr(), nullptr));
@@ -470,7 +473,7 @@ TEST_F(CourierRendererTest, Flush) {
 
   // Flush Renderer.
   // Redirect RPC message for simulate receiver scenario
-  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
+  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::BindRepeating(
       &CourierRendererTest::RpcMessageResponseBot, base::Unretained(this)));
   RunPendingTasks();
   EXPECT_CALL(*render_client_, OnFlushCallback()).Times(1);
@@ -666,7 +669,7 @@ TEST_F(CourierRendererTest, OnStatisticsUpdate) {
 TEST_F(CourierRendererTest, OnPacingTooSlowly) {
   InitializeRenderer();
 
-  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::Bind(
+  controller_->GetRpcBroker()->SetMessageCallbackForTesting(base::BindRepeating(
       &CourierRendererTest::OnSendMessageToSink, base::Unretained(this)));
 
   // There should be no error reported with this playback rate.

@@ -33,11 +33,13 @@ class DtlsTransportInformation;
 class MediaStreamInterface;
 class RtpReceiverInterface;
 class SctpTransportInformation;
+class VideoTrackInterface;
 }
 
 namespace blink {
 
 class MockWebRtcVideoTrack;
+class MediaStreamVideoTrack;
 struct P2PQuicTransportConfig;
 
 }
@@ -153,6 +155,18 @@ struct CrossThreadCopier<
 template <>
 struct CrossThreadCopier<blink::MockWebRtcVideoTrack>
     : public CrossThreadCopierPassThrough<blink::MockWebRtcVideoTrack> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<blink::MediaStreamVideoTrack>
+    : public CrossThreadCopierPassThrough<blink::MediaStreamVideoTrack> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<webrtc::VideoTrackInterface>
+    : public CrossThreadCopierPassThrough<webrtc::VideoTrackInterface> {
   STATIC_ONLY(CrossThreadCopier);
 };
 

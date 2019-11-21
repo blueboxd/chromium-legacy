@@ -410,8 +410,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
   // Update the divider position and window bounds before snapping a new
   // window. Since the minimum size of |window| maybe larger than currently
   // bounds in |snap_position|.
-  if (state_ != State::kNoSnap &&
-      split_view_type_ == SplitViewType::kTabletType) {
+  if (InTabletSplitViewMode()) {
     divider_position_ = GetClosestFixedDividerPosition();
     UpdateSnappedWindowsAndDividerBounds();
   }
@@ -581,13 +580,7 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
 }
 
 int SplitViewController::GetDefaultDividerPosition() const {
-  const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-          root_window_);
-  int default_divider_position = (IsCurrentScreenOrientationLandscape()
-                                      ? work_area_bounds_in_screen.width()
-                                      : work_area_bounds_in_screen.height()) /
-                                 2;
+  int default_divider_position = GetDividerEndPosition() / 2;
   if (split_view_type_ == SplitViewType::kTabletType)
     default_divider_position -= kSplitviewDividerShortSideLength / 2;
   return default_divider_position;
@@ -813,9 +806,8 @@ void SplitViewController::OnWindowBoundsChanged(
     ui::PropertyChangeReason reason) {
   DCHECK_EQ(root_window_, window->GetRootWindow());
 
-  if (split_view_type_ != SplitViewType::kClamshellType ||
-      reason == ui::PropertyChangeReason::FROM_ANIMATION ||
-      !InSplitViewMode()) {
+  if (!InClamshellSplitViewMode() ||
+      reason == ui::PropertyChangeReason::FROM_ANIMATION) {
     return;
   }
 
@@ -854,9 +846,8 @@ void SplitViewController::OnWindowDestroyed(aura::Window* window) {
 }
 
 void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
-  if (split_view_type_ != SplitViewType::kClamshellType || !InSplitViewMode()) {
+  if (!InClamshellSplitViewMode())
     return;
-  }
 
   // In clamshell mode, if splitview is active (which means overview is active
   // at the same time), only the resize that happens on the window edge that's
@@ -870,9 +861,8 @@ void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
 }
 
 void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
-  if (split_view_type_ != SplitViewType::kClamshellType || !InSplitViewMode()) {
+  if (!InClamshellSplitViewMode())
     return;
-  }
 
   if (divider_position_ < GetDividerEndPosition() * kOneThirdPositionRatio ||
       divider_position_ > GetDividerEndPosition() * kTwoThirdPositionRatio) {
@@ -1462,7 +1452,7 @@ aura::Window* SplitViewController::GetActiveWindowAfterResizingUponExit() {
                                 : GetPhysicalLeftOrTopWindow();
 }
 
-int SplitViewController::GetDividerEndPosition() {
+int SplitViewController::GetDividerEndPosition() const {
   const gfx::Rect work_area_bounds =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           root_window_);
@@ -1527,29 +1517,18 @@ float SplitViewController::FindClosestPositionRatio(float distance,
 
 void SplitViewController::GetDividerOptionalPositionRatios(
     std::vector<float>* out_position_ratios) {
-  aura::Window* left_or_top_window = GetPhysicalLeftOrTopWindow();
-  aura::Window* right_or_bottom_window = GetPhysicalRightOrBottomWindow();
-  bool is_landscape = IsCurrentScreenOrientationLandscape();
-
-  float min_size_left_ratio = 0.f, min_size_right_ratio = 0.f;
-  int min_left_size = 0, min_right_size = 0;
-  if (left_or_top_window && left_or_top_window->delegate()) {
-    gfx::Size min_size = left_or_top_window->delegate()->GetMinimumSize();
-    min_left_size = is_landscape ? min_size.width() : min_size.height();
-  }
-  if (right_or_bottom_window && right_or_bottom_window->delegate()) {
-    gfx::Size min_size = right_or_bottom_window->delegate()->GetMinimumSize();
-    min_right_size = is_landscape ? min_size.width() : min_size.height();
-  }
-
-  int divider_end_position = GetDividerEndPosition();
-  min_size_left_ratio =
+  const bool landscape = IsCurrentScreenOrientationLandscape();
+  const int min_left_size =
+      GetMinimumWindowSize(GetPhysicalLeftOrTopWindow(), landscape);
+  const int min_right_size =
+      GetMinimumWindowSize(GetPhysicalRightOrBottomWindow(), landscape);
+  const int divider_end_position = GetDividerEndPosition();
+  const float min_size_left_ratio =
       static_cast<float>(min_left_size) / divider_end_position;
-  min_size_right_ratio =
+  const float min_size_right_ratio =
       static_cast<float>(min_right_size) / divider_end_position;
   if (min_size_left_ratio <= kOneThirdPositionRatio)
     out_position_ratios->push_back(kOneThirdPositionRatio);
-
   if (min_size_right_ratio <= kOneThirdPositionRatio)
     out_position_ratios->push_back(kTwoThirdPositionRatio);
 }

@@ -77,5 +77,8 @@ ConsoleTts.prototype = {
   getDefaultProperty: function(property) {},
 
   /** @override */
-  toggleSpeechOnOrOff: function() {}
+  toggleSpeechOnOrOff: function() {},
+
+  /** @override */
+  resetTextToSpeechSettings: function() {}
 };

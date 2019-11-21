@@ -16,7 +16,7 @@ source_set("cursor") {
     "//skia",
     "//ui/aura",
     "//ui/events",
-    "//ui/events/ozone:events_ozone",
+    "//ui/events/ozone",
     "//ui/gfx",
     "//ui/views:views",
   ]

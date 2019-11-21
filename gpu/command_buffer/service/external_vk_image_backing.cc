@@ -516,6 +516,11 @@ void ExternalVkImageBacking::Destroy() {
       context_state()->MakeCurrent(nullptr, true /* need_gl */);
     texture_->RemoveLightweightRef(have_context());
   }
+  if (texture_passthrough_) {
+    if (!have_context())
+      texture_passthrough_->MarkContextLost();
+    texture_passthrough_ = nullptr;
+  }
 }
 
 bool ExternalVkImageBacking::ProduceLegacyMailbox(
@@ -559,62 +564,80 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
 #endif
 }
 
+GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
+#if defined(OS_LINUX)
+  GrVkImageInfo image_info;
+  bool result = backend_texture_.getVkImageInfo(&image_info);
+  DCHECK(result);
+
+  gl::GLApi* api = gl::g_current_gl_context;
+  GLuint memory_object = 0;
+  if (!use_separate_gl_texture()) {
+    int memory_fd = GetMemoryFd(image_info);
+    if (memory_fd < 0) {
+      return 0;
+    }
+
+    api->glCreateMemoryObjectsEXTFn(1, &memory_object);
+    api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
+                               GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
+  }
+
+  GLuint internal_format = viz::TextureStorageFormat(format());
+  GLint old_texture_binding = 0;
+  api->glGetIntegervFn(GL_TEXTURE_BINDING_2D, &old_texture_binding);
+  GLuint texture_service_id = 0;
+  api->glGenTexturesFn(1, &texture_service_id);
+  api->glBindTextureFn(GL_TEXTURE_2D, texture_service_id);
+  api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  if (use_separate_gl_texture()) {
+    api->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1, internal_format, size().width(),
+                             size().height());
+  } else {
+    DCHECK(memory_object);
+    if (internal_format == GL_BGRA8_EXT) {
+      // BGRA8 internal format is not well supported, so use RGBA8 instead.
+      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, GL_RGBA8, size().width(),
+                                  size().height(), memory_object, 0);
+      api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+      api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
+    } else {
+      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
+                                  size().width(), size().height(),
+                                  memory_object, 0);
+    }
+  }
+  api->glBindTextureFn(GL_TEXTURE_2D, old_texture_binding);
+  return texture_service_id;
+#elif defined(OS_FUCHSIA)
+  NOTIMPLEMENTED_LOG_ONCE();
+  return 0;
+#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
+#error Unsupported OS
+#endif
+}
+
 std::unique_ptr<SharedImageRepresentationGLTexture>
 ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
                                          MemoryTypeTracker* tracker) {
+  DCHECK(!texture_passthrough_);
   if (!(usage() & SHARED_IMAGE_USAGE_GLES2)) {
     DLOG(ERROR) << "The backing is not created with GLES2 usage.";
     return nullptr;
   }
 
-#if defined(OS_FUCHSIA)
-  NOTIMPLEMENTED_LOG_ONCE();
-  return nullptr;
-#elif defined(OS_LINUX)
-  GrVkImageInfo image_info;
-  bool result = backend_texture_.getVkImageInfo(&image_info);
-  DCHECK(result);
+#if defined(OS_LINUX)
   if (!texture_) {
-    gl::GLApi* api = gl::g_current_gl_context;
-    GLuint memory_object = 0;
-    if (!use_separate_gl_texture()) {
-      int memory_fd = GetMemoryFd(image_info);
-      if (memory_fd < 0) {
-        return nullptr;
-      }
-
-      api->glCreateMemoryObjectsEXTFn(1, &memory_object);
-      api->glImportMemoryFdEXTFn(memory_object, image_info.fAlloc.fSize,
-                                 GL_HANDLE_TYPE_OPAQUE_FD_EXT, memory_fd);
-    }
-
+    GLuint texture_service_id = ProduceGLTextureInternal();
+    if (!texture_service_id)
+      return nullptr;
     GLuint internal_format = viz::TextureStorageFormat(format());
-    GLint old_texture_binding = 0;
-    api->glGetIntegervFn(GL_TEXTURE_BINDING_2D, &old_texture_binding);
-    GLuint texture_service_id;
-    api->glGenTexturesFn(1, &texture_service_id);
-    api->glBindTextureFn(GL_TEXTURE_2D, texture_service_id);
-    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    if (use_separate_gl_texture()) {
-      api->glTexStorage2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
-                               size().width(), size().height());
-    } else {
-      DCHECK(memory_object);
-      if (internal_format == GL_BGRA8_EXT) {
-        // BGRA8 internal format is not well supported, so use RGBA8 instead.
-        api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, GL_RGBA8, size().width(),
-                                    size().height(), memory_object, 0);
-        api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
-        api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);
-      } else {
-        api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
-                                    size().width(), size().height(),
-                                    memory_object, 0);
-      }
-    }
+    GLenum gl_format = viz::GLDataFormat(format());
+    GLenum gl_type = viz::GLDataType(format());
+
     texture_ = new gles2::Texture(texture_service_id);
     texture_->SetLightweightRef();
     texture_->SetTarget(GL_TEXTURE_2D, 1);
@@ -627,17 +650,16 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     if (is_cleared_)
       cleared_rect = gfx::Rect(size());
 
-    GLenum gl_format = viz::GLDataFormat(format());
-    GLenum gl_type = viz::GLDataType(format());
     texture_->SetLevelInfo(GL_TEXTURE_2D, 0, internal_format, size().width(),
                            size().height(), 1, 0, gl_format, gl_type,
                            cleared_rect);
     texture_->SetImmutable(true, true);
-
-    api->glBindTextureFn(GL_TEXTURE_2D, old_texture_binding);
   }
-  return std::make_unique<ExternalVkImageGlRepresentation>(
+  return std::make_unique<ExternalVkImageGLRepresentation>(
       manager, this, tracker, texture_, texture_->service_id());
+#elif defined(OS_FUCHSIA)
+  NOTIMPLEMENTED_LOG_ONCE();
+  return nullptr;
 #else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
 #error Unsupported OS
 #endif
@@ -647,8 +669,50 @@ std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
 ExternalVkImageBacking::ProduceGLTexturePassthrough(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
-  // Passthrough command decoder is not currently used on Linux.
+  DCHECK(!texture_);
+  if (!(usage() & SHARED_IMAGE_USAGE_GLES2)) {
+    DLOG(ERROR) << "The backing is not created with GLES2 usage.";
+    return nullptr;
+  }
+#if defined(OS_LINUX)
+  gl::GLApi* api = gl::g_current_gl_context;
+  // Request extensions from ANGLE
+  if (!gl::g_current_gl_driver->ext.b_GL_EXT_memory_object ||
+      !gl::g_current_gl_driver->ext.b_GL_EXT_memory_object_fd ||
+      !gl::g_current_gl_driver->ext.b_GL_EXT_semaphore ||
+      !gl::g_current_gl_driver->ext.b_GL_EXT_semaphore_fd) {
+    api->glRequestExtensionANGLEFn("GL_EXT_memory_object");
+    api->glRequestExtensionANGLEFn("GL_EXT_memory_object_fd");
+    api->glRequestExtensionANGLEFn("GL_EXT_semaphore");
+    api->glRequestExtensionANGLEFn("GL_EXT_semaphore_fd");
+    // TODO(crbug.com/1025451): ReinitializeDynamicBindings is expensive and
+    // should be removed once eglCreateContext can be conficured to specify
+    // which extensions to enable.
+    gl::GLContext::GetCurrent()->ReinitializeDynamicBindings();
+  }
+
+  if (!texture_passthrough_) {
+    GLuint texture_service_id = ProduceGLTextureInternal();
+    if (!texture_service_id)
+      return nullptr;
+    GLuint internal_format = viz::TextureStorageFormat(format());
+    GLenum gl_format = viz::GLDataFormat(format());
+    GLenum gl_type = viz::GLDataType(format());
+
+    texture_passthrough_ = base::MakeRefCounted<gpu::gles2::TexturePassthrough>(
+        texture_service_id, GL_TEXTURE_2D, internal_format, size().width(),
+        size().height(),
+        /*depth=*/1, /*border=*/0, gl_format, gl_type);
+  }
+
+  return std::make_unique<ExternalVkImageGLPassthroughRepresentation>(
+      manager, this, tracker, texture_passthrough_->service_id());
+#elif defined(OS_FUCHSIA)
+  NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
+#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
+#error Unsupported OS
+#endif
 }
 
 std::unique_ptr<SharedImageRepresentationSkia>
@@ -882,7 +946,9 @@ bool ExternalVkImageBacking::WritePixels(size_t data_size,
 
 void ExternalVkImageBacking::CopyPixelsFromGLTextureToVkImage() {
   DCHECK(use_separate_gl_texture());
-  DCHECK(texture_);
+  DCHECK_NE(!!texture_, !!texture_passthrough_);
+  const GLuint texture_service_id =
+      texture_ ? texture_->service_id() : texture_passthrough_->service_id();
 
   DCHECK_GE(format(), 0);
   DCHECK_LE(format(), viz::RESOURCE_FORMAT_MAX);
@@ -911,7 +977,7 @@ void ExternalVkImageBacking::CopyPixelsFromGLTextureToVkImage() {
   api->glGenFramebuffersEXTFn(1, &framebuffer);
   api->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER, framebuffer);
   api->glFramebufferTexture2DEXTFn(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                   GL_TEXTURE_2D, texture_->service_id(), 0);
+                                   GL_TEXTURE_2D, texture_service_id, 0);
   GLenum status = api->glCheckFramebufferStatusEXTFn(GL_READ_FRAMEBUFFER);
   DCHECK_EQ(status, static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE))
       << "CheckFramebufferStatusEXT() failed.";
@@ -942,7 +1008,9 @@ void ExternalVkImageBacking::CopyPixelsFromGLTextureToVkImage() {
 
 void ExternalVkImageBacking::CopyPixelsFromShmToGLTexture() {
   DCHECK(use_separate_gl_texture());
-  DCHECK(texture_);
+  DCHECK_NE(!!texture_, !!texture_passthrough_);
+  const GLuint texture_service_id =
+      texture_ ? texture_->service_id() : texture_passthrough_->service_id();
 
   DCHECK_GE(format(), 0);
   DCHECK_LE(format(), viz::RESOURCE_FORMAT_MAX);
@@ -967,7 +1035,7 @@ void ExternalVkImageBacking::CopyPixelsFromShmToGLTexture() {
   gl::GLApi* api = gl::g_current_gl_context;
   GLint old_texture;
   api->glGetIntegervFn(GL_TEXTURE_BINDING_2D, &old_texture);
-  api->glBindTextureFn(GL_TEXTURE_2D, texture_->service_id());
+  api->glBindTextureFn(GL_TEXTURE_2D, texture_service_id);
 
   base::CheckedNumeric<size_t> checked_size = bytes_per_pixel;
   checked_size *= size().width();

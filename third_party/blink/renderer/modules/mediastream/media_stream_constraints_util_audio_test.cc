@@ -162,7 +162,7 @@ class MediaStreamConstraintsUtilAudioTestBase {
     return std::make_unique<blink::LocalMediaStreamAudioSource>(
         /*blink::WebLocalFrame=*/nullptr, device, requested_buffer_size,
         disable_local_echo,
-        blink::WebPlatformMediaStreamSource::ConstraintsCallback(),
+        blink::WebPlatformMediaStreamSource::ConstraintsRepeatingCallback(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 

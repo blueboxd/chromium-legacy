@@ -102,7 +102,7 @@
   (subpath (param darwin-user-temp-dir))
 )
 
-(if (param-true? filter-syscalls)
+(if (param-true? filter-syscalls-debug)
   (when (defined? 'syscall-unix)
     (deny syscall-unix (with send-signal SIGSYS))
     (allow syscall-unix

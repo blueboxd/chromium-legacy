@@ -47,6 +47,8 @@ CertStatus MapNetErrorToCertStatus(int error) {
       return CERT_STATUS_VALIDITY_TOO_LONG;
     case ERR_CERT_SYMANTEC_LEGACY:
       return CERT_STATUS_SYMANTEC_LEGACY;
+    case ERR_CERT_KNOWN_INTERCEPTION_BLOCKED:
+      return (CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED | CERT_STATUS_REVOKED);
     default:
       return 0;
   }
@@ -57,14 +59,16 @@ int MapCertStatusToNetError(CertStatus cert_status) {
   // serious error.
 
   // Unrecoverable errors
-  if (cert_status & CERT_STATUS_REVOKED)
-    return ERR_CERT_REVOKED;
   if (cert_status & CERT_STATUS_INVALID)
     return ERR_CERT_INVALID;
   if (cert_status & CERT_STATUS_PINNED_KEY_MISSING)
     return ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN;
 
-  // Recoverable errors
+  // Potentially recoverable errors
+  if (cert_status & CERT_STATUS_KNOWN_INTERCEPTION_BLOCKED)
+    return ERR_CERT_KNOWN_INTERCEPTION_BLOCKED;
+  if (cert_status & CERT_STATUS_REVOKED)
+    return ERR_CERT_REVOKED;
   if (cert_status & CERT_STATUS_AUTHORITY_INVALID)
     return ERR_CERT_AUTHORITY_INVALID;
   if (cert_status & CERT_STATUS_COMMON_NAME_INVALID)
@@ -85,13 +89,12 @@ int MapCertStatusToNetError(CertStatus cert_status) {
     return ERR_CERT_DATE_INVALID;
   if (cert_status & CERT_STATUS_VALIDITY_TOO_LONG)
     return ERR_CERT_VALIDITY_TOO_LONG;
-
-  // Unknown status.  Give it the benefit of the doubt.
   if (cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION)
     return ERR_CERT_UNABLE_TO_CHECK_REVOCATION;
   if (cert_status & CERT_STATUS_NO_REVOCATION_MECHANISM)
     return ERR_CERT_NO_REVOCATION_MECHANISM;
 
+  // Unknown status. The assumption is 0 (an OK status) won't be used here.
   NOTREACHED();
   return ERR_UNEXPECTED;
 }

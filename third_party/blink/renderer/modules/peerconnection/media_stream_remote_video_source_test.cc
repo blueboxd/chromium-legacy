@@ -19,8 +19,10 @@
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_sink.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/webrtc/api/video/color_space.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
 #include "ui/gfx/color_space.h"
@@ -61,7 +63,7 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
     std::unique_ptr<blink::TrackObserver> track_observer;
     mock_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE,
-        base::BindOnce(
+        ConvertToBaseOnceCallback(CrossThreadBindOnce(
             [](scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                webrtc::MediaStreamTrackInterface* webrtc_track,
                std::unique_ptr<blink::TrackObserver>* track_observer,
@@ -70,9 +72,9 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
                   new blink::TrackObserver(main_thread, webrtc_track));
               waitable_event->Signal();
             },
-            main_thread, base::Unretained(webrtc_video_track_.get()),
-            base::Unretained(&track_observer),
-            base::Unretained(&waitable_event)));
+            main_thread, CrossThreadUnretained(webrtc_video_track_.get()),
+            CrossThreadUnretained(&track_observer),
+            CrossThreadUnretained(&waitable_event))));
     waitable_event.Wait();
 
     remote_source_ =
@@ -96,8 +98,9 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
     bool enabled = true;
     return new blink::MediaStreamVideoTrack(
         source(),
-        base::Bind(&MediaStreamRemoteVideoSourceTest::OnTrackStarted,
-                   base::Unretained(this)),
+        ConvertToBaseOnceCallback(CrossThreadBindOnce(
+            &MediaStreamRemoteVideoSourceTest::OnTrackStarted,
+            CrossThreadUnretained(this))),
         enabled);
   }
 
@@ -115,15 +118,15 @@ class MediaStreamRemoteVideoSourceTest : public ::testing::Test {
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     mock_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
         FROM_HERE,
-        base::BindOnce(
+        ConvertToBaseOnceCallback(CrossThreadBindOnce(
             [](blink::MockWebRtcVideoTrack* video_track,
                base::WaitableEvent* waitable_event) {
               video_track->SetEnded();
               waitable_event->Signal();
             },
-            base::Unretained(static_cast<blink::MockWebRtcVideoTrack*>(
+            CrossThreadUnretained(static_cast<blink::MockWebRtcVideoTrack*>(
                 webrtc_video_track_.get())),
-            base::Unretained(&waitable_event)));
+            CrossThreadUnretained(&waitable_event))));
     waitable_event.Wait();
   }
 

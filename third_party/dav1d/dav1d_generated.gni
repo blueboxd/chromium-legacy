@@ -34,6 +34,8 @@ x86_template_sources = [
 
 arm32_asm_sources = [
   "libdav1d/src/arm/32/cdef.S",
+  "libdav1d/src/arm/32/ipred.S",
+  "libdav1d/src/arm/32/loopfilter.S",
   "libdav1d/src/arm/32/looprestoration.S",
   "libdav1d/src/arm/32/mc.S",
   "libdav1d/src/arm/32/util.S",

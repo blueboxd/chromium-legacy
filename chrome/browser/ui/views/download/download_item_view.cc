@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/i18n/break_iterator.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -66,6 +68,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
@@ -79,7 +82,9 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/mouse_constants.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -218,10 +223,9 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   open_button->set_context_menu_controller(this);
   open_button_ = AddChildView(std::move(open_button));
 
-  auto file_name_label = std::make_unique<views::Label>();
-  file_name_label->SetFontList(font_list_);
+  auto file_name_label = std::make_unique<views::Label>(
+      ElidedFilename(), views::style::CONTEXT_LABEL, STYLE_EMPHASIZED);
   file_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  file_name_label->SetText(ElidedFilename());
   file_name_label->GetViewAccessibility().OverrideIsIgnored(true);
   file_name_label_ = AddChildView(std::move(file_name_label));
 
@@ -359,7 +363,8 @@ void DownloadItemView::TransitionToNormalMode() {
   status_label_->SetText(GetStatusText());
   status_label_->GetViewAccessibility().OverrideIsIgnored(
       status_label_->GetText().empty());
-  AdjustTextAndGetSize(status_label_);
+  AdjustTextAndGetSize(status_label_,
+                       base::BindRepeating(&views::Label::SetText));
   file_name_label_->SetY(GetYForFilenameText());
   switch (model_->GetState()) {
     case DownloadItem::IN_PROGRESS:
@@ -877,14 +882,10 @@ void DownloadItemView::UpdateColorsFromTheme() {
   file_name_label_->SetBackgroundColor(background_color);
   status_label_->SetBackgroundColor(background_color);
 
-  if (dangerous_download_label_)
-    dangerous_download_label_->SetEnabledColor(GetTextColor());
   if (save_button_)
     shelf_->ConfigureButtonForTheme(save_button_);
   if (discard_button_)
     shelf_->ConfigureButtonForTheme(discard_button_);
-  if (deep_scanning_label_)
-    deep_scanning_label_->SetEnabledColor(GetTextColor());
   if (open_now_button_)
     shelf_->ConfigureButtonForTheme(open_now_button_);
 }
@@ -1028,9 +1029,8 @@ void DownloadItemView::ShowWarningDialog() {
 
   base::string16 dangerous_label =
       model_->GetWarningText(font_list_, kTextWidth);
-  auto dangerous_download_label =
-      std::make_unique<views::Label>(dangerous_label);
-  dangerous_download_label->SetMultiLine(true);
+  auto dangerous_download_label = std::make_unique<views::StyledLabel>(
+      dangerous_label, /*listener=*/nullptr);
   dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   dangerous_download_label->SetAutoColorReadabilityEnabled(false);
   dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
@@ -1095,12 +1095,20 @@ void DownloadItemView::ShowDeepScanningDialog() {
                          kTextWidth, gfx::Typesetter::BROWSER);
   base::string16 deep_scanning_text = l10n_util::GetStringFUTF16(
       IDS_PROMPT_DEEP_SCANNING_DOWNLOAD, elided_filename);
-  auto deep_scanning_label = std::make_unique<views::Label>(deep_scanning_text);
-  deep_scanning_label->SetMultiLine(true);
+  auto deep_scanning_label = std::make_unique<views::StyledLabel>(
+      deep_scanning_text, /*listener=*/nullptr);
   deep_scanning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   deep_scanning_label->SetAutoColorReadabilityEnabled(false);
   deep_scanning_label_ = AddChildView(std::move(deep_scanning_label));
-  deep_scanning_label_->SetSize(AdjustTextAndGetSize(deep_scanning_label_));
+  deep_scanning_label_->SetSize(AdjustTextAndGetSize(
+      deep_scanning_label_,
+      base::BindRepeating(
+          [](DownloadItemView* view, views::StyledLabel* label,
+             const base::string16& text) {
+            label->SetText(text);
+            view->StyleFilenameInLabel(label);
+          },
+          base::Unretained(this))));
 
   int delay_delivery = g_browser_process->local_state()->GetInteger(
       prefs::kDelayDeliveryUntilVerdict);
@@ -1153,13 +1161,24 @@ void DownloadItemView::SizeLabelToMinWidth() {
   if (dangerous_download_label_sized_)
     return;
 
-  dangerous_download_label_->SetSize(
-      AdjustTextAndGetSize(dangerous_download_label_));
+  dangerous_download_label_->SetSize(AdjustTextAndGetSize(
+      dangerous_download_label_,
+      base::BindRepeating(
+          [](DownloadItemView* view, views::StyledLabel* label,
+             const base::string16& text) {
+            label->SetText(text);
+            view->StyleFilenameInLabel(label);
+          },
+          base::Unretained(this))));
   dangerous_download_label_sized_ = true;
 }
 
 // static
-gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
+template <typename T>
+gfx::Size DownloadItemView::AdjustTextAndGetSize(
+    T* label,
+    base::RepeatingCallback<void(T*, const base::string16&)>
+        update_text_and_style) {
   gfx::Size size = label->GetPreferredSize();
 
   // If the label's width is already narrower than 200, we don't need to
@@ -1205,7 +1224,7 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
   if (pos < original_text.length()) {
     searching_backward = true;
     prev_text = SplitStringWithNewLineAtPosition(original_text, pos);
-    label->SetText(prev_text);
+    update_text_and_style.Run(label, prev_text);
     min_width_size = label->GetPreferredSize();
   }
 
@@ -1214,16 +1233,16 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
   if (pos != 0) {
     base::string16 current_text =
         SplitStringWithNewLineAtPosition(original_text, pos);
-    label->SetText(current_text);
+    update_text_and_style.Run(label, current_text);
     size = label->GetPreferredSize();
 
     if (size.width() == min_width_size.width()) {
       // We found the best line break position.
-      label->SetText(prev_text);
+      update_text_and_style.Run(label, prev_text);
       return size;
     } else if (size.width() > min_width_size.width()) {
       // The best line break position is after |pos|.
-      label->SetText(prev_text);
+      update_text_and_style.Run(label, prev_text);
     } else {
       // The best line break position is before |prev|.
       searching_backward = false;
@@ -1249,12 +1268,12 @@ gfx::Size DownloadItemView::AdjustTextAndGetSize(views::Label* label) {
       pos = break_points.back();
     }
     current_text = SplitStringWithNewLineAtPosition(original_text, pos);
-    label->SetText(current_text);
+    update_text_and_style.Run(label, current_text);
     size = label->GetPreferredSize();
 
     // If the width is growing again, it means we passed the optimal width spot.
     if (size.width() > min_width_size.width()) {
-      label->SetText(prev_text);
+      update_text_and_style.Run(label, prev_text);
       return min_width_size;
     }
     prev_text = current_text;
@@ -1412,4 +1431,16 @@ base::string16 DownloadItemView::ElidedFilename() {
 void DownloadItemView::OpenDownloadDuringAsyncScanning() {
   model_->CompleteSafeBrowsingScan();
   should_open_while_scanning_ = true;
+}
+
+void DownloadItemView::StyleFilenameInLabel(views::StyledLabel* label) {
+  base::string16 filename = ElidedFilename();
+  size_t file_name_position = label->GetText().find(filename);
+  if (file_name_position != std::string::npos) {
+    views::StyledLabel::RangeStyleInfo style;
+    style.text_style = STYLE_EMPHASIZED;
+    label->AddStyleRange(
+        gfx::Range(file_name_position, file_name_position + filename.size()),
+        style);
+  }
 }

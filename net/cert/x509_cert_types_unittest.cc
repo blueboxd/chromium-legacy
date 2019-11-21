@@ -190,7 +190,7 @@ TEST_P(X509CertTypesDateTest, Parse) {
       base::Time::FromUTCExploded(test_data_.expected_result, &out_time));
   EXPECT_EQ(out_time.ToInternalValue(), parsed_date.ToInternalValue());
 }
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          X509CertTypesDateTest,
                          testing::ValuesIn(kCertDateTimeData));
 

@@ -505,6 +505,14 @@
                type="chrome_html"
                preprocess="true"
                compress="gzip" />
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_ONC_MOJO_HTML"
+               file="cr_components/chromeos/network/onc_mojo.html"
+               type="chrome_html"
+               compress="gzip" />
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_ONC_MOJO_JS"
+               file="cr_components/chromeos/network/onc_mojo.js"
+               type="chrome_html"
+               compress="gzip" />
   </if>
   <structure name="IDR_WEBUI_MANAGED_FOOTNOTE_HTML"
              file="cr_components/managed_footnote/managed_footnote.html"

@@ -322,7 +322,7 @@ TEST_P(LoginExpandedPublicAccountViewTest, ChangeWarningLabel) {
   EXPECT_EQ(label->GetText(), full_warning);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          LoginExpandedPublicAccountViewTest,
                          ::testing::Values("mouse", "touch"));
 

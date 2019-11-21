@@ -97,7 +97,35 @@ locales = [
 ]
 
 # New locales with .xtb files only. Eventually all of these will merge into the main locales.
-xtb_only_locales = [ "af" ]
+xtb_only_locales = [
+  "af",
+  "as",
+  "az",
+  "be",
+  "bs",
+  "eu",
+  "fr-CA",
+  "gl",
+  "hy",
+  "is",
+  "ka",
+  "kk",
+  "km",
+  "ky",
+  "lo",
+  "mk",
+  "mn",
+  "my",
+  "ne",
+  "or",
+  "pa",
+  "si",
+  "sq",
+  "ur",
+  "uz",
+  "zh-HK",
+  "zu",
+]
 
 # Chrome on iOS uses different names for "es-419" and "pt-BR" (called
 # respectively "es-MX" and "pt" on iOS).

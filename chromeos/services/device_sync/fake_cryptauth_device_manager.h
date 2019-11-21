@@ -36,7 +36,7 @@ class FakeCryptAuthDeviceManager : public CryptAuthDeviceManager {
   }
 
   void set_synced_devices(
-      std::vector<cryptauth::ExternalDeviceInfo> synced_devices) {
+      const std::vector<cryptauth::ExternalDeviceInfo>& synced_devices) {
     synced_devices_ = synced_devices;
   }
 

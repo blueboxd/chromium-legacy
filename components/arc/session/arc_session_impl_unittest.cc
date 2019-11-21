@@ -632,7 +632,7 @@ TEST_P(ArcSessionImplPackagesCacheModeTest, PackagesCacheModes) {
                 .packages_cache_mode());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ArcSessionImplPackagesCacheModeTest,
                          ::testing::ValuesIn(kPackagesCacheModeStates));
 
@@ -656,7 +656,9 @@ TEST_P(ArcSessionImplGmsCoreCacheTest, GmsCoreCaches) {
                             .skip_gms_core_cache());
 }
 
-INSTANTIATE_TEST_SUITE_P(, ArcSessionImplGmsCoreCacheTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         ArcSessionImplGmsCoreCacheTest,
+                         ::testing::Bool());
 
 TEST_F(ArcSessionImplTest, DemoSession) {
   auto arc_session = CreateArcSession();

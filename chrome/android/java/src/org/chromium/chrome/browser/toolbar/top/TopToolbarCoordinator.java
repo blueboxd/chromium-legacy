@@ -36,8 +36,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
  * A coordinator for the top toolbar component.
  */
 public class TopToolbarCoordinator implements Toolbar {
-    static final int TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS = 200;
-    static final int TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS = 150;
 
     /**
      * Observes toolbar URL expansion percentage change.

@@ -739,6 +739,8 @@ TEST_P(FormFetcherImplTest, DestroyFetcherFromConsumer) {
       std::vector<std::unique_ptr<PasswordForm>>());
 }
 
-INSTANTIATE_TEST_SUITE_P(, FormFetcherImplTest, testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(All,
+                         FormFetcherImplTest,
+                         testing::Values(false, true));
 
 }  // namespace password_manager

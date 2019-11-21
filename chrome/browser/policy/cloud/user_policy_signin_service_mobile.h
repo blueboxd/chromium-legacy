@@ -50,10 +50,9 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   // token services.
   // |callback| is invoked once we have registered this device to fetch policy,
   // or once it is determined that |username| is not a managed account.
-  void RegisterForPolicyWithAccountId(
-      const std::string& username,
-      const std::string& account_id,
-      const PolicyRegistrationCallback& callback);
+  void RegisterForPolicyWithAccountId(const std::string& username,
+                                      const std::string& account_id,
+                                      PolicyRegistrationCallback callback);
 
   // Overridden from UserPolicySigninServiceBase to cancel the pending delayed
   // registration.
@@ -63,7 +62,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   void RegisterForPolicyInternal(const std::string& username,
                                  const std::string& account_id,
                                  const std::string& access_token,
-                                 const PolicyRegistrationCallback& callback);
+                                 PolicyRegistrationCallback callback);
 
   void CallPolicyRegistrationCallback(std::unique_ptr<CloudPolicyClient> client,
                                       PolicyRegistrationCallback callback);

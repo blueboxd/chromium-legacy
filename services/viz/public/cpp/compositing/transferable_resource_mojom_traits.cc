@@ -17,10 +17,12 @@ bool StructTraits<viz::mojom::TransferableResourceDataView,
                   viz::TransferableResource>::
     Read(viz::mojom::TransferableResourceDataView data,
          viz::TransferableResource* out) {
-  CHECK(data.ReadSize(&out->size));
-  CHECK(data.ReadMailboxHolder(&out->mailbox_holder));
-  CHECK(data.ReadColorSpace(&out->color_space));
-  CHECK(data.ReadYcbcrInfo(&out->ycbcr_info));
+  if (!data.ReadSize(&out->size) ||
+      !data.ReadMailboxHolder(&out->mailbox_holder) ||
+      !data.ReadColorSpace(&out->color_space) ||
+      !data.ReadYcbcrInfo(&out->ycbcr_info)) {
+    return false;
+  }
   out->id = data.id();
   out->format = static_cast<viz::ResourceFormat>(data.format());
   out->filter = data.filter();

@@ -76,16 +76,14 @@ const char kProactiveTabFreezeAndDiscard_ShouldProactivelyDiscardParam[] =
     "ShouldProactivelyDiscard";
 const char kProactiveTabFreezeAndDiscard_ShouldPeriodicallyUnfreezeParam[] =
     "ShouldPeriodicallyUnfreeze";
-const char kProactiveTabFreezeAndDiscard_DisableHeuristicsParam[] =
-    "DisableHeuristicsProtections";
+const char kProactiveTabFreezeAndDiscard_FreezingProtectMediaOnlyParam[] =
+    "FreezingProtectMediaOnly";
 
 // Instantiate the feature parameters for proactive tab discarding.
 constexpr base::FeatureParam<bool>
     ProactiveTabFreezeAndDiscardParams::kShouldProactivelyDiscard;
 constexpr base::FeatureParam<bool>
     ProactiveTabFreezeAndDiscardParams::kShouldPeriodicallyUnfreeze;
-constexpr base::FeatureParam<bool> ProactiveTabFreezeAndDiscardParams::
-    kShouldProtectTabsSharingBrowsingInstance;
 constexpr base::FeatureParam<int>
     ProactiveTabFreezeAndDiscardParams::kLowLoadedTabCount;
 constexpr base::FeatureParam<int>
@@ -105,7 +103,7 @@ constexpr base::FeatureParam<int>
 constexpr base::FeatureParam<int>
     ProactiveTabFreezeAndDiscardParams::kRefreezeTimeout;
 constexpr base::FeatureParam<bool>
-    ProactiveTabFreezeAndDiscardParams::kDisableHeuristicsProtections;
+    ProactiveTabFreezeAndDiscardParams::kFreezingProtectMediaOnly;
 
 ProactiveTabFreezeAndDiscardParams::ProactiveTabFreezeAndDiscardParams() =
     default;
@@ -126,10 +124,6 @@ ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
 
   params.should_periodically_unfreeze =
       ProactiveTabFreezeAndDiscardParams::kShouldPeriodicallyUnfreeze.Get();
-
-  params.should_protect_tabs_sharing_browsing_instance =
-      ProactiveTabFreezeAndDiscardParams::
-          kShouldProtectTabsSharingBrowsingInstance.Get();
 
   params.low_loaded_tab_count =
       ProactiveTabFreezeAndDiscardParams::kLowLoadedTabCount.Get();
@@ -166,8 +160,8 @@ ProactiveTabFreezeAndDiscardParams GetProactiveTabFreezeAndDiscardParams(
       ProactiveTabFreezeAndDiscardParams::kRefreezeTimeout.Get());
   DCHECK_LT(params.refreeze_timeout, kLargeTimeout);
 
-  params.disable_heuristics_protections =
-      ProactiveTabFreezeAndDiscardParams::kDisableHeuristicsProtections.Get();
+  params.freezing_protect_media_only =
+      ProactiveTabFreezeAndDiscardParams::kFreezingProtectMediaOnly.Get();
 
   return params;
 }

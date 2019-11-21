@@ -105,12 +105,12 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   void RegisterPolicyClientWithCallback(UserPolicySigninService* service) {
     UserPolicySigninServiceBase::PolicyRegistrationCallback callback =
-        base::Bind(&UserPolicySigninServiceTest::OnRegisterCompleted,
-                   base::Unretained(this));
+        base::BindOnce(&UserPolicySigninServiceTest::OnRegisterCompleted,
+                       base::Unretained(this));
     AccountInfo account_info =
         identity_test_env()->MakeAccountAvailable(kTestUser);
     service->RegisterForPolicyWithAccountId(kTestUser, account_info.account_id,
-                                            callback);
+                                            std::move(callback));
     ASSERT_TRUE(IsRequestActive());
   }
 

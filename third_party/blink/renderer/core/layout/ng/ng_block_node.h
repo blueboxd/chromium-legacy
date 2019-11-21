@@ -23,7 +23,6 @@ class NGEarlyBreak;
 class NGLayoutResult;
 class NGPhysicalBoxFragment;
 class NGPhysicalContainerFragment;
-class NGPhysicalFragment;
 struct MinMaxSize;
 struct NGBoxStrut;
 struct NGLayoutAlgorithmParams;
@@ -179,12 +178,13 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
       bool initial_container_is_flipped,
       PhysicalOffset offset = {});
   void PlaceChildrenInLayoutBox(const NGPhysicalBoxFragment&,
-                                const PhysicalOffset& offset_from_start);
+                                const NGBlockBreakToken* previous_break_token);
   void PlaceChildrenInFlowThread(const NGPhysicalBoxFragment&);
   void CopyChildFragmentPosition(
-      const NGPhysicalFragment& fragment,
-      const PhysicalOffset fragment_offset,
-      const PhysicalOffset additional_offset = PhysicalOffset());
+      const NGPhysicalBoxFragment& child_fragment,
+      PhysicalOffset,
+      const NGPhysicalBoxFragment& container_fragment,
+      const NGBlockBreakToken* previous_container_break_token = nullptr);
 
   void CopyBaselinesFromLegacyLayout(const NGConstraintSpace&,
                                      NGBoxFragmentBuilder*);

@@ -15,6 +15,7 @@
 #include "cc/animation/element_animations.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_offset_animation_curve_factory.h"
 #include "cc/animation/scroll_offset_animations.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
 #include "cc/animation/timing_function.h"
@@ -793,10 +794,9 @@ class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1: {
         std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-            ScrollOffsetAnimationCurve::Create(
-                gfx::ScrollOffset(500.f, 550.f),
-                CubicBezierTimingFunction::CreatePreset(
-                    CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+            ScrollOffsetAnimationCurveFactory::
+                CreateEaseInOutAnimationForTesting(
+                    gfx::ScrollOffset(500.f, 550.f)));
         std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
             std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
         keyframe_model->set_needs_synchronized_start_time(true);
@@ -1005,10 +1005,8 @@ class LayerTreeHostPresentationDuringAnimation
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(
-            gfx::ScrollOffset(6500.f, 7500.f),
-            CubicBezierTimingFunction::CreatePreset(
-                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+        ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+            gfx::ScrollOffset(6500.f, 7500.f)));
     std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     keyframe_model->set_needs_synchronized_start_time(true);
@@ -1083,10 +1081,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(
-            gfx::ScrollOffset(6500.f, 7500.f),
-            CubicBezierTimingFunction::CreatePreset(
-                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+        ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+            gfx::ScrollOffset(6500.f, 7500.f)));
     std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     keyframe_model->set_needs_synchronized_start_time(true);
@@ -1211,10 +1207,8 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationCompletion
     layer_tree_host()->root_layer()->AddChild(scroll_layer_);
 
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(
-            final_position_,
-            CubicBezierTimingFunction::CreatePreset(
-                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+        ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+            final_position_));
     std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     keyframe_model->set_needs_synchronized_start_time(true);
@@ -2163,10 +2157,8 @@ class ImplSideInvalidationWithoutCommitTestScroll
 
   void BeginTest() override {
     std::unique_ptr<ScrollOffsetAnimationCurve> curve(
-        ScrollOffsetAnimationCurve::Create(
-            gfx::ScrollOffset(500.f, 550.f),
-            CubicBezierTimingFunction::CreatePreset(
-                CubicBezierTimingFunction::EaseType::EASE_IN_OUT)));
+        ScrollOffsetAnimationCurveFactory::CreateEaseInOutAnimationForTesting(
+            gfx::ScrollOffset(500.f, 550.f)));
     std::unique_ptr<KeyframeModel> keyframe_model(KeyframeModel::Create(
         std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
     keyframe_model->set_needs_synchronized_start_time(true);

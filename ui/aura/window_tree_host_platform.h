@@ -88,9 +88,6 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   bool IsKeyLocked(ui::DomCode dom_code) override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
 
-  // This function is only for test purpose.
-  gfx::NativeCursor* GetCursorNative() { return &current_cursor_; }
-
  private:
   gfx::AcceleratedWidget widget_;
   std::unique_ptr<ui::PlatformWindowBase> platform_window_;

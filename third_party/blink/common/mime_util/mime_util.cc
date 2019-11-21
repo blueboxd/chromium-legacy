@@ -106,6 +106,7 @@ class MimeUtil {
   bool IsSupportedNonImageMimeType(const std::string& mime_type) const;
   bool IsUnsupportedTextMimeType(const std::string& mime_type) const;
   bool IsSupportedJavascriptMimeType(const std::string& mime_type) const;
+  bool IsJSONMimeType(const std::string&) const;
 
   bool IsSupportedMimeType(const std::string& mime_type) const;
 
@@ -165,6 +166,14 @@ bool MimeUtil::IsSupportedJavascriptMimeType(
   return javascript_types_.find(mime_type) != javascript_types_.end();
 }
 
+// TODO(sasebree): Allow non-application `*/*+json` MIME types.
+// https://mimesniff.spec.whatwg.org/#json-mime-type
+bool MimeUtil::IsJSONMimeType(const std::string& mime_type) const {
+  return net::MatchesMimeType("application/json", mime_type) ||
+         net::MatchesMimeType("text/json", mime_type) ||
+         net::MatchesMimeType("application/*+json", mime_type);
+}
+
 bool MimeUtil::IsSupportedMimeType(const std::string& mime_type) const {
   return (base::StartsWith(mime_type, "image/",
                            base::CompareCase::INSENSITIVE_ASCII) &&
@@ -192,6 +201,10 @@ bool IsUnsupportedTextMimeType(const std::string& mime_type) {
 
 bool IsSupportedJavascriptMimeType(const std::string& mime_type) {
   return g_mime_util.Get().IsSupportedJavascriptMimeType(mime_type);
+}
+
+bool IsJSONMimeType(const std::string& mime_type) {
+  return g_mime_util.Get().IsJSONMimeType(mime_type);
 }
 
 bool IsSupportedMimeType(const std::string& mime_type) {

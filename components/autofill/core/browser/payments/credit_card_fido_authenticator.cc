@@ -166,6 +166,15 @@ void CreditCardFIDOAuthenticator::SyncUserOptIn(
                                                   is_user_opted_in);
 }
 
+void CreditCardFIDOAuthenticator::CancelVerification() {
+  current_flow_ = NONE_FLOW;
+  // Full card request may not exist when this function is called. The full card
+  // request is created in OnDidGetAssertion() but the flow can be cancelled
+  // before than.
+  if (full_card_request_)
+    full_card_request_->OnFIDOVerificationCancelled();
+}
+
 FidoAuthenticationStrikeDatabase*
 CreditCardFIDOAuthenticator::GetOrCreateFidoAuthenticationStrikeDatabase() {
   if (!fido_authentication_strike_database_) {

@@ -129,7 +129,7 @@ def interpret_run_benchmark_results(upper_limit_data,
     resultsFile.truncate(0)
 
   for story_name in values_per_story:
-    if len(values_per_story[story_name]['averages']) == 0:
+    if len(values_per_story[story_name]['ci_095']) == 0:
       print(('[  FAILED  ] {}/{} has no valid values for frame_times. Check ' +
         'run_benchmark logs for more information.').format(
           benchmark, story_name))

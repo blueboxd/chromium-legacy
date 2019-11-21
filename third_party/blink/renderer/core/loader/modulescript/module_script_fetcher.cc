@@ -65,7 +65,7 @@ bool ModuleScriptFetcher::WasModuleLoadSuccessful(
   }
   // <spec step="13">If type is a JSON MIME type, then:</spec>
   if (RuntimeEnabledFeatures::JSONModulesEnabled() &&
-      DOMImplementation::IsJSONMIMEType(response.HttpContentType())) {
+      MIMETypeRegistry::IsJSONMimeType(response.HttpContentType())) {
     *module_type = ModuleScriptCreationParams::ModuleType::kJSONModule;
     return true;
   }

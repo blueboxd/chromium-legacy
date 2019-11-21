@@ -2797,7 +2797,25 @@ TEST_F(AppListViewTest, ExpandArrowNotVisibleInEmbeddedAssistantUI) {
 
   contents_view()->ShowEmbeddedAssistantUI(true);
   EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
-  EXPECT_TRUE(contents_view()->expand_arrow_view()->layer()->opacity() == 0.0f);
+  EXPECT_FALSE(contents_view()->expand_arrow_view()->GetVisible());
+}
+
+// Tests that search box is not visible when showing embedded Assistant UI.
+TEST_F(AppListViewTest, SearchBoxViewNotVisibleInEmbeddedAssistantUI) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {app_list_features::kEnableAssistantLauncherUI}, {});
+  ASSERT_TRUE(app_list_features::IsAssistantLauncherUIEnabled());
+
+  Initialize(false /*is_tablet_mode*/);
+  Show();
+
+  EXPECT_TRUE(search_box_view()->GetVisible());
+
+  contents_view()->ShowEmbeddedAssistantUI(true);
+
+  EXPECT_TRUE(contents_view()->IsShowingEmbeddedAssistantUI());
+  EXPECT_FALSE(search_box_view()->GetVisible());
 }
 
 // Tests fullscreen apps grid sizing and layout for small screens (width < 960)

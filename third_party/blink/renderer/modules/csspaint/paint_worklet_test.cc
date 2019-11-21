@@ -213,7 +213,9 @@ class MainOrOffThreadPaintWorkletTest
       : ScopedOffMainThreadCSSPaintForTest(GetParam()) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(, MainOrOffThreadPaintWorkletTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         MainOrOffThreadPaintWorkletTest,
+                         ::testing::Bool());
 
 class MockObserver final : public CSSPaintImageGenerator::Observer {
  public:

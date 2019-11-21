@@ -22,11 +22,12 @@
  *   reportPhishingError: function(),
  * }}
  */
+// eslint-disable-next-line no-var
 var certificateErrorPageController;
 
 // Should match security_interstitials::SecurityInterstitialCommand
 /** @enum {number} */
-var SecurityInterstitialCommandId = {
+const SecurityInterstitialCommandId = {
   CMD_DONT_PROCEED: 0,
   CMD_PROCEED: 1,
   // Ways for user to get more information
@@ -46,7 +47,7 @@ var SecurityInterstitialCommandId = {
   CMD_REPORT_PHISHING_ERROR: 12
 };
 
-var HIDDEN_CLASS = 'hidden';
+const HIDDEN_CLASS = 'hidden';
 
 /**
  * A convenience method for sending commands to the parent page.
@@ -102,7 +103,7 @@ function sendCommand(cmd) {
 // </if>
 // <if expr="is_ios">
   // TODO(crbug.com/565877): Revisit message passing for WKWebView.
-  var iframe = document.createElement('IFRAME');
+  const iframe = document.createElement('IFRAME');
   iframe.setAttribute('src', 'js-command:' + cmd);
   document.documentElement.appendChild(iframe);
   iframe.parentNode.removeChild(iframe);
@@ -115,7 +116,7 @@ function sendCommand(cmd) {
  */
 function preventDefaultOnPoundLinkClicks() {
   document.addEventListener('click', function(e) {
-    var anchor = findAncestor(/** @type {Node} */ (e.target), function(el) {
+    const anchor = findAncestor(/** @type {Node} */ (e.target), function(el) {
       return el.tagName == 'A';
     });
     // Use getAttribute() to prevent URL normalization.

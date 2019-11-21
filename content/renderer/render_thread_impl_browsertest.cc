@@ -154,7 +154,7 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
 
 class RenderThreadImplBrowserTest : public testing::Test {
  public:
-  RenderThreadImplBrowserTest() : field_trial_list_(nullptr) {}
+  RenderThreadImplBrowserTest() {}
 
   void SetUp() override {
     content_renderer_client_.reset(new ContentRendererClient());
@@ -280,8 +280,6 @@ class RenderThreadImplBrowserTest : public testing::Test {
   // and it's okay when we're running in multi-process mode because renderers
   // get killed by the OS. Memory leaks aren't nice but it's test-only.
   RenderThreadImpl* thread_;
-
-  base::FieldTrialList field_trial_list_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
 

@@ -101,7 +101,7 @@ TEST_P(TSFInputScopeTest, GetInputScopes) {
     EXPECT_EQ(test_case.expected_input_scopes[i], input_scopes[i]);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TSFInputScopeTest,
                          ::testing::ValuesIn(kGetInputScopesTestCases));
 
@@ -150,7 +150,7 @@ TEST_P(TSFCreateInputScopeTest, CreateInputScopes) {
     EXPECT_EQ(test_case.expected_input_scopes[i], input_scopes[i]);
   CoTaskMemFree(input_scopes);
 }
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TSFCreateInputScopeTest,
                          ::testing::ValuesIn(kCreateInputScopesTestCases));
 

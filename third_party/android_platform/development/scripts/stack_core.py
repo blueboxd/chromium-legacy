@@ -209,15 +209,24 @@ def ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome,
   start = time.time()
 
   chunks = [lines[i: i+_CHUNK_SIZE] for i in xrange(0, len(lines), _CHUNK_SIZE)]
-  pool = multiprocessing.Pool(processes=_DEFAULT_JOBS)
-  results = pool.map(PreProcessLog(load_vaddrs, apks_directory), chunks)
+
+  use_multiprocessing = os.environ.get('STACK_DISABLE_ASYNC') != '1'
+  if use_multiprocessing:
+    pool = multiprocessing.Pool(processes=_DEFAULT_JOBS)
+    results = pool.map(PreProcessLog(load_vaddrs, apks_directory), chunks)
+  else:
+    results = map(PreProcessLog(load_vaddrs, apks_directory), chunks)
+
   useful_log = []
   so_dirs = []
   for result in results:
     useful_log += result[0]
     so_dirs += result[1]
-  pool.close()
-  pool.join()
+
+  if use_multiprocessing:
+    pool.close()
+    pool.join()
+
   end = time.time()
   logging.debug('Finished processing. Elapsed time: %.4fs', (end - start))
   if so_dirs:

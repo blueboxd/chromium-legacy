@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_INSTALLER_H_
 
 #include "base/callback_forward.h"
-#include "base/macros.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_params.h"
 
 namespace content {
@@ -49,7 +48,9 @@ class AddToHomescreenInstaller {
   static void InstallShortcut(content::WebContents* web_contents,
                               const AddToHomescreenParams& params);
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AddToHomescreenInstaller);
+  AddToHomescreenInstaller() = delete;
+  AddToHomescreenInstaller(const AddToHomescreenInstaller&) = delete;
+  AddToHomescreenInstaller& operator=(const AddToHomescreenInstaller&) = delete;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_WEBAPPS_ADD_TO_HOMESCREEN_INSTALLER_H_

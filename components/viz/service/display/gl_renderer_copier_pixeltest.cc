@@ -315,7 +315,7 @@ TEST_P(GLRendererCopierPixelTest, ExecutesCopyRequest) {
 // GLRendererCopier will encounter, which will cause it to follow different
 // workflows.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     GLRendererCopierPixelTest,
     testing::Combine(
         // Source framebuffer GL format.

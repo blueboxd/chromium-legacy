@@ -39,6 +39,12 @@ ThreadProfiler* g_main_thread_instance = nullptr;
 // Run continuous profiling 2% of the time.
 constexpr const double kFractionOfExecutionTimeToSample = 0.02;
 
+constexpr struct StackSamplingProfiler::SamplingParams kSamplingParams = {
+    /* initial_delay= */ base::TimeDelta::FromMilliseconds(0),
+    /* samples_per_profile= */ 300,
+    /* sampling_interval= */ base::TimeDelta::FromMilliseconds(100),
+    /* keep_consistent_sampling_interval= */ true};
+
 CallStackProfileParams::Process GetProcess() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -231,10 +237,8 @@ ThreadProfiler::ThreadProfiler(
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  const base::StackSamplingProfiler::SamplingParams sampling_params =
-      StackSamplingConfiguration::Get()->GetSamplingParams();
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
-      base::GetSamplingProfilerCurrentThreadToken(), sampling_params,
+      base::GetSamplingProfilerCurrentThreadToken(), kSamplingParams,
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
@@ -248,10 +252,10 @@ ThreadProfiler::ThreadProfiler(
   // profiling.
   base::TimeTicks startup_profiling_completion_time =
       base::TimeTicks::Now() +
-      sampling_params.samples_per_profile * sampling_params.sampling_interval;
+      kSamplingParams.samples_per_profile * kSamplingParams.sampling_interval;
 
   periodic_sampling_scheduler_ = std::make_unique<PeriodicSamplingScheduler>(
-      sampling_params.samples_per_profile * sampling_params.sampling_interval,
+      kSamplingParams.samples_per_profile * kSamplingParams.sampling_interval,
       kFractionOfExecutionTimeToSample, startup_profiling_completion_time);
 
   if (owning_thread_task_runner_)
@@ -294,8 +298,7 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // NB: Destroys the previous profiler as side effect.
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
-      base::GetSamplingProfilerCurrentThreadToken(),
-      StackSamplingConfiguration::Get()->GetSamplingParams(),
+      base::GetSamplingProfilerCurrentThreadToken(), kSamplingParams,
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread_,
                                  CallStackProfileParams::PERIODIC_COLLECTION),

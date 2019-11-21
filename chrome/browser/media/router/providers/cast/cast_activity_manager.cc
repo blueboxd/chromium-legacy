@@ -440,7 +440,7 @@ ActivityRecord* CastActivityManager::AddMirroringActivityRecord(
     const CastSinkExtraData& cast_data) {
   auto activity = std::make_unique<MirroringActivityRecord>(
       route, app_id, message_handler_, session_tracker_, tab_id, cast_data,
-      media_router_,
+      media_router_, media_sink_service_, this,
       // We could theoretically use base::Unretained() below instead of
       // GetWeakPtr(), the that seems like an unnecessary optimization here.
       // --jrw

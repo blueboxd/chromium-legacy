@@ -14,21 +14,6 @@ class Browser;
 @protocol SettingsMainPageCommands;
 @class SigninInteractionController;
 
-// The accessibility identifier of the settings TableView.
-extern NSString* const kSettingsTableViewId;
-
-// The accessibility identifier of the sign in cell.
-extern NSString* const kSettingsSignInCellId;
-
-// The accessibility identifier of the account cell.
-extern NSString* const kSettingsAccountCellId;
-
-// The accessibility identifier of the Search Engine cell.
-extern NSString* const kSettingsSearchEngineCellId;
-
-// The accessibility identifier of the Voice Search cell.
-extern NSString* const kSettingsVoiceSearchCellId;
-
 // This class is the TableView for the application settings.
 @interface SettingsTableViewController
     : SettingsRootTableViewController <SettingsControllerProtocol>

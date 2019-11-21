@@ -515,7 +515,7 @@ TEST_P(MediaDevicesDispatcherHostTest, GetAvailableVideoInputDeviceFormats) {
   run_loop.Run();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MediaDevicesDispatcherHostTest,
                          testing::Values(GURL(), GURL("https://test.com")));
 }  // namespace content

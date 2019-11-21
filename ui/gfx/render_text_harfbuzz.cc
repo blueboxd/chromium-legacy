@@ -50,7 +50,9 @@
 #include "ui/gfx/utf16_indexing.h"
 
 #if defined(OS_MACOSX)
+#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "third_party/skia/include/ports/SkTypeface_mac.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -806,17 +808,25 @@ internal::TextRunHarfBuzz::FontParams CreateFontParams(
 
 namespace internal {
 
-#if !defined(OS_MACOSX)
 sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
                                      bool italic,
                                      Font::Weight weight) {
+#if defined(OS_MACOSX)
+  const Font::FontStyle style = italic ? Font::ITALIC : Font::NORMAL;
+  Font font_with_style = font.Derive(0, style, weight);
+  if (!font_with_style.GetNativeFont())
+    return nullptr;
+
+  return sk_sp<SkTypeface>(SkCreateTypefaceFromCTFont(
+      base::mac::NSToCFCast(font_with_style.GetNativeFont())));
+#else
   SkFontStyle skia_style(
       static_cast<int>(weight), SkFontStyle::kNormal_Width,
       italic ? SkFontStyle::kItalic_Slant : SkFontStyle::kUpright_Slant);
   return sk_sp<SkTypeface>(SkTypeface::MakeFromName(
       font.GetFontName().c_str(), skia_style));
-}
 #endif
+}
 
 TextRunHarfBuzz::FontParams::FontParams(const Font& template_font)
     : font(template_font) {}

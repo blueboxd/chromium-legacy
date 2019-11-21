@@ -33,9 +33,8 @@ Polymer({
     });
   },
 
-  onOpenManufacturerModelDialogTap_: function(e) {
-    this.fire('open-manufacturer-model-dialog-for-specified-printer',
-        {item: this.printerEntry.printerInfo});
+  onAddDiscoveredPrinterTap_: function(e) {
+    this.fire('query-discovered-printer', {item: this.printerEntry});
   },
 
   onAddAutomaticPrinterTap_: function() {

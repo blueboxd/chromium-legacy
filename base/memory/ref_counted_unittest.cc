@@ -655,6 +655,15 @@ TEST(RefCountedUnitTest, TestResetAlreadyNull) {
   EXPECT_EQ(obj.get(), nullptr);
 }
 
+TEST(RefCountedUnitTest, TestResetByNullptrAssignment) {
+  // Check that assigning nullptr resets the object.
+  auto obj = base::MakeRefCounted<ScopedRefPtrCountBase>();
+  EXPECT_NE(obj.get(), nullptr);
+
+  obj = nullptr;
+  EXPECT_EQ(obj.get(), nullptr);
+}
+
 TEST(RefCountedUnitTest, CheckScopedRefptrNullBeforeObjectDestruction) {
   scoped_refptr<CheckRefptrNull> obj = base::MakeRefCounted<CheckRefptrNull>();
   obj->set_scoped_refptr(&obj);

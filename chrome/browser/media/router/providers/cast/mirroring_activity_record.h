@@ -25,6 +25,7 @@
 namespace media_router {
 
 struct CastSinkExtraData;
+class CastActivityManagerBase;
 
 class MirroringActivityRecord : public ActivityRecord,
                                 public mirroring::mojom::SessionObserver,
@@ -39,6 +40,8 @@ class MirroringActivityRecord : public ActivityRecord,
                           int target_tab_id,
                           const CastSinkExtraData& cast_data,
                           mojom::MediaRouter* media_router,
+                          MediaSinkServiceBase* media_sink_service,
+                          CastActivityManagerBase* activity_manager,
                           OnStopCallback callback);
   ~MirroringActivityRecord() override;
 
@@ -106,6 +109,8 @@ class MirroringActivityRecord : public ActivityRecord,
 
   const int channel_id_;
   const MirroringType mirroring_type_;
+  MediaSinkServiceBase* const media_sink_service_;
+  CastActivityManagerBase* const activity_manager_;
   OnStopCallback on_stop_;
   base::WeakPtrFactory<MirroringActivityRecord> weak_ptr_factory_{this};
 };

@@ -34,6 +34,7 @@
 #include "headless/lib/utility/headless_content_utility_client.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -71,6 +72,7 @@ const base::FilePath::CharType kDefaultProfileName[] =
     FILE_PATH_LITERAL("Default");
 
 namespace {
+
 // Keep in sync with content/common/content_constants_internal.h.
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
 // TODO(skyostil): Add a tracing test for this.
@@ -86,6 +88,72 @@ base::LazyInstance<HeadlessCrashReporterClient>::Leaky g_headless_crash_client =
 
 const char kLogFileName[] = "CHROME_LOG_FILE";
 const char kHeadlessCrashKey[] = "headless";
+
+void InitializeResourceBundle(const base::CommandLine& command_line) {
+  const std::string locale =
+      command_line.GetSwitchValueASCII(::switches::kLang);
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+
+#ifdef HEADLESS_USE_EMBEDDED_RESOURCES
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromBuffer(
+      base::StringPiece(
+          reinterpret_cast<const char*>(kHeadlessResourcePak.contents),
+          kHeadlessResourcePak.length),
+      ui::SCALE_FACTOR_NONE);
+
+#else
+
+  base::FilePath dir_module;
+  bool result = base::PathService::Get(base::DIR_MODULE, &dir_module);
+  DCHECK(result);
+
+  // Try loading the headless library pak file first. If it doesn't exist (i.e.,
+  // when we're running with the --headless switch), fall back to the browser's
+  // resource pak.
+  base::FilePath headless_pak =
+      dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
+  if (base::PathExists(headless_pak)) {
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        headless_pak, ui::SCALE_FACTOR_NONE);
+    return;
+  }
+
+  // Otherwise, load resources.pak, chrome_100 and chrome_200.
+  base::FilePath resources_pak =
+      dir_module.Append(FILE_PATH_LITERAL("resources.pak"));
+  base::FilePath chrome_100_pak =
+      dir_module.Append(FILE_PATH_LITERAL("chrome_100_percent.pak"));
+  base::FilePath chrome_200_pak =
+      dir_module.Append(FILE_PATH_LITERAL("chrome_200_percent.pak"));
+
+#if defined(OS_MACOSX) && !defined(COMPONENT_BUILD)
+  // In non component builds, check if fall back in Resources/ folder is
+  // available.
+  if (!base::PathExists(resources_pak)) {
+    resources_pak =
+        dir_module.Append(FILE_PATH_LITERAL("Resources/resources.pak"));
+    chrome_100_pak = dir_module.Append(
+        FILE_PATH_LITERAL("Resources/chrome_100_percent.pak"));
+    chrome_200_pak = dir_module.Append(
+        FILE_PATH_LITERAL("Resources/chrome_200_percent.pak"));
+  }
+#endif
+
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      resources_pak, ui::SCALE_FACTOR_NONE);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      chrome_100_pak, ui::SCALE_FACTOR_100P);
+  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      chrome_200_pak, ui::SCALE_FACTOR_200P);
+#endif
+}
+
+void InitApplicationLocale(const base::CommandLine& command_line) {
+  l10n_util::GetApplicationLocale(
+      command_line.GetSwitchValueASCII(::switches::kLang));
+}
+
 }  // namespace
 
 HeadlessContentMainDelegate::HeadlessContentMainDelegate(
@@ -296,7 +364,12 @@ void HeadlessContentMainDelegate::PreSandboxStartup() {
 #endif  // defined(OS_WIN)
 
   InitCrashReporter(command_line);
-  InitializeResourceBundle();
+  InitializeResourceBundle(command_line);
+
+  // Even though InitializeResourceBundle() has indirectly done the locale
+  // initialization, do it again explicitly to avoid depending on the resource
+  // bundle, which may go away in the future in Headless code.
+  InitApplicationLocale(command_line);
 }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)
@@ -374,68 +447,6 @@ HeadlessBrowser::Options* HeadlessContentMainDelegate::options() {
   if (browser_)
     return browser_->options();
   return options_.get();
-}
-
-// static
-void HeadlessContentMainDelegate::InitializeResourceBundle() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  const std::string locale =
-      command_line->GetSwitchValueASCII(::switches::kLang);
-  ui::ResourceBundle::InitSharedInstanceWithLocale(
-      locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
-
-#ifdef HEADLESS_USE_EMBEDDED_RESOURCES
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromBuffer(
-      base::StringPiece(
-          reinterpret_cast<const char*>(kHeadlessResourcePak.contents),
-          kHeadlessResourcePak.length),
-      ui::SCALE_FACTOR_NONE);
-
-#else
-
-  base::FilePath dir_module;
-  bool result = base::PathService::Get(base::DIR_MODULE, &dir_module);
-  DCHECK(result);
-
-  // Try loading the headless library pak file first. If it doesn't exist (i.e.,
-  // when we're running with the --headless switch), fall back to the browser's
-  // resource pak.
-  base::FilePath headless_pak =
-      dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
-  if (base::PathExists(headless_pak)) {
-    ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        headless_pak, ui::SCALE_FACTOR_NONE);
-    return;
-  }
-
-  // Otherwise, load resources.pak, chrome_100 and chrome_200.
-  base::FilePath resources_pak =
-      dir_module.Append(FILE_PATH_LITERAL("resources.pak"));
-  base::FilePath chrome_100_pak =
-      dir_module.Append(FILE_PATH_LITERAL("chrome_100_percent.pak"));
-  base::FilePath chrome_200_pak =
-      dir_module.Append(FILE_PATH_LITERAL("chrome_200_percent.pak"));
-
-#if defined(OS_MACOSX) && !defined(COMPONENT_BUILD)
-  // In non component builds, check if fall back in Resources/ folder is
-  // available.
-  if (!base::PathExists(resources_pak)) {
-    resources_pak =
-        dir_module.Append(FILE_PATH_LITERAL("Resources/resources.pak"));
-    chrome_100_pak = dir_module.Append(
-        FILE_PATH_LITERAL("Resources/chrome_100_percent.pak"));
-    chrome_200_pak = dir_module.Append(
-        FILE_PATH_LITERAL("Resources/chrome_200_percent.pak"));
-  }
-#endif
-
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      resources_pak, ui::SCALE_FACTOR_NONE);
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      chrome_100_pak, ui::SCALE_FACTOR_100P);
-  ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-      chrome_200_pak, ui::SCALE_FACTOR_200P);
-#endif
 }
 
 #if !defined(CHROME_MULTIPLE_DLL_CHILD)

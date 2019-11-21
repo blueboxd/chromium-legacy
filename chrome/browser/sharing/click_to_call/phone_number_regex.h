@@ -11,4 +11,7 @@
 // Returns an RE2 instance for the given |variant| to detect phone numbers.
 const re2::RE2& GetPhoneNumberRegex(PhoneNumberRegexVariant variant);
 
+// Precompile regexes on a best effort task 15 seconds after startup.
+void PrecompilePhoneNumberRegexesAsync();
+
 #endif  // CHROME_BROWSER_SHARING_CLICK_TO_CALL_PHONE_NUMBER_REGEX_H_

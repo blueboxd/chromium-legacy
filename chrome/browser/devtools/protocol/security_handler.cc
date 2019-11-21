@@ -35,6 +35,7 @@ const char kRanContentWithCertErrorSecurityStateIssueId[] =
 const char kPkpBypassedSecurityStateIssueId[] = "pkp-bypassed";
 const char kIsErrorPageSecurityStateIssueId[] = "is-error-page";
 const char kInsecureInputEventsSecurityStateIssueId[] = "insecure-input-events";
+const char kCertMissingSubjectAltName[] = "cert-missing-subject-alt-name";
 
 std::string SecurityLevelToProtocolSecurityState(
     security_state::SecurityLevel security_level,
@@ -111,6 +112,10 @@ CreateCertificateSecurityState(
   bool certificate_has_weak_signature =
       (state.cert_status & net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
 
+  bool certificate_has_sha1_signature =
+      state.certificate &&
+      (state.cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
+
   int status = net::ObsoleteSSLStatus(state.connection_status,
                                       state.peer_signature_algorithm);
   bool modern_ssl = status == net::OBSOLETE_SSL_NONE;
@@ -129,7 +134,8 @@ CreateCertificateSecurityState(
           .SetIssuer(issuer_name)
           .SetValidFrom(valid_from)
           .SetValidTo(valid_to)
-          .SetCertifcateHasWeakSignature(certificate_has_weak_signature)
+          .SetCertificateHasWeakSignature(certificate_has_weak_signature)
+          .SetCertificateHasSha1Signature(certificate_has_sha1_signature)
           .SetModernSSL(modern_ssl)
           .SetObsoleteSslProtocol(obsolete_ssl_protocol)
           .SetObsoleteSslKeyExchange(obsolete_ssl_key_exchange)
@@ -137,6 +143,10 @@ CreateCertificateSecurityState(
           .SetObsoleteSslSignature(obsolete_ssl_signature)
           .Build();
 
+  if (net::IsCertStatusError(state.cert_status)) {
+    certificate_security_state->SetCertificateNetworkError(
+        net::ErrorToString(net::MapCertStatusToNetError(state.cert_status)));
+  }
   if (key_exchange_group)
     certificate_security_state->SetKeyExchangeGroup(key_exchange_group);
   if (mac)
@@ -193,6 +203,10 @@ CreateVisibleSecurityState(content::WebContents* web_contents) {
   if (!scheme_is_cryptographic)
     secure_origin = content::IsOriginSecure(state->url);
 
+  bool cert_missing_subject_alt_name =
+      state->certificate &&
+      !state->certificate->GetSubjectAltName(nullptr, nullptr);
+
   std::vector<std::string> security_state_issue_ids;
   if (!secure_origin)
     security_state_issue_ids.push_back(kInsecureOriginSecurityStateIssueId);
@@ -221,6 +235,8 @@ CreateVisibleSecurityState(content::WebContents* web_contents) {
   if (insecure_input_events)
     security_state_issue_ids.push_back(
         kInsecureInputEventsSecurityStateIssueId);
+  if (cert_missing_subject_alt_name)
+    security_state_issue_ids.push_back(kCertMissingSubjectAltName);
 
   auto visible_security_state =
       protocol::Security::VisibleSecurityState::Create()

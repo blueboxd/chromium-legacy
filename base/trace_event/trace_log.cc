@@ -595,11 +595,6 @@ void TraceLog::SetEnabled(const TraceConfig& trace_config,
   const bool already_recording = enabled_modes_ & RECORDING_MODE;
   if (modes_to_enable & RECORDING_MODE) {
     if (already_recording) {
-      // TODO(ssid): Stop supporting enabling of RECORDING_MODE when already
-      // enabled crbug.com/625170.
-      DCHECK_EQ(new_options, old_options) << "Attempting to re-enable "
-                                             "tracing with a different set "
-                                             "of options.";
       trace_config_.Merge(trace_config);
     } else {
       trace_config_ = trace_config;

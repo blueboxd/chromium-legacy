@@ -56,8 +56,8 @@ class ServiceWorkerObjectHostTest;
 
 namespace content {
 
+class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
-class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
 class WebContents;
 
@@ -110,6 +110,8 @@ class WebContents;
 // 2) For web workers and for service workers, the provider host is
 // created by the browser process and the provider info is sent in the start
 // worker IPC message.
+//
+// TODO(https://crbug.com/931087): Rename this to ServiceWorkerHost.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
@@ -306,35 +308,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<ServiceWorkerRegistration> controller_registration,
       bool notify_controllerchange);
 
-  // Returns an object info representing |registration|. The object info holds a
-  // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
-  // |registration| to ensure the host stays alive while the object info is
-  // alive. A new ServiceWorkerRegistrationObjectHost instance is created if one
-  // can not be found in |registration_object_hosts_|.
-  //
-  // NOTE: The registration object info should be sent over Mojo in the same
-  // task with calling this method. Otherwise, some Mojo calls to
-  // blink::mojom::ServiceWorkerRegistrationObject or
-  // blink::mojom::ServiceWorkerObject may happen before establishing the
-  // connections, and they'll end up with crashes.
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-  CreateServiceWorkerRegistrationObjectInfo(
-      scoped_refptr<ServiceWorkerRegistration> registration);
-
-  // For service worker execution contexts.
-  // Returns an object info representing |self.serviceWorker|. The object
-  // info holds a Mojo connection to the ServiceWorkerObjectHost for the
-  // |serviceWorker| to ensure the host stays alive while the object info is
-  // alive. See documentation.
-  blink::mojom::ServiceWorkerObjectInfoPtr CreateServiceWorkerObjectInfoToSend(
-      scoped_refptr<ServiceWorkerVersion> version);
-
-  // Returns a ServiceWorkerObjectHost instance for |version| for this provider
-  // host. A new instance is created if one does not already exist.
-  // ServiceWorkerObjectHost will have an ownership of the |version|.
-  base::WeakPtr<ServiceWorkerObjectHost> GetOrCreateServiceWorkerObjectHost(
-      scoped_refptr<ServiceWorkerVersion> version);
-
   // May return nullptr if the context has shut down.
   base::WeakPtr<ServiceWorkerContextCore> context() { return context_; }
 
@@ -394,13 +367,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // for current document.
   ServiceWorkerRegistration* MatchRegistration() const;
 
-  // Removes the ServiceWorkerRegistrationObjectHost corresponding to
-  // |registration_id|.
-  void RemoveServiceWorkerRegistrationObjectHost(int64_t registration_id);
-
-  // Removes the ServiceWorkerObjectHost corresponding to |version_id|.
-  void RemoveServiceWorkerObjectHost(int64_t version_id);
-
   // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
   // settings allows service workers to run at |scope|. If this provider is for
   // a window client, the check involves the topmost frame url as well as
@@ -458,6 +424,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // OnRestoreFromBackForwardCache will not be called.
   void OnRestoreFromBackForwardCache();
 
+  content::ServiceWorkerContainerHost* container_host() {
+    return container_host_.get();
+  }
+
  private:
   // For service worker clients. The flow is kInitial -> kResponseCommitted ->
   // kExecutionReady.
@@ -471,10 +441,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   friend class ServiceWorkerProviderHostTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, RegisterDuplicateScript);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerUpdateJobTest,
-                           RegisterWithDifferentUpdateViaCache);
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
 
@@ -676,21 +642,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // AddMatchingRegistration().
   ServiceWorkerRegistrationMap matching_registrations_;
 
-  // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
-  // the service worker registration JavaScript objects for the hosted execution
-  // context (service worker global scope or service worker client) in the
-  // renderer process.
-  std::map<int64_t /* registration_id */,
-           std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
-      registration_object_hosts_;
-
-  // Contains all ServiceWorkerObjectHost instances corresponding to
-  // the service worker JavaScript objects for the hosted execution
-  // context (service worker global scope or service worker client) in the
-  // renderer process.
-  std::map<int64_t /* version_id */, std::unique_ptr<ServiceWorkerObjectHost>>
-      service_worker_object_hosts_;
-
   // The ready() promise is only allowed to be created once.
   // |get_ready_callback_| has three states:
   // 1. |get_ready_callback_| is null when ready() has not yet been called.
@@ -777,6 +728,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // TODO(yuzus): This bit will be unnecessary once ServiceWorkerProviderHost
   // and RenderFrameHost have the same lifetime.
   bool is_in_back_forward_cache_;
+
+  // TODO(https://crbug.com/931087): Make an execution context host (e.g.,
+  // RenderFrameHostImpl) own this container host.
+  std::unique_ptr<content::ServiceWorkerContainerHost> container_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };

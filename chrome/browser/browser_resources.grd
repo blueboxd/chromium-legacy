@@ -164,50 +164,6 @@
       </if>
 
       <if expr="not is_android">
-        <!-- History. -->
-        <include name="IDR_HISTORY_CONSTANTS_HTML" file="resources\history\constants.html" compress="gzip" type="BINDATA" />
-        <include name="IDR_HISTORY_CONSTANTS_JS" file="resources\history\constants.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_HISTORY_HISTORY_HTML" file="resources\history\history.html" preprocess="true" type="BINDATA" compress="gzip" />
-        <include name="IDR_HISTORY_HISTORY_JS" file="resources\history\history.js" compress="gzip" type="BINDATA" />
-        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG" file="resources\history\images\sign_in_promo_dark.svg" compress="gzip" type="BINDATA" />
-        <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG" file="resources\history\images\sign_in_promo.svg" compress="gzip" type="BINDATA" />
-        <include name="IDR_HISTORY_STRINGS_HTML" file="resources\history\strings.html" compress="gzip" type="BINDATA" />
-        <if expr="optimize_webui">
-          <then>
-            <include name="IDR_HISTORY_APP_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\history\app.vulcanized.html" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
-            <include name="IDR_HISTORY_APP_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\history\app.crisper.js" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
-            <include name="IDR_HISTORY_LAZY_LOAD_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\history\lazy_load.vulcanized.html" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
-            <include name="IDR_HISTORY_LAZY_LOAD_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\history\lazy_load.crisper.js" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
-          </then>
-          <else>
-            <include name="IDR_HISTORY_APP_HTML" file="resources\history\app.html" type="BINDATA" />
-            <include name="IDR_HISTORY_APP_JS" file="resources\history\app.js" preprocess="true" type="BINDATA" />
-            <include name="IDR_HISTORY_BROWSER_SERVICE_HTML" file="resources\history\browser_service.html" type="BINDATA" />
-            <include name="IDR_HISTORY_BROWSER_SERVICE_JS" file="resources\history\browser_service.js" type="BINDATA" />
-            <include name="IDR_HISTORY_HISTORY_ITEM_HTML" file="resources\history\history_item.html" type="BINDATA" />
-            <include name="IDR_HISTORY_HISTORY_ITEM_JS" file="resources\history\history_item.js" type="BINDATA" />
-            <include name="IDR_HISTORY_HISTORY_LIST_HTML" file="resources\history\history_list.html" type="BINDATA" />
-            <include name="IDR_HISTORY_HISTORY_LIST_JS" file="resources\history\history_list.js" type="BINDATA" />
-            <include name="IDR_HISTORY_HISTORY_TOOLBAR_HTML" file="resources\history\history_toolbar.html" type="BINDATA" />
-            <include name="IDR_HISTORY_HISTORY_TOOLBAR_JS" file="resources\history\history_toolbar.js" type="BINDATA" />
-            <include name="IDR_HISTORY_LAZY_LOAD_HTML" file="resources\history\lazy_load.html" type="BINDATA" />
-            <include name="IDR_HISTORY_QUERY_MANAGER_HTML" file="resources\history\query_manager.html" type="BINDATA" />
-            <include name="IDR_HISTORY_QUERY_MANAGER_JS" file="resources\history\query_manager.js" type="BINDATA" />
-            <include name="IDR_HISTORY_ROUTER_HTML" file="resources\history\router.html" type="BINDATA" />
-            <include name="IDR_HISTORY_ROUTER_JS" file="resources\history\router.js" type="BINDATA" />
-            <include name="IDR_HISTORY_SEARCHED_LABEL_HTML" file="resources\history\searched_label.html" type="BINDATA" />
-            <include name="IDR_HISTORY_SEARCHED_LABEL_JS" file="resources\history\searched_label.js" type="BINDATA" />
-            <include name="IDR_HISTORY_SHARED_STYLE_HTML" file="resources\history\shared_style.html" type="BINDATA" />
-            <include name="IDR_HISTORY_SHARED_VARS_HTML" file="resources\history\shared_vars.html" type="BINDATA" />
-            <include name="IDR_HISTORY_SIDE_BAR_HTML" file="resources\history\side_bar.html" type="BINDATA" />
-            <include name="IDR_HISTORY_SIDE_BAR_JS" file="resources\history\side_bar.js" type="BINDATA" />
-            <include name="IDR_HISTORY_SYNCED_DEVICE_CARD_HTML" file="resources\history\synced_device_card.html" type="BINDATA" />
-            <include name="IDR_HISTORY_SYNCED_DEVICE_CARD_JS" file="resources\history\synced_device_card.js" type="BINDATA" />
-            <include name="IDR_HISTORY_SYNCED_DEVICE_MANAGER_HTML" file="resources\history\synced_device_manager.html" type="BINDATA" />
-            <include name="IDR_HISTORY_SYNCED_DEVICE_MANAGER_JS" file="resources\history\synced_device_manager.js" type="BINDATA" />
-          </else>
-        </if>
-
         <!-- Page not available for guest. -->
         <include name="IDR_PAGE_NOT_AVAILABLE_FOR_GUEST_APP_HTML" file="resources\page_not_available_for_guest\app.html" type="BINDATA" />
       </if>

@@ -78,7 +78,7 @@ TEST_P(SSLPlatformKeyNSSTest, KeyMatches) {
   TestSSLPrivateKeyMatches(key.get(), pkcs8);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SSLPlatformKeyNSSTest,
                          testing::ValuesIn(kTestKeys),
                          TestKeyToString);

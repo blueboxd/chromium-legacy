@@ -383,15 +383,32 @@ struct XRAnchorsData {
 };
 
 // Information about results for a single subscription for the current frame.
+// This struct is relevant for subscriptions to hit test for persistent input
+// sources.
 struct XRHitTestSubscriptionResultData {
   uint64 subscription_id;
   array<XRHitResult> hit_test_results;
 };
 
+// Information about results for a single subscription for the current frame.
+// This struct is relevant for subscriptions to hit test for transient input
+// sources.
+struct XRHitTestTransientInputSubscriptionResultData {
+  uint64 subscription_id;
+  // Map from input source id to array of hit test results obtained using that
+  // input source. Required since there might be multiple input sources that
+  // match input source profile name passed in at subscription creation (see
+  // XRFrameDataProvider::SubscribeToHitTestForTransientInput()).
+  map<uint32, array<XRHitResult>> input_source_id_to_hit_test_results;
+};
+
 // Struct containing data about results of all hit test subscriptions for the
 // current frame.
 struct XRHitTestSubscriptionResultsData {
+  // Results for non-transient input sources.
   array<XRHitTestSubscriptionResultData> results;
+  // Results for transient input sources.
+  array<XRHitTestTransientInputSubscriptionResultData> transient_input_results;
 };
 
 // The data needed for each animation frame of an XRSession.
@@ -525,6 +542,11 @@ enum SubscribeToHitTestResult {
   FAILURE_GENERIC = 1,
 };
 
+enum EntityTypeForHitTest {
+  POINT = 0,
+  PLANE = 1,
+};
+
 // Provides functionality for integrating environment information into an
 // XRSession. For example, some AR sessions would implement hit test to allow
 // developers to get the information about the world that its sensors supply.
@@ -545,17 +567,48 @@ interface XREnvironmentIntegrationProvider {
   // identified by passed in |native_origin_information|. I.e., in each frame,
   // the ray used to subscribe to hit test will be transformed to device
   // coordinate system using the device's current knowledge of the state of the
-  // native origin. The returned |subscription_id| uniquely identifies the
-  // subscription within an immersive session. Lifetime of the subscription is
-  // tied to the lifetime of the immersive session.
+  // native origin. |entity_types| are used to filter out results based on the
+  // specific type of the entity that was used to compute the hit test result -
+  // only the results based on the entities passed in this array will be
+  // returned in XRFrameData for this particular subscription.
+  // The returned |subscription_id| uniquely identifies the subscription within
+  // an immersive session. Lifetime of the subscription is tied to the lifetime
+  // of the immersive session.
+  // Hit-test-related mojo interfaces are influenced by WebXR's Hit Test API
+  // proposal, details can be found here:
+  // https://github.com/immersive-web/hit-test
   SubscribeToHitTest(
-    XRNativeOriginInformation native_origin_information, XRRay ray) =>
-    (SubscribeToHitTestResult result, uint64 subscription_id);
+    XRNativeOriginInformation native_origin_information,
+    array<EntityTypeForHitTest> entity_types,
+    XRRay ray) => (SubscribeToHitTestResult result, uint64 subscription_id);
+
+  // Establishes a hit test subscription on the device. The subscription results
+  // will be computed taking into account latest state of the input sources that
+  // are matching profile name specified in |profile_name|. I.e., in each frame,
+  // the ray used to subscribe to hit test will be transformed to device
+  // coordinate system using the device's current knowledge of the state of the
+  // input sources. |entity_types| are used to filter out results based on the
+  // specific type of the entity that was used to compute the hit test result -
+  // only the results based on the entities passed in this array will be
+  // returned in XRFrameData for this particular subscription.
+  // The returned |subscription_id| uniquely identifies the subscription within
+  // an immersive session. Lifetime of the subscription is tied to the lifetime
+  // of the immersive session.
+  // Hit-test-related mojo interfaces are influenced by WebXR's Hit Test API
+  // proposal, details can be found here:
+  // https://github.com/immersive-web/hit-test
+  // Transient input is described here:
+  // https://immersive-web.github.io/webxr/#transient-input
+  SubscribeToHitTestForTransientInput(
+    string profile_name,
+    array<EntityTypeForHitTest> entity_types,
+    XRRay ray) => (SubscribeToHitTestResult result, uint64 subscription_id);
 
   // Notifies the device that subscription with the passed in |subscription_id|
   // is no longer needed and should be removed. The |subscription_id| must be a
-  // valid id of a subscription returned by one of the SubscribeToHitTest calls,
-  // otherwise the call will be ignored.
+  // valid id of a subscription returned by one of the SubscribeToHitTest/
+  // SubscribeToHitTestForTransientInput calls, otherwise the call will be
+  // ignored.
   UnsubscribeFromHitTest(uint64 subscription_id);
 
   // Issues a request to create an anchor attached to a session.

@@ -15,7 +15,8 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/tracing_controller.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
@@ -115,9 +116,9 @@ class TracingControllerImpl : public TracingController,
   base::FilePath GetStartupTraceFileName() const;
 
   std::unique_ptr<PerfettoFileTracer> perfetto_file_tracer_;
-  tracing::mojom::ConsumerHostPtr consumer_host_;
-  tracing::mojom::TracingSessionHostPtr tracing_session_host_;
-  mojo::Binding<tracing::mojom::TracingSessionClient> binding_{this};
+  mojo::Remote<tracing::mojom::ConsumerHost> consumer_host_;
+  mojo::Remote<tracing::mojom::TracingSessionHost> tracing_session_host_;
+  mojo::Receiver<tracing::mojom::TracingSessionClient> receiver_{this};
   StartTracingDoneCallback start_tracing_callback_;
 
   std::vector<std::unique_ptr<tracing::BaseAgent>> agents_;

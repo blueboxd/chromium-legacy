@@ -6,8 +6,6 @@ module tracing.mojom;
 
 const uint32 kStopTracingRetryTimeMilliseconds = 100;
 
-const string kServiceName = "tracing";
-
 // The label of agents that provide trace data of the format explained in
 // https://goo.gl/Dw8qPY.
 const string kChromeTraceEventLabel = "traceEvents";

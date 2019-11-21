@@ -206,8 +206,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {
     page_valid_to = entry->GetSSL().certificate->valid_expiry().ToDoubleT();
   }
 
+  std::string page_certificate_network_error;
+  if (net::IsCertStatusError(entry->GetSSL().cert_status)) {
+    page_certificate_network_error = net::ErrorToString(
+        net::MapCertStatusToNetError(entry->GetSSL().cert_status));
+  }
+
   bool page_certificate_has_weak_signature =
       (entry->GetSSL().cert_status & net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM);
+
+  bool page_certificate_has_sha1_signature_present =
+      (entry->GetSSL().cert_status & net::CERT_STATUS_SHA1_SIGNATURE_PRESENT);
 
   int status = net::ObsoleteSSLStatus(entry->GetSSL().connection_status,
                                       entry->GetSSL().peer_signature_algorithm);
@@ -280,11 +289,23 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, VisibleSecurityStateSecureState) {
   ASSERT_TRUE(valid_to);
   ASSERT_EQ(*valid_to, page_valid_to);
 
+  std::string* certificate_network_error =
+      certificate_security_state->FindStringPath("certificateNetworkError");
+  if (certificate_network_error) {
+    ASSERT_EQ(*certificate_network_error, page_certificate_network_error);
+  }
+
   auto certificate_has_weak_signature =
-      certificate_security_state->FindBoolPath("certifcateHasWeakSignature");
+      certificate_security_state->FindBoolPath("certificateHasWeakSignature");
   ASSERT_TRUE(certificate_has_weak_signature);
   ASSERT_EQ(*certificate_has_weak_signature,
             page_certificate_has_weak_signature);
+
+  auto certificate_has_sha1_signature_present =
+      certificate_security_state->FindBoolPath("certificateHasSha1Signature");
+  ASSERT_TRUE(certificate_has_sha1_signature_present);
+  ASSERT_EQ(*certificate_has_sha1_signature_present,
+            page_certificate_has_sha1_signature_present);
 
   auto modern_ssl = certificate_security_state->FindBoolPath("modernSSL");
   ASSERT_TRUE(modern_ssl);

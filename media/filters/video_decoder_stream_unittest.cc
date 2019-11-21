@@ -119,6 +119,7 @@ class VideoDecoderStreamTest
     // Covering most MediaLog messages for now.
     // TODO(wolenetz/xhwang): Fix tests to have better MediaLog checking.
     EXPECT_MEDIA_LOG(HasSubstr("video")).Times(AnyNumber());
+    EXPECT_MEDIA_LOG(HasSubstr("Video")).Times(AnyNumber());
     EXPECT_MEDIA_LOG(HasSubstr("decryptor")).Times(AnyNumber());
   }
 

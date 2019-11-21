@@ -10,10 +10,6 @@ import("//media/media_options.gni")
 declare_args() {
   system_owns_volume =
       use_alsa && !enable_assistant && chromecast_branding != "google"
-
-  # If true, the mixer will be instantiated inside cast_shell. When false, the
-  # mixer is expected to be running in another process.
-  mixer_in_cast_shell = true
 }
 
 cast_source_set("backend") {

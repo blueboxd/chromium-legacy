@@ -5678,6 +5678,7 @@ if (!is_android) {
       sources += [
         "../browser/ui/app_list/app_list_client_interactive_uitest.cc",
         "../browser/ui/ash/drag_to_overview_interactive_uitest.cc",
+        "../browser/ui/ash/homescreen_interactive_uitest.cc",
         "../browser/ui/ash/launcher_animations_interactive_uitest.cc",
         "../browser/ui/ash/launcher_drag_interactive_uitest.cc",
         "../browser/ui/ash/launcher_page_switches_interactive_uitest.cc",

@@ -289,7 +289,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       if (surface_) {
         // Take read access to the outgoing resource for the skia copy below.
         if (!old_resource_shared_image->has_read_access()) {
-          ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
+          RasterInterface()->BeginSharedImageAccessDirectCHROMIUM(
               old_resource_shared_image->GetTextureIdForReadAccess(),
               GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
         }
@@ -297,7 +297,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
                                         GetGrSurfaceOrigin());
         surface_->flush();
         if (!old_resource_shared_image->has_read_access()) {
-          ContextGL()->EndSharedImageAccessDirectCHROMIUM(
+          RasterInterface()->EndSharedImageAccessDirectCHROMIUM(
               old_resource_shared_image->GetTextureIdForReadAccess());
         }
       }
@@ -394,7 +394,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
     if (is_accelerated_) {
       auto texture_id = resource()->GetTextureIdForWriteAccess();
-      ContextGL()->BeginSharedImageAccessDirectCHROMIUM(
+      RasterInterface()->BeginSharedImageAccessDirectCHROMIUM(
           texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
     }
 
@@ -414,7 +414,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       // Issue any skia work using this resource before releasing write access.
       FlushGrContext();
       auto texture_id = resource()->GetTextureIdForWriteAccess();
-      ContextGL()->EndSharedImageAccessDirectCHROMIUM(texture_id);
+      RasterInterface()->EndSharedImageAccessDirectCHROMIUM(texture_id);
     } else {
       if (DoCopyOnWrite())
         resource_ = NewOrRecycledResource();

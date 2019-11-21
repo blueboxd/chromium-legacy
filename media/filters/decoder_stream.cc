@@ -388,12 +388,11 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   traits_->SetIsDecryptingDemuxerStream(!!decrypting_demuxer_stream_);
   traits_->ReportStatistics(statistics_cb_, 0);
 
-  media_log_->SetBooleanProperty(GetStreamTypeString() + "_dds",
-                                 !!decrypting_demuxer_stream_);
-  media_log_->SetStringProperty(GetStreamTypeString() + "_decoder",
-                                decoder_->GetDisplayName());
-  media_log_->SetBooleanProperty(
-      "is_platform_" + GetStreamTypeString() + "_decoder",
+  media_log_->SetProperty<StreamTraits::kIsDecryptingDemuxerStream>(
+      !!decrypting_demuxer_stream_);
+  media_log_->SetProperty<StreamTraits::kDecoderName>(
+      decoder_->GetDisplayName());
+  media_log_->SetProperty<StreamTraits::kIsPlatformDecoder>(
       decoder_->IsPlatformDecoder());
 
   if (is_decrypting_demuxer_stream_selected) {

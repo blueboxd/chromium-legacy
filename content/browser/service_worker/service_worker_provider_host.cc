@@ -22,6 +22,7 @@
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
@@ -267,6 +268,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   } else {
     DCHECK(client_remote.is_valid());
   }
+  container_host_ =
+      std::make_unique<content::ServiceWorkerContainerHost>(this, context_);
 
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
@@ -300,15 +303,14 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   controller_registration_.reset();
   RemoveAllMatchingRegistrations();
 
-  // Explicitly destroy the ServiceWorkerObjectHosts and
-  // ServiceWorkerRegistrationObjectHosts owned by |this|. Otherwise, this
-  // destructor can trigger their Mojo connection error handlers, which would
-  // call back into halfway destroyed |this|. This is because they are
-  // associated with the ServiceWorker interface, which can be destroyed while
-  // in this destructor (|running_hosted_version_|'s |event_dispatcher_|). See
-  // https://crbug.com/854993.
-  service_worker_object_hosts_.clear();
-  registration_object_hosts_.clear();
+  // Explicitly destroy the ServiceWorkerContainerHost to release
+  // ServiceWorkerObjectHosts and ServiceWorkerRegistrationObjectHosts owned by
+  // that. Otherwise, this destructor can trigger their Mojo connection error
+  // handlers, which would call back into halfway destroyed |this|. This is
+  // because they are associated with the ServiceWorker interface, which can be
+  // destroyed while in this destructor (|running_hosted_version_|'s
+  // |event_dispatcher_|). See https://crbug.com/854993.
+  container_host_.reset();
 
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
@@ -620,19 +622,6 @@ ServiceWorkerRegistration* ServiceWorkerProviderHost::MatchRegistration()
   return nullptr;
 }
 
-void ServiceWorkerProviderHost::RemoveServiceWorkerRegistrationObjectHost(
-    int64_t registration_id) {
-  DCHECK(base::Contains(registration_object_hosts_, registration_id));
-  registration_object_hosts_.erase(registration_id);
-}
-
-void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
-    int64_t version_id) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(base::Contains(service_worker_object_hosts_, version_id));
-  service_worker_object_hosts_.erase(version_id);
-}
-
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
                                                    const GURL& script_url) {
   DCHECK(context_);
@@ -665,23 +654,6 @@ void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
   versions_to_update_.emplace(std::move(version));
 }
 
-base::WeakPtr<ServiceWorkerObjectHost>
-ServiceWorkerProviderHost::GetOrCreateServiceWorkerObjectHost(
-    scoped_refptr<ServiceWorkerVersion> version) {
-  if (!context_ || !version)
-    return nullptr;
-
-  const int64_t version_id = version->version_id();
-  auto existing_object_host = service_worker_object_hosts_.find(version_id);
-  if (existing_object_host != service_worker_object_hosts_.end())
-    return existing_object_host->second->AsWeakPtr();
-
-  service_worker_object_hosts_[version_id] =
-      std::make_unique<ServiceWorkerObjectHost>(context_, this,
-                                                std::move(version));
-  return service_worker_object_hosts_[version_id]->AsWeakPtr();
-}
-
 void ServiceWorkerProviderHost::PostMessageToClient(
     ServiceWorkerVersion* version,
     blink::TransferableMessage message) {
@@ -689,7 +661,7 @@ void ServiceWorkerProviderHost::PostMessageToClient(
 
   blink::mojom::ServiceWorkerObjectInfoPtr info;
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
-      GetOrCreateServiceWorkerObjectHost(version);
+      container_host_->GetOrCreateServiceWorkerObjectHost(version);
   if (object_host)
     info = object_host->CreateCompleteObjectInfoToSend();
   container_->PostMessageToClient(std::move(info), std::move(message));
@@ -852,7 +824,7 @@ void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
   }
 
   std::move(*get_ready_callback_)
-      .Run(CreateServiceWorkerRegistrationObjectInfo(
+      .Run(container_host_->CreateServiceWorkerRegistrationObjectInfo(
           scoped_refptr<ServiceWorkerRegistration>(registration)));
 }
 
@@ -892,7 +864,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
 
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
-      GetOrCreateServiceWorkerObjectHost(controller_);
+      container_host_->GetOrCreateServiceWorkerObjectHost(controller_);
   if (object_host)
     controller_info->object_info =
         object_host->CreateCompleteObjectInfoToSend();
@@ -1088,7 +1060,7 @@ void ServiceWorkerProviderHost::RegistrationComplete(
 
   std::move(callback).Run(
       blink::mojom::ServiceWorkerErrorType::kNone, base::nullopt,
-      CreateServiceWorkerRegistrationObjectInfo(
+      container_host_->CreateServiceWorkerRegistrationObjectInfo(
           scoped_refptr<ServiceWorkerRegistration>(registration)));
 }
 
@@ -1188,8 +1160,10 @@ void ServiceWorkerProviderHost::GetRegistrationComplete(
   DCHECK(status != blink::ServiceWorkerStatusCode::kOk || registration);
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info;
   if (status == blink::ServiceWorkerStatusCode::kOk &&
-      !registration->is_uninstalling())
-    info = CreateServiceWorkerRegistrationObjectInfo(std::move(registration));
+      !registration->is_uninstalling()) {
+    info = container_host_->CreateServiceWorkerRegistrationObjectInfo(
+        std::move(registration));
+  }
 
   std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
                           base::nullopt, std::move(info));
@@ -1234,7 +1208,8 @@ void ServiceWorkerProviderHost::GetRegistrationsComplete(
     DCHECK(registration.get());
     if (!registration->is_uninstalling()) {
       object_infos.push_back(
-          CreateServiceWorkerRegistrationObjectInfo(std::move(registration)));
+          container_host_->CreateServiceWorkerRegistrationObjectInfo(
+              std::move(registration)));
     }
   }
 
@@ -1383,35 +1358,6 @@ void ServiceWorkerProviderHost::GetInterface(
                                        std::move(interface_pipe),
                                        running_hosted_version_->script_origin(),
                                        render_process_id_));
-}
-
-blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-ServiceWorkerProviderHost::CreateServiceWorkerRegistrationObjectInfo(
-    scoped_refptr<ServiceWorkerRegistration> registration) {
-  int64_t registration_id = registration->id();
-  auto existing_host = registration_object_hosts_.find(registration_id);
-  if (existing_host != registration_object_hosts_.end()) {
-    return existing_host->second->CreateObjectInfo();
-  }
-  registration_object_hosts_[registration_id] =
-      std::make_unique<ServiceWorkerRegistrationObjectHost>(
-          context_, this, std::move(registration));
-  return registration_object_hosts_[registration_id]->CreateObjectInfo();
-}
-
-blink::mojom::ServiceWorkerObjectInfoPtr
-ServiceWorkerProviderHost::CreateServiceWorkerObjectInfoToSend(
-    scoped_refptr<ServiceWorkerVersion> version) {
-  int64_t version_id = version->version_id();
-  auto existing_object_host = service_worker_object_hosts_.find(version_id);
-  if (existing_object_host != service_worker_object_hosts_.end()) {
-    return existing_object_host->second->CreateCompleteObjectInfoToSend();
-  }
-  service_worker_object_hosts_[version_id] =
-      std::make_unique<ServiceWorkerObjectHost>(context_, this,
-                                                std::move(version));
-  return service_worker_object_hosts_[version_id]
-      ->CreateCompleteObjectInfoToSend();
 }
 
 template <typename CallbackType, typename... Args>

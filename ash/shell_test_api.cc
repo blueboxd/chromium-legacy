@@ -29,6 +29,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 
@@ -69,6 +70,38 @@ class PointerMoveLoopWaiter : public ui::CompositorObserver {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PointerMoveLoopWaiter);
+};
+
+class WindowAnimationWaiter : public ui::LayerAnimationObserver {
+ public:
+  explicit WindowAnimationWaiter(aura::Window* window)
+      : animator_(window->layer()->GetAnimator()) {
+    animator_->AddObserver(this);
+  }
+  ~WindowAnimationWaiter() override = default;
+
+  WindowAnimationWaiter(const WindowAnimationWaiter& other) = delete;
+  WindowAnimationWaiter& operator=(const WindowAnimationWaiter& rhs) = delete;
+
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
+    if (!animator_->is_animating()) {
+      animator_->RemoveObserver(this);
+      run_loop_.Quit();
+    }
+  }
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {}
+
+  void Wait() {
+    DCHECK(animator_->is_animating());
+    run_loop_.Run();
+  }
+
+ private:
+  ui::LayerAnimator* animator_;
+  base::RunLoop run_loop_;
 };
 
 }  // namespace
@@ -202,6 +235,11 @@ void ShellTestApi::WaitForLauncherAnimationState(
   base::RunLoop run_loop;
   WaitForLauncherState(target_state, run_loop.QuitWhenIdleClosure());
   run_loop.Run();
+}
+
+void ShellTestApi::WaitForWindowFinishAnimating(aura::Window* window) {
+  WindowAnimationWaiter waiter(window);
+  waiter.Wait();
 }
 
 PaginationModel* ShellTestApi::GetAppListPaginationModel() {

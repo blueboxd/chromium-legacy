@@ -5428,18 +5428,12 @@ grit("resources") {
     ]
   }
 
-  if (!is_android && optimize_webui) {
+  if (is_chromeos && optimize_webui) {
     deps += [
-      "//chrome/browser/resources/bookmarks:build",
-      "//chrome/browser/resources/history:build",
+      "//chrome/browser/resources/chromeos/bluetooth_pairing_dialog:build",
+      "//chrome/browser/resources/chromeos/internet_config_dialog:build",
+      "//chrome/browser/resources/chromeos/internet_detail_dialog:build",
     ]
-    if (is_chromeos) {
-      deps += [
-        "//chrome/browser/resources/chromeos/bluetooth_pairing_dialog:build",
-        "//chrome/browser/resources/chromeos/internet_config_dialog:build",
-        "//chrome/browser/resources/chromeos/internet_detail_dialog:build",
-      ]
-    }
   }
 
   if (safe_browsing_mode > 0) {

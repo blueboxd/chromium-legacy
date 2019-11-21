@@ -13,6 +13,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -160,10 +161,10 @@ class ServiceWorkerObjectHostTest : public testing::Test {
   }
 
   ServiceWorkerObjectHost* GetServiceWorkerObjectHost(
-      ServiceWorkerProviderHost* provider_host,
+      ServiceWorkerContainerHost* container_host,
       int64_t version_id) {
-    auto iter = provider_host->service_worker_object_hosts_.find(version_id);
-    if (iter != provider_host->service_worker_object_hosts_.end())
+    auto iter = container_host->service_worker_object_hosts_.find(version_id);
+    if (iter != container_host->service_worker_object_hosts_.end())
       return iter->second.get();
     return nullptr;
   }
@@ -267,11 +268,12 @@ TEST_F(ServiceWorkerObjectHostTest,
   // execution context (e.g., self.registration.active inside the active
   // worker and self.serviceWorker).
   ServiceWorkerProviderHost* provider_host = version_->provider_host();
+  ServiceWorkerContainerHost* container_host = provider_host->container_host();
   blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerObjectHost(version_)
+      container_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
   ServiceWorkerObjectHost* object_host =
-      GetServiceWorkerObjectHost(provider_host, version_->version_id());
+      GetServiceWorkerObjectHost(container_host, version_->version_id());
   EXPECT_EQ(2u, GetReceiverCount(object_host));
 
   {
@@ -372,11 +374,12 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   provider_host->UpdateUrls(scope, scope, url::Origin::Create(scope));
 
   // Prepare a ServiceWorkerObjectHost for the worker.
+  ServiceWorkerContainerHost* container_host = provider_host->container_host();
   blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerObjectHost(version_)
+      container_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
   ServiceWorkerObjectHost* object_host =
-      GetServiceWorkerObjectHost(provider_host.get(), version_->version_id());
+      GetServiceWorkerObjectHost(container_host, version_->version_id());
 
   // Simulate postMessage() from the window client to the worker.
   blink::TransferableMessage message;

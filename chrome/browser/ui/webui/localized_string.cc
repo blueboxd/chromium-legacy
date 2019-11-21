@@ -7,8 +7,13 @@
 #include "content/public/browser/web_ui_data_source.h"
 
 void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
+                             base::span<const LocalizedString> strings) {
+  for (const auto& str : strings)
+    html_source->AddLocalizedString(str.name, str.id);
+}
+
+void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
                              const LocalizedString* strings,
                              size_t num_strings) {
-  for (size_t i = 0; i < num_strings; ++i)
-    html_source->AddLocalizedString(strings[i].name, strings[i].id);
+  AddLocalizedStringsBulk(html_source, base::make_span(strings, num_strings));
 }

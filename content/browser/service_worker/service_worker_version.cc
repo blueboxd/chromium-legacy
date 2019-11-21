@@ -29,6 +29,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/service_worker/payment_handler_support.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
@@ -2249,9 +2250,10 @@ void ServiceWorkerVersion::InitializeGlobalScope() {
 
   service_worker_remote_->InitializeGlobalScope(
       std::move(service_worker_host_),
-      provider_host_->CreateServiceWorkerRegistrationObjectInfo(
-          std::move(registration)),
-      provider_host_->CreateServiceWorkerObjectInfoToSend(this),
+      provider_host_->container_host()
+          ->CreateServiceWorkerRegistrationObjectInfo(std::move(registration)),
+      provider_host_->container_host()->CreateServiceWorkerObjectInfoToSend(
+          this),
       fetch_handler_existence_);
 }
 

@@ -84,6 +84,8 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "MEDIA_DEBUG_LOG_ENTRY";
     case MediaLogEvent::PROPERTY_CHANGE:
       return "PROPERTY_CHANGE";
+    case MediaLogEvent::BUFFERING_STATE_CHANGE:
+      return "BUFFERING_STATE_CHANGE";
     case MediaLogEvent::SUSPENDED:
       return "SUSPENDED";
   }
@@ -296,7 +298,7 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateBufferingStateChangedEvent(
     const std::string& property,
     BufferingState state,
     BufferingStateChangeReason reason) {
-  return CreateStringEvent(MediaLogEvent::PROPERTY_CHANGE, property,
+  return CreateStringEvent(MediaLogEvent::BUFFERING_STATE_CHANGE, property,
                            BufferingStateToString(state, reason));
 }
 
@@ -304,30 +306,6 @@ void MediaLog::AddLogEvent(MediaLogLevel level, const std::string& message) {
   std::unique_ptr<MediaLogEvent> event(
       CreateEvent(MediaLogLevelToEventType(level)));
   event->params.SetString(MediaLogLevelToString(level), message);
-  AddEvent(std::move(event));
-}
-
-void MediaLog::SetStringProperty(
-    const std::string& key, const std::string& value) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
-  event->params.SetString(key, value);
-  AddEvent(std::move(event));
-}
-
-void MediaLog::SetDoubleProperty(
-    const std::string& key, double value) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
-  event->params.SetDouble(key, value);
-  AddEvent(std::move(event));
-}
-
-void MediaLog::SetBooleanProperty(
-    const std::string& key, bool value) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
-  event->params.SetBoolean(key, value);
   AddEvent(std::move(event));
 }
 

@@ -92,6 +92,9 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void DeleteGpuRasterTexture(GLuint texture) override;
   void BeginGpuRaster() override;
   void EndGpuRaster() override;
+  void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
+                                            GLenum mode) override;
+  void EndSharedImageAccessDirectCHROMIUM(GLuint texture) override;
 
   void TraceBeginCHROMIUM(const char* category_name,
                           const char* trace_name) override;

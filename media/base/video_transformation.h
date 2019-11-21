@@ -54,7 +54,7 @@ MEDIA_EXPORT bool operator==(const struct VideoTransformation& first,
 
 constexpr VideoTransformation kNoTransformation = VideoTransformation();
 
-std::string VideoRotationToString(VideoRotation rotation);
+std::string MEDIA_EXPORT VideoRotationToString(VideoRotation rotation);
 
 }  // namespace media
 

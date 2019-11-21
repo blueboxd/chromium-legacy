@@ -11,6 +11,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -19,6 +20,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log_event.h"
+#include "media/base/media_log_properties.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/pipeline_status.h"
 #include "url/gurl.h"
@@ -121,10 +123,12 @@ class MEDIA_EXPORT MediaLog {
   // Report a log message at the specified log level.
   void AddLogEvent(MediaLogLevel level, const std::string& message);
 
-  // Report a property change without an accompanying event.
-  void SetStringProperty(const std::string& key, const std::string& value);
-  void SetDoubleProperty(const std::string& key, double value);
-  void SetBooleanProperty(const std::string& key, bool value);
+  // Only way to access the MediaLogEvent::PROPERTY_CHANGE event type,
+  // so that parameter types can be checked from media_log_properties.h.
+  template <MediaLogProperty P, typename T>
+  void SetProperty(const T& value) {
+    AddEvent(CreatePropertyEvent<P, T>(value));
+  }
 
   // Getter for |id_|. Used by MojoMediaLogService to construct MediaLogEvents
   // to log into this MediaLog. Also used in trace events to associate each
@@ -149,6 +153,15 @@ class MEDIA_EXPORT MediaLog {
   virtual void AddEventLocked(std::unique_ptr<MediaLogEvent> event);
   virtual void OnWebMediaPlayerDestroyedLocked();
   virtual std::string GetErrorMessageLocked();
+
+  // MockMediaLog also needs to call this method.
+  template <MediaLogProperty P, typename T>
+  std::unique_ptr<MediaLogEvent> CreatePropertyEvent(const T& value) {
+    auto event = CreateEvent(MediaLogEvent::PROPERTY_CHANGE);
+    event->params.SetKey(MediaLogPropertyKeyToString(P),
+                         MediaLogPropertyTypeSupport<P, T>::Convert(value));
+    return event;
+  }
 
   // Notify all child logs that they should stop working.  This should be called
   // to guarantee that no further calls into AddEvent should be allowed.

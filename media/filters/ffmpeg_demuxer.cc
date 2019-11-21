@@ -19,7 +19,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -31,7 +30,6 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/demuxer_memory_limit.h"
 #include "media/base/limits.h"
-#include "media/base/media_log.h"
 #include "media/base/media_tracks.h"
 #include "media/base/media_types.h"
 #include "media/base/sample_rates.h"
@@ -183,16 +181,25 @@ static const char* GetCodecName(enum AVCodecID id) {
   return codec_descriptor ? codec_descriptor->name : kCodecNone;
 }
 
-static void SetTimeProperty(MediaLogEvent* event,
-                            const std::string& key,
-                            base::TimeDelta value) {
+static base::Value GetTimeValue(base::TimeDelta value) {
   if (value == kInfiniteDuration)
-    event->params.SetString(key, "kInfiniteDuration");
-  else if (value == kNoTimestamp)
-    event->params.SetString(key, "kNoTimestamp");
-  else
-    event->params.SetDouble(key, value.InSecondsF());
+    return base::Value("kInfiniteDuration");
+  if (value == kNoTimestamp)
+    return base::Value("kNoTimestamp");
+  return base::Value(value.InSecondsF());
 }
+
+template <>
+struct MediaLogPropertyTypeSupport<MediaLogProperty::kMaxDuration,
+                                   base::TimeDelta> {
+  static base::Value Convert(base::TimeDelta t) { return GetTimeValue(t); }
+};
+
+template <>
+struct MediaLogPropertyTypeSupport<MediaLogProperty::kStartTime,
+                                   base::TimeDelta> {
+  static base::Value Convert(base::TimeDelta t) { return GetTimeValue(t); }
+};
 
 static int ReadFrameAndDiscardEmpty(AVFormatContext* context,
                                     AVPacket* packet) {
@@ -1549,64 +1556,26 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
 
 void FFmpegDemuxer::LogMetadata(AVFormatContext* avctx,
                                 base::TimeDelta max_duration) {
-  // Use a single MediaLogEvent to batch all parameter updates at once; this
-  // prevents throttling of events due to the large number of updates here.
-  std::unique_ptr<MediaLogEvent> metadata_event =
-      media_log_->CreateEvent(MediaLogEvent::PROPERTY_CHANGE);
+  std::vector<AudioDecoderConfig> audio_tracks;
+  std::vector<VideoDecoderConfig> video_tracks;
 
   DCHECK_EQ(avctx->nb_streams, streams_.size());
-  auto& params = metadata_event->params;
-  int audio_track_count = 0;
-  int video_track_count = 0;
+
   for (size_t i = 0; i < streams_.size(); ++i) {
     FFmpegDemuxerStream* stream = streams_[i].get();
     if (!stream)
       continue;
     if (stream->type() == DemuxerStream::AUDIO) {
-      ++audio_track_count;
-      std::string suffix = "";
-      if (audio_track_count > 1)
-        suffix = "_track" + base::NumberToString(audio_track_count);
-      const AVCodecParameters* audio_parameters = avctx->streams[i]->codecpar;
-      const AudioDecoderConfig& audio_config = stream->audio_decoder_config();
-      params.SetString("audio_codec_name" + suffix,
-                       GetCodecName(audio_parameters->codec_id));
-      params.SetInteger("audio_channels_count" + suffix,
-                        audio_parameters->channels);
-      params.SetString("audio_sample_format" + suffix,
-                       SampleFormatToString(audio_config.sample_format()));
-      params.SetInteger("audio_samples_per_second" + suffix,
-                        audio_config.samples_per_second());
+      audio_tracks.push_back(stream->audio_decoder_config());
     } else if (stream->type() == DemuxerStream::VIDEO) {
-      ++video_track_count;
-      std::string suffix = "";
-      if (video_track_count > 1)
-        suffix = "_track" + base::NumberToString(video_track_count);
-      const AVStream* video_av_stream = avctx->streams[i];
-      const AVCodecParameters* video_parameters = video_av_stream->codecpar;
-      const VideoDecoderConfig& video_config = stream->video_decoder_config();
-      params.SetString("video_codec_name" + suffix,
-                       GetCodecName(video_parameters->codec_id));
-      params.SetInteger("width" + suffix, video_parameters->width);
-      params.SetInteger("height" + suffix, video_parameters->height);
-
-      // AVCodecParameters has no time_base field. We use the one from AVStream
-      // here.
-      params.SetString(
-          "time_base" + suffix,
-          base::StringPrintf("%d/%d", video_av_stream->time_base.num,
-                             video_av_stream->time_base.den));
-
-      params.SetBoolean("video_is_encrypted" + suffix,
-                        video_config.is_encrypted());
+      video_tracks.push_back(stream->video_decoder_config());
     }
   }
-  params.SetBoolean("found_audio_stream", (audio_track_count > 0));
-  params.SetBoolean("found_video_stream", (video_track_count > 0));
-  SetTimeProperty(metadata_event.get(), "max_duration", max_duration);
-  SetTimeProperty(metadata_event.get(), "start_time", start_time_);
-  metadata_event->params.SetInteger("bitrate", bitrate_);
-  media_log_->AddEvent(std::move(metadata_event));
+  media_log_->SetProperty<MediaLogProperty::kAudioTracks>(audio_tracks);
+  media_log_->SetProperty<MediaLogProperty::kVideoTracks>(video_tracks);
+  media_log_->SetProperty<MediaLogProperty::kMaxDuration>(max_duration);
+  media_log_->SetProperty<MediaLogProperty::kStartTime>(start_time_);
+  media_log_->SetProperty<MediaLogProperty::kBitrate>(bitrate_);
 }
 
 FFmpegDemuxerStream* FFmpegDemuxer::FindStreamWithLowestStartTimestamp(

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/browser/service_worker/service_worker_client_utils.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -129,8 +130,10 @@ bool PrepareExtendableMessageEventFromServiceWorker(
             source_service_worker_provider_host->provider_type());
   blink::mojom::ServiceWorkerObjectInfoPtr source_worker_info;
   base::WeakPtr<ServiceWorkerObjectHost> service_worker_object_host =
-      worker->provider_host()->GetOrCreateServiceWorkerObjectHost(
-          source_service_worker_provider_host->running_hosted_version());
+      worker->provider_host()
+          ->container_host()
+          ->GetOrCreateServiceWorkerObjectHost(
+              source_service_worker_provider_host->running_hosted_version());
   if (service_worker_object_host) {
     // CreateCompleteObjectInfoToSend() is safe because |source_worker_info|
     // will be sent immediately by the caller of this function.
@@ -195,14 +198,15 @@ void DispatchExtendableMessageEventFromServiceWorker(
 
 ServiceWorkerObjectHost::ServiceWorkerObjectHost(
     base::WeakPtr<ServiceWorkerContextCore> context,
-    ServiceWorkerProviderHost* provider_host,
+    ServiceWorkerContainerHost* container_host,
     scoped_refptr<ServiceWorkerVersion> version)
     : context_(context),
-      provider_host_(provider_host),
-      provider_origin_(url::Origin::Create(provider_host->url())),
+      container_host_(container_host),
+      container_origin_(
+          url::Origin::Create(container_host_->provider_host()->url())),
       version_(std::move(version)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(context_ && provider_host_ && version_);
+  DCHECK(context_ && container_host_ && version_);
   DCHECK(context_->GetLiveRegistration(version_->registration_id()));
   version_->AddObserver(this);
   receivers_.set_disconnect_handler(base::BindRepeating(
@@ -284,27 +288,29 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
   }
-  DCHECK_EQ(provider_origin_, url::Origin::Create(provider_host_->url()));
-  switch (provider_host_->provider_type()) {
+  DCHECK_EQ(container_origin_,
+            url::Origin::Create(container_host_->provider_host()->url()));
+  switch (container_host_->provider_host()->provider_type()) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
       service_worker_client_utils::GetClient(
-          provider_host_,
+          container_host_->provider_host(),
           base::BindOnce(&DispatchExtendableMessageEventFromClient, context_,
-                         version_, std::move(message), provider_origin_,
+                         version_, std::move(message), container_origin_,
                          std::move(callback)));
       return;
     case blink::mojom::ServiceWorkerProviderType::kForServiceWorker: {
       // Clamp timeout to the sending worker's remaining timeout, to prevent
       // postMessage from keeping workers alive forever.
-      base::TimeDelta timeout =
-          provider_host_->running_hosted_version()->remaining_timeout();
+      base::TimeDelta timeout = container_host_->provider_host()
+                                    ->running_hosted_version()
+                                    ->remaining_timeout();
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::BindOnce(&DispatchExtendableMessageEventFromServiceWorker,
-                         version_, std::move(message), provider_origin_,
+                         version_, std::move(message), container_origin_,
                          base::make_optional(timeout), std::move(callback),
-                         provider_host_->AsWeakPtr()));
+                         container_host_->provider_host()->AsWeakPtr()));
       return;
     }
     case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
@@ -314,7 +320,7 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
       break;
   }
-  NOTREACHED() << provider_host_->provider_type();
+  NOTREACHED() << container_host_->provider_host()->provider_type();
 }
 
 void ServiceWorkerObjectHost::OnConnectionError() {
@@ -322,7 +328,7 @@ void ServiceWorkerObjectHost::OnConnectionError() {
   if (!receivers_.empty())
     return;
   // Will destroy |this|.
-  provider_host_->RemoveServiceWorkerObjectHost(version_->version_id());
+  container_host_->RemoveServiceWorkerObjectHost(version_->version_id());
 }
 
 }  // namespace content

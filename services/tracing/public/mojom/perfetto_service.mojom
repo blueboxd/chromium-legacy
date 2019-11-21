@@ -200,8 +200,8 @@ enum TracingClientPriority {
 };
 
 // The ConsumerHost interface is a privileged interface which is implemented
-// within the tracing service, and connected to by privileged services
-// (i.e. content_browser) to receive tracing data.
+// within the tracing service, and connected to by privileged clients
+// (e.g. the browser process) to receive tracing data.
 interface ConsumerHost {
   // Enable Perfetto tracing with the given TracingSessionClient interface for
   // signaling lifespan of the tracing session, and any future callbacks.

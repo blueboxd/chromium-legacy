@@ -2572,7 +2572,6 @@ void RenderFrameHostImpl::DocumentOnLoadCompleted() {
 
 void RenderFrameHostImpl::DidChangeActiveSchedulerTrackedFeatures(
     uint64_t features_mask) {
-  TRACE_EVENT0("toplevel", "DidChangeActiveSchedulerTrackedFeatures");
   renderer_reported_scheduler_tracked_features_ = features_mask;
 
   MaybeEvictFromBackForwardCache();
@@ -2580,7 +2579,6 @@ void RenderFrameHostImpl::DidChangeActiveSchedulerTrackedFeatures(
 
 void RenderFrameHostImpl::OnSchedulerTrackedFeatureUsed(
     blink::scheduler::WebSchedulerTrackedFeature feature) {
-  TRACE_EVENT0("toplevel", "OnSchedulerTrackedFeatureUsed");
   browser_reported_scheduler_tracked_features_ |=
       1 << static_cast<uint64_t>(feature);
 
@@ -3731,7 +3729,6 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
 }
 
 void RenderFrameHostImpl::EvictFromBackForwardCache() {
-  TRACE_EVENT0("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache");
   // TODO(hajimehoshi): This function should take the reason from the renderer
   // side.
   EvictFromBackForwardCacheWithReason(
@@ -3747,6 +3744,8 @@ void RenderFrameHostImpl::EvictFromBackForwardCacheWithReason(
 
 void RenderFrameHostImpl::EvictFromBackForwardCacheWithReasons(
     const BackForwardCacheCanStoreDocumentResult& can_store) {
+  TRACE_EVENT1("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache",
+               "can_store", can_store.ToString());
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)

@@ -130,6 +130,23 @@ memory_instrumentation::mojom::ProcessType GetCoordinatorClientProcessType(
   }
 }
 
+void BindTracedProcessOnIOThread(
+    base::WeakPtr<BrowserChildProcessHostImpl> weak_host,
+    mojo::PendingReceiver<tracing::mojom::TracedProcess> receiver) {
+  if (!weak_host)
+    return;
+
+  weak_host->GetHost()->BindReceiver(std::move(receiver));
+}
+
+void BindTracedProcessFromUIThread(
+    base::WeakPtr<BrowserChildProcessHostImpl> weak_host,
+    mojo::PendingReceiver<tracing::mojom::TracedProcess> receiver) {
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&BindTracedProcessOnIOThread,
+                                std::move(weak_host), std::move(receiver)));
+}
+
 }  // namespace
 
 // static
@@ -487,6 +504,9 @@ void BrowserChildProcessHostImpl::OnChannelInitialized(IPC::Channel* channel) {
 
 void BrowserChildProcessHostImpl::OnChildDisconnected() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  tracing_registration_.reset();
+
 #if defined(OS_WIN)
   // OnChildDisconnected may be called without OnChannelConnected, so stop the
   // early exit watcher so GetTerminationStatus can close the process handle.
@@ -666,6 +686,10 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
   }
+
+  tracing_registration_ = TracingServiceController::Get().RegisterClient(
+      process.Pid(), base::BindRepeating(&BindTracedProcessFromUIThread,
+                                         weak_factory_.GetWeakPtr()));
 }
 
 void BrowserChildProcessHostImpl::RegisterCoordinatorClient(

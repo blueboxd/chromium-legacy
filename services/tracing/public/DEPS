@@ -1,3 +1,0 @@
-include_rules = [
-  "-services/service_manager/public",  # The service_manager client lib depends on the tracing one
-]

@@ -55,6 +55,12 @@ group("all") {
 config("cast_config") {
 }
 
+config("iot_service") {
+  if (iot_service_rpath != "") {
+    ldflags = [ "-Wl,-rpath=${iot_service_rpath}" ]
+  }
+}
+
 # A list of all public test() binaries. This is an organizational target that
 # cannot be depended upon or built directly. Build cast_test_lists instead.
 cast_test_group("cast_tests") {

@@ -23,10 +23,6 @@
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/tracing_service.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}  // namespace service_manager
-
 namespace perfetto {
 namespace trace_processor {
 class TraceProcessorStorage;
@@ -43,8 +39,7 @@ class ConsumerHost : public perfetto::Consumer, public mojom::ConsumerHost {
  public:
   static void BindConsumerReceiver(
       PerfettoService* service,
-      mojo::PendingReceiver<mojom::ConsumerHost> receiver,
-      const service_manager::BindSourceInfo& source_info);
+      mojo::PendingReceiver<mojom::ConsumerHost> receiver);
 
   class StreamWriter;
   class TracingSession : public mojom::TracingSessionHost {

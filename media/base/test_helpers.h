@@ -264,12 +264,12 @@ MATCHER_P2(CodecUnsupportedInContainer, codec, container, "") {
 
 MATCHER_P(FoundStream, stream_type_string, "") {
   return CONTAINS_STRING(
-      arg, "found_" + std::string(stream_type_string) + "_stream\":true");
+      arg, "kHasFound" + std::string(stream_type_string) + "Stream\":true");
 }
 
 MATCHER_P2(CodecName, stream_type_string, codec_string, "") {
   return CONTAINS_STRING(arg,
-                         std::string(stream_type_string) + "_codec_name") &&
+                         'k' + std::string(stream_type_string) + "CodecName") &&
          CONTAINS_STRING(arg, std::string(codec_string));
 }
 

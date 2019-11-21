@@ -685,7 +685,8 @@ ScriptPromise XRSession::requestHitTestSource(
   ScriptPromise promise = resolver->Promise();
 
   xr_->xrEnvironmentProviderRemote()->SubscribeToHitTest(
-      maybe_native_origin->ToMojo(), std::move(ray_mojo),
+      maybe_native_origin->ToMojo(),
+      {device::mojom::blink::EntityTypeForHitTest::PLANE}, std::move(ray_mojo),
       WTF::Bind(&XRSession::OnSubscribeToHitTestResult, WrapPersistent(this),
                 WrapPersistent(resolver)));
   request_hit_test_source_promises_.insert(resolver);

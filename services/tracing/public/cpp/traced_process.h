@@ -11,6 +11,7 @@ namespace tracing {
 
 class TracedProcess {
  public:
+  static void ResetTracedProcessReceiver();
   static void OnTracedProcessRequest(
       mojo::PendingReceiver<mojom::TracedProcess> receiver);
 };

@@ -680,14 +680,10 @@ class ChunkDemuxerTest : public ::testing::Test {
   }
 
   void ExpectInitMediaLogs(int stream_flags) {
-    if (stream_flags & HAS_VIDEO) {
-      EXPECT_MEDIA_LOG(FoundStream("video"));
-      EXPECT_MEDIA_LOG(CodecName("video", "vp8"));
-    }
-    if (stream_flags & HAS_AUDIO) {
-      EXPECT_MEDIA_LOG(FoundStream("audio"));
-      EXPECT_MEDIA_LOG(CodecName("audio", "vorbis"));
-    }
+    if (stream_flags & HAS_VIDEO)
+      EXPECT_FOUND_CODEC_NAME(Video, "vp8");
+    if (stream_flags & HAS_AUDIO)
+      EXPECT_FOUND_CODEC_NAME(Audio, "vorbis");
   }
 
   bool InitDemuxerWithEncryptionInfo(
@@ -2132,8 +2128,7 @@ TEST_F(ChunkDemuxerTest, AVHeadersWithVideoOnlyType) {
   ASSERT_EQ(AddId(kSourceId, "video/webm", "vp8"), ChunkDemuxer::kOk);
 
   // Audio track is unexpected per mimetype.
-  EXPECT_MEDIA_LOG(FoundStream("video"));
-  EXPECT_MEDIA_LOG(CodecName("video", "vp8"));
+  EXPECT_FOUND_CODEC_NAME(Video, "vp8");
   EXPECT_MEDIA_LOG(InitSegmentMismatchesMimeType("Audio", "vorbis"));
   EXPECT_MEDIA_LOG(StreamParsingFailed());
   ASSERT_FALSE(AppendInitSegment(HAS_AUDIO | HAS_VIDEO));
@@ -2148,8 +2143,7 @@ TEST_F(ChunkDemuxerTest, AudioOnlyHeaderWithAVType) {
   ASSERT_EQ(AddId(kSourceId, "video/webm", "vorbis,vp8"), ChunkDemuxer::kOk);
 
   // Video track is also expected per mimetype.
-  EXPECT_MEDIA_LOG(FoundStream("audio"));
-  EXPECT_MEDIA_LOG(CodecName("audio", "vorbis"));
+  EXPECT_FOUND_CODEC_NAME(Audio, "vorbis");
   EXPECT_MEDIA_LOG(InitSegmentMissesExpectedTrack("vp8"));
   EXPECT_MEDIA_LOG(StreamParsingFailed());
   ASSERT_FALSE(AppendInitSegment(HAS_AUDIO));
@@ -2164,8 +2158,7 @@ TEST_F(ChunkDemuxerTest, VideoOnlyHeaderWithAVType) {
   ASSERT_EQ(AddId(kSourceId, "video/webm", "vorbis,vp8"), ChunkDemuxer::kOk);
 
   // Audio track is also expected per mimetype.
-  EXPECT_MEDIA_LOG(FoundStream("video"));
-  EXPECT_MEDIA_LOG(CodecName("video", "vp8"));
+  EXPECT_FOUND_CODEC_NAME(Video, "vp8");
   EXPECT_MEDIA_LOG(InitSegmentMissesExpectedTrack("vorbis"));
   EXPECT_MEDIA_LOG(StreamParsingFailed());
   ASSERT_FALSE(AppendInitSegment(HAS_VIDEO));
@@ -3159,10 +3152,8 @@ const char* kMp2tCodecs = "mp4a.40.2,avc1.640028";
 
 TEST_F(ChunkDemuxerTest, EmitBuffersDuringAbort) {
   EXPECT_CALL(*this, DemuxerOpened());
-  EXPECT_MEDIA_LOG(FoundStream("audio"));
-  EXPECT_MEDIA_LOG(CodecName("audio", "aac"));
-  EXPECT_MEDIA_LOG(FoundStream("video"));
-  EXPECT_MEDIA_LOG(CodecName("video", "h264"));
+  EXPECT_FOUND_CODEC_NAME(Audio, "aac");
+  EXPECT_FOUND_CODEC_NAME(Video, "h264");
   demuxer_->Initialize(&host_,
                        CreateInitDoneCB(kInfiniteDuration, PIPELINE_OK));
   EXPECT_EQ(ChunkDemuxer::kOk, AddId(kSourceId, kMp2tMimeType, kMp2tCodecs));
@@ -3225,10 +3216,8 @@ TEST_F(ChunkDemuxerTest, EmitBuffersDuringAbort) {
 
 TEST_F(ChunkDemuxerTest, SeekCompleteDuringAbort) {
   EXPECT_CALL(*this, DemuxerOpened());
-  EXPECT_MEDIA_LOG(FoundStream("audio"));
-  EXPECT_MEDIA_LOG(CodecName("audio", "aac"));
-  EXPECT_MEDIA_LOG(FoundStream("video"));
-  EXPECT_MEDIA_LOG(CodecName("video", "h264"));
+  EXPECT_FOUND_CODEC_NAME(Video, "h264");
+  EXPECT_FOUND_CODEC_NAME(Audio, "aac");
   demuxer_->Initialize(&host_,
                        CreateInitDoneCB(kInfiniteDuration, PIPELINE_OK));
   EXPECT_EQ(ChunkDemuxer::kOk, AddId(kSourceId, kMp2tMimeType, kMp2tCodecs));
@@ -4471,10 +4460,8 @@ TEST_F(ChunkDemuxerTest, MultipleIds) {
   scoped_refptr<DecoderBuffer> data1 = ReadTestDataFile("green-a300hz.webm");
   scoped_refptr<DecoderBuffer> data2 = ReadTestDataFile("red-a500hz.webm");
 
-  EXPECT_MEDIA_LOG(FoundStream("audio")).Times(2);
-  EXPECT_MEDIA_LOG(FoundStream("video")).Times(2);
-  EXPECT_MEDIA_LOG(CodecName("audio", "opus")).Times(2);
-  EXPECT_MEDIA_LOG(CodecName("video", "vp9")).Times(2);
+  EXPECT_FOUND_CODEC_NAME(Video, "vp9").Times(2);
+  EXPECT_FOUND_CODEC_NAME(Audio, "opus").Times(2);
   EXPECT_CALL(*this, InitSegmentReceivedMock(_)).Times(2);
   EXPECT_MEDIA_LOG(SegmentMissingFrames("1")).Times(1);
 
@@ -4500,8 +4487,7 @@ TEST_F(ChunkDemuxerTest, CompleteInitAfterIdRemoved) {
 
   EXPECT_CALL(*this, InitSegmentReceivedMock(_));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(30));
-  EXPECT_MEDIA_LOG(FoundStream("video"));
-  EXPECT_MEDIA_LOG(CodecName("video", "vp8"));
+  EXPECT_FOUND_CODEC_NAME(Video, "vp8");
 
   ASSERT_TRUE(AppendInitSegmentWithSourceId(kId1, HAS_VIDEO));
   AppendSingleStreamCluster(kId1, kVideoTrackNum, "0K 30 60 90");
@@ -4517,10 +4503,8 @@ TEST_F(ChunkDemuxerTest, RemovingIdMustRemoveStreams) {
   EXPECT_EQ(AddId(kId1, "video/webm", "vorbis,vp8"), ChunkDemuxer::kOk);
 
   EXPECT_CALL(*this, InitSegmentReceivedMock(_));
-  EXPECT_MEDIA_LOG(FoundStream("video"));
-  EXPECT_MEDIA_LOG(CodecName("video", "vp8"));
-  EXPECT_MEDIA_LOG(FoundStream("audio"));
-  EXPECT_MEDIA_LOG(CodecName("audio", "vorbis"));
+  EXPECT_FOUND_CODEC_NAME(Video, "vp8");
+  EXPECT_FOUND_CODEC_NAME(Audio, "vorbis");
 
   // Append init segment to ensure demuxer streams get created.
   ASSERT_TRUE(AppendInitSegmentWithSourceId(kId1, HAS_AUDIO | HAS_VIDEO));

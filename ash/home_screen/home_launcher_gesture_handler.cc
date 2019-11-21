@@ -167,12 +167,20 @@ HomeScreenDelegate* GetHomeScreenDelegate() {
   return Shell::Get()->home_screen_controller()->delegate();
 }
 
+void StartTrackingAnimationSmoothness(int64_t display_id) {
+  Shell::Get()->home_screen_controller()->StartTrackingAnimationSmoothness(
+      display_id);
+}
+
+void RecordAnimationSmoothness() {
+  Shell::Get()->home_screen_controller()->RecordAnimationSmoothness();
+}
+
 }  // namespace
 
 // Class which allows us to make modifications to a window, and removes those
 // modifications on destruction.
-// TODO(sammiequon): Move to separate file and add test for
-// ComputeWindowValues.
+// TODO(sammiequon): Move to separate file and add test for ComputeWindowValues.
 class HomeLauncherGestureHandler::ScopedWindowModifier
     : public aura::WindowObserver {
  public:
@@ -352,32 +360,11 @@ bool HomeLauncherGestureHandler::ShowHomeLauncher(
   display_ = display;
   mode_ = Mode::kSlideUpToShow;
 
+  StartTrackingAnimationSmoothness(display.id());
   PauseBackdropUpdatesForActiveWindow();
   UpdateWindowsForSlideUpOrDown(0.0 /*progress*/,
                                 base::nullopt /*animation_trigger*/);
   AnimateToFinalState(AnimationTrigger::kLauncherButton);
-  return true;
-}
-
-bool HomeLauncherGestureHandler::HideHomeLauncherForWindow(
-    const display::Display& display,
-    aura::Window* window) {
-  if (!IsIdle())
-    return false;
-
-  if (!display.is_valid())
-    return false;
-
-  if (!SetUpWindows(Mode::kSlideDownToHide, window))
-    return false;
-
-  display_ = display;
-  mode_ = Mode::kSlideDownToHide;
-
-  PauseBackdropUpdatesForActiveWindow();
-  UpdateWindowsForSlideUpOrDown(1.0 /*progress*/,
-                                base::nullopt /*animation_trigger*/);
-  AnimateToFinalState(AnimationTrigger::kHideForWindow);
   return true;
 }
 
@@ -407,6 +394,7 @@ void HomeLauncherGestureHandler::NotifyHomeLauncherPositionChanged(
 void HomeLauncherGestureHandler::NotifyHomeLauncherAnimationComplete(
     bool shown,
     int64_t display_id) {
+  RecordAnimationSmoothness();
   GetHomeScreenDelegate()->OnHomeLauncherAnimationComplete(shown, display_id);
 }
 
@@ -967,6 +955,7 @@ bool HomeLauncherGestureHandler::OnDragEnded(const gfx::PointF& location,
       return false;
     }
 
+    StartTrackingAnimationSmoothness(display_.id());
     last_event_location_ = base::make_optional(location);
     AnimateToFinalState(AnimationTrigger::kDragRelease);
   }

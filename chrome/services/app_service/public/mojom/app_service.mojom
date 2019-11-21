@@ -96,8 +96,14 @@ interface AppService {
       Intent? intent,
       bool from_publisher);
 
-  // Remove all preference setting for an |app_id|.
+  // Remove all preferred app setting for an |app_id|.
   RemovePreferredApp(AppType app_type, string app_id);
+
+  // Reset app identified by |app_id| as preferred app for |intent_filter|.
+  RemovePreferredAppForFilter(
+      AppType app_type,
+      string app_id,
+      IntentFilter intent_filter);
 };
 
 interface Publisher {
@@ -181,6 +187,11 @@ interface Subscriber {
   // the change from one subscriber to the others.
   OnPreferredAppSet(string app_id,
                     IntentFilter intent_filter);
+
+  // Indicates that the app identified by |app_id| is no longer a preferred
+  // app for |intent_filter|. This method is used by the App Service to sync
+  // the change to all subscribers.
+  OnPreferredAppRemoved(string app_id, IntentFilter intent_filter);
 
   InitializePreferredApps(mojo_base.mojom.Value preferred_apps);
 };

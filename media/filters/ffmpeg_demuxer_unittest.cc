@@ -1069,12 +1069,16 @@ TEST_F(FFmpegDemuxerTest, NoID3TagData) {
 TEST_F(FFmpegDemuxerTest, Mp3WithVideoStreamID3TagData) {
   CreateDemuxerWithStrictMediaLog("id3_png_test.mp3");
 
+  EXPECT_MEDIA_LOG_PROPERTY(kBitrate, 1421305);
+  EXPECT_MEDIA_LOG_PROPERTY(kStartTime, 0.0f);
+  EXPECT_MEDIA_LOG_PROPERTY(kVideoTracks, std::vector<VideoDecoderConfig>{});
+  EXPECT_MEDIA_LOG_PROPERTY_ANY_VALUE(kMaxDuration);
+  EXPECT_MEDIA_LOG_PROPERTY_ANY_VALUE(kAudioTracks);
   EXPECT_MEDIA_LOG(SimpleCreatedFFmpegDemuxerStream("audio"));
   EXPECT_MEDIA_LOG(FailedToCreateValidDecoderConfigFromStream("video"));
 
   // TODO(wolenetz): Use a matcher that verifies more of the event parameters
   // than FoundStream. See https://crbug.com/749178.
-  EXPECT_MEDIA_LOG(FoundStream("audio"));
   EXPECT_MEDIA_LOG(SkippingUnsupportedStream("video"));
   InitializeDemuxer();
 
@@ -1092,11 +1096,15 @@ TEST_F(FFmpegDemuxerTest, Mp3WithVideoStreamID3TagData) {
 TEST_F(FFmpegDemuxerTest, UnsupportedAudioSupportedVideoDemux) {
   CreateDemuxerWithStrictMediaLog("speex_audio_vorbis_video.ogv");
 
+  EXPECT_MEDIA_LOG_PROPERTY(kBitrate, 398289);
+  EXPECT_MEDIA_LOG_PROPERTY(kStartTime, 0.0f);
+  EXPECT_MEDIA_LOG_PROPERTY(kAudioTracks, std::vector<AudioDecoderConfig>{});
+  EXPECT_MEDIA_LOG_PROPERTY_ANY_VALUE(kVideoTracks);
+  EXPECT_MEDIA_LOG_PROPERTY_ANY_VALUE(kMaxDuration);
   EXPECT_MEDIA_LOG(SimpleCreatedFFmpegDemuxerStream("video"));
 
   // TODO(wolenetz): Use a matcher that verifies more of the event parameters
   // than FoundStream. See https://crbug.com/749178.
-  EXPECT_MEDIA_LOG(FoundStream("video"));
   InitializeDemuxer();
 
   // Ensure the expected streams are present.

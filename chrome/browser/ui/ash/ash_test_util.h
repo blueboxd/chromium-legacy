@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_UI_ASH_ASH_TEST_UTIL_H_
 #define CHROME_BROWSER_UI_ASH_ASH_TEST_UTIL_H_
 
-namespace aura {
-class Window;
-}
-
 namespace ash {
 enum class WindowStateType;
+}
+
+namespace aura {
+class Window;
 }
 
 namespace test {

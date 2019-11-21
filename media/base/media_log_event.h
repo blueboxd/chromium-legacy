@@ -89,6 +89,9 @@ struct MediaLogEvent {
     // A property has changed without any special event occurring.
     PROPERTY_CHANGE,
 
+    // A change to any demuxer or pipeline buffer state.
+    BUFFERING_STATE_CHANGE,
+
     // Issued when a player is suspended.
     SUSPENDED,
 

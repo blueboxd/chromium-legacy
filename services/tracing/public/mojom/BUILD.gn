@@ -10,6 +10,7 @@ mojom_component("mojom") {
 
   sources = [
     "traced_process.mojom",
+    "tracing_service.mojom",
   ]
 
   if (!is_nacl && !is_ios) {

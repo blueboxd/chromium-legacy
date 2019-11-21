@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event_watcher.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher.h"
+#include "content/browser/tracing/tracing_service_controller.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -231,6 +232,10 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // performance.
   bool can_use_warm_up_connection_ = false;
 #endif
+
+  // Keeps this process registered with the tracing subsystem.
+  std::unique_ptr<TracingServiceController::ClientRegistration>
+      tracing_registration_;
 
   base::WeakPtrFactory<BrowserChildProcessHostImpl> weak_factory_{this};
 };

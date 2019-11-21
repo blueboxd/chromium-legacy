@@ -217,7 +217,7 @@ TestMediaController::~TestMediaController() = default;
 mojo::Remote<mojom::MediaController>
 TestMediaController::CreateMediaControllerRemote() {
   mojo::Remote<mojom::MediaController> remote;
-  binding_.Bind(remote.BindNewPipeAndPassReceiver());
+  receiver_.Bind(remote.BindNewPipeAndPassReceiver());
   return remote;
 }
 

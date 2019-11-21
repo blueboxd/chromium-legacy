@@ -4344,6 +4344,7 @@ void RenderProcessHostImpl::ResetIPC() {
   associated_interface_provider_receivers_.Clear();
   associated_interfaces_.reset();
   coordinator_connector_receiver_.reset();
+  tracing_registration_.reset();
 
   // Destroy all embedded CompositorFrameSinks.
   embedded_frame_sink_provider_.reset();
@@ -4676,6 +4677,11 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
   aec_dump_manager_.set_pid(GetProcess().Pid());
   aec_dump_manager_.AutoStart();
+
+  tracing_registration_ = TracingServiceController::Get().RegisterClient(
+      GetProcess().Pid(),
+      base::BindRepeating(&RenderProcessHostImpl::BindTracedProcess,
+                          instance_weak_factory_->GetWeakPtr()));
 }
 
 void RenderProcessHostImpl::OnProcessLaunchFailed(int error_code) {
@@ -4829,6 +4835,11 @@ void RenderProcessHostImpl::GetBrowserHistogram(
 void RenderProcessHostImpl::SetBrowserPluginMessageFilterSubFilterForTesting(
     scoped_refptr<BrowserMessageFilter> message_filter) const {
   bp_message_filter_->SetSubFilterForTesting(std::move(message_filter));
+}
+
+void RenderProcessHostImpl::BindTracedProcess(
+    mojo::PendingReceiver<tracing::mojom::TracedProcess> receiver) {
+  BindReceiver(std::move(receiver));
 }
 
 void RenderProcessHostImpl::OnBindHostReceiver(

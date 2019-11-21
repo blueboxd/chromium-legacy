@@ -28,8 +28,18 @@ TracedProcessImpl::TracedProcessImpl() {
 
 TracedProcessImpl::~TracedProcessImpl() = default;
 
-// OnTracedProcessRequest can be called concurrently from
-// multiple threads, as we get one call per service.
+void TracedProcessImpl::ResetTracedProcessReceiver() {
+  if (task_runner_ && !task_runner_->RunsTasksInCurrentSequence()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&TracedProcessImpl::ResetTracedProcessReceiver,
+                       base::Unretained(this)));
+    return;
+  }
+
+  receiver_.reset();
+}
+
 void TracedProcessImpl::OnTracedProcessRequest(
     mojo::PendingReceiver<mojom::TracedProcess> receiver) {
   if (task_runner_ && !task_runner_->RunsTasksInCurrentSequence()) {
@@ -39,13 +49,11 @@ void TracedProcessImpl::OnTracedProcessRequest(
     return;
   }
 
-  // We only need one binding per process.
-  base::AutoLock lock(lock_);
-  if (receiver_.is_bound()) {
+  // We only need one binding per process. If a new binding request is made,
+  // ignore it.
+  if (receiver_.is_bound())
     return;
-  }
 
-  DETACH_FROM_SEQUENCE(sequence_checker_);
   receiver_.Bind(std::move(receiver));
 }
 

@@ -100,7 +100,7 @@ TEST_P(SSLPlatformKeyAndroidTest, Matches) {
   TestSSLPrivateKeyMatches(key.get(), key_bytes);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          SSLPlatformKeyAndroidTest,
                          testing::ValuesIn(kTestKeys),
                          TestKeyToString);

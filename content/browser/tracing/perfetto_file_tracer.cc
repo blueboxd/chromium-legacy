@@ -15,11 +15,9 @@
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/tracing_service.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
-#include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/protos/perfetto/config/trace_config.pb.h"
 
@@ -100,8 +98,8 @@ PerfettoFileTracer::PerfettoFileTracer()
            base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       background_drainer_(background_task_runner_) {
-  GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
-                                      &consumer_host_);
+  GetTracingService().BindConsumerHost(
+      consumer_host_.BindNewPipeAndPassReceiver());
 
   const auto& chrome_config =
       tracing::TraceStartupConfig::GetInstance()->GetTraceConfig();
@@ -120,12 +118,12 @@ PerfettoFileTracer::PerfettoFileTracer()
 
   mojo::PendingRemote<tracing::mojom::TracingSessionClient>
       tracing_session_client;
-  binding_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
+  receiver_.set_disconnect_handler(base::BindOnce(
       &PerfettoFileTracer::OnTracingSessionEnded, base::Unretained(this)));
 
   consumer_host_->EnableTracing(
-      mojo::MakeRequest(&tracing_session_host_),
+      tracing_session_host_.BindNewPipeAndPassReceiver(),
       std::move(tracing_session_client), std::move(trace_config),
       tracing::mojom::TracingClientPriority::kBackground);
   ReadBuffers();
@@ -175,7 +173,7 @@ void PerfettoFileTracer::ReadBuffers() {
 }
 
 void PerfettoFileTracer::OnTracingSessionEnded() {
-  binding_.Close();
+  receiver_.reset();
   tracing_session_host_.reset();
 }
 

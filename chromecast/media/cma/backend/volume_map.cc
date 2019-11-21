@@ -36,14 +36,17 @@ VolumeMap::VolumeMap()
 VolumeMap::VolumeMap(std::unique_ptr<CastAudioJsonProvider> config_provider)
     : config_provider_(std::move(config_provider)) {
   DCHECK(config_provider_);
-
   // base::Unretained is safe because VolumeMap outlives |config_provider_|.
   config_provider_->SetTuningChangedCallback(
       base::BindRepeating(&VolumeMap::LoadVolumeMap, base::Unretained(this)));
-  LoadVolumeMap(config_provider_->GetCastAudioConfig());
+  LoadFromFile();
 }
 
 VolumeMap::~VolumeMap() = default;
+
+void VolumeMap::LoadFromFile() {
+  LoadVolumeMap(config_provider_->GetCastAudioConfig());
+}
 
 void VolumeMap::LoadVolumeMap(std::unique_ptr<base::Value> cast_audio_config) {
   const base::DictionaryValue* cast_audio_dict;
@@ -149,6 +152,11 @@ float VolumeControl::VolumeToDbFS(float volume) {
 // static
 float VolumeControl::DbFSToVolume(float db) {
   return GetVolumeMap().DbFSToVolume(db);
+}
+
+// static
+void VolumeMap::Reload() {
+  return GetVolumeMap().LoadFromFile();
 }
 
 }  // namespace media

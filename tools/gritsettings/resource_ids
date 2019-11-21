@@ -102,97 +102,103 @@
     # Big alignment at start of section.
     "META": {"align": 100},
     "includes": [8500],
-    "structures": [8890],
+    "structures": [8860],
   },
   "chrome/browser/resources/bookmarks/bookmarks_resources.grd": {
-    "includes": [8920],
-    "structures": [8930],
+    "includes": [8890],
+    "structures": [8900],
   },
   "chrome/browser/resources/bookmarks/bookmarks_resources_vulcanized.grd": {
-    "includes": [8950],
+    "includes": [8920],
   },
   "chrome/browser/resources/chromeos/camera/camera_resources.grd": {
-    "includes": [8960],
-    "structures": [9020],
+    "includes": [8930],
+    "structures": [8990],
   },
   "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd": {
-    "messages": [9070],
+    "messages": [9040],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
-    "structures": [9150],
+    "structures": [9120],
   },
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
-    "structures": [9160],
+    "structures": [9130],
   },
   "chrome/browser/resources/component_extension_resources.grd": {
-    "includes": [9170],
-    "structures": [9290],
+    "includes": [9140],
+    "structures": [9260],
   },
   "chrome/browser/resources/downloads/downloads_resources_vulcanized.grd": {
-    "includes": [9300],
+    "includes": [9270],
   },
   "chrome/browser/resources/downloads/downloads_resources.grd": {
-    "includes": [9310],
-    "structures": [9320],
+    "includes": [9280],
+    "structures": [9290],
   },
   "chrome/browser/resources/extensions/extensions_resources_vulcanized.grd": {
-    "includes": [9330],
+    "includes": [9300],
   },
   "chrome/browser/resources/extensions/extensions_resources.grd": {
-    "includes": [9340],
-    "structures": [9380],
+    "includes": [9310],
+    "structures": [9350],
+  },
+  "chrome/browser/resources/history/history_resources_vulcanized.grd": {
+    "includes": [9360],
+  },
+  "chrome/browser/resources/history/history_resources.grd": {
+    "includes": [9380],
   },
   "chrome/browser/resources/invalidations_resources.grd": {
-    "includes": [9390],
+    "includes": [9420],
   },
   "chrome/browser/resources/local_ntp/local_ntp_resources.grd": {
-    "includes": [9400],
-  },
-  "chrome/browser/resources/net_internals/net_internals_resources.grd": {
     "includes": [9430],
   },
- "chrome/browser/resources/new_tab_page/new_tab_page_resources.grd": {
-    "includes": [9440],
-    "structures": [9450],
-  },
-  "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
+  "chrome/browser/resources/net_internals/net_internals_resources.grd": {
     "includes": [9460],
   },
-  "chrome/browser/resources/print_preview/print_preview_resources.grd": {
+ "chrome/browser/resources/new_tab_page/new_tab_page_resources.grd": {
     "includes": [9470],
-    "structures": [9510],
+    "structures": [9480],
+  },
+  "chrome/browser/resources/print_preview/print_preview_resources_vulcanized.grd": {
+    "includes": [9490],
+  },
+  "chrome/browser/resources/print_preview/print_preview_resources.grd": {
+    "includes": [9500],
+    "structures": [9540],
   },
   "chrome/browser/resources/quota_internals/quota_internals_resources.grd": {
-    "includes": [9550],
+    "includes": [9580],
   },
   "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
-    "includes": [9560],
+    "includes": [9590],
   },
   "chrome/browser/resources/settings/os_settings_resources.grd": {
-    "structures": [9570],
+    "structures": [9600],
   },
   "chrome/browser/resources/settings/settings_resources_vulcanized.grd": {
-    "includes": [10040],
+    "includes": [10070],
   },
   "chrome/browser/resources/settings/settings_resources.grd": {
-    "structures": [10050],
+    "structures": [10080],
   },
   "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
-    "includes": [10560],
-  },
-  "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
-    "structures": [10570],
-    "includes": [10580],
-  },
-  "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [10590],
   },
+  "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
+    "structures": [10600],
+    "includes": [10610],
+  },
+  "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
+    "includes": [10620],
+  },
   "chrome/browser/resources/welcome/welcome_resources.grd": {
-    "includes": [10600],
-    "structures": [10620],
+    "includes": [10630],
+    "structures": [10650],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [10640],
+    "includes": [10670],
   },
   # END chrome/browser section.
 

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 
 namespace chromecast {
@@ -66,10 +67,13 @@ base::FilePath CastAudioJson::GetFilePathForTuning() {
   return base::GetHomeDir().Append(kCastAudioJsonFileName);
 }
 
-CastAudioJsonProviderImpl::CastAudioJsonProviderImpl()
-    : cast_audio_watcher_(base::SequenceBound<FileWatcher>(
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::LOWEST}))) {}
+CastAudioJsonProviderImpl::CastAudioJsonProviderImpl() {
+  if (base::ThreadPoolInstance::Get()) {
+    cast_audio_watcher_ = base::SequenceBound<FileWatcher>(
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::LOWEST}));
+  }
+}
 
 CastAudioJsonProviderImpl::~CastAudioJsonProviderImpl() = default;
 
@@ -81,8 +85,10 @@ std::unique_ptr<base::Value> CastAudioJsonProviderImpl::GetCastAudioConfig() {
 
 void CastAudioJsonProviderImpl::SetTuningChangedCallback(
     TuningChangedCallback callback) {
-  cast_audio_watcher_.Post(FROM_HERE, &FileWatcher::SetTuningChangedCallback,
-                           std::move(callback));
+  if (cast_audio_watcher_) {
+    cast_audio_watcher_.Post(FROM_HERE, &FileWatcher::SetTuningChangedCallback,
+                             std::move(callback));
+  }
 }
 
 CastAudioJsonProviderImpl::FileWatcher::FileWatcher() = default;

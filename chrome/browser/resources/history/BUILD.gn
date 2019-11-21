@@ -2,32 +2,61 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/grit_rule.gni")
 import("../optimize_webui.gni")
 
-optimize_webui("build") {
-  host = "history"
-  html_in_files = [
-    "app.html",
-    "lazy_load.html",
-  ]
-  html_out_files = [
-    "app.vulcanized.html",
-    "lazy_load.vulcanized.html",
-  ]
+if (optimize_webui) {
+  history_pak_file = "history_resources.pak"
+  unpak_folder = "history_resources.unpak"
 
-  input = rebase_path(".", root_build_dir)
-  js_out_files = [
-    "app.crisper.js",
-    "lazy_load.crisper.js",
-  ]
+  optimize_webui("build") {
+    host = "history"
+    html_in_files = [
+      "app.html",
+      "lazy_load.html",
+    ]
+    html_out_files = [
+      "app.vulcanized.html",
+      "lazy_load.vulcanized.html",
+    ]
+    input = rebase_path("$target_gen_dir/$unpak_folder", root_build_dir)
+    js_out_files = [
+      "app.crisper.js",
+      "lazy_load.crisper.js",
+    ]
 
-  excludes = [
-    "chrome://resources/html/util.html",
-    "constants.html",
-  ]
+    deps = [
+      ":unpak",
+    ]
+    excludes = [
+      "chrome://resources/html/util.html",
+      "constants.html",
+    ]
+  }
 
-  deps = []
+  unpak("unpak") {
+    pak_file = history_pak_file
+    out_folder = unpak_folder
+
+    deps = [
+      ":flattened_resources",
+    ]
+  }
+
+  grit("flattened_resources") {
+    source = "history_resources.grd"
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/history_resources.h",
+      "grit/history_resources_map.cc",
+      "grit/history_resources_map.h",
+      history_pak_file,
+    ]
+    output_dir = "$root_gen_dir/chrome/browser/resources/history"
+  }
 }
 
 js_type_check("closure_compile") {

@@ -169,6 +169,34 @@ if (!is_android) {
     output_dir = "$root_gen_dir/chrome"
   }
 
+  grit("history_resources") {
+    if (optimize_webui) {
+      # The .grd contains references to generated files.
+      source_is_generated = true
+      grit_flags = [
+        "-E",
+        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+      ]
+
+      source = "history/history_resources_vulcanized.grd"
+
+      deps = [
+        "//chrome/browser/resources/history:build",
+      ]
+    } else {
+      source = "history/history_resources.grd"
+    }
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/history_resources.h",
+      "grit/history_resources_map.cc",
+      "grit/history_resources_map.h",
+      "history_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("local_ntp_resources") {
     source = "local_ntp/local_ntp_resources.grd"
     defines = chrome_grit_defines

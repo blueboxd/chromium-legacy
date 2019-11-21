@@ -15,6 +15,7 @@
 #include "media/base/cdm_context.h"
 #include "media/base/channel_layout.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_log_properties.h"
 #include "media/base/moving_average.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder.h"
@@ -41,6 +42,13 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   using DecoderConfigType = AudioDecoderConfig;
   using InitCB = AudioDecoder::InitCB;
   using OutputCB = AudioDecoder::OutputCB;
+
+  static const MediaLogProperty kDecoderName =
+      MediaLogProperty::kAudioDecoderName;
+  static const MediaLogProperty kIsPlatformDecoder =
+      MediaLogProperty::kIsPlatformAudioDecoder;
+  static const MediaLogProperty kIsDecryptingDemuxerStream =
+      MediaLogProperty::kIsAudioDecryptingDemuxerStream;
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);
@@ -87,6 +95,12 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   using DecoderConfigType = VideoDecoderConfig;
   using InitCB = VideoDecoder::InitCB;
   using OutputCB = VideoDecoder::OutputCB;
+  static const MediaLogProperty kDecoderName =
+      MediaLogProperty::kVideoDecoderName;
+  static const MediaLogProperty kIsPlatformDecoder =
+      MediaLogProperty::kIsPlatformVideoDecoder;
+  static const MediaLogProperty kIsDecryptingDemuxerStream =
+      MediaLogProperty::kIsVideoDecryptingDemuxerStream;
 
   static std::string ToString();
   static bool NeedsBitstreamConversion(DecoderType* decoder);

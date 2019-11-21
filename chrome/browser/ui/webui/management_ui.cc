@@ -101,8 +101,7 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
      IDS_MANAGEMENT_ENTERPRISE_REPORTING_PERMISSIONS},
   };
 
-  AddLocalizedStringsBulk(source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(source, kLocalizedStrings);
 
   source->AddString(kManagementExtensionReportSafeBrowsingWarnings,
                     l10n_util::GetStringFUTF16(

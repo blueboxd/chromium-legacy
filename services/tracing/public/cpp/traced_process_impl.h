@@ -10,7 +10,6 @@
 
 #include "base/component_export.h"
 #include "base/sequence_checker.h"
-#include "base/synchronization/lock.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/mojom/traced_process.mojom.h"
@@ -28,6 +27,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TracedProcessImpl
  public:
   static TracedProcessImpl* GetInstance();
 
+  void ResetTracedProcessReceiver();
   void OnTracedProcessRequest(
       mojo::PendingReceiver<mojom::TracedProcess> receiver);
 
@@ -50,8 +50,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TracedProcessImpl
       mojom::ConnectToTracingRequestPtr request,
       ConnectToTracingServiceCallback callback) override;
 
-  // Lock protecting binding_.
-  base::Lock lock_;
   std::set<BaseAgent*> agents_;
   mojo::Receiver<tracing::mojom::TracedProcess> receiver_{this};
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

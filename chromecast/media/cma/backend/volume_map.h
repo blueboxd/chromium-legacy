@@ -23,6 +23,8 @@ class VolumeMap {
  public:
   VolumeMap();
 
+  static void Reload();
+
   // For testing.
   VolumeMap(std::unique_ptr<CastAudioJsonProvider> config_provider);
 
@@ -40,6 +42,7 @@ class VolumeMap {
     float db;
   };
 
+  void LoadFromFile();
   void UseDefaultVolumeMap();
 
   // |volume_map_| must be accessed with |lock_|.

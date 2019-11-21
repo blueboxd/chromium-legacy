@@ -578,8 +578,7 @@ void ConsumerHost::TracingSession::Flush(
 // static
 void ConsumerHost::BindConsumerReceiver(
     PerfettoService* service,
-    mojo::PendingReceiver<mojom::ConsumerHost> receiver,
-    const service_manager::BindSourceInfo& source_info) {
+    mojo::PendingReceiver<mojom::ConsumerHost> receiver) {
   mojo::MakeSelfOwnedReceiver(std::make_unique<ConsumerHost>(service),
                               std::move(receiver));
 }

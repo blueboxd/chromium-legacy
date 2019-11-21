@@ -190,6 +190,17 @@ void RasterImplementationGLES::EndGpuRaster() {
   gl_->ActiveTexture(GL_TEXTURE0);
 }
 
+void RasterImplementationGLES::BeginSharedImageAccessDirectCHROMIUM(
+    GLuint texture,
+    GLenum mode) {
+  gl_->BeginSharedImageAccessDirectCHROMIUM(texture, mode);
+}
+
+void RasterImplementationGLES::EndSharedImageAccessDirectCHROMIUM(
+    GLuint texture) {
+  gl_->EndSharedImageAccessDirectCHROMIUM(texture);
+}
+
 void RasterImplementationGLES::TraceBeginCHROMIUM(const char* category_name,
                                                   const char* trace_name) {
   gl_->TraceBeginCHROMIUM(category_name, trace_name);

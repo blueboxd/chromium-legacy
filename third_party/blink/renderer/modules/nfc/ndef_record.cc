@@ -377,6 +377,10 @@ base::Optional<HeapVector<Member<NDEFRecord>>> NDEFRecord::toRecords(
         "message as payload.");
     return base::nullopt;
   }
+
+  if (!payload_message_)
+    return base::nullopt;
+
   return payload_message_->records();
 }
 

@@ -24,7 +24,6 @@
 #include "services/media_session/public/cpp/manifest.h"
 #include "services/metrics/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
-#include "services/tracing/manifest.h"
 
 namespace content {
 
@@ -65,7 +64,6 @@ const std::vector<service_manager::Manifest>& GetBuiltinServiceManifests() {
           device::GetManifest(),
           media_session::GetManifest(),
           metrics::GetManifest(),
-          tracing::GetManifest(),
       }};
   return *manifests;
 }

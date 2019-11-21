@@ -70,10 +70,6 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // Hide MRU window and show home launcher on specified display.
   bool ShowHomeLauncher(const display::Display& display);
 
-  // Hide home launcher and show MRU window on specified display.
-  bool HideHomeLauncherForWindow(const display::Display& display,
-                                 aura::Window* window);
-
   // Returns the windows being tracked. May be null.
   aura::Window* GetActiveWindow();
   aura::Window* GetSecondaryWindow();

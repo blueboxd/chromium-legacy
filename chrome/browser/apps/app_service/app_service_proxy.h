@@ -217,6 +217,9 @@ class AppServiceProxy : public KeyedService,
   void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter) override;
+  void OnPreferredAppRemoved(
+      const std::string& app_id,
+      apps::mojom::IntentFilterPtr intent_filter) override;
   void InitializePreferredApps(base::Value preferred_apps) override;
 
   void LoadIconForPauseDialog(const apps::AppUpdate& update,

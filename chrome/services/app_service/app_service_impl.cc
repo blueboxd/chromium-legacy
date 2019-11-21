@@ -232,6 +232,23 @@ void AppServiceImpl::RemovePreferredApp(apps::mojom::AppType app_type,
   PreferredApps::DeleteAppId(app_id, update.Get());
 }
 
+void AppServiceImpl::RemovePreferredAppForFilter(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter) {
+  DCHECK(preferred_apps_.IsInitialized());
+
+  preferred_apps_.DeletePreferredApp(app_id, intent_filter);
+
+  DictionaryPrefUpdate update(pref_service_, kAppServicePreferredApps);
+  DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
+  PreferredApps::DeletePreferredApp(app_id, intent_filter, update.Get());
+
+  for (auto& subscriber : subscribers_) {
+    subscriber->OnPreferredAppRemoved(app_id, intent_filter->Clone());
+  }
+}
+
 PreferredApps& AppServiceImpl::GetPreferredAppsForTesting() {
   return preferred_apps_;
 }

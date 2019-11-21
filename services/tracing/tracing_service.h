@@ -5,48 +5,32 @@
 #ifndef SERVICES_TRACING_TRACING_SERVICE_H_
 #define SERVICES_TRACING_TRACING_SERVICE_H_
 
-#include <memory>
-#include <string>
-
-#include "base/callback.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "services/tracing/public/mojom/tracing_service.mojom.h"
 
 namespace tracing {
 
-class ServiceListener;
-
-class TracingService : public service_manager::Service {
+class TracingService : public mojom::TracingService {
  public:
-  explicit TracingService(service_manager::mojom::ServiceRequest request);
+  TracingService();
+  explicit TracingService(
+      mojo::PendingReceiver<mojom::TracingService> receiver);
+  TracingService(const TracingService&) = delete;
   ~TracingService() override;
+  TracingService& operator=(const TracingService&) = delete;
 
-  // service_manager::Service:
-  void OnStart() override;
-  void OnDisconnected() override;
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle interface_pipe) override;
+  // mojom::TracingService implementation:
+  void Initialize(std::vector<mojom::ClientInfoPtr> clients) override;
+  void AddClient(mojom::ClientInfoPtr client) override;
+#if !defined(OS_NACL) && !defined(OS_IOS)
+  void BindConsumerHost(
+      mojo::PendingReceiver<mojom::ConsumerHost> receiver) override;
+#endif
 
  private:
-  service_manager::ServiceBinding service_binding_;
-
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>
-      registry_;
-
-  std::unique_ptr<ServiceListener> service_listener_;
-
-  // WeakPtrFactory members should always come last so WeakPtrs are destructed
-  // before other members.
-  base::WeakPtrFactory<TracingService> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(TracingService);
+  mojo::Receiver<mojom::TracingService> receiver_{this};
 };
 
 }  // namespace tracing

@@ -339,7 +339,7 @@ TEST(AudioLoopbackStreamBrokerTest,
   env.RunUntilIdle();
   Mock::VerifyAndClear(&env.deleter);
 
-  env.stream_factory.CloseBinding();
+  env.stream_factory.ResetReceiver();
   env.RunUntilIdle();
 }
 
@@ -361,7 +361,7 @@ TEST(AudioLoopbackStreamBrokerTest, ObserverDisconnect_CallsDeleter) {
   env.RunUntilIdle();
   Mock::VerifyAndClear(&env.deleter);
 
-  env.stream_factory.CloseBinding();
+  env.stream_factory.ResetReceiver();
   env.RunUntilIdle();
 }
 
@@ -369,7 +369,7 @@ TEST(AudioLoopbackStreamBrokerTest,
      FactoryDisconnectDuringConstruction_CallsDeleter) {
   TestEnvironment env(base::UnguessableToken::Create(), !kMuteSource);
   env.broker->CreateStream(env.factory_ptr.get());
-  env.stream_factory.CloseBinding();
+  env.stream_factory.ResetReceiver();
 
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());

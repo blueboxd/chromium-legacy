@@ -431,6 +431,12 @@ void AppServiceProxy::OnPreferredAppSet(
   preferred_apps_.AddPreferredApp(app_id, intent_filter);
 }
 
+void AppServiceProxy::OnPreferredAppRemoved(
+    const std::string& app_id,
+    apps::mojom::IntentFilterPtr intent_filter) {
+  preferred_apps_.DeletePreferredApp(app_id, intent_filter);
+}
+
 void AppServiceProxy::InitializePreferredApps(base::Value preferred_apps) {
   preferred_apps_.Init(
       std::make_unique<base::Value>(std::move(preferred_apps)));

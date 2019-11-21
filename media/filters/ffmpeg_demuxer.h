@@ -39,6 +39,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decoder_buffer_queue.h"
 #include "media/base/demuxer.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/text_track_config.h"
 #include "media/base/timestamp_constants.h"

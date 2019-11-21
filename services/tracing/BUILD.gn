@@ -29,7 +29,6 @@ source_set("lib") {
   public_deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
     "//third_party/perfetto:libperfetto",
     "//third_party/perfetto/protos/perfetto/config:lite",
@@ -67,20 +66,6 @@ executable("trace_json_exporter") {
     "//base",
     "//third_party/perfetto:libperfetto",
     "//third_party/perfetto/src/protozero:protozero",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//services/service_manager/public/cpp",
-    "//services/tracing/public/cpp",
-    "//services/tracing/public/mojom",
   ]
 }
 
@@ -152,9 +137,6 @@ source_set("tests") {
     "//base",
     "//base/test:test_support",
     "//mojo/public/cpp/bindings",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/test:test_support",
-    "//services/service_manager/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/perfetto/include/perfetto/protozero:protozero",

@@ -745,7 +745,25 @@ void ArcApps::OnPreferredAppsChanged() {
                                  ConvertArcIntentFilter(added_preferred_app),
                                  /*intent=*/nullptr, kFromPublisher);
   }
-  // TODO(crbug.com/853604): Handle when preference deleted.
+
+  const std::vector<arc::IntentFilter>& deleted_preferred_apps =
+      intent_helper_bridge->GetDeletedPreferredApps();
+
+  for (auto& deleted_preferred_app : deleted_preferred_apps) {
+    // TODO(crbug.com/853604): Currently only handles one App ID per package.
+    // If need to handle multiple activities per package, will need to
+    // update ARC to send through the corresponding activity and ensure this
+    // activity matches with the main_activity that stored in app_service.
+    // Will add an activity field in the arc::mojom::intent_filter.
+    // Also need to make sure this still work with the Chrome set preference
+    // because the intent filter uplifted for each package doesn't contain
+    // activity info.
+    std::string app_id =
+        prefs->GetAppIdByPackageName(deleted_preferred_app.package_name());
+    app_service->RemovePreferredAppForFilter(
+        apps::mojom::AppType::kArc, app_id,
+        ConvertArcIntentFilter(deleted_preferred_app));
+  }
 }
 
 void ArcApps::LoadPlayStoreIcon(apps::mojom::IconCompression icon_compression,

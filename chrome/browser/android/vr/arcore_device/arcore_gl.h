@@ -116,9 +116,16 @@ class ArCoreGl : public mojom::XRFrameDataProvider,
 
   void SubscribeToHitTest(
       mojom::XRNativeOriginInformationPtr native_origin_information,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       mojom::XRRayPtr ray,
       mojom::XREnvironmentIntegrationProvider::SubscribeToHitTestCallback
           callback) override;
+  void SubscribeToHitTestForTransientInput(
+      const std::string& profile_name,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray,
+      mojom::XREnvironmentIntegrationProvider::
+          SubscribeToHitTestForTransientInputCallback callback) override;
 
   void UnsubscribeFromHitTest(uint64_t subscription_id) override;
 

@@ -51,7 +51,6 @@ using CompositingReasons = uint64_t;
                                                                               \
   /* Subtree reasons that require knowing what the status of your subtree is  \
      before knowing the answer. */                                            \
-  V(TransformWithCompositedDescendants)                                       \
   V(OpacityWithCompositedDescendants)                                         \
   V(MaskWithCompositedDescendants)                                            \
   V(ReflectionWithCompositedDescendants)                                      \
@@ -60,7 +59,6 @@ using CompositingReasons = uint64_t;
   V(ClipsCompositingDescendants)                                              \
   V(PerspectiveWith3DDescendants)                                             \
   V(Preserve3DWith3DDescendants)                                              \
-  V(ReflectionOfCompositedParent)                                             \
   V(IsolateCompositedDescendants)                                             \
   V(PositionFixedWithCompositedDescendants)                                   \
                                                                               \
@@ -70,8 +68,6 @@ using CompositingReasons = uint64_t;
                                                                               \
   /* CompositedLayerMapping internal hierarchy reasons. Some of them are also \
   used in CompositeAfterPaint. */                                             \
-  V(LayerForAncestorClip)                                                     \
-  V(LayerForDescendantClip)                                                   \
   V(LayerForHorizontalScrollbar)                                              \
   V(LayerForVerticalScrollbar)                                                \
   V(LayerForOverflowControlsHost)                                             \
@@ -81,11 +77,7 @@ using CompositingReasons = uint64_t;
   V(LayerForSquashingContents)                                                \
   V(LayerForSquashingContainer)                                               \
   V(LayerForForeground)                                                       \
-  V(LayerForBackground)                                                       \
   V(LayerForMask)                                                             \
-  V(LayerForClippingMask)                                                     \
-  V(LayerForAncestorClippingMask)                                             \
-  V(LayerForScrollingBlockSelection)                                          \
   /* Composited layer painted on top of all other layers as decoration. */    \
   V(LayerForDecoration)                                                       \
   /* Used in CompositeAfterPaint for link highlight, frame overlay, etc. */   \

@@ -58,8 +58,26 @@ class ArCore {
       const mojom::XRRayPtr& ray,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;
 
+  // Subscribes to hit test. Returns base::nullopt if subscription failed.
+  // This variant will subscribe for a hit test to a specific native origin
+  // specified in |native_origin_information|. The native origin will be used
+  // along with passed in ray to compute the hit test results as of latest
+  // frame. The passed in |entity_types| will be used to filter out the results
+  // that do not match anything in the vector.
   virtual base::Optional<uint64_t> SubscribeToHitTest(
       mojom::XRNativeOriginInformationPtr native_origin_information,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+      mojom::XRRayPtr ray) = 0;
+  // Subscribes to hit test for transient input sources. Returns base::nullopt
+  // if subscription failed. This variant will subscribe for a hit test to
+  // transient input sources that match the |profile_name|. The passed in ray
+  // will be used to compute the hit test results as of latest frame (relative
+  // to the location of transient input source). The passed in |entity_types|
+  // will be used to filter out the results that do not match anything in the
+  // vector.
+  virtual base::Optional<uint64_t> SubscribeToHitTestForTransientInput(
+      const std::string& profile_name,
+      const std::vector<mojom::EntityTypeForHitTest>& entity_types,
       mojom::XRRayPtr ray) = 0;
 
   virtual mojom::XRHitTestSubscriptionResultsDataPtr

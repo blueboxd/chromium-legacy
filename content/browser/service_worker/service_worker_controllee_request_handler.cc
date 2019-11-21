@@ -13,6 +13,7 @@
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -201,7 +202,7 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
         base::make_optional(provider_host_->fetch_request_window_id());
   }
   base::WeakPtr<ServiceWorkerObjectHost> object_host =
-      provider_host_->GetOrCreateServiceWorkerObjectHost(
+      provider_host_->container_host()->GetOrCreateServiceWorkerObjectHost(
           provider_host_->controller());
   if (object_host) {
     params.controller_service_worker_object_host = object_host;

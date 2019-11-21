@@ -18,6 +18,7 @@
 
 namespace ash {
 
+class FpsCounter;
 class HomeLauncherGestureHandler;
 class HomeScreenDelegate;
 
@@ -49,11 +50,15 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // True if home screen is visible.
   bool IsHomeScreenVisible() const;
 
+  // Responsible to starting or stopping |fps_counter_|.
+  void StartTrackingAnimationSmoothness(int64_t display_id);
+  void RecordAnimationSmoothness();
+
+  HomeScreenDelegate* delegate() { return delegate_; }
+
   HomeLauncherGestureHandler* home_launcher_gesture_handler() {
     return home_launcher_gesture_handler_.get();
   }
-
-  HomeScreenDelegate* delegate() { return delegate_; }
 
  private:
   // OverviewObserver:
@@ -96,6 +101,10 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // animations are finished (at which point this information will not be
   // available).
   base::Optional<OverviewSession::EnterExitOverviewType> overview_exit_type_;
+
+  // Responsible for recording smoothness related UMA stats for homescreen
+  // animations.
+  std::unique_ptr<FpsCounter> fps_counter_;
 
   base::WeakPtrFactory<HomeScreenController> weak_ptr_factory_{this};
 

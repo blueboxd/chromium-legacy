@@ -18,6 +18,7 @@
 
 namespace content {
 
+class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
 
@@ -33,7 +34,7 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
  public:
   ServiceWorkerRegistrationObjectHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      ServiceWorkerProviderHost* provider_host,
+      ServiceWorkerContainerHost* container_host,
       scoped_refptr<ServiceWorkerRegistration> registration);
   ~ServiceWorkerRegistrationObjectHost() override;
 
@@ -132,9 +133,9 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   std::string ComposeUpdateErrorMessagePrefix(
       const ServiceWorkerVersion* version_to_update) const;
 
-  // |provider_host_| is valid throughout lifetime of |this| because it owns
+  // |container_host_| is valid throughout lifetime of |this| because it owns
   // |this|.
-  ServiceWorkerProviderHost* provider_host_;
+  ServiceWorkerContainerHost* container_host_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
 

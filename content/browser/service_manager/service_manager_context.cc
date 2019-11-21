@@ -77,9 +77,6 @@
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/service_process_host.h"
 #include "services/service_manager/service_process_launcher.h"
-#include "services/tracing/public/cpp/tracing_features.h"
-#include "services/tracing/public/mojom/constants.mojom.h"
-#include "services/tracing/tracing_service.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
@@ -290,11 +287,6 @@ void CreateInProcessAudioService(
                                                         std::move(request)));
                      },
                      BrowserMainLoop::GetAudioManager(), std::move(request)));
-}
-
-std::unique_ptr<service_manager::Service> CreateTracingService(
-    service_manager::mojom::ServiceRequest request) {
-  return std::make_unique<tracing::TracingService>(std::move(request));
 }
 
 std::unique_ptr<service_manager::Service> CreateMediaSessionService(
@@ -577,16 +569,6 @@ ServiceManagerContext::ServiceManagerContext(
   g_io_thread_connector.Get() = system_connection->GetConnector()->Clone();
 
   GetContentClient()->browser()->WillStartServiceManager();
-
-  if (base::FeatureList::IsEnabled(features::kTracingServiceInProcess)) {
-    RegisterInProcessService(tracing::mojom::kServiceName,
-                             base::CreateSequencedTaskRunner(
-                                 {base::ThreadPool(), base::MayBlock(),
-                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-                                  base::WithBaseSyncPrimitives(),
-                                  base::TaskPriority::USER_BLOCKING}),
-                             base::BindRepeating(&CreateTracingService));
-  }
 
   in_process_context_->Start(
       manifests, std::move(system_remote),

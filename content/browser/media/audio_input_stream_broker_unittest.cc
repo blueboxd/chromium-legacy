@@ -248,7 +248,7 @@ TEST(AudioInputStreamBrokerTest, RendererFactoryClientDisconnect_CallsDeleter) {
   env.RunUntilIdle();
   Mock::VerifyAndClear(&env.deleter);
 
-  env.stream_factory.CloseBinding();
+  env.stream_factory.ResetReceiver();
   env.RunUntilIdle();
 }
 
@@ -269,7 +269,7 @@ TEST(AudioInputStreamBrokerTest, ObserverDisconnect_CallsDeleter) {
   env.RunUntilIdle();
   Mock::VerifyAndClear(&env.deleter);
 
-  env.stream_factory.CloseBinding();
+  env.stream_factory.ResetReceiver();
   env.RunUntilIdle();
 }
 
@@ -278,7 +278,7 @@ TEST(AudioInputStreamBrokerTest,
   TestEnvironment env;
 
   env.broker->CreateStream(env.factory_ptr.get());
-  env.stream_factory.CloseBinding();
+  env.stream_factory.ResetReceiver();
 
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());

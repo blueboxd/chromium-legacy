@@ -26,9 +26,6 @@
 #include "services/audio/service_factory.h"
 #include "services/network/network_service.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
-#include "services/tracing/public/cpp/tracing_features.h"
-#include "services/tracing/public/mojom/constants.mojom.h"
-#include "services/tracing/tracing_service.h"
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_adapter_factory.h"           // nogncheck
@@ -120,10 +117,6 @@ void UtilityServiceFactory::RunService(
   std::unique_ptr<service_manager::Service> service;
   if (service_name == audio::mojom::kServiceName) {
     service = CreateAudioService(std::move(request));
-  } else if (service_name == tracing::mojom::kServiceName &&
-             !base::FeatureList::IsEnabled(
-                 features::kTracingServiceInProcess)) {
-    service = std::make_unique<tracing::TracingService>(std::move(request));
   }
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   else if (service_name == media::mojom::kCdmServiceName) {

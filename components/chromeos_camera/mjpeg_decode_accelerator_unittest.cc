@@ -1105,7 +1105,7 @@ std::string TestParamToString(::testing::TestParamInfo<bool> param_info) {
   return param_info.param ? "DMABUF" : "SHMEM";
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MjpegDecodeAcceleratorTest,
                          ::testing::Bool(),
                          TestParamToString);

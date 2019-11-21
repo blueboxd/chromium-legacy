@@ -100,8 +100,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "preserve3DWith3DDescendants",
      "Has a preserves-3d property that needs to be known by compositor because "
      "of 3d descendants"},
-    {CompositingReason::kReflectionOfCompositedParent,
-     "reflectionOfCompositedParent", "Is a reflection of a composited layer"},
     {CompositingReason::kIsolateCompositedDescendants,
      "isolateCompositedDescendants",
      "Should isolate descendants to apply a blend effect"},
@@ -109,11 +107,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "positionFixedWithCompositedDescendants"
      "Is a position:fixed element with composited descendants"},
     {CompositingReason::kRoot, "root", "Is the root layer"},
-    {CompositingReason::kLayerForAncestorClip, "layerForAncestorClip",
-     "Secondary layer, applies a clip due to a sibling in the compositing "
-     "tree"},
-    {CompositingReason::kLayerForDescendantClip, "layerForDescendantClip",
-     "Secondary layer, to clip descendants of the owning layer"},
     {CompositingReason::kLayerForHorizontalScrollbar,
      "layerForHorizontalScrollbar",
      "Secondary layer, the horizontal scrollbar layer"},
@@ -139,20 +132,8 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::kLayerForForeground, "layerForForeground",
      "Secondary layer, to contain any normal flow and positive z-index "
      "contents on top of a negative z-index layer"},
-    {CompositingReason::kLayerForBackground, "layerForBackground",
-     "Secondary layer, to contain acceleratable background content"},
     {CompositingReason::kLayerForMask, "layerForMask",
      "Secondary layer, to contain the mask contents"},
-    {CompositingReason::kLayerForClippingMask, "layerForClippingMask",
-     "Secondary layer, for clipping mask"},
-    {CompositingReason::kLayerForAncestorClippingMask,
-     "layerForAncestorClippingMask",
-     "Secondary layer, applies a clipping mask due to a sibling in the "
-     "composited layer tree"},
-    {CompositingReason::kLayerForScrollingBlockSelection,
-     "layerForScrollingBlockSelection",
-     "Secondary layer, to house block selection gaps for composited scrolling "
-     "with no scrolling contents"},
     {CompositingReason::kLayerForDecoration, "layerForDecoration",
      "Layer painted on top of other layers as decoration"},
     {CompositingReason::kLayerForOther, "layerForOther",

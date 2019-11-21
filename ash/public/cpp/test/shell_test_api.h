@@ -97,6 +97,8 @@ class ASH_EXPORT ShellTestApi {
   // state transition animation.
   void WaitForLauncherAnimationState(AppListViewState state);
 
+  void WaitForWindowFinishAnimating(aura::Window* window);
+
   // Returns the pagination model of the currently visible app-list view.
   // It returns nullptr when app-list is not shown.
   PaginationModel* GetAppListPaginationModel();

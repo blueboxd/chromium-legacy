@@ -213,6 +213,15 @@ bool FakeArCore::RequestHitTest(
 
 base::Optional<uint64_t> FakeArCore::SubscribeToHitTest(
     mojom::XRNativeOriginInformationPtr nativeOriginInformation,
+    const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+    mojom::XRRayPtr ray) {
+  NOTREACHED();
+  return base::nullopt;
+}
+
+base::Optional<uint64_t> FakeArCore::SubscribeToHitTestForTransientInput(
+    const std::string& profile_name,
+    const std::vector<mojom::EntityTypeForHitTest>& entity_types,
     mojom::XRRayPtr ray) {
   NOTREACHED();
   return base::nullopt;

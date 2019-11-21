@@ -19,17 +19,14 @@
 #include "components/ui_devtools/connector_delegate.h"
 #include "components/ui_devtools/switches.h"
 #include "components/ui_devtools/views/devtools_server_util.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/tracing_service.h"
 #include "services/service_manager/sandbox/switches.h"
-#include "services/tracing/public/mojom/constants.mojom.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 #if defined(USE_AURA)
 #include "base/run_loop.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/viz/public/cpp/gpu/gpu.h"  // nogncheck
 #include "ui/display/screen.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
@@ -57,8 +54,7 @@ class UiDevtoolsConnector : public ui_devtools::ConnectorDelegate {
 
   void BindTracingConsumerHost(
       mojo::PendingReceiver<tracing::mojom::ConsumerHost> receiver) override {
-    content::GetSystemConnector()->Connect(tracing::mojom::kServiceName,
-                                           std::move(receiver));
+    content::GetTracingService().BindConsumerHost(std::move(receiver));
   }
 };
 

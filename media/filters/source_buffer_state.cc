@@ -645,9 +645,8 @@ bool SourceBufferState::OnNewConfigs(
           return false;
         }
         audio_streams_[track_id] = stream;
-        media_log_->SetBooleanProperty("found_audio_stream", true);
-        media_log_->SetStringProperty("audio_codec_name",
-                                      GetCodecName(audio_config.codec()));
+        media_log_->SetProperty<MediaLogProperty::kAudioTracks>(
+            std::vector<AudioDecoderConfig>{audio_config});
       } else {
         if (audio_streams_.size() > 1) {
           auto it = audio_streams_.find(track_id);
@@ -702,9 +701,9 @@ bool SourceBufferState::OnNewConfigs(
           return false;
         }
         video_streams_[track_id] = stream;
-        media_log_->SetBooleanProperty("found_video_stream", true);
-        media_log_->SetStringProperty("video_codec_name",
-                                      GetCodecName(video_config.codec()));
+
+        media_log_->SetProperty<MediaLogProperty::kVideoTracks>(
+            std::vector<VideoDecoderConfig>{video_config});
       } else {
         if (video_streams_.size() > 1) {
           auto it = video_streams_.find(track_id);

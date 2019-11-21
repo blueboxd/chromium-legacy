@@ -323,7 +323,8 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
                                   context()->AsWeakPtr(), &remote_endpoint);
   auto registration_object_host =
       std::make_unique<ServiceWorkerRegistrationObjectHost>(
-          context()->AsWeakPtr(), provider_host.get(), registration);
+          context()->AsWeakPtr(), provider_host->container_host(),
+          registration);
   // To enable the caller end point
   // |registration_object_host->remote_registration_| to make calls safely with
   // no need to pass |object_info_->receiver| through a message pipe endpoint.

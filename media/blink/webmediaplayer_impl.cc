@@ -259,13 +259,9 @@ void DestructionHelper(
           std::move(media_log)));
 }
 
-void SetSanitizedStringProperty(MediaLog* log,
-                                std::string key,
-                                blink::WebString value) {
+std::string SanitizeUserStringProperty(blink::WebString value) {
   std::string converted = value.Utf8();
-  if (!base::IsStringUTF8(converted))
-    converted = "[invalid property]";
-  log->SetStringProperty(key, converted);
+  return base::IsStringUTF8(converted) ? converted : "[invalid property]";
 }
 
 }  // namespace
@@ -372,28 +368,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_log_->AddEvent(media_log_->CreateCreatedEvent(
       url::Origin(frame_->GetSecurityOrigin()).GetURL().spec()));
 
-  SetSanitizedStringProperty(media_log_.get(), "frame_url",
-                             frame_->GetDocument().Url().GetString());
-
-  SetSanitizedStringProperty(media_log_.get(), "frame_title",
-                             frame_->GetDocument().Title());
-
-  // To make manual testing easier, include |surface_layer_mode_| in the log.
-  // TODO(liberato): Move this into media_factory.cc, so that it can be shared
-  // with the MediaStream startup.
-  const char* surface_layer_mode_name = "(unset)";
-  switch (surface_layer_mode_) {
-    case SurfaceLayerMode::kAlways:
-      surface_layer_mode_name = "kAlways";
-      break;
-    case SurfaceLayerMode::kOnDemand:
-      surface_layer_mode_name = "kOnDemand";
-      break;
-    case SurfaceLayerMode::kNever:
-      surface_layer_mode_name = "kNever";
-      break;
-  }
-  media_log_->SetStringProperty("surface_layer_mode", surface_layer_mode_name);
+  media_log_->SetProperty<MediaLogProperty::kFrameUrl>(
+      SanitizeUserStringProperty(frame_->GetDocument().Url().GetString()));
+  media_log_->SetProperty<MediaLogProperty::kFrameTitle>(
+      SanitizeUserStringProperty(frame_->GetDocument().Title()));
 
   if (params->initial_cdm())
     SetCdmInternal(params->initial_cdm());
@@ -1525,7 +1503,7 @@ void WebMediaPlayerImpl::OnCdmAttached(bool success) {
   // If the CDM is set from the constructor there is no promise
   // (|set_cdm_result_|) to fulfill.
   if (success) {
-    media_log_->SetBooleanProperty("has_cdm", true);
+    media_log_->SetProperty<MediaLogProperty::kIsVideoEncrypted>(true);
 
     // This will release the previously attached CDM (if any).
     cdm_context_ref_ = std::move(pending_cdm_context_ref_);
@@ -3529,6 +3507,7 @@ void WebMediaPlayerImpl::RecordVideoNaturalSize(const gfx::Size& natural_size) {
   // Always report video natural size to MediaLog.
   media_log_->AddEvent(media_log_->CreateVideoSizeSetEvent(
       natural_size.width(), natural_size.height()));
+  media_log_->SetProperty<MediaLogProperty::kResolution>(natural_size);
 
   if (initial_video_height_recorded_)
     return;

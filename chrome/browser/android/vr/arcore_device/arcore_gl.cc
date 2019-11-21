@@ -47,6 +47,8 @@ constexpr std::array<float, 6> kDisplayCoordinatesForTransform = {
 
 constexpr uint32_t kInputSourceId = 1;
 
+const char* kInputSourceProfileName = "generic-touchscreen";
+
 gfx::Transform ConvertUvsToTransformMatrix(const std::vector<float>& uvs) {
   // We're creating a matrix that transforms viewport UV coordinates (for a
   // screen-filling quad, origin at bottom left, u=1 at right, v=1 at top) to
@@ -660,6 +662,7 @@ void ArCoreGl::RequestHitTest(
 
 void ArCoreGl::SubscribeToHitTest(
     mojom::XRNativeOriginInformationPtr native_origin_information,
+    const std::vector<mojom::EntityTypeForHitTest>& entity_types,
     mojom::XRRayPtr ray,
     mojom::XREnvironmentIntegrationProvider::SubscribeToHitTestCallback
         callback) {
@@ -679,7 +682,31 @@ void ArCoreGl::SubscribeToHitTest(
   }
 
   base::Optional<uint64_t> maybe_subscription_id = arcore_->SubscribeToHitTest(
-      std::move(native_origin_information), std::move(ray));
+      std::move(native_origin_information), entity_types, std::move(ray));
+
+  if (maybe_subscription_id) {
+    DVLOG(2) << __func__ << ": subscription_id=" << *maybe_subscription_id;
+    std::move(callback).Run(device::mojom::SubscribeToHitTestResult::SUCCESS,
+                            *maybe_subscription_id);
+  } else {
+    DVLOG(1) << __func__ << ": subscription failed";
+    std::move(callback).Run(
+        device::mojom::SubscribeToHitTestResult::FAILURE_GENERIC, 0);
+  }
+}
+
+void ArCoreGl::SubscribeToHitTestForTransientInput(
+    const std::string& profile_name,
+    const std::vector<mojom::EntityTypeForHitTest>& entity_types,
+    mojom::XRRayPtr ray,
+    mojom::XREnvironmentIntegrationProvider::
+        SubscribeToHitTestForTransientInputCallback callback) {
+  DVLOG(2) << __func__ << ": ray origin=" << ray->origin.ToString()
+           << ", ray direction=" << ray->direction.ToString();
+
+  base::Optional<uint64_t> maybe_subscription_id =
+      arcore_->SubscribeToHitTestForTransientInput(profile_name, entity_types,
+                                                   std::move(ray));
 
   if (maybe_subscription_id) {
     DVLOG(2) << __func__ << ": subscription_id=" << *maybe_subscription_id;
@@ -836,6 +863,8 @@ mojom::XRInputSourceStatePtr ArCoreGl::GetInputSourceState() {
   state->description->handedness = device::mojom::XRHandedness::NONE;
 
   state->description->target_ray_mode = device::mojom::XRTargetRayMode::TAPPING;
+
+  state->description->profiles.push_back(kInputSourceProfileName);
 
   // Controller doesn't have a measured position.
   state->emulated_position = true;

@@ -210,7 +210,7 @@ class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
         mojo::PendingReceiver<audio::mojom::StreamFactory>(
             std::move(factory_receiver)));
     stream_factory_.receiver_.set_disconnect_handler(
-        base::BindRepeating(&audio::FakeStreamFactory::CloseBinding,
+        base::BindRepeating(&audio::FakeStreamFactory::ResetReceiver,
                             base::Unretained(&stream_factory_)));
   }
 

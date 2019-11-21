@@ -26,8 +26,9 @@
 #include "chrome/browser/ui/webui/navigation_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/history_resources.h"
+#include "chrome/grit/history_resources_map.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -96,7 +97,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       {"signInPromoDesc", IDS_HISTORY_SIGN_IN_PROMO_DESC},
       {"title", IDS_HISTORY_TITLE},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->AddString(
       "sidebarFooter",
@@ -115,50 +116,6 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
 
   source->AddBoolean(kIsUserSignedInKey, IsUserSignedIn(profile));
 
-  const struct {
-    const char* path;
-    int idr;
-  } unbundled_resources[] = {
-    {"constants.html", IDR_HISTORY_CONSTANTS_HTML},
-    {"constants.js", IDR_HISTORY_CONSTANTS_JS},
-    {"history.js", IDR_HISTORY_HISTORY_JS},
-    {"images/sign_in_promo.svg", IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG},
-    {"images/sign_in_promo_dark.svg",
-     IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG},
-    {"strings.html", IDR_HISTORY_STRINGS_HTML},
-#if !BUILDFLAG(OPTIMIZE_WEBUI)
-    {"app.html", IDR_HISTORY_APP_HTML},
-    {"app.js", IDR_HISTORY_APP_JS},
-    {"browser_service.html", IDR_HISTORY_BROWSER_SERVICE_HTML},
-    {"browser_service.js", IDR_HISTORY_BROWSER_SERVICE_JS},
-    {"history_item.html", IDR_HISTORY_HISTORY_ITEM_HTML},
-    {"history_item.js", IDR_HISTORY_HISTORY_ITEM_JS},
-    {"history_list.html", IDR_HISTORY_HISTORY_LIST_HTML},
-    {"history_list.js", IDR_HISTORY_HISTORY_LIST_JS},
-    {"history_toolbar.html", IDR_HISTORY_HISTORY_TOOLBAR_HTML},
-    {"history_toolbar.js", IDR_HISTORY_HISTORY_TOOLBAR_JS},
-    {"lazy_load.html", IDR_HISTORY_LAZY_LOAD_HTML},
-    {"query_manager.html", IDR_HISTORY_QUERY_MANAGER_HTML},
-    {"query_manager.js", IDR_HISTORY_QUERY_MANAGER_JS},
-    {"router.html", IDR_HISTORY_ROUTER_HTML},
-    {"router.js", IDR_HISTORY_ROUTER_JS},
-    {"searched_label.html", IDR_HISTORY_SEARCHED_LABEL_HTML},
-    {"searched_label.js", IDR_HISTORY_SEARCHED_LABEL_JS},
-    {"shared_style.html", IDR_HISTORY_SHARED_STYLE_HTML},
-    {"shared_vars.html", IDR_HISTORY_SHARED_VARS_HTML},
-    {"side_bar.html", IDR_HISTORY_SIDE_BAR_HTML},
-    {"side_bar.js", IDR_HISTORY_SIDE_BAR_JS},
-    {"synced_device_card.html", IDR_HISTORY_SYNCED_DEVICE_CARD_HTML},
-    {"synced_device_card.js", IDR_HISTORY_SYNCED_DEVICE_CARD_JS},
-    {"synced_device_manager.html", IDR_HISTORY_SYNCED_DEVICE_MANAGER_HTML},
-    {"synced_device_manager.js", IDR_HISTORY_SYNCED_DEVICE_MANAGER_JS},
-#endif
-  };
-
-  for (const auto& resource : unbundled_resources) {
-    source->AddResourcePath(resource.path, resource.idr);
-  }
-
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("app.html", IDR_HISTORY_APP_VULCANIZED_HTML);
   source->AddResourcePath("app.crisper.js", IDR_HISTORY_APP_CRISPER_JS);
@@ -166,8 +123,22 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
                           IDR_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
   source->AddResourcePath("lazy_load.crisper.js",
                           IDR_HISTORY_LAZY_LOAD_CRISPER_JS);
+  source->AddResourcePath("constants.html", IDR_HISTORY_CONSTANTS_HTML);
+  source->AddResourcePath("constants.js", IDR_HISTORY_CONSTANTS_JS);
+  source->AddResourcePath("history.js", IDR_HISTORY_HISTORY_JS);
+  source->AddResourcePath("history.js", IDR_HISTORY_HISTORY_JS);
+  source->AddResourcePath("images/sign_in_promo.svg",
+                          IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG);
+  source->AddResourcePath("images/sign_in_promo_dark.svg",
+                          IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG);
+  source->AddResourcePath("strings.html", IDR_HISTORY_STRINGS_HTML);
+#else
+  // Add all history resources.
+  for (size_t i = 0; i < kHistoryResourcesSize; ++i) {
+    source->AddResourcePath(kHistoryResources[i].name,
+                            kHistoryResources[i].value);
+  }
 #endif
-
   source->SetDefaultResource(IDR_HISTORY_HISTORY_HTML);
   source->UseStringsJs();
 

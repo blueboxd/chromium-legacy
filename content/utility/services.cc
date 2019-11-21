@@ -15,6 +15,8 @@
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/network/network_service.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/tracing/public/mojom/tracing_service.mojom.h"
+#include "services/tracing/tracing_service.h"
 #include "services/video_capture/public/mojom/video_capture_service.mojom.h"
 #include "services/video_capture/video_capture_service_impl.h"
 
@@ -38,6 +40,11 @@ auto RunDataDecoder(
       std::move(receiver));
 }
 
+auto RunTracing(
+    mojo::PendingReceiver<tracing::mojom::TracingService> receiver) {
+  return std::make_unique<tracing::TracingService>(std::move(receiver));
+}
+
 auto RunVideoCapture(
     mojo::PendingReceiver<video_capture::mojom::VideoCaptureService> receiver) {
   return std::make_unique<video_capture::VideoCaptureServiceImpl>(
@@ -54,6 +61,7 @@ mojo::ServiceFactory& GetIOThreadServiceFactory() {
 mojo::ServiceFactory& GetMainThreadServiceFactory() {
   static base::NoDestructor<mojo::ServiceFactory> factory{
       RunDataDecoder,
+      RunTracing,
       RunVideoCapture,
   };
   return *factory;

@@ -18,35 +18,6 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_core_switches.h"
 
-namespace {
-
-class TestLayerAnimationObserver : public ui::LayerAnimationObserver {
- public:
-  TestLayerAnimationObserver(ui::LayerAnimator* animator,
-                             base::OnceClosure callback)
-      : animator_(animator), callback_(std::move(callback)) {
-    animator_->AddObserver(this);
-  }
-  ~TestLayerAnimationObserver() override = default;
-
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
-    if (!animator_->is_animating()) {
-      std::move(callback_).Run();
-      animator_->RemoveObserver(this);
-    }
-  }
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
-  void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override {}
-
- private:
-  ui::LayerAnimator* animator_;
-  base::OnceClosure callback_;
-  DISALLOW_COPY_AND_ASSIGN(TestLayerAnimationObserver);
-};
-
-}  // namespace
-
 class TabletModeTransitionTest : public UIPerformanceTest {
  public:
   TabletModeTransitionTest() = default;
@@ -95,23 +66,12 @@ IN_PROC_BROWSER_TEST_F(TabletModeTransitionTest, EnterExit) {
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   aura::Window* browser_window = browser->window()->GetNativeWindow();
 
-  {
-    base::RunLoop run_loop;
-    ui::LayerAnimator* animator = browser_window->layer()->GetAnimator();
-    TestLayerAnimationObserver waiter(animator, run_loop.QuitClosure());
-    ash::ShellTestApi().SetTabletModeEnabledForTest(
-        true, /*wait_for_completion=*/false);
-    EXPECT_TRUE(animator->is_animating());
-    run_loop.Run();
-  }
+  ash::ShellTestApi().SetTabletModeEnabledForTest(
+      true, /*wait_for_completion=*/false);
+  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
 
-  {
-    base::RunLoop run_loop;
-    ui::LayerAnimator* animator = browser_window->layer()->GetAnimator();
-    TestLayerAnimationObserver waiter(animator, run_loop.QuitClosure());
-    ash::ShellTestApi().SetTabletModeEnabledForTest(
-        false, /*wait_for_completion=*/false);
-    EXPECT_TRUE(animator->is_animating());
-    run_loop.Run();
-  }
+  ash::ShellTestApi().SetTabletModeEnabledForTest(
+      false, /*wait_for_completion=*/false);
+  EXPECT_TRUE(browser_window->layer()->GetAnimator()->is_animating());
+  ash::ShellTestApi().WaitForWindowFinishAnimating(browser_window);
 }

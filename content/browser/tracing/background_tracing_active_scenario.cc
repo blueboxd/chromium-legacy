@@ -16,14 +16,13 @@
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
-#include "content/public/browser/system_connector.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "content/public/browser/tracing_service.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/tracing_features.h"
-#include "services/tracing/public/mojom/constants.mojom.h"
 
 using base::trace_event::TraceConfig;
 using Metrics = content::BackgroundTracingManagerImpl::Metrics;
@@ -87,8 +86,8 @@ class PerfettoTracingSession
     }
 #endif
 
-    GetSystemConnector()->BindInterface(tracing::mojom::kServiceName,
-                                        &consumer_host_);
+    GetTracingService().BindConsumerHost(
+        consumer_host_.BindNewPipeAndPassReceiver());
 
     perfetto::TraceConfig perfetto_config = tracing::GetDefaultPerfettoConfig(
         chrome_config, /*privacy_filtering_enabled=*/true);
@@ -97,16 +96,16 @@ class PerfettoTracingSession
 
     mojo::PendingRemote<tracing::mojom::TracingSessionClient>
         tracing_session_client;
-    binding_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
-    binding_.set_connection_error_handler(
+    receiver_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
+    receiver_.set_disconnect_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionEnded,
                        base::Unretained(this)));
 
     consumer_host_->EnableTracing(
-        mojo::MakeRequest(&tracing_session_host_),
+        tracing_session_host_.BindNewPipeAndPassReceiver(),
         std::move(tracing_session_client), std::move(perfetto_config),
         tracing::mojom::TracingClientPriority::kBackground);
-    tracing_session_host_.set_connection_error_handler(
+    tracing_session_host_.set_disconnect_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionEnded,
                        base::Unretained(this)));
   }
@@ -178,10 +177,10 @@ class PerfettoTracingSession
   void OnTracingSessionEnded() { parent_scenario_->AbortScenario(); }
 
   BackgroundTracingActiveScenario* const parent_scenario_;
-  mojo::Binding<tracing::mojom::TracingSessionClient> binding_{this};
-  tracing::mojom::TracingSessionHostPtr tracing_session_host_;
+  mojo::Receiver<tracing::mojom::TracingSessionClient> receiver_{this};
+  mojo::Remote<tracing::mojom::TracingSessionHost> tracing_session_host_;
   std::unique_ptr<mojo::DataPipeDrainer> drainer_;
-  tracing::mojom::ConsumerHostPtr consumer_host_;
+  mojo::Remote<tracing::mojom::ConsumerHost> consumer_host_;
   std::unique_ptr<std::string> raw_data_;
   bool has_finished_read_buffers_ = false;
   bool has_finished_receiving_data_ = false;

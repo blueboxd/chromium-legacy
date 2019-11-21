@@ -32,16 +32,31 @@
         padding: 0 32px;
       }
 
-      /* On narrow screens, decrease width/padding. */
       @media screen and (max-width: 767px) {
+        /* On narrow screens, decrease width/padding. */
         :host {
-          padding: 32px;
+          height: auto;
+          margin-bottom: calc(4 * var(--narrow-button-bar-padding));
+          padding: 32px 32px 0 32px;
           width: var(--narrow-ui-width);
         }
 
+        /*
+         * Fix the button bar to the bottom of the window. Some content may be
+         * beneath the button bar, so make the background slightly transparent
+         * so that the content can be seen.
+         */
         button-bar {
-          margin-bottom: 32px;
-          margin-top: 24px;
+          background: rgba(255, 255, 255, 0.9);
+          bottom: 0;
+          height: var(--narrow-button-bar-padding);
+          left: var(--narrow-button-bar-padding);
+          padding: var(--narrow-button-bar-padding)
+                   var(--narrow-button-bar-padding)
+                   calc(2 * var(--narrow-button-bar-padding))
+                   var(--narrow-button-bar-padding);
+          position: fixed;
+          right: var(--narrow-button-bar-padding);
         }
       }
     </style>

@@ -26,8 +26,8 @@
       <include name="IDR_NETWORK_SPEECH_SYNTHESIS_JS" file="network_speech_synthesis/tts_extension.js" type="BINDATA" />
 
       <if expr="chromeos">
-        <include name="IDR_BRAILLE_IME_JS" file="chromeos/braille_ime/braille_ime.js" type="BINDATA" />
-        <include name="IDR_BRAILLE_IME_MAIN_JS" file="chromeos/braille_ime/main.js" type="BINDATA" />
+        <include name="IDR_BRAILLE_IME_JS" file="chromeos/accessibility/braille_ime/braille_ime.js" type="BINDATA" />
+        <include name="IDR_BRAILLE_IME_MAIN_JS" file="chromeos/accessibility/braille_ime/main.js" type="BINDATA" />
       </if>
 
       <!-- Bookmarks -->
@@ -77,6 +77,7 @@
         <include name="IDR_FIRST_RUN_DIALOG_ICON_256" file="chromeos/first_run/app/icon/256.png" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_BACKGROUND_JS" file="chromeos/arc_support/background.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_MAIN_CSS" file="chromeos/arc_support/main.css" type="BINDATA" />
+        <include name="IDR_ARC_SUPPORT_MAIN_JS" file="chromeos/arc_support/main.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_OVERLAY_CSS" file="chromeos/arc_support/overlay.css" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_PLAYSTORE_CSS" file="chromeos/arc_support/playstore.css" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_PLAYSTORE_JS" file="chromeos/arc_support/playstore.js" type="BINDATA" />
@@ -84,7 +85,7 @@
         <include name="IDR_ARC_SUPPORT_PROGRESSBAR_CSS" file="chromeos/arc_support/progressbar.css" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_PROGRESSBAR_JS" file="chromeos/arc_support/progressbar.js" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_FOCUS_MANAGER_JS" file="chromeos/arc_support/arc_optin_focus_manager.js" type="BINDATA" />
-        <include name="IDR_ARC_SUPPORT_MAIN" file="chromeos/arc_support/main.html" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_ARC_SUPPORT_MAIN" file="chromeos/arc_support/main.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_ICON_32" file="chromeos/arc_support/icon/32.png" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_ICON_192" file="chromeos/arc_support/icon/192.png" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_ICON_ERROER_IMAGE" file="chromeos/arc_support/images/error_image.png" type="BINDATA" />

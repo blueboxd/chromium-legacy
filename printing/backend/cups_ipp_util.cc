@@ -288,8 +288,15 @@ PrinterSemanticCapsAndDefaults::Papers SupportedPapers(
       printer.GetSupportedOptionValueStrings(kIppMedia);
   PrinterSemanticCapsAndDefaults::Papers parsed_papers;
   parsed_papers.reserve(papers.size());
-  for (base::StringPiece paper : papers)
-    parsed_papers.push_back(ParsePaper(paper));
+  for (base::StringPiece paper : papers) {
+    PrinterSemanticCapsAndDefaults::Paper parsed = ParsePaper(paper);
+    // If a paper fails to parse reasonably, we should avoid propagating
+    // it - e.g. CUPS is known to give out empty vendor IDs at times:
+    // https://crbug.com/920295#c23
+    if (!parsed.display_name.empty()) {
+      parsed_papers.push_back(parsed);
+    }
+  }
 
   return parsed_papers;
 }

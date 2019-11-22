@@ -45,9 +45,13 @@ const char kOptimizationGuideServiceGetModelsURL[] =
 const char kOptimizationGuideServiceAPIKey[] =
     "optimization-guide-service-api-key";
 
-// Purges the optimization guide store on startup, so that it's guaranteed to be
-// using fresh data.
-const char kPurgeOptimizationGuideStore[] = "purge-optimization-guide-store";
+// Purges the store containing fetched and component hints on startup, so that
+// it's guaranteed to be using fresh data.
+const char kPurgeHintsStore[] = "purge-optimization-guide-store";
+
+// Purges the store containing prediction medels and host model features on
+// startup, so that it's guaranteed to be using fresh data.
+const char kPurgeModelAndFeaturesStore[] = "purge-model-and-features-store";
 
 const char kDisableFetchingHintsAtNavigationStartForTesting[] =
     "disable-fetching-hints-at-navigation-start";
@@ -62,7 +66,12 @@ bool IsHintComponentProcessingDisabled() {
 bool ShouldPurgeOptimizationGuideStoreOnStartup() {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   return cmd_line->HasSwitch(kHintsProtoOverride) ||
-         cmd_line->HasSwitch(kPurgeOptimizationGuideStore);
+         cmd_line->HasSwitch(kPurgeHintsStore);
+}
+
+bool ShouldPurgeModelAndFeaturesStoreOnStartup() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  return cmd_line->HasSwitch(kPurgeModelAndFeaturesStore);
 }
 
 // Parses a list of hosts to have hints fetched for. This overrides scheduling

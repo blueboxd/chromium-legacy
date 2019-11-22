@@ -52,8 +52,7 @@ void JniIdentityMutator::ReloadAllAccountsFromSystemWithPrimaryAccount(
   DCHECK(device_accounts_synchronizer);
   base::Optional<CoreAccountId> primary_account_id;
   if (j_primary_account_id) {
-    primary_account_id = CoreAccountId();
-    primary_account_id->id =
+    primary_account_id =
         ConvertFromJavaCoreAccountId(env, j_primary_account_id);
   }
   device_accounts_synchronizer->ReloadAllAccountsFromSystemWithPrimaryAccount(

@@ -79,6 +79,9 @@ base::string16 SearchResultBaseView::ComputeAccessibleName() const {
   if (!result())
     return base::string16();
 
+  if (!result()->accessible_name().empty())
+    return result()->accessible_name();
+
   base::string16 accessible_name = result()->title();
   if (!result()->title().empty() && !result()->details().empty())
     accessible_name += base::ASCIIToUTF16(", ");

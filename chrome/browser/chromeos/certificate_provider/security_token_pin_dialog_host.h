@@ -30,8 +30,8 @@ class SecurityTokenPinDialogHost {
   // Shows the PIN dialog, or updates the existing one if it's already shown.
   //
   // Note that the caller is still responsible for closing the opened dialog, by
-  // calling ClosePinDialog(), after the |callback| got executed with a
-  // non-empty |user_input|.
+  // calling CloseSecurityTokenPinDialog(), after the |callback| got executed
+  // with a non-empty |user_input|.
   //
   // Note also that when the existing dialog is updated, its old callbacks will
   // NOT be called at all.

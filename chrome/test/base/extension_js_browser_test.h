@@ -13,7 +13,7 @@
 // A super class that handles javascript-based tests against an extension.
 //
 // See an example usage at
-//chrome/browser/resources/chromeos/chromevox2/cvox2/background/background.extjs
+// chrome/browser/resources/chromeos/accessibility/chromevox/background/background_test.extjs
 class ExtensionJSBrowserTest : public JavaScriptBrowserTest {
  public:
   ExtensionJSBrowserTest();

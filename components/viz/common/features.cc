@@ -14,15 +14,8 @@ namespace features {
 // Enables running the display compositor as part of the viz service in the GPU
 // process. This is also referred to as out-of-process display compositor
 // (OOP-D).
-// TODO(dnicoara): Look at enabling Chromecast support when ChromeOS support is
-// ready.
-#if defined(IS_CHROMECAST) && !defined(OS_ANDROID)
-const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-#else
 const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 #if defined(OS_CHROMEOS)
 const base::Feature kEnableVizHitTestSurfaceLayer{

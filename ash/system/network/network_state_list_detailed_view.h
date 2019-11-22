@@ -24,6 +24,11 @@ class TrayNetworkStateModel;
 
 namespace tray {
 
+bool CanNetworkConnect(
+    chromeos::network_config::mojom::ConnectionStateType connection_state,
+    chromeos::network_config::mojom::NetworkType type,
+    bool is_connectable);
+
 // Exported for tests.
 class ASH_EXPORT NetworkStateListDetailedView
     : public TrayDetailedView,

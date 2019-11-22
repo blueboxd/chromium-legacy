@@ -77,6 +77,14 @@ views::View* AssistantTestApiImpl::greeting_label() {
   return page_view()->GetViewByID(AssistantViewID::kGreetingLabel);
 }
 
+views::View* AssistantTestApiImpl::voice_input_toggle() {
+  return page_view()->GetViewByID(AssistantViewID::kVoiceInputToggle);
+}
+
+views::View* AssistantTestApiImpl::keyboard_input_toggle() {
+  return page_view()->GetViewByID(AssistantViewID::kKeyboardInputToggle);
+}
+
 aura::Window* AssistantTestApiImpl::window() {
   return main_view()->GetWidget()->GetNativeWindow();
 }

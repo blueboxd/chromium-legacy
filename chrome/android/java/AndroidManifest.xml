@@ -296,7 +296,7 @@ by a child template that "extends" this file.
                 {{ self.mhtml_view_intent_shared_filter_body() }}
                 <data android:mimeType="*/*"/>
             </intent-filter>
-            <!-- Bundled HTTP Exchanges (.wbn) support -->
+            <!-- Web Bundles (.wbn) support -->
             {% if channel in ['dev', 'canary', 'default'] %}
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

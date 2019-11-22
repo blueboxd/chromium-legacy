@@ -20,8 +20,8 @@
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -73,17 +73,13 @@ class MojoCdmTest : public ::testing::Test {
       : mojo_cdm_service_(
             std::make_unique<MojoCdmService>(&cdm_factory_,
                                              &mojo_cdm_service_context_)),
-        cdm_binding_(mojo_cdm_service_.get()) {}
+        cdm_receiver_(mojo_cdm_service_.get()) {}
 
   ~MojoCdmTest() override = default;
 
   void Initialize(ExpectedResult expected_result) {
     // TODO(xhwang): Add pending init support.
     DCHECK_NE(PENDING, expected_result);
-
-    mojo::PendingRemote<mojom::ContentDecryptionModule> remote_cdm;
-
-    cdm_binding_.Bind(remote_cdm.InitWithNewPipeAndPassReceiver());
 
     std::string key_system;
     if (expected_result == CONNECTION_ERROR_BEFORE) {
@@ -102,7 +98,8 @@ class MojoCdmTest : public ::testing::Test {
     }
 
     MojoCdm::Create(key_system, url::Origin::Create(GURL(kTestSecurityOrigin)),
-                    CdmConfig(), std::move(remote_cdm), nullptr,
+                    CdmConfig(), cdm_receiver_.BindNewPipeAndPassRemote(),
+                    nullptr,
                     base::Bind(&MockCdmClient::OnSessionMessage,
                                base::Unretained(&cdm_client_)),
                     base::Bind(&MockCdmClient::OnSessionClosed,
@@ -134,7 +131,7 @@ class MojoCdmTest : public ::testing::Test {
   }
 
   void ForceConnectionError() {
-    cdm_binding_.CloseWithReason(2, "Test closed connection.");
+    cdm_receiver_.ResetWithReason(2, "Test closed connection.");
     base::RunLoop().RunUntilIdle();
   }
 
@@ -375,7 +372,7 @@ class MojoCdmTest : public ::testing::Test {
   std::unique_ptr<NewSessionCdmPromise> pending_new_session_cdm_promise_;
 
   std::unique_ptr<MojoCdmService> mojo_cdm_service_;
-  mojo::Binding<mojom::ContentDecryptionModule> cdm_binding_;
+  mojo::Receiver<mojom::ContentDecryptionModule> cdm_receiver_;
   scoped_refptr<ContentDecryptionModule> mojo_cdm_;
 
  private:

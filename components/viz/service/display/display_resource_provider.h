@@ -235,7 +235,8 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     // Lock a resource for external use. The return value was created by
     // |client| at some point in the past.
     ExternalUseClient::ImageContext* LockResource(ResourceId resource_id,
-                                                  bool is_video_plane = false);
+                                                  bool is_video_plane = false,
+                                                  float sdr_scale_factor = 1.f);
 
     // Unlock all locked resources with a |sync_token|.  The |sync_token| should
     // be waited on before reusing the resource's backing to ensure that any

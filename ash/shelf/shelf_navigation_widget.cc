@@ -223,7 +223,7 @@ void ShelfNavigationWidget::Initialize(aura::Window* container) {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.name = "ShelfNavigationWidget";
   params.delegate = delegate_;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = container;
   Init(std::move(params));

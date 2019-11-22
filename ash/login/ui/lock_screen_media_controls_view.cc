@@ -13,6 +13,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/power_monitor/power_monitor.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "components/vector_icons/vector_icons.h"
@@ -211,6 +212,9 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   DCHECK(callbacks.media_controls_enabled);
   DCHECK(callbacks.hide_media_controls);
   DCHECK(callbacks.show_media_controls);
+
+  // Media controls should observer power events.
+  base::PowerMonitor::AddObserver(this);
 
   // Media controls have not been dismissed initially.
   Shell::Get()->media_controller()->SetMediaControlsDismissed(false);
@@ -427,6 +431,8 @@ LockScreenMediaControlsView::~LockScreenMediaControlsView() {
     base::UmaHistogramEnumeration(kMediaControlsHideHistogramName,
                                   *hide_reason_);
   }
+
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 const char* LockScreenMediaControlsView::GetClassName() const {
@@ -675,6 +681,10 @@ void LockScreenMediaControlsView::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
+}
+
+void LockScreenMediaControlsView::OnSuspend() {
+  Hide(HideReason::kDeviceSleep);
 }
 
 void LockScreenMediaControlsView::FlushForTesting() {

@@ -55,7 +55,7 @@ void ChromeViewsDelegate::AdjustSavedWindowPlacementChromeOS(
 views::Widget::InitParams::WindowOpacity
 ChromeViewsDelegate::GetOpacityForInitParams(
     const views::Widget::InitParams& params) {
-  return views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  return views::Widget::InitParams::WindowOpacity::kTranslucent;
 }
 
 views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(

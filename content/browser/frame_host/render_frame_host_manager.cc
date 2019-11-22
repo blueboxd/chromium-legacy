@@ -965,13 +965,11 @@ void RenderFrameHostManager::OnDidChangeCollapsedState(bool collapsed) {
   // FrameOwner in the parent via the child's current RenderFrame at any time.
   DCHECK(current_frame_host());
   if (current_frame_host()->GetSiteInstance() == parent_site_instance) {
-    current_frame_host()->Send(
-        new FrameMsg_Collapse(current_frame_host()->GetRoutingID(), collapsed));
+    current_frame_host()->GetAssociatedLocalFrame()->Collapse(collapsed);
   } else {
     RenderFrameProxyHost* proxy_to_parent =
         GetRenderFrameProxyHost(parent_site_instance);
-    proxy_to_parent->Send(
-        new FrameMsg_Collapse(proxy_to_parent->GetRoutingID(), collapsed));
+    proxy_to_parent->GetAssociatedRemoteFrame()->Collapse(collapsed);
   }
 }
 

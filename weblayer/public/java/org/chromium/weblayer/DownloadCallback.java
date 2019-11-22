@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 /**
@@ -13,12 +15,12 @@ public abstract class DownloadCallback {
     /**
      * A download of has been requested with the specified details.
      *
-     * @param url the target that should be downloaded
+     * @param uri the target that should be downloaded
      * @param userAgent the user agent to be used for the download
      * @param contentDisposition content-disposition http header, if present
      * @param mimetype the mimetype of the content reported by the server
      * @param contentLength the file size reported by the server
      */
-    public abstract void onDownloadRequested(@NonNull String url, @NonNull String userAgent,
+    public abstract void onDownloadRequested(@NonNull Uri uri, @NonNull String userAgent,
             @NonNull String contentDisposition, @NonNull String mimetype, long contentLength);
 }

@@ -406,6 +406,8 @@ Bug(none) svg/zoom/text/zoom-svg-float-border-padding.xml [ Failure ]
 Bug(none) virtual/composite-after-paint/scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Crash ]
 Bug(none) virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-15.html [ Failure ]
 Bug(none) virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/backplate/forced-colors-mode-backplate-07.html [ Failure ]
+Bug(none) virtual/layout_ng_block_frag/external/wpt/css/css-break/hit-test-inline-fragmentation-with-border-radius.html [ Failure ]
+
 
 # 10/27/2019 updates.
 Bug(none) external/wpt/css/css-writing-modes/wm-propagation-body-044.html [ Failure ]

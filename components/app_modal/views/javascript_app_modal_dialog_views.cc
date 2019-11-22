@@ -12,7 +12,6 @@
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace app_modal {
 
@@ -65,11 +64,11 @@ void JavaScriptAppModalDialogViews::CloseAppModalDialog() {
 }
 
 void JavaScriptAppModalDialogViews::AcceptAppModalDialog() {
-  GetDialogClientView()->AcceptWindow();
+  AcceptDialog();
 }
 
 void JavaScriptAppModalDialogViews::CancelAppModalDialog() {
-  GetDialogClientView()->CancelWindow();
+  CancelDialog();
 }
 
 bool JavaScriptAppModalDialogViews::IsShowing() const {

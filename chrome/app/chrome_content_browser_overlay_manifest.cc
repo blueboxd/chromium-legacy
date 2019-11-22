@@ -32,7 +32,6 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/translate/content/common/translate.mojom.h"
 #include "extensions/buildflags/buildflags.h"
-#include "services/preferences/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "third_party/blink/public/mojom/badging/badging.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
@@ -109,8 +108,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("nacl_loader", "browser")
         .RequireCapability("noop", "noop")
         .RequireCapability("patch", "patch_file")
-        .RequireCapability("preferences", "pref_client")
-        .RequireCapability("preferences", "pref_control")
         .RequireCapability("profile_import", "import")
         .RequireCapability("removable_storage_writer",
                            "removable_storage_writer")
@@ -176,7 +173,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 mojom::SiteEngagementDetailsProvider,
                 mojom::UsbInternalsPageHandler,
                 snippets_internals::mojom::PageHandlerFactory>())
-        .PackageService(prefs::GetManifest())
 #if defined(OS_CHROMEOS)
         .PackageService(chromeos::multidevice_setup::GetManifest())
 #endif  // defined(OS_CHROMEOS)

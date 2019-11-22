@@ -507,7 +507,8 @@ XrTime OpenXrApiWrapper::GetPredictedDisplayTime() const {
 
 XrResult OpenXrApiWrapper::GetHeadPose(
     base::Optional<gfx::Quaternion>* orientation,
-    base::Optional<gfx::Point3F>* position) const {
+    base::Optional<gfx::Point3F>* position,
+    bool* emulated_position) const {
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL));
   DCHECK(HasSpace(XR_REFERENCE_SPACE_TYPE_VIEW));
 
@@ -518,7 +519,15 @@ XrResult OpenXrApiWrapper::GetHeadPose(
                                     frame_state_.predictedDisplayTime,
                                     &view_from_local));
 
-  if (view_from_local.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+  // emulated_position indicates when there is a fallback from a fully-tracked
+  // (i.e. 6DOF) type case to some form of orientation-only type tracking
+  // (i.e. 3DOF/IMU type sensors)
+  // Thus we have to make sure orientation is tracked.
+  // Valid Bit only indicates it's either tracked or emulated, we have to check
+  // for XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT to make sure orientation is
+  // tracked.
+  if (view_from_local.locationFlags &
+      XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT) {
     *orientation = gfx::Quaternion(
         view_from_local.pose.orientation.x, view_from_local.pose.orientation.y,
         view_from_local.pose.orientation.z, view_from_local.pose.orientation.w);
@@ -532,6 +541,11 @@ XrResult OpenXrApiWrapper::GetHeadPose(
                              view_from_local.pose.position.z);
   } else {
     *position = base::nullopt;
+  }
+
+  *emulated_position = true;
+  if (view_from_local.locationFlags & XR_SPACE_LOCATION_POSITION_TRACKED_BIT) {
+    *emulated_position = false;
   }
 
   return xr_result;

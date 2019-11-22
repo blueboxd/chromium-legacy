@@ -306,7 +306,8 @@ void ExtendedAuthenticatorImpl::OnOperationComplete(
     return;
   }
 
-  LOG(ERROR) << "Supervised user cryptohome error, code: " << return_code;
+  LOG(ERROR) << "Extended authenticator cryptohome error, code: "
+             << return_code;
 
   AuthState state = FAILED_MOUNT;
 

@@ -30,7 +30,6 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/test/event_generator.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace ash {
 
@@ -1078,7 +1077,7 @@ TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
   EXPECT_TRUE(dialog);
 
   // Canceling the dialog will cause the feature to continue to be enabled.
-  dialog->GetDialogClientView()->CancelWindow();
+  dialog->CancelDialog();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
   EXPECT_TRUE(Shell::Get()->accessibility_controller()->autoclick_enabled());
@@ -1089,7 +1088,7 @@ TEST_F(AutoclickTest, ConfirmationDialogShownWhenDisablingFeature) {
   Shell::Get()->accessibility_controller()->SetAutoclickEnabled(false);
   dialog = GetAutoclickController()->GetDisableDialogForTesting();
   EXPECT_TRUE(dialog);
-  dialog->GetDialogClientView()->AcceptWindow();
+  dialog->AcceptDialog();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetAutoclickController()->GetDisableDialogForTesting());
   EXPECT_FALSE(Shell::Get()->accessibility_controller()->autoclick_enabled());

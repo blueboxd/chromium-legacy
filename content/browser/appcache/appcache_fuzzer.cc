@@ -157,6 +157,7 @@ DEFINE_BINARY_PROTO_FUZZER(const fuzzing::proto::Session& session) {
           host_id_token = base::UnguessableToken::Create();
         mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend;
         ignore_result(frontend.InitWithNewPipeAndPassReceiver());
+        registered_hosts[host_id].reset();
         host->RegisterHost(
             registered_hosts[host_id].BindNewPipeAndPassReceiver(),
             std::move(frontend), host_id_token);

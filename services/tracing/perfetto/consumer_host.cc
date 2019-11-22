@@ -393,9 +393,14 @@ void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
 
   json_agent_label_filter_ = agent_label_filter;
 
+  perfetto::trace_processor::Config processor_config;
+  // Chrome uses a smaller block size than the default even on 64-bit machines,
+  // because the sandbox for our utility process may restrict our address space.
+  // The string pool can still grow larger across multiple blocks if necessary.
+  processor_config.string_pool_block_size_bytes = 32 * 1024 * 1024;  // 32 mB.
   trace_processor_ =
       perfetto::trace_processor::TraceProcessorStorage::CreateInstance(
-          perfetto::trace_processor::Config());
+          processor_config);
 
   DisableTracing();
 }

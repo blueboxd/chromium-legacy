@@ -653,7 +653,7 @@ group("gn_all") {
   if (is_chromecast) {
     deps += [ "//chromecast:cast_shell" ]
     if (enable_extensions && use_aura) {
-      deps += [ "//chrome/browser/resources/chromeos/chromevox" ]
+      deps += [ "//chrome/browser/resources/chromeos/accessibility/chromevox" ]
     }
   }
 

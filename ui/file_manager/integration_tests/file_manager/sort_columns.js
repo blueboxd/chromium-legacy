@@ -86,6 +86,10 @@ testcase.sortColumns = async () => {
   chrome.test.assertEq(1, a11yMessages.length, 'Missing a11y message');
   console.log(a11yMessages[0]);
 
+  // Check: sort-button has aria-haspopup set to true
+  const sortButton = await remoteCall.waitForElement(appId, '#sort-button');
+  chrome.test.assertEq(sortButton.attributes['aria-haspopup'], 'true');
+
   // Click the 'Name' again and check the list.
   await remoteCall.callRemoteTestUtil(
       'fakeMouseClick', appId, ['.table-header-cell:nth-of-type(1)']);

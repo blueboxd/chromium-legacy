@@ -309,7 +309,9 @@ class MediaSessionImplSyncBrowserTest : public MediaSessionImplBrowserTest {
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(, MediaSessionImplParamBrowserTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         MediaSessionImplParamBrowserTest,
+                         testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(MediaSessionImplParamBrowserTest,
                        PlayersFromSameObserverDoNotStopEachOtherInSameSession) {

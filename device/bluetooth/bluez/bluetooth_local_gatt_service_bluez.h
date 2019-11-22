@@ -41,9 +41,9 @@ class BluetoothLocalGattServiceBlueZ
 
   // device::BluetoothLocalGattService overrides.
   void Register(const base::Closure& callback,
-                const ErrorCallback& error_callback) override;
+                ErrorCallback error_callback) override;
   void Unregister(const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
+                  ErrorCallback error_callback) override;
   bool IsRegistered() override;
   void Delete() override;
   device::BluetoothLocalGattCharacteristic* GetCharacteristic(

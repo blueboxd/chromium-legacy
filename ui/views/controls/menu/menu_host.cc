@@ -120,9 +120,9 @@ void MenuHost::InitMenuHost(Widget* parent,
                        submenu_->GetScrollViewContainer()->HasBubbleBorder();
   params.shadow_type = bubble_border ? Widget::InitParams::ShadowType::kNone
                                      : Widget::InitParams::ShadowType::kDrop;
-  params.opacity = (bubble_border || rounded_border) ?
-      Widget::InitParams::TRANSLUCENT_WINDOW :
-      Widget::InitParams::OPAQUE_WINDOW;
+  params.opacity = (bubble_border || rounded_border)
+                       ? Widget::InitParams::WindowOpacity::kTranslucent
+                       : Widget::InitParams::WindowOpacity::kOpaque;
   params.parent = parent ? parent->GetNativeView() : gfx::kNullNativeView;
   params.bounds = bounds;
   // If MenuHost has no parent widget, it needs to be marked

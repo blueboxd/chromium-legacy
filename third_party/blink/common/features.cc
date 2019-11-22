@@ -58,10 +58,8 @@ const base::Feature kDisplayLocking{"DisplayLocking",
 
 // Enable applying rounded corner masks via a GL shader rather than
 // a mask layer.
-const base::Feature kFastBorderRadius {
-  "FastBorderRadius",
-      base::FEATURE_ENABLED_BY_DEFAULT
-};
+const base::Feature kFastBorderRadius{"FastBorderRadius",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -287,6 +285,10 @@ const base::Feature kLightweightNoStatePrefetch{
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+// A feature to enable web fonts to be fetched by No-State Prefetch.
+const base::Feature kLightweightNoStatePrefetch_FetchFonts{
+    "LightweightNoStatePrefetch_FetchFonts", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Automatically convert light-themed pages to use a Blink-generated dark theme
 const base::Feature kForceWebContentsDarkMode{

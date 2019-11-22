@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
@@ -48,6 +49,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   Profile* profile_ = nullptr;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
   std::string device_name_;
+  base::ElapsedTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCopyMessageHandler);
 };

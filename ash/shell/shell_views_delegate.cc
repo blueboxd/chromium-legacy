@@ -21,8 +21,8 @@ views::NonClientFrameView* ShellViewsDelegate::CreateDefaultNonClientFrameView(
 void ShellViewsDelegate::OnBeforeWidgetInit(
     views::Widget::InitParams* params,
     views::internal::NativeWidgetDelegate* delegate) {
-  if (params->opacity == views::Widget::InitParams::INFER_OPACITY)
-    params->opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  if (params->opacity == views::Widget::InitParams::WindowOpacity::kInferred)
+    params->opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
 
   if (params->native_widget)
     return;

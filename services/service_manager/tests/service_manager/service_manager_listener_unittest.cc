@@ -10,7 +10,8 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
@@ -31,8 +32,9 @@ constexpr uint32_t kTestTargetPid2 = 8910;
 
 class TestListener : public mojom::ServiceManagerListener {
  public:
-  explicit TestListener(mojom::ServiceManagerListenerRequest request)
-      : binding_(this, std::move(request)) {}
+  explicit TestListener(
+      mojo::PendingReceiver<mojom::ServiceManagerListener> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~TestListener() override = default;
 
   void WaitForInit() { wait_for_init_loop_.Run(); }
@@ -64,7 +66,7 @@ class TestListener : public mojom::ServiceManagerListener {
   void OnServicePIDReceived(const Identity& identity, uint32_t pid) override {}
 
  private:
-  mojo::Binding<mojom::ServiceManagerListener> binding_;
+  mojo::Receiver<mojom::ServiceManagerListener> receiver_;
   base::RunLoop wait_for_init_loop_;
 
   base::Optional<base::RunLoop> wait_for_start_loop_;

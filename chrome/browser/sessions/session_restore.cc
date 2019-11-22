@@ -47,7 +47,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -447,12 +449,15 @@ class SessionRestoreImpl : public BrowserListObserver {
       // 6. Tabs will be grouped appropriately in RestoreTabsToBrowser. Now
       //    restore the groups' visual data.
       if (base::FeatureList::IsEnabled(features::kTabGroups)) {
-        for (auto& tab_group : (*i)->tab_groups) {
-          TabGroupVisualData restored_data(std::move(tab_group->metadata.title),
-                                           tab_group->metadata.color);
-          browser->tab_strip_model()->SetVisualDataForGroup(
-              TabGroupId::FromRawToken(tab_group->group_id),
-              std::move(restored_data));
+        TabGroupModel* group_model = browser->tab_strip_model()->group_model();
+        for (auto& session_tab_group : (*i)->tab_groups) {
+          TabGroup* model_tab_group = group_model->GetTabGroup(
+              TabGroupId::FromRawToken(session_tab_group->group_id));
+          DCHECK(model_tab_group);
+          TabGroupVisualData restored_data(
+              std::move(session_tab_group->metadata.title),
+              session_tab_group->metadata.color);
+          model_tab_group->SetVisualData(std::move(restored_data));
         }
       }
 

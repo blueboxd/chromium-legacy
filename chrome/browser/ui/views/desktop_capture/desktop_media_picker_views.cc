@@ -36,7 +36,6 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window_tree_host.h"
@@ -349,7 +348,7 @@ bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
 }
 
 views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
-  return GetDialogClientView()->cancel_button();
+  return GetCancelButton();
 }
 
 bool DesktopMediaPickerDialogView::Accept() {
@@ -408,7 +407,7 @@ void DesktopMediaPickerDialogView::OnSelectionChanged() {
 
 void DesktopMediaPickerDialogView::AcceptSource() {
   // This will call Accept() and close the dialog.
-  GetDialogClientView()->AcceptWindow();
+  AcceptDialog();
 }
 
 void DesktopMediaPickerDialogView::AcceptSpecificSource(DesktopMediaID source) {

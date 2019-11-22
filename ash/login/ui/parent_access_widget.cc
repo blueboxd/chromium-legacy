@@ -86,7 +86,8 @@ ParentAccessWidget::ParentAccessWidget(const AccountId& account_id,
   widget_params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   widget_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  widget_params.opacity =
+      views::Widget::InitParams::WindowOpacity::kTranslucent;
   widget_params.accept_events = true;
 
   ShellWindowId parent_window_id =

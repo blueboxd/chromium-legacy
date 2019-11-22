@@ -17,6 +17,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/host_resolver_proc.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/url_request/url_request_context.h"
 
 namespace net {
@@ -102,13 +103,15 @@ class ContextHostResolver::WrappedResolveHostRequest
       // calling Start() in this case, but this implementation returns
       // ERR_FAILED to allow testing the case.
       inner_request_ = nullptr;
-      return ERR_FAILED;
+      resolve_error_info_ = ResolveErrorInfo(ERR_FAILED);
+      return ERR_NAME_NOT_RESOLVED;
     }
 
     if (shutting_down()) {
       // Shutting down but the resolver is not yet destroyed.
       inner_request_ = nullptr;
-      return ERR_CONTEXT_SHUT_DOWN;
+      resolve_error_info_ = ResolveErrorInfo(ERR_CONTEXT_SHUT_DOWN);
+      return ERR_NAME_NOT_RESOLVED;
     }
 
     DCHECK(inner_request_);
@@ -156,6 +159,13 @@ class ContextHostResolver::WrappedResolveHostRequest
     return inner_request_->GetEsniResults();
   }
 
+  net::ResolveErrorInfo GetResolveErrorInfo() const override {
+    if (!inner_request_) {
+      return resolve_error_info_;
+    }
+    return inner_request_->GetResolveErrorInfo();
+  }
+
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     if (!inner_request_) {
@@ -181,6 +191,9 @@ class ContextHostResolver::WrappedResolveHostRequest
  private:
   std::unique_ptr<HostResolverManager::CancellableResolveHostRequest>
       inner_request_;
+
+  // Error info for a |inner_request_| that was destroyed before it started.
+  ResolveErrorInfo resolve_error_info_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

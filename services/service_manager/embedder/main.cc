@@ -80,6 +80,9 @@ constexpr size_t kMaximumMojoMessageSize = 128 * 1024 * 1024;
 
 // Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
 void SetupSignalHandlers() {
+  // Always ignore SIGPIPE.  We check the return value of write().
+  CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableInProcessStackTraces)) {
     // Don't interfere with sanitizer signal handlers.
@@ -101,9 +104,6 @@ void SetupSignalHandlers() {
   for (unsigned i = 0; i < base::size(signals_to_reset); i++) {
     CHECK_EQ(0, sigaction(signals_to_reset[i], &sigact, NULL));
   }
-
-  // Always ignore SIGPIPE.  We check the return value of write().
-  CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
 }
 
 void PopulateFDsFromCommandLine() {

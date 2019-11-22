@@ -486,7 +486,7 @@ IN_PROC_BROWSER_TEST_P(RemoveDefaultAppSyncTest, Remove) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(, RemoveDefaultAppSyncTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, RemoveDefaultAppSyncTest, ::testing::Bool());
 
 #if !defined(OS_MACOSX)
 

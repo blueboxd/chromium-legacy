@@ -3351,15 +3351,6 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_FLASH" desc="Label for the Flash site settings.">
     Flash
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_LEGACY_COOKIE_ACCESS" desc="Label for the legacy cookie access site settings.">
-    Legacy cookie access
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_LEGACY_COOKIE_ACCESS_ALLOW" desc="The allow label for legacy cookie access in site settings.">
-    Allow sites to use less-secure legacy rules for accessing cookies in a third-party context
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_LEGACY_COOKIE_ACCESS_BLOCK" desc="The block label for legacy cookie access in site settings.">
-    Do not allow sites to use less-secure legacy rules for accessing cookies in a third-party context
-  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_PAYMENT_HANDLER" desc="Label for the payment handler site settings.">
     Payment Handlers
   </message>

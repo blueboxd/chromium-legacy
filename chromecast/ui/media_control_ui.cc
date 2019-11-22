@@ -120,7 +120,7 @@ MediaControlUi::MediaControlUi(CastWindowManager* window_manager)
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = window_manager_->GetRootWindow();
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.bounds = window_manager_->GetRootWindow()->GetBoundsInRootWindow();
   widget_->Init(std::move(params));
   widget_->SetContentsView(touch_view_.release());  // Ownership passed.

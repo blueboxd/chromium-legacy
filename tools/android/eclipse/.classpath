@@ -236,7 +236,10 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_swipe_refresh/android_swipe_refresh_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/cacheinvalidation/cacheinvalidation_javalib.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/cacheinvalidation/cacheinvalidation_proto_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/espresso/espresso-core-release-no-dep.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/gif_player/gif_player_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/hamcrest/hamcrest-core.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/hamcrest/hamcrest-library.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/robolectric/robolectric_annotations_java.jar" sourcepath="../src/third_party/robolectric/robolectric/robolectric-annotations/src/main/java"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/robolectric/robolectric_java.jar" sourcepath="../src/third_party/robolectric/robolectric/robolectric/src/main/java"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/robolectric/robolectric_resources_java.jar" sourcepath="../src/third_party/robolectric/robolectric/robolectric-resources/src/main/java"/>

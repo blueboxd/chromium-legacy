@@ -43,6 +43,7 @@
 #include "extensions/renderer/guest_view/mime_handler_view/mime_handler_view_container_manager.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -59,6 +60,16 @@ void IsGuestViewApiAvailableToScriptContext(
   if (context->GetAvailability("guestViewInternal").is_available()) {
     *api_is_available = true;
   }
+}
+
+bool ExtensionHasAccessToUrl(const Extension* extension,
+                             int tab_id,
+                             const GURL& url) {
+  return extension->permissions_data()->GetPageAccess(url, tab_id, nullptr) ==
+             extensions::PermissionsData::PageAccess::kAllowed ||
+         extension->permissions_data()->GetContentScriptAccess(url, tab_id,
+                                                               nullptr) ==
+             extensions::PermissionsData::PageAccess::kAllowed;
 }
 
 }  // namespace
@@ -197,28 +208,60 @@ void ChromeExtensionsRendererClient::WillSendRequest(
     blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
+    const blink::WebURL& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url,
     bool* attach_same_site_cookies) {
+  std::string extension_id;
   if (initiator_origin &&
       initiator_origin->scheme() == extensions::kExtensionScheme) {
+    extension_id = initiator_origin->host();
+  } else {
+    url::Origin site_for_cookies_origin =
+        url::Origin::Create(GURL(site_for_cookies));
+    if (site_for_cookies_origin.scheme() == extensions::kExtensionScheme) {
+      extension_id = site_for_cookies_origin.host();
+    }
+  }
+
+  if (!extension_id.empty()) {
     const extensions::RendererExtensionRegistry* extension_registry =
         extensions::RendererExtensionRegistry::Get();
-    const Extension* extension =
-        extension_registry->GetByID(initiator_origin->host());
+    const Extension* extension = extension_registry->GetByID(extension_id);
     if (extension) {
       int tab_id = extensions::ExtensionFrameHelper::Get(
                        content::RenderFrame::FromWebFrame(frame))
                        ->tab_id();
       GURL request_url(url);
-      if (extension->permissions_data()->GetPageAccess(request_url, tab_id,
-                                                       nullptr) ==
-              extensions::PermissionsData::PageAccess::kAllowed ||
-          extension->permissions_data()->GetContentScriptAccess(
-              request_url, tab_id, nullptr) ==
-              extensions::PermissionsData::PageAccess::kAllowed) {
-        *attach_same_site_cookies = true;
+      bool extension_has_access_to_request_url =
+          ExtensionHasAccessToUrl(extension, tab_id, request_url);
+
+      bool initiator_ok = true;
+      // In the case where the site_for_cookies is an extension URL, we also
+      // want to check that the initiator and the requested URL are same-site,
+      // and that the extension has permission for both the requested URL and
+      // the initiator origin.
+      // Ideally we would walk up the frame tree and check that each ancestor is
+      // first-party to the main frame (treating the extension as "first-party"
+      // to any URLs it has permission for). But for now we make do with just
+      // checking the direct initiator of the request.
+      // We also want to check same-siteness between the initiator and the
+      // requested URL, because setting |attach_same_site_cookies| to true
+      // causes Strict cookies to be attached, and having the initiator be
+      // same-site to the request URL is a requirement for Strict cookies
+      // (see net::cookie_util::ComputeSameSiteContext).
+      if (initiator_origin &&
+          initiator_origin->scheme() != extensions::kExtensionScheme) {
+        initiator_ok =
+            ExtensionHasAccessToUrl(extension, tab_id,
+                                    initiator_origin->GetURL()) &&
+            net::registry_controlled_domains::SameDomainOrHost(
+                request_url, *initiator_origin,
+                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
       }
+
+      *attach_same_site_cookies =
+          extension_has_access_to_request_url && initiator_ok;
     } else {
       // If there is no extension installed for the origin, it may be from a
       // recently uninstalled extension.  The tabs of such extensions are

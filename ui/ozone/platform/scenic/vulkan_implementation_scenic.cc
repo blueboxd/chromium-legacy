@@ -90,16 +90,9 @@ VulkanImplementationScenic::CreateViewSurface(gfx::AcceleratedWidget window) {
   }
   DCHECK_GT(image_pipe_swapchain_implementation_version, 0u);
   ScenicSurface* scenic_surface = scenic_surface_factory_->GetSurface(window);
-  zx_handle_t image_pipe_handle = 0;
-  if (image_pipe_swapchain_implementation_version > 1u) {
-    fuchsia::images::ImagePipe2Ptr image_pipe;
-    scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());
-    image_pipe_handle = image_pipe.Unbind().TakeChannel().release();
-  } else {
-    fuchsia::images::ImagePipePtr image_pipe;
-    scenic_surface->SetTextureToNewImagePipe1(image_pipe.NewRequest());
-    image_pipe_handle = image_pipe.Unbind().TakeChannel().release();
-  }
+  fuchsia::images::ImagePipe2Ptr image_pipe;
+  scenic_surface->SetTextureToNewImagePipe(image_pipe.NewRequest());
+  zx_handle_t image_pipe_handle = image_pipe.Unbind().TakeChannel().release();
 
   VkSurfaceKHR surface;
   VkImagePipeSurfaceCreateInfoFUCHSIA surface_create_info = {};

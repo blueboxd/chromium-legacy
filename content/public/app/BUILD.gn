@@ -193,38 +193,6 @@ source_set("content_browser_manifest") {
   ]
 }
 
-source_set("content_gpu_manifest") {
-  sources = [
-    "content_gpu_manifest.cc",
-    "content_gpu_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//content/public/common:service_names",
-  ]
-
-  public_deps = [
-    "//services/service_manager/public/cpp",
-  ]
-}
-
-source_set("content_plugin_manifest") {
-  sources = [
-    "content_plugin_manifest.cc",
-    "content_plugin_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//content/public/common:service_names",
-  ]
-
-  public_deps = [
-    "//services/service_manager/public/cpp",
-  ]
-}
-
 source_set("content_renderer_manifest") {
   sources = [
     "content_renderer_manifest.cc",
@@ -280,8 +248,6 @@ source_set("v8_snapshot_overlay_manifest") {
 group("service_manifests") {
   public_deps = [
     ":content_browser_manifest",
-    ":content_gpu_manifest",
-    ":content_plugin_manifest",
     ":content_renderer_manifest",
     ":content_utility_manifest",
   ]

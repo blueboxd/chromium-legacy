@@ -1198,6 +1198,39 @@ TEST_F(ChromePasswordProtectionServiceTest, VerifyGetWarningDetailTextSaved) {
 }
 
 TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyGetWarningDetailTextSavedDomains) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{safe_browsing::kPasswordProtectionForSavedPasswords, {}},
+       {safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords, {}}},
+      {});
+  ReusedPasswordAccountType reused_password_type;
+  reused_password_type.set_account_type(
+      ReusedPasswordAccountType::SAVED_PASSWORD);
+  std::vector<std::string> domains{"www.example.com"};
+  service_->set_saved_passwords_matching_domains(domains);
+  base::string16 warning_text = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_1_DOMAIN,
+      base::UTF8ToUTF16(domains[0]));
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
+
+  domains.push_back("www.2.example.com");
+  service_->set_saved_passwords_matching_domains(domains);
+  warning_text = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_2_DOMAINS,
+      base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]));
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
+
+  domains.push_back("www.3.example.com");
+  service_->set_saved_passwords_matching_domains(domains);
+  warning_text = l10n_util::GetStringFUTF16(
+      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SAVED_3_DOMAINS,
+      base::UTF8ToUTF16(domains[0]), base::UTF8ToUTF16(domains[1]),
+      base::UTF8ToUTF16(domains[2]));
+  EXPECT_EQ(warning_text, service_->GetWarningDetailText(reused_password_type));
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
        VerifyGetWarningDetailTextEnterprise) {
   base::string16 warning_text_non_sync = l10n_util::GetStringUTF16(
       IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_SIGNED_IN_NON_SYNC);

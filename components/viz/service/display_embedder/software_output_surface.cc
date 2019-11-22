@@ -111,7 +111,6 @@ void SoftwareOutputSurface::SwapBuffersCallback(base::TimeTicks swap_time,
                                                 const gfx::Size& pixel_size) {
   auto& latency_info = stored_latency_info_.front();
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
-  client_->DidFinishLatencyInfo(latency_info);
   std::vector<ui::LatencyInfo>().swap(latency_info);
   client_->DidReceiveSwapBuffersAck({swap_time, swap_time});
   stored_latency_info_.pop();

@@ -167,18 +167,18 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                         // show the drag image.
     };
 
-    enum WindowOpacity {
+    enum class WindowOpacity {
       // Infer fully opaque or not. For WinAura, top-level windows that are not
       // of TYPE_WINDOW are translucent so that they can be made to fade in.
       // For LinuxAura, only windows that are TYPE_DRAG are translucent.  In all
       // other cases, windows are fully opaque.
-      INFER_OPACITY,
+      kInferred,
       // Fully opaque.
-      OPAQUE_WINDOW,
+      kOpaque,
       // Possibly translucent/transparent.  Widgets that fade in or out using
       // SetOpacity() but do not make use of an alpha channel should use
-      // INFER_OPACITY.
-      TRANSLUCENT_WINDOW,
+      // kInferred.
+      kTranslucent,
     };
 
     enum Activatable {
@@ -238,14 +238,13 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     bool child = false;
 
-    // If TRANSLUCENT_WINDOW, the widget may be fully or partially transparent.
-    // If OPAQUE_WINDOW, we can perform optimizations based on the widget being
-    // fully opaque.
-    // Default is based on ViewsDelegate::GetOpacityForInitParams().  Defaults
-    // to OPAQUE_WINDOW for non-window widgets.
-    // Translucent windows may not always be supported. Use
-    // IsTranslucentWindowOpacitySupported() to determine whether they are.
-    WindowOpacity opacity = INFER_OPACITY;
+    // If kTranslucent, the widget may be fully or partially transparent.
+    // If kOpaque, we can perform optimizations based on the widget being fully
+    // opaque. Default is based on ViewsDelegate::GetOpacityForInitParams().
+    // Defaults to kOpaque for non-window widgets. Translucent windows may not
+    // always be supported. Use IsTranslucentWindowOpacitySupported() to
+    // determine whether they are.
+    WindowOpacity opacity = WindowOpacity::kInferred;
 
     bool accept_events = true;
 

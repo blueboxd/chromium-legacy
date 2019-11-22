@@ -4,8 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_localized_strings_provider.h"
 
-#include "base/stl_util.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 #include "components/strings/grit/components_strings.h"
@@ -17,7 +16,7 @@ namespace cellular_setup {
 
 namespace {
 
-constexpr LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
+constexpr webui::LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
     {"cancel", IDS_CANCEL},
     {"back", IDS_CELLULAR_SETUP_BACK_LABEL},
     {"finish", IDS_CELLULAR_SETUP_FINISH_LABEL},
@@ -42,8 +41,7 @@ constexpr LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
 }  //  namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  AddLocalizedStringsBulk(html_source, kLocalizedStringsWithoutPlaceholders,
-                          base::size(kLocalizedStringsWithoutPlaceholders));
+  AddLocalizedStringsBulk(html_source, kLocalizedStringsWithoutPlaceholders);
 }
 
 void AddLocalizedValuesToBuilder(::login::LocalizedValuesBuilder* builder) {

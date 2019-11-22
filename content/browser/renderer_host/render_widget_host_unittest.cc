@@ -2012,26 +2012,6 @@ TEST_F(RenderWidgetHostTest, ForceEnableZoomShouldUpdateAfterRebind) {
   host_->ExpectForceEnableZoom(true);
 }
 
-TEST_F(RenderWidgetHostTest, RenderWidgetSurfaceProperties) {
-  RenderWidgetSurfaceProperties prop1;
-  prop1.size = gfx::Size(200, 200);
-  prop1.device_scale_factor = 1.f;
-  RenderWidgetSurfaceProperties prop2;
-  prop2.size = gfx::Size(300, 300);
-  prop2.device_scale_factor = 2.f;
-
-  EXPECT_EQ(
-      "RenderWidgetSurfaceProperties(size(this: 200x200, other: 300x300), "
-      "device_scale_factor(this: 1, other: 2))",
-      prop1.ToDiffString(prop2));
-  EXPECT_EQ(
-      "RenderWidgetSurfaceProperties(size(this: 300x300, other: 200x200), "
-      "device_scale_factor(this: 2, other: 1))",
-      prop2.ToDiffString(prop1));
-  EXPECT_EQ("", prop1.ToDiffString(prop1));
-  EXPECT_EQ("", prop2.ToDiffString(prop2));
-}
-
 // If a navigation happens while the widget is hidden, we shouldn't show
 // contents of the previous page when we become visible.
 TEST_F(RenderWidgetHostTest, NavigateInBackgroundShowsBlank) {

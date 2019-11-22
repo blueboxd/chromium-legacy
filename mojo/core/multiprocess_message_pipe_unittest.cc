@@ -1369,7 +1369,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(BadMessageClient,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     MultiprocessMessagePipeTestWithPeerSupport,
     testing::Values(test::MojoTestBase::LaunchType::CHILD,
                     test::MojoTestBase::LaunchType::PEER,

@@ -415,7 +415,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       // We compute this for each plane in case a malicious renderer tries to
       // send very large U or V planes.
       fits_on_gpu_ = plane_width <= max_size && plane_height <= max_size;
-      if (!fits_on_gpu_ || plane_width == 0 || plane_height == 0)
+      if (!fits_on_gpu_ || plane_width == 0 || plane_height == 0 ||
+          plane_stride == 0)
         return false;
 
       size_t plane_bytes;
@@ -440,6 +441,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       SkPixmap plane_pixmap(plane_pixmap_info,
                             const_cast<const void*>(plane_pixel_data),
                             plane_stride);
+      if (plane_pixmap.computeByteSize() > plane_bytes)
+        return false;
 
       // Nothing should read the colorspace of individual planes because that
       // information is stored in image_, so we pass nullptr.

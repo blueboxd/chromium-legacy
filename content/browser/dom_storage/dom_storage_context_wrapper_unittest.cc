@@ -39,8 +39,8 @@ class DOMStorageContextWrapperTest : public testing::Test {
         /*leveldb_name=*/"");
     session_storage_context->PretendToConnectForTesting();
     context_ = new DOMStorageContextWrapper(
-        fake_mojo_task_runner_, /*mojo_local_storage_context=*/nullptr,
-        session_storage_context);
+        fake_mojo_task_runner_, session_storage_context,
+        mojo::Remote<storage::mojom::LocalStorageControl>());
   }
 
   void TearDown() override {

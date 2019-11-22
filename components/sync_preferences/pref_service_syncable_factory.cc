@@ -57,15 +57,14 @@ void PrefServiceSyncableFactory::SetPrefModelAssociatorClient(
 }
 
 std::unique_ptr<PrefServiceSyncable> PrefServiceSyncableFactory::CreateSyncable(
-    scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
-    std::unique_ptr<PrefValueStore::Delegate> delegate) {
+    scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry) {
   TRACE_EVENT0("browser", "PrefServiceSyncableFactory::CreateSyncable");
   auto pref_notifier = std::make_unique<PrefNotifierImpl>();
   auto pref_value_store = std::make_unique<PrefValueStore>(
       managed_prefs_.get(), supervised_user_prefs_.get(),
       extension_prefs_.get(), command_line_prefs_.get(), user_prefs_.get(),
       recommended_prefs_.get(), pref_registry->defaults().get(),
-      pref_notifier.get(), std::move(delegate));
+      pref_notifier.get(), /*delegate=*/nullptr);
   return std::make_unique<PrefServiceSyncable>(
       std::move(pref_notifier), std::move(pref_value_store), user_prefs_.get(),
       std::move(pref_registry), pref_model_associator_client_,

@@ -2602,9 +2602,6 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   if (auto* view = GetRenderWidgetHostView()) {
     if (view_is_visible) {
       view->Show();
-#if defined(OS_MACOSX)
-      view->SetActive(true);
-#endif
     } else if (new_visibility == Visibility::HIDDEN) {
       view->Hide();
     } else {

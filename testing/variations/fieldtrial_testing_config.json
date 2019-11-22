@@ -766,24 +766,6 @@
             ]
         }
     ],
-    "AutofillDoNotMigrateUnsupportedLocalCards": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillDoNotMigrateUnsupportedLocalCards"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillDynamicForms": [
         {
             "platforms": [
@@ -4565,21 +4547,6 @@
             ]
         }
     ],
-    "PaymentRequestNoCreditCardAbort": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NoCreditCardAbort"
-                    ]
-                }
-            ]
-        }
-    ],
     "PdfIsolation": [
         {
             "platforms": [
@@ -6633,6 +6600,9 @@
             "experiments": [
                 {
                     "name": "TopCat1_20190902",
+                    "params": {
+                        "use_topcat_ranker": "true"
+                    },
                     "enable_features": [
                         "EnableAppRanker"
                     ]
@@ -6661,6 +6631,7 @@
     "TranslateDesktopRefresh": [
         {
             "platforms": [
+                "chromeos",
                 "linux",
                 "mac",
                 "windows"

@@ -380,7 +380,9 @@ class RenderTextTest : public testing::Test {
     return test::RenderTextTestApi::GetRendererFont(renderer());
   }
 
-  void DrawVisualText() { test_api_->DrawVisualText(renderer()); }
+  void DrawVisualText(Range selection = {}) {
+    test_api_->DrawVisualText(renderer(), selection);
+  }
 
   const internal::TextRunList* GetHarfBuzzRunList() const {
     return test_api_->GetHarfBuzzRunList();
@@ -6856,6 +6858,25 @@ TEST_F(RenderTextTest, FontSizeOverride) {
             run_list->runs()[1].get()->font_params.font_size);
   EXPECT_EQ(default_font_size,
             run_list->runs()[2].get()->font_params.font_size);
+}
+
+TEST_F(RenderTextTest, DrawVisualText_WithSelection) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(UTF8ToUTF16("TheRedElephantIsEatingMyPumpkin"));
+  // Ensure selected text is drawn differently than unselected text.
+  render_text->set_selection_color(SK_ColorRED);
+  DrawVisualText({3, 14});
+
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+
+  EXPECT_EQ(text_log.size(), 3u);
+  EXPECT_EQ(text_log[0].glyph_count, 3u);
+  EXPECT_EQ(text_log[0].color, SK_ColorBLACK);
+  EXPECT_EQ(text_log[1].glyph_count, 11u);
+  EXPECT_EQ(text_log[1].color, SK_ColorRED);
+  EXPECT_EQ(text_log[2].glyph_count, 17u);
+  EXPECT_EQ(text_log[2].color, SK_ColorBLACK);
 }
 
 }  // namespace gfx

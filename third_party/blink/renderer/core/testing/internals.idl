@@ -190,14 +190,10 @@
     readonly attribute InternalRuntimeFlags runtimeFlags;
     readonly attribute unsigned long workerThreadCount;
 
-    // Flags for layerTreeAsText.
-    // The values of these constants must be kept in sync with the values of LayerTreeFlags in layers_as_json.h.
-    const unsigned short LAYER_TREE_INCLUDES_DEBUG_INFO = 1;
+    // Flag for layerTreeAsText.
+    // The value must be kept in sync with the value of LayerTreeFlags in layers_as_json.h.
+    // Other flags in LayerTreeFlags are not supported in internals API.
     const unsigned short LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS = 2;
-    const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
-    const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
-    const unsigned short LAYER_TREE_INCLUDES_COMPOSITING_REASONS = 32;
-    const unsigned short LAYER_TREE_INCLUDES_PAINT_RECORDS = 64;
 
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
 

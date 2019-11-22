@@ -118,11 +118,6 @@ class BLINK_EXPORT WebFrame {
   // navigation.  This matches the in-process frame behavior.
   void SetFrameOwnerProperties(const WebFrameOwnerProperties&);
 
-  // Whether to collapse the frame's owner element in the embedder document,
-  // that is, to remove it from the layout as if it did not exist. Only works
-  // for <iframe> owner elements.
-  void Collapse(bool);
-
   // Hierarchy ----------------------------------------------------------
 
   // Returns the containing view.

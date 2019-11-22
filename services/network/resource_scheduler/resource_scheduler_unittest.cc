@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
@@ -162,7 +161,7 @@ class CancelingTestRequest : public TestRequest {
 
 class ResourceSchedulerTest : public testing::Test {
  protected:
-  ResourceSchedulerTest() : field_trial_list_(nullptr) {
+  ResourceSchedulerTest() {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         net::features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
@@ -523,7 +522,6 @@ class ResourceSchedulerTest : public testing::Test {
   net::TestNetworkQualityEstimator network_quality_estimator_;
   std::unique_ptr<net::TestURLRequestContext> context_;
   ResourceSchedulerParamsManager resource_scheduler_params_manager_;
-  base::FieldTrialList field_trial_list_;
   base::SimpleTestTickClock tick_clock_;
 };
 

@@ -2496,6 +2496,14 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, PasswordNoLongerGenerated) {
   CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
 }
 
+TEST_F(PasswordFormManagerTestWithMockedSaver,
+       OnGeneratedPasswordAccepted_InvalidField) {
+  FormData form_data = observed_form_only_password_fields_;
+  // A call with a non-existent password field should not crash.
+  form_manager_->OnGeneratedPasswordAccepted(std::move(form_data), 12345,
+                                             ASCIIToUTF16("new_password"));
+}
+
 TEST_F(PasswordFormManagerTestWithMockedSaver, SaveHttpAuthNoHttpAuthStored) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   for (bool html_credentials_saved : {false, true}) {

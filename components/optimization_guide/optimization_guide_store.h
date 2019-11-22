@@ -101,12 +101,13 @@ class OptimizationGuideStore {
   // For tests only.
   explicit OptimizationGuideStore(
       std::unique_ptr<StoreEntryProtoDatabase> database);
-  ~OptimizationGuideStore();
+  virtual ~OptimizationGuideStore();
 
   // Initializes the store. If |purge_existing_data| is set to true,
   // then the cache is purged during initialization and starts in a fresh state.
   // When initialization completes, the provided callback is run asynchronously.
-  void Initialize(bool purge_existing_data, base::OnceClosure callback);
+  // Virtualized for testing.
+  virtual void Initialize(bool purge_existing_data, base::OnceClosure callback);
 
   // Creates and returns a StoreUpdateData object for component hints. This
   // object is used to collect hints within a component in a format usable on a
@@ -185,7 +186,8 @@ class OptimizationGuideStore {
   // Finds the entry key for the prediction model if it is known to the store.
   // Returns true if an entry key is found and |out_prediction_model_entry_key|
   // is populated with the matching key.
-  bool FindPredictionModelEntryKey(
+  // Virtualized for testing.
+  virtual bool FindPredictionModelEntryKey(
       proto::OptimizationTarget optimization_target,
       OptimizationGuideStore::EntryKey* out_prediction_model_entry_key);
 
@@ -194,8 +196,9 @@ class OptimizationGuideStore {
   // the case where the prediction model cannot be loaded, the callback is run
   // with a nullptr. Depending on the load result, the callback may be
   // synchronous or asynchronous.
-  void LoadPredictionModel(const EntryKey& prediction_model_entry_key,
-                           PredictionModelLoadedCallback callback);
+  // Virtualized for testing.
+  virtual void LoadPredictionModel(const EntryKey& prediction_model_entry_key,
+                                   PredictionModelLoadedCallback callback);
 
   // Creates and returns a StoreUpdateData object for host model features. This
   // object is used to collect a batch of host model features in a format that
@@ -234,7 +237,9 @@ class OptimizationGuideStore {
   // case where the host model features cannot be loaded, the callback is run
   // with a nullptr. Depending on the load result, the callback may be
   // synchronous or asynchronous.
-  void LoadAllHostModelFeatures(AllHostModelFeaturesLoadedCallback callback);
+  // Virtualized for testing.
+  virtual void LoadAllHostModelFeatures(
+      AllHostModelFeaturesLoadedCallback callback);
 
   // Returns the time that the host model features in the store can be updated.
   // If |this| is not available, base::Time() is returned.

@@ -17,8 +17,6 @@ SysInternalsBrowserTest.prototype = {
 
   browsePreload: 'chrome://sys-internals',
 
-  runAccessibilityChecks: false,
-
   isAsync: true,
 
   extraLibraries: [

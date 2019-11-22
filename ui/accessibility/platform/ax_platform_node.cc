@@ -62,6 +62,18 @@ int32_t AXPlatformNode::GetUniqueId() const {
   return GetDelegate() ? GetDelegate()->GetUniqueId().Get() : -1;
 }
 
+std::string AXPlatformNode::ToString() {
+  return GetDelegate() ? GetDelegate()->ToString() : "No delegate";
+}
+
+std::string AXPlatformNode::SubtreeToString() {
+  return GetDelegate() ? GetDelegate()->SubtreeToString() : "No delegate";
+}
+
+std::ostream& operator<<(std::ostream& stream, AXPlatformNode& node) {
+  return stream << node.ToString();
+}
+
 // static
 void AXPlatformNode::AddAXModeObserver(AXModeObserver* observer) {
   ax_mode_observers_.Get().AddObserver(observer);

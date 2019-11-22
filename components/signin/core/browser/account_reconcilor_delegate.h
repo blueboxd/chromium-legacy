@@ -120,8 +120,7 @@ class AccountReconcilorDelegate {
   // |OnReconcileFinished| is always called at the end of reconciliation,
   // even when there is an error (except in cases where reconciliation times
   // out before finishing, see |GetReconcileTimeout|).
-  virtual void OnReconcileFinished(const CoreAccountId& first_account,
-                                   bool reconcile_is_noop) {}
+  virtual void OnReconcileFinished(const CoreAccountId& first_account) {}
 
   // Returns the desired timeout for account reconciliation. If reconciliation
   // does not happen within this time, it is aborted and |this| delegate is

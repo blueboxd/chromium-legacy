@@ -19,8 +19,6 @@ SiteEngagementBrowserTest.prototype = {
 
   browsePreload: 'chrome://site-engagement',
 
-  runAccessibilityChecks: false,
-
   isAsync: true,
 
   testGenPreamble: function() {

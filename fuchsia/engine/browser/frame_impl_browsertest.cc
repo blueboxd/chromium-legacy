@@ -227,7 +227,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, EnsureWebSqlDisabled) {
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL title3(embedded_test_server()->GetURL(kPage3Path));
 
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
@@ -240,7 +242,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, GoBackAndForward) {
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
@@ -413,7 +417,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationEventDuringPendingLoad) {
           },
           base::Passed(base::WrapUnique(factory)))));
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL hung_url(embedded_test_server()->GetURL("/pausable"));
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), hung_url.spec()));
@@ -448,7 +454,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ReloadFrame) {
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &FrameImplTest::OnServeHttpRequest, base::Unretained(this)));
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kPage1Path));
 
   EXPECT_CALL(*this, OnServeHttpRequest(_)).Times(testing::AtLeast(1));
@@ -501,7 +509,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, GetVisibleEntry) {
     EXPECT_FALSE(result->has_page_type());
   }
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
@@ -576,7 +586,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NoNavigationObserverAttached) {
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
@@ -605,7 +617,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NoNavigationObserverAttached) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScript) {
   constexpr int64_t kBindingsId = 1234;
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -627,7 +641,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScript) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptUpdated) {
   constexpr int64_t kBindingsId = 1234;
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -663,7 +679,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptOrdered) {
   constexpr int64_t kBindingsId1 = 1234;
   constexpr int64_t kBindingsId2 = 5678;
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -692,7 +710,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptRemoved) {
   constexpr int64_t kBindingsId1 = 1234;
   constexpr int64_t kBindingsId2 = 5678;
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -723,7 +743,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptRemoved) {
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptRemoveInvalidId) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kPage1Path));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -743,7 +765,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScript) {
   constexpr char kJsonStringLiteral[] = "\"I am a literal, literally\"";
   fuchsia::web::FramePtr frame = CreateFrame();
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   const GURL kUrl(embedded_test_server()->GetURL(kPage1Path));
 
   fuchsia::web::NavigationControllerPtr controller;
@@ -779,7 +803,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScript) {
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptVmoDestroyed) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -799,7 +825,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptVmoDestroyed) {
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptWrongOrigin) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -822,7 +850,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptWrongOrigin) {
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, BeforeLoadScriptWildcardOrigin) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -858,7 +888,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
                        BeforeLoadScriptEarlyAndLateRegistrations) {
   constexpr int64_t kOnLoadScriptId2 = kOnLoadScriptId + 1;
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kDynamicTitlePath));
   fuchsia::web::FramePtr frame = CreateFrame();
 
@@ -897,7 +929,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest,
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ExecuteJavaScriptBadEncoding) {
   fuchsia::web::FramePtr frame = CreateFrame();
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL url(embedded_test_server()->GetURL(kPage1Path));
 
   fuchsia::web::NavigationControllerPtr controller;
@@ -929,7 +963,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, NavigationObserverDisconnected) {
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
@@ -962,7 +998,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, DelayedNavigationEventAck) {
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
@@ -1030,7 +1068,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, Stop) {
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
 
   // Use a request handler that will accept the connection and stall
   // indefinitely.
@@ -1070,7 +1110,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, Stop) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
   fuchsia::web::FramePtr frame = CreateFrame();
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL post_message_url(
       embedded_test_server()->GetURL("/window_post_message.html"));
 
@@ -1102,7 +1144,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessage) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
   fuchsia::web::FramePtr frame = CreateFrame();
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
 
   fuchsia::web::NavigationControllerPtr controller;
@@ -1163,7 +1207,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
   fuchsia::web::FramePtr frame = CreateFrame();
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
 
   fuchsia::web::NavigationControllerPtr controller;
@@ -1219,7 +1265,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
   fuchsia::web::FramePtr frame = CreateFrame();
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
 
   fuchsia::web::NavigationControllerPtr controller;
@@ -1322,7 +1370,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
   fuchsia::web::FramePtr frame = CreateFrame();
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL post_message_url(embedded_test_server()->GetURL("/message_port.html"));
 
   fuchsia::web::NavigationControllerPtr controller;
@@ -1397,7 +1447,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
 IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   fuchsia::web::FramePtr frame = CreateFrame();
 
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
 
   // Process the Frame creation request, and verify we can get the FrameImpl.
   base::RunLoop().RunUntilIdle();
@@ -1447,7 +1499,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
 // Tests SetNavigationEventListener() immediately returns a NavigationEvent,
 // even in the absence of a new navigation.
 IN_PROC_BROWSER_TEST_F(FrameImplTest, ImmediateNavigationEvent) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL page_url(embedded_test_server()->GetURL(kPage1Path));
 
   // The first NavigationState received should be empty.
@@ -1564,11 +1618,8 @@ class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {
         &RequestMonitoringFrameImplBrowserTest::MonitorRequestOnIoThread,
         base::Unretained(this), base::SequencedTaskRunnerHandle::Get()));
 
-    ASSERT_TRUE(embedded_test_server()->Start());
-  }
-
-  void TearDown() override {
-    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
+    ASSERT_TRUE(test_server_handle_ =
+                    embedded_test_server()->StartAndReturnHandle());
   }
 
   std::map<GURL, net::test_server::HttpRequest> accumulated_requests_;
@@ -1588,6 +1639,8 @@ class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {
       const net::test_server::HttpRequest& request) {
     accumulated_requests_[request.GetURL()] = request;
   }
+
+  net::test_server::EmbeddedTestServerHandle test_server_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestMonitoringFrameImplBrowserTest);
 };
@@ -1942,7 +1995,9 @@ class TestPopupListener : public fuchsia::web::PopupFrameCreationListener {
 };
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, PopupWindow) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL popup_url(embedded_test_server()->GetURL(kPopupPath));
   GURL popup_child_url(embedded_test_server()->GetURL(kPopupRedirectPath));
   GURL title1_url(embedded_test_server()->GetURL(kPage1Path));
@@ -1974,7 +2029,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PopupWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(FrameImplTest, MultiplePopups) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+  net::test_server::EmbeddedTestServerHandle test_server_handle;
+  ASSERT_TRUE(test_server_handle =
+                  embedded_test_server()->StartAndReturnHandle());
   GURL popup_url(embedded_test_server()->GetURL(kPopupMultiplePath));
   GURL title1_url(embedded_test_server()->GetURL(kPage1Path));
   GURL title2_url(embedded_test_server()->GetURL(kPage2Path));

@@ -55,7 +55,7 @@ policy::DMToken GetDMToken() {
 
   if (dm_token.is_empty() &&
       policy::ChromeBrowserCloudManagementController::IsEnabled()) {
-    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   }
 #endif
 

@@ -12,6 +12,7 @@
 
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/previews/content/previews_user_data.h"
@@ -19,6 +20,7 @@
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/mock_navigation_handle.h"
+#include "services/network/test/test_network_quality_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace previews {
@@ -61,8 +63,17 @@ class TestOptimizationGuideDecider
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationTarget optimization_target)
       override {
-    // Should not be called.
-    EXPECT_TRUE(false);
+    // This method should always be called with the painful page load target.
+    EXPECT_EQ(optimization_target,
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+
+    net::EffectiveConnectionType ect =
+        network_quality_tracker_.GetEffectiveConnectionType();
+    if (ect == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+      return optimization_guide::OptimizationGuideDecision::kUnknown;
+    }
+    if (ect <= net::EFFECTIVE_CONNECTION_TYPE_2G)
+      return optimization_guide::OptimizationGuideDecision::kTrue;
     return optimization_guide::OptimizationGuideDecision::kFalse;
   }
 
@@ -75,7 +86,12 @@ class TestOptimizationGuideDecider
         std::make_tuple(navigation_handle->GetURL(), optimization_type));
     if (response_iter == responses_.end())
       return optimization_guide::OptimizationGuideDecision::kFalse;
-    return std::get<0>(response_iter->second);
+
+    auto response = response_iter->second;
+    if (optimization_metadata)
+      *optimization_metadata = std::get<1>(response);
+
+    return std::get<0>(response);
   }
 
   optimization_guide::OptimizationGuideDecision
@@ -85,21 +101,9 @@ class TestOptimizationGuideDecider
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata)
       override {
-    // Previews should always call this method with painful page load as the
-    // target.
-    DCHECK(optimization_target ==
-           optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
-
-    auto response_iter = responses_.find(
-        std::make_tuple(navigation_handle->GetURL(), optimization_type));
-    if (response_iter == responses_.end())
-      return optimization_guide::OptimizationGuideDecision::kFalse;
-
-    auto response = response_iter->second;
-    if (optimization_metadata)
-      *optimization_metadata = std::get<1>(response);
-
-    return std::get<0>(response);
+    // Should not be called.
+    EXPECT_TRUE(false);
+    return optimization_guide::OptimizationGuideDecision::kFalse;
   }
 
   void SetResponses(
@@ -108,6 +112,12 @@ class TestOptimizationGuideDecider
                           optimization_guide::OptimizationMetadata>>
           responses) {
     responses_ = responses;
+  }
+
+  void ReportEffectiveConnectionType(
+      net::EffectiveConnectionType effective_connection_type) {
+    network_quality_tracker_.ReportEffectiveConnectionTypeForTesting(
+        effective_connection_type);
   }
 
  private:
@@ -125,6 +135,8 @@ class TestOptimizationGuideDecider
            std::tuple<optimization_guide::OptimizationGuideDecision,
                       optimization_guide::OptimizationMetadata>>
       responses_;
+
+  network::TestNetworkQualityTracker network_quality_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOptimizationGuideDecider);
 };
@@ -360,6 +372,45 @@ TEST_F(PreviewsOptimizationGuideTest,
 
   EXPECT_FALSE(guide.CanApplyPreview(
       /*previews_data=*/nullptr, &navigation_handle, PreviewsType::NOSCRIPT));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       ShouldShowPreviewWithTrueDecisionReturnsTrue) {
+  optimization_guide_decider()->ReportEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("doesntmatter"));
+
+  EXPECT_TRUE(guide.ShouldShowPreview(&navigation_handle));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       ShouldShowPreviewWithFalseDecisionReturnsFalse) {
+  optimization_guide_decider()->ReportEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_3G);
+
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("doesntmatter"));
+
+  EXPECT_FALSE(guide.ShouldShowPreview(&navigation_handle));
+}
+
+TEST_F(PreviewsOptimizationGuideTest,
+       ShouldShowPreviewWithUnknownDecisionReturnsFalse) {
+  optimization_guide_decider()->ReportEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
+
+  PreviewsOptimizationGuide guide(optimization_guide_decider());
+
+  content::MockNavigationHandle navigation_handle;
+  navigation_handle.set_url(GURL("doesntmatter"));
+
+  EXPECT_FALSE(guide.ShouldShowPreview(&navigation_handle));
 }
 
 TEST_F(

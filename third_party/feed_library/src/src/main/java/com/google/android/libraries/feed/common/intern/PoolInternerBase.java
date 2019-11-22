@@ -1,20 +1,11 @@
-// Copyright 2019 The Feed Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 package com.google.android.libraries.feed.common.intern;
 
 import com.google.android.libraries.feed.common.Validators;
+
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -23,47 +14,52 @@ import javax.annotation.concurrent.ThreadSafe;
  */
 @ThreadSafe
 public abstract class PoolInternerBase<T> implements Interner<T> {
+    private final Pool<T> pool;
 
-  private final Pool<T> pool;
-
-  PoolInternerBase(Pool<T> pool) {
-    this.pool = Validators.checkNotNull(pool);
-  }
-
-  @Override
-  public synchronized T intern(T input) {
-    T output = pool.get(input);
-    if (output != null) {
-      return output;
+    PoolInternerBase(Pool<T> pool) {
+        this.pool = Validators.checkNotNull(pool);
     }
 
-    pool.put(input);
-    return input;
-  }
+    @Override
+    public T intern(T input) {
+        synchronized (pool) {
+            T output = pool.get(input);
+            if (output != null) {
+                return output;
+            }
 
-  @Override
-  public synchronized void clear() {
-    pool.clear();
-  }
+            pool.put(input);
+            return input;
+        }
+    }
 
-  @Override
-  public synchronized int size() {
-    return pool.size();
-  }
+    @Override
+    public void clear() {
+        synchronized (pool) {
+            pool.clear();
+        }
+    }
 
-  /** Interface for a pool used by the PoolInternerBase. */
-  protected interface Pool<T> {
-    /** Retrieves the give object from the pool if it is found, or null otherwise. */
-    /*@Nullable*/
-    T get(T input);
+    @Override
+    public int size() {
+        synchronized (pool) {
+            return pool.size();
+        }
+    }
 
-    /** Stores the given object into the pool. */
-    void put(T input);
+    /** Interface for a pool used by the PoolInternerBase. */
+    protected interface Pool<T> {
+        /** Retrieves the give object from the pool if it is found, or null otherwise. */
+        /*@Nullable*/
+        T get(T input);
 
-    /** Clears the pool. */
-    void clear();
+        /** Stores the given object into the pool. */
+        void put(T input);
 
-    /** Returns the size of the pool. */
-    int size();
-  }
+        /** Clears the pool. */
+        void clear();
+
+        /** Returns the size of the pool. */
+        int size();
+    }
 }

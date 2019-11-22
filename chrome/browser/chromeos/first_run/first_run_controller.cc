@@ -46,7 +46,7 @@ std::unique_ptr<views::Widget> CreateFirstRunWidget() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   ash_util::SetupWidgetInitParamsForContainer(
       &params, ash::kShellWindowId_OverlayContainer);
   widget->Init(std::move(params));

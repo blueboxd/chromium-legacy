@@ -1,6 +1,6 @@
 Name: sqlite
 URL: https://sqlite.org/
-Version: 3.30.1
+Version: 3.30.1-patched
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain

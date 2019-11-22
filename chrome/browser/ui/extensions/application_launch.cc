@@ -308,7 +308,7 @@ WebContents* OpenEnabledApplication(Profile* profile,
       web_app::GetSystemWebAppTypeForAppId(profile, extension->id());
   if (system_app_type) {
     Browser* browser =
-        web_app::LaunchSystemWebApp(profile, *system_app_type, url);
+        web_app::LaunchSystemWebApp(profile, *system_app_type, url, params);
     return browser->tab_strip_model()->GetActiveWebContents();
   }
 
@@ -471,8 +471,7 @@ void OpenApplicationWithReenablePrompt(Profile* profile,
   OpenEnabledApplication(profile, params);
 }
 
-WebContents* OpenAppShortcutWindow(Profile* profile,
-                                   const GURL& url) {
+WebContents* OpenAppShortcutWindow(Profile* profile, const GURL& url) {
   apps::AppLaunchParams launch_params(
       std::string(),  // this is a URL app. No app id.
       extensions::LaunchContainer::kLaunchContainerWindow,

@@ -39,6 +39,8 @@ namespace metrics_util = password_manager::metrics_util;
 
 namespace {
 
+using Store = autofill::PasswordForm::Store;
+
 void CleanStatisticsForSite(Profile* profile, const GURL& origin) {
   DCHECK(profile);
   password_manager::PasswordStore* password_store =
@@ -389,6 +391,13 @@ void ManagePasswordsBubbleModel::OnSkipSignInClicked() {
       password_manager::prefs::kWasSignInPasswordPromoClicked, true);
 }
 
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+void ManagePasswordsBubbleModel::OnToggleAccountStore(bool is_checked) {
+  pending_password_.in_store =
+      is_checked ? Store::kAccountStore : Store::kProfileStore;
+}
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
+
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
   content::WebContents* web_contents = GetWebContents();
   if (!web_contents)
@@ -474,6 +483,12 @@ bool ManagePasswordsBubbleModel::RevealPasswords() {
     delegate_->OnPasswordsRevealed();
   return reveal_immediately;
 }
+
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+bool ManagePasswordsBubbleModel::IsUsingAccountStore() {
+  return pending_password_.in_store == Store::kAccountStore;
+}
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
 void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
   PasswordTitleType type =

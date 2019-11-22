@@ -31,11 +31,11 @@ class ResourceRequestBody;
 
 namespace content {
 
-class BundledExchangesHandleTracker;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class PrefetchedSignedExchangeCache;
 class RenderFrameHostImpl;
+class WebBundleHandleTracker;
 
 // Implementations of this interface are responsible for performing navigations
 // in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode
@@ -149,8 +149,7 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      std::unique_ptr<BundledExchangesHandleTracker>
-          bundled_exchanges_handle_tracker);
+      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker);
 
   // Used to restart a navigation that was thought to be same-document in
   // cross-document mode.

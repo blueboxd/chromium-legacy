@@ -49,6 +49,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   bool IsSVGAnimationAttributeSettingJavaScriptURL(
       const Attribute&) const override;
 
+  const QualifiedName& AttributeName() const { return attribute_name_; }
   AnimatedPropertyType GetAnimatedPropertyType() const;
   bool AnimatedPropertyTypeSupportsAddition() const;
   bool IsAdditive() const final;
@@ -116,6 +117,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
 
  protected:
   Member<SVGAnimatedPropertyBase> target_property_;
+  QualifiedName attribute_name_;
   AnimatedPropertyType type_;
   CSSPropertyID css_property_id_;
 

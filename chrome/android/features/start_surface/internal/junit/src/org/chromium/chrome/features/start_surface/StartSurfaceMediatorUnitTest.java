@@ -175,10 +175,10 @@ public class StartSurfaceMediatorUnitTest {
         doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
-        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
 
         doReturn(0).when(mNormalTabModel).getCount();
         mediator.showOverview(false);
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
     }
@@ -192,10 +192,10 @@ public class StartSurfaceMediatorUnitTest {
         doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
-        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
 
         doReturn(2).when(mNormalTabModel).getCount();
         mediator.showOverview(false);
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
 
@@ -218,10 +218,10 @@ public class StartSurfaceMediatorUnitTest {
         doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
 
         StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
-        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
 
         doReturn(1).when(mNormalTabModel).getCount();
         mediator.showOverview(false);
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
         mTabModelObserverCaptor.getValue().willCloseTab(mock(Tab.class), false);
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(false));
@@ -229,6 +229,24 @@ public class StartSurfaceMediatorUnitTest {
         mTabModelObserverCaptor.getValue().tabClosureUndone(mock(Tab.class));
         assertThat(mPropertyModel.get(IS_SHOWING_OVERVIEW), equalTo(true));
         assertThat(mPropertyModel.get(IS_TAB_CAROUSEL_VISIBLE), equalTo(true));
+    }
+
+    @Test
+    public void addAndRemoveTabModelObserverWithOverview() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mLocationBarVoiceRecognitionHandler)
+                .when(mFakeBoxDelegate)
+                .getLocationBarVoiceRecognitionHandler();
+        doReturn(true).when(mLocationBarVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE);
+        verify(mNormalTabModel, never()).addObserver(mTabModelObserverCaptor.capture());
+
+        mediator.showOverview(false);
+        verify(mNormalTabModel).addObserver(mTabModelObserverCaptor.capture());
+
+        mediator.startedHiding();
+        verify(mNormalTabModel).removeObserver(mTabModelObserverCaptor.capture());
     }
 
     private StartSurfaceMediator createStartSurfaceMediator(@SurfaceMode int mode) {

@@ -1196,12 +1196,15 @@ class MetaBuildWrapper(object):
               'chromevox_test_data/',
               'gen/ui/file_manager/file_manager/',
               'resources/chromeos/',
-              'resources/chromeos/autoclick/',
-              'resources/chromeos/chromevox/',
-              'resources/chromeos/select_to_speak/',
-              'test_data/chrome/browser/resources/chromeos/autoclick/',
-              'test_data/chrome/browser/resources/chromeos/chromevox/',
-              'test_data/chrome/browser/resources/chromeos/select_to_speak/',
+              'resources/chromeos/accessibility/autoclick/',
+              'resources/chromeos/accessibility/chromevox/',
+              'resources/chromeos/accessibility/select_to_speak/',
+              'test_data/chrome/browser/resources/chromeos/accessibility/'
+                  'autoclick/',
+              'test_data/chrome/browser/resources/chromeos/accessibility/'
+                  'chromevox/',
+              'test_data/chrome/browser/resources/chromeos/accessibility/'
+                  'select_to_speak/',
           )) or
           (is_mac and f in (  # https://crbug.com/1000667
               'AlertNotificationService.xpc/',

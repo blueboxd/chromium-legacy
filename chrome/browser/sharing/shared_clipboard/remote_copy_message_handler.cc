@@ -114,6 +114,8 @@ void RemoteCopyMessageHandler::HandleText(const std::string& text) {
     return;
   }
 
+  LogRemoteCopyReceivedTextSize(text.size());
+
   {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(base::UTF8ToUTF16(text));
@@ -144,6 +146,7 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
 
   url_loader_ =
       network::SimpleURLLoader::Create(std::move(request), kTrafficAnnotation);
+  timer_ = base::ElapsedTimer();
   // TODO(mvanouwerkerk): Downloads > 1MB (kMaxBoundedStringDownloadSize).
   // Using Unretained(this) is safe here because this owns url_loader_.
   url_loader_->DownloadToString(
@@ -168,12 +171,27 @@ bool RemoteCopyMessageHandler::IsOriginAllowed(const GURL& image_url) {
 
 void RemoteCopyMessageHandler::OnURLLoadComplete(
     std::unique_ptr<std::string> content) {
+  int code;
+  if (url_loader_->NetError() != net::OK) {
+    code = url_loader_->NetError();
+  } else if (!url_loader_->ResponseInfo() ||
+             !url_loader_->ResponseInfo()->headers) {
+    code = net::OK;
+  } else {
+    code = url_loader_->ResponseInfo()->headers->response_code();
+  }
+  LogRemoteCopyLoadImageStatusCode(code);
+
   url_loader_.reset();
   if (!content || content->empty()) {
     Finish(RemoteCopyHandleMessageResult::kFailureNoImageContentLoaded);
     return;
   }
 
+  LogRemoteCopyLoadImageTime(timer_.Elapsed());
+  LogRemoteCopyReceivedImageSizeBeforeDecode(content->size());
+
+  timer_ = base::ElapsedTimer();
   ImageDecoder::Start(this, *content);
 }
 
@@ -182,6 +200,9 @@ void RemoteCopyMessageHandler::OnImageDecoded(const SkBitmap& decoded_image) {
     Finish(RemoteCopyHandleMessageResult::kFailureDecodedImageDrawsNothing);
     return;
   }
+
+  LogRemoteCopyDecodeImageTime(timer_.Elapsed());
+  LogRemoteCopyReceivedImageSizeAfterDecode(decoded_image.computeByteSize());
 
   {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)

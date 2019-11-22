@@ -1896,10 +1896,11 @@ HitTestingTransformState PaintLayer::CreateLocalTransformState(
   return transform_state;
 }
 
-static bool IsHitCandidate(const PaintLayer* hit_layer,
-                           bool can_depth_sort,
-                           double* z_offset,
-                           const HitTestingTransformState* transform_state) {
+static bool IsHitCandidateForDepthOrder(
+    const PaintLayer* hit_layer,
+    bool can_depth_sort,
+    double* z_offset,
+    const HitTestingTransformState* transform_state) {
   if (!hit_layer)
     return false;
 
@@ -1922,6 +1923,14 @@ static bool IsHitCandidate(const PaintLayer* hit_layer,
   }
 
   return true;
+}
+
+// Calling IsDescendantOf is sad (slow), but it's the only way to tell
+// whether a hit test candidate is a descendant of the stop node.
+static bool IsHitCandidateForStopNode(const LayoutObject& candidate,
+                                      const LayoutObject* stop_node) {
+  return !stop_node || (&candidate == stop_node) ||
+         !candidate.IsDescendantOf(stop_node);
 }
 
 // hitTestLocation and hitTestRect are relative to rootLayer.
@@ -2137,6 +2146,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     candidate_layer = hit_layer;
   }
 
+  const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
   PhysicalOffset offset;
   if (recursion_data.intersects_location) {
     // Next we want to see if the mouse pos is inside the child LayoutObjects of
@@ -2153,8 +2163,9 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
       if (HitTestContentsForFragments(
               *layer_fragments, offset, temp_result, recursion_data.location,
               kHitTestDescendants, inside_fragment_foreground_rect) &&
-          IsHitCandidate(this, false, z_offset_for_contents_ptr,
-                         unflattened_transform_state)) {
+          IsHitCandidateForDepthOrder(this, false, z_offset_for_contents_ptr,
+                                      unflattened_transform_state) &&
+          IsHitCandidateForStopNode(GetLayoutObject(), stop_node)) {
         if (result.GetHitTestRequest().ListBased())
           result.Append(temp_result);
         else
@@ -2165,9 +2176,11 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
         // candidate.
         candidate_layer = this;
       } else if (inside_fragment_foreground_rect &&
-                 result.GetHitTestRequest().ListBased()) {
+                 result.GetHitTestRequest().ListBased() &&
+                 IsHitCandidateForStopNode(GetLayoutObject(), stop_node)) {
         result.Append(temp_result);
-      } else if (result.GetHitTestRequest().RetargetForInert()) {
+      } else if (result.GetHitTestRequest().RetargetForInert() &&
+                 IsHitCandidateForStopNode(GetLayoutObject(), stop_node)) {
         result.SetInertNode(temp_result.InertNode());
       }
     }
@@ -2197,19 +2210,23 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     if (HitTestContentsForFragments(*layer_fragments, offset, temp_result,
                                     recursion_data.location, kHitTestSelf,
                                     inside_fragment_background_rect) &&
-        IsHitCandidate(this, false, z_offset_for_contents_ptr,
-                       unflattened_transform_state)) {
+        IsHitCandidateForDepthOrder(this, false, z_offset_for_contents_ptr,
+                                    unflattened_transform_state) &&
+        IsHitCandidateForStopNode(GetLayoutObject(), stop_node)) {
       if (result.GetHitTestRequest().ListBased())
         result.Append(temp_result);
       else
         result = temp_result;
       return this;
-    } else if (result.GetHitTestRequest().RetargetForInert()) {
+    } else if (result.GetHitTestRequest().RetargetForInert() &&
+               IsHitCandidateForStopNode(GetLayoutObject(), stop_node)) {
       result.SetInertNode(temp_result.InertNode());
     }
     if (inside_fragment_background_rect &&
-        result.GetHitTestRequest().ListBased())
+        result.GetHitTestRequest().ListBased() &&
+        IsHitCandidateForStopNode(GetLayoutObject(), stop_node)) {
       result.Append(temp_result);
+    }
   }
 
   return nullptr;
@@ -2411,10 +2428,9 @@ PaintLayer* PaintLayer::HitTestChildren(
     if (child_layer->IsReplacedNormalFlowStacking())
       continue;
 
-    // Calling IsDescendantOf is sad (slow), but it's the only way to tell
-    // whether the child layer is a descendant of the stop node.
+    // Avoid the call to child_layer->HitTestLayer() if possible.
     if (stop_layer == this &&
-        child_layer->GetLayoutObject().IsDescendantOf(stop_node)) {
+        !IsHitCandidateForStopNode(child_layer->GetLayoutObject(), stop_node)) {
       continue;
     }
 
@@ -2431,8 +2447,8 @@ PaintLayer* PaintLayer::HitTestChildren(
     if (result.GetHitTestRequest().ListBased())
       result.Append(temp_result);
 
-    if (IsHitCandidate(hit_layer, depth_sort_descendants, z_offset,
-                       unflattened_transform_state)) {
+    if (IsHitCandidateForDepthOrder(hit_layer, depth_sort_descendants, z_offset,
+                                    unflattened_transform_state)) {
       result_layer = hit_layer;
       if (!result.GetHitTestRequest().ListBased())
         result = temp_result;

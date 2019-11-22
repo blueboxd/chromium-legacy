@@ -7,7 +7,7 @@ import("//build/config/android/rules.gni")
 
 instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   apk_name = "WebLayerInstrumentationTest"
-  apk_under_test = "//weblayer/shell/android:weblayer_shell_apk"
+  apk_under_test = "//weblayer/shell/android:weblayer_shell_system_webview_apk"
   android_manifest = "AndroidManifest.xml"
   min_sdk_version = 21
   deps = [
@@ -39,11 +39,9 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "src/org/chromium/weblayer/test/TopControlsTest.java",
     "src/org/chromium/weblayer/test/WebLayerLoadingTest.java",
   ]
-  additional_apks = [
-    "//weblayer/shell/android:weblayer_support_apk",
-    "//net/android:net_test_support_apk",
-  ]
+  additional_apks = [ "//net/android:net_test_support_apk" ]
   data = [
     "//weblayer/test/data/",
   ]
+  use_webview_provider = "//android_webview:system_webview_apk"
 }

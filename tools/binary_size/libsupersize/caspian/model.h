@@ -90,6 +90,8 @@ class BaseSymbol {
     return aliases ? aliases->size() : 1;
   }
 
+  bool IsTemplate() const { return Name().size() != TemplateName().size(); }
+
   bool IsOverhead() const { return FullName().substr(0, 10) == "Overhead: "; }
 
   bool IsBss() const { return Section() == SectionId::kBss; }

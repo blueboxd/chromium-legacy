@@ -11,7 +11,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "components/media_message_center/media_notification_container.h"
-#include "components/media_message_center/media_notification_view.h"
+#include "components/media_message_center/media_notification_view_impl.h"
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -21,6 +21,7 @@ class MediaNotificationItem;
 }  // namespace media_message_center
 
 namespace views {
+class ImageButton;
 class SlideOutController;
 }  // namespace views
 
@@ -88,7 +89,7 @@ class MediaNotificationContainerImplView
 
   views::ImageButton* GetDismissButtonForTesting();
 
-  media_message_center::MediaNotificationView* view_for_testing() {
+  media_message_center::MediaNotificationViewImpl* view_for_testing() {
     return view_;
   }
 
@@ -125,7 +126,7 @@ class MediaNotificationContainerImplView
   views::View* dismiss_button_container_ = nullptr;
 
   DismissButton* dismiss_button_ = nullptr;
-  media_message_center::MediaNotificationView* view_ = nullptr;
+  media_message_center::MediaNotificationViewImpl* view_ = nullptr;
 
   SkColor foreground_color_;
   SkColor background_color_;

@@ -9,7 +9,6 @@
 
 namespace views {
 
-class DialogClientView;
 class Widget;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,8 +17,7 @@ class Widget;
 //  A ClientView is a View subclass that is used to occupy the "client area"
 //  of a widget. It provides basic information to the widget that contains it
 //  such as non-client hit testing information, sizing etc. Sub-classes of
-//  ClientView are used to create more elaborate contents, e.g.
-//  "DialogClientView".
+//  ClientView are used to create more elaborate contents.
 class VIEWS_EXPORT ClientView : public View {
  public:
   METADATA_HEADER(ClientView);
@@ -30,10 +28,6 @@ class VIEWS_EXPORT ClientView : public View {
   // the widget to be based on |contents_view|'s preferred size.
   ClientView(Widget* widget, View* contents_view);
   ~ClientView() override = default;
-
-  // Manual RTTI ftw.
-  virtual DialogClientView* AsDialogClientView();
-  virtual const DialogClientView* AsDialogClientView() const;
 
   // Returns true to signal that the Widget can be closed. Specialized
   // ClientView subclasses can override this default behavior to allow the

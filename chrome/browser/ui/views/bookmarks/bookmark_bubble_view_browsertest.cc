@@ -17,7 +17,6 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "ui/views/window/dialog_client_view.h"
 
 class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
  public:
@@ -45,13 +44,8 @@ class BookmarkBubbleViewBrowserTest : public DialogBrowserTest {
     bookmarks::AddIfNotBookmarked(bookmark_model, url, title);
     browser()->window()->ShowBookmarkBubble(url, true);
 
-    if (name == "ios_promotion") {
-      BookmarkBubbleView::bookmark_bubble()
-          ->GetWidget()
-          ->client_view()
-          ->AsDialogClientView()
-          ->AcceptWindow();
-    }
+    if (name == "ios_promotion")
+      BookmarkBubbleView::bookmark_bubble()->AcceptDialog();
   }
 
  private:

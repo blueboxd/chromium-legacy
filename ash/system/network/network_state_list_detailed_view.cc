@@ -81,6 +81,18 @@ bool NetworkTypeIsConfigurable(NetworkType type) {
 
 }  // namespace
 
+bool CanNetworkConnect(
+    chromeos::network_config::mojom::ConnectionStateType connection_state,
+    chromeos::network_config::mojom::NetworkType type,
+    bool connectable) {
+  // Network can be connected to if the network is not connected and:
+  // * The network is connectable or
+  // * The active user is primary and the network is configurable
+  return connection_state == ConnectionStateType::kNotConnected &&
+         (connectable ||
+          (!IsSecondaryUser() && NetworkTypeIsConfigurable(type)));
+}
+
 // A bubble which displays network info.
 class NetworkStateListDetailedView::InfoBubble
     : public views::BubbleDialogDelegateView {
@@ -271,22 +283,14 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
 
 void NetworkStateListDetailedView::HandleViewClickedImpl(
     NetworkStatePropertiesPtr network) {
-  if (network) {
-    // Attempt a network connection if the network is not connected and:
-    // * The network is connectable or
-    // * The active user is primary and the network is configurable
-    bool can_connect =
-        network->connection_state == ConnectionStateType::kNotConnected &&
-        (network->connectable ||
-         (!IsSecondaryUser() && NetworkTypeIsConfigurable(network->type)));
-    if (can_connect) {
-      Shell::Get()->metrics()->RecordUserMetricsAction(
-          list_type_ == LIST_TYPE_VPN
-              ? UMA_STATUS_AREA_CONNECT_TO_VPN
-              : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
-      chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid);
-      return;
-    }
+  if (network && CanNetworkConnect(network->connection_state, network->type,
+                                   network->connectable)) {
+    Shell::Get()->metrics()->RecordUserMetricsAction(
+        list_type_ == LIST_TYPE_VPN
+            ? UMA_STATUS_AREA_CONNECT_TO_VPN
+            : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
+    chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid);
+    return;
   }
   // If the network is no longer available or not connectable or configurable,
   // show the Settings UI.

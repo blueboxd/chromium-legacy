@@ -18,30 +18,9 @@
 #include "ui/events/ozone/evdev/touch_filter/open_palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_model/onedevice_train_palm_detection_filter_model.h"
+#include "ui/events/ozone/features.h"
 
 namespace ui {
-
-const base::Feature kEnableHeuristicPalmDetectionFilter{
-    "EnableHeuristicPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kEnableNeuralPalmDetectionFilter{
-    "EnableNeuralPalmDetectionFilter", base::FEATURE_DISABLED_BY_DEFAULT};
-
-EVENTS_OZONE_EVDEV_EXPORT
-extern const base::FeatureParam<std::string> kNeuralPalmRadiusPolynomial{
-    &kEnableNeuralPalmDetectionFilter, "neural_palm_radius_polynomial", ""};
-
-const base::FeatureParam<double> kHeuristicCancelThresholdSeconds{
-    &kEnableHeuristicPalmDetectionFilter,
-    "heuristic_palm_cancel_threshold_seconds", 0.4};
-
-const base::FeatureParam<double> kHeuristicHoldThresholdSeconds{
-    &kEnableHeuristicPalmDetectionFilter,
-    "heuristic_palm_hold_threshold_seconds", 1.0};
-
-const base::FeatureParam<int> kHeuristicStrokeCount{
-    &kEnableHeuristicPalmDetectionFilter, "heuristic_palm_stroke_count", 0};
-
 namespace internal {
 
 std::vector<float> ParseRadiusPolynomial(const std::string& radius_string) {

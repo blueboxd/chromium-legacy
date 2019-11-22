@@ -36,11 +36,6 @@ using syncer::SyncUserSettings;
 using syncer::UserSelectableType;
 using syncer::UserSelectableTypeSet;
 
-#if defined(OS_CHROMEOS)
-using syncer::UserSelectableOsType;
-using syncer::UserSelectableOsTypeSet;
-#endif
-
 const char kSyncedBookmarkURL[] = "http://www.mybookmark.com";
 // Non-utf8 string to make sure it gets handled well.
 const char kTestServerChips[] = "\xed\xa0\x80\xed\xbf\xbf";
@@ -64,11 +59,6 @@ ModelTypeSet MultiGroupTypes(const ModelTypeSet& registered_types) {
       }
     }
   }
-#if defined(OS_CHROMEOS)
-  // Printers are migrating from browser UserSelectableType::kPreferences to a
-  // new UserSelectableOsType::kPrinters.
-  multi.Put(ModelType::PRINTERS);
-#endif
   multi.RetainAll(registered_types);
   return multi;
 }
@@ -131,10 +121,6 @@ class EnableDisableSingleClientTest : public FeatureToggler, public SyncTest {
  protected:
   void SetupTest(bool all_types_enabled) {
     ASSERT_TRUE(SetupClients());
-#if defined(OS_CHROMEOS)
-    GetSyncService(0)->GetUserSettings()->SetSelectedOsTypes(
-        /*sync_all_os_types=*/all_types_enabled, UserSelectableOsTypeSet());
-#endif
     if (all_types_enabled) {
       ASSERT_TRUE(GetClient(0)->SetupSync());
     } else {
@@ -223,15 +209,6 @@ IN_PROC_BROWSER_TEST_P(EnableDisableSingleClientTest, DisableOneAtATime) {
           << " for " << GetUserSelectableTypeName(type);
     }
   }
-
-#if defined(OS_CHROMEOS)
-  // Printers are migrating from browser UserSelectableType::kPreferences to a
-  // new UserSelectableOsType::kPrinters. Manually disable the type.
-  SyncUserSettings* settings = GetClient(0)->service()->GetUserSettings();
-  UserSelectableOsTypeSet os_types = settings->GetSelectedOsTypes();
-  os_types.Remove(UserSelectableOsType::kPrinters);
-  settings->SetSelectedOsTypes(/*sync_all_os_types=*/false, os_types);
-#endif
 
   // Lastly make sure that all the multi grouped times are all gone, since we
   // did not check these after disabling inside the above loop.
@@ -522,7 +499,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          EnableDisableSingleClientTest,
                          ::testing::Values(false, true));
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          EnableDisableSingleClientSelfNotifyTest,
                          ::testing::Values(false, true));
 

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -66,7 +67,8 @@ IN_PROC_BROWSER_TEST_F(TabStripBrowsertest, MoveTabAndDeleteGroup) {
 
   EXPECT_EQ(group, tab_strip_model()->GetTabGroupForTab(1));
 
-  std::vector<TabGroupId> groups = tab_strip_model()->ListTabGroups();
+  std::vector<TabGroupId> groups =
+      tab_strip_model()->group_model()->ListTabGroups();
   EXPECT_EQ(groups.size(), 1U);
   EXPECT_EQ(groups[0], group);
 }

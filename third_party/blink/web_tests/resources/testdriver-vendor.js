@@ -206,6 +206,178 @@
     });
   };
 
+  let virtualAuthenticatorManager_;
+
+  async function findAuthenticator(authenticatorManager, authenticatorId) {
+    let authenticators = (await authenticatorManager.getAuthenticators()).authenticators;
+    let foundAuthenticator;
+    for (let authenticator of authenticators) {
+      if ((await authenticator.getUniqueId()).id == authenticatorId) {
+        foundAuthenticator = authenticator;
+        break;
+      }
+    }
+    if (!foundAuthenticator) {
+      throw "Cannot find authenticator with ID " + authenticatorId;
+    }
+    return foundAuthenticator;
+  }
+
+  function loadVirtualAuthenticatorManager() {
+    if (virtualAuthenticatorManager_) {
+      return Promise.resolve(virtualAuthenticatorManager_);
+    }
+
+    return Promise.all([
+      "/gen/layout_test_data/mojo/public/js/mojo_bindings_lite.js",
+      "/gen/mojo/public/mojom/base/time.mojom-lite.js",
+      "/gen/url/mojom/url.mojom-lite.js",
+      "/gen/third_party/blink/public/mojom/webauthn/authenticator.mojom-lite.js",
+      "/gen/third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom-lite.js",
+    ].map(dependency => new Promise((resolve, reject) => {
+      let script = document.createElement("script");
+      script.src = dependency;
+      script.async = false;
+      script.onload = resolve;
+      document.head.appendChild(script);
+    }))).then(() => {
+      virtualAuthenticatorManager_ = new blink.test.mojom.VirtualAuthenticatorManagerRemote;
+      Mojo.bindInterface(
+        blink.test.mojom.VirtualAuthenticatorManager.$interfaceName,
+        virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver().handle, "context", true);
+      return virtualAuthenticatorManager_;
+    });
+  }
+
+  function urlSafeBase64ToUint8Array(base64url) {
+    let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
+    // Add padding to make the length of the base64 string divisible by 4.
+    if (base64.length % 4 != 0)
+      base64 += "=".repeat(4 - base64.length % 4);
+    return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+  }
+
+  function uint8ArrayToUrlSafeBase64(array) {
+    let binary = "";
+    for (let i = 0; i < array.length; ++i)
+      binary += String.fromCharCode(array[i]);
+
+    return window.btoa(binary)
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
+  }
+
+  window.test_driver_internal.add_virtual_authenticator = async function(options) {
+    let manager = await loadVirtualAuthenticatorManager();
+
+    options = Object.assign({
+      hasResidentKey: false,
+      hasUserVerification: false,
+      isUserConsenting: true,
+      isUserVerified: false,
+    }, options);
+    let mojoOptions = {};
+    switch (options.protocol) {
+      case "ctap1/u2f":
+        mojoOptions.protocol = blink.test.mojom.ClientToAuthenticatorProtocol.U2F;
+        break;
+      case "ctap2":
+        mojoOptions.protocol = blink.test.mojom.ClientToAuthenticatorProtocol.CTAP2;
+        break;
+      default:
+        throw "Unknown protocol "  + options.protocol;
+    }
+    switch (options.transport) {
+      case "usb":
+        mojoOptions.transport = blink.mojom.AuthenticatorTransport.USB;
+        mojoOptions.attachment = blink.mojom.AuthenticatorAttachment.CROSS_PLATFORM;
+        break;
+      case "nfc":
+        mojoOptions.transport = blink.mojom.AuthenticatorTransport.NFC;
+        mojoOptions.attachment = blink.mojom.AuthenticatorAttachment.CROSS_PLATFORM;
+        break;
+      case "ble":
+        mojoOptions.transport = blink.mojom.AuthenticatorTransport.BLE;
+        mojoOptions.attachment = blink.mojom.AuthenticatorAttachment.CROSS_PLATFORM;
+        break;
+      case "internal":
+        mojoOptions.transport = blink.mojom.AuthenticatorTransport.INTERNAL;
+        mojoOptions.attachment = blink.mojom.AuthenticatorAttachment.PLATFORM;
+        break;
+      default:
+        throw "Unknown transport "  + options.transport;
+    }
+    mojoOptions.hasResidentKey = options.hasResidentKey;
+    mojoOptions.hasUserVerification = options.hasUserVerification;
+
+    let authenticator = (await manager.createAuthenticator(mojoOptions)).authenticator;
+    return (await authenticator.getUniqueId()).id;
+  };
+
+  window.test_driver_internal.add_credential = async function(authenticatorId, credential) {
+    if (credential.isResidentCredential) {
+      throw "The mojo virtual authenticator manager does not support resident credentials";
+    }
+    let manager = await loadVirtualAuthenticatorManager();
+    let authenticator = await findAuthenticator(manager, authenticatorId);
+
+    let registration = {
+      keyHandle: urlSafeBase64ToUint8Array(credential.credentialId),
+      privateKey: urlSafeBase64ToUint8Array(credential.privateKey),
+      rpId: credential.rpId,
+      counter: credential.signCount,
+    };
+    let addRegistrationResponse = await authenticator.addRegistration(registration);
+    if (!addRegistrationResponse.added) {
+      throw "Could not add credential";
+    }
+  };
+
+  window.test_driver_internal.get_credentials = async function(authenticatorId) {
+    let manager = await loadVirtualAuthenticatorManager();
+    let authenticator = await findAuthenticator(manager, authenticatorId);
+
+    let getCredentialsResponse = await authenticator.getRegistrations();
+    return getCredentialsResponse.keys.map(key => ({
+      credentialId: uint8ArrayToUrlSafeBase64(key.keyHandle),
+      privateKey: uint8ArrayToUrlSafeBase64(key.privateKey),
+      rpId: key.rpId,
+      signCount: key.counter,
+      isResidentCredential: false,
+    }));
+  };
+
+  window.test_driver_internal.remove_credential = async function(authenticatorId, credentialId) {
+    let manager = await loadVirtualAuthenticatorManager();
+    let authenticator = await findAuthenticator(manager, authenticatorId);
+
+    let removeRegistrationResponse = await authenticator.removeRegistration(
+        urlSafeBase64ToUint8Array(credentialId));
+    if (!removeRegistrationResponse.removed) {
+      throw "Could not remove credential";
+    }
+  };
+
+  window.test_driver_internal.remove_all_credentials = async function(authenticatorId) {
+    let manager = await loadVirtualAuthenticatorManager();
+    let authenticator = await findAuthenticator(manager, authenticatorId);
+    await authenticator.clearRegistrations();
+  }
+
+  window.test_driver_internal.set_user_verified = async function(authenticatorId, options) {
+    let manager = await loadVirtualAuthenticatorManager();
+    let authenticator = await findAuthenticator(manager, authenticatorId);
+    await authenticator.setUserVerified(options.isUserVerified);
+  }
+
+  window.test_driver_internal.remove_virtual_authenticator = async function(authenticatorId) {
+    let manager = await loadVirtualAuthenticatorManager();
+    let response = await manager.removeAuthenticator(authenticatorId);
+    if (!response.removed)
+      throw "Could not remove authenticator";
+  }
+
   // Enable automation so we don't wait for user input on unimplemented APIs
   window.test_driver_internal.in_automation = true;
 

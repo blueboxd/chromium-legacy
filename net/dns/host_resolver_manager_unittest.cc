@@ -57,6 +57,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/dns/mock_mdns_client.h"
 #include "net/dns/mock_mdns_socket_factory.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/dns/test_dns_config_service.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
@@ -267,7 +268,7 @@ class ResolveHostResponseHelper {
       std::unique_ptr<HostResolverManager::CancellableResolveHostRequest>
           request)
       : request_(std::move(request)) {
-    result_error_ = request_->Start(base::BindOnce(
+    top_level_result_error_ = request_->Start(base::BindOnce(
         &ResolveHostResponseHelper::OnComplete, base::Unretained(this)));
   }
   ResolveHostResponseHelper(
@@ -275,16 +276,22 @@ class ResolveHostResponseHelper {
           request,
       Callback custom_callback)
       : request_(std::move(request)) {
-    result_error_ = request_->Start(
+    top_level_result_error_ = request_->Start(
         base::BindOnce(std::move(custom_callback),
                        base::BindOnce(&ResolveHostResponseHelper::OnComplete,
                                       base::Unretained(this))));
   }
 
-  bool complete() const { return result_error_ != ERR_IO_PENDING; }
+  bool complete() const { return top_level_result_error_ != ERR_IO_PENDING; }
+
+  int top_level_result_error() {
+    WaitForCompletion();
+    return top_level_result_error_;
+  }
+
   int result_error() {
     WaitForCompletion();
-    return result_error_;
+    return request_->GetResolveErrorInfo().error;
   }
 
   HostResolverManager::CancellableResolveHostRequest* request() {
@@ -300,7 +307,7 @@ class ResolveHostResponseHelper {
 
   void OnComplete(int error) {
     DCHECK(!complete());
-    result_error_ = error;
+    top_level_result_error_ = error;
 
     run_loop_.Quit();
   }
@@ -316,7 +323,7 @@ class ResolveHostResponseHelper {
   }
 
   std::unique_ptr<HostResolverManager::CancellableResolveHostRequest> request_;
-  int result_error_ = ERR_IO_PENDING;
+  int top_level_result_error_ = ERR_IO_PENDING;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ResolveHostResponseHelper);
@@ -641,6 +648,7 @@ TEST_F(HostResolverManagerTest, AsynchronousLookup) {
       host_cache_.get()));
 
   EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.top_level_result_error(), IsOk());
   EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
               testing::ElementsAre(CreateExpected("192.168.1.42", 80)));
   EXPECT_FALSE(response.request()->GetStaleInfo());
@@ -846,6 +854,8 @@ TEST_F(HostResolverManagerTest, FailedAsynchronousLookup) {
       NetLogWithSource(), base::nullopt, request_context_.get(),
       host_cache_.get()));
   EXPECT_THAT(response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(response.top_level_result_error(),
+              IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_FALSE(response.request()->GetAddressResults());
   EXPECT_FALSE(response.request()->GetStaleInfo());
 

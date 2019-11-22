@@ -45,7 +45,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -1043,10 +1045,11 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, GroupMetadataRestored) {
 
   // Get the default visual data for the first group and set custom visual data
   // for the second.
-  const TabGroupVisualData group1_data = *tsm->GetVisualDataForGroup(group1);
+  const TabGroupVisualData group1_data =
+      *tsm->group_model()->GetTabGroup(group1)->visual_data();
   const TabGroupVisualData group2_data(base::ASCIIToUTF16("Foo"),
                                        gfx::kGoogleBlue600);
-  tsm->SetVisualDataForGroup(group2, group2_data);
+  tsm->group_model()->GetTabGroup(group2)->SetVisualData(group2_data);
 
   Browser* const new_browser = QuitBrowserAndRestore(browser(), 5);
   TabStripModel* const new_tsm = new_browser->tab_strip_model();
@@ -1054,9 +1057,9 @@ IN_PROC_BROWSER_TEST_P(SessionRestoreTabGroupsTest, GroupMetadataRestored) {
 
   // Check that the restored visual data is the same.
   const TabGroupVisualData* const group1_restored_data =
-      new_tsm->GetVisualDataForGroup(group1);
+      new_tsm->group_model()->GetTabGroup(group1)->visual_data();
   const TabGroupVisualData* const group2_restored_data =
-      new_tsm->GetVisualDataForGroup(group2);
+      new_tsm->group_model()->GetTabGroup(group2)->visual_data();
   EXPECT_EQ(group1_data.title(), group1_restored_data->title());
   EXPECT_EQ(group1_data.color(), group1_restored_data->color());
   EXPECT_EQ(group2_data.title(), group2_restored_data->title());

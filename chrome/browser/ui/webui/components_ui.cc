@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -47,7 +47,7 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources 'self' 'unsafe-eval';");
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"componentsTitle", IDS_COMPONENTS_TITLE},
       {"componentsNoneInstalled", IDS_COMPONENTS_NONE_INSTALLED},
       {"componentVersion", IDS_COMPONENTS_VERSION},
@@ -56,7 +56,7 @@ content::WebUIDataSource* CreateComponentsUIHTMLSource(Profile* profile) {
       {"statusLabel", IDS_COMPONENTS_STATUS_LABEL},
       {"checkingLabel", IDS_COMPONENTS_CHECKING_LABEL},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->AddBoolean(
       "isGuest",

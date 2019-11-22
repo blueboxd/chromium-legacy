@@ -18,7 +18,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 NativeFileSystemPermissionView::NativeFileSystemPermissionView(
     const url::Origin& origin,
@@ -93,8 +92,7 @@ ui::ModalType NativeFileSystemPermissionView::GetModalType() const {
 }
 
 views::View* NativeFileSystemPermissionView::GetInitiallyFocusedView() {
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 void ShowNativeFileSystemPermissionDialog(

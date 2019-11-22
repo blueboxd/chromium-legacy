@@ -32,13 +32,10 @@
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"
 #include "services/preferences/public/cpp/tracked/mock_validation_delegate.h"
 #include "services/preferences/public/cpp/tracked/pref_names.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

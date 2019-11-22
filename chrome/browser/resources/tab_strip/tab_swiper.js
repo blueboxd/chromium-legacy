@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * The minimum amount of pixels needed for the user to swipe for the opacity
- * to start animating to 0.
+ * The minimum amount of pixels needed for the user to swipe for the position
+ * (controlled by transform property) to start animating to 0.
  * @const {number}
  */
-export const OPACITY_ANIMATION_THRESHOLD_PX = 30;
+export const TRANSLATE_ANIMATION_THRESHOLD_PX = 30;
 
 /**
  * The minimum amount of pixels needed for the user to swipe to actually close
@@ -21,6 +21,8 @@ export const SWIPE_START_THRESHOLD_PX = 100;
  * The maximum amount of pixels needed to swipe a tab away. This is how many
  * pixels across the screen the user needs to swipe for the swipe away
  * animation to complete such that the tab is gone from the screen.
+ * TODO(johntlee): Make this relative to the height of the tab, not a
+ * hard-coded value.
  * @const {number}
  */
 export const SWIPE_FINISH_THRESHOLD_PX = 200;
@@ -104,18 +106,17 @@ export class TabSwiper {
             transform: `translateY(-${SWIPE_FINISH_THRESHOLD_PX}px)`
           },
           {
-            // Start of max-width animation swiping up.
+            // Start of max-width and opacity animation swiping up.
             maxWidth: 'var(--tabstrip-tab-width)',
             offset: (SWIPE_ANIMATION_BASELINE_PX - SWIPE_START_THRESHOLD_PX) /
                 SWIPE_ANIMATION_TOTAL_PX,
+            opacity: 1,
           },
           {
-            // Start of opacity animation swiping up.
-            maxWidth: 'var(--tabstrip-tab-width)',
-            offset:
-                (SWIPE_ANIMATION_BASELINE_PX - OPACITY_ANIMATION_THRESHOLD_PX) /
+            // Start of transform animation swiping up.
+            offset: (SWIPE_ANIMATION_BASELINE_PX -
+                     TRANSLATE_ANIMATION_THRESHOLD_PX) /
                 SWIPE_ANIMATION_TOTAL_PX,
-            opacity: 1,
             transform: `translateY(0)`
           },
           {
@@ -125,19 +126,18 @@ export class TabSwiper {
             transform: `translateY(0)`
           },
           {
-            // Start of opacity animation swiping down.
-            maxWidth: 'var(--tabstrip-tab-width)',
-            offset:
-                (SWIPE_ANIMATION_BASELINE_PX + OPACITY_ANIMATION_THRESHOLD_PX) /
+            // Start of transform animation swiping down.
+            offset: (SWIPE_ANIMATION_BASELINE_PX +
+                     TRANSLATE_ANIMATION_THRESHOLD_PX) /
                 SWIPE_ANIMATION_TOTAL_PX,
-            opacity: 1,
             transform: `translateY(0)`
           },
           {
-            // Start of opacity animation swiping down.
+            // Start of max-width and opacity animation swiping down.
             maxWidth: 'var(--tabstrip-tab-width)',
             offset: (SWIPE_ANIMATION_BASELINE_PX + SWIPE_START_THRESHOLD_PX) /
                 SWIPE_ANIMATION_TOTAL_PX,
+            opacity: 1,
           },
           {
             // Fully swiped down.
@@ -203,7 +203,7 @@ export class TabSwiper {
         Math.max(0, Math.min(SWIPE_ANIMATION_TOTAL_PX, animationTime));
 
     if (!this.animationInitiated_ &&
-        Math.abs(yDiff) > OPACITY_ANIMATION_THRESHOLD_PX) {
+        Math.abs(yDiff) > TRANSLATE_ANIMATION_THRESHOLD_PX) {
       this.animationInitiated_ = true;
       this.element_.setPointerCapture(event.pointerId);
     }

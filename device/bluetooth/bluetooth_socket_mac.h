@@ -46,7 +46,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   // called with a message explaining the cause of failure.
   void Connect(IOBluetoothDevice* device,
                const BluetoothUUID& uuid,
-               const base::Closure& success_callback,
+               base::OnceClosure success_callback,
                const ErrorCompletionCallback& error_callback);
 
   // Listens for incoming RFCOMM connections using this socket: Publishes an
@@ -92,11 +92,10 @@ class BluetoothSocketMac : public BluetoothSocket {
   // |status| is the returned status from the SDP query, |device| is the
   // IOBluetoothDevice for which the query was made. The remaining
   // parameters are those from |Connect()|.
-  void OnSDPQueryComplete(
-      IOReturn status,
-      IOBluetoothDevice* device,
-      const base::Closure& success_callback,
-      const ErrorCompletionCallback& error_callback);
+  void OnSDPQueryComplete(IOReturn status,
+                          IOBluetoothDevice* device,
+                          base::OnceClosure success_callback,
+                          const ErrorCompletionCallback& error_callback);
 
   // Called by BluetoothRfcommConnectionListener and
   // BluetoothL2capConnectionListener.
@@ -140,7 +139,7 @@ class BluetoothSocketMac : public BluetoothSocket {
   struct ConnectCallbacks {
     ConnectCallbacks();
     ~ConnectCallbacks();
-    base::Closure success_callback;
+    base::OnceClosure success_callback;
     ErrorCompletionCallback error_callback;
   };
 

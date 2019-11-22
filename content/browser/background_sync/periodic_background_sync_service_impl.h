@@ -16,7 +16,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_registration_helper.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
@@ -28,8 +29,8 @@ class CONTENT_EXPORT PeriodicBackgroundSyncServiceImpl
  public:
   PeriodicBackgroundSyncServiceImpl(
       BackgroundSyncContextImpl* background_sync_context,
-      mojo::InterfaceRequest<blink::mojom::PeriodicBackgroundSyncService>
-          request);
+      mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService>
+          receiver);
 
   ~PeriodicBackgroundSyncServiceImpl() override;
 
@@ -49,14 +50,14 @@ class CONTENT_EXPORT PeriodicBackgroundSyncServiceImpl
   void OnUnregisterResult(UnregisterCallback callback,
                           BackgroundSyncStatus status);
 
-  // Called when an error is detected on |binding_|.
-  void OnConnectionError();
+  // Called when a disconnection is detected on |receiver_|.
+  void OnMojoDisconnect();
 
   // |background_sync_context_| owns |this|.
   BackgroundSyncContextImpl* background_sync_context_;
 
   std::unique_ptr<BackgroundSyncRegistrationHelper> registration_helper_;
-  mojo::Binding<blink::mojom::PeriodicBackgroundSyncService> binding_;
+  mojo::Receiver<blink::mojom::PeriodicBackgroundSyncService> receiver_;
 
   base::WeakPtrFactory<PeriodicBackgroundSyncServiceImpl> weak_ptr_factory_{
       this};

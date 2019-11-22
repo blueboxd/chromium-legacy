@@ -626,7 +626,9 @@ bool Display::DrawAndSwap() {
                                                  "Display::DrawAndSwap");
 
     cc::benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
-    renderer_->SwapBuffers(std::move(frame.metadata.latency_info));
+    DirectRenderer::SwapFrameData swap_frame_data;
+    swap_frame_data.latency_info = std::move(frame.metadata.latency_info);
+    renderer_->SwapBuffers(std::move(swap_frame_data));
     if (scheduler_)
       scheduler_->DidSwapBuffers();
   } else {
@@ -756,10 +758,6 @@ void Display::DidReceivePresentationFeedback(
       copy_feedback.timestamp);
   presentation_group_timing.OnPresent(copy_feedback);
   pending_presentation_group_timings_.pop_front();
-}
-
-void Display::DidFinishLatencyInfo(
-    const std::vector<ui::LatencyInfo>& latency_info) {
 }
 
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {

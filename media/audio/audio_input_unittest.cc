@@ -123,7 +123,8 @@ class AudioInputTest : public testing::Test {
             .GetInputStreamParameters(AudioDeviceDescription::kDefaultDeviceId);
     audio_input_stream_ = audio_manager_->MakeAudioInputStream(
         params, AudioDeviceDescription::kDefaultDeviceId,
-        base::Bind(&AudioInputTest::OnLogMessage, base::Unretained(this)));
+        base::BindRepeating(&AudioInputTest::OnLogMessage,
+                            base::Unretained(this)));
     EXPECT_TRUE(audio_input_stream_);
   }
 

@@ -271,7 +271,7 @@ void ProactiveSuggestionsView::InitWidget() {
   views::Widget::InitParams params;
   params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
   params.context = delegate_->GetRootWindowForNewWindows();
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
 

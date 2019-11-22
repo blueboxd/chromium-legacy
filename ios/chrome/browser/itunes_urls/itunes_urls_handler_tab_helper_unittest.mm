@@ -78,6 +78,10 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, NoHandlingInIframes) {
       @"http://itunes.apple.com/app/bar/id243?at=12312", /*main_frame=*/true));
   EXPECT_FALSE(VerifyStoreKitLaunched(
       @"http://itunes.apple.com/app/bar/id243?at=12312", /*main_frame=*/false));
+  EXPECT_TRUE(VerifyStoreKitLaunched(
+      @"http://apps.apple.com/app/bar/id243?at=12312", /*main_frame=*/true));
+  EXPECT_FALSE(VerifyStoreKitLaunched(
+      @"http://apps.apple.com/app/bar/id243?at=12312", /*main_frame=*/false));
 }
 
 // Verifies that navigating to non iTunes product URLs, or not supported iTunes
@@ -96,10 +100,13 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
   EXPECT_FALSE(VerifyStoreKitLaunched(
       @"https://itunes.apple.com/us/tv-show/theshow/id1232",
       /*main_frame=*/true));
-  EXPECT_FALSE(VerifyStoreKitLaunched(
-      @"http://itunes.apple.com/podcast/id12345", /*main_frame=*/true));
+  EXPECT_FALSE(VerifyStoreKitLaunched(@"http://apps.apple.com/podcast/id12345",
+                                      /*main_frame=*/true));
   EXPECT_FALSE(VerifyStoreKitLaunched(
       @"itms-apps://itunes.apple.com/us/app/appname/id123",
+      /*main_frame=*/true));
+  EXPECT_FALSE(VerifyStoreKitLaunched(
+      @"http://geo.apps.apple.com/app/bar/id243?at=12312",
       /*main_frame=*/true));
   EXPECT_FALSE(VerifyStoreKitLaunched(
       @"http://itunes.apple.com/us/movie/testmovie/id12345",
@@ -113,7 +120,7 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
 // with supported media type launches storekit.
 TEST_F(ITunesUrlsHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
   EXPECT_TRUE(VerifyStoreKitLaunched(
-      @"http://itunes.apple.com/us/app/app_name/id123", /*main_frame=*/true));
+      @"http://apps.apple.com/us/app/app_name/id123", /*main_frame=*/true));
   NSString* product_id = @"id";
   NSString* af_tkn = @"at";
   NSDictionary* expected_params = @{product_id : @"123"};
@@ -124,13 +131,13 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(VerifyStoreKitLaunched(
-      @"http://foo.itunes.apple.com/app/test/id123?qux&baz#foo",
+      @"http://itunes.apple.com/app/test/id123?qux&baz#foo",
       /*main_frame=*/true));
   expected_params = @{product_id : @"123", @"qux" : @"", @"baz" : @""};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(VerifyStoreKitLaunched(
-      @"http://itunes.apple.com/app/bar/id243?at=12312", /*main_frame=*/true));
+      @"http://apps.apple.com/app/bar/id243?at=12312", /*main_frame=*/true));
   expected_params = @{product_id : @"243", af_tkn : @"12312"};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
@@ -141,7 +148,7 @@ TEST_F(ITunesUrlsHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
   EXPECT_TRUE(VerifyStoreKitLaunched(
-      @"http://itunes.apple.com/de/app/bar/id123?at=2&uo=4#foo",
+      @"http://apps.apple.com/de/app/bar/id123?at=2&uo=4#foo",
       /*main_frame=*/true));
   expected_params = @{product_id : @"123", af_tkn : @"2", @"uo" : @"4"};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);

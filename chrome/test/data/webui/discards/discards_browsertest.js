@@ -29,11 +29,6 @@ var DiscardsTest = class extends testing.Test {
   get webuiHost() {
     return 'discards';
   }
-
-  /** @override */
-  get runAccessibilityChecks() {
-    return false;
-  }
 };
 
 

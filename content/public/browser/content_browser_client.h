@@ -1599,7 +1599,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::NavigationHandle* navigation_handle);
 
   // Returns true if it is OK to accept untrusted exchanges, such as expired
-  // signed exchanges, and unsigned bundled exchanges.
+  // signed exchanges, and unsigned Web Bundles.
   // The embedder may require --user-data-dir flag and so on to accept it in
   // order to make sure that insecure contents will not persist accidentally.
   virtual bool CanAcceptUntrustedExchangesIfNeeded();

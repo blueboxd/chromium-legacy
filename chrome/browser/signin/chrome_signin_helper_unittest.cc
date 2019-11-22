@@ -114,8 +114,6 @@ class ChromeSigninHelperTest : public testing::Test {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Tests that Dice response headers are removed after being processed.
 TEST_F(ChromeSigninHelperTest, RemoveDiceSigninHeader) {
-  ScopedAccountConsistencyDiceMigration scoped_dice_migration;
-
   // Process the header.
   TestResponseAdapter adapter(signin::kDiceResponseHeader, "Foo",
                               /*is_main_frame=*/false);

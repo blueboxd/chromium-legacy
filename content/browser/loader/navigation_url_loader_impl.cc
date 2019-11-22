@@ -42,11 +42,11 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_request_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
+#include "content/browser/web_package/web_bundle_utils.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/common/net/record_load_histograms.h"
@@ -191,6 +191,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->method = request_info->common_params->method;
   new_request->url = request_info->common_params->url;
   new_request->site_for_cookies = request_info->site_for_cookies;
+  new_request->attach_same_site_cookies =
+      request_info->begin_params->attach_same_site_cookies;
   new_request->trusted_params = network::ResourceRequest::TrustedParams();
   new_request->trusted_params->network_isolation_key =
       request_info->network_isolation_key;
@@ -1035,8 +1037,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response) {
     if (!default_loader_used_ &&
-        !bundled_exchanges_utils::CanLoadAsBundledExchanges(
-            url_, response.mime_type)) {
+        !web_bundle_utils::CanLoadAsWebBundle(url_, response.mime_type)) {
       return false;
     }
     for (size_t i = 0u; i < interceptors_.size(); ++i) {
@@ -1216,7 +1217,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   // True when a proxy will handle the redirect checks, or when an interceptor
   // intentionally returned unsafe redirect response
-  // (eg: NavigationLoaderInterceptor for loading local bundled exchanges file).
+  // (eg: NavigationLoaderInterceptor for loading a local Web Bundle file).
   bool bypass_redirect_checks_;
 
   // Used to reset the state of ServiceWorkerProviderHost when

@@ -433,6 +433,7 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kFavicon, APIPermission::kTopSites}},
       {IDS_EXTENSION_PROMPT_WARNING_FAVICON, {APIPermission::kFavicon}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_TOPSITES, {APIPermission::kTopSites}, {}},
+      {IDS_EXTENSION_PROMPT_WARNING_PRINTING, {APIPermission::kPrinting}, {}},
       {IDS_EXTENSION_PROMPT_WARNING_PRINTING_METRICS,
        {APIPermission::kPrintingMetrics},
        {}},

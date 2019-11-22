@@ -77,7 +77,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/wm/core/accelerator_filter.h"
 
 namespace ash {
@@ -228,12 +227,12 @@ class AcceleratorControllerTest : public AshTestBase {
 
   void AcceptConfirmationDialog() {
     DCHECK(test_api_->GetConfirmationDialog());
-    test_api_->GetConfirmationDialog()->GetDialogClientView()->AcceptWindow();
+    test_api_->GetConfirmationDialog()->AcceptDialog();
   }
 
   void CancelConfirmationDialog() {
     DCHECK(test_api_->GetConfirmationDialog());
-    test_api_->GetConfirmationDialog()->GetDialogClientView()->CancelWindow();
+    test_api_->GetConfirmationDialog()->CancelDialog();
   }
 
   void RemoveAllNotifications() const {

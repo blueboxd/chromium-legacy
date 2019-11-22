@@ -68,7 +68,17 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
 
   // Public interface implemented by subclasses.
-  virtual void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) = 0;
+  struct SwapFrameData {
+    SwapFrameData();
+    ~SwapFrameData();
+
+    SwapFrameData(const SwapFrameData&) = delete;
+    SwapFrameData& operator=(const SwapFrameData&) = delete;
+
+    SwapFrameData(SwapFrameData&&);
+    std::vector<ui::LatencyInfo> latency_info;
+  };
+  virtual void SwapBuffers(SwapFrameData swap_frame_data) = 0;
   virtual void SwapBuffersSkipped() {}
   virtual void SwapBuffersComplete() {}
   virtual void DidReceiveTextureInUseResponses(

@@ -61,9 +61,11 @@ grit("camera_resources") {
 
 group("closure_compile") {
   deps = [
+    "accessibility/braille_ime:closure_compile",
+    "accessibility/select_to_speak:closure_compile",
+    "accessibility/switch_access:closure_compile",
     "add_supervision:closure_compile",
     "bluetooth_pairing_dialog:closure_compile",
-    "braille_ime:closure_compile",
     "camera/src/js:closure_compile",
     "crostini_installer:closure_compile",
     "emulator:closure_compile",
@@ -73,10 +75,8 @@ group("closure_compile") {
     "machine_learning:closure_compile",
     "multidevice_setup:closure_compile",
     "network_ui:closure_compile",
-    "select_to_speak:closure_compile",
     "set_time_dialog:closure_compile",
     "smb_shares:closure_compile",
-    "switch_access:closure_compile",
     "sys_internals:closure_compile",
   ]
 }

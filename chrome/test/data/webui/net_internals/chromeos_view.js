@@ -53,8 +53,6 @@ TEST_F(
         return;
       }
 
-      // #chromeos-view-import-onc fails accessibility check.
-      this.runAccessibilityChecks = false;
       NetInternalsTest.switchToView('chromeos');
 
       var taskQueue = new NetInternalsTest.TaskQueue(true);

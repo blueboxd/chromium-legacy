@@ -34,7 +34,6 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -52,14 +51,6 @@ bool IsBubbleShowing() {
          PasswordBubbleViewBase::manage_password_bubble()
              ->GetWidget()
              ->IsVisible();
-}
-
-const views::DialogClientView* GetDialogClientView(
-    const LocationBarBubbleDelegateView* bubble) {
-  const views::DialogClientView* view =
-      bubble->GetWidget()->client_view()->AsDialogClientView();
-  DCHECK(view);
-  return view;
 }
 
 }  // namespace
@@ -127,9 +118,8 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, CommandControlsBubble) {
   EXPECT_TRUE(IsBubbleShowing());
   const LocationBarBubbleDelegateView* bubble =
       PasswordBubbleViewBase::manage_password_bubble();
-  EXPECT_TRUE(GetDialogClientView(bubble)->ok_button());
-  EXPECT_EQ(GetDialogClientView(bubble)->ok_button(),
-            bubble->GetFocusManager()->GetFocusedView());
+  EXPECT_TRUE(bubble->GetOkButton());
+  EXPECT_EQ(bubble->GetOkButton(), bubble->GetFocusManager()->GetFocusedView());
   PasswordBubbleViewBase::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
   // Drain message pump to ensure the bubble view is cleared so that it can be

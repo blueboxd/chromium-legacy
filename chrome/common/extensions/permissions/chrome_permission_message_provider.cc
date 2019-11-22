@@ -94,7 +94,7 @@ ChromePermissionMessageProvider::GetPowerfulPermissionMessages(
   // We pick only top N rules as they are considered as most sensitive ones.
   // TODO(crbug.com/888981): Find a better way to get wanted rules. Maybe add a
   // bool to each one telling if we should consider it here or not.
-  constexpr size_t rules_considered = 17;
+  constexpr size_t rules_considered = 18;
   rules.erase(rules.begin() + std::min(rules_considered, rules.size()),
               rules.end());
 

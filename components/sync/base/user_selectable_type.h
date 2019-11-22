@@ -44,9 +44,10 @@ constexpr int UserSelectableTypeHistogramNumEntries() {
 #if defined(OS_CHROMEOS)
 // Chrome OS provides a separate UI with sync controls for OS data types.
 enum class UserSelectableOsType {
-  kOsPreferences,
-  kFirstType = kOsPreferences,
+  kOsApps,
+  kFirstType = kOsApps,
 
+  kOsPreferences,
   kPrinters,
   kLastType = kPrinters
 };

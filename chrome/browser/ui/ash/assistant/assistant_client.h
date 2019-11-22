@@ -61,9 +61,6 @@ class AssistantClient : chromeos::assistant::mojom::Client,
   void RequestAssistantStateController(
       mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver)
       override;
-  void RequestPrefStoreConnector(
-      mojo::PendingReceiver<prefs::mojom::PrefStoreConnector> receiver)
-      override;
   void RequestBatteryMonitor(
       mojo::PendingReceiver<device::mojom::BatteryMonitor> receiver) override;
   void RequestWakeLockProvider(

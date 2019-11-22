@@ -45,6 +45,7 @@ void PaintLayerResourceInfo::ResourceContentChanged(InvalidationModeMask) {
   DCHECK(layer_);
   LayoutObject& layout_object = layer_->GetLayoutObject();
   layout_object.SetShouldDoFullPaintInvalidation();
+  layer_->SetNeedsCompositingInputsUpdate();
   layout_object.InvalidateClipPathCache();
   // The effect paint property nodes depend on SVG filters so we need
   // to update these properties when filter resources change.
@@ -57,6 +58,7 @@ void PaintLayerResourceInfo::ResourceElementChanged() {
   DCHECK(layer_);
   LayoutObject& layout_object = layer_->GetLayoutObject();
   layout_object.SetShouldDoFullPaintInvalidation();
+  layer_->SetNeedsCompositingInputsUpdate();
   layout_object.InvalidateClipPathCache();
   // The effect paint property nodes depend on SVG filters so we need
   // to update these properties when filter resources change.

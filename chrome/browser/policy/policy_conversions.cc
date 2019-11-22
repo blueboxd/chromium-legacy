@@ -97,7 +97,7 @@ base::Optional<PolicyConversions::PolicyToSchemaMap> GetKnownPolicies(
 
 }  // namespace
 
-const LocalizedString kPolicySources[POLICY_SOURCE_COUNT] = {
+const webui::LocalizedString kPolicySources[POLICY_SOURCE_COUNT] = {
     {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
     {"cloud", IDS_POLICY_SOURCE_CLOUD},
     {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},

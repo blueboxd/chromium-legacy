@@ -40,6 +40,8 @@ class AssistantTestApiImpl : public AssistantTestApi {
   views::Textfield* input_text_field() override;
   views::View* mic_view() override;
   views::View* greeting_label() override;
+  views::View* voice_input_toggle() override;
+  views::View* keyboard_input_toggle() override;
   aura::Window* window() override;
 
  private:

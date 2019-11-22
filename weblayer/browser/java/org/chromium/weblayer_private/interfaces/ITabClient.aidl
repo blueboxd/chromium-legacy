@@ -9,7 +9,7 @@ package org.chromium.weblayer_private.interfaces;
  * TabCallback interface, but is a singleton to avoid unnecessary IPC.
  */
 interface ITabClient {
-  void visibleUrlChanged(in String url) = 0;
+  void visibleUriChanged(in String uriString) = 0;
 
   void onNewTab(in int tabId, in int mode) = 1;
 

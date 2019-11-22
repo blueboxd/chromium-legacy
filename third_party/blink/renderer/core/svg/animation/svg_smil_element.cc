@@ -179,7 +179,6 @@ void SVGSMILElement::Condition::DisconnectEventBase(
 SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
     : SVGElement(tag_name, doc),
       SVGTests(this),
-      attribute_name_(AnyQName()),
       target_element_(nullptr),
       conditions_connected_(false),
       has_end_event_conditions_(false),

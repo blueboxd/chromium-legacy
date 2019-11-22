@@ -60,7 +60,7 @@ class ArcSupervisionTransitionNotificationTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ArcSupervisionTransitionNotificationTest,
     ::testing::Values(ArcSupervisionTransition::NO_TRANSITION,
                       ArcSupervisionTransition::CHILD_TO_REGULAR,

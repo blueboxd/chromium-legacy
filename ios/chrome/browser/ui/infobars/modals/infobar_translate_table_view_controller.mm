@@ -40,6 +40,18 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong) id<InfobarTranslateModalDelegate>
     infobarModalDelegate;
 
+// Prefs updated by |modalConsumer|.
+// The source language from which to translate.
+@property(nonatomic, copy) NSString* sourceLanguage;
+// The target language to which to translate.
+@property(nonatomic, copy) NSString* targetLanguage;
+// YES if the pref is set to always translate for the source language.
+@property(nonatomic, assign) BOOL shouldAlwaysTranslate;
+// NO if the current pref is set to never translate the source language.
+@property(nonatomic, assign) BOOL isTranslatableLanguage;
+// YES if the pref is set to never translate the current site.
+@property(nonatomic, assign) BOOL isSiteBlacklisted;
+
 @end
 
 @implementation InfobarTranslateTableViewController
@@ -112,33 +124,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:targetLanguageItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewTextButtonItem* translateButtonItem = [self
-      textButtonItemForType:ItemTypeTranslateButton
-                 buttonText:
-                     l10n_util::GetNSString(
-                         IDS_IOS_TRANSLATE_INFOBAR_NEVER_TRANSLATE_SITE_BUTTON_TITLE)];
-  translateButtonItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
-  translateButtonItem.buttonBackgroundColor = [UIColor clearColor];
+  TableViewTextButtonItem* translateButtonItem =
+      [self textButtonItemForType:ItemTypeTranslateButton
+                       buttonText:self.translateButtonText];
+  translateButtonItem.disableButtonIntrinsicWidth = YES;
   [model addItem:translateButtonItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewTextButtonItem* alwaysTranslateSourceItem = [self
-      textButtonItemForType:ItemTypeAlwaysTranslateSource
-                 buttonText:
-                     l10n_util::GetNSStringF(
-                         IDS_IOS_TRANSLATE_INFOBAR_NEVER_TRANSLATE_SOURCE_BUTTON_TITLE,
-                         base::SysNSStringToUTF16(self.sourceLanguage))];
+  TableViewTextButtonItem* alwaysTranslateSourceItem =
+      [self textButtonItemForType:ItemTypeAlwaysTranslateSource
+                       buttonText:[self shouldAlwaysTranslateButtonText]];
   alwaysTranslateSourceItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
   alwaysTranslateSourceItem.buttonBackgroundColor = [UIColor clearColor];
   [model addItem:alwaysTranslateSourceItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  TableViewTextButtonItem* neverTranslateSourceItem = [self
-      textButtonItemForType:ItemTypeNeverTranslateSource
-                 buttonText:
-                     l10n_util::GetNSStringF(
-                         IDS_IOS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE_SOURCE_BUTTON_TITLE,
-                         base::SysNSStringToUTF16(self.sourceLanguage))];
+  TableViewTextButtonItem* neverTranslateSourceItem =
+      [self textButtonItemForType:ItemTypeNeverTranslateSource
+                       buttonText:[self shouldNeverTranslateSourceButtonText]];
   neverTranslateSourceItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
   neverTranslateSourceItem.buttonBackgroundColor = [UIColor clearColor];
   [model addItem:neverTranslateSourceItem
@@ -146,10 +149,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewTextButtonItem* neverTranslateSiteItem =
       [self textButtonItemForType:ItemTypeNeverTranslateSite
-                       buttonText:self.translateButtonText];
-  neverTranslateSiteItem.disableButtonIntrinsicWidth = YES;
+                       buttonText:[self shouldNeverTranslateSiteButtonText]];
+  neverTranslateSiteItem.buttonTextColor = [UIColor colorNamed:kBlueColor];
+  neverTranslateSiteItem.buttonBackgroundColor = [UIColor clearColor];
   [model addItem:neverTranslateSiteItem
       toSectionWithIdentifier:SectionIdentifierContent];
+}
+
+#pragma mark - InfobarTranslateModalConsumer
+
+- (void)setupModalViewControllerWithPrefs:(NSDictionary*)prefs {
+  self.sourceLanguage = prefs[kSourceLanguagePrefKey];
+  self.targetLanguage = prefs[kTargetLanguagePrefKey];
+  self.shouldAlwaysTranslate = prefs[kShouldAlwaysTranslatePrefKey];
+  self.isTranslatableLanguage = prefs[kIsTranslatableLanguagePrefKey];
+  self.isSiteBlacklisted = prefs[kIsSiteBlacklistedPrefKey];
+  [self.tableView reloadData];
 }
 
 #pragma mark - UITableViewDataSource
@@ -209,6 +224,48 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self.infobarModalDelegate dismissInfobarModal:sender
                                         animated:YES
                                       completion:nil];
+}
+
+// Returns the text of the modal button allowing the user to always translate
+// the source language or revert back to offering to translate.
+- (NSString*)shouldAlwaysTranslateButtonText {
+  NSString* sourceLanguage = self.sourceLanguage;
+  if (self.shouldAlwaysTranslate) {
+    return l10n_util::GetNSStringF(
+        IDS_IOS_TRANSLATE_INFOBAR_OFFER_TRANSLATE_SOURCE_BUTTON_TITLE,
+        base::SysNSStringToUTF16(sourceLanguage));
+  } else {
+    return l10n_util::GetNSStringF(
+        IDS_IOS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE_SOURCE_BUTTON_TITLE,
+        base::SysNSStringToUTF16(sourceLanguage));
+  }
+}
+
+// Returns the text of the modal button allowing the user to never translate the
+// source language or revert back to offering to translate.
+- (NSString*)shouldNeverTranslateSourceButtonText {
+  NSString* sourceLanguage = self.sourceLanguage;
+  if (self.isTranslatableLanguage) {
+    return l10n_util::GetNSStringF(
+        IDS_IOS_TRANSLATE_INFOBAR_NEVER_TRANSLATE_SOURCE_BUTTON_TITLE,
+        base::SysNSStringToUTF16(sourceLanguage));
+  } else {
+    return l10n_util::GetNSStringF(
+        IDS_IOS_TRANSLATE_INFOBAR_OFFER_TRANSLATE_SOURCE_BUTTON_TITLE,
+        base::SysNSStringToUTF16(sourceLanguage));
+  }
+}
+
+// Returns the text of the modal button allowing the user to never translate the
+// site or revert back to offering to translate.
+- (NSString*)shouldNeverTranslateSiteButtonText {
+  if (self.isSiteBlacklisted) {
+    return l10n_util::GetNSString(
+        IDS_IOS_TRANSLATE_INFOBAR_OFFER_TRANSLATE_SITE_BUTTON_TITLE);
+  } else {
+    return l10n_util::GetNSString(
+        IDS_IOS_TRANSLATE_INFOBAR_NEVER_TRANSLATE_SITE_BUTTON_TITLE);
+  }
 }
 
 @end

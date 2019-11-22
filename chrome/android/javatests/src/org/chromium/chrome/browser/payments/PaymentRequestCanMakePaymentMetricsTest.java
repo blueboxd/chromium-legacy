@@ -65,7 +65,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
+    @CommandLineFlags.Add("disable-features=StrictHasEnrolledAutofillInstrument")
     public void testCannotMakePayment_UserAbort() throws TimeoutException {
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -97,7 +97,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
+    @CommandLineFlags.Add("disable-features=StrictHasEnrolledAutofillInstrument")
     public void testCannotMakePayment_Complete() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(
                 "queryShow", mPaymentRequestTestRule.getReadyForInput());
@@ -232,7 +232,7 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
+    @CommandLineFlags.Add("disable-features=StrictHasEnrolledAutofillInstrument")
     public void testNoQuery_UserAbort() throws TimeoutException {
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(

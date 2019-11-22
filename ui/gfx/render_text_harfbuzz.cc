@@ -1841,7 +1841,8 @@ void RenderTextHarfBuzz::EnsureLayout() {
   }
 }
 
-void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
+void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
+                                        const Range& selection) {
   DCHECK(!update_layout_run_list_);
   DCHECK(!update_display_run_list_);
   DCHECK(!update_display_text_);
@@ -1850,7 +1851,7 @@ void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
 
   ApplyFadeEffects(renderer);
   ApplyTextShadows(renderer);
-  ApplyCompositionAndSelectionStyles();
+  ApplyCompositionAndSelectionStyles(selection);
 
   internal::TextRunList* run_list = GetRunList();
   const base::string16& display_text = GetDisplayText();
@@ -1991,7 +1992,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   }
 
   // Temporarily apply composition underlines and selection colors.
-  ApplyCompositionAndSelectionStyles();
+  ApplyCompositionAndSelectionStyles(focused() ? selection() : Range{});
 
   // Build the run list from the script items and ranged styles and baselines.
   DCHECK_LE(text.size(), baselines().max());

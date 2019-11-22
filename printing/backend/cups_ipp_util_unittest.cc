@@ -207,6 +207,35 @@ TEST_F(PrintBackendCupsIppUtilTest, LegalPaperDefault) {
   EXPECT_EQ(355600, caps.default_paper.size_um.height());
 }
 
+// Tests that CapsAndDefaultsFromPrinter does not propagate papers with
+// badly formatted vendor IDs - such papers will not transform into
+// meaningful ParsedPaper instances and are sometimes inimical to
+// ARC++.
+TEST_F(PrintBackendCupsIppUtilTest, OmitPapersWithoutVendorIds) {
+  printer_->SetSupportedOptions(
+      "media", MakeStringCollection(ipp_, {"jis_b5_182x257mm", "invalidsize",
+                                           "", "iso_b5_176x250mm"}));
+
+  PrinterSemanticCapsAndDefaults caps;
+  CapsAndDefaultsFromPrinter(*printer_, &caps);
+
+  // The printer reports that it supports four media sizes, two of which
+  // are invalid (``invalidsize'' and the empty vendor ID). The
+  // preceding call to CapsAndDefaultsFromPrinter() will have dropped
+  // these invalid sizes.
+  ASSERT_EQ(2U, caps.papers.size());
+
+  // While not directly pertinent to this test, we expect a certain
+  // format for the other supported papers.
+  EXPECT_THAT(
+      caps.papers,
+      testing::UnorderedElementsAre(
+          testing::Field(&PrinterSemanticCapsAndDefaults::Paper::display_name,
+                         "jis b5"),
+          testing::Field(&PrinterSemanticCapsAndDefaults::Paper::display_name,
+                         "iso b5")));
+}
+
 TEST_F(PrintBackendCupsIppUtilTest, PinSupported) {
   printer_->SetSupportedOptions("job-password", MakeInteger(ipp_, 4));
   printer_->SetSupportedOptions("job-password-encryption",

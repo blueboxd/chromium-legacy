@@ -71,10 +71,8 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
   if (selection_text.size() > kSelectionTextMaxLength)
     return base::nullopt;
 
-  if (!base::FeatureList::IsEnabled(kClickToCallContextMenuForSelectedText) ||
-      !IsClickToCallEnabled(browser_context)) {
+  if (!IsClickToCallEnabled(browser_context))
     return base::nullopt;
-  }
 
   return ExtractPhoneNumber(selection_text, PhoneNumberRegexVariant::kSimple);
 }

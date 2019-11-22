@@ -45,6 +45,20 @@
     </div>
 
     <div class="list-frame" id="sync-data-types">
+      <div class="list-item" hidden="[[!osSyncPrefs.osAppsRegistered]]">
+        <div id="osAppsCheckboxLabel">
+          $i18n{syncOsAppsCheckboxLabel}
+        </div>
+        <cr-toggle id="osAppsControl"
+            checked="{{osSyncPrefs.osAppsSynced}}"
+            on-change="onSingleSyncDataTypeChanged_"
+            disabled="[[shouldSyncCheckboxBeDisabled_(
+                osSyncPrefs.syncAllOsTypes,
+                osSyncPrefs.osAppsEnforced)]]"
+            aria-labelledby="osAppsCheckboxLabel">
+        </cr-toggle>
+      </div>
+
       <div class="list-item" hidden="[[!osSyncPrefs.osPreferencesRegistered]]">
         <div id="osSettingsCheckboxLabel">
           $i18n{syncOsSettingsCheckboxLabel}
@@ -72,9 +86,7 @@
         </cr-toggle>
       </div>
 
-      <!-- TODO(jamescook): Apps, Wallpaper, Wi-Fi configs. Apps may require
-           support for "forced" types, see SyncUserSettingsImpl and
-           SupervisedUserService::GetForcedTypes(). -->
+      <!-- TODO(jamescook): Wallpaper, Wi-Fi configs. -->
 
     </div>
   </template>

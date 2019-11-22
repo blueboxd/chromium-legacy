@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.start_surface.R;
@@ -91,6 +92,10 @@ class StartSurfaceMediator
     UrlFocusChangeListener mUrlFocusChangeListener;
     @Nullable
     private StartSurface.StateObserver mStateObserver;
+    @Nullable
+    private TabModel mNormalTabModel;
+    @Nullable
+    private TabModelObserver mNormalTabModelObserver;
 
     StartSurfaceMediator(TabSwitcher.Controller controller, TabModelSelector tabModelSelector,
             @Nullable PropertyModel propertyModel,
@@ -157,22 +162,19 @@ class StartSurfaceMediator
 
                 // Hide tab carousel, which does not exist in incognito mode, when closing all
                 // normal tabs.
-                TabModel normalTabModel = mTabModelSelector.getModel(false);
-                normalTabModel.addObserver(new EmptyTabModelObserver() {
+                mNormalTabModel = mTabModelSelector.getModel(false);
+                mNormalTabModelObserver = new EmptyTabModelObserver() {
                     @Override
                     public void willCloseTab(Tab tab, boolean animate) {
-                        if (normalTabModel.getCount() <= 1
-                                && mPropertyModel.get(IS_SHOWING_OVERVIEW)) {
+                        if (mNormalTabModel.getCount() <= 1) {
                             setTabCarouselVisibility(false);
                         }
                     }
                     @Override
                     public void tabClosureUndone(Tab tab) {
-                        if (mPropertyModel.get(IS_SHOWING_OVERVIEW)) {
-                            setTabCarouselVisibility(true);
-                        }
+                        setTabCarouselVisibility(true);
                     }
-                });
+                };
             }
 
             // Set the initial state.
@@ -268,6 +270,9 @@ class StartSurfaceMediator
                     setExploreSurfaceVisibility(true);
                     setTabCarouselVisibility(mTabModelSelector.getModel(false).getCount() > 0);
                 }
+
+                mNormalTabModel.addObserver(mNormalTabModelObserver);
+
             } else if (mSurfaceMode == SurfaceMode.TWO_PANES) {
                 RecordUserAction.record("StartSurface.TwoPanes");
                 String defaultOnUserActionString = mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE)
@@ -319,6 +324,11 @@ class StartSurfaceMediator
         return mController.onBackPressed();
     }
 
+    @Override
+    public void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs) {
+        mController.enableRecordingFirstMeaningfulPaint(activityCreateTimeMs);
+    }
+
     // Implements TabSwitcher.OverviewModeObserver.
     @Override
     public void startedShowing() {
@@ -348,6 +358,9 @@ class StartSurfaceMediator
             mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
 
             destroyFeedSurfaceCoordinator();
+            if (mNormalTabModelObserver != null) {
+                mNormalTabModel.removeObserver(mNormalTabModelObserver);
+            }
         }
         for (StartSurface.OverviewModeObserver observer : mObservers) {
             observer.startedHiding();

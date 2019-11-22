@@ -35,7 +35,6 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -72,13 +71,9 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   }
 
  protected:
-  bool HasAcceptButton() {
-    return view_->GetDialogClientView()->ok_button() != nullptr;
-  }
+  bool HasAcceptButton() { return view_->GetOkButton() != nullptr; }
 
-  bool HasCancelButton() {
-    return view_->GetDialogClientView()->cancel_button() != nullptr;
-  }
+  bool HasCancelButton() { return view_->GetCancelButton() != nullptr; }
 
   void AllowPluginVm() {
     EnterpriseEnrollDevice();
@@ -266,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTestWithFeatureEnabled,
                        kZipFileHash);
 
   // Retry button clicked to retry the download.
-  view_->GetDialogClientView()->AcceptWindow();
+  view_->AcceptDialog();
 
   WaitForSetupToFinish();
 

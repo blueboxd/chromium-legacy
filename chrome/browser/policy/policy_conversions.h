@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 
@@ -28,7 +28,7 @@ namespace policy {
 class PolicyErrorMap;
 class Schema;
 
-extern const LocalizedString kPolicySources[POLICY_SOURCE_COUNT];
+extern const webui::LocalizedString kPolicySources[POLICY_SOURCE_COUNT];
 
 // A convenience class to retrieve all policies values.
 class PolicyConversions {

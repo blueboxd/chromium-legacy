@@ -162,19 +162,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            HandleSigninDuringReconcile);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
-                           DiceMigrationAfterNoop);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
-                           DiceNoMigrationWhenTokensNotReady);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
-                           DiceNoMigrationAfterReconcile);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
                            DiceReconcileReuseGaiaFirstAccount);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
-                           MigrationClearSecondaryTokens);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MigrationClearAllTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceDeleteCookie);
-  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorDiceEndpointParamTest,
-                           MigrationClearAllTokens);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest, TokensNotLoaded);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
                            StartReconcileCookiesDisabled);

@@ -20,7 +20,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 // static
 TabModalConfirmDialog* TabModalConfirmDialog::Create(
@@ -64,11 +63,11 @@ TabModalConfirmDialogViews::~TabModalConfirmDialogViews() {
 }
 
 void TabModalConfirmDialogViews::AcceptTabModalDialog() {
-  GetDialogClientView()->AcceptWindow();
+  AcceptDialog();
 }
 
 void TabModalConfirmDialogViews::CancelTabModalDialog() {
-  GetDialogClientView()->CancelWindow();
+  CancelDialog();
 }
 
 void TabModalConfirmDialogViews::CloseDialog() {
@@ -121,13 +120,10 @@ views::View* TabModalConfirmDialogViews::GetInitiallyFocusedView() {
     return DialogDelegate::GetInitiallyFocusedView();
   }
 
-  const views::DialogClientView* dialog_client_view = GetDialogClientView();
-  if (!dialog_client_view)
-    return nullptr;
   if (*focused_button == ui::DIALOG_BUTTON_OK)
-    return dialog_client_view->ok_button();
+    return GetOkButton();
   if (*focused_button == ui::DIALOG_BUTTON_CANCEL)
-    return dialog_client_view->cancel_button();
+    return GetCancelButton();
   return nullptr;
 }
 

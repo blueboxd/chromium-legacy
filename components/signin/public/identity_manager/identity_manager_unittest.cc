@@ -2318,7 +2318,7 @@ TEST_F(IdentityManagerTest, ForceRefreshOfExtendedAccountInfo) {
 
   SimulateSuccessfulFetchOfAccountInfo(
       identity_manager(), account_info.account_id, account_info.email,
-      account_info.account_id, kTestHostedDomain, kTestFullName, kTestGivenName,
+      account_info.gaia, kTestHostedDomain, kTestFullName, kTestGivenName,
       kTestLocale, kTestPictureUrl);
 
   const AccountInfo& refreshed_account_info =

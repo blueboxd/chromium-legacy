@@ -346,9 +346,6 @@ extern const char
 extern const char kEnableAutofillCreditCardUploadFeedbackName[];
 extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 
-extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[];
-extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
-
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
 extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
 
@@ -1102,9 +1099,6 @@ extern const char kSharedClipboardReceiverDescription[];
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
 
-extern const char kSharingDeviceRegistrationName[];
-extern const char kSharingDeviceRegistrationDescription[];
-
 extern const char kSharingPeerConnectionReceiverName[];
 extern const char kSharingPeerConnectionReceiverDescription[];
 
@@ -1457,14 +1451,8 @@ extern const char kChromeSharingHubDescription[];
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
 
-extern const char kClickToCallOpenDialerDirectlyName[];
-extern const char kClickToCallOpenDialerDirectlyDescription[];
-
 extern const char kCloseTabSuggestionsName[];
 extern const char kCloseTabSuggestionsDescription[];
-
-extern const char kClickToCallReceiverName[];
-extern const char kClickToCallReceiverDescription[];
 
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
@@ -1543,9 +1531,6 @@ extern const char kInterestFeedContentSuggestionsDescription[];
 
 extern const char kManualPasswordGenerationAndroidName[];
 extern const char kManualPasswordGenerationAndroidDescription[];
-
-extern const char kNoCreditCardAbort[];
-extern const char kNoCreditCardAbortDescription[];
 
 extern const char kOfflineIndicatorAlwaysHttpProbeName[];
 extern const char kOfflineIndicatorAlwaysHttpProbeDescription[];
@@ -1822,6 +1807,9 @@ extern const char kUseAngleD3D11on12[];
 
 extern const char kUseWinrtMidiApiName[];
 extern const char kUseWinrtMidiApiDescription[];
+
+extern const char kUseXpsForPrintingName[];
+extern const char kUseXpsForPrintingDescription[];
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 extern const char kWinUseBrowserSpellCheckerName[];
@@ -2123,6 +2111,9 @@ extern const char kTrimOnMemoryPressureDescription[];
 extern const char kEnableZeroStateSuggestionsName[];
 extern const char kEnableZeroStateSuggestionsDescription[];
 
+extern const char kEnterpriseReportingInChromeOSName[];
+extern const char kEnterpriseReportingInChromeOSDescription[];
+
 extern const char kExoPointerLockName[];
 extern const char kExoPointerLockDescription[];
 
@@ -2335,9 +2326,6 @@ extern const char kWebGL2ComputeContextDescription[];
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-
-extern const char kClickToCallContextMenuForSelectedTextName[];
-extern const char kClickToCallContextMenuForSelectedTextDescription[];
 
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];

@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #import "ios/testing/earl_grey/base_eg_test_helper_impl.h"
 
-@class ChromeIdentity;
+@class FakeChromeIdentity;
 
 #define SigninEarlGreyUtils \
   [SigninEarlGreyUtilsImpl invokedFromFile:@"" __FILE__ lineNumber:__LINE__]
@@ -20,19 +20,19 @@
 @interface SigninEarlGreyUtilsImpl : BaseEGTestHelperImpl
 
 // Returns a fake identity.
-- (ChromeIdentity*)fakeIdentity1;
+- (FakeChromeIdentity*)fakeIdentity1;
 
 // Returns a second fake identity.
-- (ChromeIdentity*)fakeIdentity2;
+- (FakeChromeIdentity*)fakeIdentity2;
 
 // Returns a fake managed identity.
-- (ChromeIdentity*)fakeManagedIdentity;
+- (FakeChromeIdentity*)fakeManagedIdentity;
 
 // Adds |identity| to the fake identity service.
-- (void)addIdentity:(ChromeIdentity*)identity;
+- (void)addIdentity:(FakeChromeIdentity*)identity;
 
 // Induces a GREYAssert if |identity| is not signed in to the active profile.
-- (void)checkSignedInWithIdentity:(ChromeIdentity*)identity;
+- (void)checkSignedInWithIdentity:(FakeChromeIdentity*)identity;
 
 // Induces a GREYAssert if an identity is signed in.
 - (void)checkSignedOut;

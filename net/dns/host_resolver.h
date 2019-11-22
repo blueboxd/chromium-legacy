@@ -24,6 +24,7 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/resolve_error_info.h"
 
 namespace base {
 class Value;
@@ -106,6 +107,13 @@ class NET_EXPORT HostResolver {
     // Start() signals completion, either by invoking the callback or by
     // returning a result other than |ERR_IO_PENDING|.
     virtual const base::Optional<EsniContent>& GetEsniResults() const = 0;
+
+    // Error info for the request.
+    //
+    // Should only be called after Start() signals completion, either by
+    // invoking the callback or by returning a result other than
+    // |ERR_IO_PENDING|.
+    virtual ResolveErrorInfo GetResolveErrorInfo() const = 0;
 
     // Information about the result's staleness in the host cache. Only
     // available if results were received from the host cache.

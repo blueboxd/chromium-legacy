@@ -15,7 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/background_sync/background_sync_registration_helper.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
 namespace content {
@@ -27,8 +28,8 @@ class CONTENT_EXPORT OneShotBackgroundSyncServiceImpl
  public:
   OneShotBackgroundSyncServiceImpl(
       BackgroundSyncContextImpl* background_sync_context,
-      mojo::InterfaceRequest<blink::mojom::OneShotBackgroundSyncService>
-          request);
+      mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService>
+          receiver);
 
   ~OneShotBackgroundSyncServiceImpl() override;
 
@@ -44,14 +45,14 @@ class CONTENT_EXPORT OneShotBackgroundSyncServiceImpl
   void GetRegistrations(int64_t sw_registration_id,
                         GetRegistrationsCallback callback) override;
 
-  // Called when an error is detected on |binding_|.
-  void OnConnectionError();
+  // Called when a disconnection is detected on |receiver_|.
+  void OnMojoDisconnect();
 
   // |background_sync_context_| owns |this|.
   BackgroundSyncContextImpl* const background_sync_context_;
 
   std::unique_ptr<BackgroundSyncRegistrationHelper> registration_helper_;
-  mojo::Binding<blink::mojom::OneShotBackgroundSyncService> binding_;
+  mojo::Receiver<blink::mojom::OneShotBackgroundSyncService> receiver_;
 
   base::WeakPtrFactory<blink::mojom::OneShotBackgroundSyncService>
       weak_ptr_factory_{this};

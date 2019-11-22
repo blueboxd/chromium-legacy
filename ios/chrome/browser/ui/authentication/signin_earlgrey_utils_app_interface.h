@@ -7,16 +7,16 @@
 
 #import <Foundation/Foundation.h>
 
-@class ChromeIdentity;
+@class FakeChromeIdentity;
 @protocol GREYMatcher;
 
-// SignInEarlGreyAppInterface contains the app-side implementation for helpers
-// that primarily work via direct model access. These helpers are compiled into
-// the app binary and can be called from either app or test code.
-@interface SignInEarlGreyUtilsAppInterface : NSObject
+// SigninEarlGreyUtilsAppInterface contains the app-side implementation for
+// helpers that primarily work via direct model access. These helpers are
+// compiled into the app binary and can be called from either app or test code.
+@interface SigninEarlGreyUtilsAppInterface : NSObject
 
 // Adds |identity| to the fake identity service.
-+ (void)addIdentity:(ChromeIdentity*)identity;
++ (void)addIdentity:(FakeChromeIdentity*)identity;
 
 // Returns the gaia ID of the signed-in account.
 + (NSString*)primaryAccountGaiaID;

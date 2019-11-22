@@ -317,6 +317,11 @@ void RemoteFrame::DispatchLoadEventForFrameOwner() {
   Owner()->DispatchLoad();
 }
 
+void RemoteFrame::Collapse(bool collapsed) {
+  FrameOwner* owner = Owner();
+  To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
+}
+
 bool RemoteFrame::IsIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   if (!owner || !owner->GetLayoutObject())

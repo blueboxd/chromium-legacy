@@ -84,7 +84,8 @@ void RoundedLabelWidget::Init(InitParams params) {
   widget_params.type = views::Widget::InitParams::TYPE_POPUP;
   widget_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  widget_params.opacity =
+      views::Widget::InitParams::WindowOpacity::kTranslucent;
   widget_params.layer_type = ui::LAYER_NOT_DRAWN;
   widget_params.accept_events = false;
   widget_params.parent = params.parent;

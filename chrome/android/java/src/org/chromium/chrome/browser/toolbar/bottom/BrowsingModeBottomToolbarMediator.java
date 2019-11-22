@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.view.View;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.StringRes;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -27,6 +30,9 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
 
     /** The transparency fraction of the IPH bubble. */
     private static final float DUET_IPH_BUBBLE_ALPHA_FRACTION = 0.9f;
+
+    /** The transparency fraction of the IPH background. */
+    private static final float DUET_IPH_BACKGROUND_ALPHA_FRACTION = 0.3f;
 
     /** The model for the browsing mode bottom toolbar that holds all of its state. */
     private final BrowsingModeBottomToolbarModel mModel;
@@ -57,24 +63,41 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
      * @param anchor The view to anchor the IPH to.
      * @param tracker A tracker for IPH.
      */
-    void showIPH(ChromeActivity activity, View anchor, Tracker tracker,
-            Runnable completeRunnable) {
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_DUET_FEATURE)) return;
-        int baseColor =
+    void showIPH(@FeatureConstants String feature, ChromeActivity activity, View anchor,
+            Tracker tracker, Runnable completeRunnable) {
+        if (!tracker.shouldTriggerHelpUI(feature)) return;
+        int baseBubbleColor =
                 ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_blue_600);
 
         // Clear out the alpha and use custom transparency.
-        int finalColor =
-                (baseColor & 0x00FFFFFF) | ((int) (DUET_IPH_BUBBLE_ALPHA_FRACTION * 255) << 24);
+        int finalOuterColor =
+                applyCustomAlphaToColor(baseBubbleColor, DUET_IPH_BUBBLE_ALPHA_FRACTION);
+        int finalScrimColor =
+                applyCustomAlphaToColor(baseBubbleColor, DUET_IPH_BACKGROUND_ALPHA_FRACTION);
 
-        FeatureHighlightProvider.getInstance().buildForView(activity, anchor,
-                R.string.iph_duet_title, FeatureHighlightProvider.TextAlignment.CENTER,
-                R.style.TextAppearance_WhiteTitle1, R.string.iph_duet_description,
-                FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteBody,
-                finalColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS, completeRunnable);
+        @StringRes
+        int titleId = 0;
+        @StringRes
+        int descId = 0;
+        switch (feature) {
+            case FeatureConstants.CHROME_DUET_SEARCH_FEATURE:
+                titleId = R.string.iph_duet_search_title;
+                descId = R.string.iph_duet_search_description;
+                break;
+            case FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE:
+                titleId = R.string.iph_duet_tab_switcher_title;
+                descId = R.string.iph_duet_tab_switcher_description;
+                break;
+            default:
+                assert false : "Unsupported FeatureConstants: " + feature;
+        }
+        FeatureHighlightProvider.getInstance().buildForView(activity, anchor, titleId,
+                FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteTitle1,
+                descId, FeatureHighlightProvider.TextAlignment.CENTER,
+                R.style.TextAppearance_WhiteBody, finalOuterColor, finalScrimColor,
+                DUET_IPH_BUBBLE_SHOW_DURATION_MS, completeRunnable);
 
-        anchor.postDelayed(() -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE),
-                DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+        anchor.postDelayed(() -> tracker.dismissed(feature), DUET_IPH_BUBBLE_SHOW_DURATION_MS);
     }
 
     /**
@@ -90,5 +113,15 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
     @Override
     public void onThemeColorChanged(int primaryColor, boolean shouldAnimate) {
         mModel.set(BrowsingModeBottomToolbarModel.PRIMARY_COLOR, primaryColor);
+    }
+
+    /**
+     * Set the alpha for the color.
+     * @param baseColor The color which alpha will apply to.
+     * @param alpha The desired alpha for the color. The value should between 0 to 1. 0 means total
+     *         transparency, 1 means total non-transparency.
+     */
+    private @ColorInt int applyCustomAlphaToColor(@ColorInt int baseColor, float alpha) {
+        return (baseColor & 0x00FFFFFF) | ((int) (alpha * 255) << 24);
     }
 }

@@ -143,4 +143,7 @@ specific_include_rules = {
   "cross_site_document_blocking_browsertest.cc": [
     "+services/network/cross_origin_read_blocking.h",
   ],
+  "storage_partition_impl_unittest.cc": [
+    "+third_party/leveldatabase",
+  ],
 }

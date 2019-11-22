@@ -416,7 +416,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
       Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   // Opacity defaults to "infer" which is usually updated by ViewsDelegate.
   Widget::InitParams::WindowOpacity opacity_ =
-      Widget::InitParams::OPAQUE_WINDOW;
+      Widget::InitParams::WindowOpacity::kOpaque;
   gfx::Rect bounds_ = gfx::Rect(100, 100, 100, 100);
   Widget::InitParams::ShadowType shadow_type_ =
       Widget::InitParams::ShadowType::kDefault;
@@ -901,7 +901,7 @@ TEST_F(BridgedNativeWidgetInitTest, InitNotCalled) {
 TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
   // Verify Widget::InitParam defaults and arguments added from SetUp().
   EXPECT_EQ(Widget::InitParams::TYPE_WINDOW_FRAMELESS, type_);
-  EXPECT_EQ(Widget::InitParams::OPAQUE_WINDOW, opacity_);
+  EXPECT_EQ(Widget::InitParams::WindowOpacity::kOpaque, opacity_);
   EXPECT_EQ(Widget::InitParams::ShadowType::kDefault, shadow_type_);
 
   CreateNewWidgetToInit();

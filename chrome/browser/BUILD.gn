@@ -1302,8 +1302,6 @@ jumbo_static_library("browser") {
     "prefs/chrome_pref_model_associator_client.h",
     "prefs/chrome_pref_service_factory.cc",
     "prefs/chrome_pref_service_factory.h",
-    "prefs/in_process_service_factory_factory.cc",
-    "prefs/in_process_service_factory_factory.h",
     "prefs/incognito_mode_prefs.cc",
     "prefs/incognito_mode_prefs.h",
     "prefs/origin_trial_prefs.cc",
@@ -2178,7 +2176,6 @@ jumbo_static_library("browser") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//services/preferences/public/cpp",
-    "//services/preferences/public/cpp:service_main",
     "//services/preferences/public/cpp/tracked",
     "//services/preferences/public/mojom",
     "//services/preferences/tracked",
@@ -3772,6 +3769,7 @@ jumbo_static_library("browser") {
       "//chromeos/strings",
       "//components/services/font:lib",
       "//components/services/font/public/mojom",
+      "//ui/events/ozone",
       "//ui/ozone",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]

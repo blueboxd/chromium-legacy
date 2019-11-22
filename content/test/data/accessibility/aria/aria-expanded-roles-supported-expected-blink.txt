@@ -8,9 +8,7 @@ rootWebArea
 ++++blockquote
 ++++button expanded
 ++++caption
-++++cell expanded
 ++++checkBox expanded
-++++columnHeader expanded
 ++++comboBoxGrouping expanded
 ++++complementary
 ++++contentInfo
@@ -24,7 +22,10 @@ rootWebArea
 ++++figure
 ++++form
 ++++grid
-++++cell expanded
+++++++columnHeader expanded
+++++++cell expanded
+++++++row expanded
+++++++rowHeader expanded
 ++++group
 ++++heading
 ++++image
@@ -55,8 +56,6 @@ rootWebArea
 ++++radioButton
 ++++radioGroup
 ++++region
-++++row expanded
-++++rowHeader expanded
 ++++scrollBar
 ++++search
 ++++searchBox
@@ -71,6 +70,7 @@ rootWebArea
 ++++switch expanded
 ++++tab expanded
 ++++table
+++++++cell expanded
 ++++tabList
 ++++tabPanel
 ++++term

@@ -33,6 +33,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
                            const std::string& message,
                            bool discard_duplicates) override;
   void CheckCompleted() override;
+  void Collapse(bool collapsed) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

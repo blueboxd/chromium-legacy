@@ -50,8 +50,8 @@ void ChromeNativeAppWindowViewsWin::OnBeforeWidgetInit(
                                                      widget);
   init_params->native_widget = new AppWindowDesktopNativeWidgetAuraWin(this);
 
-  is_translucent_ =
-      init_params->opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  is_translucent_ = init_params->opacity ==
+                    views::Widget::InitParams::WindowOpacity::kTranslucent;
 }
 
 void ChromeNativeAppWindowViewsWin::InitializeDefaultWindow(

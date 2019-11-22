@@ -12,20 +12,7 @@
 #include "components/signin/public/base/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-class DiceTestSigninClient : public testing::StrictMock<TestSigninClient> {
- public:
-  DiceTestSigninClient(PrefService* prefs)
-      : testing::StrictMock<TestSigninClient>(prefs) {}
-
-  MOCK_METHOD1(SetReadyForDiceMigration, void(bool is_ready));
-};
-
-}  // namespace
 
 namespace signin {
 
@@ -57,49 +44,6 @@ TEST(DiceAccountReconcilorDelegateTest, RevokeTokens) {
     EXPECT_EQ(AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
               delegate.ShouldRevokeSecondaryTokensBeforeReconcile(
                   std::vector<gaia::ListedAccount>()));
-  }
-}
-
-TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
-  sync_preferences::TestingPrefServiceSyncable pref_service;
-  pref_service.registry()->RegisterBooleanPref(
-      prefs::kTokenServiceDiceCompatible, false);
-
-  DiceTestSigninClient client(&pref_service);
-
-  {
-    // Dice migration enabled, but token service is not ready.
-    testing::InSequence mock_sequence;
-    EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
-    DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceMigration,
-        /*migration_completed=*/false);
-    delegate.OnReconcileFinished(CoreAccountId("account"),
-                                 true /* is_reconcile_noop */);
-  }
-
-  pref_service.SetBoolean(prefs::kTokenServiceDiceCompatible, true);
-
-  {
-    // Dice migration enabled, token service is ready, but reconcile is not
-    // no-op.
-    testing::InSequence mock_sequence;
-    EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
-    DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceMigration,
-        /*migration_completed=*/false);
-    delegate.OnReconcileFinished(CoreAccountId("account"),
-                                 false /* is_reconcile_noop */);
-  }
-
-  {
-    // Ready for migration.
-    testing::InSequence mock_sequence;
-    EXPECT_CALL(client, SetReadyForDiceMigration(true)).Times(1);
-    DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDiceMigration, false);
-    delegate.OnReconcileFinished(CoreAccountId("account"),
-                                 true /* is_reconcile_noop */);
   }
 }
 

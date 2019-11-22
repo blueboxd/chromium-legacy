@@ -373,7 +373,6 @@ android_library("chrome_java") {
     "//chrome:page_info_action_javagen",
     "//chrome:partner_bookmarks_javagen",
     "//chrome:payments_journey_logger_enum_javagen",
-    "//chrome:pref_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
     "//chrome:supervised_user_url_filter_enum_javagen",
     "//chrome/browser/notifications/scheduler/public:jni_enums",
@@ -501,6 +500,7 @@ group("jni_headers") {
     "//chrome/android/public/profiles:jni_headers",
     "//chrome/browser/download/android:jni_headers",
     "//chrome/browser/image_fetcher:jni_headers",
+    "//chrome/browser/preferences:jni_headers",
     "//chrome/browser/touch_to_fill/android:jni_headers",
     "//chrome/browser/util:jni_headers",
   ]
@@ -1396,7 +1396,7 @@ if (current_toolchain == default_toolchain) {
       ]
       if (_is_monochrome) {
         deps += [ "//android_webview:locale_pak_assets" ]
-        if (webview_includes_weblayer) {
+        if (webview_includes_weblayer && !_is_bundle_module) {
           deps += [ "//weblayer:locale_pak_assets" ]
         }
       }
@@ -1772,6 +1772,9 @@ template("monochrome_public_apk_or_module_tmpl") {
         # is upstreamed.
         "//android_webview/glue:webview_chromium_for_q_upstream_java",
       ]
+      if (webview_includes_weblayer) {
+        deps += [ "//weblayer/browser/java:gms_bridge_upstream_impl_java" ]
+      }
     }
   }
 }
@@ -2680,8 +2683,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/photo_picker/DecoderService.java",
     "java/src/org/chromium/chrome/browser/policy/PolicyAuditor.java",
     "java/src/org/chromium/chrome/browser/preferences/LocationSettings.java",
-    "java/src/org/chromium/chrome/browser/preferences/PrefChangeRegistrar.java",
-    "java/src/org/chromium/chrome/browser/preferences/PrefServiceBridge.java",
     "java/src/org/chromium/chrome/browser/preferences/PreferencesLauncher.java",
     "java/src/org/chromium/chrome/browser/preferences/about/AboutSettingsBridge.java",
     "java/src/org/chromium/chrome/browser/preferences/autofill/AutofillProfileBridge.java",

@@ -22,7 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/feedback/system_logs/about_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -50,7 +50,7 @@ content::WebUIDataSource* CreateSystemInfoUIDataSource() {
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISystemInfoHost);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"title", IDS_ABOUT_SYS_TITLE},
       {"description", IDS_ABOUT_SYS_DESC},
       {"tableTitle", IDS_ABOUT_SYS_TABLE_TITLE},
@@ -61,7 +61,7 @@ content::WebUIDataSource* CreateSystemInfoUIDataSource() {
       {"collapseBtn", IDS_ABOUT_SYS_COLLAPSE},
       {"parseError", IDS_ABOUT_SYS_PARSE_ERROR},
   };
-  AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(html_source, kStrings);
 
   html_source->AddResourcePath("about_sys.js", IDR_ABOUT_SYS_JS);
   html_source->AddResourcePath("about_sys.css", IDR_ABOUT_SYS_CSS);

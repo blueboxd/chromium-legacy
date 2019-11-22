@@ -97,14 +97,7 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
             GetFakeServer()->AsWeakPtr()));
 
     std::string username;
-#if defined(OS_CHROMEOS)
-    // In browser tests, the profile may already by authenticated with stub
-    // account |user_manager::kStubUserEmail|.
-    CoreAccountInfo info =
-        IdentityManagerFactory::GetForProfile(browser()->profile())
-            ->GetPrimaryAccountInfo();
-    username = info.email;
-#endif
+
     if (username.empty()) {
       username = "user@gmail.com";
     }
@@ -114,10 +107,8 @@ class PageInfoBubbleViewSyncBrowserTest : public SyncTest {
             browser()->profile(), username, "password",
             ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
 
-#if !defined(OS_CHROMEOS)
     // Sign the profile in.
     ASSERT_TRUE(harness->SignInPrimaryAccount());
-#endif
 
     CoreAccountInfo current_info =
         IdentityManagerFactory::GetForProfile(browser()->profile())

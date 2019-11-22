@@ -10,9 +10,6 @@ const base::Feature kClickToCallReceiver{"ClickToCallReceiver",
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-const base::Feature kClickToCallContextMenuForSelectedText{
-    "ClickToCallContextMenuForSelectedText", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kClickToCallUI{"ClickToCallUI",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 

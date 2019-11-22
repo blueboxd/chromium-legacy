@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/containers/span.h"
 #include "base/guid.h"
 #include "crypto/ec_private_key.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "device/fido/virtual_ctap2_device.h"
@@ -45,7 +45,7 @@ void VirtualAuthenticator::AddReceiver(
 
 bool VirtualAuthenticator::AddRegistration(
     std::vector<uint8_t> key_handle,
-    base::span<const uint8_t, device::kRpIdHashLength> rp_id_hash,
+    const std::string& rp_id,
     const std::vector<uint8_t>& private_key,
     int32_t counter) {
   auto ec_private_key =
@@ -54,9 +54,11 @@ bool VirtualAuthenticator::AddRegistration(
     return false;
 
   return state_->registrations
-      .emplace(std::move(key_handle),
-               ::device::VirtualFidoDevice::RegistrationData(
-                   std::move(ec_private_key), std::move(rp_id_hash), counter))
+      .emplace(
+          std::move(key_handle),
+          ::device::VirtualFidoDevice::RegistrationData(
+              std::move(ec_private_key),
+              ::device::fido_parsing_utils::CreateSHA256Hash(rp_id), counter))
       .second;
 }
 
@@ -125,9 +127,8 @@ void VirtualAuthenticator::GetRegistrations(GetRegistrationsCallback callback) {
     auto mojo_registered_key = blink::test::mojom::RegisteredKey::New();
     mojo_registered_key->key_handle = registration.first;
     mojo_registered_key->counter = registration.second.counter;
-    mojo_registered_key->application_parameter.assign(
-        registration.second.application_parameter.begin(),
-        registration.second.application_parameter.end());
+    mojo_registered_key->rp_id =
+        registration.second.rp ? registration.second.rp->id : "";
     registration.second.private_key->ExportPrivateKey(
         &mojo_registered_key->private_key);
     mojo_registered_keys.push_back(std::move(mojo_registered_key));
@@ -138,16 +139,9 @@ void VirtualAuthenticator::GetRegistrations(GetRegistrationsCallback callback) {
 void VirtualAuthenticator::AddRegistration(
     blink::test::mojom::RegisteredKeyPtr registration,
     AddRegistrationCallback callback) {
-  if (registration->application_parameter.size() != device::kRpIdHashLength) {
-    std::move(callback).Run(false);
-    return;
-  }
-
-  std::move(callback).Run(
-      AddRegistration(std::move(registration->key_handle),
-                      base::make_span<device::kRpIdHashLength>(
-                          registration->application_parameter),
-                      registration->private_key, registration->counter));
+  std::move(callback).Run(AddRegistration(
+      std::move(registration->key_handle), std::move(registration->rp_id),
+      registration->private_key, registration->counter));
 }
 
 void VirtualAuthenticator::ClearRegistrations(
@@ -156,14 +150,16 @@ void VirtualAuthenticator::ClearRegistrations(
   std::move(callback).Run();
 }
 
-void VirtualAuthenticator::SetUserPresence(bool present,
-                                           SetUserPresenceCallback callback) {
-  SetUserPresence(present);
-  std::move(callback).Run();
+void VirtualAuthenticator::RemoveRegistration(
+    const std::vector<uint8_t>& key_handle,
+    RemoveRegistrationCallback callback) {
+  std::move(callback).Run(RemoveRegistration(std::move(key_handle)));
 }
 
-void VirtualAuthenticator::GetUserPresence(GetUserPresenceCallback callback) {
-  std::move(callback).Run(is_user_present_);
+void VirtualAuthenticator::SetUserVerified(bool verified,
+                                           SetUserVerifiedCallback callback) {
+  is_user_verified_ = verified;
+  std::move(callback).Run();
 }
 
 }  // namespace content

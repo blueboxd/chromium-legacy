@@ -19,9 +19,9 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation SignInEarlGreyUtilsAppInterface
+@implementation SigninEarlGreyUtilsAppInterface
 
-+ (void)addIdentity:(ChromeIdentity*)identity {
++ (void)addIdentity:(FakeChromeIdentity*)identity {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 }

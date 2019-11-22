@@ -7,9 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Feature to allow device registration for sharing features.
-extern const base::Feature kSharingDeviceRegistration;
-
 // Feature flag to allow sharing infrastructure to register devices in
 // DeviceInfo.
 extern const base::Feature kSharingUseDeviceInfo;

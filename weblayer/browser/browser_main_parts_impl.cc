@@ -89,7 +89,7 @@ void BrowserMainPartsImpl::PreMainMessageLoopRun() {
       WebUIControllerFactory::GetInstance());
 
   if (main_function_params_.ui_task) {
-    main_function_params_.ui_task->Run();
+    std::move(*main_function_params_.ui_task).Run();
     delete main_function_params_.ui_task;
     run_message_loop_ = false;
   }

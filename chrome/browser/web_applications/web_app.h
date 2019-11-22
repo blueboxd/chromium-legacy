@@ -88,6 +88,7 @@ class WebApp {
   void AddSource(Source::Type source);
   void RemoveSource(Source::Type source);
   bool HasAnySources() const;
+  bool HasOnlySource(Source::Type source) const;
 
   bool IsSynced() const;
 

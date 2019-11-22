@@ -274,10 +274,11 @@ void HomeScreenController::OnOverviewModeStarting() {
           ->enter_exit_overview_type();
 
   const bool animate =
-      overview_enter_type ==
-          OverviewSession::EnterExitOverviewType::kSlideInEnter ||
-      overview_enter_type ==
-          OverviewSession::EnterExitOverviewType::kFadeInEnter;
+      IsHomeScreenVisible() &&
+      (overview_enter_type ==
+           OverviewSession::EnterExitOverviewType::kSlideInEnter ||
+       overview_enter_type ==
+           OverviewSession::EnterExitOverviewType::kFadeInEnter);
   const HomeScreenPresenter::TransitionType transition =
       overview_enter_type ==
               OverviewSession::EnterExitOverviewType::kFadeInEnter

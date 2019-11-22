@@ -90,11 +90,6 @@ ChromeFeatureListCreator::TakeChromeBrowserPolicyConnector() {
   return std::move(browser_policy_connector_);
 }
 
-std::unique_ptr<prefs::InProcessPrefServiceFactory>
-ChromeFeatureListCreator::TakePrefServiceFactory() {
-  return std::move(pref_service_factory_);
-}
-
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 std::unique_ptr<installer::MasterPreferences>
 ChromeFeatureListCreator::TakeMasterPrefs() {
@@ -123,8 +118,7 @@ void ChromeFeatureListCreator::CreatePrefService() {
 
   local_state_ = chrome_prefs::CreateLocalState(
       local_state_file, browser_policy_connector_->GetPolicyService(),
-      std::move(pref_registry), false, nullptr /* delegate */,
-      browser_policy_connector_.get());
+      std::move(pref_registry), false, browser_policy_connector_.get());
 
 // TODO(asvitkine): This is done here so that the pref is set before
 // VariationsService queries the locale. This should potentially be moved to

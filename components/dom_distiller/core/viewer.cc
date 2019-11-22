@@ -57,14 +57,10 @@ const char kMonospaceCssClass[] = "monospace";
 
 std::string GetPlatformSpecificCss() {
 #if defined(OS_IOS)
-  return base::StrCat(
-      {ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-           IDR_DISTILLER_MOBILE_CSS),
-       ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-           IDR_DISTILLER_IOS_CSS)});
-#elif defined(OS_ANDROID)
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-      IDR_DISTILLER_MOBILE_CSS);
+      IDR_DISTILLER_IOS_CSS);
+#elif defined(OS_ANDROID)
+  return "";
 #else  // Desktop
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
       IDR_DISTILLER_DESKTOP_CSS);
@@ -150,9 +146,7 @@ std::string ReplaceHtmlTemplateValues(
 
   substitutions.push_back(svg.str());  // $6
 
-  substitutions.push_back(original_url);  // $7
-  substitutions.push_back(l10n_util::GetStringUTF8(
-      IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));  // $8
+  substitutions.push_back(viewer::GetSettingsContainer());  // $7
 
   return base::ReplaceStringPlaceholders(html_template, substitutions, nullptr);
 }
@@ -229,6 +223,15 @@ const std::string GetUnsafeArticleContentJs(
   std::string page_update("addToPage(");
   page_update += output + ");";
   return page_update + GetToggleLoadingIndicatorJs(true);
+}
+
+const std::string GetSettingsContainer() {
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  return "";
+#else  // desktop
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
+      IDR_DISTILLER_DESKTOP_SETTINGS_HTML);
+#endif
 }
 
 const std::string GetCss() {

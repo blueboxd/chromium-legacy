@@ -7,36 +7,42 @@
 
 #include "ui/color/color_id.h"
 
+// TODO(pkasting): Add the rest of the colors.
+
+#define CHROME_COLOR_IDS \
+  /* Omnibox output colors. */ \
+  E(kColorOmniboxBackground, ui::kUiColorsEnd), \
+  E(kColorOmniboxBackgroundHovered), \
+  E(kColorOmniboxBubbleOutline), \
+  E(kColorOmniboxBubbleOutlineExperimentalKeywordMode), \
+  E(kColorOmniboxResultsBackground), \
+  E(kColorOmniboxResultsBackgroundHovered), \
+  E(kColorOmniboxResultsBackgroundSelected), \
+  E(kColorOmniboxResultsIcon), \
+  E(kColorOmniboxResultsIconSelected), \
+  E(kColorOmniboxResultsTextDimmed), \
+  E(kColorOmniboxResultsTextDimmedSelected), \
+  E(kColorOmniboxResultsTextSelected), \
+  E(kColorOmniboxResultsUrl), \
+  E(kColorOmniboxResultsUrlSelected), \
+  E(kColorOmniboxSecurityChipDangerous), \
+  E(kColorOmniboxSecurityChipDefault), \
+  E(kColorOmniboxSecurityChipSecure), \
+  E(kColorOmniboxSelectedKeyword), \
+  E(kColorOmniboxText), \
+  E(kColorOmniboxTextDimmed), \
+  E(kColorToolbar)
+
+#include "ui/color/color_id_macros.inc"
+
 enum ChromeColorIds : ui::ColorId {
-  // TODO(pkasting): Add the rest of the colors.
 
-  // Omnibox output colors.
-  kColorOmniboxBackground =
-      ui::kUiColorsEnd,  // TODO(pkasting): Add a default/custom theme recipe
-  kColorOmniboxBackgroundHovered,
-  kColorOmniboxBubbleOutline,
-  kColorOmniboxBubbleOutlineExperimentalKeywordMode,
-  kColorOmniboxResultsBackground,
-  kColorOmniboxResultsBackgroundHovered,
-  kColorOmniboxResultsBackgroundSelected,
-  kColorOmniboxResultsIcon,
-  kColorOmniboxResultsIconSelected,
-  kColorOmniboxResultsTextDimmed,
-  kColorOmniboxResultsTextDimmedSelected,
-  kColorOmniboxResultsTextSelected,
-  kColorOmniboxResultsUrl,
-  kColorOmniboxResultsUrlSelected,
-  kColorOmniboxSecurityChipDangerous,
-  kColorOmniboxSecurityChipDefault,
-  kColorOmniboxSecurityChipSecure,
-  kColorOmniboxSelectedKeyword,
-  kColorOmniboxText,  // TODO(pkasting): Add a default/custom theme recipe
-  kColorOmniboxTextDimmed,
-
-  kColorToolbar,  // TODO(pkasting): Add a recipe
+  CHROME_COLOR_IDS,
 
   kChromeColorsEnd,
 };
+
+#include "ui/color/color_id_macros.inc"
 
 static_assert(ui::ColorId{kChromeColorsEnd} <= ui::ColorId{ui::kUiColorsLast},
               "Embedder colors must not exceed allowed space");

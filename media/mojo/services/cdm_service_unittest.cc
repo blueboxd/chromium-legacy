@@ -163,7 +163,7 @@ TEST_F(CdmServiceTest, LoadCdm) {
   base::FilePath cdm_path(FILE_PATH_LITERAL("dummy path"));
 #if defined(OS_MACOSX)
   // Token provider will not be used since the path is a dummy path.
-  cdm_service_remote_->LoadCdm(cdm_path, nullptr);
+  cdm_service_remote_->LoadCdm(cdm_path, mojo::NullRemote());
 #else
   cdm_service_remote_->LoadCdm(cdm_path);
 #endif

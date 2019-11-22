@@ -15,7 +15,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
-#import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -54,14 +54,13 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 
 @implementation SigninEarlGreyUI
 
-+ (void)signinWithIdentity:(ChromeIdentity*)identity {
-  [self signinWithIdentity:(ChromeIdentity*)identity isManagedAccount:NO];
++ (void)signinWithIdentity:(FakeChromeIdentity*)identity {
+  [self signinWithIdentity:identity isManagedAccount:NO];
 }
 
-+ (void)signinWithIdentity:(ChromeIdentity*)identity
++ (void)signinWithIdentity:(FakeChromeIdentity*)identity
           isManagedAccount:(BOOL)isManagedAccount {
   [SigninEarlGreyUtils addIdentity:identity];
-
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
@@ -78,7 +77,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
   // Assumes that the identity chooser is visible.
   [[EarlGrey
-      selectElementWithMatcher:[SignInEarlGreyUtilsAppInterface
+      selectElementWithMatcher:[SigninEarlGreyUtilsAppInterface
                                    identityCellMatcherForEmail:userEmail]]
       performAction:grey_tap()];
 }

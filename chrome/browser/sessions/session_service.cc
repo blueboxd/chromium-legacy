@@ -38,7 +38,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/core/session_command.h"
@@ -777,8 +779,10 @@ void SessionService::BuildCommandsForBrowser(
   }
 
   // Set the visual data for each tab group.
-  for (const TabGroupId& group_id : tab_strip->ListTabGroups()) {
-    const TabGroupVisualData* data = tab_strip->GetVisualDataForGroup(group_id);
+  TabGroupModel* group_model = tab_strip->group_model();
+  for (const TabGroupId& group_id : group_model->ListTabGroups()) {
+    const TabGroupVisualData* data =
+        group_model->GetTabGroup(group_id)->visual_data();
     base_session_service_->AppendRebuildCommand(
         sessions::CreateTabGroupMetadataUpdateCommand(
             group_id.token(), data->title(), data->color()));

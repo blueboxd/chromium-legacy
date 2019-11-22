@@ -127,16 +127,11 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   // Makes user signed-in with the stub account's email and |hosted_domain|.
   void SetUpPrimaryAccountWithHostedDomain(const std::string& hosted_domain) {
     // Ensure that the stub user is signed in.
-#if defined(OS_CHROMEOS)
-    // On ChromeOS, the stub user is signed in by default on browsertests.
-    CoreAccountInfo account_info =
-        identity_test_env()->identity_manager()->GetPrimaryAccountInfo();
-    identity_test_env()->SetRefreshTokenForPrimaryAccount();
-#else
+
     CoreAccountInfo account_info =
         identity_test_env()->MakePrimaryAccountAvailable(
             user_manager::kStubUserEmail);
-#endif
+
     ASSERT_EQ(account_info.email, user_manager::kStubUserEmail);
 
     identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(

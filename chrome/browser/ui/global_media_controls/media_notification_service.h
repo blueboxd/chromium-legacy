@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
@@ -170,12 +171,16 @@ class MediaNotificationService
 
     void OnInactiveTimerFired();
 
+    void RecordInteractionDelayAfterPause();
+
     MediaNotificationService* owner_;
     const std::string id_;
     std::unique_ptr<media_message_center::MediaSessionNotificationItem> item_;
 
     // Used to stop/hide a paused session after a period of inactivity.
     base::OneShotTimer inactive_timer_;
+
+    base::TimeTicks last_interaction_time_ = base::TimeTicks::Now();
 
     // The reason why this session was dismissed/removed.
     base::Optional<GlobalMediaControlsDismissReason> dismiss_reason_;

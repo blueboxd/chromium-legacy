@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -60,16 +61,6 @@ Browser* LaunchSystemWebApp(Profile* profile,
   if (did_create)
     *did_create = false;
 
-  Browser* browser = FindSystemWebAppBrowser(profile, app_type);
-  if (browser) {
-    content::WebContents* web_contents =
-        browser->tab_strip_model()->GetWebContentsAt(0);
-    if (web_contents && web_contents->GetURL() == url) {
-      browser->window()->Show();
-      return browser;
-    }
-  }
-
   base::Optional<AppId> app_id = GetAppIdForSystemWebApp(profile, app_type);
   // TODO(calamity): Queue a task to launch app after it is installed.
   if (!app_id)
@@ -85,6 +76,29 @@ Browser* LaunchSystemWebApp(Profile* profile,
       profile, extension, 0, extensions::AppLaunchSource::kSourceChromeInternal,
       display::kInvalidDisplayId);
   params.override_url = url;
+
+  return LaunchSystemWebApp(profile, app_type, url, params, did_create);
+}
+
+Browser* LaunchSystemWebApp(Profile* profile,
+                            SystemAppType app_type,
+                            const GURL& url,
+                            const apps::AppLaunchParams& params,
+                            bool* did_create) {
+  if (did_create)
+    *did_create = false;
+
+  // TODO(https://crbug.com/1027030): Better understand and improve SWA launch
+  // behavior. Early exit here skips logic in ShowApplicationWindow.
+  Browser* browser = FindSystemWebAppBrowser(profile, app_type);
+  if (browser) {
+    content::WebContents* web_contents =
+        browser->tab_strip_model()->GetWebContentsAt(0);
+    if (web_contents && web_contents->GetURL() == url) {
+      browser->window()->Show();
+      return browser;
+    }
+  }
 
   if (!browser) {
     if (did_create)

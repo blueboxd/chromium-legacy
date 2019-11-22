@@ -11535,7 +11535,8 @@ Called by update_net_error_codes.py.-->
   <int value="529697949" label="CPP_EH_EXCEPTION"/>
   <int value="533692099" label="STATUS_GUARD_PAGE_VIOLATION"/>
   <int value="536870904" label="Out of Memory"/>
-  <int value="1066598274" label="DelayLoad_ModuleNotFound"/>
+  <int value="1066598273" label="FACILITY_VISUALCPP/ERROR_PROC_NOT_FOUND"/>
+  <int value="1066598274" label="FACILITY_VISUALCPP/ERROR_MOD_NOT_FOUND"/>
   <int value="1073740760" label="STATUS_INVALID_IMAGE_HASH"/>
   <int value="1073740791" label="STATUS_STACK_BUFFER_OVERRUN"/>
   <int value="1073740940" label="STATUS_HEAP_CORRUPTION"/>
@@ -13462,14 +13463,18 @@ Called by update_net_error_codes.py.-->
   <int value="8250451" label="DATA_REDUCTION_PROXY"/>
   <int value="8561691" label="SAFE_BROWSING"/>
   <int value="9459438" label="POLICY"/>
+  <int value="10498172" label="PER_USER_TOPIC_REGISTRATION_REQUEST"/>
   <int value="13211343" label="SUGGESTIONS"/>
   <int value="14257952" label="SUPERVISED_USER"/>
   <int value="15418154" label="NTP_SNIPPETS_SUGGESTIONS"/>
   <int value="16653985" label="NTP_SNIPPETS_THUMBNAILS"/>
+  <int value="17188928" label="WEBSOCKET_STREAM"/>
   <int value="17400350" label="WEB_HISTORY_SERVICE"/>
+  <int value="17562717" label="HISTORY_UI_FAVICON"/>
   <int value="18300705" label="GCM_DRIVER"/>
   <int value="18858893" label="OFFLINE_PAGES_DOWNLOAD_FILE"/>
   <int value="19185953" label="OFFLINE_PAGES_PREFETCH"/>
+  <int value="21785164" label="INTRANET_REDIRECT_DETECTOR"/>
   <int value="22265491" label="POLICY"/>
   <int value="24978481" label="CLOUD_PRINT"/>
   <int value="25790702" label="APPCACHE_UPDATE_JOB"/>
@@ -13479,12 +13484,19 @@ Called by update_net_error_codes.py.-->
   <int value="29057242" label="GCM_DRIVER"/>
   <int value="29188932" label="GAIA"/>
   <int value="30913825" label="SUPERVISED_USER"/>
+  <int value="31445884" label="GAIA_AUTH_MULTILOGIN"/>
   <int value="32585152" label="GAIA"/>
+  <int value="33813109" label="PREVIEWS_LITEPAGE_PROBER"/>
+  <int value="34557599" label="HINTSFETCHER_GETHINTS"/>
   <int value="35370363" label="SUGGESTIONS"/>
   <int value="35380758" label="RESUMED_DOWNLOADS"/>
+  <int value="35473769" label="LOGO_SERVICE"/>
   <int value="35565745" label="GAIA"/>
+  <int value="35725390" label="HTTPS_SERVER_PREVIEWS_NAVIGATION"/>
   <int value="36859107" label="SEARCH_PROVIDER_LOGOS"/>
+  <int value="38670228" label="DOWNLOADS_INTERNAL_WEBUI"/>
   <int value="39877119" label="GAIA"/>
+  <int value="39886742" label="WEB_PUSH_MESSAGE"/>
   <int value="42848942" label="SAFE_BROWSING"/>
   <int value="43206794" label="SUPERVISED_USER"/>
   <int value="44494884" label="NTP_TILES"/>
@@ -13496,18 +13508,25 @@ Called by update_net_error_codes.py.-->
   <int value="49544361" label="NTP_SNIPPETS_THUMBNAILS"/>
   <int value="49601082" label="WEB_RESOURCE_SERVICE"/>
   <int value="50755044" label="NTP_TILES"/>
+  <int value="50816767" label="LIB_ADDRESS_INPUT"/>
   <int value="50859288" label="CLOUD_PRINT"/>
+  <int value="52821843" label="GEO_LANGUAGE_PROVIDER"/>
+  <int value="53695122" label="CREDENTIAL_AVATAR"/>
+  <int value="54845618" label="UPDATE_CLIENT"/>
   <int value="56434025" label="NTP_SNIPPETS_SUGGESTIONS"/>
   <int value="57144960" label="SYNC"/>
+  <int value="60071001" label="NET_ERROR_HELPER"/>
   <int value="60946824" label="WEB_HISTORY_SERVICE"/>
   <int value="61656965" label="GCM_DRIVER"/>
   <int value="61684939" label="OMNIBOX"/>
+  <int value="63171670" label="NAVIGATION_URL_LOADER"/>
   <int value="65957842" label="GCM_DRIVER"/>
   <int value="66322287" label="SAFE_BROWSING"/>
   <int value="66590631" label="SAFE_BROWSING"/>
   <int value="67638271" label="CLOUD_PRINT"/>
   <int value="68561428" label="DATA_REDUCTION_PROXY"/>
   <int value="68745894" label="SAFE_BROWSING"/>
+  <int value="69585116" label="PASSWORD_REQUIREMENTS_SPEC_FETCH"/>
   <int value="69881286" label="OMNIBOX_ANSWERS_IMAGE"/>
   <int value="70126372" label="SAFE_BROWSING"/>
   <int value="71251498" label="CLOUD_PRINT"/>
@@ -13516,9 +13535,12 @@ Called by update_net_error_codes.py.-->
   <int value="73107389" label="OMNIBOX"/>
   <int value="73772528" label="DOWNLOAD_VIA_CONTEXT_MENU"/>
   <int value="75153841" label="SAFE_BROWSING"/>
+  <int value="76717919" label="INTEREST_FEED_SEND"/>
   <int value="77597059" label="DOMAIN_RELIABILITY"/>
   <int value="78544924" label="SUPERVISED_USER"/>
+  <int value="79442849" label="SIGNED_EXCHANGE_CERT_FETCHER"/>
   <int value="79957943" label="SAFE_BROWSING"/>
+  <int value="80832574" label="HISTORY_NOTICE_UTILS_POPUP"/>
   <int value="82167736" label="GAIA"/>
   <int value="82462683" label="GAIA"/>
   <int value="83476155" label="GAIA"/>
@@ -13527,29 +13549,40 @@ Called by update_net_error_codes.py.-->
   <int value="84575287" label="TRACING_UPLOADER"/>
   <int value="88754904" label="CAPTIVE_PORTAL"/>
   <int value="88863520" label="AUTOFILL"/>
+  <int value="91068704" label="PREFETCH_VISUALS"/>
   <int value="91597383" label="GAIA"/>
   <int value="95588446" label="AUTOFILL"/>
   <int value="95682324" label="MACHINE_INTELLIGENCE"/>
   <int value="95711309" label="NTP_SNIPPETS_SUGGESTIONS"/>
   <int value="97978464" label="GAIA"/>
   <int value="98658519" label="SIGNIN"/>
+  <int value="102595701" label="HISTORY_NOTICE_UTILS_NOTICE"/>
   <int value="102935425" label="SAFE_BROWSING"/>
   <int value="103133150" label="NTP_TILES"/>
   <int value="104798869" label="AUTOFILL"/>
   <int value="106980485" label="SAFE_BROWSING"/>
+  <int value="107267424" label="OPEN_SEARCH"/>
+  <int value="107881858" label="IMAGE_ANNOTATION"/>
   <int value="108804096" label="DOMAIN_RELIABILITY"/>
   <int value="108903331" label="PROFILE_DOWNLOADER"/>
   <int value="109200878" label="OMNIBOX"/>
+  <int value="109891200" label="REPORTING"/>
+  <int value="109987793" label="KIDS_CHROME_MANAGEMENT_CLIENT"/>
   <int value="110307337" label="WEB_HISTORY_SERVICE"/>
   <int value="111712433" label="CLOUD_PRINT"/>
+  <int value="111904019" label="AFFILIATION_LOOKUP"/>
   <int value="112189210" label="FAVICON_LOADER"/>
   <int value="113231892" label="UPDATE_CLIENT"/>
+  <int value="113553577" label="CERTIFICATE_VERIFIER"/>
+  <int value="114468207" label="SSL_NAME_MISMATCH_LOOKUP"/>
   <int value="115188287" label="VARIATIONS"/>
   <int value="115907811" label="SAFE_BROWSING"/>
   <int value="116426676" label="GAIA"/>
   <int value="117649486" label="SPELL_CHECKER"/>
   <int value="117782019" label="POLICY"/>
   <int value="117963307" label="SERVICE_WORKER_WRITE_TO_CACHE_JOB"/>
+  <int value="118389509" label="URL_PROVISION_FETCHER"/>
+  <int value="119416099" label="LOAD_AUTOFILL_GSTATIC_DATA"/>
   <int value="119542033" label="GCM_DRIVER"/>
   <int value="119677115" label="SUPERVISED_USER"/>
   <int value="121842329" label="WEBAPK_ICON_HASHER"/>
@@ -13558,6 +13591,7 @@ Called by update_net_error_codes.py.-->
   <int value="125596241" label="UPDATE_CLIENT"/>
   <int value="126122632" label="WEB_HISTORY_SERVICE"/>
   <int value="129872904" label="SERVICE_WORKER_NAVIGATION_PRELOAD"/>
+  <int value="130931413" label="SERVICE_WORKER_UPDATE_CHECKER"/>
   <int value="131236802" label="DATA_REDUCTION_PROXY"/>
   <int value="132055347" label="CLOUD_PRINT"/>
   <int value="132553989" label="SPELL_CHECKER"/>
@@ -13565,6 +13599,7 @@ Called by update_net_error_codes.py.-->
   <int value="134289752" label="GAIA"/>
   <int value="134729048" label="FEEDBACK_UPLOADER"/>
   <int value="135967426" label="SAFE_BROWSING"/>
+  <int value="136468456" label="PROXY_CONFIG_SETTINGS"/>
   <int value="137116619" label="TRANSLATE"/>
   <int value="137420486" label="CLOUD_PRINT"/>
   <int value="137457845" label="WEB_HISTORY_SERVICE"/>
@@ -21365,6 +21400,7 @@ Called by update_net_error_codes.py.-->
   <int value="1415" label="TERMINALPRIVATE_GETSETTINGS"/>
   <int value="1416" label="TERMINALPRIVATE_SETSETTINGS"/>
   <int value="1417" label="WEBSTOREPRIVATE_REQUESTEXTENSION"/>
+  <int value="1418" label="AUTOTESTPRIVATE_INSTALLPLUGINVM"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -33588,6 +33624,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="Requested and granted automatically"/>
 </enum>
 
+<enum name="IppVersion">
+  <int value="0" label="Error">Failed to parse version</int>
+  <int value="1" label="Unknown">Version value not recognized</int>
+  <int value="2" label="IPP 1.0">IPP 1.0</int>
+  <int value="3" label="IPP 1.1">IPP 1.1</int>
+  <int value="4" label="IPP 2.0">IPP 2.0</int>
+  <int value="5" label="IPP 2.1">IPP 2.1</int>
+  <int value="6" label="IPP 2.2">IPP 2.2</int>
+</enum>
+
 <enum name="IPv6ConnectivityStatus">
   <int value="0" label="Incomplete IPv6 Configuration"/>
   <int value="1" label="Complete IPv6 Configuration"/>
@@ -35563,6 +35609,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Session changed"/>
   <int value="1" label="Dismissed by user"/>
   <int value="2" label="Device unlocked"/>
+  <int value="3" label="Device sleep"/>
 </enum>
 
 <enum name="LockScreenMediaControlsShown">
@@ -36881,6 +36928,7 @@ from previous Chrome versions.
   <int value="-682580680" label="DisableOfficeEditingComponentApp:disabled"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
+  <int value="-679500267" label="UseXpsForPrinting:disabled"/>
   <int value="-674804217" label="SoleIntegration:enabled"/>
   <int value="-673804828" label="EnablePlayStoreAppSearch:disabled"/>
   <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
@@ -37393,6 +37441,7 @@ from previous Chrome versions.
   <int value="-2953333" label="AndroidHistoryManager:disabled"/>
   <int value="-2512468" label="OmniboxMaterialDesignWeatherIcons:disabled"/>
   <int value="-2371418" label="disable-display-list-2d-canvas"/>
+  <int value="-1164379" label="EnterpriseReportingInChromeOS:disabled"/>
   <int value="0" label="BAD_FLAG_FORMAT">
     Command-line flag doesn't start with two dashes.
   </int>
@@ -37661,6 +37710,7 @@ from previous Chrome versions.
   <int value="360599302" label="enable-gpu-rasterization"/>
   <int value="362644448" label="memlog-in-process"/>
   <int value="362853088" label="AmbientColor:disabled"/>
+  <int value="363997248" label="UseXpsForPrinting:enabled"/>
   <int value="365068212" label="PiexWasm:disabled"/>
   <int value="365467768" label="prefetch-search-results"/>
   <int value="367063319" label="PasswordImport:disabled"/>
@@ -38095,6 +38145,7 @@ from previous Chrome versions.
   <int value="946688335" label="OmniboxSpareRenderer:disabled"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="955340765" label="ChromeHomeOptOutSnackbar:enabled"/>
+  <int value="955425932" label="EnterpriseReportingInChromeOS:enabled"/>
   <int value="963457392" label="ChromeHomeModernLayout:disabled"/>
   <int value="963671232" label="DrawOcclusion:disabled"/>
   <int value="964613807" label="ContextualSearchTranslationModel:disabled"/>
@@ -50715,9 +50766,11 @@ Called by update_net_trust_anchors.py.-->
       label="The page was being reloaded and the preview type can not be
              shown on a reload."/>
   <int value="9"
-      label="Host blacklisted by server rules provided to the client."/>
+      label="Host blacklisted by server rules provided to the client
+             (obsolete)."/>
   <int value="10"
-      label="Host not whitelisted by server rules provided to the client."/>
+      label="Host not whitelisted by server rules provided to the client
+             (obsolete)."/>
   <int value="11"
       label="Preview Allowed without server rule check (obsolete)."/>
   <int value="12" label="Committed Preview."/>
@@ -50725,7 +50778,8 @@ Called by update_net_trust_anchors.py.-->
     Response header had Cache-Control:no-transform directive (developer
     opt-out).
   </int>
-  <int value="14" label="Network is not slow per session threshold."/>
+  <int value="14"
+      label="Network is not slow per session threshold (obsolete)."/>
   <int value="15" label="Device was reported as offline."/>
   <int value="16"
       label="URL contained Basic Authentication, i.e.: a username or
@@ -50736,6 +50790,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="Coin flip holdback encountered."/>
   <int value="21" label="Redirect loop detected."/>
   <int value="22" label="URL matched deny list."/>
+  <int value="23" label="Page load not predicted to be painful."/>
 </enum>
 
 <enum name="PreviewsHintCacheLevelDBStoreLoadMetadataResult">
@@ -65179,6 +65234,12 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Rejected by both iOS and NSS."/>
   <int value="2" label="Accepted only by iOS (rejected by NSS)."/>
   <int value="3" label="Accepted only by NSS (rejected by iOS)."/>
+</enum>
+
+<enum name="WebContentsAudioState">
+  <int value="0" label="Never played audio"/>
+  <int value="1" label="Currently playing audio"/>
+  <int value="2" label="Previously played audio"/>
 </enum>
 
 <enum name="WebContentsState">

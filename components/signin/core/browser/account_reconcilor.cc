@@ -578,8 +578,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     DCHECK_NE(AccountReconcilorState::ACCOUNT_RECONCILOR_RUNNING, state_);
     CoreAccountId first_gaia_account_after_reconcile =
         PickFirstGaiaAccount(parameters_for_multilogin, gaia_accounts);
-    delegate_->OnReconcileFinished(first_gaia_account_after_reconcile,
-                                   reconcile_is_noop_);
+    delegate_->OnReconcileFinished(first_gaia_account_after_reconcile);
   }
   first_execution_ = false;
 }
@@ -821,7 +820,7 @@ void AccountReconcilor::FinishReconcile(
   first_execution_ = false;
   CalculateIfReconcileIsDone();
   if (!is_reconcile_started_)
-    delegate_->OnReconcileFinished(first_account, reconcile_is_noop_);
+    delegate_->OnReconcileFinished(first_account);
   ScheduleStartReconcileIfChromeAccountsChanged();
 }
 

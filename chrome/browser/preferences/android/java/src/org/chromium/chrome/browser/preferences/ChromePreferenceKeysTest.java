@@ -38,7 +38,7 @@ public class ChromePreferenceKeysTest {
     @Test
     @SmallTest
     public void testKeysAreNotReused() {
-        doTestKeysAreNotReused(ChromePreferenceKeys.createUsedKeys(),
+        doTestKeysAreNotReused(ChromePreferenceKeys.createKeysInUse(),
                 ChromePreferenceKeys.createDeprecatedKeysForTesting());
     }
 
@@ -57,8 +57,8 @@ public class ChromePreferenceKeysTest {
         intersection.retainAll(deprecatedSet);
         if (!intersection.isEmpty()) {
             fail("\"" + intersection.iterator().next()
-                    + "\" is both in |ChromePreferenceKeys.sUsedKeys| and in "
-                    + "|ChromePreferenceKeys.sDeprecatedKeys|");
+                    + "\" is both in ChromePreferenceKeys' [keys in use] and in "
+                    + "[deprecated keys]");
         }
     }
 
@@ -107,21 +107,21 @@ public class ChromePreferenceKeysTest {
     @Test
     @SmallTest
     public void testKeysConformToFormat() {
-        doTestKeysConformToFormat(ChromePreferenceKeys.createUsedKeys(),
+        doTestKeysConformToFormat(ChromePreferenceKeys.createKeysInUse(),
                 ChromePreferenceKeys.createGrandfatheredFormatKeysForTesting());
     }
 
-    private void doTestKeysConformToFormat(List<String> usedKeysList, List<String> grandfathered) {
+    private void doTestKeysConformToFormat(List<String> usedList, List<String> grandfathered) {
         Set<String> grandfatheredSet = new HashSet<>(grandfathered);
         Pattern regex = Pattern.compile("Chrome.([A-Z][a-z0-9]+)+.([A-Z][a-z0-9]+)+");
 
-        for (String usedKey : usedKeysList) {
-            if (grandfatheredSet.contains(usedKey)) {
+        for (String keyInUse : usedList) {
+            if (grandfatheredSet.contains(keyInUse)) {
                 continue;
             }
 
-            assertTrue("\"" + usedKey + "\" does not conform to format \"Chrome.[Feature].[Key]\"",
-                    regex.matcher(usedKey).matches());
+            assertTrue("\"" + keyInUse + "\" does not conform to format \"Chrome.[Feature].[Key]\"",
+                    regex.matcher(keyInUse).matches());
         }
     }
 
@@ -135,10 +135,6 @@ public class ChromePreferenceKeysTest {
         public static final String MISSING_FEATURE = "Chrome..Key";
         public static final String LOWERCASE_KEY = "Chrome.Foo.key";
     }
-
-    private static final List<String> NON_FORMAT_CONFORMING_CONSTANTS = Arrays.asList(
-            TestFormatConstantsClass.GRANDFATHERED_IN, TestFormatConstantsClass.BROKEN_PREFIX,
-            TestFormatConstantsClass.MISSING_FEATURE, TestFormatConstantsClass.LOWERCASE_KEY);
 
     @Test
     @SmallTest

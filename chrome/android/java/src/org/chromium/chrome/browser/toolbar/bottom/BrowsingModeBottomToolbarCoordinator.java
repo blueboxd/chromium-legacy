@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabSwitcherButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.TabSwitcherButtonView;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -65,6 +66,9 @@ public class BrowsingModeBottomToolbarCoordinator {
     /** The supplier for the share button on click listener. */
     private final ObservableSupplier<OnClickListener> mShareButtonListenerSupplier;
 
+    /** The activity tab provider that used for making the IPH. */
+    private final ActivityTabProvider mTabProvider;
+
     /**
      * Build the coordinator that manages the browsing mode bottom toolbar.
      * @param root The root {@link View} for locating the views to inflate.
@@ -78,8 +82,8 @@ public class BrowsingModeBottomToolbarCoordinator {
             ObservableSupplier<OnClickListener> shareButtonListenerSupplier,
             OnLongClickListener tabSwitcherLongClickListner) {
         mModel = new BrowsingModeBottomToolbarModel();
-
         mToolbarRoot = root.findViewById(R.id.bottom_toolbar_browsing);
+        mTabProvider = tabProvider;
 
         PropertyModelChangeProcessor.create(
                 mModel, mToolbarRoot, new BrowsingModeBottomToolbarViewBinder());
@@ -89,7 +93,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         mHomeButton = mToolbarRoot.findViewById(R.id.home_button);
         mHomeButton.setWrapperView(mToolbarRoot.findViewById(R.id.home_button_wrapper));
         mHomeButton.setOnClickListener(homeButtonListener);
-        mHomeButton.setActivityTabProvider(tabProvider);
+        mHomeButton.setActivityTabProvider(mTabProvider);
 
         mShareButton = mToolbarRoot.findViewById(R.id.share_button);
         mShareButton.setWrapperView(mToolbarRoot.findViewById(R.id.share_button_wrapper));
@@ -98,7 +102,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         };
         mShareButtonListenerSupplier = shareButtonListenerSupplier;
         mShareButtonListenerSupplier.addObserver(mShareButtonListenerSupplierCallback);
-        mShareButton.setActivityTabProvider(tabProvider);
+        mShareButton.setActivityTabProvider(mTabProvider);
 
         mSearchAccelerator = mToolbarRoot.findViewById(R.id.search_accelerator);
         mSearchAccelerator.setWrapperView(
@@ -118,17 +122,24 @@ public class BrowsingModeBottomToolbarCoordinator {
         mMenuButton = mToolbarRoot.findViewById(R.id.menu_button_wrapper);
         mMenuButton.setWrapperView(mToolbarRoot.findViewById(R.id.labeled_menu_button_wrapper));
 
-        tabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
+        setupIPH(FeatureConstants.CHROME_DUET_SEARCH_FEATURE, mSearchAccelerator,
+                searchAcceleratorListener);
+    }
+
+    void setupIPH(@FeatureConstants String feature, View anchor, OnClickListener listener) {
+        mTabProvider.addObserverAndTrigger(new HintlessActivityTabObserver() {
             @Override
             public void onActivityTabChanged(Tab tab) {
                 if (tab == null) return;
                 final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+                final Runnable completeRunnable = () -> {
+                    listener.onClick(anchor);
+                };
                 tracker.addOnInitializedCallback(
-                        (ready) -> mMediator.showIPH(tab.getActivity(), mSearchAccelerator, tracker,
-                                () -> {
-                                    searchAcceleratorListener.onClick(mSearchAccelerator);
-                                }));
-                tabProvider.removeObserver(this);
+                        (ready)
+                                -> mMediator.showIPH(feature, tab.getActivity(), anchor, tracker,
+                                        completeRunnable));
+                mTabProvider.removeObserver(this);
             }
         });
     }
@@ -159,6 +170,9 @@ public class BrowsingModeBottomToolbarCoordinator {
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setThemeColorProvider(themeColorProvider);
         mTabSwitcherButtonCoordinator.setTabCountProvider(tabCountProvider);
+
+        setupIPH(FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE, mTabSwitcherButtonView,
+                tabSwitcherListener);
 
         assert menuButtonHelper != null;
         mMenuButton.setAppMenuButtonHelper(menuButtonHelper);

@@ -151,6 +151,8 @@ class ProfileAttributesEntry {
   // Lock/Unlock the profile, should be called only if force-sign-in is enabled.
   void LockForceSigninProfile(bool is_lock);
 
+  static const char kSupervisedUserId[];
+  static const char kIsOmittedFromProfileListKey[];
   static const char kAvatarIconKey[];
   static const char kBackgroundAppsKey[];
   static const char kProfileIsEphemeral[];

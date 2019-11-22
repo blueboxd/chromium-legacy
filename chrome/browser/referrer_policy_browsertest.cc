@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,7 +34,11 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_input_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
 
 class ReferrerPolicyTest : public InProcessBrowserTest {
  public:
@@ -48,7 +54,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     EXPECT_TRUE(embedded_test_server()->Start());
     EXPECT_TRUE(https_server_.Start());
   }
-  ~ReferrerPolicyTest() override {}
+  ~ReferrerPolicyTest() override = default;
 
   enum ExpectedReferrer {
     EXPECT_EMPTY_REFERRER,
@@ -57,7 +63,26 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   };
 
  protected:
-  virtual void OnServerIncomingRequest(const net::test_server::HttpRequest&) {}
+  // Callback to verify that HTTP requests have the correct headers;
+  // currently, (See the comment on RequestCheck, below.)
+  virtual void OnServerIncomingRequest(
+      const net::test_server::HttpRequest& request) {
+    if (!check_on_requests_)
+      return;
+
+    if (request.relative_url != check_on_requests_->destination_url_to_match)
+      return;
+
+    auto it = request.headers.find("Referer");
+
+    if (check_on_requests_->expected_spec.empty()) {
+      EXPECT_TRUE(it == request.headers.end()) << it->second;
+    } else {
+      EXPECT_TRUE(it != request.headers.end());
+      if (it != request.headers.end())
+        EXPECT_EQ(it->second, check_on_requests_->expected_spec);
+    }
+  }
 
   // Returns the expected title for the tab with the given (full) referrer and
   // the expected modification of it.
@@ -102,6 +127,8 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     SERVER_REDIRECT_FROM_HTTP_TO_HTTPS
   };
 
+  enum RendererOrBrowserInitiated { RENDERER_INITIATED, BROWSER_INITIATED };
+
   // Navigates from a page with a given |referrer_policy| and checks that the
   // reported referrer matches the expectation.
   // Parameters:
@@ -114,18 +141,21 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   //                     link with the specified mouse button.
   //  expected_referrer: The kind of referrer to expect.
   //  expected_referrer_policy: The expected referrer policy of the activity.
+  //  renderer_or_browser_initiated: If BROWSER_INITIATED, uses Navigate() to
+  //  load in the current WebContents and disregards the value of |button|.
   //
   // Returns:
   //  The URL of the first page navigated to.
-  GURL RunReferrerTest(
-      const network::mojom::ReferrerPolicy referrer_policy,
-      StartOnProtocol start_protocol,
-      LinkType link_type,
-      RedirectType redirect,
-      WindowOpenDisposition disposition,
-      blink::WebMouseEvent::Button button,
-      ExpectedReferrer expected_referrer,
-      network::mojom::ReferrerPolicy expected_referrer_policy) {
+  GURL RunReferrerTest(const network::mojom::ReferrerPolicy referrer_policy,
+                       StartOnProtocol start_protocol,
+                       LinkType link_type,
+                       RedirectType redirect,
+                       WindowOpenDisposition disposition,
+                       blink::WebMouseEvent::Button button,
+                       ExpectedReferrer expected_referrer,
+                       network::mojom::ReferrerPolicy expected_referrer_policy,
+                       RendererOrBrowserInitiated
+                           renderer_or_browser_initiated = RENDERER_INITIATED) {
     GURL redirect_url;
     switch (redirect) {
       case NO_REDIRECT:
@@ -162,7 +192,10 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         std::string("/referrer_policy/referrer-policy-start.html?") +
         "policy=" + content::ReferrerPolicyToString(referrer_policy) +
         "&redirect=" + redirect_url.spec() + "&link=" +
-        (button == blink::WebMouseEvent::Button::kNoButton ? "false" : "true") +
+        ((button == blink::WebMouseEvent::Button::kNoButton &&
+          renderer_or_browser_initiated == RENDERER_INITIATED)
+             ? "false"
+             : "true") +
         "&target=" + (link_type == LINK_WITH_TARGET_BLANK ? "_blank" : "");
 
     auto* start_test_server = start_protocol == START_ON_HTTPS
@@ -178,12 +211,28 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     content::TitleWatcher title_watcher(tab, expected_title);
 
+    std::string expected_referrer_value;
+    if (expected_referrer != EXPECT_EMPTY_REFERRER) {
+      expected_referrer_value =
+          base::UTF16ToASCII(expected_title)
+              .substr(base::StringPiece("Referrer is ").size());
+    }
+    check_on_requests_ = RequestCheck{
+        expected_referrer_value, "/referrer_policy/referrer-policy-log.html"};
+
     // Watch for all possible outcomes to avoid timeouts if something breaks.
     AddAllPossibleTitles(start_url, &title_watcher);
 
     ui_test_utils::NavigateToURL(browser(), start_url);
 
-    if (button != blink::WebMouseEvent::Button::kNoButton) {
+    if (renderer_or_browser_initiated == BROWSER_INITIATED) {
+      CHECK(disposition == WindowOpenDisposition::CURRENT_TAB);
+      NavigateParams params(browser(), redirect_url, ui::PAGE_TRANSITION_LINK);
+      params.referrer = content::Referrer(
+          tab->GetController().GetVisibleEntry()->GetURL(), referrer_policy);
+      params.source_contents = tab;
+      ui_test_utils::NavigateToURL(&params);
+    } else if (button != blink::WebMouseEvent::Button::kNoButton) {
       blink::WebMouseEvent mouse_event(
           blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
           blink::WebInputEvent::GetStaticTimeStampForTests());
@@ -211,6 +260,8 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_referrer_policy,
               tab->GetController().GetVisibleEntry()->GetReferrer().policy);
 
+    check_on_requests_.reset();
+
     return start_url;
   }
 
@@ -228,6 +279,18 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   }
 
   net::EmbeddedTestServer https_server_;
+
+  // If "check_on_requests_" is set, for each HTTP request that arrives at
+  // either of the embedded test servers ("embedded_test_server()" and
+  // "https_server_"), if the relative URL equals that stored in
+  // "destination_url_to_match", OnServerIncomingRequest will assert
+  // that the provided Referer header's value equals the value of
+  // "expected_spec".
+  struct RequestCheck {
+    std::string expected_spec;
+    std::string destination_url_to_match;
+  };
+  base::Optional<RequestCheck> check_on_requests_;
 };
 
 // The basic behavior of referrer policies is covered by layout tests in
@@ -480,14 +543,14 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, History) {
   chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
-  title_watcher.reset(new content::TitleWatcher(tab, expected_title));
+  title_watcher = std::make_unique<content::TitleWatcher>(tab, expected_title);
   AddAllPossibleTitles(start_url, title_watcher.get());
 
   // Reload to B.
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
-  title_watcher.reset(new content::TitleWatcher(tab, expected_title));
+  title_watcher = std::make_unique<content::TitleWatcher>(tab, expected_title);
   AddAllPossibleTitles(start_url, title_watcher.get());
 
   // Shift-reload to B.
@@ -565,12 +628,12 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, IFrame) {
 
   // Reload the iframe.
   expected_title = base::ASCIIToUTF16("reset");
-  title_watcher.reset(new content::TitleWatcher(tab, expected_title));
+  title_watcher = std::make_unique<content::TitleWatcher>(tab, expected_title);
   EXPECT_TRUE(content::ExecuteScript(tab, "document.title = 'reset'"));
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
   expected_title = base::ASCIIToUTF16("loaded");
-  title_watcher.reset(new content::TitleWatcher(tab, expected_title));
+  title_watcher = std::make_unique<content::TitleWatcher>(tab, expected_title);
   EXPECT_TRUE(content::ExecuteScript(frame, "location.reload()"));
   EXPECT_EQ(expected_title, title_watcher->WaitAndGetTitle());
 
@@ -674,11 +737,9 @@ struct ReferrerOverrideParams {
     {.feature_to_enable = features::kNoReferrers,
      .baseline_policy = network::mojom::ReferrerPolicy::kAlways,
      // The renderer's "have we completely disabled referrers?"
-     // implementation resets requests' referrer policies to the default when
+     // implementation resets requests' referrer policies to kNever when
      // it excises their referrers.
-     .expected_policy =
-         content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-             content::Referrer::GetDefaultReferrerPolicy()),
+     .expected_policy = network::mojom::ReferrerPolicy::kNever,
      .same_origin_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
      .cross_origin_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
      .cross_origin_downgrade_nav = ReferrerPolicyTest::EXPECT_EMPTY_REFERRER,
@@ -739,40 +800,7 @@ class ReferrerOverrideTest
       scoped_feature_list_.InitAndEnableFeature(*GetParam().feature_to_enable);
   }
 
-  // Callback to verify that HTTP requests have the correct headers;
-  // currently, this is used on subresource-request tests. (See the comment
-  // on RequestCheck, below.)
-  void OnServerIncomingRequest(
-      const net::test_server::HttpRequest& request) final {
-    if (!check_on_requests_)
-      return;
-
-    if (request.relative_url != check_on_requests_->destination_url_to_match)
-      return;
-
-    auto it = request.headers.find("Referer");
-
-    if (check_on_requests_->expected_spec.empty()) {
-      EXPECT_TRUE(it == request.headers.end());
-    } else {
-      EXPECT_TRUE(it != request.headers.end() &&
-                  it->second == check_on_requests_->expected_spec);
-    }
-  }
-
  protected:
-  // If "check_on_requests_" is set, for each HTTP request that arrives at
-  // either of the embedded test servers ("embedded_test_server()" and
-  // "https_server_"), if the relative URL equals that stored in
-  // "destination_url_to_match", OnServerIncomingRequest will assert
-  // that the provided Referer header's value equals the value of
-  // "expected_spec".
-  struct RequestCheck {
-    std::string expected_spec;
-    std::string destination_url_to_match;
-  };
-  base::Optional<RequestCheck> check_on_requests_;
-
   // Test that the correct referrer is sent along with
   // a subresource request.
   // Parameter semantics are the same as for
@@ -871,6 +899,15 @@ IN_PROC_BROWSER_TEST_P(ReferrerOverrideTest, CrossOriginNavigation) {
                   GetParam().cross_origin_nav, GetParam().expected_policy);
 }
 
+IN_PROC_BROWSER_TEST_P(ReferrerOverrideTest,
+                       CrossOriginNavigationBrowserInitiated) {
+  RunReferrerTest(GetParam().baseline_policy, START_ON_HTTP, REGULAR_LINK,
+                  HTTPS_NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft,
+                  GetParam().cross_origin_nav, GetParam().expected_policy,
+                  BROWSER_INITIATED);
+}
+
 IN_PROC_BROWSER_TEST_P(ReferrerOverrideTest, CrossOriginDowngradeNavigation) {
   RunReferrerTest(GetParam().baseline_policy, START_ON_HTTPS, REGULAR_LINK,
                   NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
@@ -959,8 +996,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
                   REGULAR_LINK, NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
                   blink::WebMouseEvent::Button::kLeft, EXPECT_EMPTY_REFERRER,
                   // when the pref is set, the renderer sets the referrer policy
-                  // to the default on outgoing requests at the same time
+                  // to the kNever on outgoing requests at the same time
                   // it removes referrers
-                  content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
-                      content::Referrer::GetDefaultReferrerPolicy()));
+                  network::mojom::ReferrerPolicy::kNever);
 }

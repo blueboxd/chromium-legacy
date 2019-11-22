@@ -48,7 +48,7 @@ views::Widget* CreateWidget(const gfx::Rect& bounds,
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.context = Shell::GetRootWindowControllerWithDisplayId(display.id())
                        ->GetRootWindow();
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   widget->set_focus_on_creation(false);
   widget->Init(std::move(params));

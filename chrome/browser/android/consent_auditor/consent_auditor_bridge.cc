@@ -42,5 +42,6 @@ static void JNI_ConsentAuditorBridge_RecordConsent(
   }
   ConsentAuditorFactory::GetForProfile(
       ProfileAndroid::FromProfileAndroid(j_profile))
-      ->RecordSyncConsent(ConvertJavaStringToUTF8(j_account_id), sync_consent);
+      ->RecordSyncConsent(CoreAccountId(ConvertJavaStringToUTF8(j_account_id)),
+                          sync_consent);
 }

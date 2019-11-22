@@ -59,7 +59,7 @@ namespace {
 
 const char kGetLoadIndicatorClassName[] =
     "window.domAutomationController.send("
-    "document.getElementById('loadingIndicator').className)";
+    "document.getElementById('loading-indicator').className)";
 
 const char kGetContent[] =
     "window.domAutomationController.send("

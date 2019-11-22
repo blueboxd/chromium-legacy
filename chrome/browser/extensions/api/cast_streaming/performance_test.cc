@@ -810,7 +810,7 @@ IN_PROC_BROWSER_TEST_P(CastV2PerformanceTest, DISABLED_Performance) {
 }
 
 #if !defined(OS_CHROMEOS) || !defined(MEMORY_SANITIZER)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CastV2PerformanceTest,
                          testing::Values(k24fps,
                                          k30fps,

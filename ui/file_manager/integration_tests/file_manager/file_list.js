@@ -149,16 +149,20 @@
    *
    * @param {string} appId
    * @param {number} expectedCount
-   * @param {string} expectedMessage
+   * @param {?string} expectedMessage
    * @return {string} Latest a11y message.
    */
   async function countAndCheckLatestA11yMessage(
       appId, expectedCount, expectedMessage) {
     const a11yMessages =
         await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
-    chrome.test.assertEq(
-        expectedCount, a11yMessages.length, 'Wrong number of a11y messages');
+    if (expectedMessage === null || expectedMessage === undefined) {
+      return '';
+    }
     const latestMessage = a11yMessages[a11yMessages.length - 1];
+    chrome.test.assertEq(
+        expectedCount, a11yMessages.length,
+        'Wrong number of a11y messages: latest message: ' + latestMessage);
     chrome.test.assertEq(expectedMessage, latestMessage);
     return latestMessage;
   }
@@ -195,9 +199,9 @@
     // Select first item with Home key.
     await remoteCall.fakeKeyDown(appId, ...homeKey);
 
-    // Check: Announced "photos" directory selection.
-    await countAndCheckLatestA11yMessage(
-        appId, ++a11yMsgCount, 'Selected photos.');
+    // Navigating with Home key doesn't use aria-live message, it only uses the
+    // native listbox selection state messages.
+    await countAndCheckLatestA11yMessage(appId, a11yMsgCount);
 
     // Ctrl+Down & Ctrl+Space to select second item: Beautiful Song.ogg
     await remoteCall.fakeKeyDown(appId, ...ctrlDownKey);
@@ -260,9 +264,9 @@
     await remoteCall.waitAndClickElement(
         appId, '#file-list [file-name="photos"]');
 
-    // Check: Announced "photos" directory selection.
-    await countAndCheckLatestA11yMessage(
-        appId, ++a11yMsgCount, 'Selected photos.');
+    // Simple click to select a file doesn't use aria-live message, it only
+    // uses the native listbox selection state messages.
+    await countAndCheckLatestA11yMessage(appId, a11yMsgCount);
 
     // Ctrl+Click second item.
     await remoteCall.waitAndClickElement(

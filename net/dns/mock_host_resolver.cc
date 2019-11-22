@@ -29,6 +29,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_cache.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/url_request/url_request_context.h"
 
 #if defined(OS_WIN)
@@ -143,6 +144,11 @@ class MockHostResolverBase::RequestImpl
     return *nullopt_result;
   }
 
+  net::ResolveErrorInfo GetResolveErrorInfo() const override {
+    DCHECK(complete_);
+    return resolve_error_info_;
+  }
+
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     DCHECK(complete_);
@@ -167,6 +173,8 @@ class MockHostResolverBase::RequestImpl
   }
 
   void OnAsyncCompleted(size_t id, int error) {
+    resolve_error_info_ = ResolveErrorInfo(error);
+
     DCHECK_EQ(id_, id);
     id_ = 0;
 
@@ -209,6 +217,7 @@ class MockHostResolverBase::RequestImpl
 
   base::Optional<AddressList> address_results_;
   base::Optional<HostCache::EntryStaleness> staleness_;
+  ResolveErrorInfo resolve_error_info_;
 
   // Used while stored with the resolver for async resolution.  Otherwise 0.
   size_t id_;
@@ -989,6 +998,10 @@ class HangingHostResolver::RequestImpl
   }
 
   const base::Optional<EsniContent>& GetEsniResults() const override {
+    IMMEDIATE_CRASH();
+  }
+
+  net::ResolveErrorInfo GetResolveErrorInfo() const override {
     IMMEDIATE_CRASH();
   }
 

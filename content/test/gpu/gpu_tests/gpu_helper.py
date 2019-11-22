@@ -10,8 +10,10 @@ import mock
 EXPECTATIONS_DRIVER_TAGS = frozenset([
     'intel_lt_25.20.100.6444',
     'intel_lt_25.20.100.6577',
-    'mesa_lt_19.1.2',
+    'intel_lt_26.20.100.7000',
+    'intel_lt_26.20.100.7323',
     'mesa_eq_18.0.5',
+    'mesa_lt_19.1.2',
 ])
 
 

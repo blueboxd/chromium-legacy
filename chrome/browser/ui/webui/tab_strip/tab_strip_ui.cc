@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
@@ -29,9 +31,9 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/tab_strip_resources.h"
@@ -47,6 +49,8 @@
 #include "content/public/common/url_constants.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
@@ -97,23 +101,77 @@ std::string EncodePNGAndMakeDataURI(gfx::ImageSkia image, float scale_factor) {
       base::as_bytes(base::make_span(stream.GetBuffer())), "png");
 }
 
-class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
-                            public TabMenuModel {
+class WebUITabMenuModel : public ui::SimpleMenuModel {
  public:
-  WebUITabContextMenu(TabStripModel* tab_strip_model, int tab_index)
-      : TabMenuModel(this, tab_strip_model, tab_index),
-        tab_strip_model_(tab_strip_model),
+  WebUITabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
+                    TabStripModel* tab_strip_model,
+                    int tab_index)
+      : ui::SimpleMenuModel(delegate) {
+    AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
+    AddItemWithStringId(TabStripModel::CommandDuplicate,
+                        IDS_TAB_CXMENU_DUPLICATE);
+    const int pin_str = tab_strip_model->WillContextMenuPin(tab_index)
+                            ? IDS_TAB_CXMENU_PIN_TAB
+                            : IDS_TAB_CXMENU_UNPIN_TAB;
+    AddItemWithStringId(TabStripModel::CommandTogglePinned, pin_str);
+    const int mute_str = chrome::IsSiteMuted(*tab_strip_model, tab_index)
+                             ? IDS_TAB_CXMENU_SOUND_UNMUTE_SITE
+                             : IDS_TAB_CXMENU_SOUND_MUTE_SITE;
+    AddItem(TabStripModel::CommandToggleSiteMuted,
+            l10n_util::GetPluralStringFUTF16(mute_str, 1));
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringId(TabStripModel::CommandCloseTab,
+                        IDS_TAB_CXMENU_CLOSETAB);
+    AddItemWithStringId(TabStripModel::CommandCloseTabsToRight,
+                        IDS_TAB_CXMENU_CLOSETABSTORIGHT);
+  }
+};
+
+class WebUITabContextMenu : public ui::SimpleMenuModel::Delegate,
+                            public WebUITabMenuModel {
+ public:
+  WebUITabContextMenu(Browser* browser,
+                      const ui::AcceleratorProvider* accelerator_provider,
+                      int tab_index)
+      : WebUITabMenuModel(this, browser->tab_strip_model(), tab_index),
+        browser_(browser),
+        accelerator_provider_(accelerator_provider),
         tab_index_(tab_index) {}
   ~WebUITabContextMenu() override = default;
 
   void ExecuteCommand(int command_id, int event_flags) override {
-    DCHECK_LT(tab_index_, tab_strip_model_->count());
-    tab_strip_model_->ExecuteContextMenuCommand(
+    DCHECK_LT(tab_index_, browser_->tab_strip_model()->count());
+    if (command_id == IDC_NEW_TAB) {
+      chrome::NewTab(browser_);
+      return;
+    }
+    browser_->tab_strip_model()->ExecuteContextMenuCommand(
         tab_index_, static_cast<TabStripModel::ContextMenuCommand>(command_id));
   }
 
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) const override {
+    int real_command = -1;
+    if (command_id == IDC_NEW_TAB) {
+      real_command = IDC_NEW_TAB;
+    } else {
+      TabStripModel::ContextMenuCommandToBrowserCommand(command_id,
+                                                        &real_command);
+    }
+
+    if (real_command != -1) {
+      return accelerator_provider_->GetAcceleratorForCommandId(real_command,
+                                                               accelerator);
+    } else {
+      return false;
+    }
+  }
+
  private:
-  TabStripModel* const tab_strip_model_;
+  Browser* const browser_;
+  const ui::AcceleratorProvider* const accelerator_provider_;
   const int tab_index_;
 };
 
@@ -367,18 +425,19 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
       point = gfx::PointF(x, y);
     }
 
-    TabStripModel* tab_strip_model = nullptr;
+    Browser* browser = nullptr;
     int tab_index = -1;
     const bool got_tab = extensions::ExtensionTabUtil::GetTabById(
-        tab_id, browser_->profile(), true /* include_incognito */, nullptr,
-        &tab_strip_model, nullptr, &tab_index);
+        tab_id, browser_->profile(), true /* include_incognito */, &browser,
+        nullptr, nullptr, &tab_index);
     DCHECK(got_tab);
-    DCHECK_EQ(tab_strip_model, browser_->tab_strip_model());
+    DCHECK_EQ(browser, browser_);
 
     DCHECK(embedder_);
     embedder_->ShowContextMenuAtPoint(
         gfx::ToRoundedPoint(point),
-        std::make_unique<WebUITabContextMenu>(tab_strip_model, tab_index));
+        std::make_unique<WebUITabContextMenu>(
+            browser, embedder_->GetAcceleratorProvider(), tab_index));
   }
 
   void HandleGetLayout(const base::ListValue* args) {
@@ -473,7 +532,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       "showDemoOptions",
       base::FeatureList::IsEnabled(features::kWebUITabStripDemoOptions));
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"tabListTitle", IDS_ACCNAME_TAB_LIST},
       {"closeTab", IDS_ACCNAME_CLOSE},
       {"defaultTabTitle", IDS_DEFAULT_TAB_TITLE},
@@ -491,7 +550,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       {"desktopCapturing", IDS_TAB_AX_LABEL_DESKTOP_CAPTURING_FORMAT},
       {"vrPresenting", IDS_TAB_AX_LABEL_VR_PRESENTING},
   };
-  AddLocalizedStringsBulk(html_source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(html_source, kStrings);
   html_source->UseStringsJs();
 
   content::WebUIDataSource::Add(profile, html_source);

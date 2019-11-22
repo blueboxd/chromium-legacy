@@ -10,7 +10,8 @@
 Polymer({
   is: 'settings-crostini-subpage',
 
-  behaviors: [PrefsBehavior, WebUIListenerBehavior],
+  behaviors:
+      [PrefsBehavior, WebUIListenerBehavior, settings.RouteOriginBehavior],
 
   properties: {
     /** Preferences state. */
@@ -58,6 +59,12 @@ Polymer({
     },
   },
 
+  /**
+   * The route corresponding to this page.
+   * @private {!settings.Route|undefined}
+   */
+  route_: settings.routes.CROSTINI_DETAILS,
+
   observers: [
     'onCrostiniEnabledChanged_(prefs.crostini.enabled.value)',
     'onArcEnabledChanged_(prefs.arc.enabled.value)'
@@ -70,6 +77,15 @@ Polymer({
     this.addWebUIListener('crostini-installer-status-changed', callback);
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestCrostiniInstallerStatus();
+  },
+
+  ready: function() {
+    const r = settings.routes;
+    this.addFocusConfig_(r.CROSTINI_SHARED_PATHS, '#crostini-shared-paths');
+    this.addFocusConfig_(
+        r.CROSTINI_SHARED_USB_DEVICES, '#crostini-shared-usb-devices');
+    this.addFocusConfig_(r.CROSTINI_EXPORT_IMPORT, '#crostini-export-import');
+    this.addFocusConfig_(r.CROSTINI_ANDROID_ADB, '#crostini-enable-arc-adb');
   },
 
   /** @private */

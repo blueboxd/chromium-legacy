@@ -12,6 +12,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/power_monitor_test_base.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "components/media_message_center/media_controls_progress_view.h"
@@ -91,6 +92,10 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     // Enable media controls.
     feature_list.InitAndEnableFeature(features::kLockScreenMediaControls);
 
+    auto power_source = std::make_unique<base::PowerMonitorTestSource>();
+    power_source_ = power_source.get();
+    base::PowerMonitor::Initialize(std::move(power_source));
+
     LoginTestBase::SetUp();
 
     lock_contents_view_ = new LockContentsView(
@@ -119,6 +124,8 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     actions_.clear();
 
     LoginTestBase::TearDown();
+
+    base::PowerMonitor::ShutdownForTesting();
   }
 
   void EnableAllActions() {
@@ -248,6 +255,8 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
     return media_controls_view_->GetArtworkClipPath();
   }
 
+  base::PowerMonitorTestSource& GetTestPowerSource() { return *power_source_; }
+
   LockScreenMediaControlsView* media_controls_view_ = nullptr;
   AnimationWaiter* animation_waiter_ = nullptr;
 
@@ -262,6 +271,7 @@ class LockScreenMediaControlsViewTest : public LoginTestBase {
   LockContentsView* lock_contents_view_ = nullptr;
   std::unique_ptr<TestMediaController> media_controller_;
   std::set<MediaSessionAction> actions_;
+  base::PowerMonitorTestSource* power_source_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsViewTest);
 };
@@ -1149,6 +1159,24 @@ TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_Unlocked) {
   tester.ExpectUniqueSample(
       LockScreenMediaControlsView::kMediaControlsHideHistogramName,
       LockScreenMediaControlsView::HideReason::kUnlocked, 1);
+  tester.ExpectUniqueSample(
+      LockScreenMediaControlsView::kMediaControlsShownHistogramName,
+      LockScreenMediaControlsView::Shown::kShown, 1);
+}
+
+TEST_F(LockScreenMediaControlsViewTest, Histogram_Hide_DeviceSleep) {
+  base::HistogramTester tester;
+
+  SimulateMediaSessionChanged(
+      media_session::mojom::MediaPlaybackState::kPlaying);
+
+  GetTestPowerSource().GenerateSuspendEvent();
+
+  SimulateSessionUnlock();
+
+  tester.ExpectUniqueSample(
+      LockScreenMediaControlsView::kMediaControlsHideHistogramName,
+      LockScreenMediaControlsView::HideReason::kDeviceSleep, 1);
   tester.ExpectUniqueSample(
       LockScreenMediaControlsView::kMediaControlsShownHistogramName,
       LockScreenMediaControlsView::Shown::kShown, 1);

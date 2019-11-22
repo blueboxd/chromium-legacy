@@ -657,4 +657,24 @@ TEST_F(FindBufferTest, FindObjectReplacementCharacter) {
   ASSERT_EQ(1u, results->CountForTesting());
 }
 
+TEST_F(FindBufferTest, FindMaxCodepointWithReplacedElementAndMaxCodepoint) {
+  SetBodyContent("some text with <img/> <br> and \U0010FFFF (max codepoint)");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("\U0010FFFF", 0);
+  ASSERT_EQ(1u, results->CountForTesting());
+}
+
+TEST_F(FindBufferTest, FindMaxCodepointNormalText) {
+  SetBodyContent("some text");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("\U0010FFFF", 0);
+  ASSERT_EQ(0u, results->CountForTesting());
+}
+
+TEST_F(FindBufferTest, FindMaxCodepointWithReplacedElement) {
+  SetBodyContent("some text with <img/> <br>");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("\U0010FFFF", 0);
+  ASSERT_EQ(0u, results->CountForTesting());
+}
 }  // namespace blink

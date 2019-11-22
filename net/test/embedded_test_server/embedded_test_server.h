@@ -38,6 +38,7 @@ class TCPServerSocket;
 namespace test_server {
 
 class EmbeddedTestServerConnectionListener;
+class EmbeddedTestServerHandle;
 class HttpConnection;
 class HttpResponse;
 struct HttpRequest;
@@ -53,7 +54,7 @@ struct HttpRequest;
 //   test_server_ = std::make_unique<EmbeddedTestServer>();
 //   test_server_->RegisterRequestHandler(
 //       base::Bind(&FooTest::HandleRequest, base::Unretained(this)));
-//   ASSERT_TRUE(test_server_.Start());
+//   ASSERT_TRUE((test_server_handle_ = test_server_.StartAndReturnHandle()));
 // }
 //
 // std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
@@ -157,7 +158,12 @@ class EmbeddedTestServer {
   // Initializes and waits until the server is ready to accept requests.
   // This is the equivalent of calling InitializeAndListen() followed by
   // StartAcceptingConnections().
-  // Returns whether a listening socket has been successfully created.
+  // Returns a "handle" which will ShutdownAndWaitUntilComplete() when
+  // destroyed, or null if the listening socket could not be created.
+  EmbeddedTestServerHandle StartAndReturnHandle(int port = 0)
+      WARN_UNUSED_RESULT;
+
+  // Deprecated equivalent of StartAndReturnHandle().
   bool Start(int port = 0) WARN_UNUSED_RESULT;
 
   // Starts listening for incoming connections but will not yet accept them.
@@ -332,6 +338,23 @@ class EmbeddedTestServer {
   base::WeakPtrFactory<EmbeddedTestServer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
+};
+
+class EmbeddedTestServerHandle {
+ public:
+  EmbeddedTestServerHandle() = default;
+  EmbeddedTestServerHandle(EmbeddedTestServerHandle&& other);
+  EmbeddedTestServerHandle& operator=(EmbeddedTestServerHandle&& other);
+
+  ~EmbeddedTestServerHandle();
+
+  explicit operator bool() const { return test_server_; }
+
+ private:
+  friend class EmbeddedTestServer;
+
+  explicit EmbeddedTestServerHandle(EmbeddedTestServer* test_server);
+  EmbeddedTestServer* test_server_ = nullptr;
 };
 
 }  // namespace test_server

@@ -59,7 +59,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   bool HasValidTarget() const;
   SVGElement* targetElement() const { return target_element_; }
-  const QualifiedName& AttributeName() const { return attribute_name_; }
 
   void BeginByLinkActivation();
 
@@ -90,10 +89,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILTime ComputeNextIntervalTime(SMILTime presentation_time) const;
   SMILTime NextProgressTime(SMILTime elapsed) const;
-  void UpdateAnimatedValue(SVGSMILElement* result_element) {
-    UpdateAnimation(last_progress_.progress, last_progress_.repeat,
-                    result_element);
-  }
 
   void Reset();
 
@@ -106,15 +101,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void SetDocumentOrderIndex(unsigned index) { document_order_index_ = index; }
 
   wtf_size_t& PriorityQueueHandle() { return queue_handle_; }
-
-  virtual void ResetAnimatedType() = 0;
-  virtual void ClearAnimatedType() = 0;
-  virtual void ApplyResultsToTarget() = 0;
-
-  // Returns true if this animation "sets" the
-  // value of the animation. Thus all previous
-  // animations are rendered useless.
-  virtual bool OverwritesUnderlyingAnimationValue() const = 0;
 
   void ScheduleEvent(const AtomicString& event_type);
   void ScheduleRepeatEvents();
@@ -137,7 +123,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   virtual void StartedActiveInterval();
   void QueueDiscard();
 
-  QualifiedName attribute_name_;
+  struct ProgressState {
+    float progress;
+    unsigned repeat;
+  };
+  const ProgressState& GetProgressState() const { return last_progress_; }
 
  private:
   void BuildPendingResource() override;
@@ -145,9 +135,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void ClearConditions();
 
   void EndedActiveInterval();
-  virtual void UpdateAnimation(float percent,
-                               unsigned repeat,
-                               SVGSMILElement* result_element) = 0;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
     return false;
@@ -243,10 +230,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   }
   ActiveState DetermineActiveState(SMILTime elapsed) const;
 
-  struct ProgressState {
-    float progress;
-    unsigned repeat;
-  };
   ProgressState CalculateProgressState(SMILTime presentation_time) const;
 
   Member<SVGElement> target_element_;

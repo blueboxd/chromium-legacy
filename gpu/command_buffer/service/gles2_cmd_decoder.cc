@@ -2194,9 +2194,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool SimulateFixedAttribs(const char* function_name,
                             GLuint max_vertex_accessed,
                             bool* simulated,
-                            GLsizei primcount,
-                            GLint basevertex,
-                            GLuint baseinstance);
+                            GLsizei primcount);
   void RestoreStateForSimulatedFixedAttribs();
 
   bool CheckMultiDrawArraysVertices(const char* function_name,
@@ -11060,9 +11058,7 @@ void GLES2DecoderImpl::RestoreStateForAttrib(
 bool GLES2DecoderImpl::SimulateFixedAttribs(const char* function_name,
                                             GLuint max_vertex_accessed,
                                             bool* simulated,
-                                            GLsizei primcount,
-                                            GLint basevertex,
-                                            GLuint baseinstance) {
+                                            GLsizei primcount) {
   DCHECK(simulated);
   *simulated = false;
   if (gl_version_info().SupportsFixedType())
@@ -11089,8 +11085,8 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(const char* function_name,
     const VertexAttrib* attrib = *it;
     const Program::VertexAttrib* attrib_info =
         state_.current_program->GetAttribInfoByLocation(attrib->index());
-    GLuint max_accessed = attrib->MaxVertexAccessed(
-        primcount, max_vertex_accessed, basevertex, baseinstance);
+    GLuint max_accessed =
+        attrib->MaxVertexAccessed(primcount, max_vertex_accessed);
     GLuint num_vertices = max_accessed + 1;
     if (num_vertices == 0) {
       LOCAL_SET_GL_ERROR(
@@ -11135,8 +11131,8 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(const char* function_name,
     const VertexAttrib* attrib = *it;
     const Program::VertexAttrib* attrib_info =
         state_.current_program->GetAttribInfoByLocation(attrib->index());
-    GLuint max_accessed = attrib->MaxVertexAccessed(
-        primcount, max_vertex_accessed, basevertex, baseinstance);
+    GLuint max_accessed =
+        attrib->MaxVertexAccessed(primcount, max_vertex_accessed);
     GLuint num_vertices = max_accessed + 1;
     if (num_vertices == 0) {
       LOCAL_SET_GL_ERROR(
@@ -11384,11 +11380,9 @@ ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawArrays(
   bool simulated_fixed_attribs = false;
   // The branch with fixed attrib is not meant to be used
   // normally but just to pass OpenGL ES 2 conformance where there's no
-  // basevertex and baseinstance support. So just pass in 0 for base vertex and
-  // base instance.
+  // basevertex and baseinstance support.
   if (SimulateFixedAttribs(function_name, total_max_vertex_accessed,
-                           &simulated_fixed_attribs, total_max_primcount, 0,
-                           0)) {
+                           &simulated_fixed_attribs, total_max_primcount)) {
     bool textures_set;
     if (!PrepareTexturesForRender(&textures_set, function_name)) {
       return error::kNoError;
@@ -11645,13 +11639,11 @@ ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawElements(
     return error::kNoError;
   }
   bool simulated_fixed_attribs = false;
-  // TODO(shrekshao) The branch with fixed attrib is not meant to be used
+  // The branch with fixed attrib is not meant to be used
   // normally But just to pass OpenGL ES 2 conformance where there's no
-  // basevertex and baseinstance support So just pass in 0 for base vertex and
-  // base instance
+  // basevertex and baseinstance support.
   if (SimulateFixedAttribs(function_name, total_max_vertex_accessed,
-                           &simulated_fixed_attribs, total_max_primcount, 0,
-                           0)) {
+                           &simulated_fixed_attribs, total_max_primcount)) {
     bool textures_set;
     if (!PrepareTexturesForRender(&textures_set, function_name)) {
       return error::kNoError;

@@ -521,21 +521,25 @@ void TranslateBubbleView::ShowOptionsMenuTab(views::Button* source) {
       OptionsMenuItem::CHANGE_TARGET_LANGUAGE,
       IDS_TRANSLATE_BUBBLE_CHANGE_TARGET_LANGUAGE);
 
+  auto original_language =
+      model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
+
   // Don't show "Always translate <language>" in incognito mode, because it
-  // doesn't do anything anyways.
-  if (!is_in_incognito_window_) {
+  // doesn't do anything anyways. Don't show if the source language is an empty
+  // string.
+  if (!is_in_incognito_window_ && !original_language.empty()) {
     tab_options_menu_model_->AddCheckItem(
         OptionsMenuItem::ALWAYS_TRANSLATE_LANGUAGE,
-        l10n_util::GetStringFUTF16(
-            IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
-            model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
+        l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
+                                   original_language));
   }
 
-  tab_options_menu_model_->AddItem(
-      OptionsMenuItem::NEVER_TRANSLATE_LANGUAGE,
-      l10n_util::GetStringFUTF16(
-          IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
-          model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
+  if (!original_language.empty()) {
+    tab_options_menu_model_->AddItem(
+        OptionsMenuItem::NEVER_TRANSLATE_LANGUAGE,
+        l10n_util::GetStringFUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
+                                   original_language));
+  }
 
   if (model_->CanBlacklistSite()) {
     tab_options_menu_model_->AddItemWithStringId(
@@ -547,7 +551,9 @@ void TranslateBubbleView::ShowOptionsMenuTab(views::Button* source) {
       OptionsMenuItem::CHANGE_SOURCE_LANGUAGE,
       l10n_util::GetStringFUTF16(
           IDS_TRANSLATE_BUBBLE_CHANGE_SOURCE_LANGUAGE,
-          model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
+          original_language.empty()
+              ? l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_UNKNOWN_LANGUAGE)
+              : original_language));
 
   options_menu_runner_ = std::make_unique<views::MenuRunner>(
       tab_options_menu_model_.get(), views::MenuRunner::COMBOBOX);

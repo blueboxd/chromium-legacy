@@ -7,7 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -30,7 +30,7 @@ SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
                           IDR_SIGNIN_EMAIL_CONFIRMATION_APP_JS);
   source->AddResourcePath("signin_shared_css.js", IDR_SIGNIN_SHARED_CSS_JS);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"signinEmailConfirmationTitle", IDS_SIGNIN_EMAIL_CONFIRMATION_TITLE},
       {"signinEmailConfirmationCreateProfileButtonTitle",
        IDS_SIGNIN_EMAIL_CONFIRMATION_CREATE_PROFILE_RADIO_BUTTON_TITLE},
@@ -45,7 +45,7 @@ SigninEmailConfirmationUI::SigninEmailConfirmationUI(content::WebUI* web_ui)
       {"signinEmailConfirmationCloseLabel",
        IDS_SIGNIN_EMAIL_CONFIRMATION_CLOSE_BUTTON_LABEL},
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   base::DictionaryValue strings;
   webui::SetLoadTimeDataDefaults(g_browser_process->GetApplicationLocale(),

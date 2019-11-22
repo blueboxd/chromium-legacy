@@ -50,7 +50,8 @@ class OpenXrApiWrapper {
   XrResult EndFrame();
 
   XrResult GetHeadPose(base::Optional<gfx::Quaternion>* orientation,
-                       base::Optional<gfx::Point3F>* position) const;
+                       base::Optional<gfx::Point3F>* position,
+                       bool* emulated_position) const;
   void GetHeadFromEyes(XrView* left, XrView* right) const;
 
   gfx::Size GetViewSize() const;

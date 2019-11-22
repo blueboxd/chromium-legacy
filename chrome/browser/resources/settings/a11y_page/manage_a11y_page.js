@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-manage-a11y-page',
 
-  behaviors: [WebUIListenerBehavior, settings.RouteObserverBehavior],
+  behaviors: [WebUIListenerBehavior, settings.RouteOriginBehavior],
 
   properties: {
     /**
@@ -19,41 +19,6 @@ Polymer({
     prefs: {
       type: Object,
       notify: true,
-    },
-
-    /** @private {!Map<string, string>} */
-    focusConfig_: {
-      type: Object,
-      value: function() {
-        const map = new Map();
-        if (settings.routes.MANAGE_TTS_SETTINGS) {
-          map.set(
-              settings.routes.MANAGE_TTS_SETTINGS.path, '#ttsSubpageButton');
-        }
-        if (settings.routes.MANAGE_CAPTION_SETTINGS) {
-          map.set(
-              settings.routes.MANAGE_CAPTION_SETTINGS.path,
-              '#captionsSubpageButton');
-        }
-        if (settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS) {
-          map.set(
-              settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS.path,
-              '#switchAccessSubpageButton');
-        }
-        if (settings.routes.DISPLAY) {
-          map.set(settings.routes.DISPLAY.path, '#displaySubpageButton');
-        }
-        if (settings.routes.APPEARANCE) {
-          map.set(settings.routes.APPEARANCE.path, '#appearanceSubpageButton');
-        }
-        if (settings.routes.KEYBOARD) {
-          map.set(settings.routes.KEYBOARD.path, '#keyboardSubpageButton');
-        }
-        if (settings.routes.POINTERS) {
-          map.set(settings.routes.POINTERS.path, '#pointerSubpageButton');
-        }
-        return map;
-      },
     },
 
     screenMagnifierZoomOptions_: {
@@ -162,12 +127,15 @@ Polymer({
     },
 
     /**
-     * |hasKeyboard_|starts undefined so observers don't trigger
+     * |hasKeyboard_| starts undefined so observers don't trigger
      * until it has been populated.
      * @private
      */
     hasKeyboard_: Boolean,
   },
+
+  /** @private {!Map<string, string>} */
+  focusConfig_: new Map(),
 
   /**
    * The route corresponding to this page.
@@ -188,28 +156,16 @@ Polymer({
         'startup-sound-enabled-updated',
         this.updateStartupSoundEnabled_.bind(this));
     chrome.send('getStartupSoundEnabled');
-  },
 
-  /**
-   * settings.RouteObserverBehavior
-   * @param {!settings.Route} newRoute
-   * @param {!settings.Route} oldRoute
-   * @protected
-   */
-  currentRouteChanged: function(newRoute, oldRoute) {
-    // Don't attempt to focus any anchor element, unless last navigation was a
-    // 'pop' (backwards) navigation.
-    if (!settings.lastRouteChangeWasPopstate()) {
-      return;
-    }
-
-    const focusSelector = this.focusConfig_.get(oldRoute.path);
-
-    if (this.route_ != newRoute || !focusSelector) {
-      return;
-    }
-
-    cr.ui.focusWithoutInk(assert(this.$$(focusSelector)));
+    const r = settings.routes;
+    this.addFocusConfig_(r.MANAGE_TTS_SETTINGS, '#ttsSubpageButton');
+    this.addFocusConfig_(r.MANAGE_CAPTION_SETTINGS, '#captionsSubpageButton');
+    this.addFocusConfig_(
+        r.MANAGE_SWITCH_ACCESS_SETTINGS, '#switchAccessSubpageButton');
+    this.addFocusConfig_(r.DISPLAY, '#displaySubpageButton');
+    this.addFocusConfig_(r.APPEARANCE, '#appearanceSubpageButton');
+    this.addFocusConfig_(r.KEYBOARD, '#keyboardSubpageButton');
+    this.addFocusConfig_(r.POINTERS, '#pointerSubpageButton');
   },
 
   /**

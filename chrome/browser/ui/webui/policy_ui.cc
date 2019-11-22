@@ -8,8 +8,8 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/policy_ui_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -22,7 +22,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
       content::WebUIDataSource::Create(chrome::kChromeUIPolicyHost);
   PolicyUIHandler::AddCommonLocalizedStringsToSource(source);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       // Localized strings (alphabetical order).
       {"exportPoliciesJSON", IDS_EXPORT_POLICIES_JSON},
       {"filterPlaceholder", IDS_POLICY_FILTER_PLACEHOLDER},

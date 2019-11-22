@@ -283,6 +283,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     private NavigationPopup mNavigationPopup;
     private NavigationSheet mNavigationSheet;
 
+    private StartSurface mStartSurface;
+
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
      */
@@ -692,17 +694,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             if (isTablet()) {
                 mLayoutManager = new LayoutManagerChromeTablet(compositorViewHolder);
             } else {
-                StartSurface startSurface = null;
-
                 if (FeatureUtilities.isGridTabSwitcherEnabled()) {
                     TabManagementDelegate tabManagementDelegate =
                             TabManagementModuleProvider.getDelegate();
                     if (tabManagementDelegate != null) {
-                        startSurface = tabManagementDelegate.createStartSurface(this);
+                        mStartSurface = tabManagementDelegate.createStartSurface(this);
                     }
                 }
 
-                mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, startSurface);
+                mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, mStartSurface);
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
 
@@ -1035,6 +1035,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             if (getCurrentTabModel() != null) {
                 RecordHistogram.recordCountHistogram(
                         TAB_COUNT_ON_RETURN, getCurrentTabModel().getCount());
+            }
+            if (FeatureUtilities.isGridTabSwitcherEnabled()) {
+                assert !getCurrentTabModel().isIncognito();
+                mStartSurface.getController().enableRecordingFirstMeaningfulPaint(
+                        getOnCreateTimestampMs());
             }
             toggleOverview();
             return;

@@ -20,6 +20,7 @@ class Point;
 }  // namespace gfx
 
 namespace ui {
+class AcceleratorProvider;
 class MenuModel;
 }
 
@@ -33,6 +34,8 @@ class TabStripUI : public content::WebUIController {
    public:
     Embedder() = default;
     virtual ~Embedder() {}
+
+    virtual const ui::AcceleratorProvider* GetAcceleratorProvider() const = 0;
 
     virtual void CloseContainer() = 0;
 

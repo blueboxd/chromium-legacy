@@ -1576,10 +1576,10 @@ group("extra_resources") {
       "//chrome/browser/resources:os_settings_resources",
       "//chrome/browser/resources/chromeos:cellular_setup_resources",
       "//chrome/browser/resources/chromeos:multidevice_setup_resources",
-      "//chrome/browser/resources/chromeos/autoclick:build",
-      "//chrome/browser/resources/chromeos/chromevox",
-      "//chrome/browser/resources/chromeos/select_to_speak:build",
-      "//chrome/browser/resources/chromeos/switch_access:build",
+      "//chrome/browser/resources/chromeos/accessibility/autoclick:build",
+      "//chrome/browser/resources/chromeos/accessibility/chromevox",
+      "//chrome/browser/resources/chromeos/accessibility/select_to_speak:build",
+      "//chrome/browser/resources/chromeos/accessibility/switch_access:build",
       "//third_party/ink:ink_resources",
     ]
   }
@@ -1728,12 +1728,6 @@ if (is_android) {
   java_cpp_enum("payments_journey_logger_enum_javagen") {
     sources = [
       "../components/payments/core/journey_logger.h",
-    ]
-  }
-
-  java_cpp_enum("pref_enum_javagen") {
-    sources = [
-      "browser/android/preferences/prefs.h",
     ]
   }
 

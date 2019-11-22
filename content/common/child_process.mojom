@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "components/tracing/common/background_tracing_agent.mojom";
+import "ipc/ipc.mojom";
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/generic_pending_receiver.mojom";
 import "services/service_manager/public/mojom/service.mojom";
@@ -60,6 +61,9 @@ interface ChildProcess {
   // Force the child process to crash immediately (i.e. a hard crash, no
   // cleanup, generating a crash report).
   CrashHungProcess();
+
+  // Binds the legacy IPC Channel bootstrapping pipe.
+  BootstrapLegacyIpc(pending_receiver<IPC.mojom.ChannelBootstrap> receiver);
 
   // Tells the child process to run an instance of a service named
   // |service_name|, binding it to |receiver|. This is used by the browser to

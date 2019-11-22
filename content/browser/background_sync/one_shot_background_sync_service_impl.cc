@@ -17,17 +17,17 @@ namespace content {
 
 OneShotBackgroundSyncServiceImpl::OneShotBackgroundSyncServiceImpl(
     BackgroundSyncContextImpl* background_sync_context,
-    mojo::InterfaceRequest<blink::mojom::OneShotBackgroundSyncService> request)
+    mojo::PendingReceiver<blink::mojom::OneShotBackgroundSyncService> receiver)
     : background_sync_context_(background_sync_context),
-      binding_(this, std::move(request)) {
+      receiver_(this, std::move(receiver)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(background_sync_context_);
 
   registration_helper_ = std::make_unique<BackgroundSyncRegistrationHelper>(
       background_sync_context_);
 
-  binding_.set_connection_error_handler(base::BindOnce(
-      &OneShotBackgroundSyncServiceImpl::OnConnectionError,
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &OneShotBackgroundSyncServiceImpl::OnMojoDisconnect,
       base::Unretained(this) /* the channel is owned by |this| */));
 }
 
@@ -35,7 +35,7 @@ OneShotBackgroundSyncServiceImpl::~OneShotBackgroundSyncServiceImpl() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
-void OneShotBackgroundSyncServiceImpl::OnConnectionError() {
+void OneShotBackgroundSyncServiceImpl::OnMojoDisconnect() {
   background_sync_context_->OneShotSyncServiceHadConnectionError(this);
   // |this| is now deleted.
 }

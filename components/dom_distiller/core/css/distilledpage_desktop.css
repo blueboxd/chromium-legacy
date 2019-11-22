@@ -2,273 +2,275 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* This file should contain style used on desktop but not Android or iOS. */
+/* This file should contain style used on desktop but not Android or i-oS. */
 
 :root {
-  --fontSizePercent: 22%;
-  --mdblue: rgb(26, 115, 232);
-  --mdblue-faint: rgba(26, 115, 232, .2);
-  --mdgrey: rgb(95, 99, 104);
+  --font-size-percent: 22%;
+  --google-blue-600: 26, 115, 232;
+  --google-grey-700: 95, 99, 104;
+  --google-grey-800: 60, 64, 67;
 }
 
 fieldset {
-  border: none;
   background: transparent;
+  border: none;
 }
 
-#mainContent h1 {
+#main-content h1 {
   font-size: 1.5em;
 }
 
-#mainContent article {
+#main-content article {
   margin-top: 2em;
 }
 
-.screenReaderOnly {
-  display: block;
+.screen-reader-only {
+  border: none;
   color: transparent;
-  height: 0px;
+  display: block;
+  height: 0;
   margin: 0;
   padding: 0;
-  border: none;
   user-select: none;
 }
 
-#mainContent {
-  max-width: 100%;
-  width: 35em;
-  padding: 1em;
-  margin-top: 1em;
+#main-content {
   margin-bottom: 1em;
+  margin-top: 1em;
+  max-width: 100%;
+  padding: 1em;
+  width: 35em;
 }
 
-#settingsContainer {
+#settings-container {
+  border-bottom: thin solid gray;
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  max-width: 90%;
   position: absolute;
   width: inherit;
-  max-width: 90%;
-  flex: 1 1 auto;
-  display: flex;
-  justify-content: flex-end;
-  border-bottom: thin solid gray;
 }
 
-#settingsContainer button {
+#settings-container button {
   background: transparent;
   border: none;
   border-radius: 50%;
-  color: var(--mdgrey);
+  color: rgb(var(--google-grey-700));
 }
 
-#settingsContainer button .material-icons {
+#settings-container button .material-icons {
   user-select: none;
 }
 
-#settingsContainer button.activated {
+#settings-container button.activated {
   background-color: rgba(0, 0, 0, .1);
 }
 
-.dark #settingsContainer button.activated {
+.dark #settings-container button.activated {
   background-color: rgba(255, 255, 255, .1);
 }
 
-#settingsContainer button:focus {
+#settings-container button:focus {
   background-color: rgba(95, 99, 104, .2);
-  box-shadow: 0px 0px 0px 8px rgba(95, 99, 104, .2);
+  box-shadow: 0 0 0 8px rgba(95, 99, 104, .2);
   outline: none;
 }
 
-#settingsContainer button#settingsToggle {
+#settings-container button#settings-toggle {
   border-radius: 16px;
 }
 
-.dark #settingsToggle {
+.dark #settings-toggle {
   color: #E0E0E0;
 }
 
-#settingsDialog {
-  top: 3em;
-  left: auto;
+#settings-dialog {
   border: none;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
               0 4px 8px 3px rgba(60, 64, 67, 0.15);
-  width: 320px;
-  height: 168px;
-  padding: 16px;
   box-sizing: border-box;
-  font-size: 13px;
+  color: rgb(var(--google-grey-800));
   font-family: 'Roboto Regular', 'Roboto', sans-serif;
-  color: #3C4043;
+  font-size: 13px;
+  height: 168px;
+  left: auto;
+  padding: 16px;
+  top: 3em;
+  width: 320px;
 
   /* The z-index is set so that any "positioned" elements in the article text
    * (e.g. footnotes) are rendered below the dialog. */
   z-index: 1;
 }
 
-#settingsDialog h2 {
-  font-size: 14px;
+#settings-dialog h2 {
   font-family: 'Roboto Medium', 'Roboto', sans-serif;
+  font-size: 14px;
 }
 
-#settingsHeader {
+#settings-header {
   margin-bottom: 16px;
 }
 
-#settingsHeader > * {
+#settings-header > * {
   display: inline;
 }
 
-#closeSettingsButton {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 18px;
+#close-settings {
   height: 18px;
   padding: 0;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  width: 18px;
 }
 
-#closeSettingsButton > * {
+#close-settings > * {
   font-size: 18px;
   margin: 0;
 }
 
-
-#settingsFields {
-  width: 100%;
+#settings-fields {
   display: grid;
   grid-row-gap: 12px;
   grid-template:
-    "style color" 32px
-    "size size"  32px
+    'style color' 32px
+    'size size'  32px
     / 50% 50%;
+  width: 100%;
 }
 
-select#fontFamilySelection {
+select#font-family-selection {
   background: transparent;
   border: 1px solid silver;
   border-radius: 2px;
-  width: 100%;
-  height: 32px;
   color: inherit;
-  font-size: inherit;
   font-family: inherit;
+  font-size: inherit;
+  height: 32px;
+  width: 100%;
 }
 
-select#fontFamilySelection:focus {
-  outline-color: var(--mdblue);
+select#font-family-selection:focus {
+  outline-color: rgb(var(--google-blue-600));
 }
 
-#themeSelection ul {
-  list-style-type: none;
+#theme-selection ul {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
+  list-style-type: none;
 }
 
-.themeOption {
+.theme-option {
   display: block;
+  height: 32px;
   position: relative;
   width: 32px;
-  height: 32px;
 }
 
-.themeOption input[type="radio"] {
+.theme-option input[type='radio'] {
   -webkit-appearance: none;
   appearance: none;
-  width: 32px;
-  height: 32px;
   border-radius: 50%;
+  height: 32px;
   margin: 0;
   padding: 0;
+  width: 32px;
 }
 
-.themeOption input[type="radio"].light {
+.theme-option input[type='radio'].light {
   border: 1px solid gray;
 }
 
-.themeOption input[type="radio"]:focus {
+.theme-option input[type='radio']:focus {
+  border: 2px solid rgb(var(--google-blue-600));
   outline: none;
-  border: 2px solid var(--mdblue);
 }
 
 .checkmark {
+  bottom: 0;
   display: none;
-  width: 16px;
   height: 16px;
   position: absolute;
-  bottom: 0;
   right: 0;
+  width: 16px;
 }
 
 .checkmark .material-icons {
-  font-size: 16px;
-  color: var(--mdblue);
   background-color: white;
   border-radius: 50%;
+  color: rgb(var(--google-blue-600));
+  font-size: 16px;
   user-select: none;
 }
 
-.themeOption input[type="radio"]:checked + .checkmark {
+.theme-option input[type='radio']:checked + .checkmark {
   display: inline;
 }
 
-#fontSizeWrapper {
+#font-size-wrapper {
   grid-area: size;
 }
 
-#fontSizeSelection {
+#font-size-selection {
   -webkit-appearance: none;
-  width: 100%;
-  margin: 0;
   background: transparent;
+  margin: 0;
+  width: 100%;
 }
 
-#fontSizeSelection:focus {
+#font-size-selection:focus {
   outline: none;
 }
 
-#fontSizeSelection::-webkit-slider-thumb {
+#font-size-selection::-webkit-slider-thumb {
   -webkit-appearance: none;
+  background-color: rgb(var(--google-blue-600));
   border-radius: 50%;
-  background-color: var(--mdblue);
-  width: 10px;
   height: 10px;
 
   /* Position the thumb over the slider track. */
   margin-top: -4px;
 
+  position: relative;
+  width: 10px;
+
   /* Render the thumb on top of the tickmarks. We can't just rearrange the HTML
    * because the tickmarks need to render above the slider's track but below the
    * thumb. */
-  position: relative;
   z-index: 1;
 }
 
-#fontSizeSelection:focus::-webkit-slider-thumb {
-  box-shadow: 0px 0px 0px 11px var(--mdblue-faint);
+#font-size-selection:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 11px rgba(var(--google-blue-600), .2);
 }
 
-#fontSizeSelection::-webkit-slider-container {
+#font-size-selection::-webkit-slider-container {
   /* Increase the clickable area of the slider. */
-  border-top: 5px solid transparent;
   border-bottom: 5px solid transparent;
+  border-top: 5px solid transparent;
 }
 
-#fontSizeSelection::-webkit-slider-runnable-track {
-  height: 2px;
-  width: 100%;
-
+#font-size-selection::-webkit-slider-runnable-track {
   /* Make the track opaque blue to the left of the thumb and mostly transparent
    * to the right of the thumb. */
   background: linear-gradient(
-    to right, var(--mdblue), var(--mdblue) var(--fontSizePercent),
-    var(--mdblue-faint) var(--fontSizePercent), var(--mdblue-faint));
+      to right,
+      rgb(var(--google-blue-600)),
+      rgb(var(--google-blue-600)) var(--font-size-percent),
+      rgba(var(--google-blue-600), .2) var(--font-size-percent),
+      rgba(var(--google-blue-600), .2)
+  );
+
+  height: 2px;
+  width: 100%;
 }
 
 .tickmarks {
   display: flex;
-  justify-content: space-between;
-  width: 100%;
-  padding-top: 0;
   height: 2px;
+  justify-content: space-between;
 
   /* Position the tickmarks over the slider track. */
   margin-top: -19px;
@@ -277,24 +279,27 @@ select#fontFamilySelection:focus {
    * datalist. Setting the height property directly does not seem to have an
    * impact. */
   overflow: hidden;
+
+  padding-top: 0;
+  width: 100%;
 }
 
 .tickmarks option {
-  width: 1px;
   padding: 0;
+  width: 1px;
 }
 
-.tickmarks option.beforeThumb {
+.tickmarks option.before-thumb {
   background: white;
 }
 
-.tickmarks option.afterThumb {
-  background: var(--mdblue);
+.tickmarks option.after-thumb {
+  background: rgb(var(--google-blue-600));
 }
 
 .label-container {
   display: flex;
-  justify-content: space-between;
   font-size: 13px;
+  justify-content: space-between;
   padding-top: 8px;
 }

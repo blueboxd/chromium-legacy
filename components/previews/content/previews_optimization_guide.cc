@@ -98,6 +98,15 @@ PreviewsOptimizationGuide::PreviewsOptimizationGuide(
 
 PreviewsOptimizationGuide::~PreviewsOptimizationGuide() = default;
 
+bool PreviewsOptimizationGuide::ShouldShowPreview(
+    content::NavigationHandle* navigation_handle) {
+  optimization_guide::OptimizationGuideDecision decision =
+      optimization_guide_decider_->ShouldTargetNavigation(
+          navigation_handle,
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD);
+  return decision == optimization_guide::OptimizationGuideDecision::kTrue;
+}
+
 bool PreviewsOptimizationGuide::CanApplyPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
@@ -118,11 +127,8 @@ bool PreviewsOptimizationGuide::CanApplyPreview(
   // conditions match a painful page load as a prerequisite for returning true.
   optimization_guide::OptimizationMetadata optimization_metadata;
   optimization_guide::OptimizationGuideDecision decision =
-      optimization_guide_decider_
-          ->ShouldTargetNavigationAndCanApplyOptimization(
-              navigation_handle,
-              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD,
-              *optimization_type, &optimization_metadata);
+      optimization_guide_decider_->CanApplyOptimization(
+          navigation_handle, *optimization_type, &optimization_metadata);
 
   // Return false if we are even unsure if we can apply the optimization (i.e.
   // hint not loaded yet or just not applicable).

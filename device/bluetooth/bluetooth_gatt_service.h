@@ -34,7 +34,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattService {
   };
 
   // The ErrorCallback is used by methods to asynchronously report errors.
-  using ErrorCallback = base::Callback<void(GattErrorCode error_code)>;
+  using ErrorCallback = base::OnceCallback<void(GattErrorCode error_code)>;
 
   // Identifier used to uniquely identify a GATT service object. This is
   // different from the service UUID: while multiple services with the same UUID

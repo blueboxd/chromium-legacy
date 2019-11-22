@@ -1132,11 +1132,6 @@ if (!is_android) {
       "../browser/sessions/tab_restore_service_browsertest.cc",
       "../browser/sessions/tab_restore_service_load_waiter.cc",
       "../browser/sessions/tab_restore_service_load_waiter.h",
-      "../browser/sharing/click_to_call/click_to_call_browsertest.cc",
-      "../browser/sharing/shared_clipboard/remote_copy_browsertest.cc",
-      "../browser/sharing/shared_clipboard/shared_clipboard_browsertest.cc",
-      "../browser/sharing/sharing_browsertest.cc",
-      "../browser/sharing/sharing_browsertest.h",
       "../browser/signin/consistency_cookie_browsertest.cc",
       "../browser/signin/e2e_tests/live_sign_in_test.cc",
       "../browser/signin/e2e_tests/live_test.cc",
@@ -1150,6 +1145,11 @@ if (!is_android) {
       "../browser/ui/manifest_web_app_browsertest.cc",
       "../browser/ui/passwords/google_password_manager_navigation_throttle_browsertest.cc",
       "../browser/ui/tabs/pinned_tab_service_browsertest.cc",
+      "../browser/ui/views/sharing/click_to_call_browsertest.cc",
+      "../browser/ui/views/sharing/remote_copy_browsertest.cc",
+      "../browser/ui/views/sharing/shared_clipboard_browsertest.cc",
+      "../browser/ui/views/sharing/sharing_browsertest.cc",
+      "../browser/ui/views/sharing/sharing_browsertest.h",
       "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
       "../browser/ui/views/tabs/tab_strip_browsertest.cc",
       "../browser/wake_lock/wake_lock_browsertest.cc",
@@ -1439,11 +1439,11 @@ if (!is_android) {
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/browser/chromeos:test_support",
         "//chrome/browser/media/router:test_support",
-        "//chrome/browser/resources/chromeos/autoclick:browser_tests",
-        "//chrome/browser/resources/chromeos/chromevox:browser_tests",
+        "//chrome/browser/resources/chromeos/accessibility/autoclick:browser_tests",
+        "//chrome/browser/resources/chromeos/accessibility/chromevox:browser_tests",
+        "//chrome/browser/resources/chromeos/accessibility/select_to_speak:browser_tests",
+        "//chrome/browser/resources/chromeos/accessibility/switch_access:browser_tests",
         "//chrome/browser/resources/chromeos/login:browser_tests",
-        "//chrome/browser/resources/chromeos/select_to_speak:browser_tests",
-        "//chrome/browser/resources/chromeos/switch_access:browser_tests",
         "//chrome/services/file_util/public/cpp:browser_tests",
         "//chromeos:test_support",
         "//chromeos/components/drivefs:test_support",
@@ -1465,6 +1465,8 @@ if (!is_android) {
         "//ui/events/devices:test_support",
         "//url",
       ]
+
+      sources += [ "../browser/policy/accessibility_policy_browsertest.cc" ]
     }
 
     if (include_js_tests) {
@@ -1744,6 +1746,7 @@ if (!is_android) {
         "../browser/extensions/extension_modules_apitest.cc",
         "../browser/extensions/extension_override_apitest.cc",
         "../browser/extensions/extension_resource_request_policy_apitest.cc",
+        "../browser/extensions/extension_samesite_cookies_browsertest.cc",
         "../browser/extensions/extension_startup_browsertest.cc",
         "../browser/extensions/extension_storage_apitest.cc",
         "../browser/extensions/extension_tab_util_browsertest.cc",
@@ -4442,6 +4445,11 @@ test("unit_tests") {
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
       "../browser/safe_browsing/test_extension_event_observer.cc",
       "../browser/safe_browsing/test_extension_event_observer.h",
+
+      # TODO(1026557): The below test depends on TestExtensionEventObserver.
+      # Maybe it should be changed to not use that class so that it could be
+      # run on all platforms and hopefully componentized?
+      "../browser/ssl/ssl_blocking_page_unittest.cc",
       "../browser/sync/glue/extensions_activity_monitor_unittest.cc",
       "../browser/sync_file_system/drive_backend/callback_helper_unittest.cc",
       "../browser/sync_file_system/drive_backend/callback_tracker_unittest.cc",

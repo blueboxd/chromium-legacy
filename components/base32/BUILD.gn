@@ -16,6 +16,7 @@ static_library("base32") {
 }
 
 static_library("base32_test_util") {
+  testonly = true
   sources = [
     "base32_test_util.cc",
     "base32_test_util.h",

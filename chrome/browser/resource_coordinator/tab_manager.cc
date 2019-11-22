@@ -34,6 +34,7 @@
 #include "chrome/browser/memory/oom_memory_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
@@ -221,6 +222,8 @@ void TabManager::Start() {
                        std::make_unique<ResourceCoordinatorSignalObserver>(
                            weak_ptr_factory_.GetWeakPtr())));
   }
+
+  LocalSiteCharacteristicsWebContentsObserver::MaybeCreateGraphObserver();
 
   g_browser_process->resource_coordinator_parts()
       ->tab_lifecycle_unit_source()

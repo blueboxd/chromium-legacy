@@ -9,7 +9,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/extensions/api/resources_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -41,7 +41,7 @@ void AddStringsForIdentity(base::DictionaryValue* dict) {
 }
 
 void AddStringsForPdf(base::DictionaryValue* dict) {
-  static constexpr LocalizedString kPdfResources[] = {
+  static constexpr webui::LocalizedString kPdfResources[] = {
     {"passwordDialogTitle", IDS_PDF_PASSWORD_DIALOG_TITLE},
     {"passwordPrompt", IDS_PDF_NEED_PASSWORD},
     {"passwordSubmit", IDS_PDF_PASSWORD_SUBMIT},

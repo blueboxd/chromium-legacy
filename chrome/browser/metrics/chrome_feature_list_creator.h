@@ -17,7 +17,6 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/prefs/pref_service.h"
-#include "services/preferences/public/cpp/in_process_service_factory.h"
 
 class ChromeMetricsServicesManagerClient;
 
@@ -63,9 +62,6 @@ class ChromeFeatureListCreator {
   std::unique_ptr<installer::MasterPreferences> TakeMasterPrefs();
 #endif
 
-  // Passes ownership of the |pref_service_factory_| to the caller.
-  std::unique_ptr<prefs::InProcessPrefServiceFactory> TakePrefServiceFactory();
-
   PrefService* local_state() { return local_state_.get(); }
   policy::ChromeBrowserPolicyConnector* browser_policy_connector() {
     return browser_policy_connector_.get();
@@ -107,8 +103,6 @@ class ChromeFeatureListCreator {
 
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
       browser_policy_connector_;
-
-  std::unique_ptr<prefs::InProcessPrefServiceFactory> pref_service_factory_;
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   std::unique_ptr<installer::MasterPreferences> installer_master_prefs_;

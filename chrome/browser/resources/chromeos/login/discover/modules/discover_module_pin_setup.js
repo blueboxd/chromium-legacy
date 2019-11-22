@@ -332,6 +332,13 @@ Polymer({
     },
 
     /** @private */
+    onBackButton_: function() {
+      this.password_ = '';
+      this.$.pinKeyboard.resetState();
+      this.step_ = PIN_SETUP_STEPS.START;
+    },
+
+    /** @private */
     onNextButton_: function() {
       this.onPinSubmit_();
     },

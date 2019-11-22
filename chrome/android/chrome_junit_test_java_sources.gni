@@ -87,6 +87,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/fullscreen/BrowserStateBrowserControlsVisibilityDelegateTest.java",
   "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientHelperTest.java",
   "junit/src/org/chromium/chrome/browser/history/HistoryDeletionBridgeTest.java",
+  "junit/src/org/chromium/chrome/browser/homepage/HomepagePolicyManagerTest.java",
   "junit/src/org/chromium/chrome/browser/image_fetcher/CachedImageFetcherTest.java",
   "junit/src/org/chromium/chrome/browser/image_fetcher/ImageFetcherFactoryTest.java",
   "junit/src/org/chromium/chrome/browser/image_fetcher/ImageFetcherTest.java",

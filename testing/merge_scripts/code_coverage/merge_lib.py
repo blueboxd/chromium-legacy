@@ -170,6 +170,8 @@ def _validate_and_convert_profraw(profraw_file, output_profdata_files,
     # that output.
     validation_output = subprocess.check_output(
         subprocess_cmd, stderr=subprocess.STDOUT)
+    logging.info('Validating and converting %r to %r succeeded with output: %r',
+                 profraw_file, output_profdata_file, validation_output)
     if 'Counter overflow' in validation_output:
       counter_overflow = True
     else:

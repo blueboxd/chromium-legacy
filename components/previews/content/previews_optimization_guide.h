@@ -34,11 +34,12 @@ class PreviewsOptimizationGuide {
       optimization_guide::OptimizationGuideDecider* optimization_guide_decider);
   virtual ~PreviewsOptimizationGuide();
 
+  // Returns whether a Preview should be shown for the current conditions.
+  virtual bool ShouldShowPreview(content::NavigationHandle* navigation_handle);
+
   // Returns whether |type| is allowed for the URL associated with
-  // |navigation_handle| and the current conditions. |previews_data| can be
-  // modified (for further details provided by hints). Note that this will
-  // return false if a hint is needed to determine if the preview is allowed but
-  // we do not have everything we need to make that determination in memory.
+  // |navigation_handle|. |previews_data| can be
+  // modified (for further details provided by hints).
   virtual bool CanApplyPreview(PreviewsUserData* previews_data,
                                content::NavigationHandle* navigation_handle,
                                PreviewsType type);

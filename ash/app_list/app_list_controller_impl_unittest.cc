@@ -37,6 +37,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -62,19 +63,20 @@ AppListView* GetAppListView() {
   return Shell::Get()->app_list_controller()->presenter()->GetView();
 }
 
+ContentsView* GetContentsView() {
+  return GetAppListView()->app_list_main_view()->contents_view();
+}
+
+views::View* GetExpandArrowView() {
+  return GetContentsView()->expand_arrow_view();
+}
+
 bool GetExpandArrowViewVisibility() {
-  return GetAppListView()
-      ->app_list_main_view()
-      ->contents_view()
-      ->expand_arrow_view()
-      ->GetVisible();
+  return GetExpandArrowView()->GetVisible();
 }
 
 SearchBoxView* GetSearchBoxView() {
-  return GetAppListView()
-      ->app_list_main_view()
-      ->contents_view()
-      ->GetSearchBoxView();
+  return GetContentsView()->GetSearchBoxView();
 }
 
 aura::Window* GetVirtualKeyboardWindow() {
@@ -82,6 +84,10 @@ aura::Window* GetVirtualKeyboardWindow() {
       ->keyboard_controller()
       ->keyboard_ui_controller()
       ->GetKeyboardWindow();
+}
+
+AppsGridView* GetAppsGridView() {
+  return GetContentsView()->GetAppsContainerView()->apps_grid_view();
 }
 
 void ShowAppListNow() {
@@ -113,6 +119,14 @@ class AppListControllerImplTest : public AshTestBase {
 
   std::unique_ptr<aura::Window> CreateTestWindow() {
     return AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  }
+
+  void PopulateItem(int num) {
+    for (int i = 0; i < num; i++) {
+      std::unique_ptr<AppListItem> item(
+          new AppListItem("app_id" + base::UTF16ToUTF8(base::FormatNumber(i))));
+      Shell::Get()->app_list_controller()->GetModel()->AddItem(std::move(item));
+    }
   }
 
  private:
@@ -250,6 +264,50 @@ TEST_F(AppListControllerImplTest, HideRoundingCornersWhenEmojiShows) {
   EXPECT_EQ(
       expected_transform,
       GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
+}
+
+// Verifies that the dragged item has the correct focusable siblings after drag
+// (https://crbug.com/990071).
+TEST_F(AppListControllerImplTest, CheckTabOrderAfterDragIconToShelf) {
+  // Adds three items to AppsGridView.
+  PopulateItem(3);
+
+  // Shows the app list in fullscreen.
+  ShowAppListNow();
+  ASSERT_EQ(AppListViewState::kPeeking, GetAppListView()->app_list_state());
+  GetEventGenerator()->GestureTapAt(
+      GetExpandArrowView()->GetBoundsInScreen().CenterPoint());
+  ASSERT_EQ(AppListViewState::kFullscreenAllApps,
+            GetAppListView()->app_list_state());
+
+  test::AppsGridViewTestApi apps_grid_view_test_api(GetAppsGridView());
+  const AppListItemView* item1 =
+      apps_grid_view_test_api.GetViewAtIndex(GridIndex(0, 0));
+  AppListItemView* item2 =
+      apps_grid_view_test_api.GetViewAtIndex(GridIndex(0, 1));
+  const AppListItemView* item3 =
+      apps_grid_view_test_api.GetViewAtIndex(GridIndex(0, 2));
+
+  // Verifies that AppListItemView has the correct focusable siblings before
+  // drag.
+  ASSERT_EQ(item1, item2->GetPreviousFocusableView());
+  ASSERT_EQ(item3, item2->GetNextFocusableView());
+
+  // Pins |item2| by dragging it to ShelfView.
+  ShelfView* shelf_view = GetPrimaryShelf()->GetShelfViewForTesting();
+  ASSERT_EQ(0, shelf_view->view_model()->view_size());
+  GetEventGenerator()->MoveMouseTo(item2->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->PressLeftButton();
+  item2->FireMouseDragTimerForTest();
+  GetEventGenerator()->MoveMouseTo(
+      shelf_view->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ReleaseLeftButton();
+  ASSERT_EQ(1, shelf_view->view_model()->view_size());
+
+  // Verifies that the dragged item has the correct previous/next focusable
+  // view after drag.
+  EXPECT_EQ(item1, item2->GetPreviousFocusableView());
+  EXPECT_EQ(item3, item2->GetNextFocusableView());
 }
 
 // Verifies that in clamshell mode the bounds of AppListView are correct when
@@ -488,11 +546,7 @@ TEST_P(HotseatAppListControllerImplTest, DragItemFromAppsGridView) {
   Shell::Get()->app_list_controller()->GetModel()->AddItem(
       std::make_unique<AppListItem>(app_id));
 
-  AppsGridView* apps_grid_view = GetAppListView()
-                                     ->app_list_main_view()
-                                     ->contents_view()
-                                     ->GetAppsContainerView()
-                                     ->apps_grid_view();
+  AppsGridView* apps_grid_view = GetAppsGridView();
   AppListItemView* app_list_item_view =
       test::AppsGridViewTestApi(apps_grid_view).GetViewAtIndex(GridIndex(0, 0));
   views::View* shelf_icon_view =

@@ -23,7 +23,7 @@
 #include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
-#include "content/browser/web_package/bundled_exchanges_handle.h"
+#include "content/browser/web_package/web_bundle_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
@@ -55,8 +55,8 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 namespace content {
 
 class AppCacheNavigationHandle;
-class BundledExchangesHandleTracker;
-class BundledExchangesNavigationInfo;
+class WebBundleHandleTracker;
+class WebBundleNavigationInfo;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationURLLoader;
@@ -175,8 +175,7 @@ class CONTENT_EXPORT NavigationRequest
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      std::unique_ptr<BundledExchangesHandleTracker>
-          bundled_exchanges_handle_tracker);
+      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker);
 
   // Creates a request at commit time. This should only be used for
   // renderer-initiated same-document navigations, and navigations whose
@@ -475,9 +474,8 @@ class CONTENT_EXPORT NavigationRequest
     return rfh_restored_from_back_forward_cache_;
   }
 
-  const BundledExchangesNavigationInfo* bundled_exchanges_navigation_info()
-      const {
-    return bundled_exchanges_navigation_info_.get();
+  const WebBundleNavigationInfo* web_bundle_navigation_info() const {
+    return web_bundle_navigation_info_.get();
   }
 
   // The NavigatorDelegate to notify/query for various navigation events.
@@ -1009,11 +1007,9 @@ class CONTENT_EXPORT NavigationRequest
   scoped_refptr<PrefetchedSignedExchangeCache>
       prefetched_signed_exchange_cache_;
 
-  // Tracks navigations within bundled exchanges file. Used when
-  // BundledHTTPExchanges feature is enabled or
-  // TrustableBundledExchangesFileUrl switch is set.
-  std::unique_ptr<BundledExchangesHandleTracker>
-      bundled_exchanges_handle_tracker_;
+  // Tracks navigations within a Web Bundle file. Used when WebBundles feature
+  // is enabled or TrustableWebBundleFileUrl switch is set.
+  std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker_;
 
   // The time this navigation was ready to commit.
   base::TimeTicks ready_to_commit_time_;
@@ -1039,24 +1035,22 @@ class CONTENT_EXPORT NavigationRequest
   // TODO(clamy): Revisit the unit test architecture.
   ThrottleChecksFinishedCallback complete_callback_for_testing_;
 
-  // The instance to process the BundledExchanges that's bound to this request.
-  // Used to navigate to the main resource URL of the BundledExchanges, and
+  // The instance to process the Web Bundle that's bound to this request.
+  // Used to navigate to the main resource URL of the Web Bundle, and
   // load it from the corresponding entry.
   // This is created in OnStartChecksComplete() and passed to the
   // RenderFrameHostImpl in CommitNavigation().
-  std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle_;
+  std::unique_ptr<WebBundleHandle> web_bundle_handle_;
 
-  // Keeps the bundled exchanges related information when |this| is for a
-  // navigation within a bundled exchanges file. Used when
-  // BundledHTTPExchanges feature is enabled or
-  // TrustableBundledExchangesFileUrl switch is set.
-  // For navigations to bundled exchanges file, this is cloned from
-  // |bundled_exchanges_handle_| in CommitNavigation(), and is passed to
+  // Keeps the Web Bundle related information when |this| is for a navigation
+  // within a Web Bundle file. Used when WebBundle feature is enabled or
+  // TrustableWebBundleFileUrl switch is set.
+  // For navigations to Web Bundle file, this is cloned from
+  // |web_bundle_handle_| in CommitNavigation(), and is passed to
   // NavigationEntry for the navigation. And for history (back / forward)
-  // navigations within the bundled exchanges file, this is cloned from the
-  // NavigationEntry and is used to create a BundledExchangesHandle.
-  std::unique_ptr<BundledExchangesNavigationInfo>
-      bundled_exchanges_navigation_info_;
+  // navigations within the Web Bundle file, this is cloned from the
+  // NavigationEntry and is used to create a WebBundleHandle.
+  std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info_;
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;

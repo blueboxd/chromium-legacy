@@ -29,7 +29,7 @@ PASS cloneContents
 PASS cloneRange
 PASS getContext 2d
 PASS getContext webgl
-FAIL createImageData Failed to execute 'createImageData' on 'CanvasRenderingContext2D': The provided value is not of type '(Uint8ClampedArray or Uint16Array or Float32Array)'
+FAIL createImageData assert_false: 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 should not be from top-level Realm expected false got true
 FAIL getImageData assert_false: 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 should not be from top-level Realm expected false got true
 PASS FontFace's load()
 Harness: the test ran to completion.

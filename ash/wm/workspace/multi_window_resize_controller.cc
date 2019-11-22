@@ -456,7 +456,7 @@ void MultiWindowResizeController::ShowNow() {
   resize_widget_.reset(new views::Widget);
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.name = "MultiWindowResizeController";
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = windows_.window1->GetRootWindow()->GetChildById(
       kShellWindowId_AlwaysOnTopContainer);

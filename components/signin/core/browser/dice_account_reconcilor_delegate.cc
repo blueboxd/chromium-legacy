@@ -270,15 +270,8 @@ bool DiceAccountReconcilorDelegate::ShouldRevokeTokensOnCookieDeleted() {
 }
 
 void DiceAccountReconcilorDelegate::OnReconcileFinished(
-    const CoreAccountId& first_account,
-    bool reconcile_is_noop) {
+    const CoreAccountId& first_account) {
   last_known_first_account_ = first_account;
-
-  // Migration happens on startup if the last reconcile was a no-op and the
-  // refresh tokens are Dice-compatible.
-  signin_client_->SetReadyForDiceMigration(
-      reconcile_is_noop && signin_client_->GetPrefs()->GetBoolean(
-                               prefs::kTokenServiceDiceCompatible));
 }
 
 }  // namespace signin

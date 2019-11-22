@@ -647,7 +647,7 @@ TEST_P(MojoInProcessInterfacePerfTest, SingleThreadPingPong) {
   RunPingPongServer(server_handle, "SingleProcess");
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MojoInProcessInterfacePerfTest,
                          testing::Values(InProcessMessageMode::kSerialized,
                                          InProcessMessageMode::kUnserialized));
@@ -712,7 +712,7 @@ TEST_P(MojoInProcessInterfacePassingPerfTest,
                             true /* associated */);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MojoInProcessInterfacePassingPerfTest,
                          testing::Values(InProcessMessageMode::kSerialized,
                                          InProcessMessageMode::kUnserialized));

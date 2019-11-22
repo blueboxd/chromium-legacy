@@ -16,7 +16,6 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace safe_browsing {
 
@@ -70,13 +69,13 @@ IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, TestBasicDialogBehavior) {
   // Simulating a click on ui::DIALOG_BUTTON_OK button results in a
   // CHANGE_PASSWORD action.
   ShowUi(std::string());
-  dialog_->GetDialogClientView()->AcceptWindow();
+  dialog_->AcceptDialog();
   EXPECT_EQ(WarningAction::CHANGE_PASSWORD, latest_user_action_);
 
   // Simulating a click on ui::DIALOG_BUTTON_CANCEL button results in an
   // IGNORE_WARNING action.
   ShowUi(std::string());
-  dialog_->GetDialogClientView()->CancelWindow();
+  dialog_->CancelDialog();
   EXPECT_EQ(WarningAction::IGNORE_WARNING, latest_user_action_);
 }
 

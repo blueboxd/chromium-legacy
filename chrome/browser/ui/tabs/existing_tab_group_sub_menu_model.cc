@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/tabs/existing_tab_group_sub_menu_model.h"
 
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
@@ -22,9 +24,10 @@ ExistingTabGroupSubMenuModel::ExistingTabGroupSubMenuModel(TabStripModel* model,
 void ExistingTabGroupSubMenuModel::Build() {
   // Start command ids after the parent menu's ids to avoid collisions.
   int group_index = kFirstCommandIndex;
-  for (TabGroupId group : model_->ListTabGroups()) {
+  for (TabGroupId group : model_->group_model()->ListTabGroups()) {
     if (ShouldShowGroup(model_, context_index_, group))
-      AddItem(group_index, model_->GetUserVisibleGroupTitle(group));
+      AddItem(group_index,
+              model_->group_model()->GetTabGroup(group)->GetDisplayedTitle());
     group_index++;
   }
 }
@@ -42,15 +45,15 @@ void ExistingTabGroupSubMenuModel::ExecuteCommand(int command_id,
   const int group_index = command_id - kFirstCommandIndex;
   // TODO(https://crbug.com/922736): If a group has been deleted, |group_index|
   // may refer to a different group than it did when the menu was created.
-  DCHECK_LT(size_t{group_index}, model_->ListTabGroups().size());
+  DCHECK_LT(size_t{group_index}, model_->group_model()->ListTabGroups().size());
   model_->ExecuteAddToExistingGroupCommand(
-      context_index_, model_->ListTabGroups()[group_index]);
+      context_index_, model_->group_model()->ListTabGroups()[group_index]);
 }
 
 // static
 bool ExistingTabGroupSubMenuModel::ShouldShowSubmenu(TabStripModel* model,
                                                      int context_index) {
-  for (TabGroupId group : model->ListTabGroups()) {
+  for (TabGroupId group : model->group_model()->ListTabGroups()) {
     if (ShouldShowGroup(model, context_index, group)) {
       return true;
     }

@@ -26,6 +26,43 @@ gfx::Rect CropRectangle(const gfx::Rect& input_rect,
   return result;
 }
 
+gfx::Rect ScaleRectangle(const gfx::Rect& input_rect,
+                         gfx::Size original,
+                         gfx::Size scaled) {
+  if (input_rect.IsEmpty()) {
+    return input_rect;
+  }
+  gfx::Rect result;
+  // Rounded down.
+  result.set_x(input_rect.x() * scaled.width() / original.width());
+  result.set_y(input_rect.y() * scaled.height() / original.height());
+  // rounded up.
+  result.set_width(input_rect.width() * scaled.width() / original.width());
+  result.set_height(input_rect.height() * scaled.height() / original.height());
+  // Snap to 2x2 grid because of UV subsampling.
+  if (result.x() % 2) {
+    result.set_x(result.x() - 1);
+    result.set_width(result.width() + 1);
+  }
+  if (result.y() % 2) {
+    result.set_y(result.y() - 1);
+    result.set_height(result.height() + 1);
+  }
+  if (result.width() % 2) {
+    result.set_width(result.width() + 1);
+  }
+  if (result.height() % 2) {
+    result.set_height(result.height() + 1);
+  }
+  // Expand the rect by 2 pixels in each direction, to include any possible
+  // scaling artifacts.
+  result.set_x(result.x() - 2);
+  result.set_y(result.y() - 2);
+  result.set_width(result.width() + 4);
+  result.set_height(result.height() + 4);
+  result.Intersect(gfx::Rect(0, 0, scaled.width(), scaled.height()));
+  return result;
+}
 }  // anonymous namespace
 
 namespace blink {
@@ -181,32 +218,32 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   if (!video_frame)
     return;
 
+  // The webrtc::VideoFrame::UpdateRect expected by WebRTC must be
+  // relative to the |visible_rect()|. We need to translate.
+  if (accumulated_update_rect_) {
+    accumulated_update_rect_ =
+        CropRectangle(*accumulated_update_rect_, frame->visible_rect());
+  }
+
   // If no scaling is needed, return a wrapped version of |frame| directly.
   // The soft-applied cropping will be taken into account by the remainder
   // of the pipeline.
   if (video_frame->natural_size() == video_frame->visible_rect().size()) {
-    // The webrtc::VideoFrame::UpdateRect expected by WebRTC must be
-    // relative to the |visible_rect()|. We need to translate.
-    base::Optional<gfx::Rect> cropped_rect;
-    if (accumulated_update_rect_) {
-      cropped_rect =
-          CropRectangle(*accumulated_update_rect_, frame->visible_rect());
-    }
-    DeliverFrame(std::move(video_frame), OptionalOrNullptr(cropped_rect),
+    DeliverFrame(std::move(video_frame),
+                 OptionalOrNullptr(accumulated_update_rect_),
                  translated_camera_time_us);
     return;
+  }
+
+  if (accumulated_update_rect_) {
+    accumulated_update_rect_ = ScaleRectangle(
+        *accumulated_update_rect_, video_frame->visible_rect().size(),
+        video_frame->natural_size());
   }
 
   // Delay scaling if |video_frame| is backed by GpuMemoryBuffer.
   if (video_frame->storage_type() ==
       media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-    // When scaling is applied and any part of the frame has changed, we don't
-    // have reliable changed rect information.
-    if (accumulated_update_rect_.has_value() &&
-        !accumulated_update_rect_->IsEmpty()) {
-      accumulated_update_rect_ = base::nullopt;
-    }
-
     DeliverFrame(std::move(video_frame),
                  OptionalOrNullptr(accumulated_update_rect_),
                  translated_camera_time_us);
@@ -245,12 +282,6 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
                        scaled_frame->stride(media::VideoFrame::kAPlane),
                        adapted_size.width(), adapted_size.height(),
                        libyuv::kFilterBilinear);
-  }
-  // When scaling is applied and any part of the frame has changed, we don't
-  // have a reliable update rect information.
-  if (accumulated_update_rect_.has_value() &&
-      !accumulated_update_rect_->IsEmpty()) {
-    accumulated_update_rect_ = base::nullopt;
   }
   DeliverFrame(std::move(scaled_frame),
                OptionalOrNullptr(accumulated_update_rect_),
@@ -291,9 +322,6 @@ void WebRtcVideoTrackSource::DeliverFrame(
     update_rect = nullptr;
   }
 
-  // Clear accumulated_update_rect_.
-  accumulated_update_rect_ = gfx::Rect();
-
   webrtc::VideoFrame::Builder frame_builder =
       webrtc::VideoFrame::Builder()
           .set_video_frame_buffer(
@@ -306,6 +334,9 @@ void WebRtcVideoTrackSource::DeliverFrame(
         update_rect->height()});
   }
   OnFrame(frame_builder.build());
+
+  // Clear accumulated_update_rect_.
+  accumulated_update_rect_ = gfx::Rect();
 }
 
 }  // namespace blink

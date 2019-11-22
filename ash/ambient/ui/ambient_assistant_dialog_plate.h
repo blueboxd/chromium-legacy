@@ -6,6 +6,7 @@
 #define ASH_AMBIENT_UI_AMBIENT_ASSISTANT_DIALOG_PLATE_H_
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/ui/base/assistant_button_listener.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
@@ -15,10 +16,9 @@ namespace ash {
 class AssistantQueryView;
 class AssistantViewDelegate;
 class MicView;
-enum class AssistantButtonId;
 
 class AmbientAssistantDialogPlate : public views::View,
-                                    public views::ButtonListener,
+                                    public AssistantButtonListener,
                                     public AssistantInteractionModelObserver {
  public:
   explicit AmbientAssistantDialogPlate(AssistantViewDelegate* delegate);
@@ -27,8 +27,8 @@ class AmbientAssistantDialogPlate : public views::View,
   // views::View:
   const char* GetClassName() const override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // AssistantButtonListener:
+  void OnButtonPressed(AssistantButtonId button_id) override;
 
   // AssistantInteractionModelObserver:
   void OnCommittedQueryChanged(const AssistantQuery& query) override;

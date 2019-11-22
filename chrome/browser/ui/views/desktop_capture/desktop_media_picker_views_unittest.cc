@@ -31,7 +31,6 @@
 #include "ui/views/test/scoped_views_test_helper.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 using content::DesktopMediaID;
@@ -140,7 +139,7 @@ TEST_F(DesktopMediaPickerViewsTest, DoneCallbackCalledOnOkButtonPressed) {
   EXPECT_TRUE(
       GetPickerDialogView()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
 
-  GetPickerDialogView()->GetDialogClientView()->AcceptWindow();
+  GetPickerDialogView()->AcceptDialog();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -292,7 +291,7 @@ TEST_F(DesktopMediaPickerViewsTest, DoneWithAudioShare) {
   test_api_.GetAudioShareCheckbox()->SetChecked(true);
   test_api_.FocusSourceAtIndex(0);
 
-  GetPickerDialogView()->GetDialogClientView()->AcceptWindow();
+  GetPickerDialogView()->AcceptDialog();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -319,10 +318,7 @@ TEST_F(DesktopMediaPickerViewsSingleTabPaneTest, TabListHasFixedHeight) {
   };
 
   auto GetDialogHeight = [&]() {
-    return GetPickerDialogView()
-        ->GetDialogClientView()
-        ->GetPreferredSize()
-        .height();
+    return GetPickerDialogView()->GetPreferredSize().height();
   };
 
   int initial_size = GetDialogHeight();

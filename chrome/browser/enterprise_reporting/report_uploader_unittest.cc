@@ -290,7 +290,7 @@ TEST_P(ReportUploaderTestWithTransientError, WithoutRetry) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ReportUploaderTestWithTransientError,
     ::testing::Values(policy::DM_STATUS_REQUEST_FAILED,
                       policy::DM_STATUS_TEMPORARY_UNAVAILABLE,

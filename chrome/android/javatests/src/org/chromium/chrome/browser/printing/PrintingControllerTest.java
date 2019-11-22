@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper;
 import org.chromium.printing.PrintDocumentAdapterWrapper.WriteResultCallbackWrapper;
 import org.chromium.printing.PrintManagerDelegate;
@@ -68,7 +67,6 @@ public class PrintingControllerTest {
 
     private static final String TEMP_FILE_NAME = "temp_print";
     private static final String TEMP_FILE_EXTENSION = ".pdf";
-    private static final String PRINT_JOB_NAME = "foo";
     private static final String URL = UrlUtils.encodeHtmlDataUri(
             "<html><head></head><body>foo</body></html>");
     private static final String PDF_PREAMBLE = "%PDF-1";
@@ -140,10 +138,7 @@ public class PrintingControllerTest {
     private static class PrintingControllerImplPdfWritingDone extends PrintingControllerImpl {
         private WaitForOnWriteHelper mWaitForOnWrite;
 
-        public PrintingControllerImplPdfWritingDone(
-                PrintDocumentAdapterWrapper printDocumentAdapterWrapper, String errorText,
-                WaitForOnWriteHelper waitForOnWrite) {
-            super(printDocumentAdapterWrapper, errorText);
+        public PrintingControllerImplPdfWritingDone(WaitForOnWriteHelper waitForOnWrite) {
             mWaitForOnWrite = waitForOnWrite;
             sInstance = this;
         }
@@ -335,10 +330,8 @@ public class PrintingControllerTest {
         final WaitForOnWriteHelper onWriteHelper = new WaitForOnWriteHelper();
         final Tab currentTab = mActivityTestRule.getActivity().getActivityTab();
         final PrintingControllerImpl printingController =
-                TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-                    return new PrintingControllerImplPdfWritingDone(
-                            new PrintDocumentAdapterWrapper(), PRINT_JOB_NAME, onWriteHelper);
-                });
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> new PrintingControllerImplPdfWritingDone(onWriteHelper));
 
         startControllerOnUiThread(printingController, currentTab);
         callStartOnUiThread(printingController);
@@ -398,10 +391,8 @@ public class PrintingControllerTest {
     }
 
     private PrintingControllerImpl createControllerOnUiThread() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            return (PrintingControllerImpl) PrintingControllerImpl.create(
-                    new PrintDocumentAdapterWrapper(), PRINT_JOB_NAME);
-        });
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> (PrintingControllerImpl) PrintingControllerImpl.getInstance());
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)

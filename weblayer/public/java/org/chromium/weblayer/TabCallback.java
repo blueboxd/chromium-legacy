@@ -13,11 +13,11 @@ import androidx.annotation.NonNull;
  */
 public abstract class TabCallback {
     /**
-     * The Uri that should be displayed in the url-bar has updated.
+     * The Uri that should be displayed in the location-bar has updated.
      *
-     * @param url The new user-visible url.
+     * @param uri The new user-visible uri.
      */
-    public void onVisibleUrlChanged(@NonNull Uri url) {}
+    public void onVisibleUriChanged(@NonNull Uri uri) {}
 
     /**
      * Triggered when the render process dies, either due to crash or killed by the system to

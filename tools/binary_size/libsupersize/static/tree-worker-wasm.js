@@ -177,11 +177,10 @@ async function buildTree(
 
     const BuildTree = Module.cwrap(
         'BuildTree', 'void',
-        ['bool', 'bool', 'string', 'string', 'string', 'number', 'number']);
+        ['bool', 'string', 'string', 'string', 'string', 'number', 'number']);
     const start_time = Date.now();
-    const groupByComponent = groupBy === 'component';
     BuildTree(
-        groupByComponent, methodCountMode, includeRegex, excludeRegex,
+        methodCountMode, groupBy, includeRegex, excludeRegex,
         includeSections, minSymbolSize, flagToFilter);
     console.log(
         'Constructed tree in ' + (Date.now() - start_time) / 1000.0 +

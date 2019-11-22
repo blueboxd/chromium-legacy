@@ -1844,9 +1844,7 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
     ukm::UkmRecorder* ukm_recorder,
     const ukm::SourceId source_id)
-    : ukm_recorder_(ukm_recorder), source_id_(source_id) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.CanLogUKM", CanLog());
-}
+    : ukm_recorder_(ukm_recorder), source_id_(source_id) {}
 
 void AutofillMetrics::FormInteractionsUkmLogger::OnFormsParsed(
     const ukm::SourceId source_id) {

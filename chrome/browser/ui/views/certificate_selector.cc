@@ -30,7 +30,6 @@
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service.h"
@@ -301,12 +300,12 @@ void CertificateSelector::ButtonPressed(views::Button* sender,
 }
 
 void CertificateSelector::OnSelectionChanged() {
-  GetDialogClientView()->ok_button()->SetEnabled(GetSelectedCert() != nullptr);
+  GetOkButton()->SetEnabled(GetSelectedCert() != nullptr);
 }
 
 void CertificateSelector::OnDoubleClick() {
   if (GetSelectedCert())
-    GetDialogClientView()->AcceptWindow();
+    AcceptDialog();
 }
 
 }  // namespace chrome

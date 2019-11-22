@@ -20,10 +20,10 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
+#include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
-#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
@@ -34,8 +34,6 @@ class SpecialStoragePolicy;
 
 namespace content {
 
-struct StorageUsageInfo;
-
 // Used for mojo-based LocalStorage implementation (can be disabled with
 // --disable-mojo-local-storage for now).
 // Created on the UI thread, but all further methods are called on the task
@@ -43,32 +41,27 @@ struct StorageUsageInfo;
 // can involve asynchronous steps, it can only be deleted by calling
 // ShutdownAndDelete (on the correct task runner).
 class CONTENT_EXPORT LocalStorageContextMojo
-    : public base::trace_event::MemoryDumpProvider {
+    : public base::trace_event::MemoryDumpProvider,
+      public storage::mojom::LocalStorageControl {
  public:
-  using GetStorageUsageCallback =
-      base::OnceCallback<void(std::vector<StorageUsageInfo>)>;
-
   static base::FilePath LegacyDatabaseFileNameFromOrigin(
       const url::Origin& origin);
   static url::Origin OriginFromLegacyDatabaseFileName(
       const base::FilePath& file_name);
 
+  // Constructs a Local Storage implementation which will create its root
+  // "Local Storage" directory in |storage_root| if non-empty. |task_runner|
+  // run tasks on the same sequence as the one which constructs this object.
+  // |legacy_task_runner| must support blocking operations and its tasks must
+  // be able to block shutdown. If valid, |receiver| will be bound to this
+  // object to allow for remote control via the LocalStorageControl interface.
   LocalStorageContextMojo(
       const base::FilePath& storage_root,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       scoped_refptr<base::SequencedTaskRunner> legacy_task_runner,
-      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
+      scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
+      mojo::PendingReceiver<storage::mojom::LocalStorageControl> receiver);
 
-  void OpenLocalStorage(
-      const url::Origin& origin,
-      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
-  void GetStorageUsage(GetStorageUsageCallback callback);
-  // |callback| is called when the deletion is sent to the database and
-  // GetStorageUsage() will not return entries for |origin| anymore.
-  void DeleteStorage(const url::Origin& origin, base::OnceClosure callback);
-  // Ensure that no traces of deleted data are left in the backing storage.
-  void PerformStorageCleanup(base::OnceClosure callback);
-  void Flush();
   void FlushOriginForTesting(const url::Origin& origin);
 
   // Used by content settings to alter the behavior around
@@ -83,12 +76,20 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // policies.
   void ShutdownAndDelete();
 
-  // Clears any caches, to free up as much memory as possible. Next access to
-  // storage for a particular origin will reload the data from the database.
-  void PurgeMemory();
-
   // Clears unused storage areas, when thresholds are reached.
   void PurgeUnusedAreasIfNeeded();
+
+  // storage::mojom::LocalStorageControl implementation:
+  void BindStorageArea(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override;
+  void GetUsage(GetUsageCallback callback) override;
+  void DeleteStorage(const url::Origin& origin,
+                     DeleteStorageCallback callback) override;
+  void CleanUpStorage(CleanUpStorageCallback callback) override;
+  void Flush(FlushCallback callback) override;
+  void PurgeMemory() override;
+  void ForceKeepSessionState() override;
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -129,21 +130,17 @@ class CONTENT_EXPORT LocalStorageContextMojo
   void DeleteAndRecreateDatabase(const char* histogram_name);
   void OnDBDestroyed(bool recreate_in_memory, leveldb::Status status);
 
-  // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
-  // directly from that function, or through |on_database_open_callbacks_|.
-  void BindLocalStorage(
-      const url::Origin& origin,
-      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
   StorageAreaHolder* GetOrCreateStorageArea(const url::Origin& origin);
 
-  // The (possibly delayed) implementation of GetStorageUsage(). Can be called
-  // directly from that function, or through |on_database_open_callbacks_|.
-  void RetrieveStorageUsage(GetStorageUsageCallback callback);
+  // The (possibly delayed) implementation of GetUsage(). Can be called directly
+  // from that function, or through |on_database_open_callbacks_|.
+  void RetrieveStorageUsage(GetUsageCallback callback);
   void OnGotMetaData(
-      GetStorageUsageCallback callback,
+      GetUsageCallback callback,
       std::vector<storage::DomStorageDatabase::KeyValuePair> data);
 
-  void OnGotStorageUsageForShutdown(std::vector<StorageUsageInfo> usage);
+  void OnGotStorageUsageForShutdown(
+      std::vector<storage::mojom::LocalStorageUsageInfoPtr> usage);
   void OnShutdownComplete(leveldb::Status status);
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_area_count);
@@ -199,6 +196,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // Name of an extra histogram to log open results to, if not null.
   const char* open_result_histogram_ = nullptr;
+
+  mojo::Receiver<storage::mojom::LocalStorageControl> control_receiver_{this};
 
   base::WeakPtrFactory<LocalStorageContextMojo> weak_ptr_factory_{this};
 };

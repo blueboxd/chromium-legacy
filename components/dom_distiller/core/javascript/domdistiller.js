@@ -18,8 +18,8 @@ try {
 
   // The OPTIONS placeholder will be replaced with the DomDistillerOptions at
   // runtime.
-  var distiller = window.org.chromium.distiller.DomDistiller;
-  var res = distiller.applyWithOptions(options);
+  const distiller = window.org.chromium.distiller.DomDistiller;
+  const res = distiller.applyWithOptions(options);
 
   if (stringify_output) {
     return JSON.stringify(res);

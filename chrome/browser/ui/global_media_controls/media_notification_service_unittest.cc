@@ -286,6 +286,17 @@ class MediaNotificationServiceTest : public testing::Test {
         "Media.GlobalMediaControls.DismissReason", reason, count);
   }
 
+  void ExpectHistogramInteractionDelayAfterPause(base::TimeDelta time,
+                                                 int count) {
+    histogram_tester_.ExpectTimeBucketCount(
+        "Media.GlobalMediaControls.InteractionDelayAfterPause", time, count);
+  }
+
+  void ExpectEmptyInteractionHistogram() {
+    histogram_tester_.ExpectTotalCount(
+        "Media.GlobalMediaControls.InteractionDelayAfterPause", 0);
+  }
+
   void SimulateMediaRoutesUpdate(
       const std::vector<media_router::MediaRoute>& routes) {
     service_->cast_notification_provider_->OnRoutesUpdated(routes, {});
@@ -675,6 +686,10 @@ TEST_F(MediaNotificationServiceTest, HidesInactiveNotifications) {
       MediaNotificationService::GlobalMediaControlsDismissReason::
           kInactiveTimeout,
       1);
+
+  // Since the user never interacted with the media before it was paused, we
+  // should not have recorded any post-pause interactions.
+  ExpectEmptyInteractionHistogram();
 }
 
 TEST_F(MediaNotificationServiceTest, DelaysHidingNotifications_PlayPause) {
@@ -692,7 +707,11 @@ TEST_F(MediaNotificationServiceTest, DelaysHidingNotifications_PlayPause) {
 
   // If we start playing again, we should not hide the notification, even after
   // an hour.
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(59),
+                                            0);
   SimulatePlaybackStateChanged(id, true);
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(59),
+                                            1);
   AdvanceClockMinutes(2);
   EXPECT_TRUE(HasActiveNotifications());
 
@@ -716,13 +735,21 @@ TEST_F(MediaNotificationServiceTest, DelaysHidingNotifications_Interactions) {
   EXPECT_TRUE(HasActiveNotifications());
 
   // If the user goes back to the tab, it should reset the hide timer.
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(59),
+                                            0);
   SimulateTabFocused(id);
-  AdvanceClockMinutes(59);
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(59),
+                                            1);
+  AdvanceClockMinutes(50);
   EXPECT_TRUE(HasActiveNotifications());
 
   // If the user seeks the media before an hour is up, it should reset the hide
   // timer.
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(50),
+                                            0);
   SimulateMediaSeeked(id);
+  ExpectHistogramInteractionDelayAfterPause(base::TimeDelta::FromMinutes(50),
+                                            1);
   AdvanceClockMinutes(59);
   EXPECT_TRUE(HasActiveNotifications());
 

@@ -225,9 +225,16 @@ bool EdgeDatabaseReader::OpenDatabase(const base::string16& database_file) {
     return false;
   if (!SetLastError(JetCreateInstance(&instance_id_, L"EdgeDataImporter")))
     return false;
-  if (!SetLastError(JetSetSystemParameter(&instance_id_, JET_sesidNil,
+  if (!log_folder_.empty()) {
+    if (!SetLastError(JetSetSystemParameter(&instance_id_, JET_sesidNil,
+                                            JET_paramLogFilePath, 0,
+                                            log_folder_.c_str())))
+      return false;
+  } else {
+    if (!SetLastError(JetSetSystemParameter(&instance_id_, JET_sesidNil,
                                           JET_paramRecovery, 0, L"Off")))
-    return false;
+      return false;
+  }
   if (!SetLastError(JetInit(&instance_id_)))
     return false;
   if (!SetLastError(

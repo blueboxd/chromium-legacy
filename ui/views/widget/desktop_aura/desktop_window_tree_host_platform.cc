@@ -85,13 +85,13 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
 
   switch (params.opacity) {
-    case Widget::InitParams::WindowOpacity::INFER_OPACITY:
+    case Widget::InitParams::WindowOpacity::kInferred:
       properties.opacity = ui::PlatformWindowOpacity::kInferOpacity;
       break;
-    case Widget::InitParams::WindowOpacity::OPAQUE_WINDOW:
+    case Widget::InitParams::WindowOpacity::kOpaque:
       properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
       break;
-    case Widget::InitParams::WindowOpacity::TRANSLUCENT_WINDOW:
+    case Widget::InitParams::WindowOpacity::kTranslucent:
       properties.opacity = ui::PlatformWindowOpacity::kTranslucentWindow;
       break;
   }

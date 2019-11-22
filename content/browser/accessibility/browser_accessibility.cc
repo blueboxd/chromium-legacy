@@ -658,7 +658,7 @@ gfx::Rect BrowserAccessibility::GetRootFrameHypertextRangeBoundsRect(
     const BrowserAccessibility* child = it.get();
     if (child->GetRole() != ax::mojom::Role::kInlineTextBox) {
       DLOG(WARNING) << "BrowserAccessibility objects with role STATIC_TEXT "
-                    << "should have children of role INLINE_TEXT_BOX.";
+                    << "should have children of role INLINE_TEXT_BOX.\n";
       continue;
     }
 
@@ -1366,6 +1366,21 @@ const ui::AXUniqueId& BrowserAccessibility::GetUniqueId() const {
   return unique_id_;
 }
 
+std::string BrowserAccessibility::SubtreeToStringHelper(size_t level) {
+  std::string result(level * 2, '+');
+  result += ToString();
+  result += '\n';
+
+  for (InternalChildIterator it = InternalChildrenBegin();
+       it != InternalChildrenEnd(); ++it) {
+    BrowserAccessibility* child = it.get();
+    DCHECK(child);
+    result += child->SubtreeToStringHelper(level + 1);
+  }
+
+  return result;
+}
+
 base::Optional<int> BrowserAccessibility::FindTextBoundary(
     ui::AXTextBoundary boundary,
     int offset,
@@ -1531,7 +1546,7 @@ BrowserAccessibility::PlatformChildIterator::PlatformChildIterator(
   DCHECK(parent && parent->instance_active());
 }
 
-BrowserAccessibility::PlatformChildIterator::~PlatformChildIterator() {}
+BrowserAccessibility::PlatformChildIterator::~PlatformChildIterator() = default;
 
 bool BrowserAccessibility::PlatformChildIterator::operator==(
     const ChildIterator& rhs) const {
@@ -1580,6 +1595,7 @@ int BrowserAccessibility::PlatformChildIterator::GetIndexInParent() const {
 
   return platform_iterator->GetIndexInParent();
 }
+
 BrowserAccessibility& BrowserAccessibility::PlatformChildIterator::operator*()
     const {
   return *platform_iterator;
@@ -2202,11 +2218,6 @@ bool BrowserAccessibility::HasInvalidAttribute(
                       [](const ui::TextAttribute& attribute) {
                         return attribute.first == "invalid";
                       }) != attributes.end();
-}
-
-std::ostream& operator<<(std::ostream& stream,
-                         const BrowserAccessibility& object) {
-  return stream << object.ToString();
 }
 
 static bool HasListAncestor(const BrowserAccessibility* node) {

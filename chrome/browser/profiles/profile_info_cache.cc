@@ -43,9 +43,7 @@ namespace {
 const char kIsUsingDefaultAvatarKey[] = "is_using_default_avatar";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
-const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
 const char kSigninRequiredKey[] = "signin_required";
-const char kSupervisedUserId[] = "managed_user_id";
 const char kAccountIdKey[] = "account_id_key";
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 const char kLegacyProfileNameMigrated[] = "legacy.profile.name.migrated";
@@ -73,7 +71,8 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS) && !defined(OS_ANDROID) && \
     !defined(OS_CHROMEOS)
     std::string supervised_user_id;
-    info->GetString(kSupervisedUserId, &supervised_user_id);
+    info->GetString(ProfileAttributesEntry::kSupervisedUserId,
+                    &supervised_user_id);
     // Silently ignore legacy supervised user profiles.
     if (!supervised_user_id.empty() &&
         supervised_user_id != supervised_users::kChildAccountSUID) {
@@ -160,8 +159,10 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
                   profiles::GetDefaultAvatarIconUrl(icon_index));
   // Default value for whether background apps are running is false.
   info->SetBoolean(ProfileAttributesEntry::kBackgroundAppsKey, false);
-  info->SetString(kSupervisedUserId, supervised_user_id);
-  info->SetBoolean(kIsOmittedFromProfileListKey, !supervised_user_id.empty());
+  info->SetString(ProfileAttributesEntry::kSupervisedUserId,
+                  supervised_user_id);
+  info->SetBoolean(ProfileAttributesEntry::kIsOmittedFromProfileListKey,
+                   !supervised_user_id.empty());
   info->SetBoolean(ProfileAttributesEntry::kProfileIsEphemeral, false);
   // Either the user has provided a name manually on purpose, and in this case
   // we should not check for legacy profile names or this a new profile but then
@@ -195,6 +196,18 @@ void ProfileInfoCache::NotifyIfProfileNamesHaveChanged() {
         observer.OnProfileNameChanged(entry->GetPath(), old_display_name);
     }
   }
+}
+
+void ProfileInfoCache::NotifyProfileSupervisedUserIdChanged(
+    const base::FilePath& profile_path) {
+  for (auto& observer : observer_list_)
+    observer.OnProfileSupervisedUserIdChanged(profile_path);
+}
+
+void ProfileInfoCache::NotifyProfileIsOmittedChanged(
+    const base::FilePath& profile_path) {
+  for (auto& observer : observer_list_)
+    observer.OnProfileIsOmittedChanged(profile_path);
 }
 
 void ProfileInfoCache::DeleteProfileFromCache(
@@ -239,19 +252,6 @@ size_t ProfileInfoCache::GetIndexOfProfileWithPath(
   return std::string::npos;
 }
 
-base::string16 ProfileInfoCache::GetNameToDisplayOfProfileAtIndex(
-    size_t index) {
-  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
-  ProfileAttributesEntry* entry;
-  GetProfileAttributesWithPath(profile_path, &entry);
-  if (!entry) {
-    DLOG(ERROR) << "No entry found for this profile!";
-    return base::string16();
-  }
-
-  return entry->GetName();
-}
-
 base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.AppendASCII(keys_[index]);
 }
@@ -292,42 +292,10 @@ bool ProfileInfoCache::IsUsingGAIAPictureOfProfileAtIndex(size_t index) const {
   return value;
 }
 
-bool ProfileInfoCache::ProfileIsSupervisedAtIndex(size_t index) const {
-  return !GetSupervisedUserIdOfProfileAtIndex(index).empty();
-}
-
-bool ProfileInfoCache::ProfileIsChildAtIndex(size_t index) const {
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  return GetSupervisedUserIdOfProfileAtIndex(index) ==
-      supervised_users::kChildAccountSUID;
-#else
-  return false;
-#endif
-}
-
-bool ProfileInfoCache::ProfileIsLegacySupervisedAtIndex(size_t index) const {
-  return ProfileIsSupervisedAtIndex(index) && !ProfileIsChildAtIndex(index);
-}
-
-bool ProfileInfoCache::IsOmittedProfileAtIndex(size_t index) const {
-  bool value = false;
-  GetInfoForProfileAtIndex(index)->GetBoolean(kIsOmittedFromProfileListKey,
-                                              &value);
-  return value;
-}
-
 bool ProfileInfoCache::ProfileIsSigninRequiredAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kSigninRequiredKey, &value);
   return value;
-}
-
-std::string ProfileInfoCache::GetSupervisedUserIdOfProfileAtIndex(
-    size_t index) const {
-  std::string supervised_user_id;
-  GetInfoForProfileAtIndex(index)->GetString(kSupervisedUserId,
-                                             &supervised_user_id);
-  return supervised_user_id;
 }
 
 bool ProfileInfoCache::ProfileIsUsingDefaultAvatarAtIndex(size_t index) const {
@@ -379,35 +347,6 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
 
   for (auto& observer : observer_list_)
     observer.OnProfileAvatarChanged(profile_path);
-}
-
-void ProfileInfoCache::SetIsOmittedProfileAtIndex(size_t index,
-                                                  bool is_omitted) {
-  if (IsOmittedProfileAtIndex(index) == is_omitted)
-    return;
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(kIsOmittedFromProfileListKey, is_omitted);
-  SetInfoForProfileAtIndex(index, std::move(info));
-
-  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
-  for (auto& observer : observer_list_)
-    observer.OnProfileIsOmittedChanged(profile_path);
-}
-
-void ProfileInfoCache::SetSupervisedUserIdOfProfileAtIndex(
-    size_t index,
-    const std::string& id) {
-  if (GetSupervisedUserIdOfProfileAtIndex(index) == id)
-    return;
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetString(kSupervisedUserId, id);
-  SetInfoForProfileAtIndex(index, std::move(info));
-
-  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
-  for (auto& observer : observer_list_)
-    observer.OnProfileSupervisedUserIdChanged(profile_path);
 }
 
 void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,

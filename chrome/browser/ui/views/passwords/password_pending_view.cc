@@ -38,7 +38,12 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
-#include "ui/views/window/dialog_client_view.h"
+
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+#include "base/feature_list.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "ui/views/controls/button/checkbox.h"
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
 namespace {
 
@@ -216,6 +221,28 @@ std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
   return image_view;
 }
 
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+views::Checkbox* MaybeAppendAccountCheckboxRow(
+    views::GridLayout* layout,
+    bool uses_account_store,
+    int height,
+    views::ButtonListener* listener) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorageSavingUi)) {
+    return nullptr;
+  }
+  auto account_store_checkbox = std::make_unique<views::Checkbox>(
+      base::ASCIIToUTF16("Store passwords in account store?"), listener);
+  account_store_checkbox->SetChecked(uses_account_store);
+  BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_PASSWORD);
+  layout->StartRow(views::GridLayout::kFixedSize,
+                   DOUBLE_VIEW_COLUMN_SET_PASSWORD);
+  return layout->AddView(std::move(account_store_checkbox), 1, 1,
+                         views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                         height);
+}
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
+
 }  // namespace
 
 PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
@@ -271,6 +298,11 @@ PasswordPendingView::PasswordPendingView(content::WebContents* web_contents,
     BuildCredentialRows(layout, std::move(username_dropdown),
                         std::move(password_dropdown),
                         std::move(password_view_button));
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+    account_store_checkbox_ = MaybeAppendAccountCheckboxRow(
+        layout, model()->IsUsingAccountStore(),
+        password_dropdown_->GetPreferredSize().height(), this);
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
   }
 }
 
@@ -310,6 +342,13 @@ bool PasswordPendingView::Close() {
 
 void PasswordPendingView::ButtonPressed(views::Button* sender,
                                         const ui::Event& event) {
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+  DCHECK(sender);
+  if (sender == account_store_checkbox_) {
+    model()->OnToggleAccountStore(account_store_checkbox_->GetChecked());
+    return;
+  }
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
   DCHECK(sender == password_view_button_);
   TogglePasswordVisibility();
 }
@@ -325,7 +364,9 @@ void PasswordPendingView::OnContentChanged(
       is_ok_button_enabled_before !=
           IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
     DialogModelChanged();
-    GetDialogClientView()->Layout();
+    // TODO(ellyjones): This should not be necessary; DialogModelChanged()
+    // implies a re-layout of the dialog.
+    GetWidget()->GetRootView()->Layout();
   }
 }
 
@@ -446,6 +487,9 @@ void PasswordPendingView::ReplaceWithPromo() {
   username_dropdown_ = nullptr;
   password_dropdown_ = nullptr;
   password_view_button_ = nullptr;
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+  account_store_checkbox_ = nullptr;
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

@@ -76,7 +76,6 @@
 #include "chrome/browser/policy/schema_registry_service_builder.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
-#include "chrome/browser/prefs/in_process_service_factory_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -161,7 +160,6 @@
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/identity/identity_service.h"
 #include "services/network/public/cpp/features.h"
-#include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -1102,7 +1100,7 @@ PrefService* ProfileImpl::GetOffTheRecordPrefs() {
 PrefService* ProfileImpl::GetReadOnlyOffTheRecordPrefs() {
   if (!dummy_otr_prefs_) {
     dummy_otr_prefs_ = CreateIncognitoPrefServiceSyncable(
-        prefs_.get(), CreateExtensionPrefStore(this, true), nullptr);
+        prefs_.get(), CreateExtensionPrefStore(this, true));
   }
   return dummy_otr_prefs_.get();
 }
@@ -1282,11 +1280,6 @@ bool ProfileImpl::ShouldEnableOutOfBlinkCors() {
 std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
     const std::string& service_name,
     service_manager::mojom::ServiceRequest request) {
-  if (service_name == prefs::mojom::kServiceName) {
-    return InProcessPrefServiceFactoryFactory::GetInstanceForKey(key_.get())
-        ->CreatePrefService(std::move(request));
-  }
-
 #if defined(OS_CHROMEOS)
   if (service_name == chromeos::multidevice_setup::mojom::kServiceName) {
     chromeos::android_sms::AndroidSmsService* android_sms_service =

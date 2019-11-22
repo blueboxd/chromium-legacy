@@ -320,10 +320,6 @@ viz_component("common") {
     ]
   }
 
-  if (is_chromecast) {
-    defines += [ "IS_CHROMECAST" ]
-  }
-
   public_deps = [
     ":resource_format_utils",
     "//gpu/command_buffer/client",

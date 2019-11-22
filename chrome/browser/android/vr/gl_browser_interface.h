@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/android/jni_weak_ref.h"
-#include "chrome/browser/android/vr/gvr_gamepad_data.h"
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -36,7 +35,6 @@ class GlBrowserInterface {
   virtual void SendRequestPresentReply(device::mojom::XRSessionPtr) = 0;
   virtual void DialogSurfaceCreated(jobject surface,
                                     gl::SurfaceTexture* texture) = 0;
-  virtual void UpdateGamepadData(GvrGamepadData) = 0;
   virtual void ToggleCardboardGamepad(bool enabled) = 0;
 };
 

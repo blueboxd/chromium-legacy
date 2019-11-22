@@ -3870,6 +3870,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE" desc="Permission string for Networking Private API.">
           Manage network connections
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_PRINTING" desc="Permission string for access to printers.">
+          Access your printers
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_PRINTING_METRICS" desc="Permission string for access to printing metrics.">
           See your printing history
         </message>
@@ -9097,7 +9100,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Search your device, apps, web...
         </message>
         <message name="IDS_APP_ACTION_SHORTCUT_ACCESSIBILITY_NAME" desc="Hint text for the search result that performs a specific action with an app.">
-          <ph name="ACTION_NAME">$1<ex>Compose</ex></ph> with <ph name="APP_NAME">$2<ex>GMail</ex></ph>.
+          <ph name="ACTION_NAME">$1<ex>Compose</ex></ph> with <ph name="APP_NAME">$2<ex>GMail</ex></ph> App
+        </message>
+        <message name="IDS_APP_LIST_QUERY_SEARCH_ACCESSIBILITY_NAME" desc="Hint text for the search result that will invoke a query search poweredy by the default search engine.">
+          <ph name="QUERY_NAME">$1<ex>Harry Potter</ex></ph>, <ph name="DEFAULT_SEARCH_ENGINE_NAME">$2<ex>Google</ex></ph> Search
         </message>
         <message name="IDS_APP_LIST_REMOVE_SUGGESTION_ACCESSIBILITY_NAME" desc="The spoken feedback for removing suggestion button">
           Remove the suggestion <ph name="SUGGESTION_NAME">$1<ex>Harry Potter</ex></ph>

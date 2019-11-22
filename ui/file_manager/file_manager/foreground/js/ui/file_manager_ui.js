@@ -370,7 +370,6 @@ class FileManagerUI {
      */
     this.a11yMessage_ = queryRequiredElement('#a11y-msg', this.element);
 
-
     if (window.IN_TEST) {
       /**
        * Stores all a11y announces to be checked in tests.

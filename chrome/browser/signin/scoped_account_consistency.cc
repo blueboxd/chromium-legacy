@@ -15,41 +15,17 @@
 
 using signin::AccountConsistencyMethod;
 
-ScopedAccountConsistency::ScopedAccountConsistency(
-    AccountConsistencyMethod method) {
-  DCHECK_NE(AccountConsistencyMethod::kDisabled, method);
-#if !BUILDFLAG(ENABLE_DICE_SUPPORT)
-  DCHECK_NE(AccountConsistencyMethod::kDice, method);
-  DCHECK_NE(AccountConsistencyMethod::kDiceMigration, method);
-#endif
-
+ScopedAccountConsistencyMirror::ScopedAccountConsistencyMirror() {
 #if BUILDFLAG(ENABLE_MIRROR)
-  DCHECK_EQ(AccountConsistencyMethod::kMirror, method);
   return;
 #endif
 
-  // Set up the account consistency method.
-  std::string feature_value;
-  switch (method) {
-    case AccountConsistencyMethod::kDisabled:
-      NOTREACHED();
-      break;
-    case AccountConsistencyMethod::kMirror:
-      feature_value = kAccountConsistencyFeatureMethodMirror;
-      break;
-    case AccountConsistencyMethod::kDiceMigration:
-      feature_value = kAccountConsistencyFeatureMethodDiceMigration;
-      break;
-    case AccountConsistencyMethod::kDice:
-      feature_value = kAccountConsistencyFeatureMethodDice;
-      break;
-  }
-
   std::map<std::string, std::string> feature_params;
-  feature_params[kAccountConsistencyFeatureMethodParameter] = feature_value;
+  feature_params[kAccountConsistencyFeatureMethodParameter] =
+      kAccountConsistencyFeatureMethodMirror;
 
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       kAccountConsistencyFeature, feature_params);
 }
 
-ScopedAccountConsistency::~ScopedAccountConsistency() {}
+ScopedAccountConsistencyMirror::~ScopedAccountConsistencyMirror() {}

@@ -33,10 +33,10 @@ jint JNI_SigninInvestigator_Investigate(
       IdentityManagerFactory::GetForProfile(profile)
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               email);
-  std::string account_id;
+  std::string gaia_id;
   if (maybe_account_info.has_value())
-    account_id = maybe_account_info.value().account_id;
+    gaia_id = maybe_account_info.value().gaia;
 
   return static_cast<int>(
-      SigninInvestigator(email, account_id, &provider).Investigate());
+      SigninInvestigator(email, gaia_id, &provider).Investigate());
 }

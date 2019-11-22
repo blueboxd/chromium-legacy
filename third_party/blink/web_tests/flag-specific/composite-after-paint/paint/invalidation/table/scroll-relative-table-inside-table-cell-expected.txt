@@ -5,20 +5,42 @@
       "bounds": [1566, 1781],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
+      "transform": 1
+    },
+    {
+      "name": "HorizontalScrollbar",
+      "position": [0, 585],
+      "bounds": [785, 15]
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 585]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600]
+    },
+    {
+      "name": "LayoutNGBlockFlow HTML",
+      "position": [808, 1208],
+      "bounds": [758, 573],
+      "contentsOpaque": true,
+      "backgroundColor": "#FF0000",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (positioned) DIV class='absolute green'",
-          "rect": [1114, 1314, 435, 450],
+          "rect": [306, 106, 435, 450],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutNGBlockFlow (relative positioned) DIV class='relative red'",
-          "rect": [1114, 1314, 435, 450],
+          "rect": [306, 106, 435, 450],
           "reason": "chunk disappeared"
         },
         {
           "object": "HorizontalScrollbar",
-          "rect": [1114, 1764, 435, 15],
+          "rect": [306, 556, 435, 15],
           "reason": "scroll control"
         }
       ],
@@ -32,7 +54,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [-766, -1181, 0, 1]
+        [-781, -1196, 0, 1]
       ]
     }
   ]

@@ -52,7 +52,6 @@ SRC_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, os.pardir))
 sys.path.insert(0, os.path.join(SRC_DIR, 'build'))
 import find_depot_tools
 find_depot_tools.add_depot_tools_to_path()
-import roll_dep_svn
 
 CHROMIUM_GIT_URL = 'https://chromium.googlesource.com/chromium/src.git'
 CL_ISSUE_RE = re.compile('^Issue number: ([0-9]+) \((.*)\)$')
@@ -318,14 +317,10 @@ class AutoRoller(object):
 
   def _UpdateDep(self, deps_filename, dep_relative_to_src, commit_info):
     dep_name = _PosixPath(os.path.join('src', dep_relative_to_src))
-
-    # roll_dep_svn.py relies on cwd being the Chromium checkout, so let's
-    # temporarily change the working directory and then change back.
-    cwd = os.getcwd()
-    os.chdir(os.path.dirname(deps_filename))
-    roll_dep_svn.update_deps(deps_filename, dep_relative_to_src, dep_name,
-                             commit_info.git_commit, '')
-    os.chdir(cwd)
+    dep_revision = '%s@%s' % (dep_name, commit_info.git_commit)
+    self._RunCommand(
+        ['gclient', 'setdep', '-r', dep_revision],
+        cwd=os.path.dirname(deps_filename))
 
   def _UpdateWebGLRevTextFile(self, txt_filename, commit_info):
     # Rolling the WebGL conformance tests must cause at least all of

@@ -185,7 +185,6 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
 
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
-  client_->DidFinishLatencyInfo(latency_info);
 
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);

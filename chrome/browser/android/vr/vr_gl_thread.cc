@@ -118,13 +118,6 @@ void VrGLThread::SendRequestPresentReply(device::mojom::XRSessionPtr session) {
                                 weak_vr_shell_, std::move(session)));
 }
 
-void VrGLThread::UpdateGamepadData(GvrGamepadData pad) {
-  DCHECK(OnGlThread());
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VrShell::UpdateGamepadData, weak_vr_shell_, pad));
-}
-
 void VrGLThread::ForwardEventToContent(std::unique_ptr<InputEvent> event,
                                        int content_id) {
   DCHECK(OnGlThread());

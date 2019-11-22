@@ -287,8 +287,17 @@ class ChildThreadImpl::IOThreadState
         wait_for_interface_binders_(wait_for_interface_binders),
         host_receiver_(std::move(host_receiver)) {}
 
+  // Used only in the deprecated Service Manager IPC mode.
   void BindChildProcessReceiver(
       mojo::PendingReceiver<mojom::ChildProcess> receiver) {
+    receiver_.Bind(std::move(receiver));
+  }
+
+  // Used in non-Service Manager IPC mode.
+  void BindChildProcessReceiverAndLegacyIpc(
+      mojo::PendingReceiver<mojom::ChildProcess> receiver,
+      mojo::PendingRemote<IPC::mojom::ChannelBootstrap> legacy_ipc_bootstrap) {
+    legacy_ipc_bootstrap_ = std::move(legacy_ipc_bootstrap);
     receiver_.Bind(std::move(receiver));
   }
 
@@ -359,6 +368,12 @@ class ChildThreadImpl::IOThreadState
     IMMEDIATE_CRASH();
   }
 
+  void BootstrapLegacyIpc(
+      mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> receiver) override {
+    DCHECK(legacy_ipc_bootstrap_);
+    mojo::FusePipes(std::move(receiver), std::move(legacy_ipc_bootstrap_));
+  }
+
   void RunService(const std::string& service_name,
                   mojo::PendingReceiver<service_manager::mojom::Service>
                       receiver) override {
@@ -419,6 +434,11 @@ class ChildThreadImpl::IOThreadState
   bool wait_for_interface_binders_;
   mojo::Receiver<mojom::ChildProcess> receiver_{this};
   mojo::PendingReceiver<mojom::ChildProcessHost> host_receiver_;
+
+  // The pending legacy IPC channel endpoint to fuse with one we will eventually
+  // receiver on the ChildProcess interface. Only used when not in the
+  // deprecated Service Manager IPC mode.
+  mojo::PendingRemote<IPC::mojom::ChannelBootstrap> legacy_ipc_bootstrap_;
 
   // Binding requests which should be handled by |interface_binders|, but which
   // have been queued because |allow_interface_binders_| is still |false|.
@@ -552,7 +572,7 @@ void ChildThreadImpl::OnFieldTrialGroupFinalized(
   field_trial_recorder->FieldTrialActivated(trial_name);
 }
 
-void ChildThreadImpl::ConnectChannel() {
+void ChildThreadImpl::ConnectLegacyIpcChannelThroughServiceManager() {
   DCHECK(service_manager_connection_);
   mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap;
   mojo::ScopedMessagePipeHandle handle =
@@ -589,6 +609,10 @@ void ChildThreadImpl::Init(const Options& options) {
     IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
 
+  // Only one of these will be made valid by the block below. This determines
+  // whether we were launched in normal IPC mode or deprecated Service Manager
+  // IPC mode.
+  mojo::ScopedMessagePipeHandle child_process_pipe;
   mojo::ScopedMessagePipeHandle service_request_pipe;
   if (!IsInBrowserProcess()) {
     mojo_ipc_support_.reset(new mojo::core::ScopedIPCSupport(
@@ -601,29 +625,51 @@ void ChildThreadImpl::Init(const Options& options) {
     if (!service_request_token.empty()) {
       service_request_pipe =
           invitation.ExtractMessagePipe(service_request_token);
+    } else {
+      child_process_pipe = invitation.ExtractMessagePipe(0);
     }
   } else {
-    service_request_pipe = options.mojo_invitation->ExtractMessagePipe(
-        options.in_process_service_request_token);
+    if (!options.in_process_service_request_token.empty()) {
+      service_request_pipe = options.mojo_invitation->ExtractMessagePipe(
+          options.in_process_service_request_token);
+    } else {
+      child_process_pipe = options.mojo_invitation->ExtractMessagePipe(0);
+    }
   }
 
   if (service_request_pipe.is_valid()) {
+    // We're in deprecated legacy IPC mode. Initialize a connection to the
+    // Service Manager.
     service_manager_connection_ = ServiceManagerConnection::Create(
         service_manager::mojom::ServiceRequest(std::move(service_request_pipe)),
         GetIOTaskRunner());
+  } else {
+    // We're in normal IPC mode. Set up the ChildProcess receiver and legacy IPC
+    // Channel.
+    DCHECK(child_process_pipe.is_valid());
+
+    mojo::PendingRemote<IPC::mojom::ChannelBootstrap> legacy_ipc_bootstrap;
+    mojo::ScopedMessagePipeHandle legacy_ipc_channel_handle =
+        legacy_ipc_bootstrap.InitWithNewPipeAndPassReceiver().PassPipe();
+    channel_->Init(IPC::ChannelMojo::CreateClientFactory(
+                       std::move(legacy_ipc_channel_handle),
+                       ChildProcess::current()->io_task_runner(),
+                       ipc_task_runner_ ? ipc_task_runner_
+                                        : base::ThreadTaskRunnerHandle::Get()),
+                   /*create_pipe_now=*/true);
+
+    ChildThreadImpl::GetIOTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&IOThreadState::BindChildProcessReceiverAndLegacyIpc,
+                       io_thread_state_,
+                       mojo::PendingReceiver<mojom::ChildProcess>(
+                           std::move(child_process_pipe)),
+                       std::move(legacy_ipc_bootstrap)));
   }
 
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
   thread_safe_sender_ =
       new ThreadSafeSender(main_thread_runner_, sync_message_filter_.get());
-
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(
-      base::BindRepeating(&IOThreadState::BindChildProcessReceiver,
-                          io_thread_state_),
-      ChildThreadImpl::GetIOTaskRunner());
-  service_manager_connection_->AddConnectionFilter(
-      std::make_unique<SimpleConnectionFilter>(std::move(registry)));
 
   // In single process mode, browser-side tracing and memory will cover the
   // whole process including renderers.
@@ -667,12 +713,18 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(startup_filter);
   }
 
-  ConnectChannel();
+  if (service_manager_connection_) {
+    auto registry = std::make_unique<service_manager::BinderRegistry>();
+    registry->AddInterface(
+        base::BindRepeating(&IOThreadState::BindChildProcessReceiver,
+                            io_thread_state_),
+        ChildThreadImpl::GetIOTaskRunner());
+    service_manager_connection_->AddConnectionFilter(
+        std::make_unique<SimpleConnectionFilter>(std::move(registry)));
 
-  // This must always be done after ConnectChannel, because ConnectChannel() may
-  // add a ConnectionFilter to the connection.
-  if (service_manager_connection_)
+    ConnectLegacyIpcChannelThroughServiceManager();
     StartServiceManagerConnection();
+  }
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =

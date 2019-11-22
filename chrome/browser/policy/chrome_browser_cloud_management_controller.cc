@@ -110,7 +110,7 @@ ChromeBrowserCloudManagementController::CreatePolicyManager(
 
   std::string enrollment_token =
       BrowserDMTokenStorage::Get()->RetrieveEnrollmentToken();
-  DMToken dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+  DMToken dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
   std::string client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
 
   if (dm_token.is_empty())
@@ -119,8 +119,6 @@ ChromeBrowserCloudManagementController::CreatePolicyManager(
     VLOG(1) << "DM token = invalid";
   else if (dm_token.is_valid())
     VLOG(1) << "DM token = from persistence";
-  else
-    VLOG(1) << "DM token = unknown status";
 
   VLOG(1) << "Enrollment token = " << enrollment_token;
   VLOG(1) << "Client ID = " << client_id;
@@ -194,7 +192,7 @@ void ChromeBrowserCloudManagementController::Init(
   //      request a DM token in that case.
   std::string enrollment_token;
   std::string client_id;
-  auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+  DMToken dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
 
   if (dm_token.is_invalid())
     return;
@@ -348,7 +346,7 @@ void ChromeBrowserCloudManagementController::
   // Start fetching policies.
   VLOG(1) << "Fetch policy after enrollment.";
   policy_fetcher_->SetupRegistrationAndFetchPolicy(
-      BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken(), client_id);
+      BrowserDMTokenStorage::Get()->RetrieveDMToken(), client_id);
   if (report_scheduler_) {
     report_scheduler_->OnDMTokenUpdated();
   }

@@ -31,7 +31,6 @@ class WebView;
 }  // namespace views
 
 class Browser;
-class TabCounterModelObserver;
 
 class WebUITabStripContainerView : public TabStripUI::Embedder,
                                    public gfx::AnimationDelegate,
@@ -64,6 +63,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   bool EventShouldPropagate(const ui::Event& event);
 
   // TabStripUI::Embedder:
+  const ui::AcceleratorProvider* GetAcceleratorProvider() const override;
   void CloseContainer() override;
   void ShowContextMenuAtPoint(
       gfx::Point point,
@@ -90,7 +90,7 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   views::WebView* const web_view_;
   views::View* const tab_contents_container_;
   ToolbarButton* new_tab_button_ = nullptr;
-  views::LabelButton* tab_counter_ = nullptr;
+  views::View* tab_counter_ = nullptr;
 
   int desired_height_ = 0;
 
@@ -102,8 +102,6 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   std::unique_ptr<ui::MenuModel> context_menu_model_;
 
   ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
-
-  std::unique_ptr<TabCounterModelObserver> tab_counter_model_observer_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_WEBUI_TAB_STRIP_CONTAINER_VIEW_H_

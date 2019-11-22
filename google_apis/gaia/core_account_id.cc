@@ -22,12 +22,6 @@ CoreAccountId::CoreAccountId(std::string&& id) : id(std::move(id)) {}
 
 CoreAccountId::CoreAccountId(const std::string& id) : id(id) {}
 
-#if defined(OS_ANDROID)
-CoreAccountId::operator std::string() const {
-  return id;
-}
-#endif
-
 bool CoreAccountId::empty() const {
   return id.empty();
 }

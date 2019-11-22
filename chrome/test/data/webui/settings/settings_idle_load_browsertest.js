@@ -25,9 +25,6 @@ SettingsIdleLoadBrowserTest.prototype = {
 
   /** @override */
   isAsync: true,
-
-  /** @override */
-  runAccessibilityChecks: false,
 };
 
 TEST_F('SettingsIdleLoadBrowserTest', 'All', function() {

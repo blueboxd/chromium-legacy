@@ -429,7 +429,7 @@ void SplitViewDivider::CreateDividerWidget(SplitViewController* controller) {
   // Native widget owns this widget.
   divider_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.parent = Shell::GetContainer(controller->root_window(),
                                       kShellWindowId_AlwaysOnTopContainer);

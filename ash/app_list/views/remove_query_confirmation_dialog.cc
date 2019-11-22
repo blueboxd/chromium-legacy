@@ -11,7 +11,6 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace ash {
 
@@ -114,7 +113,7 @@ void RemoveQueryConfirmationDialog::OnSearchBoxClearAndDeactivated() {
       contents_view_->GetSearchBoxView()->GetWidget()->GetFocusManager();
   views::View* strored_focus_view = focus_manager->GetStoredFocusView();
   focus_manager->SetStoredFocusView(nullptr);
-  GetDialogClientView()->CancelWindow();
+  CancelDialog();
   focus_manager->SetStoredFocusView(strored_focus_view);
 }
 

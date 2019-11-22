@@ -91,6 +91,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       const scoped_refptr<const SecurityOrigin>& origin,
       bool is_potentially_trustworthy_unique_origin) override;
   void DispatchLoadEventForFrameOwner() override;
+  void Collapse(bool collapsed) final;
 
  private:
   // Frame protected overrides:

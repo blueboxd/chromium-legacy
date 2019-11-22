@@ -1069,9 +1069,7 @@ void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
   if (action_data.action == ax::mojom::Action::kSetSelection) {
-    if (action_data.anchor_node_id != action_data.focus_node_id)
-      return false;
-    // TODO(nektar): Check that the focus_node_id matches the ID of this node.
+    DCHECK_EQ(action_data.anchor_node_id, action_data.focus_node_id);
     const gfx::Range range(action_data.anchor_offset, action_data.focus_offset);
     return SetEditableSelectionRange(range);
   }
@@ -2288,23 +2286,9 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
         render_text->display_rect(), placeholder_text_draw_flags);
   }
 
-  if (drop_cursor_visible_ && !IsDropCursorForInsertion()) {
-    // Draw as selected to mark the entire text that will be replaced by drop.
-    // TODO(http://crbug.com/853678): Replace this state push/pop with a clean
-    // call to a finer grained rendering API when one becomes available.  These
-    // changes are only applied because RenderText is so stateful and subtle
-    // (e.g. focus is required for the selection to be rendered as selected).
-    const gfx::SelectionModel sm = render_text->selection_model();
-    const bool focused = render_text->focused();
-    render_text->SelectAll(true);
-    render_text->set_focused(true);
-    render_text->Draw(canvas);
-    render_text->set_focused(focused);
-    render_text->SetSelection(sm);
-  } else {
-    // Draw text as normal
-    render_text->Draw(canvas);
-  }
+  // If drop cursor is active, draw |render_text| with its text selected.
+  const bool select_all = drop_cursor_visible_ && !IsDropCursorForInsertion();
+  render_text->Draw(canvas, select_all);
 
   if (drop_cursor_visible_ && IsDropCursorForInsertion()) {
     // Draw a drop cursor that marks where the text will be dropped/inserted.

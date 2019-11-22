@@ -24,7 +24,8 @@ extern const char kFetchHintsOverrideTimer[];
 extern const char kOptimizationGuideServiceGetHintsURL[];
 extern const char kOptimizationGuideServiceGetModelsURL[];
 extern const char kOptimizationGuideServiceAPIKey[];
-extern const char kPurgeOptimizationGuideStore[];
+extern const char kPurgeHintsStore[];
+extern const char kPurgeModelAndFeaturesStore[];
 extern const char kDisableFetchingHintsAtNavigationStartForTesting[];
 extern const char kDisableCheckingUserPermissionsForTesting[];
 
@@ -35,8 +36,12 @@ bool IsHintComponentProcessingDisabled();
 
 // Returns whether all entries within the store should be purged during startup
 // if the explicit purge switch exists or if a proto override is being used, in
-// which case the hints or models need to come from the override instead.
+// which case the hints need to come from the override instead.
 bool ShouldPurgeOptimizationGuideStoreOnStartup();
+
+// Returns whether all entries within the store should be purged during startup
+// if the explicit purge switch exists.
+bool ShouldPurgeModelAndFeaturesStoreOnStartup();
 
 // Parses a list of hosts to have hints fetched for. This overrides scheduling
 // of the first hints fetch and forces it to occur immediately. If no hosts are

@@ -27,6 +27,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
@@ -69,6 +70,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,6 +86,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
 
     protected static final String BUNDLE_TAB_ID = "tabId";
+
+    private final WebappDirectoryManager mDirectoryManager;
 
     private WebappInfo mWebappInfo;
 
@@ -148,6 +152,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
+        mDirectoryManager = new WebappDirectoryManager();
         mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
     }
 
@@ -373,13 +378,14 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        saveTabState(outState);
+        mDirectoryManager.cancelCleanup();
+        saveState(outState);
     }
 
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        WebappDirectoryManager.cleanUpDirectories();
+        mDirectoryManager.cleanUpDirectories(this, getActivityId());
     }
 
     @Override
@@ -391,21 +397,25 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     /**
      * Saves the tab data out to a file.
      */
-    private void saveTabState(Bundle outState) {
-        Tab tab = getActivityTab();
-        if (tab == null || tab.getUrl() == null || tab.getUrl().isEmpty()) return;
-        if (TabState.saveState(outState, TabState.from(tab))) {
-            outState.putInt(BUNDLE_TAB_ID, tab.getId());
+    private void saveState(Bundle outState) {
+        if (getActivityTab() == null || getActivityTab().getUrl() == null
+                || getActivityTab().getUrl().isEmpty()) {
+            return;
+        }
+
+        outState.putInt(BUNDLE_TAB_ID, getActivityTab().getId());
+
+        String tabFileName = TabState.getTabStateFilename(getActivityTab().getId(), false);
+        File tabFile = new File(getActivityDirectory(), tabFileName);
+
+        // TODO(crbug.com/525785): Temporarily allowing disk access until more permanent fix is in.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
+            TabState.saveState(tabFile, TabState.from(getActivityTab()), false);
         }
     }
 
-    /**
-     * Restore {@link TabState} from a given {@link Bundle} and tabId.
-     * @param saveInstanceState The saved bundle for the last recorded state.
-     * @param tabId ID of the tab restored from.
-     */
     private TabState restoreTabState(Bundle savedInstanceState, int tabId) {
-        return TabState.restoreTabState(savedInstanceState);
+        return TabState.restoreTabState(getActivityDirectory(), tabId);
     }
 
     @Override
@@ -746,6 +756,15 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     protected String getActivityId() {
         return mWebappInfo.id();
+    }
+
+    /**
+     * Get the active directory by this web app.
+     *
+     * @return The directory used for the current web app.
+     */
+    private File getActivityDirectory() {
+        return mDirectoryManager.getWebappDirectory(this, getActivityId());
     }
 
     @VisibleForTesting

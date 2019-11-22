@@ -67,8 +67,18 @@ class AssistantAshTestBase : public AshTestBase {
   // Simulate the user entering a query followed by <return>.
   void SendQueryThroughTextField(const std::string& query);
 
-  // Simulate the user tapping on the text field.
-  void TapOnTextField();
+  // Simulate the user tapping on the given view.
+  // Waits for the event to be processed.
+  void TapOnAndWait(views::View* view);
+
+  // Simulate a mouse click on the given view.
+  // Waits for the event to be processed.
+  void ClickOnAndWait(views::View* view);
+
+  // Returns the current interaction. Returns |base::nullopt| if no interaction
+  // is in progress.
+  base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+  current_interaction();
 
   // Create a new App window, and activate it. This will take the focus away
   // from the Assistant UI (and force it to close).
@@ -89,8 +99,15 @@ class AssistantAshTestBase : public AshTestBase {
   // Return the greeting label shown when you first open the Assistant.
   views::View* greeting_label();
 
+  // Return the button to enable voice mode.
+  views::View* voice_input_toggle();
+
+  // Return the button to enable text mode.
+  views::View* keyboard_input_toggle();
+
   // Show the on-screen keyboard.
   void ShowKeyboard();
+
   // Returns if the on-screen keyboard is being displayed.
   bool IsKeyboardShowing() const;
 

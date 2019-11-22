@@ -67,6 +67,14 @@ class ASH_EXPORT AssistantTestApi {
   // Can only be used after the Assistant UI has been shown at least once.
   virtual views::View* greeting_label() = 0;
 
+  // Returns the button to enable voice mode.
+  // Can only be used after the Assistant UI has been shown at least once.
+  virtual views::View* voice_input_toggle() = 0;
+
+  // Returns the button to enable text mode.
+  // Can only be used after the Assistant UI has been shown at least once.
+  virtual views::View* keyboard_input_toggle() = 0;
+
   // Returns the window containing the Assistant UI.
   // Note that this window is shared for all components of the |AppList|.
   virtual aura::Window* window() = 0;

@@ -261,6 +261,8 @@ class DeviceCloudPolicyManagerChromeOSTest
     EXPECT_TRUE(manager_->policies().Equals(bundle));
   }
 
+  // Should be called after EXPECT_CALL(..., StartJob(_)) so "any" case does
+  // not override this one.
   void AllowUninterestingRemoteCommandFetches() {
     // We are not interested in remote command fetches that the client initiates
     // automatically. Make them fail and ignore them otherwise.
@@ -338,8 +340,8 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
       .WillOnce(
           DoAll(device_management_service_.CaptureJobType(&job_type),
                 device_management_service_.StartJobFullControl(&policy_job)));
-  ConnectManager();
   AllowUninterestingRemoteCommandFetches();
+  ConnectManager();
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&device_management_service_);
   ASSERT_TRUE(policy_job);
@@ -377,8 +379,8 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
       .WillOnce(
           DoAll(device_management_service_.CaptureJobType(&job_type),
                 device_management_service_.StartJobFullControl(&policy_job)));
-  ConnectManager();
   AllowUninterestingRemoteCommandFetches();
+  ConnectManager();
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&device_management_service_);
   ASSERT_TRUE(policy_job);
@@ -432,9 +434,9 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, ConnectAndDisconnect) {
   DeviceManagementService::JobControl* policy_job = nullptr;
   EXPECT_CALL(device_management_service_, StartJob(_))
       .WillOnce(device_management_service_.StartJobFullControl(&policy_job));
+  AllowUninterestingRemoteCommandFetches();
   EXPECT_CALL(*this, OnDeviceCloudPolicyManagerConnected());
   ConnectManager();
-  AllowUninterestingRemoteCommandFetches();
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&device_management_service_);
   Mock::VerifyAndClearExpectations(this);
@@ -523,6 +525,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
             device_management_service_.CaptureQueryParams(&query_params_),
             device_management_service_.CaptureRequest(&register_request_),
             device_management_service_.StartJobFullControl(&register_job)));
+    AllowUninterestingRemoteCommandFetches();
 
     chromeos::OwnerSettingsServiceChromeOS* owner_settings_service =
         chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
@@ -544,7 +547,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     initializer_->StartEnrollment();
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&device_management_service_);
-    AllowUninterestingRemoteCommandFetches();
 
     if (done_)
       return;
@@ -564,13 +566,13 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .WillOnce(
             DoAll(device_management_service_.CaptureJobType(&fetch_job_type),
                   device_management_service_.StartJobFullControl(&fetch_job)));
+    AllowUninterestingRemoteCommandFetches();
     device_management_service_.DoURLCompletion(
         &register_job,
         register_status_ == DM_STATUS_SUCCESS ? net::OK : net::ERR_FAILED,
         DeviceManagementService::kSuccess, register_response_);
     EXPECT_EQ(nullptr, register_job);
     Mock::VerifyAndClearExpectations(&device_management_service_);
-    AllowUninterestingRemoteCommandFetches();
 
     if (done_)
       return;
@@ -597,9 +599,9 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
             DoAll(device_management_service_.CaptureJobType(&robot_job_type),
                   device_management_service_.StartJobFullControl(
                       &robot_auth_fetch_job)));
+    AllowUninterestingRemoteCommandFetches();
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&device_management_service_);
-    AllowUninterestingRemoteCommandFetches();
 
     if (done_)
       return;
@@ -616,7 +618,6 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         DeviceManagementService::kSuccess, robot_auth_fetch_response_);
     EXPECT_EQ(nullptr, robot_auth_fetch_job);
     Mock::VerifyAndClearExpectations(&device_management_service_);
-    AllowUninterestingRemoteCommandFetches();
 
     if (done_)
       return;
@@ -631,6 +632,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
             device_management_service_.CaptureJobType(&component_job_type),
             device_management_service_.StartJobFullControl(
                 &component_fetch_job)));
+    AllowUninterestingRemoteCommandFetches();
 
     // Process robot refresh token fetch if the auth code fetch succeeded.
     // DeviceCloudPolicyInitializer holds an EnrollmentHandlerChromeOS which
@@ -675,6 +677,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .WillRepeatedly(device_management_service_.StartJobAsync(
             net::OK, DeviceManagementService::kSuccess,
             em::DeviceManagementResponse()));
+    AllowUninterestingRemoteCommandFetches();
 
     ReloadDeviceSettings();
 
@@ -732,8 +735,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyManagerChromeOSEnrollmentTest);
 };
 
-// Flaky. https://crbug.com/1014318
-TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, DISABLED_Success) {
+TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Success) {
   RunTest();
   ExpectSuccessfulEnrollment();
 }
@@ -835,6 +837,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
   EXPECT_CALL(device_management_service_, StartJob(_))
       .WillOnce(DoAll(device_management_service_.CaptureJobType(&job_type),
                       device_management_service_.StartJobOKAsync(response)));
+  AllowUninterestingRemoteCommandFetches();
   EXPECT_CALL(*this, OnUnregistered(true));
 
   // Start unregistering.
@@ -858,6 +861,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, UnregisterFails) {
       .WillOnce(DoAll(device_management_service_.CaptureJobType(&job_type),
                       device_management_service_.StartJobAsync(
                           net::ERR_FAILED, DeviceManagementService::kSuccess)));
+  AllowUninterestingRemoteCommandFetches();
   EXPECT_CALL(*this, OnUnregistered(false));
 
   // Start unregistering.

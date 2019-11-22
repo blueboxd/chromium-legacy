@@ -239,7 +239,7 @@ public class BottomSheetController implements Destroyable {
             final ScrimView scrim, Supplier<View> bottomSheetViewSupplier, Window window,
             KeyboardVisibilityDelegate keyboardDelegate) {
         mBottomSheet = (BottomSheet) bottomSheetViewSupplier.get();
-        mBottomSheet.init(mTabProvider, window, keyboardDelegate);
+        mBottomSheet.init(window, keyboardDelegate);
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,

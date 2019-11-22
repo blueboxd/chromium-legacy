@@ -86,8 +86,9 @@ int DialogPlate::GetHeightForWidth(int width) const {
   return kPreferredHeightDip;
 }
 
-void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  OnButtonPressed(static_cast<AssistantButtonId>(sender->GetID()));
+void DialogPlate::OnButtonPressed(AssistantButtonId button_id) {
+  delegate_->OnDialogPlateButtonPressed(button_id);
+  textfield_->SetText(base::string16());
 }
 
 bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
@@ -380,11 +381,6 @@ void DialogPlate::InitVoiceLayoutContainer() {
   layout_manager->SetFlexForView(spacer, 1);
 
   input_modality_layout_container_->AddChildView(voice_layout_container_);
-}
-
-void DialogPlate::OnButtonPressed(AssistantButtonId id) {
-  delegate_->OnDialogPlateButtonPressed(id);
-  textfield_->SetText(base::string16());
 }
 
 void DialogPlate::OnAnimationStarted(

@@ -37,8 +37,15 @@ void PredictionMetricsHandler::AddPredictedEvent(
   // predicted event and that each predicted events are ordered over time
   DCHECK(!events_queue_.empty());
   DCHECK(time_stamp >= events_queue_.front().time_stamp);
-  DCHECK(predicted_events_queue_.empty() ||
-         time_stamp >= predicted_events_queue_.back().time_stamp);
+  // TODO(nzolghadr): The following DCHECK is commented out due to
+  // crbug.com/1017661. More investigation needs to be done as why this happens.
+  // DCHECK(predicted_events_queue_.empty() ||
+  //       time_stamp >= predicted_events_queue_.back().time_stamp);
+  bool needs_sorting = false;
+  if (!predicted_events_queue_.empty() &&
+      time_stamp < predicted_events_queue_.back().time_stamp)
+    needs_sorting = true;
+
   EventData e;
   if (scrolling)
     e.pos = gfx::PointF(0, pos.y());
@@ -47,6 +54,15 @@ void PredictionMetricsHandler::AddPredictedEvent(
   e.time_stamp = time_stamp;
   e.frame_time = frame_time;
   predicted_events_queue_.push_back(e);
+
+  // TODO(nzolghadr): This should never be needed. Something seems to be wrong
+  // in the tests. See crbug.com/1017661.
+  if (needs_sorting) {
+    std::sort(predicted_events_queue_.begin(), predicted_events_queue_.end(),
+              [](const EventData& a, const EventData& b) {
+                return a.time_stamp < b.time_stamp;
+              });
+  }
 }
 
 void PredictionMetricsHandler::EvaluatePrediction() {

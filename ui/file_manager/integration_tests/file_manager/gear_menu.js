@@ -202,7 +202,11 @@ testcase.showToggleHiddenAndroidFoldersGearMenuItemsInMyFiles = async () => {
       appId, TestEntryInfo.getExpectedRows(BASIC_ANDROID_ENTRY_SET));
 
   // Click the gear menu button.
-  await remoteCall.waitAndClickElement(appId, '#gear-button:not([hidden])');
+  const gearButton =
+      await remoteCall.waitAndClickElement(appId, '#gear-button:not([hidden])');
+
+  // Check: gear-button has aria-haspopup set to true
+  chrome.test.assertEq(gearButton.attributes['aria-haspopup'], 'true');
 
   // Wait for the gear menu to appear.
   await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');

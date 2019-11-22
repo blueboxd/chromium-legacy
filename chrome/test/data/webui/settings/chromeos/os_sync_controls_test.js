@@ -34,6 +34,9 @@ class TestOsSyncBrowserProxy extends TestBrowserProxy {
  */
 function getSyncAllOsPrefs() {
   return {
+    osAppsEnforced: false,
+    osAppsRegistered: true,
+    osAppsSynced: true,
     osPreferencesEnforced: false,
     osPreferencesRegistered: true,
     osPreferencesSynced: true,

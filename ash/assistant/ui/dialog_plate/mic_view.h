@@ -12,7 +12,6 @@
 
 namespace ash {
 
-enum class AssistantButtonId;
 class AssistantViewDelegate;
 class LogoView;
 
@@ -22,7 +21,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) MicView
     : public AssistantButton,
       public AssistantInteractionModelObserver {
  public:
-  MicView(views::ButtonListener* listener,
+  MicView(AssistantButtonListener* listener,
           AssistantViewDelegate* delegate,
           AssistantButtonId button_id);
   ~MicView() override;

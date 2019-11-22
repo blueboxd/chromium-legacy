@@ -331,15 +331,6 @@ void ChromeSigninClient::SetDiceMigrationCompleted() {
 #endif
 }
 
-void ChromeSigninClient::SetReadyForDiceMigration(bool is_ready) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  AccountConsistencyModeManager::GetForProfile(profile_)
-      ->SetReadyForDiceMigration(is_ready);
-#else
-  NOTREACHED();
-#endif
-}
-
 bool ChromeSigninClient::IsNonEnterpriseUser(const std::string& username) {
   return policy::BrowserPolicyConnector::IsNonEnterpriseUser(username);
 }

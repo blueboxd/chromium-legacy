@@ -703,7 +703,7 @@ TEST_P(AnimatedContentSamplerParameterizedTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AnimatedContentSamplerParameterizedTest,
     ::testing::Values(
         // Typical frame rate content: Compositor runs at 60 Hz, capture at 30

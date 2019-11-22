@@ -32,10 +32,8 @@ const char* AmbientAssistantDialogPlate::GetClassName() const {
   return "AmbientAssistantDialogPlate";
 }
 
-void AmbientAssistantDialogPlate::ButtonPressed(views::Button* sender,
-                                                const ui::Event& event) {
-  delegate_->OnDialogPlateButtonPressed(
-      static_cast<AssistantButtonId>(sender->GetID()));
+void AmbientAssistantDialogPlate::OnButtonPressed(AssistantButtonId button_id) {
+  delegate_->OnDialogPlateButtonPressed(button_id);
 }
 
 void AmbientAssistantDialogPlate::OnCommittedQueryChanged(

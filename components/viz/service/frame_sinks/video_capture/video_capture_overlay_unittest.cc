@@ -564,7 +564,7 @@ TEST_P(VideoCaptureOverlayRenderTest, ClipsToContentBounds) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     VideoCaptureOverlayRenderTest,
     testing::Values(VideoCaptureOverlayRenderTest::kARGBFormat,
                     VideoCaptureOverlayRenderTest::kI420Format));

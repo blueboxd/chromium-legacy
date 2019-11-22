@@ -137,7 +137,7 @@ TEST_P(VideoCaptureClientTest, Basic) {
   OnBufferReady(0, gfx::Size(320, 180));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoCaptureClientTest,
                          ::testing::Values(true, false));
 

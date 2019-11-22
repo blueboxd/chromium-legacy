@@ -169,6 +169,7 @@ Polymer({
     this.pinKeyboardValue_ = '';
     this.enableSubmit = false;
     this.isConfirmStep = false;
+    this.pinHasPassedMinimumLength_ = false;
     this.hideProblem_();
     this.onPinChange_(
         new CustomEvent('pin-change', {detail: {pin: this.pinKeyboardValue_}}));

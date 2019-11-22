@@ -119,11 +119,11 @@ class AudioSystemTestTemplate : public T {
     };
 
     audio_manager()->SetInputDeviceDescriptionsCallback(
-        base::Bind(get_device_descriptions,
-                   base::Unretained(&input_device_descriptions_)));
+        base::BindRepeating(get_device_descriptions,
+                            base::Unretained(&input_device_descriptions_)));
     audio_manager()->SetOutputDeviceDescriptionsCallback(
-        base::Bind(get_device_descriptions,
-                   base::Unretained(&output_device_descriptions_)));
+        base::BindRepeating(get_device_descriptions,
+                            base::Unretained(&output_device_descriptions_)));
   }
 
  protected:
@@ -304,9 +304,9 @@ TYPED_TEST_P(AudioSystemTestTemplate, GetOutputDeviceDescriptions) {
 TYPED_TEST_P(AudioSystemTestTemplate, GetAssociatedOutputDeviceID) {
   const std::string associated_id("associated_id");
   this->audio_manager()->SetAssociatedOutputDeviceIDCallback(
-      base::Bind([](const std::string& result,
-                    const std::string&) -> std::string { return result; },
-                 associated_id));
+      base::BindRepeating([](const std::string& result, const std::string&)
+                              -> std::string { return result; },
+                          associated_id));
 
   base::RunLoop wait_loop;
   this->audio_system()->GetAssociatedOutputDeviceID(
@@ -328,9 +328,9 @@ TYPED_TEST_P(AudioSystemTestTemplate, GetInputDeviceInfoNoAssociation) {
 TYPED_TEST_P(AudioSystemTestTemplate, GetInputDeviceInfoWithAssociation) {
   const std::string associated_id("associated_id");
   this->audio_manager()->SetAssociatedOutputDeviceIDCallback(
-      base::Bind([](const std::string& result,
-                    const std::string&) -> std::string { return result; },
-                 associated_id));
+      base::BindRepeating([](const std::string& result, const std::string&)
+                              -> std::string { return result; },
+                          associated_id));
 
   base::RunLoop wait_loop;
   this->audio_system()->GetInputDeviceInfo(

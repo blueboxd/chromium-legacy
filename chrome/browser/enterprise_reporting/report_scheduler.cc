@@ -36,8 +36,8 @@ const int kMaximumTrackedProfiles = 21;
 // Reads DM token and client id. Returns true if boths are non empty.
 bool GetDMTokenAndDeviceId(std::string* dm_token, std::string* client_id) {
   DCHECK(dm_token && client_id);
-  auto browser_dm_token =
-      policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+  policy::DMToken browser_dm_token =
+      policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   *client_id = policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
 
   if (!browser_dm_token.is_valid() || client_id->empty()) {

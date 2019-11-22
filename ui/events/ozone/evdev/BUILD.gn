@@ -6,6 +6,8 @@ import("//build/config/ui.gni")
 
 assert(use_ozone && is_linux)
 
+visibility = [ ":*" ]
+
 declare_args() {
   # Support ChromeOS touchpad gestures with ozone.
   use_evdev_gestures = false
@@ -142,6 +144,11 @@ component("evdev") {
 
     public_configs += [ ":evdev_gestures_config" ]
   }
+
+  visibility += [
+    "//ui/ozone/*",
+    "//ui/chromeos/*",
+  ]
 }
 
 source_set("unittests") {
@@ -180,4 +187,6 @@ source_set("unittests") {
     "//ui/events/ozone/layout",
     "//ui/gfx/geometry",
   ]
+
+  visibility += [ "//ui/events/ozone:unittests" ]
 }

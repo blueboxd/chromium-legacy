@@ -13,38 +13,15 @@
 
 // Changes the account consistency method while it is in scope. Useful for
 // tests.
-class ScopedAccountConsistency {
+class ScopedAccountConsistencyMirror {
  public:
-  explicit ScopedAccountConsistency(signin::AccountConsistencyMethod method);
-  ~ScopedAccountConsistency();
+  ScopedAccountConsistencyMirror();
+  ~ScopedAccountConsistencyMirror();
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScopedAccountConsistency);
+  DISALLOW_COPY_AND_ASSIGN(ScopedAccountConsistencyMirror);
 };
-
-// Specialized helper classes for each account consistency method:
-// ScopedAccountConsistencyDice, ScopedAccountConsistencyMirror, ...
-
-#define SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(method)                     \
-  class ScopedAccountConsistency##method {                                    \
-   public:                                                                    \
-    ScopedAccountConsistency##method()                                        \
-        : scoped_consistency_(signin::AccountConsistencyMethod::k##method) {} \
-                                                                              \
-   private:                                                                   \
-    ScopedAccountConsistency scoped_consistency_;                             \
-    DISALLOW_COPY_AND_ASSIGN(ScopedAccountConsistency##method);               \
-  }
-
-// ScopedAccountConsistencyMirror:
-SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(Mirror);
-// ScopedAccountConsistencyDiceMigration:
-SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(DiceMigration);
-// ScopedAccountConsistencyDice:
-SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION(Dice);
-
-#undef SCOPED_ACCOUNT_CONSISTENCY_SPECIALIZATION
 
 #endif  // CHROME_BROWSER_SIGNIN_SCOPED_ACCOUNT_CONSISTENCY_H_

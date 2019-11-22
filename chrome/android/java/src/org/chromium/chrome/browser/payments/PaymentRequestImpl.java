@@ -649,8 +649,11 @@ public class PaymentRequestImpl
         // Checks whether the merchant supports autofill payment instrument before show is called.
         mMerchantSupportsAutofillPaymentInstruments =
                 AutofillPaymentApp.merchantSupportsAutofillPaymentInstruments(mMethodData);
+        // If in strict mode, don't give user an option to add an autofill card during the checkout
+        // to avoid the "unhappy" basic-card flow.
         mUserCanAddCreditCard = mMerchantSupportsAutofillPaymentInstruments
-                && !ChromeFeatureList.isEnabled(ChromeFeatureList.NO_CREDIT_CARD_ABORT);
+                && !PaymentsExperimentalFeatures.isEnabled(
+                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT);
 
         if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
             mAutofillProfiles = Collections.unmodifiableList(
@@ -2553,7 +2556,8 @@ public class PaymentRequestImpl
         boolean foundPaymentMethods =
                 mPaymentMethodsSection != null && !mPaymentMethodsSection.isEmpty();
 
-        if (!mArePaymentMethodsSupported || (!foundPaymentMethods && !mUserCanAddCreditCard)) {
+        if (!mArePaymentMethodsSupported
+                || (!foundPaymentMethods && !mMerchantSupportsAutofillPaymentInstruments)) {
             // All payment apps have responded, but none of them have instruments. It's possible to
             // add credit cards, but the merchant does not support them either. The payment request
             // must be rejected.
@@ -2598,6 +2602,7 @@ public class PaymentRequestImpl
             return false;
         }
 
+        if (sObserverForTest != null) sObserverForTest.onPaymentRequestServiceShowFailed();
         mRejectShowErrorMessage = ErrorStrings.STRICT_BASIC_CARD_SHOW_REJECT;
         disconnectFromClientWithDebugMessage(
                 ErrorStrings.GENERIC_PAYMENT_METHOD_NOT_SUPPORTED_MESSAGE + " "

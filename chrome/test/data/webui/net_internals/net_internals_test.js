@@ -50,37 +50,6 @@ var NetInternalsTest = (function() {
     setUp: function() {
       testing.Test.prototype.setUp.call(this);
 
-      // Enforce accessibility auditing, but suppress some false positives.
-      this.accessibilityIssuesAreErrors = true;
-      // False positive because the background color highlights and then
-      // fades out with a transition when there's an error.
-      this.accessibilityAuditConfig.ignoreSelectors(
-          'lowContrastElements', '#hsts-view-query-output span');
-      // False positives for unknown reason.
-      this.accessibilityAuditConfig.ignoreSelectors(
-          'focusableElementNotVisibleAndNotAriaHidden',
-          '#domain-security-policy-view-tab-content *');
-
-      // TODO(aboxhall): enable when this bug is fixed:
-      // https://github.com/GoogleChrome/accessibility-developer-tools/issues/69
-      this.accessibilityAuditConfig.auditRulesToIgnore.push(
-          'focusableElementNotVisibleAndNotAriaHidden');
-
-      var controlsWithoutLabelSelectors = [
-        '#hsts-view-add-input',
-        '#hsts-view-delete-input',
-        '#hsts-view-query-input',
-      ];
-
-      // Enable when failure is resolved.
-      // AX_TEXT_01: http://crbug.com/559203
-      this.accessibilityAuditConfig.ignoreSelectors(
-          'controlsWithoutLabel', controlsWithoutLabelSelectors);
-
-      // Enable when warning is resolved.
-      // AX_HTML_01: http://crbug.com/559204
-      this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
-
       // Wrap g_browser.receive around a test function so that assert and expect
       // functions can be called from observers.
       g_browser.receive = this.continueTest(

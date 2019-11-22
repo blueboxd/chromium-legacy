@@ -299,25 +299,35 @@ XrResult OpenXrController::UpdateInteractionProfile() {
 
 base::Optional<gfx::Transform> OpenXrController::GetMojoFromGripTransform(
     XrTime predicted_display_time,
-    XrSpace local_space) const {
+    XrSpace local_space,
+    bool* emulated_position) const {
   return GetTransformFromSpaces(predicted_display_time, grip_pose_space_,
-                                local_space);
+                                local_space, emulated_position);
 }
 
 base::Optional<gfx::Transform> OpenXrController::GetPointerFromGripTransform(
     XrTime predicted_display_time) const {
+  bool emulated_position;
   return GetTransformFromSpaces(predicted_display_time, pointer_pose_space_,
-                                grip_pose_space_);
+                                grip_pose_space_, &emulated_position);
 }
 
 base::Optional<gfx::Transform> OpenXrController::GetTransformFromSpaces(
     XrTime predicted_display_time,
     XrSpace target,
-    XrSpace origin) const {
+    XrSpace origin,
+    bool* emulated_position) const {
   XrSpaceLocation location = {XR_TYPE_SPACE_LOCATION};
+  // emulated_position indicates when there is a fallback from a fully-tracked
+  // (i.e. 6DOF) type case to some form of orientation-only type tracking
+  // (i.e. 3DOF/IMU type sensors)
+  // Thus we have to make sure orientation is tracked.
+  // Valid Bit only indicates it's either tracked or emulated, we have to check
+  // for XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT to make sure orientation is
+  // tracked.
   if (FAILED(
           xrLocateSpace(target, origin, predicted_display_time, &location)) ||
-      !(location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) ||
+      !(location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT) ||
       !(location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
     return base::nullopt;
   }
@@ -331,6 +341,11 @@ base::Optional<gfx::Transform> OpenXrController::GetTransformFromSpaces(
   decomp.translate[0] = location.pose.position.x;
   decomp.translate[1] = location.pose.position.y;
   decomp.translate[2] = location.pose.position.z;
+
+  *emulated_position = true;
+  if (location.locationFlags & XR_SPACE_LOCATION_POSITION_TRACKED_BIT) {
+    *emulated_position = false;
+  }
 
   return gfx::ComposeTransform(decomp);
 }

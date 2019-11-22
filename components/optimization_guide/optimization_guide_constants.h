@@ -28,6 +28,10 @@ extern const char kLoadedHintLocalHistogramString[];
 // The folder where the hint data will be stored on disk.
 extern const char kOptimizationGuideHintStore[];
 
+// The folder where the prediction model and host model features data will be
+// stored on disk.
+extern const char kOptimizationGuidePredictionModelAndFeaturesStore[];
+
 }  // namespace optimization_guide
 
 #endif  // COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_CONSTANTS_H_

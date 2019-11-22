@@ -164,7 +164,7 @@ void MachineLevelUserCloudPolicyFetcher::InitializeManager(
 }
 
 void MachineLevelUserCloudPolicyFetcher::TryToFetchPolicy() {
-  auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+  DMToken dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
   std::string client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
   if (dm_token.is_valid() && !client_id.empty())
     SetupRegistrationAndFetchPolicy(dm_token, client_id);

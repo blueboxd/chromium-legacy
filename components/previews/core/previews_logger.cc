@@ -77,7 +77,7 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
       return want_inverse_description
                  ? "Cache-control no-transform not received"
                  : "Cache-control no-transform received";
-    case PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION:
+    case PreviewsEligibilityReason::DEPRECATED_NETWORK_NOT_SLOW_FOR_SESSION:
       return want_inverse_description
                  ? "Network is slow enough for the session"
                  : "Network not slow enough for the session";
@@ -107,6 +107,9 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
     case PreviewsEligibilityReason::DENY_LIST_MATCHED:
       DCHECK(!want_inverse_description);
       return "URL matched deny list";
+    case PreviewsEligibilityReason::PAGE_LOAD_PREDICTION_NOT_PAINFUL:
+      return want_inverse_description ? "Page load predicted to be painful"
+                                      : "Page load not predicted to be painful";
     case PreviewsEligibilityReason::LAST:
       break;
   }

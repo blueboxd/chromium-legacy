@@ -23482,6 +23482,8 @@ should be able to be added at any place in this file.
   <suffix name="Bookmark" label="For Bookmark feature."/>
   <suffix name="BottomToolbarTip" label="For BottomToolbarTip feature."/>
   <suffix name="ChromeDuet" label="For ChromeDuet feature."/>
+  <suffix name="ChromeDuetTabSwitcherButton"
+      label="For ChromeDuetTabSwitcherButton feature."/>
   <suffix name="ChromeHomeExpand" label="For ChromeHomeExpand feature."/>
   <suffix name="ChromeHomeMenuHeader"
       label="For ChromeHomeMenuHeader feature."/>

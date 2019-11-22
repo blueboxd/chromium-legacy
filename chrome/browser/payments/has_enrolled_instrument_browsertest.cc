@@ -86,12 +86,7 @@ class HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument
   HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument() {
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kStrictHasEnrolledAutofillInstrument},
-        /*disabled_features=*/{
-          features::kPaymentRequestSkipToGPay,
-#if defined(OS_ANDROID)
-              ::chrome::android::kNoCreditCardAbort,
-#endif
-        });
+        /*disabled_features=*/{features::kPaymentRequestSkipToGPay});
   }
 
  private:

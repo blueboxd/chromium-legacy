@@ -76,7 +76,6 @@ class ChromeSigninClient
 #endif
 
   void SetDiceMigrationCompleted() override;
-  void SetReadyForDiceMigration(bool is_ready) override;
 
   // Used in tests to override the URLLoaderFactory returned by
   // GetURLLoaderFactory().

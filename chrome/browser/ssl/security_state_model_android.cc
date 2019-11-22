@@ -30,17 +30,21 @@ jint JNI_SecurityStateModel_GetSecurityLevelForWebContents(
 }
 
 // static
-jboolean JNI_SecurityStateModel_IsOriginSecure(
-    JNIEnv* env,
-    const JavaParamRef<jstring>& jurl) {
-  GURL url(ConvertJavaStringToUTF16(env, jurl));
-  return url.is_valid() && content::IsOriginSecure(url);
-}
-
-// static
 jboolean JNI_SecurityStateModel_IsSchemeCryptographic(
     JNIEnv* env,
     const JavaParamRef<jstring>& jurl) {
   GURL url(ConvertJavaStringToUTF16(env, jurl));
   return url.is_valid() && url.SchemeIsCryptographic();
+}
+
+// static
+jboolean JNI_SecurityStateModel_ShouldDowngradeNeutralStyling(
+    JNIEnv* env,
+    jint jsecurity_level,
+    const JavaParamRef<jstring>& jurl) {
+  GURL url(ConvertJavaStringToUTF16(env, jurl));
+  auto security_level =
+      static_cast<security_state::SecurityLevel>(jsecurity_level);
+  return security_state::ShouldDowngradeNeutralStyling(
+      security_level, url, base::BindRepeating(&content::IsOriginSecure));
 }

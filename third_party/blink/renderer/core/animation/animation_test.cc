@@ -367,39 +367,33 @@ TEST_F(AnimationAnimationTestNoCompositing, SetStartTime) {
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeLimitsAnimation) {
-  // TODO(crbug/958433): Fix to align with spec.
   // Setting the start time is a seek operation, which is not constrained by the
   // normal limits on the animation.
   animation->setStartTime(-50000, false);
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
-  // This value is not to spec. Should be 50s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(50000, animation->currentTime());
   animation->setPlaybackRate(-1);
   EXPECT_EQ("running", animation->playState());
   animation->setStartTime(-100000, false);
   EXPECT_EQ("finished", animation->playState());
-  // This value is not to spec. Should be -100s.
-  EXPECT_EQ(0, animation->currentTime());
+  EXPECT_EQ(-100000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, SetStartTimeOnLimitedAnimation) {
-  // TODO(crbug/958433): Fix to align with spec.
   // The setStartTime method is a seek and thus not constrained by the normal
   // limits on the animation.
   SimulateFrame(30000);
   animation->setStartTime(-10000, false);
   EXPECT_EQ("finished", animation->playState());
-  // This value is not to spec. Should be 40s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(40000, animation->currentTime());
   EXPECT_TRUE(animation->Limited());
 
   animation->setCurrentTime(50000, false);
   EXPECT_EQ(50000, animation->currentTime());
   animation->setStartTime(-40000, false);
-  // This value is not to spec. Should be 70s.
-  EXPECT_EQ(30000, animation->currentTime());
+  EXPECT_EQ(70000, animation->currentTime());
   EXPECT_EQ("finished", animation->playState());
   EXPECT_TRUE(animation->Limited());
 }

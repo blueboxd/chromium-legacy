@@ -625,6 +625,22 @@ TEST_F(PreviewsLoggerTest,
   EXPECT_EQ(expected_description, actual_description);
 }
 
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionPageLoadNotPainful) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::PAGE_LOAD_PREDICTION_NOT_PAINFUL,
+      true /* final_reason */);
+  std::string expected_description = "Page load not predicted to be painful";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
+TEST_F(PreviewsLoggerTest, LogPreviewDecisionDescriptionPageLoadPainful) {
+  std::string actual_description = LogPreviewDecisionAndGetReasonDescription(
+      PreviewsEligibilityReason::PAGE_LOAD_PREDICTION_NOT_PAINFUL,
+      false /* final_reason */);
+  std::string expected_description = "Page load predicted to be painful";
+  EXPECT_EQ(expected_description, actual_description);
+}
+
 TEST_F(PreviewsLoggerTest, NotifyObserversOfNewBlacklistedHost) {
   TestPreviewsLoggerObserver observers[3];
 

@@ -158,7 +158,6 @@ namespace content {
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
 class BackForwardCacheMetrics;
-class BundledExchangesHandle;
 class FrameTree;
 class FrameTreeNode;
 class GeolocationServiceImpl;
@@ -183,6 +182,7 @@ class SerialService;
 class SpeechSynthesisImpl;
 class TimeoutMonitor;
 class WebBluetoothServiceImpl;
+class WebBundleHandle;
 struct ContextMenuParams;
 struct FrameOwnerProperties;
 struct PendingNavigation;
@@ -756,7 +756,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
           subresource_overrides,
       blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
       const base::UnguessableToken& devtools_navigation_token,
-      std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle);
+      std::unique_ptr<WebBundleHandle> web_bundle_handle);
 
   // Indicates that a navigation failed and that this RenderFrame should display
   // an error page.
@@ -2492,9 +2492,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::mojom::FrameLifecycleState frame_lifecycle_state_ =
       blink::mojom::FrameLifecycleState::kRunning;
 
-  // The factory to load resources from the BundledExchanges source bound to
+  // The factory to load resources from the WebBundle source bound to
   // this file.
-  std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle_;
+  std::unique_ptr<WebBundleHandle> web_bundle_handle_;
 
   // Tainted once MediaStream access was granted.
   bool was_granted_media_access_ = false;

@@ -26,7 +26,7 @@ struct VirtualAuthenticatorOptions {
 // with a single registration on a single virtual authenticator device.
 struct RegisteredKey {
   array<uint8> key_handle;
-  array<uint8> application_parameter;
+  string rp_id;
   // The EC private key in PKCS#8 format.
   array<uint8> private_key;
   int32 counter;
@@ -38,10 +38,14 @@ interface VirtualAuthenticator {
 
   AddRegistration(RegisteredKey key) => (bool added);
   GetRegistrations() => (array<RegisteredKey> keys);
+  // Removes a registration identified by |key_handle|. Returns |true| if the
+  // registration was found and removed, |false| otherwise.
+  RemoveRegistration(array<uint8> key_handle) => (bool removed);
   ClearRegistrations() => ();
 
-  SetUserPresence(bool present) => ();
-  GetUserPresence() => (bool present);
+  // Sets whether the authenticator will reply to user verification requests
+  // successfully (UV = true) or not.
+  SetUserVerified(bool verified) => ();
 };
 
 // Manages a virtual environment where the Web Authentication API talks to a

@@ -91,15 +91,6 @@ bool IsCommitTimePreview(PreviewsType type) {
   return false;
 }
 
-// We don't care if the ECT is unknown if the slow page threshold is set to 4G
-// (i.e.: all pages).
-bool ShouldCheckForUnknownECT(net::EffectiveConnectionType ect) {
-  if (!base::FeatureList::IsEnabled(features::kSlowPageTriggering))
-    return true;
-
-  return ect != net::EFFECTIVE_CONNECTION_TYPE_LAST - 1;
-}
-
 }  // namespace
 
 PreviewsDeciderImpl::PreviewsDeciderImpl(base::Clock* clock)
@@ -258,10 +249,14 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   passed_reasons->push_back(
       PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX);
 
-  // Check the network quality for client previews that don't have optimization
-  // hints. This defers checking ECT for server previews because the server will
-  // perform its own ECT check and for previews with hints because the hints may
-  // specify variable ECT thresholds for slow page hints.
+  // TODO(sophiechang): Remove the ECT unknown and offline checks when
+  // optimization guide checks for those values specifically.
+
+  // Check whether the page load is painful or not for previews that require a
+  // decision at navigation start. This does not do the checking for HTTP server
+  // previews because the server will perform its own ECT check. This also does
+  // not do the checking for commit-time previews since more information may
+  // become available later on in the page load.
   if (!is_drp_server_preview && !IsCommitTimePreview(type)) {
     if (effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
       return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
@@ -279,20 +274,24 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
     }
     passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
 
-    // If the optimization type is not a commit-time preview, determine
-    // the ECT network triggering condition here.
+    // If the optimization type is not a commit-time preview, determine whether
+    // we should show a Preview here.
     if (!IsCommitTimePreview(type)) {
-      if (effective_connection_type_ >
-          previews::params::GetECTThresholdForPreview(type)) {
-        return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
+      // ECT should not be checked if we are able to evaluate whether a page
+      // load is painful or not.
+      if (previews_opt_guide_) {
+        if (!previews_opt_guide_->ShouldShowPreview(navigation_handle)) {
+          return PreviewsEligibilityReason::PAGE_LOAD_PREDICTION_NOT_PAINFUL;
+        }
+        passed_reasons->push_back(
+            PreviewsEligibilityReason::PAGE_LOAD_PREDICTION_NOT_PAINFUL);
+      } else {
+        if (effective_connection_type_ >
+            previews::params::GetECTThresholdForPreview(type)) {
+          return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
+        }
+        passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
       }
-      passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
-
-      if (effective_connection_type_ > params::GetSessionMaxECTThreshold()) {
-        return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
-      }
-      passed_reasons->push_back(
-          PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
     }
   }
 
@@ -301,8 +300,13 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   }
   passed_reasons->push_back(PreviewsEligibilityReason::RELOAD_DISALLOWED);
 
+  bool skip_hint_check =
+      (type == PreviewsType::DEFER_ALL_SCRIPT &&
+       base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kEnableDeferAllScriptWithoutOptimizationHints));
+
   // Check optimization hints, if provided.
-  if (ShouldCheckOptimizationHints(type)) {
+  if (ShouldCheckOptimizationHints(type) && !skip_hint_check) {
     if (previews_opt_guide_) {
       // Optimization hints are configured, so determine if those hints
       // allow the optimization type (as of start-of-navigation time anyway).
@@ -424,12 +428,6 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
   if (type == PreviewsType::LITE_PAGE_REDIRECT) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kIgnoreLitePageRedirectOptimizationBlacklist)) {
-      // Make sure to also check the ECT threshold for the Preview if we are
-      // bypassing the optimization guide.
-      if (effective_connection_type_ >
-          params::GetECTThresholdForPreview(type)) {
-        return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
-      }
       return PreviewsEligibilityReason::ALLOWED;
     }
 
@@ -474,6 +472,12 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   passed_reasons->push_back(
       PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
 
+  // Check if the page load is predicted to be painful.
+  if (!previews_opt_guide_->ShouldShowPreview(navigation_handle))
+    return PreviewsEligibilityReason::PAGE_LOAD_PREDICTION_NOT_PAINFUL;
+  passed_reasons->push_back(
+      PreviewsEligibilityReason::PAGE_LOAD_PREDICTION_NOT_PAINFUL);
+
   // Check if request URL is whitelisted by the optimization guide.
   if (!previews_opt_guide_->CanApplyPreview(previews_data, navigation_handle,
                                             type)) {
@@ -482,8 +486,8 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   passed_reasons->push_back(
       PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE);
 
-  // The url is whitelisted, now check some additional cases of the effective
-  // network condition.
+  // TODO(sophiechang): Remove below ECT unknown and offline checks when
+  // optimization guide checks for those values specifically.
 
   // Note: the network quality estimator may sometimes return effective
   // connection type as offline when the Android APIs incorrectly return device
@@ -496,8 +500,7 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
     ect = effective_connection_type_;
   }
 
-  if (ShouldCheckForUnknownECT(params::GetSessionMaxECTThreshold()) &&
-      ect == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+  if (ect == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
   }
   passed_reasons->push_back(
@@ -508,11 +511,6 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   }
   passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
 
-  if (ect > params::GetSessionMaxECTThreshold()) {
-    return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
-  }
-  passed_reasons->push_back(
-      PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
   return PreviewsEligibilityReason::ALLOWED;
 }
 

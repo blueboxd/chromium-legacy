@@ -92,6 +92,9 @@ NET_EXPORT extern const base::FeatureParam<int>
 // in order to make cookies available in a third-party context. When disabled,
 // the default behavior for cookies without a SameSite attribute specified is no
 // restriction, i.e., available in a third-party context.
+// The "Lax-allow-unsafe" mitigation allows these cookies to be sent on
+// top-level cross-site requests with an unsafe (e.g. POST) HTTP method, if the
+// cookie is no more than 2 minutes old.
 NET_EXPORT extern const base::Feature kSameSiteByDefaultCookies;
 
 // When enabled, cookies without SameSite restrictions that don't specify the
@@ -108,6 +111,13 @@ NET_EXPORT extern const base::Feature kCookiesWithoutSameSiteMustBeSecure;
 // integration tests which may want to test behavior of cookies older than the
 // threshold, but which would not be practical to run for 2 minutes.
 NET_EXPORT extern const base::Feature kShortLaxAllowUnsafeThreshold;
+
+// When enabled, the SameSite by default feature does not add the
+// "Lax-allow-unsafe" behavior. Any cookies that do not specify a SameSite
+// attribute will be treated as Lax only, i.e. POST and other unsafe HTTP
+// methods will not be allowed at all for top-level cross-site navigations.
+// This only has an effect if the cookie defaults to SameSite=Lax.
+NET_EXPORT extern const base::Feature kSameSiteDefaultChecksMethodRigorously;
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
 // When enabled, use the builtin cert verifier instead of the platform verifier.

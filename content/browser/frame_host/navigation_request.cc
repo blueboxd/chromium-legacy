@@ -49,11 +49,11 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
-#include "content/browser/web_package/bundled_exchanges_navigation_info.h"
-#include "content/browser/web_package/bundled_exchanges_source.h"
-#include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/web_bundle_handle_tracker.h"
+#include "content/browser/web_package/web_bundle_navigation_info.h"
+#include "content/browser/web_package/web_bundle_source.h"
+#include "content/browser/web_package/web_bundle_utils.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
@@ -256,7 +256,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
                                  const std::string user_agent_override,
                                  bool has_user_gesture,
                                  base::Optional<url::Origin> initiator_origin,
-                                 network::mojom::ReferrerPolicy referrer_policy,
+                                 blink::mojom::Referrer* referrer,
                                  FrameTreeNode* frame_tree_node) {
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
@@ -329,11 +329,16 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
     // `network::SetFetchMetadataHeaders` function.
   }
 
+  if (!render_prefs.enable_referrers) {
+    *referrer =
+        blink::mojom::Referrer(GURL(), network::mojom::ReferrerPolicy::kNever);
+  }
+
   // Next, set the HTTP Origin if needed.
   if (NeedsHTTPOrigin(headers, method)) {
     url::Origin origin_header_value = initiator_origin.value_or(url::Origin());
     origin_header_value = Referrer::SanitizeOriginForRequest(
-        url, origin_header_value, referrer_policy);
+        url, origin_header_value, referrer->policy);
     headers->SetHeader(net::HttpRequestHeaders::kOrigin,
                        origin_header_value.Serialize());
   }
@@ -659,7 +664,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       false /* was_initiated_by_link_click */, GURL() /* searchable_form_url */,
       std::string() /* searchable_form_encoding */,
       GURL() /* client_side_redirect_url */,
-      base::nullopt /* devtools_initiator_info */);
+      base::nullopt /* devtools_initiator_info */,
+      false /* attach_same_site_cookies */);
 
   // Shift-Reload forces bypassing caches and service workers.
   if (common_params->navigation_type ==
@@ -723,8 +729,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator,
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
-    std::unique_ptr<BundledExchangesHandleTracker>
-        bundled_exchanges_handle_tracker) {
+    std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker) {
   // Only normal navigations to a different document or reloads are expected.
   // - Renderer-initiated same document navigations never start in the browser.
   // - Restore-navigations are always browser-initiated.
@@ -769,7 +774,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
 #endif
           false,  // is_browser_initiated
           network::mojom::IPAddressSpace::kUnknown,
-          GURL() /* base_url_override_for_bundled_exchanges */
+          GURL() /* base_url_override_for_web_bundle */
       );
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, std::move(common_params), std::move(begin_params),
@@ -786,8 +791,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       std::move(blob_url_loader_factory);
   navigation_request->prefetched_signed_exchange_cache_ =
       std::move(prefetched_signed_exchange_cache);
-  navigation_request->bundled_exchanges_handle_tracker_ =
-      std::move(bundled_exchanges_handle_tracker);
+  navigation_request->web_bundle_handle_tracker_ =
+      std::move(web_bundle_handle_tracker);
   return navigation_request;
 }
 
@@ -844,7 +849,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
 #endif
           false,  // is_browser_initiated
           network::mojom::IPAddressSpace::kUnknown,
-          GURL() /* base_url_override_for_bundled_exchanges */
+          GURL() /* base_url_override_for_web_bundle */
       );
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
@@ -993,9 +998,9 @@ NavigationRequest::NavigationRequest(
       entry->back_forward_cache_metrics()
           ->MainFrameDidStartNavigationToDocument();
     }
-    if (entry->bundled_exchanges_navigation_info()) {
-      bundled_exchanges_navigation_info_ =
-          entry->bundled_exchanges_navigation_info()->Clone();
+    if (entry->web_bundle_navigation_info()) {
+      web_bundle_navigation_info_ =
+          entry->web_bundle_navigation_info()->Clone();
     }
 
     // If this NavigationRequest is for the current pending entry, make sure
@@ -1037,7 +1042,7 @@ NavigationRequest::NavigationRequest(
         common_params_->transition, controller->GetBrowserContext(),
         common_params_->method, user_agent_override,
         common_params_->has_user_gesture, common_params_->initiator_origin,
-        common_params_->referrer->policy, frame_tree_node);
+        common_params_->referrer.get(), frame_tree_node);
 
     if (begin_params_->is_form_submission) {
       if (browser_initiated_ && !commit_params_->post_content_type.empty()) {
@@ -2090,44 +2095,40 @@ void NavigationRequest::OnStartChecksComplete(
     }
   }
 
-  // Initialize the BundledExchangesHandle.
-  if (bundled_exchanges_handle_tracker_) {
+  // Initialize the WebBundleHandle.
+  if (web_bundle_handle_tracker_) {
     DCHECK(base::FeatureList::IsEnabled(features::kWebBundles) ||
            base::FeatureList::IsEnabled(features::kWebBundlesFromNetwork) ||
            base::CommandLine::ForCurrentProcess()->HasSwitch(
-               switches::kTrustableBundledExchangesFileUrl));
-    bundled_exchanges_handle_ =
-        bundled_exchanges_handle_tracker_->MaybeCreateBundledExchangesHandle(
-            common_params_->url, frame_tree_node_->frame_tree_node_id());
+               switches::kTrustableWebBundleFileUrl));
+    web_bundle_handle_ = web_bundle_handle_tracker_->MaybeCreateWebBundleHandle(
+        common_params_->url, frame_tree_node_->frame_tree_node_id());
   }
-  if (!bundled_exchanges_handle_ && bundled_exchanges_navigation_info_) {
+  if (!web_bundle_handle_ && web_bundle_navigation_info_) {
     DCHECK(base::FeatureList::IsEnabled(features::kWebBundles) ||
            base::FeatureList::IsEnabled(features::kWebBundlesFromNetwork) ||
            base::CommandLine::ForCurrentProcess()->HasSwitch(
-               switches::kTrustableBundledExchangesFileUrl));
-    bundled_exchanges_handle_ =
-        BundledExchangesHandle::MaybeCreateForNavigationInfo(
-            bundled_exchanges_navigation_info_->Clone(),
-            frame_tree_node_->frame_tree_node_id());
+               switches::kTrustableWebBundleFileUrl));
+    web_bundle_handle_ = WebBundleHandle::MaybeCreateForNavigationInfo(
+        web_bundle_navigation_info_->Clone(),
+        frame_tree_node_->frame_tree_node_id());
   }
-  if (!bundled_exchanges_handle_) {
-    if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
+  if (!web_bundle_handle_) {
+    if (web_bundle_utils::CanLoadAsTrustableWebBundleFile(
             common_params_->url)) {
-      auto source = BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
-          common_params_->url);
+      auto source =
+          WebBundleSource::MaybeCreateFromTrustedFileUrl(common_params_->url);
       // MaybeCreateFromTrustedFileUrl() returns null when the url contains an
       // invalid character.
       if (source) {
-        bundled_exchanges_handle_ =
-            BundledExchangesHandle::CreateForTrustableFile(
-                std::move(source), frame_tree_node_->frame_tree_node_id());
+        web_bundle_handle_ = WebBundleHandle::CreateForTrustableFile(
+            std::move(source), frame_tree_node_->frame_tree_node_id());
       }
-    } else if (bundled_exchanges_utils::CanLoadAsBundledExchangesFile(
-                   common_params_->url)) {
-      bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile(
+    } else if (web_bundle_utils::CanLoadAsWebBundleFile(common_params_->url)) {
+      web_bundle_handle_ = WebBundleHandle::CreateForFile(
           frame_tree_node_->frame_tree_node_id());
     } else if (base::FeatureList::IsEnabled(features::kWebBundlesFromNetwork)) {
-      bundled_exchanges_handle_ = BundledExchangesHandle::CreateForNetwork(
+      web_bundle_handle_ = WebBundleHandle::CreateForNetwork(
           browser_context, frame_tree_node_->frame_tree_node_id());
     }
   }
@@ -2165,8 +2166,8 @@ void NavigationRequest::OnStartChecksComplete(
   // TODO(clamy): Avoid cloning the navigation params and create the
   // ResourceRequest directly here.
   std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptor;
-  if (bundled_exchanges_handle_)
-    interceptor.push_back(bundled_exchanges_handle_->TakeInterceptor());
+  if (web_bundle_handle_)
+    interceptor.push_back(web_bundle_handle_->TakeInterceptor());
   loader_ = NavigationURLLoader::Create(
       browser_context, partition,
       std::make_unique<NavigationRequestInfo>(
@@ -2485,10 +2486,9 @@ void NavigationRequest::CommitNavigation() {
         &service_worker_provider_info);
   }
 
-  if (bundled_exchanges_handle_ &&
-      bundled_exchanges_handle_->navigation_info()) {
-    bundled_exchanges_navigation_info_ =
-        bundled_exchanges_handle_->navigation_info()->Clone();
+  if (web_bundle_handle_ && web_bundle_handle_->navigation_info()) {
+    web_bundle_navigation_info_ =
+        web_bundle_handle_->navigation_info()->Clone();
   }
 
   auto common_params = common_params_->Clone();
@@ -2509,7 +2509,7 @@ void NavigationRequest::CommitNavigation() {
       std::move(url_loader_client_endpoints_), is_view_source_,
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
       std::move(service_worker_provider_info), devtools_navigation_token_,
-      std::move(bundled_exchanges_handle_));
+      std::move(web_bundle_handle_));
 
   // Give SpareRenderProcessHostManager a heads-up about the most recently used
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up

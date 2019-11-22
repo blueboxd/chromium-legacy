@@ -5,6 +5,9 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_H_
 
+#include <ostream>
+#include <string>
+
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/observer_list.h"
@@ -91,6 +94,15 @@ class AX_EXPORT AXPlatformNode {
 
   // Return the unique ID
   int32_t GetUniqueId() const;
+
+  // Creates a string representation of this node's data.
+  std::string ToString();
+
+  // Returns a string representation of the subtree of nodes rooted at this
+  // node.
+  std::string SubtreeToString();
+
+  friend std::ostream& operator<<(std::ostream& stream, AXPlatformNode& node);
 
  protected:
   AXPlatformNode();

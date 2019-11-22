@@ -143,6 +143,7 @@ Bug(none) paint/invalidation/position/relative-positioned-movement-repaint.html 
 Bug(none) paint/invalidation/scroll/fixed-and-absolute-position-scrolled.html [ Failure ]
 Bug(none) paint/invalidation/scroll/fixed-img-src-change-after-scroll.html [ Failure ]
 Bug(none) paint/invalidation/scroll/fixed-scroll-simple.html [ Failure ]
+Bug(none) paint/invalidation/scroll/fixed-scroll-viewport-scroll-hidden.html [ Failure ]
 Bug(none) paint/invalidation/table/fixed-table-overflow.html [ Failure ]
 Bug(none) paint/invalidation/scroll/fixed-under-composited-fixed-scrolled.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-in-fixed-layer.html [ Failure ]

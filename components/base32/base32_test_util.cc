@@ -21,7 +21,7 @@ namespace {
 uint8_t ReverseMapping(char input_char) {
   if (input_char >= 'A' && input_char <= 'Z')
     return input_char - 'A';
-  else if (input_char >= '2' && input_char <= '7')
+  if (input_char >= '2' && input_char <= '7')
     return input_char - '2' + 26;
 
   NOTREACHED() << "Invalid base32 character";

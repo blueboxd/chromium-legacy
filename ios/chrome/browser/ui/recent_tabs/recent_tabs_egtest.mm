@@ -28,6 +28,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -167,7 +168,7 @@ id<GREYMatcher> TitleOfTestPage() {
   // Sign-in promo should be visible with cold state.
   [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
                                         closeButton:NO];
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
   // Sign-in promo should be visible with warm state.
@@ -195,7 +196,7 @@ id<GREYMatcher> TitleOfTestPage() {
   [SigninEarlGreyUI checkSigninPromoNotVisible];
 
   // Add an account.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 

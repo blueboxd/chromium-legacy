@@ -1808,7 +1808,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // In that case we Run() it here, and set a flag to avoid running the main
   // message loop later, as the test will do so as needed from the |ui_task|.
   if (parameters().ui_task) {
-    parameters().ui_task->Run();
+    std::move(*parameters().ui_task).Run();
     delete parameters().ui_task;
     run_message_loop_ = false;
   }

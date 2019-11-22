@@ -103,7 +103,7 @@ MediaNotificationContainerImplView::MediaNotificationContainerImplView(
       dismiss_button_container_->AddChildView(std::move(dismiss_button));
   UpdateDismissButtonIcon();
 
-  auto view = std::make_unique<media_message_center::MediaNotificationView>(
+  auto view = std::make_unique<media_message_center::MediaNotificationViewImpl>(
       this, std::move(item), std::move(dismiss_button_placeholder),
       base::string16(), kWidth, /*should_show_icon=*/false);
   view_ = swipeable_container_->AddChildView(std::move(view));

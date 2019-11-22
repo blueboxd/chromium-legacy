@@ -65,6 +65,7 @@ enum Pref {
   SYNC_LAST_ACCOUNT_NAME,
   WEBKIT_PASSWORD_ECHO_ENABLED,
   WEBKIT_FORCE_DARK_MODE_ENABLED,
+  HOME_PAGE,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -116,6 +117,7 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kGoogleServicesLastUsername,
     prefs::kWebKitPasswordEchoEnabled,
     prefs::kWebKitForceDarkModeEnabled,
+    prefs::kHomePage,
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

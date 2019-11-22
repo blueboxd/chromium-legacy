@@ -1,5 +1,5 @@
 # tags: [ android chromeos highsierra linux mac mojave sierra win win7 ]
-# tags: [ d3d11 no-angle vulkan opengl opengles ]
+# tags: [ d3d11 no-angle vulkan opengl opengles no-use-gl ]
 # tags: [ passthrough no-passthrough ]
 # tags: [ intel intel-0xa2e
 #         amd amd-0x6613 amd-0x699f
@@ -59,7 +59,12 @@ crbug.com/891861 [ android no-passthrough ] WebglExtension_WEBGL_multi_draw_inst
 
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 
-crbug.com/949249 [ passthrough ] conformance2/extensions/ovr_multiview2.html [ Failure ]
+crbug.com/1025652 [ intel passthrough d3d11 ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
+crbug.com/1025652 [ intel passthrough opengl ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
+
+crbug.com/949249 [ win passthrough opengl nvidia ] conformance2/extensions/ovr_multiview2.html [ Failure ]
+crbug.com/949249 [ win passthrough no-use-gl ] conformance2/extensions/ovr_multiview2.html [ Failure ]
+crbug.com/949249 [ linux passthrough opengl ] conformance2/extensions/ovr_multiview2.html [ Failure ]
 
 # Failing new test
 crbug.com/874620 [ linux nvidia ] conformance2/glsl3/const-struct-from-array-as-function-parameter.html [ Failure ]
@@ -111,8 +116,10 @@ crbug.com/628395 [ d3d11 win intel ] conformance/* [ RetryOnFailure ]
 crbug.com/628395 [ d3d11 win intel ] conformance2/* [ RetryOnFailure ]
 crbug.com/628395 [ d3d11 win intel ] deqp/* [ RetryOnFailure ]
 
+crbug.com/1023745 [ win intel opengl passthrough ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1023745 [ win intel opengl passthrough ] conformance2/textures/video/* [ RetryOnFailure ]
+
 # Intel failed issues
-crbug.com/963450 [ opengl win passthrough intel ] deqp/functional/gles3/textureshadow/cube_* [ Failure ]
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
 crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
 
@@ -148,9 +155,9 @@ crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] confor
 
 # Windows only.
 crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
-crbug.com/angleproject/2291 [ win ] conformance2/rendering/framebuffer-texture-changing-base-level.html [ Failure ]
+crbug.com/angleproject/2291 [ win no-use-gl ] conformance2/rendering/framebuffer-texture-changing-base-level.html [ Failure ]
 crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/generate-mipmap-with-large-base-level.html [ Failure ]
-crbug.com/angleproject/1465 [ win ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
+crbug.com/angleproject/1465 [ win no-use-gl ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
 # Win / NVidia
@@ -259,9 +266,8 @@ crbug.com/951628 [ passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
 
 # Passthrough command decoder / OpenGL / Windows
-crbug.com/835364 [ opengl win passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
+crbug.com/835364 [ opengl win passthrough nvidia ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/835364 [ opengl win passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]
-crbug.com/angleproject/3742 [ opengl win passthrough ] conformance2/rendering/clearbuffer-sub-source.html [ Failure ]
 
 # Passthrough command decoder / Linux / OpenGL / NVIDIA
 crbug.com/766918 [ opengl linux passthrough nvidia ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
@@ -720,6 +726,7 @@ crbug.com/906735 [ android qualcomm ] conformance2/textures/video/tex-2d-rgba8ui
 crbug.com/981216 [ android qualcomm-adreno-(tm)-540 ] deqp/functional/gles3/fbocolorbuffer/tex2d_01.html [ RetryOnFailure ]
 crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/default_framebuffer_02.html [ RetryOnFailure ]
 crbug.com/1022410 [ android qualcomm ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
+crbug.com/1027125 [ android qualcomm ] deqp/functional/gles3/negativetextureapi.html [ Failure ]
 
 # This test is failing on Android Pixel 2 and 3 (Qualcomm)
 # Seems to be an OpenGL ES bug.

@@ -58,17 +58,16 @@ bool BluetoothLocalGattServiceBlueZ::IsPrimary() const {
   return is_primary_;
 }
 
-void BluetoothLocalGattServiceBlueZ::Register(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
-  GetAdapter()->RegisterGattService(this, callback, error_callback);
+void BluetoothLocalGattServiceBlueZ::Register(const base::Closure& callback,
+                                              ErrorCallback error_callback) {
+  GetAdapter()->RegisterGattService(this, callback, std::move(error_callback));
 }
 
-void BluetoothLocalGattServiceBlueZ::Unregister(
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+void BluetoothLocalGattServiceBlueZ::Unregister(const base::Closure& callback,
+                                                ErrorCallback error_callback) {
   DCHECK(GetAdapter());
-  GetAdapter()->UnregisterGattService(this, callback, error_callback);
+  GetAdapter()->UnregisterGattService(this, callback,
+                                      std::move(error_callback));
 }
 
 bool BluetoothLocalGattServiceBlueZ::IsRegistered() {

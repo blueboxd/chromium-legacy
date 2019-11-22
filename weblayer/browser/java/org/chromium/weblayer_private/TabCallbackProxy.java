@@ -32,8 +32,8 @@ public final class TabCallbackProxy {
     }
 
     @CalledByNative
-    private void visibleUrlChanged(String string) throws RemoteException {
-        mClient.visibleUrlChanged(string);
+    private void visibleUriChanged(String string) throws RemoteException {
+        mClient.visibleUriChanged(string);
     }
 
     @CalledByNative

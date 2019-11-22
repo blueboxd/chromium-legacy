@@ -68,7 +68,7 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
       std::string() /* manufacture_date */, device_management_service,
       std::move(url_loader_factory), nullptr,
       policy::CloudPolicyClient::DeviceDMTokenCallback());
-  dm_token_ = policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+  dm_token_ = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   client_id_ = policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
 }
 

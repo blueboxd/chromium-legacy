@@ -11,6 +11,7 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query_history.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/assistant/ui/base/assistant_button_listener.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -27,7 +28,6 @@ class ImageButton;
 
 namespace ash {
 
-enum class AssistantButtonId;
 class AssistantViewDelegate;
 class MicView;
 
@@ -43,7 +43,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) DialogPlate
       public views::TextfieldController,
       public AssistantInteractionModelObserver,
       public AssistantUiModelObserver,
-      public views::ButtonListener {
+      public AssistantButtonListener {
  public:
   explicit DialogPlate(AssistantViewDelegate* delegate);
   ~DialogPlate() override;
@@ -54,8 +54,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) DialogPlate
   int GetHeightForWidth(int width) const override;
   void RequestFocus() override;
 
-  // ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // AssistantButtonListener:
+  void OnButtonPressed(AssistantButtonId button_id) override;
 
   // views::TextfieldController:
   bool HandleKeyEvent(views::Textfield* sender,
@@ -79,8 +79,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) DialogPlate
   void InitLayout();
   void InitKeyboardLayoutContainer();
   void InitVoiceLayoutContainer();
-
-  void OnButtonPressed(AssistantButtonId id);
 
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);

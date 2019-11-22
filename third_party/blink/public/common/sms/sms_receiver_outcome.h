@@ -15,7 +15,8 @@ enum class SMSReceiverOutcome {
   kTimeout = 1,
   kConnectionError = 2,
   kCancelled = 3,
-  kMaxValue = kCancelled
+  kAborted = 4,
+  kMaxValue = kAborted
 };
 
 }  // namespace blink

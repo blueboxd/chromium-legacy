@@ -369,7 +369,7 @@ void LaunchCrostiniApp(Profile* profile,
 
     // At this point, we know that Crostini UI is allowed.
     if (!crostini_manager->IsCrosTerminaInstalled() ||
-        !profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled)) {
+        !CrostiniFeatures::Get()->IsEnabled(profile)) {
       ShowCrostiniInstallerView(profile, CrostiniUISurface::kAppList);
       return std::move(callback).Run(false, "Crostini not installed");
     }

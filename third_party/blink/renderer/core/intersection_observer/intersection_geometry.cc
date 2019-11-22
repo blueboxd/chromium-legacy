@@ -157,27 +157,6 @@ LayoutObject* GetTargetLayoutObject(const Element& target_element) {
   return target;
 }
 
-// If root_element is non-null, it is treated as the explicit root of an
-// IntersectionObserver; if it is valid, its LayoutObject is returned.
-// If root_element is null, returns the object to be used as the implicit root
-// for a given target.
-//
-//   https://w3c.github.io/IntersectionObserver/#dom-intersectionobserver-root
-LayoutObject* GetRootLayoutObjectForTarget(const Element* root_element,
-                                           LayoutObject* target) {
-  if (!target)
-    return nullptr;
-  if (root_element && !root_element->isConnected())
-    return nullptr;
-  LayoutObject* root =
-      root_element ? root_element->GetLayoutObject() : LocalRootView(*target);
-  if (!root)
-    return nullptr;
-  if (root_element && !IsContainingBlockChainDescendant(target, root))
-    return nullptr;
-  return root;
-}
-
 static const unsigned kConstructorFlagsMask =
     IntersectionGeometry::kShouldReportRootBounds |
     IntersectionGeometry::kShouldComputeVisibility |
@@ -192,16 +171,39 @@ IntersectionGeometry::RootGeometry::RootGeometry(const LayoutObject* root,
   if (!root || !root->GetNode() || !root->GetNode()->isConnected() ||
       !root->IsBox())
     return;
-  if (RuntimeEnabledFeatures::
-          IntersectionObserverDocumentScrollingElementRootEnabled() &&
-      root->GetNode() == root->GetDocument().scrollingElement()) {
-    root = root->GetDocument().GetLayoutView();
-  }
   zoom = root->StyleRef().EffectiveZoom();
   local_root_rect = InitializeRootRect(root, margin);
   TransformState transform_state(TransformState::kApplyTransformDirection);
   root->MapLocalToAncestor(nullptr, transform_state, 0);
   root_to_document_transform = transform_state.AccumulatedTransform();
+}
+
+// If root_element is non-null, it is treated as the explicit root of an
+// IntersectionObserver; if it is valid, its LayoutObject is returned.
+//
+// If root_element is null, returns the object to be used as the implicit root
+// for a given target.
+//
+//   https://w3c.github.io/IntersectionObserver/#dom-intersectionobserver-root
+const LayoutObject* IntersectionGeometry::GetRootLayoutObjectForTarget(
+    const Element* root_element,
+    LayoutObject* target) {
+  if (!root_element)
+    return target ? LocalRootView(*target) : nullptr;
+  if (!root_element->isConnected())
+    return nullptr;
+
+  LayoutObject* root = nullptr;
+  if (RuntimeEnabledFeatures::
+          IntersectionObserverDocumentScrollingElementRootEnabled() &&
+      root_element == root_element->GetDocument().scrollingElement()) {
+    root = root_element->GetDocument().GetLayoutView();
+  } else {
+    root = root_element->GetLayoutObject();
+    if (target && !IsContainingBlockChainDescendant(target, root))
+      root = nullptr;
+  }
+  return root;
 }
 
 IntersectionGeometry::IntersectionGeometry(const Element* root_element,
@@ -215,8 +217,10 @@ IntersectionGeometry::IntersectionGeometry(const Element* root_element,
   if (!root_element)
     flags_ |= kRootIsImplicit;
   LayoutObject* target = GetTargetLayoutObject(target_element);
-  LayoutObject* root = GetRootLayoutObjectForTarget(root_element, target);
-  if (!root || !target)
+  if (!target)
+    return;
+  const LayoutObject* root = GetRootLayoutObjectForTarget(root_element, target);
+  if (!root)
     return;
   RootGeometry root_geometry(root, root_margin);
   ComputeGeometry(root_geometry, root, target, thresholds);
@@ -231,8 +235,11 @@ IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
       intersection_ratio_(0),
       threshold_index_(0) {
   LayoutObject* target = GetTargetLayoutObject(target_element);
-  LayoutObject* root = explicit_root.GetLayoutObject();
-  if (!IsContainingBlockChainDescendant(target, root))
+  if (!target)
+    return;
+  const LayoutObject* root =
+      GetRootLayoutObjectForTarget(&explicit_root, target);
+  if (!root)
     return;
   ComputeGeometry(root_geometry, root, target, thresholds);
 }

@@ -87,6 +87,12 @@ void EmbeddedTestServer::SetConnectionListener(
   connection_listener_ = listener;
 }
 
+EmbeddedTestServerHandle EmbeddedTestServer::StartAndReturnHandle(int port) {
+  if (!Start(port))
+    return EmbeddedTestServerHandle();
+  return EmbeddedTestServerHandle(this);
+}
+
 bool EmbeddedTestServer::Start(int port) {
   bool success = InitializeAndListen(port);
   if (!success)
@@ -526,6 +532,28 @@ bool EmbeddedTestServer::PostTaskToIOThreadAndWait(
   run_loop.Run();
 
   return true;
+}
+
+EmbeddedTestServerHandle::EmbeddedTestServerHandle(
+    EmbeddedTestServerHandle&& other) {
+  operator=(std::move(other));
+}
+
+EmbeddedTestServerHandle& EmbeddedTestServerHandle::operator=(
+    EmbeddedTestServerHandle&& other) {
+  EmbeddedTestServerHandle temporary;
+  std::swap(other.test_server_, temporary.test_server_);
+  std::swap(temporary.test_server_, test_server_);
+  return *this;
+}
+
+EmbeddedTestServerHandle::EmbeddedTestServerHandle(
+    EmbeddedTestServer* test_server)
+    : test_server_(test_server) {}
+
+EmbeddedTestServerHandle::~EmbeddedTestServerHandle() {
+  if (test_server_)
+    EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
 }
 
 }  // namespace test_server

@@ -71,7 +71,6 @@ std::unique_ptr<PrefService> CreateLocalState(
     policy::PolicyService* policy_service,
     scoped_refptr<PrefRegistry> pref_registry,
     bool async,
-    std::unique_ptr<PrefValueStore::Delegate> delegate,
     policy::BrowserPolicyConnector* policy_connector);
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
@@ -84,22 +83,8 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
     policy::BrowserPolicyConnector* connector,
     bool async,
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    std::unique_ptr<PrefValueStore::Delegate> delegate);
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
-// Installs policy related PrefStores on |preexisting_local_state|.
-// |preexisting_local_state| instance is a local state that has user PrefStore
-// and commandline PrefStore initialized. It is missing the mandatory and
-// recommended PrefStores and this method will add them to it.
-// |policy_service| is used as the source for mandatory or recommended
-// policies.
-// |delegate| is passed to listen to PrefStore initialization events.
-void InstallPoliciesOnLocalState(
-    PrefService* preexisting_local_state,
-    policy::PolicyService* policy_service,
-    std::unique_ptr<PrefValueStore::Delegate> delegate);
-
-// Call before startup tasks kick in to ignore the presence of a domain when
 // determining the active SettingsEnforcement group. For testing only.
 void DisableDomainCheckForTesting();
 

@@ -921,6 +921,12 @@
                  file="route.js"
                  type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_SETTINGS_ROUTE_ORIGIN_BEHAVIOR_HTML"
+                 file="route_origin_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_ROUTE_ORIGIN_BEHAVIOR_JS"
+                 file="route_origin_behavior.js"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_SITE_FAVICON_HTML"
                  file="site_favicon.html"
                  type="chrome_html" />

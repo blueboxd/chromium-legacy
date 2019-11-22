@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "components/services/storage/dom_storage/storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
@@ -33,7 +33,7 @@ namespace content {
 // it does allow it's user to keep track of the number of binding using
 // |binding_count()|, |AddBindingReference()|, and |RemoveBindingReference()|.
 class CONTENT_EXPORT SessionStorageDataMap final
-    : public StorageAreaImpl::Delegate,
+    : public storage::StorageAreaImpl::Delegate,
       public base::RefCounted<SessionStorageDataMap> {
  public:
   class CONTENT_EXPORT Listener {
@@ -62,7 +62,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
 
   Listener* listener() const { return listener_; }
 
-  StorageAreaImpl* storage_area() { return storage_area_ptr_; }
+  storage::StorageAreaImpl* storage_area() { return storage_area_ptr_; }
 
   scoped_refptr<SessionStorageMetadata::MapData> map_data() {
     return map_data_.get();
@@ -95,7 +95,7 @@ class CONTENT_EXPORT SessionStorageDataMap final
 
   void OnMapLoaded(leveldb::Status status) override;
 
-  static StorageAreaImpl::Options GetOptions();
+  static storage::StorageAreaImpl::Options GetOptions();
 
   Listener* listener_;
   int binding_count_ = 0;
@@ -106,13 +106,13 @@ class CONTENT_EXPORT SessionStorageDataMap final
   scoped_refptr<SessionStorageDataMap> clone_from_data_map_;
 
   scoped_refptr<SessionStorageMetadata::MapData> map_data_;
-  std::unique_ptr<StorageAreaImpl> storage_area_impl_;
+  std::unique_ptr<storage::StorageAreaImpl> storage_area_impl_;
   // Holds the same value as |storage_area_impl_|. The reason for this is that
   // during destruction of the StorageAreaImpl instance we might still get
   // called and need access  to the StorageAreaImpl instance. The
   // unique_ptr could already be null, but this field should still be valid.
   // TODO(dmurph): Change delegate ownership so this doesn't have to be done.
-  StorageAreaImpl* storage_area_ptr_;
+  storage::StorageAreaImpl* storage_area_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageDataMap);
 };

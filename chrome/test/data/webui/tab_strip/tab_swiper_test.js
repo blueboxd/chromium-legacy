@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {OPACITY_ANIMATION_THRESHOLD_PX, SWIPE_FINISH_THRESHOLD_PX, SWIPE_START_THRESHOLD_PX, TabSwiper} from 'chrome://tab-strip/tab_swiper.js';
+import {SWIPE_FINISH_THRESHOLD_PX, SWIPE_START_THRESHOLD_PX, TabSwiper, TRANSLATE_ANIMATION_THRESHOLD_PX} from 'chrome://tab-strip/tab_swiper.js';
 
 import {eventToPromise} from '../test_util.m.js';
 
@@ -26,7 +26,12 @@ suite('TabSwiper', () => {
   });
 
   test('swiping progresses the animation', () => {
-    document.body.style.setProperty('--tabstrip-tab-width', '100px');
+    // Set margin top 0 to avoid offsetting the bounding client rect.
+    document.body.style.margin = 0;
+
+    const tabWidth = 100;
+    document.body.style.setProperty('--tabstrip-tab-width', `${tabWidth}px`);
+
     const tabElStyle = window.getComputedStyle(tabElement);
 
     const startY = 50;
@@ -40,25 +45,30 @@ suite('TabSwiper', () => {
       pointerState.clientY = startY + (direction * 1);
       pointerState.movementY = 1; /* Any non-0 value here is fine. */
       tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      assertEquals(tabElStyle.maxWidth, '100px');
+      assertEquals(tabElStyle.maxWidth, `${tabWidth}px`);
       assertEquals(tabElStyle.opacity, '1');
+      let startTop = tabElement.getBoundingClientRect().top;
+      assertEquals(startTop, 0);
 
-      // Swipe was enough to start animating opacity.
+      // Swipe was enough to start animating the position.
       pointerState.clientY =
-          startY + (direction * (OPACITY_ANIMATION_THRESHOLD_PX + 1));
+          startY + (direction * (TRANSLATE_ANIMATION_THRESHOLD_PX + 1));
       tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
-      assertEquals(tabElStyle.maxWidth, '100px');
-      assertTrue(
-          parseFloat(tabElStyle.opacity) > 0 &&
-          parseFloat(tabElStyle.opacity) < 1);
+      assertEquals(tabElStyle.maxWidth, `${tabWidth}px`);
+      let top = tabElement.getBoundingClientRect().top;
+      if (swipeUp) {
+        assertTrue(top < startTop && top > -1 * SWIPE_FINISH_THRESHOLD_PX);
+      } else {
+        assertTrue(top > startTop && top < SWIPE_FINISH_THRESHOLD_PX);
+      }
 
-      // Swipe was enough to start animating max width.
+      // Swipe was enough to start animating max width and opacity.
       pointerState.clientY =
           startY + (direction * (SWIPE_START_THRESHOLD_PX + 1));
       tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
       assertTrue(
           parseInt(tabElStyle.maxWidth) > 0 &&
-          parseInt(tabElStyle.maxWidth) < 100);
+          parseInt(tabElStyle.maxWidth) < tabWidth);
       assertTrue(
           parseFloat(tabElStyle.opacity) > 0 &&
           parseFloat(tabElStyle.opacity) < 1);
@@ -69,6 +79,9 @@ suite('TabSwiper', () => {
       tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
       assertEquals(tabElStyle.maxWidth, '0px');
       assertEquals(tabElStyle.opacity, '0');
+      assertEquals(
+          tabElement.getBoundingClientRect().top,
+          direction * SWIPE_FINISH_THRESHOLD_PX);
     }
 
     testSwipeAnimation(true);

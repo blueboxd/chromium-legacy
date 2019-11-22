@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import android.os.SystemClock;
+
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
 /** Interface to communicate with the start surface. */
@@ -99,6 +101,12 @@ public interface StartSurface {
          * @return Whether or not the TabSwitcher consumed the event.
          */
         boolean onBackPressed();
+
+        /**
+         * Enable recording the first meaningful paint event of StartSurface.
+         * @param activityCreateTimeMs {@link SystemClock#elapsedRealtime} at activity creation.
+         */
+        void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs);
     }
 
     /**

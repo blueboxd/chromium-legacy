@@ -328,7 +328,8 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           GURL() /* searchable_form_url */,
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
-          base::nullopt /* devtools_initiator_info */);
+          base::nullopt /* devtools_initiator_info */,
+          false /* attach_same_site_cookies */);
   mojom::CommonNavigationParamsPtr common_params =
       mojom::CommonNavigationParams::New();
   common_params->navigation_start = base::TimeTicks::Now();

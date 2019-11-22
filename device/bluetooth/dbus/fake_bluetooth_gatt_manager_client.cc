@@ -103,16 +103,16 @@ void FakeBluetoothGattManagerClient::RegisterApplication(
     const dbus::ObjectPath& application_path,
     const Options& options,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   VLOG(1) << "Register GATT application: " << application_path.value();
   ApplicationProvider* provider =
       GetApplicationServiceProvider(application_path);
   if (!provider || provider->second) {
-    error_callback.Run(bluetooth_gatt_service::kErrorFailed, "");
+    std::move(error_callback).Run(bluetooth_gatt_service::kErrorFailed, "");
     return;
   }
   if (!VerifyProviderHierarchy(provider->first)) {
-    error_callback.Run(bluetooth_gatt_service::kErrorFailed, "");
+    std::move(error_callback).Run(bluetooth_gatt_service::kErrorFailed, "");
     return;
   }
   provider->second = true;
@@ -124,12 +124,12 @@ void FakeBluetoothGattManagerClient::UnregisterApplication(
     const dbus::ObjectPath& adapter_object_path,
     const dbus::ObjectPath& application_path,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   VLOG(1) << "Unregister GATT application: " << application_path.value();
   ApplicationProvider* provider =
       GetApplicationServiceProvider(application_path);
   if (!provider || !provider->second) {
-    error_callback.Run(bluetooth_gatt_service::kErrorFailed, "");
+    std::move(error_callback).Run(bluetooth_gatt_service::kErrorFailed, "");
     return;
   }
   provider->second = false;

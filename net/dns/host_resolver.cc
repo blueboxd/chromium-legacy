@@ -59,6 +59,10 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest,
     return *nullopt_result;
   }
 
+  ResolveErrorInfo GetResolveErrorInfo() const override {
+    return ResolveErrorInfo(error_);
+  }
+
   const base::Optional<HostCache::EntryStaleness>& GetStaleInfo()
       const override {
     static const base::NoDestructor<base::Optional<HostCache::EntryStaleness>>

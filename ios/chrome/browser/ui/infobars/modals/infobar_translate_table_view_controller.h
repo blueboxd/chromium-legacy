@@ -7,11 +7,14 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_modal_consumer.h"
+
 @protocol InfobarTranslateModalDelegate;
 
 // InfobarTranslateTableViewController represents the content for the Translate
 // InfobarModal.
-@interface InfobarTranslateTableViewController : ChromeTableViewController
+@interface InfobarTranslateTableViewController
+    : ChromeTableViewController <InfobarTranslateModalConsumer>
 
 - (instancetype)initWithDelegate:
     (id<InfobarTranslateModalDelegate>)modalDelegate NS_DESIGNATED_INITIALIZER;
@@ -20,18 +23,9 @@
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
-// The source language to be displayed in the InfobarModal.
-@property(nonatomic, copy) NSString* sourceLanguage;
-
-// The target language to be displayed in the InfobarModal.
-@property(nonatomic, copy) NSString* targetLanguage;
-
 // The text for the Infobar action button (i.e. translate or show
 // original)
 @property(nonatomic, copy) NSString* translateButtonText;
-
-// Whether the current preference is set to always translate |targetLanguage|.
-@property(nonatomic, assign) BOOL shouldAlwaysTranslateSourceLanguage;
 
 @end
 

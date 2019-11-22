@@ -44,6 +44,16 @@ bool IsPluginVmWindow(const aura::Window* window);
 // none is set this will return an empty string.
 std::string GetPluginVmLicenseKey();
 
+// Sets fake policy values and enables Plugin VM for testing. These set global
+// state so this should be called with empty strings on tear down.
+// TODO(crbug.com/1025136): Remove this once Tast supports setting test
+// policies.
+void SetFakePluginVmPolicy(Profile* profile,
+                           const std::string& image_path,
+                           const std::string& image_hash,
+                           const std::string& license_key);
+bool FakeLicenseKeyIsSet();
+
 }  // namespace plugin_vm
 
 #endif  // CHROME_BROWSER_CHROMEOS_PLUGIN_VM_PLUGIN_VM_UTIL_H_

@@ -47,6 +47,12 @@ bool WebApp::HasAnySources() const {
   return sources_.any();
 }
 
+bool WebApp::HasOnlySource(Source::Type source) const {
+  Sources mask;
+  mask[source] = true;
+  return (sources_ & ~mask).none() && sources_[source];
+}
+
 bool WebApp::IsSynced() const {
   return sources_[Source::kSync];
 }

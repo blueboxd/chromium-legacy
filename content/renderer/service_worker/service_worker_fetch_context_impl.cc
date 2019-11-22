@@ -139,7 +139,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
 
   if (!renderer_preferences_.enable_referrers) {
     request.SetHttpReferrer(blink::WebString(),
-                            network::mojom::ReferrerPolicy::kDefault);
+                            network::mojom::ReferrerPolicy::kNever);
   }
 }
 

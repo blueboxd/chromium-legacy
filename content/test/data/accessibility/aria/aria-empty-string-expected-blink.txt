@@ -22,5 +22,6 @@ rootWebArea
 ++++textField name='Required undefined'
 ++++tree multiselectable vertical
 ++++++treeItem name='Selected undefined' selected=false
-++++columnHeader name='Sort undefined' selected=false
+++++grid
+++++++columnHeader name='Sort undefined' selected=false
 ++++genericContainer name='Hidden undefined, display block'

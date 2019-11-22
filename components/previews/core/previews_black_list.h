@@ -70,8 +70,8 @@ enum class PreviewsEligibilityReason {
   // Previews blocked by a Cache-Control:no-transform directive.
   CACHE_CONTROL_NO_TRANSFORM = 13,
   // The network is faster than the max slow page triggering threshold for the
-  // session.
-  NETWORK_NOT_SLOW_FOR_SESSION = 14,
+  // session. No longer used as of M80.
+  DEPRECATED_NETWORK_NOT_SLOW_FOR_SESSION = 14,
   // Device is offline.
   DEVICE_OFFLINE = 15,
   // URL contained Basic Authentication, i.e.: a username or password.
@@ -82,8 +82,7 @@ enum class PreviewsEligibilityReason {
   // The navigation URL has a media suffix which is excluded from previews.
   EXCLUDED_BY_MEDIA_SUFFIX = 18,
   // The Optimization Guide was checked for this preview type and the
-  // optimization guide did not allow this preview type in the current browser
-  // conditions.
+  // optimization guide did not allow this preview type.
   NOT_ALLOWED_BY_OPTIMIZATION_GUIDE = 19,
   // The preview was not performed due to a coinflip experiment holdback.
   COINFLIP_HOLDBACK = 20,
@@ -91,6 +90,8 @@ enum class PreviewsEligibilityReason {
   REDIRECT_LOOP_DETECTED = 21,
   // URL matched the deny list.
   DENY_LIST_MATCHED = 22,
+  // The page load was not predicted to be painful.
+  PAGE_LOAD_PREDICTION_NOT_PAINFUL = 23,
   LAST,
 };
 

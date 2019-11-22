@@ -33,13 +33,10 @@ void BatteryMetrics::StartRecording() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!battery_monitor_.is_bound());
 
-  // Don't create a long lived BatteryMonitor on windows. crbug.com/794105.
-#if !defined(OS_WIN)
   content::GetSystemConnector()->Connect(
       service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
       battery_monitor_.BindNewPipeAndPassReceiver());
   QueryNextStatus();
-#endif  // !defined(OS_WIN)
 }
 
 void BatteryMetrics::DidChange(device::mojom::BatteryStatusPtr battery_status) {

@@ -152,11 +152,11 @@ end up packaged into the final APK by the build system.
 
 It uses the following keys:
 
+* `deps_info['resource_dirs']`:
+List of paths to the source directories containing the resources for this
+target. This key is optional, because some targets can refer to prebuilt
+`.aar` archives.
 
-* `deps_info['res_sources_path']`:
-Path to file containing a list of resource source files used by the
-android_resources target. This replaces `deps_info['resource_dirs']` which is
-now no longer used.
 
 * `deps_info['resources_zip']`:
 *Required*. Path to the `.resources.zip` file that contains all raw/uncompiled
@@ -548,7 +548,6 @@ import sys
 import xml.dom.minidom
 
 from util import build_utils
-from util import resource_utils
 
 # Types that should never be used as a dependency of another build config.
 _ROOT_TYPES = ('android_apk', 'java_binary', 'java_annotation_processor',
@@ -829,9 +828,6 @@ def main(argv):
   parser.add_option('--android-manifest', help='Path to android manifest.')
   parser.add_option('--resource-dirs', action='append', default=[],
                     help='GYP-list of resource dirs')
-  parser.add_option(
-      '--res-sources-path',
-      help='Path to file containing a list of paths to resources.')
 
   # android_assets options
   parser.add_option('--asset-sources', help='List of asset sources.')
@@ -1241,10 +1237,10 @@ def main(argv):
     if options.package_name:
       deps_info['package_name'] = options.package_name
 
-
-    deps_info['res_sources_path'] = ''
-    if options.res_sources_path:
-      deps_info['res_sources_path'] = options.res_sources_path
+    deps_info['resources_dirs'] = []
+    if options.resource_dirs:
+      for gyp_list in options.resource_dirs:
+        deps_info['resources_dirs'].extend(build_utils.ParseGnList(gyp_list))
 
   if options.requires_android and is_java_target:
     # Lint all resources that are not already linted by a dependent library.
@@ -1255,12 +1251,8 @@ def main(argv):
       # Always use resources_dirs in favour of resources_zips so that lint error
       # messages have paths that are closer to reality (and to avoid needing to
       # extract during lint).
-      if c['res_sources_path']:
-        with open(c['res_sources_path']) as f:
-          resource_files = f.readlines()
-        resource_dirs = resource_utils.ExtractResourceDirsFromFileList(
-            resource_files)
-        owned_resource_dirs.update(resource_dirs)
+      if c['resources_dirs']:
+        owned_resource_dirs.update(c['resources_dirs'])
       else:
         owned_resource_zips.add(c['resources_zip'])
       srcjar = c.get('srcjar')

@@ -54,6 +54,7 @@ void NetworkServiceNetworkDelegate::MaybeTruncateReferrer(
     const GURL& effective_url) {
   if (!enable_referrers_) {
     request->SetReferrer(std::string());
+    request->set_referrer_policy(net::URLRequest::NO_REFERRER);
     return;
   }
 

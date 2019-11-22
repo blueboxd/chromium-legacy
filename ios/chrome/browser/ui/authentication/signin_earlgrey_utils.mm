@@ -15,29 +15,29 @@
 
 @implementation SigninEarlGreyUtilsImpl
 
-- (ChromeIdentity*)fakeIdentity1 {
+- (FakeChromeIdentity*)fakeIdentity1 {
   return [FakeChromeIdentity identityWithEmail:@"foo1@gmail.com"
                                         gaiaID:@"foo1ID"
                                           name:@"Fake Foo 1"];
 }
 
-- (ChromeIdentity*)fakeIdentity2 {
+- (FakeChromeIdentity*)fakeIdentity2 {
   return [FakeChromeIdentity identityWithEmail:@"foo2@gmail.com"
                                         gaiaID:@"foo2ID"
                                           name:@"Fake Foo 2"];
 }
 
-- (ChromeIdentity*)fakeManagedIdentity {
+- (FakeChromeIdentity*)fakeManagedIdentity {
   return [FakeChromeIdentity identityWithEmail:@"foo@managed.com"
                                         gaiaID:@"fooManagedID"
                                           name:@"Fake Managed"];
 }
 
-- (void)addIdentity:(ChromeIdentity*)identity {
-  [SignInEarlGreyUtilsAppInterface addIdentity:identity];
+- (void)addIdentity:(FakeChromeIdentity*)identity {
+  [SigninEarlGreyUtilsAppInterface addIdentity:identity];
 }
 
-- (void)checkSignedInWithIdentity:(ChromeIdentity*)identity {
+- (void)checkSignedInWithIdentity:(FakeChromeIdentity*)identity {
   BOOL identityIsNonNil = identity != nil;
   EG_TEST_HELPER_ASSERT_TRUE(identityIsNonNil, @"Need to give an identity");
 
@@ -48,14 +48,14 @@
                  base::test::ios::kWaitForActionTimeout,
                  ^bool {
                    NSString* primaryAccountGaiaID =
-                       [SignInEarlGreyUtilsAppInterface primaryAccountGaiaID];
+                       [SigninEarlGreyUtilsAppInterface primaryAccountGaiaID];
                    return primaryAccountGaiaID.length > 0;
                  }),
              @"Sign in did not complete.");
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
   NSString* primaryAccountGaiaID =
-      [SignInEarlGreyUtilsAppInterface primaryAccountGaiaID];
+      [SigninEarlGreyUtilsAppInterface primaryAccountGaiaID];
 
   NSString* errorStr = [NSString
       stringWithFormat:@"Unexpected Gaia ID of the signed in user [expected = "
@@ -71,7 +71,7 @@
   // the assert.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  EG_TEST_HELPER_ASSERT_TRUE([SignInEarlGreyUtilsAppInterface isSignedOut],
+  EG_TEST_HELPER_ASSERT_TRUE([SigninEarlGreyUtilsAppInterface isSignedOut],
                              @"Unexpected signed in user");
 }
 

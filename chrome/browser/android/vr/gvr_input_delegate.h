@@ -18,11 +18,10 @@ class GvrApi;
 namespace vr {
 
 class GestureDetector;
-class GlBrowserInterface;
 
 class GvrInputDelegate : public InputDelegate {
  public:
-  GvrInputDelegate(gvr::GvrApi* gvr_api, GlBrowserInterface* browser);
+  explicit GvrInputDelegate(gvr::GvrApi* gvr_api);
   ~GvrInputDelegate() override;
 
   // InputDelegate implementation.
@@ -41,7 +40,6 @@ class GvrInputDelegate : public InputDelegate {
   std::unique_ptr<VrController> controller_;
   GestureDetector gesture_detector_;
   gvr::GvrApi* gvr_api_;
-  GlBrowserInterface* browser_;
 
   bool was_select_button_down_ = false;
 

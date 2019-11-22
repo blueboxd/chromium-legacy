@@ -21,7 +21,7 @@
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/process_data_collector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -229,7 +229,7 @@ PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUIPowerHost);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"titleText", IDS_ABOUT_POWER_TITLE},
       {"showButton", IDS_ABOUT_POWER_SHOW_BUTTON},
       {"hideButton", IDS_ABOUT_POWER_HIDE_BUTTON},
@@ -256,7 +256,7 @@ PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
       {"frequencyStateOccupancyPercentageHeader",
        IDS_ABOUT_POWER_CPU_FREQ_STATE_OCCUPANCY_PERCENTAGE},
   };
-  AddLocalizedStringsBulk(html, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(html, kStrings);
 
   html->UseStringsJs();
 

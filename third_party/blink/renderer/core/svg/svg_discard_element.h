@@ -45,15 +45,6 @@ class SVGDiscardElement final : public SVGSMILElement {
 
  private:
   void StartedActiveInterval() override;
-  void ResetAnimatedType() override {}
-  void ClearAnimatedType() override {}
-  void ApplyResultsToTarget() override {}
-
-  bool OverwritesUnderlyingAnimationValue() const override { return false; }
-
-  void UpdateAnimation(float percent,
-                       unsigned repeat,
-                       SVGSMILElement* result_element) override {}
 };
 
 }  // namespace blink

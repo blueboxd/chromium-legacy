@@ -369,7 +369,7 @@ public class PaymentRequestDynamicShippingMultipleAddressesTest
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
+    @CommandLineFlags.Add("disable-features=StrictHasEnrolledAutofillInstrument")
     public void testAllMissingFieldsRecorded() throws TimeoutException {
         // Don't add any profiles
         mProfilesToAdd = new AutofillProfile[] {};

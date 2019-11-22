@@ -87,10 +87,12 @@ suite('Tab', function() {
 
   test('slideOut animates out the element', async () => {
     testTabStripEmbedderProxy.setVisible(true);
+    const tabElementStyle = window.getComputedStyle(tabElement);
     const animationPromise = tabElement.slideOut();
     // Before animation completes.
-    assertEquals('1', window.getComputedStyle(tabElement).opacity);
-    assertEquals('none', window.getComputedStyle(tabElement).maxWidth);
+    assertEquals('1', tabElementStyle.opacity);
+    assertEquals('none', tabElementStyle.maxWidth);
+    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
     assertTrue(tabElement.isConnected);
     await animationPromise;
     // After animation completes.

@@ -42,7 +42,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     // once http://crbug.com/125248 is fixed.
     params.force_software_compositing = true;
 #endif
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
     params.parent = parent_widget->GetNativeView();
     params.bounds = bounds;
     params.context = parent_widget->GetNativeWindow();

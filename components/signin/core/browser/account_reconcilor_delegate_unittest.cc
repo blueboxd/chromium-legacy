@@ -146,7 +146,7 @@ TEST_P(AccountReconcilorDelegateTest, ReorderChromeAccountsForReconcile) {
                        GaiaAccountsFromString(order_as_string)));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          AccountReconcilorDelegateTest,
                          ::testing::ValuesIn(kReorderParams));
 

@@ -242,7 +242,7 @@ class MediaNotificationContainerImplViewTest : public views::ViewsTestBase {
 
   void NotifyUpdatedActions() { GetView()->UpdateWithMediaActions(actions_); }
 
-  media_message_center::MediaNotificationView* GetView() {
+  media_message_center::MediaNotificationViewImpl* GetView() {
     return notification_container()->view_for_testing();
   }
 

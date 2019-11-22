@@ -806,12 +806,16 @@ public class BookmarkReorderTest extends BookmarkTest {
     @Test
     @SmallTest
     public void testAddBookmarkInBackgroundWithSelection() throws Exception {
-        BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
+        BookmarkId folder = addFolder(TEST_FOLDER_TITLE);
+        BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo, folder);
         BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
-        // Force empty partner bookmark folder to keep set of bookmark items consistent across
-        // devices.
-        loadEmptyPartnerBookmarksForTesting();
         openBookmarkManager();
+
+        // Open the new folder where these bookmarks were created.
+        final BookmarkDelegate delegate = getBookmarkManager();
+        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
         Assert.assertEquals(1, getAdapter().getItemCount());
         BookmarkRow row =
                 (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
@@ -825,8 +829,7 @@ public class BookmarkReorderTest extends BookmarkTest {
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mBookmarkModel.addBookmark(
-                    mBookmarkModel.getDefaultFolder(), 1, TEST_PAGE_TITLE_GOOGLE, mTestPage);
+            mBookmarkModel.addBookmark(folder, 1, TEST_PAGE_TITLE_GOOGLE, mTestPage);
         });
 
         helper.waitForCallback(0, 1);
@@ -842,16 +845,20 @@ public class BookmarkReorderTest extends BookmarkTest {
     @Test
     @SmallTest
     public void testDeleteAllSelectedBookmarksInBackground() throws Exception {
-        // selected on bookmark and then remove that in background
-        // in the meantime, the toolbar changes from selection mode to normal mode
-        BookmarkId fooId = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
-        BookmarkId googleId = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
-        BookmarkId aId = addBookmark(TEST_TITLE_A, TEST_URL_A);
+        // Select one bookmark and then remove that in background.
+        // In the meantime, the toolbar changes from selection mode to normal mode.
+        BookmarkId folder = addFolder(TEST_FOLDER_TITLE);
+        BookmarkId fooId = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo, folder);
+        BookmarkId googleId = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage, folder);
+        BookmarkId aId = addBookmark(TEST_TITLE_A, TEST_URL_A, folder);
         BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
-        // Force empty partner bookmark folder to keep set of bookmark items consistent across
-        // devices.
-        loadEmptyPartnerBookmarksForTesting();
         openBookmarkManager();
+
+        // Open the new folder where these bookmarks were created.
+        final BookmarkDelegate delegate = getBookmarkManager();
+        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
         Assert.assertEquals(3, getAdapter().getItemCount());
         BookmarkRow row =
                 (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
@@ -877,14 +884,18 @@ public class BookmarkReorderTest extends BookmarkTest {
     public void testDeleteSomeSelectedBookmarksInBackground() throws Exception {
         // selected on bookmarks and then remove one of them in background
         // in the meantime, the toolbar stays in selection mode
-        BookmarkId fooId = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
-        BookmarkId googleId = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
-        BookmarkId aId = addBookmark(TEST_TITLE_A, TEST_URL_A);
+        BookmarkId folder = addFolder(TEST_FOLDER_TITLE);
+        BookmarkId fooId = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo, folder);
+        BookmarkId googleId = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage, folder);
+        BookmarkId aId = addBookmark(TEST_TITLE_A, TEST_URL_A, folder);
         BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
-        // Force empty partner bookmark folder to keep set of bookmark items consistent across
-        // devices.
-        loadEmptyPartnerBookmarksForTesting();
         openBookmarkManager();
+
+        // Open the new folder where these bookmarks were created.
+        final BookmarkDelegate delegate = getBookmarkManager();
+        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
         Assert.assertEquals(3, getAdapter().getItemCount());
         BookmarkRow row =
                 (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
@@ -912,12 +923,16 @@ public class BookmarkReorderTest extends BookmarkTest {
     @Test
     @SmallTest
     public void testUpdateSelectedBookmarkInBackground() throws Exception {
-        BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
+        BookmarkId folder = addFolder(TEST_FOLDER_TITLE);
+        BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo, folder);
         BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
-        // Force empty partner bookmark folder to keep set of bookmark items consistent across
-        // devices.
-        loadEmptyPartnerBookmarksForTesting();
         openBookmarkManager();
+
+        // Open the new folder where these bookmarks were created.
+        final BookmarkDelegate delegate = getBookmarkManager();
+        TestThreadUtils.runOnUiThreadBlocking(() -> delegate.openFolder(folder));
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+
         Assert.assertEquals(1, getAdapter().getItemCount());
         BookmarkRow row =
                 (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(0).itemView;

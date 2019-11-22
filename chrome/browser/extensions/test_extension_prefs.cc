@@ -200,7 +200,7 @@ std::unique_ptr<PrefService> TestExtensionPrefs::CreateIncognitoPrefService()
     const {
   return CreateIncognitoPrefServiceSyncable(
       pref_service_.get(),
-      new ExtensionPrefStore(extension_pref_value_map_.get(), true), nullptr);
+      new ExtensionPrefStore(extension_pref_value_map_.get(), true));
 }
 
 void TestExtensionPrefs::set_extensions_disabled(bool extensions_disabled) {

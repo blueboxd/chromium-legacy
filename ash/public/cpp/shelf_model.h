@@ -59,7 +59,7 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // If there is no running instance, a new shelf item is created and pinned.
   void PinAppWithID(const std::string& app_id);
 
-  // Check if the app with |app_id_| is pinned to the shelf.
+  // Checks if the app with |app_id_| is pinned to the shelf.
   bool IsAppPinned(const std::string& app_id);
 
   // Unpins app item with |app_id|.

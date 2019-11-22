@@ -400,8 +400,9 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   DCHECK(!RootIsImplicit());
   if (!RootIsValid() || !GetExecutionContext() || observations_.IsEmpty())
     return false;
-  IntersectionGeometry::RootGeometry root_geometry(root()->GetLayoutObject(),
-                                                   root_margin_);
+  IntersectionGeometry::RootGeometry root_geometry(
+      IntersectionGeometry::GetRootLayoutObjectForTarget(root(), nullptr),
+      root_margin_);
   HeapVector<Member<IntersectionObservation>> observations_to_process;
   // TODO(szager): Is this copy necessary?
   CopyToVector(observations_, observations_to_process);

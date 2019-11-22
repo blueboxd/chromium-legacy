@@ -746,7 +746,7 @@ INSTANTIATE_MOJO_BINDINGS_TEST_SUITE_P(StrongBindingTest);
 
 // These tests only make sense for serialized messages.
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ReceiverSerializationTest,
     testing::Values(mojo::BindingsTestSerializationMode::kSerializeBeforeSend));
 

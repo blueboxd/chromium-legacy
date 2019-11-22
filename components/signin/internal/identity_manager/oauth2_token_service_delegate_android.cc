@@ -165,7 +165,7 @@ OAuth2TokenServiceDelegateAndroid::OAuth2TokenServiceDelegateAndroid(
       AccountInfo account_info =
           account_tracker_service_->FindAccountInfoByEmail(account_name.id);
       DCHECK(!account_info.gaia.empty());
-      accounts_id.push_back(account_info.gaia);
+      accounts_id.push_back(CoreAccountId(account_info.gaia));
     }
     SetAccounts(accounts_id);
   }
@@ -283,9 +283,8 @@ OAuth2TokenServiceDelegateAndroid::GetValidAccounts() {
 void OAuth2TokenServiceDelegateAndroid::SetAccounts(
     const std::vector<CoreAccountId>& accounts) {
   JNIEnv* env = AttachCurrentThread();
-  std::vector<std::string> str_ids(accounts.begin(), accounts.end());
   ScopedJavaLocalRef<jobjectArray> java_accounts(
-      base::android::ToJavaArrayOfStrings(env, str_ids));
+      base::android::ToJavaArrayOfStrings(env, ToStringList(accounts)));
   signin::Java_OAuth2TokenService_setAccounts(env, java_accounts);
 }
 

@@ -338,7 +338,7 @@ class AuraWindowVideoCaptureDeviceBrowserTestP
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AuraWindowVideoCaptureDeviceBrowserTestP,
     testing::Combine(
         // Note: On ChromeOS, software compositing is not an option.
@@ -347,7 +347,7 @@ INSTANTIATE_TEST_SUITE_P(
                         true /* fixed aspect ratio */)));
 #else
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     AuraWindowVideoCaptureDeviceBrowserTestP,
     testing::Combine(testing::Values(false /* GPU-accelerated compositing */,
                                      true /* software compositing */),

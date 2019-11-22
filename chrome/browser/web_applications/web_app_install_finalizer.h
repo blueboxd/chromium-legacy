@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 
 struct WebApplicationInfo;
 
@@ -41,11 +42,15 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                UninstallWebAppCallback callback) override;
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
   void UninstallWebAppFromSyncByUser(const AppId& app_id,
-                                     UninstallWebAppCallback) override;
+                                     UninstallWebAppCallback callback) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
 
  private:
+  void UninstallWebAppOrRemoveSource(const AppId& app_id,
+                                     Source::Type source,
+                                     UninstallWebAppCallback callback);
+
   void OnIconsDataWritten(InstallFinalizedCallback callback,
                           std::unique_ptr<WebApp> web_app,
                           bool success);

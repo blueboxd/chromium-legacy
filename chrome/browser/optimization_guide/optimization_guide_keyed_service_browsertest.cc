@@ -162,8 +162,7 @@ class OptimizationGuideKeyedServiceBrowserTest
   ~OptimizationGuideKeyedServiceBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
-    cmd->AppendSwitch(
-        optimization_guide::switches::kPurgeOptimizationGuideStore);
+    cmd->AppendSwitch(optimization_guide::switches::kPurgeHintsStore);
   }
 
   void SetUpOnMainThread() override {

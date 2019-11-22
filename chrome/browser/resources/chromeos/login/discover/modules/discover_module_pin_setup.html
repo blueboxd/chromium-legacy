@@ -115,6 +115,10 @@
                     images/pin_illustration_2x.svg 2x">
       </div>
       <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+        <oobe-back-button
+            hidden="[[isStepHidden_(step_, 'confirm')]]"
+            on-tap="onBackButton_"></oobe-back-button>
+        <div class="flex"></div>
         <oobe-text-button id="setupSkipButton" on-tap="onSkipButton_"
             hidden="[[!isStepHidden_(step_, 'done')]]">
           <div>[[i18nDynamic(locale, 'discoverPinSetupSkip')]]</div>
@@ -122,9 +126,7 @@
         <oobe-next-button inverse
             disabled="[[isNextDisabled_(step_, enableSubmit_)]]"
             on-tap="onNextButton_" class="focus-on-show"
-            hidden="[[!isStepHidden_(step_, 'done')]]">
-          <div>[[i18nDynamic(locale, 'next')]]</div>
-        </oobe-next-button>
+            hidden="[[!isStepHidden_(step_, 'done')]]"></oobe-next-button>
         <oobe-text-button inverse on-tap="onDoneButton_" class="focus-on-show"
             hidden="[[isStepHidden_(step_, 'done')]]">
           <div>[[i18nDynamic(locale, 'discoverPinSetupDone')]]</div>

@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,7 +39,6 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
@@ -93,35 +93,6 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler {
   EventPassthroughPredicate event_passthrough_predicate_;
   base::RepeatingClosure close_container_callback_;
   bool enabled_ = false;
-};
-
-class TabCounterModelObserver : public TabStripModelObserver {
- public:
-  explicit TabCounterModelObserver(views::LabelButton* tab_counter)
-      : tab_counter_(tab_counter) {}
-  ~TabCounterModelObserver() override = default;
-
-  void UpdateCounter(TabStripModel* model) {
-    const int num_tabs = model->count();
-
-    tab_counter_->SetTooltipText(
-        base::i18n::MessageFormatter::FormatWithNumberedArgs(
-            l10n_util::GetStringUTF16(IDS_TOOLTIP_WEBUI_TAB_STRIP_TAB_COUNTER),
-            num_tabs));
-    // TODO(999557): Have a 99+-style fallback to limit the max text width.
-    tab_counter_->SetText(base::FormatNumber(num_tabs));
-  }
-
-  // TabStripModelObserver:
-  void OnTabStripModelChanged(
-      TabStripModel* tab_strip_model,
-      const TabStripModelChange& change,
-      const TabStripSelectionChange& selection) override {
-    UpdateCounter(tab_strip_model);
-  }
-
- private:
-  views::LabelButton* tab_counter_;
 };
 
 WebUITabStripContainerView::WebUITabStripContainerView(
@@ -207,35 +178,9 @@ WebUITabStripContainerView::CreateNewTabButton() {
 
 std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   DCHECK_EQ(nullptr, tab_counter_);
-  // TODO(999557): Create a custom text style to get the correct size/weight.
-  // TODO(999557): Figure out how to get the right font.
-  auto tab_counter = std::make_unique<views::LabelButton>(
-      this, base::string16(), views::style::CONTEXT_BUTTON_MD);
-  tab_counter->SetID(VIEW_ID_WEBUI_TAB_STRIP_TAB_COUNTER);
-  tab_counter->SetProperty(views::kFlexBehaviorKey,
-                           views::FlexSpecification::ForSizeRule(
-                               views::MinimumFlexSizeRule::kScaleToMinimum,
-                               views::MaximumFlexSizeRule::kPreferred)
-                               .WithOrder(1));
 
-  // TODO(999557): also update this in response to touch mode changes.
-  const int button_height = GetLayoutConstant(TOOLBAR_BUTTON_HEIGHT);
-  tab_counter->SetMinSize(gfx::Size(button_height, button_height));
-  tab_counter->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
-
-  // TODO(999557): Install an inkdrop.
-
-  // TODO(999557): Add a roundrect border, like below but more like spec.
-  // tab_counter->SetBorder(views::CreateRoundedRectBorder(
-  //     2,
-  //     views::LayoutProvider::Get()->GetCornerRadiusMetric(
-  //         views::EMPHASIS_MEDIUM),
-  //     gfx::kGoogleGrey300));
-
-  tab_counter_model_observer_ =
-      std::make_unique<TabCounterModelObserver>(tab_counter.get());
-  browser_->tab_strip_model()->AddObserver(tab_counter_model_observer_.get());
-  tab_counter_model_observer_->UpdateCounter(browser_->tab_strip_model());
+  auto tab_counter = CreateWebUITabCounterButton(
+      this, browser_->tab_strip_model(), GetThemeProvider());
 
   tab_counter_ = tab_counter.get();
   view_observer_.Add(tab_counter_);
@@ -250,8 +195,11 @@ void WebUITabStripContainerView::UpdateButtons() {
     new_tab_button_->SetImage(views::Button::STATE_NORMAL,
                               gfx::CreateVectorIcon(kAddIcon, normal_color));
   }
-  if (tab_counter_)
-    tab_counter_->SetEnabledTextColors(normal_color);
+}
+
+const ui::AcceleratorProvider*
+WebUITabStripContainerView::GetAcceleratorProvider() const {
+  return BrowserView::GetBrowserViewForBrowser(browser_);
 }
 
 void WebUITabStripContainerView::CloseContainer() {
@@ -282,9 +230,9 @@ bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
     return true;
 
   // If the event is in the container or control buttons, let it be handled.
-  for (views::View* view : {static_cast<views::View*>(this),
-                            static_cast<views::View*>(new_tab_button_),
-                            static_cast<views::View*>(tab_counter_)}) {
+  for (views::View* view :
+       {static_cast<views::View*>(this),
+        static_cast<views::View*>(new_tab_button_), tab_counter_}) {
     if (!view)
       continue;
 

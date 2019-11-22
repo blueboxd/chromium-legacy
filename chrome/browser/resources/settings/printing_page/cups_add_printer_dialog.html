@@ -87,13 +87,14 @@
         <div class="settings-box first two-line">
           <cr-input class="printer-name-input" autofocus
             id="printerNameInput" value="{{newPrinter.printerName}}"
-            label="$i18n{printerName}" maxlength=64>
+            label="$i18n{printerName}" maxlength=64 on-keypress="onKeypress_">
           </cr-input>
         </div>
         <div class="settings-box two-line">
           <cr-input id="printerAddressInput" label="$i18n{printerAddress}"
               value="{{newPrinter.printerAddress}}" maxlength=63
-              error-message="$i18n{ippPrinterUnreachable}">
+              error-message="$i18n{ippPrinterUnreachable}"
+              on-keypress="onKeypress_">
           </cr-input>
         </div>
         <div class="settings-box two-line">
@@ -117,8 +118,9 @@
           </div>
         </div>
         <div class="settings-box two-line">
-          <cr-input label="$i18n{printerQueue}"
-              value="{{newPrinter.printerQueue}}" maxlength=64>
+          <cr-input id="printerQueueInput" label="$i18n{printerQueue}"
+              value="{{newPrinter.printerQueue}}" maxlength=64
+              on-keypress="onKeypress_">
           </cr-input>
         </div>
       </div>

@@ -324,6 +324,11 @@ bool MultipleFieldsTemporalInputTypeView::SetupDateTimeChooserParameters(
     parameters.has_ampm = edit->HasField(DateTimeField::kAMPM);
     parameters.has_second = edit->HasField(DateTimeField::kSecond);
     parameters.has_millisecond = edit->HasField(DateTimeField::kMillisecond);
+  } else {
+    parameters.is_ampm_first = false;
+    parameters.has_ampm = false;
+    parameters.has_second = false;
+    parameters.has_millisecond = false;
   }
 
   return GetElement().SetupDateTimeChooserParameters(parameters);

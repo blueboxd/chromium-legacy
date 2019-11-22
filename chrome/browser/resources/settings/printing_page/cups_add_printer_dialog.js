@@ -345,6 +345,23 @@ Polymer({
     this.errorText_ = '';
   },
 
+  /**
+   * Keypress event handler. If enter is pressed, printer is added if
+   * |canAddPrinter_| is true.
+   * @param {!Event} event
+   * @private
+   */
+  onKeypress_: function(event) {
+    if (event.key != 'Enter') {
+      return;
+    }
+    event.stopPropagation();
+
+    if (this.canAddPrinter_()) {
+      this.addPressed_();
+    }
+  },
+
 });
 
 Polymer({

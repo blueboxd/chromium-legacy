@@ -251,7 +251,7 @@ proto_library("cicerone_proto") {
 
 proto_library("concierge_proto") {
   sources = [
-    "//third_party/cros_system_api/dbus/vm_concierge/service.proto",
+    "//third_party/cros_system_api/dbus/vm_concierge/concierge_service.proto",
   ]
 
   proto_out_dir = "chromeos/dbus/concierge"

@@ -68,11 +68,11 @@ source_set("cpp") {
   } else {
     public += [
       "decode_image.h",
-      "safe_bundled_exchanges_parser.h",
+      "safe_web_bundle_parser.h",
     ]
     sources += [
       "decode_image.cc",
-      "safe_bundled_exchanges_parser.cc",
+      "safe_web_bundle_parser.cc",
     ]
   }
 

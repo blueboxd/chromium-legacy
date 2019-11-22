@@ -318,7 +318,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   // Show rounded corners except in maximized (which includes split view) mode,
   // or whenever we are "in app".
   if (background_type == SHELF_BACKGROUND_MAXIMIZED ||
-      (tablet_mode && in_app)) {
+      (tablet_mode && in_app && chromeos::switches::ShouldShowShelfHotseat())) {
     opaque_background_.SetRoundedCornerRadius({0, 0, 0, 0});
   } else {
     opaque_background_.SetRoundedCornerRadius({

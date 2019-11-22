@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -63,6 +62,24 @@ Source::Type InferSourceFromMetricsInstallSource(
     case WebappInstallSource::COUNT:
       NOTREACHED();
       return Source::kMaxValue;
+  }
+}
+
+Source::Type InferSourceFromExternalInstallSource(
+    ExternalInstallSource external_install_source) {
+  switch (external_install_source) {
+    case ExternalInstallSource::kInternalDefault:
+    case ExternalInstallSource::kExternalDefault:
+      return Source::kDefault;
+
+    case ExternalInstallSource::kExternalPolicy:
+      return Source::kPolicy;
+
+    case ExternalInstallSource::kSystemInstalled:
+      return Source::kSystem;
+
+    case ExternalInstallSource::kArc:
+      return Source::kWebAppStore;
   }
 }
 
@@ -230,22 +247,34 @@ void WebAppInstallFinalizer::UninstallExternalWebApp(
     const GURL& app_url,
     ExternalInstallSource external_install_source,
     UninstallWebAppCallback callback) {
-  NOTIMPLEMENTED();
+  base::Optional<web_app::AppId> app_id =
+      registrar().LookupExternalAppId(app_url);
+  if (!app_id.has_value()) {
+    LOG(WARNING) << "Couldn't uninstall app with url " << app_url
+                 << "; No corresponding web app for url.";
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), /*uninstalled=*/false));
+    return;
+  }
+
+  Source::Type source =
+      InferSourceFromExternalInstallSource(external_install_source);
+  UninstallWebAppOrRemoveSource(*app_id, source, std::move(callback));
 }
 
 bool WebAppInstallFinalizer::CanUserUninstallFromSync(
     const AppId& app_id) const {
-  // TODO(crbug.com/901226): Implement it.
-  return false;
+  // TODO(loyso): Policy Apps: Implement web_app::ManagementPolicy taking
+  // extensions::ManagementPolicy::UserMayModifySettings as inspiration.
+  const WebApp* app = sync_bridge_->registrar().GetAppById(app_id);
+  return app ? app->IsSynced() : false;
 }
 
 void WebAppInstallFinalizer::UninstallWebAppFromSyncByUser(
     const AppId& app_id,
-    UninstallWebAppCallback) {
-  // TODO(loyso): Implement The Unified Uninstall API. Expose Source as an
-  // argument for UninstallWebApp method. Do app->RemoveSource from the app and
-  // uninstall the app if no more sources interested.
-  NOTIMPLEMENTED();
+    UninstallWebAppCallback callback) {
+  DCHECK(CanUserUninstallFromSync(app_id));
+  UninstallWebAppOrRemoveSource(app_id, Source::kSync, std::move(callback));
 }
 
 void WebAppInstallFinalizer::FinalizeUpdate(
@@ -254,6 +283,37 @@ void WebAppInstallFinalizer::FinalizeUpdate(
   // TODO(crbug.com/926083): Implement update logic, this requires updating
   // WebAppIconManager to clean out the existing icons and write new ones.
   NOTIMPLEMENTED();
+}
+
+void WebAppInstallFinalizer::UninstallWebAppOrRemoveSource(
+    const AppId& app_id,
+    Source::Type source,
+    UninstallWebAppCallback callback) {
+  const WebApp* app = sync_bridge_->registrar().GetAppById(app_id);
+  if (!app) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  /*uninstalled=*/false));
+  }
+
+  ScopedRegistryUpdate update(sync_bridge_);
+
+  if (app->HasOnlySource(source)) {
+    update->DeleteApp(app_id);
+
+    icon_manager_->DeleteData(
+        app_id, base::BindOnce(&WebAppInstallFinalizer::OnIconsDataDeleted,
+                               weak_ptr_factory_.GetWeakPtr(), app_id,
+                               std::move(callback)));
+
+  } else {
+    WebApp* app_to_update = update->UpdateApp(app_id);
+    app_to_update->RemoveSource(source);
+
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  /*uninstalled=*/true));
+  }
 }
 
 void WebAppInstallFinalizer::OnIconsDataWritten(

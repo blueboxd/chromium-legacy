@@ -247,34 +247,6 @@ TEST(IPCMessageTest, SSLInfo) {
   ASSERT_EQ(in.ocsp_result, out.ocsp_result);
 }
 
-TEST(IPCMessageTest, RenderWidgetSurfaceProperties) {
-  content::RenderWidgetSurfaceProperties input;
-  input.size = gfx::Size(23, 45);
-  input.device_scale_factor = 0.8;
-  input.top_controls_height = 16.5;
-  input.top_controls_shown_ratio = 0.4;
-#ifdef OS_ANDROID
-  input.has_transparent_background = true;
-#endif
-
-  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
-  IPC::ParamTraits<content::RenderWidgetSurfaceProperties>::Write(&msg, input);
-
-  content::RenderWidgetSurfaceProperties output;
-  base::PickleIterator iter(msg);
-  EXPECT_TRUE(IPC::ParamTraits<content::RenderWidgetSurfaceProperties>::Read(
-      &msg, &iter, &output));
-
-  EXPECT_EQ(input.size, output.size);
-  EXPECT_EQ(input.device_scale_factor, output.device_scale_factor);
-  EXPECT_EQ(input.top_controls_height, output.top_controls_height);
-  EXPECT_EQ(input.top_controls_shown_ratio, output.top_controls_shown_ratio);
-#ifdef OS_ANDROID
-  EXPECT_EQ(input.has_transparent_background,
-            output.has_transparent_background);
-#endif
-}
-
 static constexpr viz::FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 TEST(IPCMessageTest, SurfaceInfo) {

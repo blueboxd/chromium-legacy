@@ -24,17 +24,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
-import org.chromium.base.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
-import org.chromium.content_public.browser.SelectionPopupController;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -118,9 +113,6 @@ class BottomSheet extends FrameLayout
     /** The target sheet state. This is the state that the sheet is currently moving to. */
     @SheetState
     private int mTargetState = SheetState.NONE;
-
-    /** Used for getting the current tab. */
-    protected Supplier<Tab> mTabSupplier;
 
     /** A handle to the content being shown by the sheet. */
     @Nullable
@@ -256,14 +248,11 @@ class BottomSheet extends FrameLayout
      * Adds layout change listeners to the views that the bottom sheet depends on. Namely the
      * heights of the root view and control container are important as they are used in many of the
      * calculations in this class.
-     * @param tabProvider A means of accessing the active tab.
      * @param window Android window for getting insets.
      * @param keyboardDelegate Delegate for hiding the keyboard.
      */
-    public void init(ActivityTabProvider tabProvider, Window window,
-            KeyboardVisibilityDelegate keyboardDelegate) {
+    public void init(Window window, KeyboardVisibilityDelegate keyboardDelegate) {
         View root = (View) getParent();
-        mTabSupplier = tabProvider;
 
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
@@ -491,7 +480,6 @@ class BottomSheet extends FrameLayout
 
         mIsSheetOpen = true;
 
-        dismissSelectedText();
         for (BottomSheetObserver o : mObservers) o.onSheetOpened(reason);
     }
 
@@ -639,18 +627,6 @@ class BottomSheet extends FrameLayout
             setInternalCurrentState(SheetState.SCROLLING, StateChangeReason.SWIPE);
             setSheetOffsetFromBottom(offset, StateChangeReason.SWIPE);
         }
-    }
-
-    /**
-     * Deselects any text in the active tab's web contents and dismisses the text controls.
-     */
-    private void dismissSelectedText() {
-        Tab activeTab = mTabSupplier != null ? mTabSupplier.get() : null;
-        if (activeTab == null) return;
-
-        WebContents webContents = activeTab.getWebContents();
-        if (webContents == null) return;
-        SelectionPopupController.fromWebContents(webContents).clearSelection();
     }
 
     /**

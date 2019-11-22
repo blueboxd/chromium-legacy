@@ -97,8 +97,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
           navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      std::unique_ptr<BundledExchangesHandleTracker>
-          bundled_exchanges_handle_tracker) override;
+      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker)
+      override;
   void RestartNavigationAsCrossDocument(
       std::unique_ptr<NavigationRequest> navigation_request) override;
   void LogResourceRequestTime(base::TimeTicks timestamp,

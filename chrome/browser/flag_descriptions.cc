@@ -564,12 +564,6 @@ const char kEnableAutofillCreditCardUploadFeedbackDescription[] =
     "show a highlight, otherwise the icon will be updated and if it is "
     "clicked, the save card failure bubble will be shown.";
 
-const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[] =
-    "Prevents local card migration on local cards from unsupported networks";
-const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[] =
-    "If enabled, local cards from unsupported networks will not be offered "
-    "local card migration.";
-
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";
 const char kEnableAutofillNativeDropdownViewsDescription[] =
@@ -1876,12 +1870,6 @@ const char kSharedClipboardUIDescription[] =
     "Enables shared clipboard feature signals to be handled by showing "
     "a list of user's available devices to share the clipboard.";
 
-const char kSharingDeviceRegistrationName[] =
-    "Enable device registration for Sharing features";
-const char kSharingDeviceRegistrationDescription[] =
-    "Enables device registration with Sharing infrastructure. Required to use "
-    "cross-device Sharing features.";
-
 const char kSharingPeerConnectionReceiverName[] =
     "Enable receiver device to handle peer connection requests.";
 const char kSharingPeerConnectionReceiverDescription[] =
@@ -2466,22 +2454,11 @@ const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
     "period.";
 
-const char kClickToCallOpenDialerDirectlyName[] =
-    "Open the dialer directly for Click to Call";
-const char kClickToCallOpenDialerDirectlyDescription[] =
-    "Enables opening the dialer directly instead of displaying a notification. "
-    "Only available on Android P- and when the screen is on and unlocked.";
 const char kCloseTabSuggestionsName[] = "Suggest to close Tabs";
 const char kCloseTabSuggestionsDescription[] =
     "Suggests to the user to close Tabs that haven't been used beyond a "
     "configurable threshold or where duplicates of Tabs exist. "
     "The threshold is configurable.";
-
-const char kClickToCallReceiverName[] =
-    "Enable receiver device to handle click to call feature";
-const char kClickToCallReceiverDescription[] =
-    "Enables receiver device to handle click to call feature by showing a "
-    "notification to call the phone number clicked on the desktop.";
 
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =
@@ -2614,10 +2591,6 @@ const char kManualPasswordGenerationAndroidName[] =
 const char kManualPasswordGenerationAndroidDescription[] =
     "Whether Chrome should offer users the option to manually request to "
     "generate passwords on Android.";
-
-const char kNoCreditCardAbort[] = "No Credit Card Abort";
-const char kNoCreditCardAbortDescription[] =
-    "Whether or not the No Credit Card Abort is enabled.";
 
 const char kOfflineIndicatorAlwaysHttpProbeName[] = "Always http probe";
 const char kOfflineIndicatorAlwaysHttpProbeDescription[] =
@@ -2960,7 +2933,7 @@ const char kEnterpriseReportingInBrowserName[] =
     "Enterprise cloud reporting in browser";
 const char kEnterpriseReportingInBrowserDescription[] =
     "Enable the enterprise cloud reporting in browser without installing the "
-    "reporting companion extension. This feautre requires device level cloud "
+    "reporting companion extension. This feature requires device level cloud "
     "mangement.";
 
 const char kHappinessTrackingSurveysForDesktopName[] =
@@ -3118,6 +3091,10 @@ const char kUseWinrtMidiApiName[] = "Use Windows Runtime MIDI API";
 const char kUseWinrtMidiApiDescription[] =
     "Use Windows Runtime MIDI API for WebMIDI (effective only on Windows 10 or "
     "later).";
+
+const char kUseXpsForPrintingName[] = "Use XPS for printing";
+const char kUseXpsForPrintingDescription[] =
+    "When enabled, use XPS printing API instead of the GDI print API.";
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 const char kWinUseBrowserSpellCheckerName[] = "Use the Windows OS spellchecker";
@@ -3573,6 +3550,12 @@ const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "
     "suggestions when launcher search box is active with an empty query";
 
+const char kEnterpriseReportingInChromeOSName[] =
+    "Enterprise cloud reporting in Chrome OS";
+const char kEnterpriseReportingInChromeOSDescription[] =
+    "Enable the enterprise cloud reporting in Chrome OS. This feature requires "
+    "user level cloud management.";
+
 const char kExoPointerLockName[] = "Pointer lock for Linux applications";
 const char kExoPointerLockDescription[] =
     "Allow Linux applications to request a pointer lock, i.e. exclusive use of "
@@ -3907,12 +3890,6 @@ const char kWebGL2ComputeContextDescription[] =
 #endif  // defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-
-const char kClickToCallContextMenuForSelectedTextName[] =
-    "Enable click to call feature on desktop when a phone number is selected";
-const char kClickToCallContextMenuForSelectedTextDescription[] =
-    "Enables click to call feature to be shown in context menu when the user "
-    "right clicks after selecting a phone number.";
 
 const char kClickToCallUIName[] =
     "Enable click to call feature signals to be handled on desktop";

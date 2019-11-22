@@ -211,13 +211,6 @@ suite('settings-date-time-page', function() {
     });
   });
 
-  suiteTeardown(function() {
-    // TODO(michaelpg): Removes the element before exiting, because the
-    // <paper-tooltip> in <cr-policy-indicator> somehow causes warnings
-    // and/or script errors in axs_testing.js.
-    PolymerTest.clearBody();
-  });
-
   function checkDateTimePageReadyCalled() {
     if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
             .value) {

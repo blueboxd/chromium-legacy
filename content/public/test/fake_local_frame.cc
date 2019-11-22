@@ -35,6 +35,8 @@ void FakeLocalFrame::AddMessageToConsole(
 
 void FakeLocalFrame::CheckCompleted() {}
 
+void FakeLocalFrame::Collapse(bool collapsed) {}
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

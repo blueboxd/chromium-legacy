@@ -100,7 +100,8 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
     main_loop_->Init();
 
     if (parameters.created_main_parts_closure) {
-      parameters.created_main_parts_closure->Run(main_loop_->parts());
+      std::move(*parameters.created_main_parts_closure)
+          .Run(main_loop_->parts());
       delete parameters.created_main_parts_closure;
     }
 

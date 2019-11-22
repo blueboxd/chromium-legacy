@@ -10,6 +10,7 @@
  * @type {!Array<string>}
  */
 const SyncPrefsIndividualDataTypes = [
+  'osAppsSynced',
   'osPreferencesSynced',
   'printersSynced',
 ];
@@ -120,6 +121,14 @@ Polymer({
       }
     }
 
+    this.sendOsSyncDatatypes_();
+  },
+
+  /**
+   * Handler for when any sync data type checkbox is changed.
+   * @private
+   */
+  onSingleSyncDataTypeChanged_: function() {
     this.sendOsSyncDatatypes_();
   },
 

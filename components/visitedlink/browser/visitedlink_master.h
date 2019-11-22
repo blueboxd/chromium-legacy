@@ -171,6 +171,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
 #endif
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(VisitedLinkTest, DatabaseIOAddURLs);
   FRIEND_TEST_ALL_PREFIXES(VisitedLinkTest, Delete);
   FRIEND_TEST_ALL_PREFIXES(VisitedLinkTest, BigDelete);
   FRIEND_TEST_ALL_PREFIXES(VisitedLinkTest, BigImport);
@@ -205,10 +206,15 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // When creating a fresh new table, we use this many entries.
   static const unsigned kDefaultTableSize;
 
-  // When the user is deleting a boatload of URLs, we don't really want to do
-  // individual writes for each of them. When the count exceeds this threshold,
-  // we will write the whole table to disk at once instead of individual items.
-  static const size_t kBigDeleteThreshold;
+  // When the user is adding or deleting a boatload of URLs, we don't really
+  // want to do individual writes for each of them. When the count exceeds this
+  // threshold, we will write the whole table to disk at once instead of
+  // individual items.
+  static constexpr size_t kBulkOperationThreshold = 64;
+
+  // Adds |url| to the table and updates the file if |update_file| and
+  // |persist_to_disk_| are true.
+  void AddURL(const GURL& url, bool update_file);
 
   // If a rebuild is in progress, we save the URL in the temporary list.
   // Otherwise, we add this to the table. Returns the index of the

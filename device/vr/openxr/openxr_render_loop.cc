@@ -43,8 +43,8 @@ mojom::XRFrameDataPtr OpenXrRenderLoop::GetNextFrameData() {
 
   base::Optional<gfx::Quaternion> orientation;
   base::Optional<gfx::Point3F> position;
-  if (XR_SUCCEEDED(openxr_->GetHeadPose(&orientation, &position))) {
-
+  if (XR_SUCCEEDED(openxr_->GetHeadPose(
+          &orientation, &position, &frame_data->pose->emulated_position))) {
     if (orientation.has_value())
       frame_data->pose->orientation = orientation;
 

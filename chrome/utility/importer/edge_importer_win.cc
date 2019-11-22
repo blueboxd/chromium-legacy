@@ -209,7 +209,15 @@ void EdgeImporter::ParseFavoritesDatabase(
   if (database_path.empty())
     return;
 
+  base::FilePath log_folder = database_path.DirName().Append(L"LogFiles");
+
   EdgeDatabaseReader database;
+
+  // If the log file directory does not exist, don't set the log_folder
+  // attribute, as the open database operation will fail in such cases.
+  // The log folder will usually not be present when running the unit tests.
+  if (base::PathExists(log_folder))
+    database.set_log_folder(log_folder.value());
   if (!database.OpenDatabase(database_path.value())) {
     DVLOG(1) << "Error opening database " << database.GetErrorMessage();
     return;

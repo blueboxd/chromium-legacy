@@ -89,8 +89,6 @@ import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentSwitches;
-import org.chromium.printing.PrintDocumentAdapterWrapper;
-import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
@@ -418,12 +416,6 @@ public class ProcessInitializationHandler {
                 if (!CommandLine.getInstance().hasSwitch(ContentSwitches.SWITCH_PROCESS_TYPE)) {
                     DownloadController.setDownloadNotificationService(
                             DownloadManagerService.getDownloadManagerService());
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    String errorText = ContextUtils.getApplicationContext().getString(
-                            R.string.error_printing_failed);
-                    PrintingControllerImpl.create(new PrintDocumentAdapterWrapper(), errorText);
                 }
             }
         });

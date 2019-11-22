@@ -18,6 +18,10 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
+#endif
+
 namespace {
 
 const char kGAIAGivenNameKey[] = "gaia_given_name";
@@ -49,6 +53,9 @@ int NextAvailableMetricsBucketIndex() {
 const base::Feature kPersistUPAInProfileInfoCache{
     "PersistUPAInProfileInfoCache", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const char ProfileAttributesEntry::kSupervisedUserId[] = "managed_user_id";
+const char ProfileAttributesEntry::kIsOmittedFromProfileListKey[] =
+    "is_omitted_from_profile_list";
 const char ProfileAttributesEntry::kAvatarIconKey[] = "avatar_icon";
 const char ProfileAttributesEntry::kBackgroundAppsKey[] = "background_apps";
 const char ProfileAttributesEntry::kProfileIsEphemeral[] = "is_ephemeral";
@@ -300,19 +307,23 @@ bool ProfileAttributesEntry::IsGAIAPictureLoaded() const {
 }
 
 bool ProfileAttributesEntry::IsSupervised() const {
-  return profile_info_cache_->ProfileIsSupervisedAtIndex(profile_index());
+  return !GetSupervisedUserId().empty();
 }
 
 bool ProfileAttributesEntry::IsChild() const {
-  return profile_info_cache_->ProfileIsChildAtIndex(profile_index());
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  return GetSupervisedUserId() == supervised_users::kChildAccountSUID;
+#else
+  return false;
+#endif
 }
 
 bool ProfileAttributesEntry::IsLegacySupervised() const {
-  return profile_info_cache_->ProfileIsLegacySupervisedAtIndex(profile_index());
+  return IsSupervised() && !IsChild();
 }
 
 bool ProfileAttributesEntry::IsOmitted() const {
-  return profile_info_cache_->IsOmittedProfileAtIndex(profile_index());
+  return GetBool(kIsOmittedFromProfileListKey);
 }
 
 bool ProfileAttributesEntry::IsSigninRequired() const {
@@ -321,8 +332,7 @@ bool ProfileAttributesEntry::IsSigninRequired() const {
 }
 
 std::string ProfileAttributesEntry::GetSupervisedUserId() const {
-  return profile_info_cache_->GetSupervisedUserIdOfProfileAtIndex(
-      profile_index());
+  return GetString(kSupervisedUserId);
 }
 
 bool ProfileAttributesEntry::IsEphemeral() const {
@@ -393,11 +403,13 @@ void ProfileAttributesEntry::SetActiveTimeToNow() {
 }
 
 void ProfileAttributesEntry::SetIsOmitted(bool is_omitted) {
-  profile_info_cache_->SetIsOmittedProfileAtIndex(profile_index(), is_omitted);
+  if (SetBool(kIsOmittedFromProfileListKey, is_omitted))
+    profile_info_cache_->NotifyProfileIsOmittedChanged(GetPath());
 }
 
 void ProfileAttributesEntry::SetSupervisedUserId(const std::string& id) {
-  profile_info_cache_->SetSupervisedUserIdOfProfileAtIndex(profile_index(), id);
+  if (SetString(kSupervisedUserId, id))
+    profile_info_cache_->NotifyProfileSupervisedUserIdChanged(GetPath());
 }
 
 void ProfileAttributesEntry::SetLocalAuthCredentials(const std::string& auth) {
@@ -443,7 +455,7 @@ void ProfileAttributesEntry::LockForceSigninProfile(bool is_lock) {
   if (is_force_signin_profile_locked_ == is_lock)
     return;
   is_force_signin_profile_locked_ = is_lock;
-  profile_info_cache_->NotifyIsSigninRequiredChanged(profile_path_);
+  profile_info_cache_->NotifyIsSigninRequiredChanged(GetPath());
 }
 
 void ProfileAttributesEntry::SetIsEphemeral(bool value) {

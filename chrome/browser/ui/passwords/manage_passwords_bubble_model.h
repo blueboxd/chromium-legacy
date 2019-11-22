@@ -90,6 +90,11 @@ class ManagePasswordsBubbleModel {
   // clicked.
   void OnSkipSignInClicked();
 
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+  // Called by the view when the account store checkbox is toggled.
+  void OnToggleAccountStore(bool is_checked);
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
+
   password_manager::ui::State state() const { return state_; }
 
   const base::string16& title() const { return title_; }
@@ -154,6 +159,11 @@ class ManagePasswordsBubbleModel {
   // and returns false immediately. New bubble will reveal the passwords if the
   // re-authentication is successful.
   bool RevealPasswords();
+
+#if defined(PASSWORD_STORE_SELECT_ENABLED)
+  // Returns true iff the password account store is used.
+  bool IsUsingAccountStore();
+#endif  // defined(PASSWORD_STORE_SELECT_ENABLED)
 
  private:
   class InteractionKeeper;

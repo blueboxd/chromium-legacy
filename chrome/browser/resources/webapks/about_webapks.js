@@ -41,8 +41,6 @@ let WebApkInfo;
  */
 let UpdateStatus;
 
-const UPDATE_TIMEOUT = 60 * 1000;  // milliseconds.
-
 /**
  * Creates and returns an element (with |text| as content) assigning it the
  * |className| class.
@@ -125,7 +123,9 @@ function addWebApk(webApkInfo) {
       webApkList, 'Check for Updates Less Frequently: ',
       webApkInfo.relaxUpdates.toString());
   addWebApkField(webApkList, 'Owning Browser: ', webApkInfo.backingBrowser);
-  addWebApkField(webApkList, 'Update Status: ', webApkInfo.updateStatus);
+  addWebApkField(
+      webApkList, 'Update Status (Reload page to get new status): ',
+      webApkInfo.updateStatus);
 
   // TODO(ckitagawa): Convert to an enum using mojom handlers.
   if (webApkInfo.updateStatus == 'Not updatable' ||
@@ -139,18 +139,12 @@ function addWebApk(webApkInfo) {
             'The WebAPK will check for an update the next time it launches. ' +
             'If an update is available, the "Update Status" on this page ' +
             'will switch to "Scheduled". The update will be installed once ' +
-            'the WebAPK is closed (this may take a few minutes).');
+            'the WebAPK is closed (this may take a few minutes). Update ' +
+            'requests don\'t work if they are requested right after (< 1 ' +
+            'minute) the completion of the previous update request.');
         chrome.send('requestWebApkUpdate', [webApkInfo.id]);
+        window.location.reload();
       });
-
-  // Prevent updates in the WebAPK server caching window as they will fail.
-  const msSinceLastUpdate = Date.now() - webApkInfo.lastUpdateCompletionTimeMs;
-  if (msSinceLastUpdate < UPDATE_TIMEOUT) {
-    buttonElement.disabled = true;
-    window.setTimeout(() => {
-      buttonElement.disabled = false;
-    }, UPDATE_TIMEOUT - msSinceLastUpdate);
-  }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

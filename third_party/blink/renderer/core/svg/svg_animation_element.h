@@ -74,7 +74,13 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   AnimationMode GetAnimationMode() const { return animation_mode_; }
   CalcMode GetCalcMode() const { return calc_mode_; }
 
-  bool OverwritesUnderlyingAnimationValue() const override;
+  virtual void ResetAnimatedType() = 0;
+  virtual void ClearAnimatedType() = 0;
+  virtual void ApplyResultsToTarget() = 0;
+  // Returns true if this animation "sets" the value of the animation. Thus all
+  // previous animations are rendered useless.
+  bool OverwritesUnderlyingAnimationValue() const;
+  void ApplyAnimation(SVGAnimationElement* result_element);
 
   void AnimateAdditiveNumber(float percentage,
                              unsigned repeat_count,
@@ -100,11 +106,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   SVGAnimationElement(const QualifiedName&, Document&);
 
   void ParseAttribute(const AttributeModificationParams&) override;
-
-  // from SVGSMILElement
-  void UpdateAnimation(float percent,
-                       unsigned repeat,
-                       SVGSMILElement* result_element) override;
 
   virtual void UpdateAnimationMode();
   void SetAnimationMode(AnimationMode animation_mode) {

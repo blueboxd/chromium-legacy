@@ -14,7 +14,7 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 /**
  * A utility for observing when a view gets drawn for the first time.
  */
-class FirstDrawDetector {
+public class FirstDrawDetector {
     View mView;
     Runnable mCallback;
 

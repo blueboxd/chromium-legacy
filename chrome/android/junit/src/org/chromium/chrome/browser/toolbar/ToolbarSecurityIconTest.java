@@ -26,7 +26,6 @@ import org.robolectric.annotation.Resetter;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
@@ -63,12 +62,12 @@ public final class ToolbarSecurityIconTest {
     @Implements(SecurityStateModel.class)
     static class ShadowSecurityStateModel {
         private static boolean sSchemeIsCryptographic;
-        private static boolean sOriginIsSecure;
+        private static boolean sShouldDowngrade;
 
         @Resetter
         public static void reset() {
             sSchemeIsCryptographic = false;
-            sOriginIsSecure = false;
+            sShouldDowngrade = false;
         }
 
         @Implementation
@@ -77,16 +76,16 @@ public final class ToolbarSecurityIconTest {
         }
 
         @Implementation
-        public static boolean isOriginSecure(String url) {
-            return sOriginIsSecure;
+        public static boolean shouldDowngradeNeutralStyling(int securityLevel, String url) {
+            return sShouldDowngrade;
         }
 
         public static void setSchemeIsCryptographic(boolean schemeIsCryptographicValue) {
             sSchemeIsCryptographic = schemeIsCryptographicValue;
         }
 
-        public static void setOriginIsSecure(boolean originIsSecureValue) {
-            sOriginIsSecure = originIsSecureValue;
+        public static void setShouldDowngradeNeutralStyling(boolean shouldDowngradeValue) {
+            sShouldDowngrade = shouldDowngradeValue;
         }
     }
 
@@ -103,7 +102,6 @@ public final class ToolbarSecurityIconTest {
     @After
     public void tearDown() {
         ShadowSecurityStateModel.reset();
-        FeatureUtilities.setMarkHttpAsDangerWarningEnabledForTesting(null);
     }
 
     @Test
@@ -212,8 +210,6 @@ public final class ToolbarSecurityIconTest {
 
     @Test
     public void testGetSecurityIconResourceForMarkHttpAsDangerWarning() {
-        FeatureUtilities.setMarkHttpAsDangerWarningEnabledForTesting(true);
-
         assertEquals(0,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
@@ -221,8 +217,9 @@ public final class ToolbarSecurityIconTest {
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
-        // Tests passive mixed content.
+        // Tests passive mixed content, which should be downgraded.
         ShadowSecurityStateModel.setSchemeIsCryptographic(true);
+        ShadowSecurityStateModel.setShouldDowngradeNeutralStyling(true);
         assertEquals(R.drawable.omnibox_not_secure_warning,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
@@ -230,8 +227,9 @@ public final class ToolbarSecurityIconTest {
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
-        // Tests non-secure connection (e.g. HTTP).
+        // Tests non-secure connection (e.g. HTTP), which should be downgraded.
         ShadowSecurityStateModel.setSchemeIsCryptographic(false);
+        ShadowSecurityStateModel.setShouldDowngradeNeutralStyling(true);
         assertEquals(R.drawable.omnibox_not_secure_warning,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
@@ -239,8 +237,8 @@ public final class ToolbarSecurityIconTest {
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
-        // Tests non-cryptographic secure origins.
-        ShadowSecurityStateModel.setOriginIsSecure(true);
+        // Tests non-cryptographic secure origins, which should not be downgraded.
+        ShadowSecurityStateModel.setShouldDowngradeNeutralStyling(false);
         assertEquals(R.drawable.omnibox_info,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));

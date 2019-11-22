@@ -170,7 +170,7 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 #endif  // defined(OS_CHROMEOS)
 
   // We need to determine opacity if it's not already specified.
-  if (params->opacity == views::Widget::InitParams::INFER_OPACITY)
+  if (params->opacity == views::Widget::InitParams::WindowOpacity::kInferred)
     params->opacity = GetOpacityForInitParams(*params);
 
   // If we already have a native_widget, we don't have to try to come
@@ -203,6 +203,6 @@ std::string ChromeViewsDelegate::GetApplicationName() {
 views::Widget::InitParams::WindowOpacity
 ChromeViewsDelegate::GetOpacityForInitParams(
     const views::Widget::InitParams& params) {
-  return views::Widget::InitParams::OPAQUE_WINDOW;
+  return views::Widget::InitParams::WindowOpacity::kOpaque;
 }
 #endif

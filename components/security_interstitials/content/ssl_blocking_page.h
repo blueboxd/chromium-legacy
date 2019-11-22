@@ -44,22 +44,6 @@ class SSLBlockingPage : public SSLBlockingPageBase {
 
   ~SSLBlockingPage() override;
 
-  // Creates an SSL blocking page. If the blocking page isn't shown, the caller
-  // is responsible for cleaning up the blocking page, otherwise the
-  // interstitial takes ownership when shown. |options_mask| must be a bitwise
-  // mask of SSLErrorOptionsMask values.
-  // This is static because the constructor uses expensive to compute parameters
-  // more than once (e.g. overrideable).
-  static SSLBlockingPage* Create(
-      content::WebContents* web_contents,
-      int cert_error,
-      const net::SSLInfo& ssl_info,
-      const GURL& request_url,
-      int options_mask,
-      const base::Time& time_triggered,
-      const GURL& support_url,
-      std::unique_ptr<SSLCertReporter> ssl_cert_reporter);
-
   // InterstitialPageDelegate method:
   InterstitialPageDelegate::TypeID GetTypeForTesting() override;
 

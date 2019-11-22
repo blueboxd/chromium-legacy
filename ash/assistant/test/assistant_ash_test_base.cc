@@ -40,6 +40,16 @@ bool CanProcessEvents(const views::View* view) {
   return true;
 }
 
+void CheckCanProcessEvents(const views::View* view) {
+  if (!view->IsDrawn()) {
+    ADD_FAILURE()
+        << view->GetClassName()
+        << " can not process events because it is not drawn on screen.";
+  } else if (!CanProcessEvents(view)) {
+    ADD_FAILURE() << view->GetClassName() << " can not process events.";
+  }
+}
+
 }  // namespace
 
 AssistantAshTestBase::AssistantAshTestBase()
@@ -139,11 +149,24 @@ void AssistantAshTestBase::SendQueryThroughTextField(const std::string& query) {
   test_api_->SendTextQuery(query);
 }
 
-void AssistantAshTestBase::TapOnTextField() {
-  if (!CanProcessEvents(input_text_field()))
-    ADD_FAILURE() << "TextField can not process tap events";
+void AssistantAshTestBase::TapOnAndWait(views::View* view) {
+  CheckCanProcessEvents(view);
+  GetEventGenerator()->GestureTapAt(GetPointInside(view));
 
-  GetEventGenerator()->GestureTapAt(GetPointInside(input_text_field()));
+  base::RunLoop().RunUntilIdle();
+}
+
+void AssistantAshTestBase::ClickOnAndWait(views::View* view) {
+  CheckCanProcessEvents(view);
+  GetEventGenerator()->MoveMouseTo(GetPointInside(view));
+  GetEventGenerator()->ClickLeftButton();
+
+  base::RunLoop().RunUntilIdle();
+}
+
+base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+AssistantAshTestBase::current_interaction() {
+  return assistant_service()->current_interaction();
 }
 
 aura::Window* AssistantAshTestBase::SwitchToNewAppWindow() {
@@ -168,6 +191,14 @@ views::View* AssistantAshTestBase::mic_view() {
 
 views::View* AssistantAshTestBase::greeting_label() {
   return test_api_->greeting_label();
+}
+
+views::View* AssistantAshTestBase::voice_input_toggle() {
+  return test_api_->voice_input_toggle();
+}
+
+views::View* AssistantAshTestBase::keyboard_input_toggle() {
+  return test_api_->keyboard_input_toggle();
 }
 
 void AssistantAshTestBase::ShowKeyboard() {

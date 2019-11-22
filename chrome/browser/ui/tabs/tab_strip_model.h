@@ -35,6 +35,7 @@
 #endif
 
 class Profile;
+class TabGroupModel;
 class TabStripModelDelegate;
 class TabStripModelObserver;
 
@@ -341,24 +342,6 @@ class TabStripModel {
   // https://crbug.com/915956).
   base::Optional<TabGroupId> GetTabGroupForTab(int index) const;
 
-  // Returns the TabGroupVisualData instance for the given |group|. The returned
-  // pointer is valid until all tabs in |group| are destroyed or until
-  // SetVisualDataForGroup is called for |group|.
-  const TabGroupVisualData* GetVisualDataForGroup(TabGroupId group) const;
-
-  // Returns a title for |group| that can be shown in the UI, generating a
-  // descriptive placeholder if the user has not named the group.
-  base::string16 GetUserVisibleGroupTitle(TabGroupId group) const;
-
-  // Sets the visual data for |group|. Notifies observers of the change.
-  void SetVisualDataForGroup(TabGroupId group, TabGroupVisualData data);
-
-  // Returns a list of tab groups that contain at least one tab in this strip.
-  std::vector<TabGroupId> ListTabGroups() const;
-
-  // Returns the list of tabs in the given |group|.
-  std::vector<int> ListTabsInGroup(TabGroupId group) const;
-
   // Returns the index of the first tab that is not a pinned tab. This returns
   // |count()| if all of the tabs are pinned tabs, and 0 if none of the tabs are
   // pinned tabs.
@@ -452,9 +435,7 @@ class TabStripModel {
   // behind a feature flag. https://crbug.com/915956.
   void RemoveFromGroup(const std::vector<int>& indices);
 
-  // Register a new TabGroupId in the |group_data_| mapping.
-  void RegisterGroup(TabGroupId id,
-                     base::Optional<TabGroupVisualData> visual_data);
+  TabGroupModel* group_model() { return group_model_.get(); }
 
   // View API //////////////////////////////////////////////////////////////////
 
@@ -528,6 +509,17 @@ class TabStripModel {
   // reset when _any_ active tab change occurs (rather than just one outside the
   // current tree of openers).
   bool ShouldResetOpenerOnActiveTabChange(content::WebContents* contents) const;
+
+  // Notifies observers that the tab at |index| was moved from |old_group| to
+  // |new_group|.
+  void NotifyGroupChange(int index,
+                         base::Optional<TabGroupId> old_group,
+                         base::Optional<TabGroupId> new_group);
+
+  // Notifies observers that the group with id |group| had its visual data
+  // changed to |visual_data|.
+  void NotifyGroupVisualsChange(TabGroupId group,
+                                TabGroupVisualData* visual_data);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TabStripModelTest, GetIndicesClosedByCommand);
@@ -674,12 +666,6 @@ class TabStripModel {
                        int new_index,
                        base::Optional<TabGroupId> new_group);
 
-  // Notifies observers that the tab at |index| was moved from |old_group| to
-  // |new_group|.
-  void NotifyGroupChange(int index,
-                         base::Optional<TabGroupId> old_group,
-                         base::Optional<TabGroupId> new_group);
-
   // Helper function for MoveAndSetGroup. Removes the tab at |index| from the
   // group that contains it, if any. Also deletes that group, if it now contains
   // no tabs. Returns that group.
@@ -709,10 +695,8 @@ class TabStripModel {
   // be kept in sync with |selection_model_|.
   std::vector<std::unique_ptr<WebContentsData>> contents_data_;
 
-  // The data for tab groups hosted within this TabStripModel, indexed by the
-  // group ID.
-  class GroupData;
-  std::map<TabGroupId, GroupData> group_data_;
+  // The model for tab groups hosted within this TabStripModel.
+  std::unique_ptr<TabGroupModel> group_model_;
 
   TabStripModelDelegate* delegate_;
 

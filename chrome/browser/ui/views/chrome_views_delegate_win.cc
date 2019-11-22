@@ -137,7 +137,8 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
     // because it was disabled at the command line), anything that requires
     // transparency will be broken with a toplevel window, so force the use of
     // a non toplevel window.
-    if (params->opacity == views::Widget::InitParams::TRANSLUCENT_WINDOW &&
+    if (params->opacity ==
+            views::Widget::InitParams::WindowOpacity::kTranslucent &&
         !params->force_software_compositing)
       native_widget_type = NativeWidgetType::NATIVE_WIDGET_AURA;
   } else {

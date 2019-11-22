@@ -149,6 +149,47 @@ TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
   EXPECT_FALSE(observer_delegate->LastEntry()->isIntersecting());
 }
 
+TEST_F(IntersectionObserverTest, ScrollingElementRootClips) {
+  ScopedIntersectionObserverDocumentScrollingElementRootForTest scope(true);
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <div id='target'>Hello, world!</div>
+    <div id='spacer' style='height:2000px'></div>
+  )HTML");
+
+  Element* root = GetDocument().scrollingElement();
+  ASSERT_TRUE(root);
+  IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
+  observer_init->setRoot(root);
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  observer->observe(target, exception_state);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 1);
+  EXPECT_EQ(observer_delegate->EntryCount(), 1);
+  EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
+
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 1000),
+                                                          kProgrammaticScroll);
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  ASSERT_FALSE(Compositor().NeedsBeginFrame());
+  EXPECT_EQ(observer_delegate->CallCount(), 2);
+  EXPECT_EQ(observer_delegate->EntryCount(), 2);
+  EXPECT_FALSE(observer_delegate->LastEntry()->isIntersecting());
+}
+
 TEST_F(IntersectionObserverTest, ReportsFractionOfTargetOrRoot) {
   // Place a 100x100 target element in the middle of a 200x200 main frame.
   WebView().MainFrameWidget()->Resize(WebSize(200, 200));

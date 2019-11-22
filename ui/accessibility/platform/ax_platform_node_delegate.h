@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <new>
+#include <ostream>
 #include <set>
 #include <string>
 #include <utility>
@@ -33,7 +34,8 @@
 namespace gfx {
 
 class Rect;
-}
+
+}  // namespace gfx
 
 namespace ui {
 
@@ -120,7 +122,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
 
   class ChildIterator {
    public:
-    virtual ~ChildIterator() {}
+    virtual ~ChildIterator() = default;
     virtual bool operator==(const ChildIterator& rhs) const = 0;
     virtual bool operator!=(const ChildIterator& rhs) const = 0;
     virtual void operator++() = 0;
@@ -129,6 +131,8 @@ class AX_EXPORT AXPlatformNodeDelegate {
     virtual void operator--(int) = 0;
     virtual gfx::NativeViewAccessible GetNativeViewAccessible() const = 0;
     virtual int GetIndexInParent() const = 0;
+    virtual AXPlatformNodeDelegate& operator*() const = 0;
+    virtual AXPlatformNodeDelegate* operator->() const = 0;
   };
   virtual std::unique_ptr<AXPlatformNodeDelegate::ChildIterator>
   ChildrenBegin() = 0;
@@ -376,8 +380,22 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // element. The default value should be false if not in testing mode.
   virtual bool ShouldIgnoreHoveredStateForTesting() = 0;
 
+  // Creates a string representation of this delegate's data.
+  std::string ToString() { return GetData().ToString(); }
+
+  // Returns a string representation of the subtree of delegates rooted at this
+  // delegate.
+  std::string SubtreeToString() { return SubtreeToStringHelper(0u); }
+
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  AXPlatformNodeDelegate& delegate) {
+    return stream << delegate.ToString();
+  }
+
  protected:
   AXPlatformNodeDelegate() = default;
+
+  virtual std::string SubtreeToStringHelper(size_t level) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeDelegate);

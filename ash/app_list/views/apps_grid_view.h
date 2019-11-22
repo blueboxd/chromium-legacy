@@ -668,11 +668,20 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // folder or creating a folder with two apps.
   void MaybeCreateFolderDroppingAccessibilityEvent();
 
-  // Modifies the announcement view to verbalize |moving_view_title| is creating
-  // a folder or moving into an existing folder with |target_view_title|.
+  // Modifies the announcement view to verbalize that the current drag will move
+  // |moving_view_title| and create a folder or move it into an existing folder
+  // with |target_view_title|.
   void AnnounceFolderDrop(const base::string16& moving_view_title,
                           const base::string16& target_view_title,
                           bool target_is_folder);
+
+  // Modifies the announcement view to vervalize that the most recent keyboard
+  // foldering action has either moved |moving_view_title| into
+  // |target_view_title| folder or that |moving_view_title| and
+  // |target_view_title| have formed a new folder.
+  void AnnounceKeyboardFoldering(const base::string16& moving_view_title,
+                                 const base::string16& target_view_title,
+                                 bool target_is_folder);
 
   // During an app drag, creates an a11y event to verbalize drop target
   // location.

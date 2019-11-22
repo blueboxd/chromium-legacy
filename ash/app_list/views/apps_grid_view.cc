@@ -691,6 +691,11 @@ void AppsGridView::EndDrag(bool cancel) {
       folder_delegate_->DispatchEndDragEventForReparent(
           true /* events_forwarded_to_drag_drop_host */,
           cancel /* cancel_drag */);
+    } else {
+      // |drag_view_| is reordered when initiating the drag. In addition, the
+      // icon's location in AppsGridView does not alter after being dragged to
+      // Shelf. So recover the order when drag ends.
+      MoveItemInModel(drag_view_, drag_view_init_index_);
     }
   } else {
     if (IsDraggingForReparentInHiddenGridView()) {
@@ -1780,9 +1785,14 @@ void AppsGridView::HandleKeyboardFoldering(ui::KeyboardCode key_code) {
     return;
 
   const base::string16 moving_view_title = selected_view_->title()->GetText();
+  AppListItemView* target_view =
+      GetViewDisplayedAtSlotOnCurrentPage(target_index.slot);
+  const base::string16 target_view_title = target_view->title()->GetText();
+  const bool target_view_is_folder = target_view->is_folder();
+
   AppListItemView* folder_item = MoveItemToFolder(selected_view_, target_index);
-  AnnounceFolderDrop(moving_view_title, folder_item->title()->GetText(),
-                     folder_item->is_folder());
+  AnnounceKeyboardFoldering(moving_view_title, target_view_title,
+                            target_view_is_folder);
   DCHECK(folder_item->is_folder());
   folder_item->RequestFocus();
   Layout();
@@ -2257,6 +2267,8 @@ void AppsGridView::MoveItemInModel(AppListItemView* item_view,
 
   // Reorder the app list item views in accordance with |view_model_|.
   items_container_->ReorderChildView(item_view, target_model_index);
+  items_container_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                             true /* send_native_event */);
 
   if (target_item_list_index == current_item_list_index)
     return;
@@ -2388,6 +2400,8 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
   if (!folder_delegate_)
     view_structure_.Move(item_view, target_override);
   items_container_->ReorderChildView(item_view, target_model_index);
+  items_container_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
+                                             true /* send_native_event */);
 
   RemoveLastItemFromReparentItemFolderIfNecessary(source_folder_id);
 
@@ -2661,6 +2675,8 @@ void AppsGridView::OnListItemMoved(size_t from_index,
     view_model_.Move(from_model_index, to_model_index);
     items_container_->ReorderChildView(view_model_.view_at(to_model_index),
                                        to_model_index);
+    items_container_->NotifyAccessibilityEvent(
+        ax::mojom::Event::kChildrenChanged, true /* send_native_event */);
   }
 
   if (!folder_delegate_)
@@ -3407,6 +3423,22 @@ void AppsGridView::AnnounceFolderDrop(const base::string16& moving_view_title,
           target_is_folder
               ? IDS_APP_LIST_APP_DRAG_MOVE_TO_FOLDER_ACCESSIBILE_NAME
               : IDS_APP_LIST_APP_DRAG_CREATE_FOLDER_ACCESSIBILE_NAME,
+          moving_view_title, target_view_title));
+  announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+}
+
+void AppsGridView::AnnounceKeyboardFoldering(
+    const base::string16& moving_view_title,
+    const base::string16& target_view_title,
+    bool target_is_folder) {
+  // Set a11y name to announce keyboard move to folder or creation of folder.
+  auto* announcement_view =
+      contents_view_->app_list_view()->announcement_view();
+  announcement_view->GetViewAccessibility().OverrideName(
+      l10n_util::GetStringFUTF16(
+          target_is_folder
+              ? IDS_APP_LIST_APP_KEYBOARD_MOVE_TO_FOLDER_ACCESSIBILE_NAME
+              : IDS_APP_LIST_APP_KEYBOARD_CREATE_FOLDER_ACCESSIBILE_NAME,
           moving_view_title, target_view_title));
   announcement_view->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }

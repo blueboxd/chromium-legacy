@@ -2196,10 +2196,6 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   metadata.top_controls_shown_ratio =
       browser_controls_offset_manager_->TopControlsShownRatio();
 #if defined(OS_ANDROID)
-  metadata.bottom_controls_height =
-      browser_controls_offset_manager_->BottomControlsHeight();
-  metadata.bottom_controls_shown_ratio =
-      browser_controls_offset_manager_->BottomControlsShownRatio();
   metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
@@ -2257,10 +2253,6 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
            metadata.top_controls_height ||
        last_draw_render_frame_metadata_->top_controls_shown_ratio !=
            metadata.top_controls_shown_ratio ||
-       last_draw_render_frame_metadata_->bottom_controls_height !=
-           metadata.bottom_controls_height ||
-       last_draw_render_frame_metadata_->bottom_controls_shown_ratio !=
-           metadata.bottom_controls_shown_ratio ||
        last_draw_render_frame_metadata_->selection != metadata.selection ||
        last_draw_render_frame_metadata_->has_transparent_background !=
            metadata.has_transparent_background);

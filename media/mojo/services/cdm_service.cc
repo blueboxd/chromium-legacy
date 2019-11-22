@@ -11,7 +11,6 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -172,7 +171,7 @@ void CdmService::Create(mojo::PendingReceiver<mojom::CdmService> receiver) {
 #if defined(OS_MACOSX)
 void CdmService::LoadCdm(
     const base::FilePath& cdm_path,
-    mojom::SeatbeltExtensionTokenProviderPtr token_provider) {
+    mojo::PendingRemote<mojom::SeatbeltExtensionTokenProvider> token_provider) {
 #else
 void CdmService::LoadCdm(const base::FilePath& cdm_path) {
 #endif  // defined(OS_MACOSX)
@@ -193,7 +192,9 @@ void CdmService::LoadCdm(const base::FilePath& cdm_path) {
 
   if (token_provider) {
     std::vector<sandbox::SeatbeltExtensionToken> tokens;
-    CHECK(token_provider->GetTokens(&tokens));
+    CHECK(mojo::Remote<mojom::SeatbeltExtensionTokenProvider>(
+              std::move(token_provider))
+              ->GetTokens(&tokens));
 
     for (auto&& token : tokens) {
       DVLOG(3) << "token: " << token.token();

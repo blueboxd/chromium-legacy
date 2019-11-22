@@ -15,7 +15,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 FolderUploadConfirmationView::FolderUploadConfirmationView(
     const base::FilePath& path,
@@ -63,8 +62,7 @@ base::string16 FolderUploadConfirmationView::GetWindowTitle() const {
 }
 
 views::View* FolderUploadConfirmationView::GetInitiallyFocusedView() {
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 bool FolderUploadConfirmationView::ShouldShowCloseButton() const {

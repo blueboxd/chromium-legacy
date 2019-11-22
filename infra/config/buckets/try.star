@@ -183,6 +183,9 @@ android_builder(
 
 android_builder(
     name = 'android-pie-arm64-rel',
+    cores = 16,
+    goma_jobs = goma.jobs.J300,
+    ssd = True,
     tryjob = tryjob(
         experiment_percentage = 50,
     ),

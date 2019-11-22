@@ -377,7 +377,13 @@ Polymer({
 
     this.syncStatus = syncStatus;
 
-    if (shouldRecordSigninImpression && !this.shouldShowSyncAccountControl_()) {
+    if (
+        shouldRecordSigninImpression
+        // <if expr="not chromeos">
+        // Sync account control is not shown on Chrome OS.
+        && !this.shouldShowSyncAccountControl_()
+        // </if>
+    ) {
       // SyncAccountControl records the impressions user actions.
       chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
     }

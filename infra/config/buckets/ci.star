@@ -218,7 +218,7 @@ android_builder(
     name = 'KitKat Tablet Tester',
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
-    execution_timeout = 8 * time.hour,
+    execution_timeout = 10 * time.hour,
 )
 
 android_builder(
@@ -229,7 +229,7 @@ android_builder(
     name = 'Lollipop Tablet Tester',
     # We have limited tablet capacity and thus limited ability to run
     # tests in parallel, hence the high timeout.
-    execution_timeout = 8 * time.hour,
+    execution_timeout = 10 * time.hour,
 )
 
 android_builder(

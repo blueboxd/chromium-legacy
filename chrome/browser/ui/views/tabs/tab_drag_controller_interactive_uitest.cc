@@ -33,6 +33,9 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -729,7 +732,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ(4, model->count());
-  EXPECT_EQ(3u, model->ListTabsInGroup(group).size());
+  EXPECT_EQ(3u, model->group_model()->GetTabGroup(group)->ListTabs().size());
 
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
   ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(3))));
@@ -739,7 +742,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   // Dragging the tab in the second index to the tab in the third index switches
   // the tabs and removes the dragged tab from the group.
   EXPECT_EQ("0 1 3 2", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(0, 1));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(0, 1));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(2));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(3));
 
@@ -751,7 +755,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   // Dragging the tab in the first index to the tab in the second index (tab 3)
   // switches the tabs and removes the dragged tab from the group.
   EXPECT_EQ("0 3 1 2", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(0));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(0));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(1));
 }
 
@@ -770,7 +775,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ(4, model->count());
-  EXPECT_EQ(3u, model->ListTabsInGroup(group).size());
+  EXPECT_EQ(3u, model->group_model()->GetTabGroup(group)->ListTabs().size());
   EXPECT_EQ(group, model->GetTabGroupForTab(1).value());
 
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
@@ -781,7 +786,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   // Dragging the tab in the first index to the tab in the zero-th index
   // switches the tabs and removes the dragged tab from the group.
   EXPECT_EQ("1 0 2 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(2, 3));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(2, 3));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(0));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(1));
 
@@ -793,7 +799,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   // Dragging the tab in the second index to the tab in the first index switches
   // the tabs and removes the dragged tab from the group.
   EXPECT_EQ("1 2 0 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(3));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(3));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(2));
 }
 
@@ -810,7 +817,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ(4, model->count());
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(0, 1, 2));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(0, 1, 2));
 
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(0))));
   ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
@@ -820,7 +828,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   // Dragging the tab in the zero-th index to the tab in the first index
   // switches the tabs but group membership does not change.
   EXPECT_EQ("1 0 2 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(0, 1, 2));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(0, 1, 2));
 
   ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
   ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
@@ -830,7 +839,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   // Dragging the tab in the second index to the tab in the first index switches
   // the tabs but group membership does not change.
   EXPECT_EQ("1 2 0 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(0, 1, 2));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(0, 1, 2));
 }
 
 // Creates a browser with four tabs. The first tab is in a Tab Group. Dragging
@@ -845,7 +855,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ(4, model->count());
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(0));
+  EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(0));
 
   // Dragging the tab in the zero-th index to the tab in the first index
   // switches the tabs and removes the group of the zero-th tab.
@@ -855,7 +866,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("1 0 2 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre());
+  EXPECT_FALSE(model->group_model()->ContainsTabGroup(group));
 }
 
 // Creates a browser with four tabs. The first tab is in Tab Group 1. The
@@ -868,6 +879,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        DragSingleTabLeftIntoGroup) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group1 = model->AddToNewGroup({0});
@@ -889,7 +901,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("1 0 2 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1));
 
   // Dragging the tab in the second index to the tab in the first index switches
   // the tabs and adds the dragged tab to the group.
@@ -899,7 +912,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("1 2 0 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1, 2));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1, 2));
 
   // Dragging the tab in the third index to the tab in the second index switches
   // the tabs and adds the dragged tab to the group.
@@ -909,7 +923,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("1 2 3 0", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1, 2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1, 2, 3));
 }
 
 // Creates a browser with four tabs. The last tab is in Tab Group 1. The
@@ -922,6 +937,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        DragSingleTabRightIntoGroup) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group1 = model->AddToNewGroup({3});
@@ -936,7 +952,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("0 1 3 2", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(2, 3));
 
   // Dragging the tab in the first index to the tab in the second index switches
   // the tabs and adds the dragged tab to the group.
@@ -946,7 +963,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("0 3 1 2", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(1, 2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(1, 2, 3));
 
   // Dragging the tab in the zero-th index to the tab in the first index
   // switches the tabs and adds the dragged tab to the group.
@@ -956,7 +974,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("3 0 1 2", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1, 2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1, 2, 3));
 }
 
 // Creates a browser with four tabs each in its own group. Selecting and
@@ -968,6 +987,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        DragMultipleTabsRightIntoGroup) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   model->AddToNewGroup({0});
@@ -993,8 +1013,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("0 2 1 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group4), testing::ElementsAre(3));
-  EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(0, 1, 2));
+  EXPECT_THAT(group_model->GetTabGroup(group4)->ListTabs(),
+              testing::ElementsAre(3));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(0, 1, 2));
 
   // Dragging the center of the first tab to the center of the third tab will
   // result in the tabs joining the end of Tab Group 4.
@@ -1006,8 +1028,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("1 3 0 2", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(0));
-  EXPECT_THAT(model->ListTabsInGroup(group4), testing::ElementsAre(1, 2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(0));
+  EXPECT_THAT(group_model->GetTabGroup(group4)->ListTabs(),
+              testing::ElementsAre(1, 2, 3));
 }
 
 // Creates a browser with four tabs each in its own group. Selecting and
@@ -1017,6 +1041,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        DragMultipleTabsLeftIntoGroup) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group1 = model->AddToNewGroup({0});
@@ -1041,8 +1066,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("0 2 1 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0));
-  EXPECT_THAT(model->ListTabsInGroup(group3), testing::ElementsAre(1, 2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0));
+  EXPECT_THAT(group_model->GetTabGroup(group3)->ListTabs(),
+              testing::ElementsAre(1, 2, 3));
 }
 
 // Creates a browser with four tabs. The first two tabs are in Tab Group 1.
@@ -1053,6 +1080,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        RevertDragSingleTabIntoGroup) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group1 = model->AddToNewGroup({0, 1});
@@ -1064,7 +1092,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
 
   EXPECT_EQ("0 2 1 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1, 2));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1, 2));
 
   ASSERT_TRUE(TabDragController::IsActive());
 
@@ -1072,7 +1101,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
                                               false, false, false));
   EXPECT_EQ("0 1 2 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1));
 }
 
 // Creates a browser with four tabs. The last two tabs are in Tab Group 1. The
@@ -1084,12 +1114,13 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        RevertDragSingleTabGroupIntoGroup) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group1 = model->AddToNewGroup({2, 3});
   TabGroupId group2 = model->AddToNewGroup({1});
   const TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"), SK_ColorCYAN);
-  model->SetVisualDataForGroup(group2, new_data);
+  group_model->GetTabGroup(group2)->SetVisualData(new_data);
   StopAnimating(tab_strip);
 
   // Dragging the tab in the first index to the tab in the second index switches
@@ -1098,7 +1129,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
 
   EXPECT_EQ("0 2 1 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(1, 2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(1, 2, 3));
 
   ASSERT_TRUE(TabDragController::IsActive());
 
@@ -1106,10 +1138,12 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
                                               false, false, false));
   EXPECT_EQ("0 1 2 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(2, 3));
-  EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(1));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(1));
   const TabGroupVisualData* group2_visual_data =
-      model->GetVisualDataForGroup(group2);
+      group_model->GetTabGroup(group2)->visual_data();
   EXPECT_THAT(group2_visual_data->title(), new_data.title());
   EXPECT_THAT(group2_visual_data->color(), new_data.color());
 }
@@ -1121,13 +1155,14 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        DragGroupHeaderDragsGroup) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group = model->AddToNewGroup({1, 2});
   StopAnimating(tab_strip);
 
   ASSERT_EQ(4, model->count());
-  ASSERT_EQ(2u, model->ListTabsInGroup(group).size());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group)->ListTabs().size());
 
   // Drag the entire group right by its header.
   ASSERT_TRUE(
@@ -1137,7 +1172,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("0 3 1 2", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(2, 3));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(0));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(1));
 
@@ -1149,7 +1185,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   EXPECT_EQ("1 2 0 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group), testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group)->ListTabs(),
+              testing::ElementsAre(0, 1));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(2));
   EXPECT_EQ(base::nullopt, model->GetTabGroupForTab(3));
 }
@@ -1161,6 +1198,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        DragGroupHeaderRightAvoidsOtherGroups) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group1 = model->AddToNewGroup({0, 1});
@@ -1168,8 +1206,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   ASSERT_EQ(4, model->count());
-  ASSERT_EQ(2u, model->ListTabsInGroup(group1).size());
-  ASSERT_EQ(2u, model->ListTabsInGroup(group2).size());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group1)->ListTabs().size());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group2)->ListTabs().size());
 
   // Drag group1 right, but not far enough to get to the other side of group2.
   ASSERT_TRUE(PressInput(
@@ -1180,8 +1218,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
 
   // Expect group1 to "snap back" to its current position, avoiding group2.
   EXPECT_EQ("0 1 2 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1));
-  EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(2, 3));
 
   // Drag group1 right, far enough to get to the other side of group2.
   ASSERT_TRUE(PressInput(
@@ -1193,8 +1233,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   // Expect group1 to "snap to" the other side of group2 and not land in the
   // middle.
   EXPECT_EQ("2 3 0 1", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(2, 3));
-  EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(0, 1));
 }
 
 // Creates a browser with four tabs. The first two belong in Tab Group 1, and
@@ -1204,6 +1246,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
                        DragGroupHeaderLeftAvoidsOtherGroups) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
+  TabGroupModel* group_model = model->group_model();
 
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group1 = model->AddToNewGroup({0, 1});
@@ -1211,8 +1254,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   StopAnimating(tab_strip);
 
   ASSERT_EQ(4, model->count());
-  ASSERT_EQ(2u, model->ListTabsInGroup(group1).size());
-  ASSERT_EQ(2u, model->ListTabsInGroup(group2).size());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group1)->ListTabs().size());
+  ASSERT_EQ(2u, group_model->GetTabGroup(group2)->ListTabs().size());
 
   // Drag group2 left, but not far enough to get to the other side of group1.
   ASSERT_TRUE(PressInput(
@@ -1223,8 +1266,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
 
   // Expect group2 to "snap back" to its current position, avoiding group1.
   EXPECT_EQ("0 1 2 3", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1));
-  EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(2, 3));
 
   // Drag group2 left, far enough to get to the other side of group1.
   ASSERT_TRUE(PressInput(
@@ -1236,8 +1281,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   // Expect group2 to "snap to" the other side of group1 and not land in the
   // middle.
   EXPECT_EQ("2 3 0 1", IDString(model));
-  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(2, 3));
-  EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(0, 1));
+  EXPECT_THAT(group_model->GetTabGroup(group1)->ListTabs(),
+              testing::ElementsAre(2, 3));
+  EXPECT_THAT(group_model->GetTabGroup(group2)->ListTabs(),
+              testing::ElementsAre(0, 1));
 }
 
 // Drags a tab within the window (without dragging the whole window) then
@@ -2020,7 +2067,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
   ASSERT_TRUE(ReleaseInput());
 
   EXPECT_EQ("100 0 1 101", IDString(model2));
-  EXPECT_THAT(model2->ListTabsInGroup(group1),
+  EXPECT_THAT(model2->group_model()->GetTabGroup(group1)->ListTabs(),
               testing::ElementsAre(0, 1, 2, 3));
 }
 
@@ -2049,9 +2096,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestWithTabGroupsEnabled,
 
   // Expect the group to be in browser2, but with a new TabGroupId.
   EXPECT_EQ("100 0 1", IDString(model2));
-  std::vector<TabGroupId> groups2 = model2->ListTabGroups();
+  std::vector<TabGroupId> groups2 = model2->group_model()->ListTabGroups();
   EXPECT_EQ(1u, groups2.size());
-  EXPECT_THAT(model2->ListTabsInGroup(groups2[0]), testing::ElementsAre(1, 2));
+  EXPECT_THAT(model2->group_model()->GetTabGroup(groups2[0])->ListTabs(),
+              testing::ElementsAre(1, 2));
   EXPECT_NE(groups2[0], group);
   EXPECT_EQ(tab_strip2->GetVisualDataForGroup(groups2[0])->color(),
             group_color);

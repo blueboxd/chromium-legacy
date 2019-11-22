@@ -145,7 +145,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
   if (parameters_.ui_task) {
-    parameters_.ui_task->Run();
+    std::move(*parameters_.ui_task).Run();
     delete parameters_.ui_task;
   } else {
     base::RunLoop run_loop;

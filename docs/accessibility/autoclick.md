@@ -46,7 +46,7 @@ ash/autoclick/
 ash/system/accessibility/autoclick*
 
 - A component extension to provide Accessibility tree information, in
-chrome/browser/resources/chromeos/autoclick/
+chrome/browser/resources/chromeos/accessibility/autoclick/
 
 In addition, there are settings for automatic clicks in
 chrome/browser/resources/settings/a11y_page/manage_a11y_page.*

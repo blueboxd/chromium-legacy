@@ -28,7 +28,8 @@ public abstract class ChildProcessService extends Service {
         super.onCreate();
         try {
             Context appContext = getApplicationContext();
-            ClassLoader remoteClassLoader = WebLayer.createRemoteClassLoader(appContext);
+            ClassLoader remoteClassLoader =
+                    WebLayer.getOrCreateRemoteClassLoaderForChildProcess(appContext);
             mImpl = IChildProcessService.Stub.asInterface(
                     (IBinder) remoteClassLoader
                             .loadClass("org.chromium.weblayer_private.ChildProcessServiceImpl")

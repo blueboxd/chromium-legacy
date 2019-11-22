@@ -180,7 +180,7 @@ p.title {
 .page {
   font-family: 'Roboto';
   font-size: 13px;
-  text-align: left;
+  text-align: start;
 }
 
 .scrollable {
@@ -199,7 +199,7 @@ p.title {
 .section-active-directory-auth {
   align-content: left;
   padding: 64px 0 0 64px;
-  text-align: left;
+  text-align: start;
 }
 
 .section-active-directory-auth-view {
@@ -278,4 +278,3 @@ a.invisible-link {
   height: 0;
   width: 0;
 }
-

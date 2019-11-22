@@ -10,6 +10,8 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
@@ -17,31 +19,89 @@
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_store.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+
+namespace {
+
+// Returns true if |optimization_target_decision| reflects that the model had
+// already been evaluated.
+bool ShouldUseCurrentOptimizationTargetDecision(
+    optimization_guide::OptimizationTargetDecision
+        optimization_target_decision) {
+  switch (optimization_target_decision) {
+    case optimization_guide::OptimizationTargetDecision::kPageLoadMatches:
+    case optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch:
+    case optimization_guide::OptimizationTargetDecision::
+        kModelPredictionHoldback:
+      return true;
+    case optimization_guide::OptimizationTargetDecision::
+        kModelNotAvailableOnClient:
+    case optimization_guide::OptimizationTargetDecision::kUnknown:
+    case optimization_guide::OptimizationTargetDecision::kDeciderNotInitialized:
+      return false;
+  }
+}
+
+}  // namespace
 
 namespace optimization_guide {
 
 PredictionManager::PredictionManager(
     const std::vector<optimization_guide::proto::OptimizationTarget>&
         optimization_targets_at_initialization,
+    const base::FilePath& profile_path,
+    leveldb_proto::ProtoDatabaseProvider* database_provider,
     TopHostProvider* top_host_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : session_fcp_(),
       top_host_provider_(top_host_provider),
+      model_and_features_store_(std::make_unique<OptimizationGuideStore>(
+          database_provider,
+          profile_path.AddExtensionASCII(
+              optimization_guide::
+                  kOptimizationGuidePredictionModelAndFeaturesStore),
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::BEST_EFFORT}))),
       url_loader_factory_(url_loader_factory) {
-  RegisterOptimizationTargets(optimization_targets_at_initialization);
-  g_browser_process->network_quality_tracker()
-      ->AddEffectiveConnectionTypeObserver(this);
+  Initialize(optimization_targets_at_initialization);
+}
+
+PredictionManager::PredictionManager(
+    const std::vector<optimization_guide::proto::OptimizationTarget>&
+        optimization_targets_at_initialization,
+    std::unique_ptr<OptimizationGuideStore> model_and_features_store,
+    TopHostProvider* top_host_provider,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : session_fcp_(),
+      top_host_provider_(top_host_provider),
+      model_and_features_store_(std::move(model_and_features_store)),
+      url_loader_factory_(url_loader_factory) {
+  Initialize(optimization_targets_at_initialization);
 }
 
 PredictionManager::~PredictionManager() {
   g_browser_process->network_quality_tracker()
       ->RemoveEffectiveConnectionTypeObserver(this);
+}
+
+void PredictionManager::Initialize(const std::vector<proto::OptimizationTarget>&
+                                       optimization_targets_at_initialization) {
+  RegisterOptimizationTargets(optimization_targets_at_initialization);
+  g_browser_process->network_quality_tracker()
+      ->AddEffectiveConnectionTypeObserver(this);
+  model_and_features_store_->Initialize(
+      switches::ShouldPurgeModelAndFeaturesStoreOnStartup(),
+      base::BindOnce(&PredictionManager::OnStoreInitialized,
+                     ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PredictionManager::UpdateFCPSessionStatistics(base::TimeDelta fcp) {
@@ -53,6 +113,10 @@ void PredictionManager::RegisterOptimizationTargets(
     const std::vector<proto::OptimizationTarget>& optimization_targets) {
   SEQUENCE_CHECKER(sequence_checker_);
 
+  if (optimization_targets.size() == 0)
+    return;
+
+  base::flat_set<proto::OptimizationTarget> new_optimization_targets;
   for (const auto& optimization_target : optimization_targets) {
     if (optimization_target == proto::OPTIMIZATION_TARGET_UNKNOWN)
       continue;
@@ -61,14 +125,33 @@ void PredictionManager::RegisterOptimizationTargets(
       continue;
     }
     registered_optimization_targets_.insert(optimization_target);
+    new_optimization_targets.insert(optimization_target);
   }
-  // TODO(crbug/1001194): If the OptimizationGuideStore is available/ready, ask
-  // it to start loading the registered models. Scheduling for model host model
-  // fetch will wait until the store is ready.
+
+  // Before loading/fetching models and features, the store must be ready.
+  if (!store_is_ready_)
+    return;
+
+  // Only proceed if there are newly registered targets to load/fetch models and
+  // features for. Otherwise, the registered targets will have models loaded
+  // when the store was initialized.
+  if (new_optimization_targets.size() == 0)
+    return;
 
   // TODO(crbug/1001194): Create a schedule for fetching updates for models and
   // for additional/fresh host model features.
   FetchModelsAndHostModelFeatures();
+
+  // Start loading the host model features if they are not already. Models
+  // cannot be loaded from the store until the host model features have loaded
+  // from the store as they are required to construct each prediction model.
+  if (!host_model_features_loaded_) {
+    LoadHostModelFeatures();
+    return;
+  }
+  // Otherwise, the host model features are loaded, so load prediction models
+  // for any newly registered targets.
+  LoadPredictionModels(new_optimization_targets);
 }
 
 base::Optional<float> PredictionManager::GetValueForClientFeature(
@@ -166,6 +249,21 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
   SEQUENCE_CHECKER(sequence_checker_);
   DCHECK(navigation_handle->GetURL().SchemeIsHTTPOrHTTPS());
 
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+  if (navigation_data) {
+    base::Optional<optimization_guide::OptimizationTargetDecision>
+        optimization_target_decision =
+            navigation_data->GetDecisionForOptimizationTarget(
+                optimization_target);
+    if (optimization_target_decision.has_value() &&
+        ShouldUseCurrentOptimizationTargetDecision(
+            *optimization_target_decision)) {
+      return *optimization_target_decision;
+    }
+  }
+
   // TODO(crbug/1001194): Add histogram to record that the optimization target
   // was not registered but was requested.
   if (!registered_optimization_targets_.contains(optimization_target))
@@ -187,9 +285,6 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
   optimization_guide::OptimizationTargetDecision target_decision =
       prediction_model->Predict(feature_map, &prediction_score);
 
-  OptimizationGuideNavigationData* navigation_data =
-      OptimizationGuideNavigationData::GetFromNavigationHandle(
-          navigation_handle);
   if (navigation_data) {
     navigation_data->SetModelVersionForOptimizationTarget(
         optimization_target, prediction_model->GetVersion());
@@ -232,6 +327,7 @@ void PredictionManager::SetPredictionModelFetcherForTesting(
 }
 
 void PredictionManager::FetchModelsAndHostModelFeatures() {
+  SEQUENCE_CHECKER(sequence_checker_);
   DCHECK(top_host_provider_);
 
   // Models and host model features should not be fetched if there are no
@@ -283,6 +379,7 @@ void PredictionManager::FetchModelsAndHostModelFeatures() {
 void PredictionManager::OnModelsAndHostFeaturesFetched(
     base::Optional<std::unique_ptr<proto::GetModelsResponse>>
         get_models_response_data) {
+  SEQUENCE_CHECKER(sequence_checker_);
   if (!get_models_response_data)
     return;
   // TODO(crbug/1001194): Asynchronously store the models and host model
@@ -315,49 +412,16 @@ void PredictionManager::OnModelsAndHostFeaturesFetched(
 void PredictionManager::UpdateHostModelFeatures(
     const google::protobuf::RepeatedPtrField<proto::HostModelFeatures>&
         host_model_features) {
-  for (const auto& host_model_features : host_model_features) {
-    if (!host_model_features.has_host())
-      continue;
-    if (host_model_features.model_features_size() == 0)
-      continue;
-    base::flat_map<std::string, float> model_features_for_host;
-    model_features_for_host.reserve(host_model_features.model_features_size());
-    for (const auto& model_feature : host_model_features.model_features()) {
-      if (!model_feature.has_feature_name())
-        continue;
-      switch (model_feature.feature_value_case()) {
-        case proto::ModelFeature::kDoubleValue:
-          // Loss of precision from double is acceptable for features supported
-          // by the prediction models.
-          model_features_for_host.emplace(
-              model_feature.feature_name(),
-              static_cast<float>(model_feature.double_value()));
-          break;
-        case proto::ModelFeature::kInt64Value:
-          model_features_for_host.emplace(
-              model_feature.feature_name(),
-              static_cast<float>(model_feature.int64_value()));
-          break;
-        case proto::ModelFeature::FEATURE_VALUE_NOT_SET:
-          NOTREACHED();
-          break;
-      }
-    }
-    if (model_features_for_host.size() == 0)
-      continue;
-    auto it = host_model_features_map_.find(host_model_features.host());
-    if (it != host_model_features_map_.end()) {
-      it->second = model_features_for_host;
-      continue;
-    }
-    host_model_features_map_.emplace(host_model_features.host(),
-                                     model_features_for_host);
-  }
+  SEQUENCE_CHECKER(sequence_checker_);
+  for (const auto& host_model_features : host_model_features)
+    ProcessAndStoreHostModelFeatures(host_model_features);
+  UpdateSupportedHostModelFeatures();
 }
 
 std::unique_ptr<PredictionModel> PredictionManager::CreatePredictionModel(
     const proto::PredictionModel& model,
     const base::flat_set<std::string>& host_model_features) const {
+  SEQUENCE_CHECKER(sequence_checker_);
   return PredictionModel::Create(
       std::make_unique<proto::PredictionModel>(model), host_model_features);
 }
@@ -366,30 +430,181 @@ void PredictionManager::UpdatePredictionModels(
     google::protobuf::RepeatedPtrField<proto::PredictionModel>*
         prediction_models,
     const base::flat_set<std::string>& host_model_features) {
+  SEQUENCE_CHECKER(sequence_checker_);
   std::unique_ptr<PredictionModel> prediction_model;
-  for (auto& model : *prediction_models) {
-    if (!model.model_info().has_optimization_target())
-      continue;
-    if (!registered_optimization_targets_.contains(
-            model.model_info().optimization_target())) {
-      continue;
-    }
+  for (auto& model : *prediction_models)
+    ProcessAndStorePredictionModel(model);
+}
 
-    prediction_model = CreatePredictionModel(model, host_model_features);
-    if (!prediction_model) {
-      continue;
-    }
-    auto it = optimization_target_prediction_model_map_.find(
-        model.model_info().optimization_target());
-    if (it == optimization_target_prediction_model_map_.end()) {
-      optimization_target_prediction_model_map_.emplace(
-          model.model_info().optimization_target(),
-          std::move(prediction_model));
-      continue;
-    }
-    if (it->second->GetVersion() != model.model_info().version())
-      it->second = std::move(prediction_model);
+void PredictionManager::OnStoreInitialized() {
+  SEQUENCE_CHECKER(sequence_checker_);
+  store_is_ready_ = true;
+
+  // Only load host model features if there are optimization targets registered.
+  if (registered_optimization_targets_.size() == 0)
+    return;
+
+  // The store is ready so start loading host model features and the models for
+  // the registered optimization targets. The host model features must be loaded
+  // first because prediction models require them to be constructed. Once the
+  // host model features are loaded, prediction models for the registered
+  // optimization targets will be loaded.
+  LoadHostModelFeatures();
+
+  // TODO(crbug/1001194): Create a schedule for fetching updates for models and
+  // for additional/fresh host model features.
+  FetchModelsAndHostModelFeatures();
+}
+
+void PredictionManager::LoadHostModelFeatures() {
+  SEQUENCE_CHECKER(sequence_checker_);
+  // Load the host model features first, each prediction model requires the set
+  // of host model features to be known before creation.
+  model_and_features_store_->LoadAllHostModelFeatures(
+      base::BindOnce(&PredictionManager::OnLoadHostModelFeatures,
+                     ui_weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PredictionManager::OnLoadHostModelFeatures(
+    std::unique_ptr<std::vector<proto::HostModelFeatures>>
+        all_host_model_features) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  // If the store returns an empty vector of host model features, the store
+  // contains no host model features. However, the load is otherwise complete
+  // and prediction models can be loaded but they will require no host model
+  // feature information.
+  host_model_features_loaded_ = true;
+  if (all_host_model_features) {
+    for (const auto& host_model_features : *all_host_model_features)
+      ProcessAndStoreHostModelFeatures(host_model_features);
+    UpdateSupportedHostModelFeatures();
   }
+  UMA_HISTOGRAM_COUNTS_1000(
+      "OptimizationGuide.PredictionManager.HostModelFeaturesMapSize",
+      host_model_features_map_.size());
+
+  // Load the prediction models for all the registered optimization targets now
+  // that it is not blocked by loading the host model features.
+  LoadPredictionModels(registered_optimization_targets_);
+}
+
+void PredictionManager::UpdateSupportedHostModelFeatures() {
+  SEQUENCE_CHECKER(sequence_checker_);
+  if (host_model_features_map_.size() > 0) {
+    // Clear the current supported host model features if they exist.
+    if (supported_host_model_features_.size() != 0)
+      supported_host_model_features_.clear();
+    // TODO(crbug/1027224): Add support to collect the set of all features, not
+    // just for the first host in the map. This is needed when additional models
+    // are supported.
+    base::flat_map<std::string, float> host_model_features =
+        host_model_features_map_.begin()->second;
+    supported_host_model_features_.reserve(host_model_features.size());
+    for (const auto& model_feature : host_model_features)
+      supported_host_model_features_.insert(model_feature.first);
+  }
+}
+
+base::flat_set<std::string>
+PredictionManager::GetSupportedHostModelFeaturesForTesting() const {
+  return supported_host_model_features_;
+}
+
+void PredictionManager::LoadPredictionModels(
+    const base::flat_set<proto::OptimizationTarget>& optimization_targets) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  DCHECK(host_model_features_loaded_);
+
+  OptimizationGuideStore::EntryKey model_entry_key;
+  for (const auto& optimization_target : optimization_targets) {
+    // The prediction model for this optimization target has already been
+    // loaded.
+    if (optimization_target_prediction_model_map_.contains(optimization_target))
+      continue;
+    if (!model_and_features_store_->FindPredictionModelEntryKey(
+            optimization_target, &model_entry_key)) {
+      continue;
+    }
+    model_and_features_store_->LoadPredictionModel(
+        model_entry_key,
+        base::BindOnce(&PredictionManager::OnLoadPredictionModel,
+                       ui_weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void PredictionManager::OnLoadPredictionModel(
+    std::unique_ptr<proto::PredictionModel> model) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  if (model)
+    ProcessAndStorePredictionModel(*model);
+}
+
+void PredictionManager::ProcessAndStorePredictionModel(
+    const proto::PredictionModel& model) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  if (!model.model_info().has_optimization_target())
+    return;
+  if (!registered_optimization_targets_.contains(
+          model.model_info().optimization_target())) {
+    return;
+  }
+
+  std::unique_ptr<PredictionModel> prediction_model =
+      CreatePredictionModel(model, supported_host_model_features_);
+  if (!prediction_model)
+    return;
+
+  auto it = optimization_target_prediction_model_map_.find(
+      model.model_info().optimization_target());
+  if (it == optimization_target_prediction_model_map_.end()) {
+    optimization_target_prediction_model_map_.emplace(
+        model.model_info().optimization_target(), std::move(prediction_model));
+    return;
+  }
+  if (it->second->GetVersion() != prediction_model->GetVersion()) {
+    it->second = std::move(prediction_model);
+    return;
+  }
+  return;
+}
+
+void PredictionManager::ProcessAndStoreHostModelFeatures(
+    const proto::HostModelFeatures& host_model_features) {
+  SEQUENCE_CHECKER(sequence_checker_);
+  if (!host_model_features.has_host())
+    return;
+  if (host_model_features.model_features_size() == 0)
+    return;
+  base::flat_map<std::string, float> model_features_for_host;
+  model_features_for_host.reserve(host_model_features.model_features_size());
+  for (const auto& model_feature : host_model_features.model_features()) {
+    if (!model_feature.has_feature_name())
+      continue;
+    switch (model_feature.feature_value_case()) {
+      case proto::ModelFeature::kDoubleValue:
+        // Loss of precision from double is acceptable for features supported
+        // by the prediction models.
+        model_features_for_host.emplace(
+            model_feature.feature_name(),
+            static_cast<float>(model_feature.double_value()));
+        break;
+      case proto::ModelFeature::kInt64Value:
+        model_features_for_host.emplace(
+            model_feature.feature_name(),
+            static_cast<float>(model_feature.int64_value()));
+        break;
+      case proto::ModelFeature::FEATURE_VALUE_NOT_SET:
+        NOTREACHED();
+        break;
+    }
+  }
+  if (model_features_for_host.size() == 0)
+    return;
+
+  host_model_features_map_[host_model_features.host()] =
+      model_features_for_host;
+
+  return;
 }
 
 }  // namespace optimization_guide

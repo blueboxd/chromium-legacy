@@ -11,12 +11,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
 
 namespace content {

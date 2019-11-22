@@ -60,11 +60,11 @@ public class TabCallbackTest {
             }
         }
 
-        public TabCallbackValueRecorder visibleUrlChangedCallback = new TabCallbackValueRecorder();
+        public TabCallbackValueRecorder visibleUriChangedCallback = new TabCallbackValueRecorder();
 
         @Override
-        public void onVisibleUrlChanged(Uri url) {
-            visibleUrlChangedCallback.recordValue(url.toString());
+        public void onVisibleUriChanged(Uri uri) {
+            visibleUriChangedCallback.recordValue(uri.toString());
         }
     }
 
@@ -82,7 +82,7 @@ public class TabCallbackTest {
         mActivityTestRule.navigateAndWait(url);
 
         /* Verify that the visible URL changes to the target. */
-        callback.visibleUrlChangedCallback.waitUntilValueObserved(url);
+        callback.visibleUriChangedCallback.waitUntilValueObserved(url);
     }
 
     @Test

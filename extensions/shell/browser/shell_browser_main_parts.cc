@@ -248,7 +248,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   if (parameters_.ui_task) {
     // For running browser tests.
-    parameters_.ui_task->Run();
+    std::move(*parameters_.ui_task).Run();
     delete parameters_.ui_task;
     run_message_loop_ = false;
   } else {

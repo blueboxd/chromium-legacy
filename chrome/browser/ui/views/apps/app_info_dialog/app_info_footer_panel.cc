@@ -156,6 +156,7 @@ void AppInfoFooterPanel::SetPinnedToShelf(bool value) {
   ash::ShelfModel* shelf_model =
       ChromeLauncherController::instance()->shelf_model();
   DCHECK(shelf_model);
+  ash::ShelfModel::ScopedUserTriggeredMutation user_triggered(shelf_model);
   if (value)
     shelf_model->PinAppWithID(app_->id());
   else

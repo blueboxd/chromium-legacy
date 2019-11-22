@@ -601,7 +601,7 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(
   // Therefore, it is OK to retrieve the dm token once here on initialization
   // of the router to determine if real-time reporting can be enabled or not.
   policy::DMToken dm_token =
-      policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+      policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
   std::string client_id =
       policy::BrowserDMTokenStorage::Get()->RetrieveClientId();
 

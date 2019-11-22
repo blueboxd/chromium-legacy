@@ -35,7 +35,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -155,7 +154,10 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   intent_picker_bubble_->Initialize();
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(intent_picker_bubble_);
-  intent_picker_bubble_->GetDialogClientView()->Layout();
+  // TODO(ellyjones): It should not at all be necessary to call Layout() here;
+  // it should have just happened during ::CreateBubble(). Figure out why this
+  // is here and/or simply delete it.
+  intent_picker_bubble_->GetWidget()->GetRootView()->Layout();
   // TODO(aleventhal) Should not need to be focusable as only descendant widgets
   // are interactive; however, it does call RequestFocus(). If it is going to be
   // focusable, it needs an accessible name so that it can pass accessibility

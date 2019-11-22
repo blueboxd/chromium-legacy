@@ -22,5 +22,6 @@ rootWebArea
 ++++textField required name='Required illegal'
 ++++tree multiselectable vertical
 ++++++treeItem name='Selected illegal' selected=true
-++++columnHeader name='Sort illegal' sortDirection=other selected=false
+++++grid
+++++++columnHeader name='Sort illegal' sortDirection=other selected=false
 ++++genericContainer ignored invisible name='Hidden illegal'

@@ -24,6 +24,7 @@
 #include "base/token.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -174,7 +175,7 @@ class ServiceManagerTest : public testing::Test,
                          service_manager.BindNewPipeAndPassReceiver());
 
     mojo::PendingRemote<mojom::ServiceManagerListener> listener;
-    binding_.Bind(listener.InitWithNewPipeAndPassReceiver());
+    receiver_.Bind(listener.InitWithNewPipeAndPassReceiver());
     service_manager->AddListener(std::move(listener));
 
     wait_for_instances_loop_ = std::make_unique<base::RunLoop>();
@@ -385,7 +386,7 @@ class ServiceManagerTest : public testing::Test,
   TestServiceManager test_service_manager_;
   TestService test_service_;
 
-  mojo::Binding<mojom::ServiceManagerListener> binding_{this};
+  mojo::Receiver<mojom::ServiceManagerListener> receiver_{this};
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
   std::unique_ptr<base::RunLoop> wait_for_instances_loop_;

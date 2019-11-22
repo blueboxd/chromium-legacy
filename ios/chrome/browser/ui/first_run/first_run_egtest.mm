@@ -138,7 +138,7 @@ id<GREYMatcher> SkipSigninButton() {
 
 // Signs in to an account and then taps the Advanced link to go to settings.
 - (void)testSignInAndTapSettingsLink {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   [SigninEarlGreyUtils addIdentity:identity];
 
   // Launch First Run and accept tems of services.

@@ -172,7 +172,6 @@ namespace http://www.w3.org/1999/xhtml
     property onanimationiteration
     property onanimationstart
     property onauxclick
-    property onbeforeactivate
     property onbeforecopy
     property onbeforecut
     property onbeforepaste
@@ -238,6 +237,7 @@ namespace http://www.w3.org/1999/xhtml
     property onpointerup
     property onprogress
     property onratechange
+    property onrendersubtreeactivation
     property onreset
     property onresize
     property onscroll
@@ -1351,7 +1351,6 @@ namespace http://www.w3.org/2000/svg
     property onanimationiteration
     property onanimationstart
     property onauxclick
-    property onbeforeactivate
     property onbeforecopy
     property onbeforecut
     property onbeforepaste
@@ -1417,6 +1416,7 @@ namespace http://www.w3.org/2000/svg
     property onpointerup
     property onprogress
     property onratechange
+    property onrendersubtreeactivation
     property onreset
     property onresize
     property onscroll

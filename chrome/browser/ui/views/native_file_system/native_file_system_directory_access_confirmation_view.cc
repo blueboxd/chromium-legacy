@@ -21,7 +21,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 NativeFileSystemDirectoryAccessConfirmationView::
     ~NativeFileSystemDirectoryAccessConfirmationView() {
@@ -80,8 +79,7 @@ ui::ModalType NativeFileSystemDirectoryAccessConfirmationView::GetModalType()
 
 views::View*
 NativeFileSystemDirectoryAccessConfirmationView::GetInitiallyFocusedView() {
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 NativeFileSystemDirectoryAccessConfirmationView::

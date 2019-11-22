@@ -16,6 +16,7 @@
 
 namespace ash {
 
+class CurrentInteractionSubscriber;
 class SanityCheckSubscriber;
 
 // A response issued when an Assistant interaction is started.
@@ -79,6 +80,10 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   // Set the response that will be invoked when the next interaction starts.
   void SetInteractionResponse(InteractionResponse&& response);
 
+  // Returns the current interaction.
+  base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
+  current_interaction();
+
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
   void StartEditReminderInteraction(const std::string& client_id) override;
@@ -121,6 +126,7 @@ class TestAssistantService : public chromeos::assistant::mojom::Assistant {
   mojo::RemoteSet<chromeos::assistant::mojom::AssistantInteractionSubscriber>
       interaction_subscribers_;
   std::unique_ptr<SanityCheckSubscriber> sanity_check_subscriber_;
+  std::unique_ptr<CurrentInteractionSubscriber> current_interaction_subscriber_;
   InteractionResponse interaction_response_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAssistantService);

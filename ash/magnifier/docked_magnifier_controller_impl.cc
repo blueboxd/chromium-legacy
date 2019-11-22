@@ -708,7 +708,7 @@ void DockedMagnifierControllerImpl::CreateMagnifierViewport() {
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = false;
   params.bounds = viewport_bounds;
-  params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
   params.parent =
       GetViewportParentContainerForRoot(current_source_root_window_);
   params.name = kDockedMagnifierViewportWindowName;

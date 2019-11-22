@@ -90,28 +90,8 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
     return context_wrapper()->mojo_task_runner();
   }
 
-  LocalStorageContextMojo* context() { return context_wrapper()->mojo_state_; }
-
   SessionStorageContextMojo* session_storage_context() {
     return context_wrapper()->mojo_session_state_;
-  }
-
-  void EnsureConnected() {
-    base::RunLoop run_loop;
-    mojo_task_runner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LocalStorageContextMojo::RunWhenConnected,
-                       base::Unretained(context()), run_loop.QuitClosure()));
-    run_loop.Run();
-  }
-
-  void EnsureSessionStorageConnected() {
-    base::RunLoop run_loop;
-    mojo_task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&SessionStorageContextMojo::RunWhenConnected,
-                                  base::Unretained(session_storage_context()),
-                                  run_loop.QuitClosure()));
-    run_loop.Run();
   }
 };
 
@@ -133,7 +113,6 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, SanityCheckIncognito) {
 #define MAYBE_DataPersists DataPersists
 #endif
 IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, PRE_DataPersists) {
-  EnsureConnected();
   SimpleTest(GetTestUrl("dom_storage", "store_data.html"), kNotIncognito);
 }
 

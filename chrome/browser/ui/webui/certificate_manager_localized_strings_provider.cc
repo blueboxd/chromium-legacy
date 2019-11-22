@@ -4,9 +4,8 @@
 
 #include "chrome/browser/ui/webui/certificate_manager_localized_strings_provider.h"
 
-#include "base/stl_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -14,7 +13,7 @@
 namespace certificate_manager {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"certificateManagerExpandA11yLabel",
        IDS_SETTINGS_CERTIFICATE_MANAGER_EXPAND_ACCESSIBILITY_LABEL},
       {"certificateManagerNoCertificates",
@@ -84,8 +83,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source) {
       // For A11y.
       {"menu", IDS_MENU},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
 }  // namespace certificate_manager

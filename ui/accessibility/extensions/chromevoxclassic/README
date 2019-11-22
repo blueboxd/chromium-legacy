@@ -36,8 +36,8 @@ out/Release/chromevox_tests
 
 ## Maintenance/Contributions
 Tooling is minimal for this fork of ChromeVox. Much of what's available for
-ChromeVox in Chrome OS (chrome/browser/resources/chromeos/chromevox/tools is
-applicable.
+ChromeVox in Chrome OS
+(chrome/browser/resources/chromeos/accessibility/chromevox/tools) is applicable.
 
 ## Release/Testing
 Load ChromeVox Classic on at least Mac and Linux Chrome. Verify web content and

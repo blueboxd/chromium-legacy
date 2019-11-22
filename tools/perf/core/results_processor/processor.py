@@ -259,11 +259,15 @@ def UploadArtifacts(test_result, upload_bucket, run_identifier):
                  artifact['remoteUrl'])
 
 
-def _GetTraceUrl(test_result):
+def GetTraceUrl(test_result):
   artifacts = test_result.get('outputArtifacts', {})
   trace_artifact = artifacts.get(compute_metrics.HTML_TRACE_NAME, {})
-  return (trace_artifact['remoteUrl'] if 'remoteUrl' in trace_artifact
-               else trace_artifact.get('filePath'))
+  if 'remoteUrl' in trace_artifact:
+    return trace_artifact['remoteUrl']
+  elif 'filePath' in trace_artifact:
+    return 'file://' + trace_artifact['filePath']
+  else:
+    return None
 
 
 def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label,
@@ -295,7 +299,7 @@ def AddDiagnosticsToHistograms(test_result, test_suite_start, results_label,
   story_tags = [tag['value'] for tag in test_result.get('tags', [])
                 if tag['key'] == 'story_tag']
   result_id = int(test_result.get('resultId', 0))
-  trace_url = _GetTraceUrl(test_result)
+  trace_url = GetTraceUrl(test_result)
 
   additional_diagnostics = [
       (reserved_infos.BENCHMARKS, test_suite),

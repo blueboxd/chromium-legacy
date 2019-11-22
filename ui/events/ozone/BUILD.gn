@@ -23,6 +23,8 @@ component("ozone") {
     "device/udev/device_manager_udev.cc",
     "device/udev/device_manager_udev.h",
     "events_ozone_export.h",
+    "features.cc",
+    "features.h",
     "gamepad/gamepad_event.cc",
     "gamepad/gamepad_event.h",
     "gamepad/gamepad_observer.h",

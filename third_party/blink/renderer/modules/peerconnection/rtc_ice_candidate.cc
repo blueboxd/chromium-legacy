@@ -88,7 +88,7 @@ String RTCIceCandidate::sdpMid() const {
 
 uint16_t RTCIceCandidate::sdpMLineIndex(bool& is_null) const {
   is_null = !platform_candidate_->SdpMLineIndex().has_value();
-  return is_null ? 0 : *platform_candidate_->SdpMLineIndex();
+  return platform_candidate_->SdpMLineIndex().value_or(0);
 }
 
 scoped_refptr<RTCIceCandidatePlatform> RTCIceCandidate::PlatformCandidate()
@@ -106,7 +106,7 @@ String RTCIceCandidate::component() const {
 
 uint32_t RTCIceCandidate::priority(bool& is_null) const {
   is_null = !platform_candidate_->Priority().has_value();
-  return is_null ? 0 : *platform_candidate_->Priority();
+  return platform_candidate_->Priority().value_or(0);
 }
 
 String RTCIceCandidate::address() const {
@@ -119,7 +119,7 @@ String RTCIceCandidate::protocol() const {
 
 uint16_t RTCIceCandidate::port(bool& is_null) const {
   is_null = !platform_candidate_->Port().has_value();
-  return is_null ? 0 : *platform_candidate_->Port();
+  return platform_candidate_->Port().value_or(0);
 }
 
 String RTCIceCandidate::type() const {
@@ -136,7 +136,7 @@ String RTCIceCandidate::relatedAddress() const {
 
 uint16_t RTCIceCandidate::relatedPort(bool& is_null) const {
   is_null = !platform_candidate_->RelatedPort().has_value();
-  return is_null ? 0 : *platform_candidate_->RelatedPort();
+  return platform_candidate_->RelatedPort().value_or(0);
 }
 
 String RTCIceCandidate::usernameFragment() const {

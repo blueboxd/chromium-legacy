@@ -2173,6 +2173,11 @@
     "expiry_milestone": 81
   },
   {
+    "name": "enterprise-reporting-in-chromeos",
+    "owners": [ "anqing" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "ev-details-in-page-info",
     "owners": [ "cthomp" ],
     "expiry_milestone": 83
@@ -3606,6 +3611,11 @@
   {
     "name": "use-winrt-midi-api",
     "owners": [ "toyoshim" ],
+    "expiry_milestone": 83
+  },
+  {
+    "name": "use-xps-for-printing",
+    "owners": [ "awscreen", "thestig" ],
     "expiry_milestone": 83
   },
   {

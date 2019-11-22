@@ -647,9 +647,7 @@ bool SVGAnimationElement::CheckAnimationParameters() {
   return false;
 }
 
-void SVGAnimationElement::UpdateAnimation(float percent,
-                                          unsigned repeat_count,
-                                          SVGSMILElement* result_element) {
+void SVGAnimationElement::ApplyAnimation(SVGAnimationElement* result_element) {
   if (animation_valid_ == AnimationValidity::kUnknown) {
     if (CheckAnimationParameters()) {
       animation_valid_ = AnimationValidity::kValid;
@@ -667,6 +665,9 @@ void SVGAnimationElement::UpdateAnimation(float percent,
 
   if (animation_valid_ != AnimationValidity::kValid || !targetElement())
     return;
+
+  const ProgressState& progress_state = GetProgressState();
+  const float percent = progress_state.progress;
 
   float effective_percent;
   CalcMode calc_mode = GetCalcMode();
@@ -696,7 +697,8 @@ void SVGAnimationElement::UpdateAnimation(float percent,
   } else {
     effective_percent = percent;
   }
-  CalculateAnimatedValue(effective_percent, repeat_count, result_element);
+  CalculateAnimatedValue(effective_percent, progress_state.repeat,
+                         result_element);
 }
 
 bool SVGAnimationElement::OverwritesUnderlyingAnimationValue() const {

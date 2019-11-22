@@ -722,7 +722,9 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
                            return generation_element_id ==
                                   field_data.unique_renderer_id;
                          });
-  DCHECK(it != form_data.fields.end());
+  // The parameters are coming from the renderer and can't be trusted.
+  if (it == form_data.fields.end())
+    return;
   it->value = password;
   std::unique_ptr<PasswordForm> parsed_form =
       ParseFormAndMakeLogging(form_data, FormDataParser::Mode::kSaving);

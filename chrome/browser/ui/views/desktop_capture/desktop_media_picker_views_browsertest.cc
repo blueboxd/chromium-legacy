@@ -21,7 +21,6 @@
 #include "content/public/browser/desktop_media_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class DesktopMediaPickerViewsBrowserTest : public DialogBrowserTest {
@@ -134,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(DesktopMediaPickerViewsBrowserTest,
   ShowUi(std::string());
   views::DialogDelegate* dialog =
       picker_->GetDialogViewForTesting()->AsDialogDelegate();
-  EXPECT_EQ(dialog->GetDialogClientView()->ok_button(),
+  EXPECT_EQ(dialog->GetOkButton(),
             dialog->DialogDelegate::GetInitiallyFocusedView());
   EXPECT_FALSE(picker_->GetDialogViewForTesting()->IsDialogButtonEnabled(
       ui::DIALOG_BUTTON_OK));

@@ -1402,12 +1402,12 @@ TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramReceived) {
 // Test that when a datagram is sent that is properly fires the OnDatagramSent
 // function on the delegate.
 TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramSent) {
-  EXPECT_CALL(*connection(), SendMessage(_, _))
-      .WillOnce(Invoke(
-          [](quic::QuicMessageId message_id, quic::QuicMemSliceSpan message) {
-            EXPECT_THAT(message.GetData(0), ElementsAreArray(kMessage));
-            return quic::MESSAGE_STATUS_SUCCESS;
-          }));
+  EXPECT_CALL(*connection(), SendMessage(_, _, _))
+      .WillOnce(Invoke([](quic::QuicMessageId message_id,
+                          quic::QuicMemSliceSpan message, bool flush) {
+        EXPECT_THAT(message.GetData(0), ElementsAreArray(kMessage));
+        return quic::MESSAGE_STATUS_SUCCESS;
+      }));
   EXPECT_CALL(*delegate(), OnDatagramSent());
 
   transport()->SendDatagram(VectorFromArray(kMessage));
@@ -1416,7 +1416,7 @@ TEST_F(P2PQuicTransportMockConnectionTest, OnDatagramSent) {
 // Test that when the quic::QuicConnection is congestion control blocked that
 // the datagram gets buffered and not sent.
 TEST_F(P2PQuicTransportMockConnectionTest, DatagramNotSent) {
-  EXPECT_CALL(*connection(), SendMessage(_, _))
+  EXPECT_CALL(*connection(), SendMessage(_, _, _))
       .WillOnce(Return(quic::MESSAGE_STATUS_BLOCKED));
   EXPECT_CALL(*delegate(), OnDatagramSent()).Times(0);
 
@@ -1426,7 +1426,7 @@ TEST_F(P2PQuicTransportMockConnectionTest, DatagramNotSent) {
 // Test that when datagrams are buffered they are later sent when the transport
 // is no longer congestion control blocked.
 TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramsSent) {
-  EXPECT_CALL(*connection(), SendMessage(_, _))
+  EXPECT_CALL(*connection(), SendMessage(_, _, _))
       .WillOnce(Return(quic::MESSAGE_STATUS_BLOCKED));
   transport()->SendDatagram(VectorFromArray(kMessage));
   transport()->SendDatagram(VectorFromArray(kMessage2));
@@ -1435,18 +1435,22 @@ TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramsSent) {
   // Need to check equality with the function call matcher, instead of
   // passing a lamda that checks equality in an Invoke as done in other tests.
   EXPECT_CALL(*connection(),
-              SendMessage(_, ResultOf(
-                                 [](quic::QuicMemSliceSpan message) {
-                                   return message.GetData(0);
-                                 },
-                                 ElementsAreArray(kMessage))))
+              SendMessage(_,
+                          ResultOf(
+                              [](quic::QuicMemSliceSpan message) {
+                                return message.GetData(0);
+                              },
+                              ElementsAreArray(kMessage)),
+                          _))
       .WillOnce(Return(quic::MESSAGE_STATUS_SUCCESS));
   EXPECT_CALL(*connection(),
-              SendMessage(_, ResultOf(
-                                 [](quic::QuicMemSliceSpan message) {
-                                   return message.GetData(0);
-                                 },
-                                 ElementsAreArray(kMessage2))))
+              SendMessage(_,
+                          ResultOf(
+                              [](quic::QuicMemSliceSpan message) {
+                                return message.GetData(0);
+                              },
+                              ElementsAreArray(kMessage2)),
+                          _))
       .WillOnce(Return(quic::MESSAGE_STATUS_SUCCESS));
 
   transport()->OnCanWrite();
@@ -1457,7 +1461,7 @@ TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramsSent) {
 // -Write unblocked - send buffered datagrams.
 // -Write blocked - keep datagrams buffered.
 TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramRemainBuffered) {
-  EXPECT_CALL(*connection(), SendMessage(_, _))
+  EXPECT_CALL(*connection(), SendMessage(_, _, _))
       .WillOnce(Return(quic::MESSAGE_STATUS_BLOCKED));
   transport()->SendDatagram(VectorFromArray(kMessage));
   transport()->SendDatagram(VectorFromArray(kMessage2));
@@ -1465,18 +1469,22 @@ TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramRemainBuffered) {
   // The first datagram gets sent off after becoming write unblocked, while the
   // second datagram is buffered.
   EXPECT_CALL(*connection(),
-              SendMessage(_, ResultOf(
-                                 [](quic::QuicMemSliceSpan message) {
-                                   return message.GetData(0);
-                                 },
-                                 ElementsAreArray(kMessage))))
+              SendMessage(_,
+                          ResultOf(
+                              [](quic::QuicMemSliceSpan message) {
+                                return message.GetData(0);
+                              },
+                              ElementsAreArray(kMessage)),
+                          _))
       .WillOnce(Return(quic::MESSAGE_STATUS_SUCCESS));
   EXPECT_CALL(*connection(),
-              SendMessage(_, ResultOf(
-                                 [](quic::QuicMemSliceSpan message) {
-                                   return message.GetData(0);
-                                 },
-                                 ElementsAreArray(kMessage2))))
+              SendMessage(_,
+                          ResultOf(
+                              [](quic::QuicMemSliceSpan message) {
+                                return message.GetData(0);
+                              },
+                              ElementsAreArray(kMessage2)),
+                          _))
       .WillOnce(Return(quic::MESSAGE_STATUS_BLOCKED));
   // No callback for the second datagram, as it is still buffered.
   EXPECT_CALL(*delegate(), OnDatagramSent()).Times(1);
@@ -1484,7 +1492,7 @@ TEST_F(P2PQuicTransportMockConnectionTest, BufferedDatagramRemainBuffered) {
   transport()->OnCanWrite();
 
   // Sending another datagram at this point should just buffer it.
-  EXPECT_CALL(*connection(), SendMessage(_, _)).Times(0);
+  EXPECT_CALL(*connection(), SendMessage(_, _, _)).Times(0);
   transport()->SendDatagram(VectorFromArray(kMessage));
 }
 
@@ -1492,12 +1500,13 @@ TEST_F(P2PQuicTransportMockConnectionTest, LostDatagramUpdatesStats) {
   // The ID the quic::QuicSession will assign to the datagram that is used for
   // callbacks, like OnDatagramLost.
   uint32_t datagram_id;
-  EXPECT_CALL(*connection(), SendMessage(_, _))
-      .WillOnce(Invoke([&datagram_id](quic::QuicMessageId message_id,
-                                      quic::QuicMemSliceSpan message) {
-        datagram_id = message_id;
-        return quic::MESSAGE_STATUS_SUCCESS;
-      }));
+  EXPECT_CALL(*connection(), SendMessage(_, _, _))
+      .WillOnce(
+          Invoke([&datagram_id](quic::QuicMessageId message_id,
+                                quic::QuicMemSliceSpan message, bool flush) {
+            datagram_id = message_id;
+            return quic::MESSAGE_STATUS_SUCCESS;
+          }));
   EXPECT_CALL(*delegate(), OnDatagramSent()).Times(1);
   transport()->SendDatagram(VectorFromArray(kMessage));
 

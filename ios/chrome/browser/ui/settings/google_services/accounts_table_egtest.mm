@@ -48,7 +48,7 @@ namespace {
 
 // Returns a matcher for a button that matches the userEmail in the given
 // |identity|.
-id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
+id<GREYMatcher> ButtonWithIdentity(FakeChromeIdentity* identity) {
   return ButtonWithAccessibilityLabel(identity.userEmail);
 }
 }
@@ -62,7 +62,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 // Tests that the Sync and Account Settings screen are correctly popped if the
 // signed in account is removed.
 - (void)testSignInPopUpAccountOnSyncSettings {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
 
   // Sign In |identity|, then open the Sync Settings.
   [SigninEarlGreyUI signinWithIdentity:identity];
@@ -85,7 +85,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 // Tests that the Account Settings screen is correctly popped if the signed in
 // account is removed while the "Disconnect Account" dialog is up.
 - (void)testSignInPopUpAccountOnDisconnectAccount {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -113,8 +113,8 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 - (void)testSignInReloadOnRemoveAccount {
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
-  ChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
-  ChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
+  FakeChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
   identity_service->AddIdentity(identity2);
 
   // Sign In |identity|, then open the Account Settings.
@@ -144,7 +144,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 // Tests that the Account Settings screen is popped and the user signed out
 // when the account is removed.
 - (void)testSignOutOnRemoveAccount {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
 
   // Sign In |identity|, then open the Account Settings.
   [SigninEarlGreyUI signinWithIdentity:identity];
@@ -174,7 +174,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 #if !TARGET_IPHONE_SIMULATOR
   EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
 #endif
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
 
   // Sign In |identity|, then open the Account Settings.
   [SigninEarlGreyUI signinWithIdentity:identity];

@@ -13,12 +13,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/search_engines/util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -267,6 +269,12 @@ void OmniboxResult::UpdateTitleAndDetails() {
 
   ChromeSearchResult::Tags details_tags;
   if (use_directly) {
+    if (AutocompleteMatch::IsSearchType(match_.type)) {
+      SetAccessibleName(l10n_util::GetStringFUTF16(
+          IDS_APP_LIST_QUERY_SEARCH_ACCESSIBILITY_NAME, title(),
+          GetDefaultSearchEngineName(
+              TemplateURLServiceFactory::GetForProfile(profile_))));
+    }
     SetDetails(match_.description);
     ACMatchClassificationsToTags(match_.description, match_.description_class,
                                  &details_tags);

@@ -40,6 +40,7 @@ test("caspian_unittests") {
   sources = [
     "diff_test.cc",
     "function_signature_test.cc",
+    "tree_builder_test.cc",
   ]
   deps = [
     ":caspian-lib",

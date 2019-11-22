@@ -491,14 +491,16 @@ class HTMLCSSSyncScriptFontNoStatePrefetchBrowserTest
     std::map<std::string, std::string> parameters;
     parameters["skip_other"] = "true";
     parameters["skip_async_script"] = "true";
-    parameters["skip_font"] = "false";
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kLightweightNoStatePrefetch, parameters}}, {});
+    fonts_feature_list_.InitAndEnableFeature(
+        blink::features::kLightweightNoStatePrefetch_FetchFonts);
     NoStatePrefetchBrowserTest::SetUp();
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  base::test::ScopedFeatureList fonts_feature_list_;
 };
 
 // Checks that the expected resource types are fetched via NoState Prefetch.

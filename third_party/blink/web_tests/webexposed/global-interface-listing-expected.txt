@@ -503,10 +503,6 @@ interface BatteryManager : EventTarget
     setter onchargingtimechange
     setter ondischargingtimechange
     setter onlevelchange
-interface BeforeActivateEvent : Event
-    attribute @@toStringTag
-    getter activatedElement
-    method constructor
 interface BeforeInstallPromptEvent : Event
     attribute @@toStringTag
     getter platforms
@@ -1613,7 +1609,6 @@ interface Document : Node
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
-    getter onbeforeactivate
     getter onbeforecopy
     getter onbeforecut
     getter onbeforepaste
@@ -1683,6 +1678,7 @@ interface Document : Node
     getter onprogress
     getter onratechange
     getter onreadystatechange
+    getter onrendersubtreeactivation
     getter onreset
     getter onresize
     getter onresume
@@ -1810,7 +1806,6 @@ interface Document : Node
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
-    setter onbeforeactivate
     setter onbeforecopy
     setter onbeforecut
     setter onbeforepaste
@@ -1880,6 +1875,7 @@ interface Document : Node
     setter onprogress
     setter onratechange
     setter onreadystatechange
+    setter onrendersubtreeactivation
     setter onreset
     setter onresize
     setter onresume
@@ -2944,7 +2940,6 @@ interface HTMLElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
-    getter onbeforeactivate
     getter onblur
     getter oncancel
     getter oncanplay
@@ -3005,6 +3000,7 @@ interface HTMLElement : Element
     getter onpointerup
     getter onprogress
     getter onratechange
+    getter onrendersubtreeactivation
     getter onreset
     getter onresize
     getter onscroll
@@ -3057,7 +3053,6 @@ interface HTMLElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
-    setter onbeforeactivate
     setter onblur
     setter oncancel
     setter oncanplay
@@ -3118,6 +3113,7 @@ interface HTMLElement : Element
     setter onpointerup
     setter onprogress
     setter onratechange
+    setter onrendersubtreeactivation
     setter onreset
     setter onresize
     setter onscroll
@@ -4710,7 +4706,6 @@ interface MathMLElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
-    getter onbeforeactivate
     getter onblur
     getter oncancel
     getter oncanplay
@@ -4771,6 +4766,7 @@ interface MathMLElement : Element
     getter onpointerup
     getter onprogress
     getter onratechange
+    getter onrendersubtreeactivation
     getter onreset
     getter onresize
     getter onscroll
@@ -4806,7 +4802,6 @@ interface MathMLElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
-    setter onbeforeactivate
     setter onblur
     setter oncancel
     setter oncanplay
@@ -4867,6 +4862,7 @@ interface MathMLElement : Element
     setter onpointerup
     setter onprogress
     setter onratechange
+    setter onrendersubtreeactivation
     setter onreset
     setter onresize
     setter onscroll
@@ -6522,6 +6518,10 @@ interface RemotePlayback : EventTarget
     setter onconnect
     setter onconnecting
     setter ondisconnect
+interface RenderSubtreeActivationEvent : Event
+    attribute @@toStringTag
+    getter activatedElement
+    method constructor
 interface ReportingObserver
     attribute @@toStringTag
     method constructor
@@ -6753,7 +6753,6 @@ interface SVGElement : Element
     getter onanimationiteration
     getter onanimationstart
     getter onauxclick
-    getter onbeforeactivate
     getter onblur
     getter oncancel
     getter oncanplay
@@ -6814,6 +6813,7 @@ interface SVGElement : Element
     getter onpointerup
     getter onprogress
     getter onratechange
+    getter onrendersubtreeactivation
     getter onreset
     getter onresize
     getter onscroll
@@ -6851,7 +6851,6 @@ interface SVGElement : Element
     setter onanimationiteration
     setter onanimationstart
     setter onauxclick
-    setter onbeforeactivate
     setter onblur
     setter oncancel
     setter oncanplay
@@ -6912,6 +6911,7 @@ interface SVGElement : Element
     setter onpointerup
     setter onprogress
     setter onratechange
+    setter onrendersubtreeactivation
     setter onreset
     setter onresize
     setter onscroll
@@ -11448,7 +11448,6 @@ interface webkitURL
     getter onanimationstart
     getter onappinstalled
     getter onauxclick
-    getter onbeforeactivate
     getter onbeforeinstallprompt
     getter onbeforeprint
     getter onbeforeunload
@@ -11523,6 +11522,7 @@ interface webkitURL
     getter onprogress
     getter onratechange
     getter onrejectionhandled
+    getter onrendersubtreeactivation
     getter onreset
     getter onresize
     getter onscroll
@@ -11647,7 +11647,6 @@ interface webkitURL
     setter onanimationstart
     setter onappinstalled
     setter onauxclick
-    setter onbeforeactivate
     setter onbeforeinstallprompt
     setter onbeforeprint
     setter onbeforeunload
@@ -11722,6 +11721,7 @@ interface webkitURL
     setter onprogress
     setter onratechange
     setter onrejectionhandled
+    setter onrendersubtreeactivation
     setter onreset
     setter onresize
     setter onscroll

@@ -62,7 +62,8 @@ class OpenXrController {
 
   base::Optional<gfx::Transform> GetMojoFromGripTransform(
       XrTime predicted_display_time,
-      XrSpace local_space) const;
+      XrSpace local_space,
+      bool* emulated_position) const;
 
   XrResult UpdateInteractionProfile();
 
@@ -102,7 +103,8 @@ class OpenXrController {
   base::Optional<gfx::Transform> GetTransformFromSpaces(
       XrTime predicted_display_time,
       XrSpace target,
-      XrSpace origin) const;
+      XrSpace origin,
+      bool* emulated_position) const;
 
   std::vector<std::string> GetProfiles() const;
 

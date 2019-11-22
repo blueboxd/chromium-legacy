@@ -7,6 +7,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -54,6 +55,7 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
   set_owned_by_client();  // Deleted by DeleteDelegate().
 
   ShelfConfig::Get()->AddObserver(this);
+  shelf_->shelf_layout_manager()->AddObserver(this);
 
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
@@ -64,6 +66,7 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
 
 StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {
   ShelfConfig::Get()->RemoveObserver(this);
+  shelf_->shelf_layout_manager()->RemoveObserver(this);
 }
 
 void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
@@ -130,6 +133,11 @@ void StatusAreaWidgetDelegate::DeleteDelegate() {
 }
 
 void StatusAreaWidgetDelegate::OnShelfConfigUpdated() {
+  UpdateLayout();
+}
+
+void StatusAreaWidgetDelegate::OnHotseatStateChanged(HotseatState old_state,
+                                                     HotseatState new_state) {
   UpdateLayout();
 }
 
@@ -212,10 +220,12 @@ void StatusAreaWidgetDelegate::SetBorderOnChild(views::View* child,
   // items also takes care of padding at the edge of the shelf.
   int right_edge = kPaddingBetweenWidgetsNewUi;
 
-  // TODO: ensure that this is set in tablet mode, only when dense shelf
-  // threshold is met. (just make this variable a member of ShelfConfig)
-  if (is_child_on_edge && chromeos::switches::ShouldShowShelfHotseat())
-    right_edge = kPaddingBetweenWidgetAndRightScreenEdge;
+  if (is_child_on_edge && chromeos::switches::ShouldShowShelfHotseat()) {
+    right_edge =
+        shelf_->shelf_layout_manager()->hotseat_state() == HotseatState::kShown
+            ? kPaddingBetweenWidgetAndRightScreenEdge
+            : 0;
+  }
 
   // Swap edges if alignment is not horizontal (bottom-to-top).
   if (!shelf_->IsHorizontalAlignment()) {

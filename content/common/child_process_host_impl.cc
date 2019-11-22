@@ -123,6 +123,10 @@ ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate,
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(),
         mojo::internal::MessageQuotaChecker::MaybeCreate());
+  } else if (ipc_mode_ == IpcMode::kNormal) {
+    child_process_.Bind(mojo::PendingRemote<mojom::ChildProcess>(
+        mojo_invitation_->AttachMessagePipe(0), /*version=*/0));
+    child_process_->Initialize(bootstrap_receiver_.BindNewPipeAndPassRemote());
   }
 }
 
@@ -176,10 +180,21 @@ void ChildProcessHostImpl::CreateChannelMojo() {
   // not bound through the Service Manager.
   if (ipc_mode_ != IpcMode::kLegacy) {
     DCHECK(!channel_);
-    mojo::MessagePipe pipe;
-    BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
+
+    mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap;
+    auto bootstrap_receiver = bootstrap.InitWithNewPipeAndPassReceiver();
+
+    if (ipc_mode_ == IpcMode::kServiceManager) {
+      BindInterface(IPC::mojom::ChannelBootstrap::Name_,
+                    bootstrap_receiver.PassPipe());
+    } else {
+      DCHECK_EQ(ipc_mode_, IpcMode::kNormal);
+      DCHECK(child_process_);
+      child_process_->BootstrapLegacyIpc(std::move(bootstrap_receiver));
+    }
+
     channel_ = IPC::ChannelMojo::Create(
-        std::move(pipe.handle0), IPC::Channel::MODE_SERVER, this,
+        bootstrap.PassPipe(), IPC::Channel::MODE_SERVER, this,
         base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(),
         mojo::internal::MessageQuotaChecker::MaybeCreate());
@@ -200,8 +215,10 @@ bool ChildProcessHostImpl::InitChannel() {
   delegate_->OnChannelInitialized(channel_.get());
 
   // In legacy mode, |child_process_| endpoint is already bound to a
-  // disconnected pipe and will remain dysfunctional.
+  // disconnected pipe and will remain dysfunctional. In normal mode, it's bound
+  // in the constructor.
   if (!child_process_) {
+    DCHECK_EQ(ipc_mode_, IpcMode::kServiceManager);
     // We want to bind this interface as early as possible, but the constructor
     // is too early. |delegate_| may not be fully initialized at that point and
     // thus may be unable to properly fulfill the BindInterface() call. Instead

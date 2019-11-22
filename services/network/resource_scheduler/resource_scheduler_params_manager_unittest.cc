@@ -27,7 +27,7 @@ constexpr int kHttpRttMultiplierForQueuingDuration = 30;
 
 class ResourceSchedulerParamsManagerTest : public testing::Test {
  public:
-  ResourceSchedulerParamsManagerTest() : field_trial_list_(nullptr) {}
+  ResourceSchedulerParamsManagerTest() {}
 
   ~ResourceSchedulerParamsManagerTest() override {}
 
@@ -159,7 +159,6 @@ class ResourceSchedulerParamsManagerTest : public testing::Test {
   }
 
  private:
-  base::FieldTrialList field_trial_list_;
   DISALLOW_COPY_AND_ASSIGN(ResourceSchedulerParamsManagerTest);
 };
 

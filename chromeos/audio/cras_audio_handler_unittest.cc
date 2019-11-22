@@ -516,15 +516,15 @@ class HDMIRediscoverWaiter {
     run_loop.Run();
   }
 
-  void CheckHDMIRediscoverGracePeriodEnd(const base::Closure& quit_loop_func) {
+  void CheckHDMIRediscoverGracePeriodEnd(base::OnceClosure quit_loop_func) {
     if (!cras_audio_handler_test_->IsDuringHDMIRediscoverGracePeriod()) {
-      quit_loop_func.Run();
+      std::move(quit_loop_func).Run();
       return;
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&HDMIRediscoverWaiter::CheckHDMIRediscoverGracePeriodEnd,
-                       base::Unretained(this), quit_loop_func),
+                       base::Unretained(this), std::move(quit_loop_func)),
         base::TimeDelta::FromMilliseconds(grace_period_duration_in_ms_ / 4));
   }
 

@@ -69,6 +69,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -92,6 +93,7 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
+#include "chrome/browser/ui/views/plugin_vm/plugin_vm_launcher_view.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -145,6 +147,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/window_util.h"
@@ -1723,6 +1726,46 @@ void AutotestPrivateImportCrostiniFunction::CrostiniImported(
   } else {
     Respond(Error("Error importing crostini"));
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateInstallPluginVMFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateInstallPluginVMFunction::
+    ~AutotestPrivateInstallPluginVMFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateInstallPluginVMFunction::Run() {
+  std::unique_ptr<api::autotest_private::InstallPluginVM::Params> params(
+      api::autotest_private::InstallPluginVM::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateInstallPluginVMFunction " << params->image_url
+           << ", " << params->image_hash << ", " << params->license_key;
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  plugin_vm::SetFakePluginVmPolicy(profile, params->image_url,
+                                   params->image_hash, params->license_key);
+  plugin_vm::ShowPluginVmLauncherView(profile);
+  PluginVmLauncherView::GetActiveViewForTesting()
+      ->SetFinishedCallbackForTesting(base::BindOnce(
+          &AutotestPrivateInstallPluginVMFunction::OnInstallFinished, this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateInstallPluginVMFunction::OnInstallFinished(bool success) {
+  if (!success) {
+    Respond(Error("Error installing Plugin VM"));
+    return;
+  }
+
+  // Dismiss the dialog and start launching the VM.
+  PluginVmLauncherView::GetActiveViewForTesting()
+      ->GetDialogClientView()
+      ->AcceptWindow();
+
+  Respond(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

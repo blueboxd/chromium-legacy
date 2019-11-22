@@ -202,11 +202,6 @@ void WebFrame::SetFrameOwnerProperties(
   owner->SetRequiredCsp(properties.required_csp);
 }
 
-void WebFrame::Collapse(bool collapsed) {
-  FrameOwner* owner = ToCoreFrame(*this)->Owner();
-  To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
-}
-
 WebFrame* WebFrame::Opener() const {
   return opener_;
 }

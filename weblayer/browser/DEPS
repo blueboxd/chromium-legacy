@@ -7,6 +7,8 @@ include_rules = [
   "+cc",
   "+components/crash/content/browser",
   "+components/embedder_support",
+  "+components/prefs",
+  "+components/user_prefs",
   "+components/safe_browsing",
   "+components/security_interstitials",
   "+components/version_info",

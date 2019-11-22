@@ -82,6 +82,13 @@ class GPU_GLES2_EXPORT VertexAttrib {
 
   // Find the maximum vertex accessed, accounting for instancing.
   GLuint MaxVertexAccessed(GLsizei primcount,
+                           GLuint max_vertex_accessed) const {
+    return divisor_ ? ((primcount - 1) / divisor_) : max_vertex_accessed;
+  }
+
+  // For performance issue we are having separate overloading functions
+  // which takes in basevertex and baseinstance
+  GLuint MaxVertexAccessed(GLsizei primcount,
                            GLuint max_vertex_accessed,
                            GLint basevertex,
                            GLuint baseinstance) const {

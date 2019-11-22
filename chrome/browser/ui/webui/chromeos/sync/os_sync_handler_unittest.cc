@@ -50,6 +50,7 @@ DictionaryValue CreateOsSyncPrefs(FeatureConfig feature,
   result.SetBoolean("featureEnabled", feature == FEATURE_ENABLED);
   result.SetBoolean("syncAllOsTypes", sync_all == SYNC_ALL_OS_TYPES);
   // Add all of our data types.
+  result.SetBoolean("osAppsSynced", types.Has(UserSelectableOsType::kOsApps));
   result.SetBoolean("osPreferencesSynced",
                     types.Has(UserSelectableOsType::kOsPreferences));
   result.SetBoolean("printersSynced",
@@ -74,6 +75,8 @@ void CheckConfigDataTypeArguments(const DictionaryValue* dictionary,
                                   SyncAllConfig config,
                                   UserSelectableOsTypeSet types) {
   CheckBool(dictionary, "syncAllOsTypes", config == SYNC_ALL_OS_TYPES);
+  CheckBool(dictionary, "osAppsSynced",
+            types.Has(UserSelectableOsType::kOsApps));
   CheckBool(dictionary, "osPreferencesSynced",
             types.Has(UserSelectableOsType::kOsPreferences));
   CheckBool(dictionary, "printersSynced",

@@ -19,8 +19,18 @@
 #include "chromeos/tpm/install_attributes.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace plugin_vm {
+
+namespace {
+
+static std::string& GetFakeLicenseKey() {
+  static base::NoDestructor<std::string> license_key;
+  return *license_key;
+}
+
+}  // namespace
 
 // For PluginVm to be allowed:
 // * Profile should be eligible.
@@ -48,6 +58,10 @@ bool IsPluginVmAllowedForProfile(const Profile* profile) {
   // Check that PluginVm feature is enabled.
   if (!base::FeatureList::IsEnabled(features::kPluginVm))
     return false;
+
+  // Bypass other checks when a fake policy is set
+  if (FakeLicenseKeyIsSet())
+    return true;
 
   // TODO(okalitova, aoldemeier): Remove once PluginVm is ready to be launched.
   // Check for alternative condition for manual testing, i.e. the device is in
@@ -118,12 +132,31 @@ bool IsPluginVmWindow(const aura::Window* window) {
 }
 
 std::string GetPluginVmLicenseKey() {
+  if (FakeLicenseKeyIsSet())
+    return GetFakeLicenseKey();
   std::string plugin_vm_license_key;
   if (!chromeos::CrosSettings::Get()->GetString(chromeos::kPluginVmLicenseKey,
                                                 &plugin_vm_license_key)) {
     return std::string();
   }
   return plugin_vm_license_key;
+}
+
+void SetFakePluginVmPolicy(Profile* profile,
+                           const std::string& image_url,
+                           const std::string& image_hash,
+                           const std::string& license_key) {
+  DictionaryPrefUpdate update(profile->GetPrefs(),
+                              plugin_vm::prefs::kPluginVmImage);
+  base::DictionaryValue* dict = update.Get();
+  dict->SetPath("url", base::Value(image_url));
+  dict->SetPath("hash", base::Value(image_hash));
+
+  GetFakeLicenseKey() = license_key;
+}
+
+bool FakeLicenseKeyIsSet() {
+  return !GetFakeLicenseKey().empty();
 }
 
 }  // namespace plugin_vm

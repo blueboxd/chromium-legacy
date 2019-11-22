@@ -1251,9 +1251,9 @@ void DesktopDragDropClientAuraX11::CreateDragWidget(
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_DRAG);
   if (ui::IsCompositingManagerPresent())
-    params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   else
-    params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+    params.opacity = Widget::InitParams::WindowOpacity::kOpaque;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = false;
 
@@ -1263,7 +1263,7 @@ void DesktopDragDropClientAuraX11::CreateDragWidget(
   widget->set_focus_on_creation(false);
   widget->set_frame_type(Widget::FrameType::kForceNative);
   widget->Init(std::move(params));
-  if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW)
+  if (params.opacity == Widget::InitParams::WindowOpacity::kTranslucent)
     widget->SetOpacity(kDragWidgetOpacity);
   widget->GetNativeWindow()->SetName("DragWindow");
 

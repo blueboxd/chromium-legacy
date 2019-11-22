@@ -16,6 +16,9 @@ public interface Printable {
     /** Get the title of the generated PDF document. */
     String getTitle();
 
+    /** Get the error message from the Printable. */
+    String getErrorMessage();
+
     /** Check if the current Printable can print. */
     boolean canPrint();
 }

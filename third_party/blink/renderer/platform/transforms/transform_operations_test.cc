@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_box.h"
 #include "third_party/blink/renderer/platform/geometry/float_box_test_helpers.h"
 #include "third_party/blink/renderer/platform/transforms/identity_transform_operation.h"
+#include "third_party/blink/renderer/platform/transforms/interpolated_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/perspective_transform_operation.h"
@@ -570,4 +571,35 @@ TEST(TransformOperationsTest, PerspectiveOpsTest) {
   EXPECT_TRUE(ops.HasNonTrivial3DComponent());
 }
 
+TEST(TransformOperations, InterpolatedTransformBlendTest) {
+  // When interpolating transform lists of differing lengths,the length of the
+  // shorter list is padded with identity transforms. The Blend method accepts a
+  // null from operator when blending from an identity transform. This test
+  // verifies the correctness of an interpolated transform when the 'from
+  // transform' list is shorter than the 'to transform' list (crbug.com/998938).
+  TransformOperations empt_from, from_ops_padding;
+  TransformOperations to_ops, to_intrepolated;
+  double progress = 0.25, abs_difference = 1e-5;
+  to_ops.Operations().push_back(
+      ScaleTransformOperation::Create(5, 2, TransformOperation::kScale));
+  // to_interpolated is scale(2, 1.25)
+  to_intrepolated.Operations().push_back(
+      InterpolatedTransformOperation::Create(empt_from, to_ops, 0, progress));
+  // result is scale(1.25, 1.0625)
+  TransformOperations result = to_intrepolated.Blend(empt_from, progress);
+  from_ops_padding.Operations().push_back(TranslateTransformOperation::Create(
+      Length::Fixed(20), Length::Fixed(20), TransformOperation::kTranslate));
+  // Pad the from_ops_padding to have at least one operation, otherwise it would
+  // execute the matching prefix.
+  FloatPoint3D original_point(64, 64, 4);
+  FloatPoint3D expected_point(83, 80, 4);
+  TransformationMatrix blended_transform;
+  // result is scale(1.0625, 1.015625) and translate(15, 15)
+  result = result.Blend(from_ops_padding, progress);
+  result.Apply(FloatSize(), blended_transform);
+  FloatPoint3D final_point = blended_transform.MapPoint(original_point);
+  EXPECT_NEAR(expected_point.X(), final_point.X(), abs_difference);
+  EXPECT_NEAR(expected_point.Y(), final_point.Y(), abs_difference);
+  EXPECT_NEAR(expected_point.Z(), final_point.Z(), abs_difference);
+}
 }  // namespace blink

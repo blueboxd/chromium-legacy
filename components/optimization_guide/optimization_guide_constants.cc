@@ -22,4 +22,7 @@ const char kLoadedHintLocalHistogramString[] =
 
 const char kOptimizationGuideHintStore[] = "previews_hint_cache_store";
 
+const char kOptimizationGuidePredictionModelAndFeaturesStore[] =
+    "optimization_guide_model_and_features_store";
+
 }  // namespace optimization_guide

@@ -738,11 +738,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)
 IPC_MESSAGE_ROUTED1(FrameMsg_ForwardResourceTimingToParent,
                     content::ResourceTimingInfo)
 
-// Sent to a subframe to control whether to collapse its the frame owner element
-// in the embedder document, that is, to remove it from the layout as if it did
-// not exist.
-IPC_MESSAGE_ROUTED1(FrameMsg_Collapse, bool /* collapsed */)
-
 // Notifies the frame that its parent has changed the frame's sandbox flags or
 // container policy.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateFramePolicy, blink::FramePolicy)

@@ -10,6 +10,7 @@ per-file js2gtest.*=file://ui/webui/PLATFORM_OWNERS
 
 per-file *javascript*=file://ui/webui/PLATFORM_OWNERS
 per-file *web_ui*=file://ui/webui/PLATFORM_OWNERS
+per-file js_test_api.*=file://ui/webui/PLATFORM_OWNERS
 
 per-file *tracing*=file://base/trace_event/OWNERS
 

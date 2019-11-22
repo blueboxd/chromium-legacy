@@ -333,6 +333,7 @@ LatencyInfo::AsTraceableData() {
     record_data->Set(GetComponentName(lc.first), std::move(component_info));
   }
   record_data->SetDouble("trace_id", static_cast<double>(trace_id_));
+  record_data->SetBoolean("is_coalesced", coalesced_);
   return LatencyInfoTracedValue::FromValue(std::move(record_data));
 }
 

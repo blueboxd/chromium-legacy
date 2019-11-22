@@ -11,7 +11,6 @@
 #include "components/viz/common/quads/selection.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/render_widget_surface_properties.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/resource_type.h"
@@ -72,18 +71,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebTextAutosizerPageInfo)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_width)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_layout_width)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_adjustment)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::RenderWidgetSurfaceProperties)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-  IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
-  IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
-  IPC_STRUCT_TRAITS_MEMBER(top_controls_shown_ratio)
-#ifdef OS_ANDROID
-  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_height)
-  IPC_STRUCT_TRAITS_MEMBER(bottom_controls_shown_ratio)
-  IPC_STRUCT_TRAITS_MEMBER(has_transparent_background)
-#endif
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_

@@ -75,7 +75,7 @@ DownloadStartedAnimationViews::DownloadStartedAnimationViews(
   popup_ = new views::Widget;
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.accept_events = false;
   params.parent = web_contents->GetNativeView();
   popup_->Init(std::move(params));

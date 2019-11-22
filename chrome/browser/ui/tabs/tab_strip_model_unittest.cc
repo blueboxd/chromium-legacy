@@ -21,7 +21,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -3246,11 +3248,11 @@ TEST_F(TabStripModelTest, RemoveTabFromGroupDeletesGroup) {
   TabStripModel strip(&delegate, profile());
   strip.AppendWebContents(CreateWebContents(), true);
   strip.AddToNewGroup({0});
-  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 1U);
 
   strip.RemoveFromGroup({0});
 
-  EXPECT_EQ(strip.ListTabGroups().size(), 0U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 0U);
 
   strip.CloseAllTabs();
 }
@@ -3260,12 +3262,12 @@ TEST_F(TabStripModelTest, AddToNewGroupDeletesGroup) {
   TabStripModel strip(&delegate, profile());
   strip.AppendWebContents(CreateWebContents(), true);
   strip.AddToNewGroup({0});
-  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 1U);
   base::Optional<TabGroupId> group = strip.GetTabGroupForTab(0);
 
   strip.AddToNewGroup({0});
 
-  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 1U);
   EXPECT_NE(strip.GetTabGroupForTab(0), group);
 
   strip.CloseAllTabs();
@@ -3278,13 +3280,13 @@ TEST_F(TabStripModelTest, AddToExistingGroupDeletesGroup) {
   strip.AppendWebContents(CreateWebContents(), false);
   strip.AddToNewGroup({0});
   strip.AddToNewGroup({1});
-  EXPECT_EQ(strip.ListTabGroups().size(), 2U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 2U);
   base::Optional<TabGroupId> group = strip.GetTabGroupForTab(1);
 
   strip.AddToExistingGroup({1}, strip.GetTabGroupForTab(0).value());
 
-  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
-  EXPECT_NE(strip.ListTabGroups()[0], group);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 1U);
+  EXPECT_NE(strip.group_model()->ListTabGroups()[0], group);
 
   strip.CloseAllTabs();
 }
@@ -3294,11 +3296,11 @@ TEST_F(TabStripModelTest, CloseTabDeletesGroup) {
   TabStripModel strip(&delegate, profile());
   strip.AppendWebContents(CreateWebContents(), true);
   strip.AddToNewGroup({0});
-  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 1U);
 
   strip.CloseWebContentsAt(0, TabStripModel::CLOSE_USER_GESTURE);
 
-  EXPECT_EQ(strip.ListTabGroups().size(), 0U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 0U);
 }
 
 TEST_F(TabStripModelTest, CloseTabNotifiesObserversOfGroupChange) {
@@ -3415,9 +3417,9 @@ TEST_F(TabStripModelTest, NewTabWithGroupDeletedCorrectly) {
                             strip.GetTabGroupForTab(0));
 
   strip.RemoveFromGroup({1});
-  EXPECT_EQ(strip.ListTabGroups().size(), 1U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 1U);
   strip.RemoveFromGroup({0});
-  EXPECT_EQ(strip.ListTabGroups().size(), 0U);
+  EXPECT_EQ(strip.group_model()->ListTabGroups().size(), 0U);
 
   strip.CloseAllTabs();
 }
@@ -3469,8 +3471,9 @@ TEST_F(TabStripModelTest, SetVisualDataForGroup) {
   const TabGroupId group = strip.AddToNewGroup({0});
 
   const TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"), SK_ColorCYAN);
-  strip.SetVisualDataForGroup(group, new_data);
-  const TabGroupVisualData* data = strip.GetVisualDataForGroup(group);
+  strip.group_model()->GetTabGroup(group)->SetVisualData(new_data);
+  const TabGroupVisualData* data =
+      strip.group_model()->GetTabGroup(group)->visual_data();
   EXPECT_EQ(data->title(), new_data.title());
   EXPECT_EQ(data->color(), new_data.color());
 
@@ -3490,7 +3493,7 @@ TEST_F(TabStripModelTest, VisualDataChangeNotifiesObservers) {
   EXPECT_EQ(group, observer.visual_data_updates()[0].group);
 
   const TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"), SK_ColorBLUE);
-  strip.SetVisualDataForGroup(group, new_data);
+  strip.group_model()->GetTabGroup(group)->SetVisualData(new_data);
 
   // Now check that we are notified when we change it.
   ASSERT_EQ(2u, observer.visual_data_updates().size());
@@ -3729,7 +3732,7 @@ TEST_F(TabStripModelTest, MoveWebContentsAtCorrectlyRemovesGroupEntries) {
   EXPECT_EQ("1 0 2", GetTabStripStateString(strip));
   EXPECT_EQ(group2, strip.GetTabGroupForTab(1));
   const std::vector<TabGroupId> expected_groups{group2};
-  EXPECT_EQ(expected_groups, strip.ListTabGroups());
+  EXPECT_EQ(expected_groups, strip.group_model()->ListTabGroups());
 
   strip.CloseAllTabs();
 }

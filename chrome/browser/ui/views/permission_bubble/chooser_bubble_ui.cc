@@ -18,7 +18,6 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using bubble_anchor_util::AnchorConfiguration;
 
@@ -121,8 +120,7 @@ base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
 }
 
 views::View* ChooserBubbleUiViewDelegate::GetInitiallyFocusedView() {
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 bool ChooserBubbleUiViewDelegate::IsDialogButtonEnabled(

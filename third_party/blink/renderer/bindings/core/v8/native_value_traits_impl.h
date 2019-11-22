@@ -561,12 +561,13 @@ struct NativeValueTraits<IDLRecord<K, V>>
     // "3. Let keys be ? O.[[OwnPropertyKeys]]()."
     v8::Local<v8::Array> keys;
     // While we could pass v8::ONLY_ENUMERABLE below, doing so breaks
-    // web-platform-tests' headers-record.html and deviates from the spec
-    // algorithm.
+    // web-platform-tests' headers-record.html. It might be worthwhile to try
+    // changing the test.
     if (!v8_object
              ->GetOwnPropertyNames(context,
                                    static_cast<v8::PropertyFilter>(
-                                       v8::PropertyFilter::ALL_PROPERTIES))
+                                       v8::PropertyFilter::ALL_PROPERTIES),
+                                   v8::KeyConversionMode::kConvertToString)
              .ToLocal(&keys)) {
       exception_state.RethrowV8Exception(block.Exception());
       return ImplType();
@@ -594,11 +595,6 @@ struct NativeValueTraits<IDLRecord<K, V>>
         return ImplType();
       }
 
-      // V8's GetOwnPropertyNames() does not convert numeric property indices
-      // to strings, so we have to do it ourselves.
-      if (!key->IsName())
-        key = key->ToString(context).ToLocalChecked();
-
       // "4.1. Let desc be ? O.[[GetOwnProperty]](key)."
       v8::Local<v8::Value> desc;
       if (!v8_object->GetOwnPropertyDescriptor(context, key.As<v8::Name>())
@@ -617,7 +613,7 @@ struct NativeValueTraits<IDLRecord<K, V>>
       DCHECK(desc->IsObject());
       v8::Local<v8::Value> enumerable =
           v8::Local<v8::Object>::Cast(desc)
-              ->Get(context, V8String(isolate, "enumerable"))
+              ->Get(context, V8AtomicString(isolate, "enumerable"))
               .ToLocalChecked();
       if (!enumerable->BooleanValue(isolate))
         continue;
@@ -646,14 +642,15 @@ struct NativeValueTraits<IDLRecord<K, V>>
         //         typedValue.
         //         Note: This can happen when O is a proxy object."
         const uint32_t pos = seen_keys.at(typed_key);
-        result[pos] = std::make_pair(typed_key, typed_value);
+        result[pos].second = std::move(typed_value);
       } else {
         // "4.2.5. Otherwise, append to result a mapping (typedKey,
         // typedValue)."
         // Note we can take this shortcut because we are always appending.
         const uint32_t pos = result.size();
         seen_keys.Set(typed_key, pos);
-        result.UncheckedAppend(std::make_pair(typed_key, typed_value));
+        result.UncheckedAppend(
+            std::make_pair(std::move(typed_key), std::move(typed_value)));
       }
     }
     // "5. Return result."

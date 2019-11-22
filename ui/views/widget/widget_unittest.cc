@@ -174,7 +174,7 @@ class EventCountHandler : public ui::EventHandler {
 TEST_F(WidgetTest, WidgetInitParams) {
   // Widgets are not transparent by default.
   Widget::InitParams init1;
-  EXPECT_EQ(Widget::InitParams::INFER_OPACITY, init1.opacity);
+  EXPECT_EQ(Widget::InitParams::WindowOpacity::kInferred, init1.opacity);
 }
 
 // Tests that the internal name is propagated through widget initialization to
@@ -2269,7 +2269,7 @@ TEST_F(DesktopWidgetTest, CloseDestroys) {
       new CloseDestroysWidget(&destroyed, run_loop.QuitClosure());
   Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_MENU);
-  params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  params.opacity = Widget::InitParams::WindowOpacity::kOpaque;
   widget->Init(std::move(params));
   widget->Show();
   widget->Hide();
@@ -4216,9 +4216,9 @@ class CompositingWidgetTest : public DesktopWidgetTest {
       // transparent titlebars which is what ShouldWindowContentsBeTransparent()
       // is currently used for. Asking for transparency should get it. Note that
       // TestViewsDelegate::use_transparent_windows_ determines the result of
-      // INFER_OPACITY: assume it is false.
+      // kInferOpacity: assume it is false.
       bool should_be_transparent =
-          opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+          opacity == Widget::InitParams::WindowOpacity::kTranslucent;
 #else
       bool should_be_transparent = widget.ShouldWindowContentsBeTransparent();
 #endif
@@ -4248,15 +4248,15 @@ class CompositingWidgetTest : public DesktopWidgetTest {
 
 // Test opacity when compositing is enabled.
 TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetInferOpacity) {
-  CheckAllWidgetsForOpacity(Widget::InitParams::INFER_OPACITY);
+  CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kInferred);
 }
 
 TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetOpaque) {
-  CheckAllWidgetsForOpacity(Widget::InitParams::OPAQUE_WINDOW);
+  CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kOpaque);
 }
 
 TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetTranslucent) {
-  CheckAllWidgetsForOpacity(Widget::InitParams::TRANSLUCENT_WINDOW);
+  CheckAllWidgetsForOpacity(Widget::InitParams::WindowOpacity::kTranslucent);
 }
 
 #endif  // BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)

@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Utility class that provides conversion between Android NdefMessage and Mojo NdefMessage data
@@ -58,10 +59,8 @@ public final class NdefMessageUtils {
             for (int i = 0; i < message.data.length; ++i) {
                 records.add(toNdefRecord(message.data[i]));
             }
-            // NdefRecord.createExternal() will internally convert both the domain and type to
-            // lower-case. Details: https://github.com/w3c/web-nfc/issues/308
-            records.add(android.nfc.NdefRecord.createExternal(AUTHOR_RECORD_DOMAIN,
-                    AUTHOR_RECORD_TYPE, ApiCompatibilityUtils.getBytesUtf8(message.url)));
+            records.add(createPlatformExternalRecord(AUTHOR_RECORD_DOMAIN, AUTHOR_RECORD_TYPE,
+                    null /* id */, ApiCompatibilityUtils.getBytesUtf8(message.url)));
             android.nfc.NdefRecord[] ndefRecords = new android.nfc.NdefRecord[records.size()];
             records.toArray(ndefRecords);
             return new android.nfc.NdefMessage(ndefRecords);
@@ -134,7 +133,7 @@ public final class NdefMessageUtils {
         // type name or a local type name (for an embedded record).
         PairOfDomainAndType pair = parseDomainAndType(record.recordType);
         if (pair != null) {
-            return android.nfc.NdefRecord.createExternal(pair.mDomain, pair.mType, record.data);
+            return createPlatformExternalRecord(pair.mDomain, pair.mType, record.id, record.data);
         }
 
         throw new InvalidNdefMessageException();
@@ -327,10 +326,30 @@ public final class NdefMessageUtils {
     }
 
     /**
+     * Creates a TNF_EXTERNAL_TYPE android.nfc.NdefRecord.
+     */
+    public static android.nfc.NdefRecord createPlatformExternalRecord(
+            String domain, String type, String id, byte[] payload) {
+        // Already guaranteed by parseDomainAndType().
+        assert domain != null && !domain.isEmpty();
+        assert type != null && !type.isEmpty();
+
+        // NFC Forum requires that the domain and type used in an external record are treated as
+        // case insensitive, however Android intent filtering is always case sensitive. So we force
+        // the domain and type to lower-case here and later we will compare in a case insensitive
+        // way when filtering by them.
+        String record_type = domain.toLowerCase(Locale.ROOT) + ':' + type.toLowerCase(Locale.ROOT);
+
+        return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_EXTERNAL_TYPE,
+                ApiCompatibilityUtils.getBytesUtf8(record_type),
+                id == null ? null : ApiCompatibilityUtils.getBytesUtf8(id), payload);
+    }
+
+    /**
      * Parses the input custom type to get its domain and type.
      * e.g. returns a pair ('w3.org', 'xyz') for the input 'w3.org:xyz'.
      * Returns null for invalid input.
-     * https://w3c.github.io/web-nfc/#the-ndefrecordtype-string
+     * https://w3c.github.io/web-nfc/#ndef-record-types
      *
      * TODO(https://crbug.com/520391): Refine the validation algorithm here accordingly once there
      * is a conclusion on some case-sensitive things at https://github.com/w3c/web-nfc/issues/331.
@@ -341,10 +360,10 @@ public final class NdefMessageUtils {
 
         // TODO(ThisCL): verify |domain| is a valid FQDN, asking help at
         // https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/QN2mHt_WgHo.
-        String domain = customType.substring(0, colonIndex);
+        String domain = customType.substring(0, colonIndex).trim();
         if (domain.isEmpty()) return null;
 
-        String type = customType.substring(colonIndex + 1);
+        String type = customType.substring(colonIndex + 1).trim();
         if (type.isEmpty()) return null;
         if (!type.matches("[a-zA-Z0-9()+,\\-:=@;$_!*'.]+")) return null;
 

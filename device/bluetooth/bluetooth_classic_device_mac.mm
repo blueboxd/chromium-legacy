@@ -245,7 +245,7 @@ void BluetoothClassicDeviceMac::ConnectToService(
     const ConnectToServiceCallback& callback,
     const ConnectToServiceErrorCallback& error_callback) {
   scoped_refptr<BluetoothSocketMac> socket = BluetoothSocketMac::CreateSocket();
-  socket->Connect(device_.get(), uuid, base::Bind(callback, socket),
+  socket->Connect(device_.get(), uuid, base::BindOnce(callback, socket),
                   error_callback);
 }
 

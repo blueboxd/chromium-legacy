@@ -44,11 +44,11 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattManagerClient
                            const dbus::ObjectPath& application_path,
                            const Options& options,
                            const base::Closure& callback,
-                           const ErrorCallback& error_callback) override;
+                           ErrorCallback error_callback) override;
   void UnregisterApplication(const dbus::ObjectPath& adapter_object_path,
                              const dbus::ObjectPath& application_path,
                              const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
+                             ErrorCallback error_callback) override;
 
   // Register, unregister, and retrieve pointers to application service
   // providers. Automatically called from the application provider constructor

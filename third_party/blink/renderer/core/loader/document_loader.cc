@@ -277,8 +277,7 @@ DocumentLoader::DocumentLoader(
     history_item_ = history_item;
   }
 
-  base_url_override_for_bundled_exchanges_ =
-      params_->base_url_override_for_bundled_exchanges;
+  base_url_override_for_web_bundle_ = params_->base_url_override_for_web_bundle;
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -747,14 +746,14 @@ void DocumentLoader::FinalizeMHTMLArchiveLoad() {
 void DocumentLoader::HandleRedirect(const KURL& current_request_url) {
   // Browser process should have already checked that redirecting url is
   // allowed to display content from the target origin.
-  // When the referrer page is in an unsigned bundled exchanges file in local
+  // When the referrer page is in an unsigned Web Bundle file in local
   // (eg: file:///tmp/a.wbn), Chrome internally redirects the navigation to the
-  // page (eg: https://example.com/page.html) inside the bundled exchanges file
+  // page (eg: https://example.com/page.html) inside the Web Bundle file
   // to the file's URL (file:///tmp/a.wbn?https://example.com/page.html). In
   // this case, CanDisplay() returns false, and
-  // base_url_override_for_bundled_exchanges must not be null.
+  // base_url_override_for_web_bundle must not be null.
   CHECK(SecurityOrigin::Create(current_request_url)->CanDisplay(url_) ||
-        !params_->base_url_override_for_bundled_exchanges.IsNull());
+        !params_->base_url_override_for_web_bundle.IsNull());
 
   DCHECK(!GetTiming().FetchStart().is_null());
   redirect_chain_.push_back(url_);
@@ -875,7 +874,7 @@ void DocumentLoader::HandleResponse() {
 void DocumentLoader::CommitNavigation() {
   CHECK_GE(state_, kCommitted);
 
-  KURL overriding_url = base_url_override_for_bundled_exchanges_;
+  KURL overriding_url = base_url_override_for_web_bundle_;
   if (loading_mhtml_archive_ && archive_)
     overriding_url = archive_->MainResource()->Url();
 

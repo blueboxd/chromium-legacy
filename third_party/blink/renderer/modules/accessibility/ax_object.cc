@@ -2136,6 +2136,21 @@ ax::mojom::Role AXObject::RemapAriaRoleDueToParent(ax::mojom::Role role) const {
   // element, we need to avoid accessibilityIsIgnored().
   // https://bugs.webkit.org/show_bug.cgi?id=65174
 
+  // Don't return table roles unless inside a table-like container.
+  if (role == ax::mojom::Role::kRow || role == ax::mojom::Role::kCell ||
+      role == ax::mojom::Role::kRowHeader ||
+      role == ax::mojom::Role::kColumnHeader) {
+    for (AXObject* ancestor = ParentObjectUnignored(); ancestor;
+         ancestor = ancestor->ParentObjectUnignored()) {
+      ax::mojom::Role ancestor_aria_role = ancestor->AriaRoleAttribute();
+      if (ancestor_aria_role == ax::mojom::Role::kCell)
+        return ax::mojom::Role::kGenericContainer;  // In another cell, illegal.
+      if (ancestor->IsTableLikeRole())
+        return role;  // Inside a table: ARIA role is legal.
+    }
+    return ax::mojom::Role::kGenericContainer;  // Not in a table.
+  }
+
   if (role != ax::mojom::Role::kListBoxOption &&
       role != ax::mojom::Role::kMenuItem)
     return role;

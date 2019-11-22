@@ -36,6 +36,12 @@ const char kOsSyncFeatureEnabled[] = "sync.os_sync_feature_enabled";
 // types (including future ones). This includes types like printers, OS-only
 // settings, etc. If set, the individual type preferences can be ignored.
 const char kSyncAllOsTypes[] = "sync.all_os_types";
+
+// Booleans specifying whether the user has selected to sync the following
+// OS datatypes.
+const char kSyncOsApps[] = "sync.os_apps";
+const char kSyncOsPreferences[] = "sync.os_preferences";
+const char kSyncOsPrinters[] = "sync.os_printers";
 #endif
 
 // Booleans specifying whether the user has selected to sync the following
@@ -59,10 +65,8 @@ const char kSyncFaviconImages[] = "sync.favicon_images";
 const char kSyncFaviconTracking[] = "sync.favicon_tracking";
 const char kSyncHistoryDeleteDirectives[] = "sync.history_delete_directives";
 const char kSyncMountainShares[] = "sync.mountain_shares";
-const char kSyncOsPreferences[] = "sync.os_preferences";
 const char kSyncPasswords[] = "sync.passwords";
 const char kSyncPreferences[] = "sync.preferences";
-const char kSyncPrinters[] = "sync.printers";
 const char kSyncPriorityPreferences[] = "sync.priority_preferences";
 const char kSyncReadingList[] = "sync.reading_list";
 const char kSyncSearchEngines[] = "sync.search_engines";

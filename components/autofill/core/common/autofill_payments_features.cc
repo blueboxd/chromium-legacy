@@ -42,10 +42,6 @@ const base::Feature kAutofillCreditCardAuthentication{
 const base::Feature kAutofillCreditCardUploadFeedback{
     "AutofillCreditCardUploadFeedback", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards{
-    "AutofillDoNotMigrateUnsupportedLocalCards",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When enabled, enable local card migration flow for user who has signed in but
 // has not turned on sync.
 const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{

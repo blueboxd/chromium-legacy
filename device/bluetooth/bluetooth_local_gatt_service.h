@@ -185,12 +185,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
   // all of its associated attributes available on the local adapters GATT
   // database. Call Unregister to make this service no longer available.
   virtual void Register(const base::Closure& callback,
-                        const ErrorCallback& error_callback) = 0;
+                        ErrorCallback error_callback) = 0;
 
   // Unregisters this GATT service. This will remove the service from the list
   // of services exposed by the adapter this service was registered on.
   virtual void Unregister(const base::Closure& callback,
-                          const ErrorCallback& error_callback) = 0;
+                          ErrorCallback error_callback) = 0;
 
   // Returns if this service is currently registered.
   virtual bool IsRegistered() = 0;

@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
-#include "third_party/blink/renderer/core/display_lock/before_activate_event.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/display_lock/render_subtree_activation_event.h"
 #include "third_party/blink/renderer/core/display_lock/strict_yielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/unyielding_display_lock_budget.h"
 #include "third_party/blink/renderer/core/display_lock/yielding_display_lock_budget.h"
@@ -397,7 +397,7 @@ bool DisplayLockContext::IsActivatable(
 
 void DisplayLockContext::FireActivationEvent(Element* activated_element) {
   element_->DispatchEvent(
-      *MakeGarbageCollected<BeforeActivateEvent>(*activated_element));
+      *MakeGarbageCollected<RenderSubtreeActivationEvent>(*activated_element));
 }
 
 void DisplayLockContext::CommitForActivationWithSignal(

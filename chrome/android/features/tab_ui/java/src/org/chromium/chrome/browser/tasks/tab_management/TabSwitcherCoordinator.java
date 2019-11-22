@@ -95,7 +95,8 @@ public class TabSwitcherCoordinator
                 context, container, tabModelSelector, tabContentManager, null);
 
         mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
-                fullscreenManager, container, mTabSelectionEditorCoordinator.getController(), mode);
+                fullscreenManager, container, mTabSelectionEditorCoordinator.getController(),
+                tabContentManager, mode);
 
         mMultiThumbnailCardProvider =
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
@@ -278,6 +279,7 @@ public class TabSwitcherCoordinator
             }
         }
 
+        mMediator.registerFirstMeaningfulPaintRecorder();
         return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
     }
 

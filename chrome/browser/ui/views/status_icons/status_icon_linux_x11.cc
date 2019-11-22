@@ -89,7 +89,7 @@ void StatusIconLinuxX11::OnSetDelegate() {
 
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_CONTROL;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.remove_standard_frame = true;
   params.bounds =

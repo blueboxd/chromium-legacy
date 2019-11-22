@@ -45,11 +45,10 @@ class CONTENT_EXPORT VirtualAuthenticator
 
   // Register a new credential. Returns true if the registration was successful,
   // false otherwise.
-  bool AddRegistration(
-      std::vector<uint8_t> key_handle,
-      base::span<const uint8_t, device::kRpIdHashLength> rp_id_hash,
-      const std::vector<uint8_t>& private_key,
-      int32_t counter);
+  bool AddRegistration(std::vector<uint8_t> key_handle,
+                       const std::string& rp_id,
+                       const std::vector<uint8_t>& private_key,
+                       int32_t counter);
 
   // Register a new resident credential. Returns true if the registration was
   // successful, false otherwise.
@@ -104,9 +103,11 @@ class CONTENT_EXPORT VirtualAuthenticator
   void AddRegistration(blink::test::mojom::RegisteredKeyPtr registration,
                        AddRegistrationCallback callback) override;
   void ClearRegistrations(ClearRegistrationsCallback callback) override;
+  void RemoveRegistration(const std::vector<uint8_t>& key_handle,
+                          RemoveRegistrationCallback callback) override;
 
-  void SetUserPresence(bool present, SetUserPresenceCallback callback) override;
-  void GetUserPresence(GetUserPresenceCallback callback) override;
+  void SetUserVerified(bool verified,
+                       SetUserVerifiedCallback callback) override;
 
  private:
   const ::device::ProtocolVersion protocol_;

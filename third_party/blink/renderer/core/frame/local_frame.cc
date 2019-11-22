@@ -824,7 +824,7 @@ String LocalFrame::GetLayerTreeAsTextForTesting(unsigned flags) const {
   } else {
     if (const auto* root_layer =
             ContentLayoutObject()->Compositor()->RootGraphicsLayer()) {
-      if (flags & kLayerTreeIncludesRootLayer && IsMainFrame()) {
+      if (flags & kLayerTreeIncludesAllLayers && IsMainFrame()) {
         while (root_layer->Parent())
           root_layer = root_layer->Parent();
       }
@@ -1848,6 +1848,11 @@ void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
       ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther, level,
                              message),
       discard_duplicates);
+}
+
+void LocalFrame::Collapse(bool collapsed) {
+  FrameOwner* owner = Owner();
+  To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
 }
 
 void LocalFrame::BindToReceiver(

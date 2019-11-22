@@ -240,11 +240,10 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  // Events should be ignored during the post-background grace period.
+  // These events should be ignored during the post-background grace period.
   observer()->OnAudioStateChanged(true);
   observer()->DidUpdateFaviconURL({});
   observer()->TitleWasSet(nullptr);
-  observer()->OnNonPersistentNotificationCreated();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   test_clock().Advance(kFeatureUsagePostBackgroundGracePeriod);
@@ -302,9 +301,6 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   web_contents()->WasHidden();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  // Events should be ignored during the post-background grace period.
-  observer()->OnNonPersistentNotificationCreated();
-  ::testing::Mock::VerifyAndClear(mock_writer);
   test_clock().Advance(kFeatureUsagePostBackgroundGracePeriod);
 
   EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());

@@ -59,19 +59,19 @@
     chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
         'openFile', appId, [ENTRIES.image3.targetPath]));
 
-    // Wait for the expected 3
+    // Wait for the expected 1
     const caller = getCaller();
     await repeatUntil(async () => {
       const a11yMessages =
           await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
 
-      if (a11yMessages.length === 3) {
+      if (a11yMessages.length === 1) {
         return true;
       }
 
       return pending(
           caller,
-          'Waiting for 3 a11y messages, got: ' + JSON.stringify(a11yMessages));
+          'Waiting for 1 a11y messages, got: ' + JSON.stringify(a11yMessages));
     });
 
     // Fetch A11y messages.
@@ -79,8 +79,8 @@
         await remoteCall.callRemoteTestUtil('getA11yAnnounces', appId, []);
 
     // Check that opening the file was announced to screen reader.
-    chrome.test.assertEq(3, a11yMessages.length);
-    chrome.test.assertEq('Opening file image3.jpg.', a11yMessages[2]);
+    chrome.test.assertEq(1, a11yMessages.length);
+    chrome.test.assertEq('Opening file image3.jpg.', a11yMessages[0]);
 
     // Check: the Gallery window should open.
     const galleryAppId = await galleryApp.waitForWindow('gallery.html');

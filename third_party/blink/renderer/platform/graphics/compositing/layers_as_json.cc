@@ -130,10 +130,12 @@ void LayersAsJSON::AddLayer(const cc::Layer& layer,
                             const FloatPoint& offset,
                             const TransformPaintPropertyNode& transform,
                             const LayerAsJSONClient* json_client) {
-  auto layer_json = CCLayerAsJSON(&layer, Flags(), offset);
+  if (!(flags_ & kLayerTreeIncludesAllLayers) && !layer.DrawsContent())
+    return;
+
+  auto layer_json = CCLayerAsJSON(&layer, flags_, offset);
   if (json_client) {
-    json_client->AppendAdditionalInfoAsJSON(Flags(), layer,
-                                            *(layer_json.get()));
+    json_client->AppendAdditionalInfoAsJSON(flags_, layer, *(layer_json.get()));
   }
   int transform_id = AddTransformJSON(transform);
   if (transform_id)

@@ -860,7 +860,7 @@ TEST_P(MediaEngagementServiceTest, SchemaVersion_Same) {
   new_service->Shutdown();
 }
 
-INSTANTIATE_TEST_SUITE_P(, MediaEngagementServiceTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, MediaEngagementServiceTest, ::testing::Bool());
 
 class MediaEngagementServiceEnabledTest
     : public ChromeRenderViewHostTestHarness {};

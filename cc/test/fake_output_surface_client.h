@@ -20,8 +20,6 @@ class FakeOutputSurfaceClient : public viz::OutputSurfaceClient {
   void DidReceiveCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override {}
   void DidSwapWithSize(const gfx::Size& pixel_size) override {}
-  void DidFinishLatencyInfo(
-      const std::vector<ui::LatencyInfo>& latency_info) override {}
   void DidReceivePresentationFeedback(
       const gfx::PresentationFeedback& feedback) override {}
 

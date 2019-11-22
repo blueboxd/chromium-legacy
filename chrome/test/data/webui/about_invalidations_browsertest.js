@@ -16,8 +16,6 @@ InvalidationsWebUITest.prototype = {
    * Browse to the Invalidations page.
    */
   browsePreload: 'chrome://invalidations',
-  runAccessibilityChecks: false,
-  accessibilityIssuesAreErrors: false
 };
 
 // Test that registering an invalidations appears properly on the textarea.

@@ -43,7 +43,7 @@ using device::BluetoothSocket;
   scoped_refptr<device::BluetoothSocketMac> socket_;
 
   // Callbacks associated with the request that triggered this SDP query.
-  base::Closure success_callback_;
+  base::OnceClosure success_callback_;
   BluetoothSocket::ErrorCompletionCallback error_callback_;
 
   // The device being queried.
@@ -52,7 +52,7 @@ using device::BluetoothSocket;
 
 - (id)initWithSocket:(scoped_refptr<device::BluetoothSocketMac>)socket
               device:(IOBluetoothDevice*)device
-    success_callback:(base::Closure)success_callback
+    success_callback:(base::OnceClosure)success_callback
       error_callback:(BluetoothSocket::ErrorCompletionCallback)error_callback;
 - (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status;
 
@@ -62,12 +62,12 @@ using device::BluetoothSocket;
 
 - (id)initWithSocket:(scoped_refptr<device::BluetoothSocketMac>)socket
               device:(IOBluetoothDevice*)device
-    success_callback:(base::Closure)success_callback
+    success_callback:(base::OnceClosure)success_callback
       error_callback:(BluetoothSocket::ErrorCompletionCallback)error_callback {
   if ((self = [super init])) {
     socket_ = socket;
     device_ = device;
-    success_callback_ = success_callback;
+    success_callback_ = std::move(success_callback);
     error_callback_ = error_callback;
   }
 
@@ -76,8 +76,8 @@ using device::BluetoothSocket;
 
 - (void)sdpQueryComplete:(IOBluetoothDevice*)device status:(IOReturn)status {
   DCHECK_EQ(device, device_);
-  socket_->OnSDPQueryComplete(
-      status, device, success_callback_, error_callback_);
+  socket_->OnSDPQueryComplete(status, device, std::move(success_callback_),
+                              error_callback_);
 }
 
 @end
@@ -416,7 +416,7 @@ scoped_refptr<BluetoothSocketMac> BluetoothSocketMac::CreateSocket() {
 void BluetoothSocketMac::Connect(
     IOBluetoothDevice* device,
     const BluetoothUUID& uuid,
-    const base::Closure& success_callback,
+    base::OnceClosure success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -430,7 +430,7 @@ void BluetoothSocketMac::Connect(
   SDPQueryListener* listener =
       [[SDPQueryListener alloc] initWithSocket:this
                                         device:device
-                              success_callback:success_callback
+                              success_callback:std::move(success_callback)
                                 error_callback:error_callback];
   [device performSDPQuery:[listener autorelease]
                     uuids:@[GetIOBluetoothSDPUUID(uuid_)]];
@@ -491,10 +491,10 @@ void BluetoothSocketMac::ListenUsingL2cap(
 }
 
 void BluetoothSocketMac::OnSDPQueryComplete(
-      IOReturn status,
-      IOBluetoothDevice* device,
-      const base::Closure& success_callback,
-      const ErrorCompletionCallback& error_callback) {
+    IOReturn status,
+    IOBluetoothDevice* device,
+    base::OnceClosure success_callback,
+    const ErrorCompletionCallback& error_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << BluetoothClassicDeviceMac::GetDeviceAddress(device) << " "
            << uuid_.canonical_value() << ": SDP query complete.";
@@ -549,7 +549,7 @@ void BluetoothSocketMac::OnSDPQueryComplete(
   // channel, as opening the channel can synchronously call into
   // OnChannelOpenComplete().
   connect_callbacks_.reset(new ConnectCallbacks());
-  connect_callbacks_->success_callback = success_callback;
+  connect_callbacks_->success_callback = std::move(success_callback);
   connect_callbacks_->error_callback = error_callback;
 
   if (rfcomm_channel_id != kInvalidRfcommChannelId) {
@@ -612,7 +612,7 @@ void BluetoothSocketMac::OnChannelOpenComplete(
     return;
   }
 
-  temp->success_callback.Run();
+  std::move(temp->success_callback).Run();
 }
 
 void BluetoothSocketMac::Close() {

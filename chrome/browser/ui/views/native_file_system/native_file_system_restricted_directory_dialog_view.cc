@@ -14,7 +14,6 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 NativeFileSystemRestrictedDirectoryDialogView::
     ~NativeFileSystemRestrictedDirectoryDialogView() {

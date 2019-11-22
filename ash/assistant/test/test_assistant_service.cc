@@ -13,6 +13,7 @@
 namespace ash {
 
 using chromeos::assistant::mojom::AssistantInteractionMetadata;
+using chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
 using chromeos::assistant::mojom::AssistantInteractionResolution;
 using chromeos::assistant::mojom::AssistantInteractionSubscriber;
 using chromeos::assistant::mojom::AssistantInteractionType;
@@ -33,9 +34,7 @@ class SanityCheckSubscriber : public AssistantInteractionSubscriber {
   }
 
   // AssistantInteractionSubscriber implementation:
-  void OnInteractionStarted(
-      chromeos::assistant::mojom::AssistantInteractionMetadataPtr metadata)
-      override {
+  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
     if (current_state_ == ConversationState::kInProgress) {
       ADD_FAILURE()
           << "Cannot start a new Assistant interaction without finishing the "
@@ -112,6 +111,60 @@ class SanityCheckSubscriber : public AssistantInteractionSubscriber {
   DISALLOW_COPY_AND_ASSIGN(SanityCheckSubscriber);
 };
 
+// Subscriber that tracks the current interaction.
+class CurrentInteractionSubscriber : public AssistantInteractionSubscriber {
+ public:
+  CurrentInteractionSubscriber() : receiver_(this) {}
+  CurrentInteractionSubscriber(CurrentInteractionSubscriber&) = delete;
+  CurrentInteractionSubscriber& operator=(CurrentInteractionSubscriber&) =
+      delete;
+  ~CurrentInteractionSubscriber() override = default;
+
+  mojo::PendingRemote<AssistantInteractionSubscriber>
+  BindNewPipeAndPassRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
+  }
+
+  // AssistantInteractionSubscriber implementation:
+  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
+    current_interaction_ = *metadata;
+  }
+
+  void OnInteractionFinished(
+      AssistantInteractionResolution resolution) override {
+    current_interaction_ = base::nullopt;
+  }
+
+  void OnHtmlResponse(const std::string& response,
+                      const std::string& fallback) override {}
+  void OnSuggestionsResponse(
+      std::vector<chromeos::assistant::mojom::AssistantSuggestionPtr> response)
+      override {}
+  void OnTextResponse(const std::string& response) override {}
+  void OnOpenUrlResponse(const ::GURL& url, bool in_background) override {}
+  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+                         OnOpenAppResponseCallback callback) override {}
+  void OnSpeechRecognitionStarted() override {}
+  void OnSpeechRecognitionIntermediateResult(
+      const std::string& high_confidence_text,
+      const std::string& low_confidence_text) override {}
+  void OnSpeechRecognitionEndOfUtterance() override {}
+  void OnSpeechRecognitionFinalResult(
+      const std::string& final_result) override {}
+  void OnSpeechLevelUpdated(float speech_level) override {}
+  void OnTtsStarted(bool due_to_error) override {}
+  void OnWaitStarted() override {}
+
+  base::Optional<AssistantInteractionMetadata> current_interaction() {
+    return current_interaction_;
+  }
+
+ private:
+  base::Optional<AssistantInteractionMetadata> current_interaction_ =
+      base::nullopt;
+  mojo::Receiver<AssistantInteractionSubscriber> receiver_;
+};
+
 class InteractionResponse::Response {
  public:
   Response() = default;
@@ -166,9 +219,13 @@ class ResolutionResponse : public InteractionResponse::Response {
 };
 
 TestAssistantService::TestAssistantService()
-    : sanity_check_subscriber_(std::make_unique<SanityCheckSubscriber>()) {
+    : sanity_check_subscriber_(std::make_unique<SanityCheckSubscriber>()),
+      current_interaction_subscriber_(
+          std::make_unique<CurrentInteractionSubscriber>()) {
   AddAssistantInteractionSubscriber(
       sanity_check_subscriber_->BindNewPipeAndPassRemote());
+  AddAssistantInteractionSubscriber(
+      current_interaction_subscriber_->BindNewPipeAndPassRemote());
 }
 
 TestAssistantService::~TestAssistantService() = default;
@@ -181,6 +238,11 @@ TestAssistantService::CreateRemoteAndBind() {
 void TestAssistantService::SetInteractionResponse(
     InteractionResponse&& response) {
   interaction_response_ = std::move(response);
+}
+
+base::Optional<AssistantInteractionMetadata>
+TestAssistantService::current_interaction() {
+  return current_interaction_subscriber_->current_interaction();
 }
 
 void TestAssistantService::StartCachedScreenContextInteraction() {

@@ -244,20 +244,16 @@ TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
 
 GEN('#if defined(OS_CHROMEOS)');
 
-// On ChromeOS, browser tests are signed in by default to mimic production,
-// so the sync transport layer should be enabled. Note that the sync *feature*
-// might still be disabled depending on how the test infrastructure is
-// configured.
-TEST_F('SyncInternalsWebUITest', 'SyncTransportEnabledByDefault', function() {
-  // The specific transport state is dependent on the timing of startup, but it
-  // should not be disabled.
-  expectFalse(this.hasInDetails(true, 'Transport State', 'Disabled'));
+// Sync should be disabled if there was no primary account set.
+TEST_F('SyncInternalsWebUITest', 'SyncDisabledByDefaultChromeOS', function() {
+  expectTrue(this.hasInDetails(true, 'Transport State', 'Disabled'));
+  expectTrue(this.hasInDetails(true, 'Disable Reasons', 'Not signed in'));
+  expectTrue(this.hasInDetails(true, 'Username', ''));
 });
 
 GEN('#else');
 
-// On non-ChromeOS, sync should be disabled if there was no primary account
-// set.
+// On non-ChromeOS, sync should be disabled if there was no primary account set.
 TEST_F('SyncInternalsWebUITest', 'SyncDisabledByDefault', function() {
   expectTrue(this.hasInDetails(true, 'Transport State', 'Disabled'));
   expectTrue(

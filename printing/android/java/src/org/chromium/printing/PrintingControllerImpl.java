@@ -48,7 +48,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     @VisibleForTesting
     protected static PrintingController sInstance;
 
-    private final String mErrorMessage;
+    private String mErrorMessage;
 
     private PrintingContext mPrintingContext;
 
@@ -91,44 +91,22 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     private PrintManagerDelegate mPrintManager;
 
     @VisibleForTesting
-    protected PrintingControllerImpl(
-            PrintDocumentAdapterWrapper printDocumentAdapterWrapper, String errorText) {
-        mErrorMessage = errorText;
-        mPrintDocumentAdapterWrapper = printDocumentAdapterWrapper;
+    protected PrintingControllerImpl() {
+        mPrintDocumentAdapterWrapper = new PrintDocumentAdapterWrapper();
         mPrintDocumentAdapterWrapper.setPdfGenerator(this);
     }
 
     /**
-     * Creates a controller for handling printing with the framework.
-     *
-     * The controller is a singleton, since there can be only one printing action at any time.
-     *
-     * @param printDocumentAdapterWrapper The object through which the framework will make calls
-     *                                    for generating PDF.
-     * @param errorText The error message to be shown to user in case something goes wrong in PDF
-     *                  generation in Chromium. We pass it here as a string so src/printing/android
-     *                  doesn't need any string dependency.
-     * @return The resulting PrintingController.
-     */
-    public static PrintingController create(
-            PrintDocumentAdapterWrapper printDocumentAdapterWrapper, String errorText) {
-        ThreadUtils.assertOnUiThread();
-
-        if (sInstance == null) {
-            sInstance = new PrintingControllerImpl(printDocumentAdapterWrapper, errorText);
-        }
-        return sInstance;
-    }
-
-    /**
-     * Returns the singleton instance, created by the {@link PrintingControllerImpl#create}.
-     *
-     * This method must be called once {@link PrintingControllerImpl#create} is called, and always
-     * thereafter.
+     * Returns the singleton instance, lazily creating one if needed.
      *
      * @return The singleton instance.
      */
     public static PrintingController getInstance() {
+        ThreadUtils.assertOnUiThread();
+
+        if (sInstance == null) {
+            sInstance = new PrintingControllerImpl();
+        }
         return sInstance;
     }
 
@@ -180,6 +158,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
             return;
         }
         mPrintable = printable;
+        mErrorMessage = mPrintable.getErrorMessage();
         mPrintManager = printManager;
         mRenderProcessId = renderProcessId;
         mRenderFrameId = renderFrameId;

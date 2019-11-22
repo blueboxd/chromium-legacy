@@ -198,7 +198,19 @@ void FinishFragmentation(const NGConstraintSpace& space,
     // Need a break inside this block.
     builder->SetConsumedBlockSize(space_left + previously_consumed_block_size);
     builder->SetDidBreak();
-    builder->SetBreakAppeal(kBreakAppealPerfect);
+    NGBreakAppeal break_appeal = kBreakAppealPerfect;
+    if (!previously_consumed_block_size) {
+      // This is the first fragment generated for the node. Avoid breaking
+      // inside block-start border, scrollbar and padding, if possible. No valid
+      // breakpoints there.
+      const NGFragmentGeometry& geometry = builder->InitialFragmentGeometry();
+      LayoutUnit block_start_unbreakable_space =
+          geometry.border.block_start + geometry.scrollbar.block_start +
+          geometry.padding.block_start;
+      if (space_left < block_start_unbreakable_space)
+        break_appeal = kBreakAppealLastResort;
+    }
+    builder->SetBreakAppeal(break_appeal);
     builder->SetBlockSize(space_left);
     builder->SetIntrinsicBlockSize(space_left);
     if (space.BlockFragmentationType() == kFragmentColumn &&

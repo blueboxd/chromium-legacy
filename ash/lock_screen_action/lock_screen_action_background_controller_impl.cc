@@ -99,7 +99,7 @@ views::Widget* LockScreenActionBackgroundControllerImpl::CreateWidget() {
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.name = kLockScreenActionBackgroundWidgetName;
   params.parent = parent_window_;
   params.delegate = contents_view_;

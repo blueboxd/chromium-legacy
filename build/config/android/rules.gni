@@ -899,11 +899,12 @@ if (enable_java_templates) {
   #   alternative_android_sdk_dep: Optional. Alternative Android system
   #     android java target to use.
   #   resource_dirs: List of directories containing resources for this target.
-  #   generated_resource_dirs (deprecated):
-  #     **This is deprecated, you only need to specify generated files directly
-  #     in |generated_resource_files|**
-  #   generated_resource_files: List of all resource files for this target
-  #     which are *generated* by a dependency.
+  #   generated_resource_dirs: List of directories containing resources for this
+  #     target which are *generated* by a dependency. |generated_resource_files|
+  #     must be specified if |generated_resource_dirs| is specified.
+  #   generated_resource_files: List of all files in |generated_resource_dirs|.
+  #     |generated_resource_dirs| must be specified in |generated_resource_files|
+  #     is specified.
   #   android_manifest: AndroidManifest.xml for this target (optional). Will be
   #     merged into apks that directly or indirectly depend on this target.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
@@ -919,19 +920,13 @@ if (enable_java_templates) {
   # Example:
   #   android_resources("foo_resources") {
   #     deps = [":foo_strings_grd"]
-  #     sources = [
-  #       "res/drawable/foo1.xml",
-  #       "res/drawable/foo2.xml",
-  #     ]
+  #     resource_dirs = ["res"]
   #     custom_package = "org.chromium.foo"
   #   }
   #
   #   android_resources("foo_resources_overrides") {
   #     deps = [":foo_resources"]
-  #     sources = [
-  #       "res_overrides/drawable/foo1.xml",
-  #       "res_overrides/drawable/foo2.xml",
-  #     ]
+  #     resource_dirs = ["res_overrides"]
   #   }
   template("android_resources") {
     forward_variables_from(invoker, [ "testonly" ])
@@ -940,14 +935,6 @@ if (enable_java_templates) {
     if (defined(invoker.v14_skip)) {
       not_needed(invoker, [ "v14_skip" ])
     }
-
-    # TODO(https://crbug.com/1026378): remove unneeded generated_resource_dirs
-    if (defined(invoker.generated_resource_dirs)) {
-      not_needed(invoker, [ "generated_resource_dirs" ])
-    }
-
-    _pass_resource_files = defined(invoker.sources)
-    _res_sources_path = "$target_gen_dir/${invoker.target_name}.res.sources"
 
     # JUnit tests use resource zip files. These must not be put in gen/
     # directory or they will not be available to tester bots.
@@ -972,32 +959,15 @@ if (enable_java_templates) {
       _deps += [ "//third_party/android_sdk:android_sdk_java" ]
     }
 
-    if (_pass_resource_files) {
-      _resource_files = invoker.sources
-    } else {
-      _sources_build_rel = []
-
-      # Speed up "gn gen" by short-circuiting the empty directory.
-      if (invoker.resource_dirs != [ "//build/android/empty" ] &&
-          invoker.resource_dirs != []) {
-        _sources_build_rel +=
-            exec_script("//build/android/gyp/find.py",
-                        rebase_path(invoker.resource_dirs, root_build_dir),
-                        "list lines")
-      }
-      _resource_files = rebase_path(_sources_build_rel, ".", root_build_dir)
-    }
-    if (defined(invoker.generated_resource_files)) {
-      _resource_files += invoker.generated_resource_files
-    }
-    _rebased_resource_files = rebase_path(_resource_files, root_build_dir)
-    write_file(_res_sources_path, _rebased_resource_files)
-
     write_build_config(_build_config_target_name) {
       type = "android_resources"
       build_config = _build_config
       resources_zip = _zip_path
-      res_sources_path = _res_sources_path
+
+      resource_dirs = invoker.resource_dirs
+      if (defined(invoker.generated_resource_dirs)) {
+        resource_dirs += invoker.generated_resource_dirs
+      }
 
       if (defined(_srcjar_path)) {
         forward_variables_from(invoker,
@@ -1025,6 +995,9 @@ if (enable_java_templates) {
                              [
                                "android_manifest",
                                "custom_package",
+                               "generated_resource_dirs",
+                               "generated_resource_files",
+                               "resource_dirs",
                                "strip_drawables",
                              ])
       deps = _deps
@@ -1032,9 +1005,6 @@ if (enable_java_templates) {
       if (defined(invoker.android_manifest_dep)) {
         deps += [ invoker.android_manifest_dep ]
       }
-
-      res_sources_path = _res_sources_path
-      sources = _resource_files
 
       build_config = _build_config
       zip_path = _zip_path
@@ -3677,6 +3647,7 @@ if (enable_java_templates) {
                                "modules",
                                "proguard_enabled",
                                "public_deps",
+                               "use_webview_provider",
                              ])
       test_name = invoker.target_name
       test_type = "instrumentation"
@@ -3762,6 +3733,9 @@ if (enable_java_templates) {
       if (defined(additional_apks)) {
         data_deps += additional_apks
       }
+      if (defined(use_webview_provider)) {
+        data_deps += [ use_webview_provider ]
+      }
       if (defined(invoker.apk_under_test)) {
         # Prevent a build_hooks_android_impl exising in both the test apks as
         # well as the apk_under_test.
@@ -3821,6 +3795,7 @@ if (enable_java_templates) {
                                "never_incremental",
                                "proguard_enabled",
                                "public_deps",
+                               "use_webview_provider",
                              ])
       android_test_apk = ":${_apk_target_name}"
       android_test_apk_name = invoker.apk_name

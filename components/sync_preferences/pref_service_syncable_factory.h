@@ -43,11 +43,8 @@ class PrefServiceSyncableFactory : public PrefServiceFactory {
   void SetPrefModelAssociatorClient(
       PrefModelAssociatorClient* pref_model_associator_client);
 
-  // |delegate| might be null during test or if we're not using the Mojo pref
-  // service.
   std::unique_ptr<PrefServiceSyncable> CreateSyncable(
-      scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
-      std::unique_ptr<PrefValueStore::Delegate> delegate = nullptr);
+      scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry);
 
  private:
   PrefModelAssociatorClient* pref_model_associator_client_ = nullptr;

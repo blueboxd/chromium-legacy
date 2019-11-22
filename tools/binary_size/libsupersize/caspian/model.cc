@@ -343,6 +343,14 @@ void TreeNode::WriteIntoJson(
   (*out)["size"] = this->size;
   (*out)["flags"] = this->flags;
   this->node_stats.WriteIntoJson(&(*out)["childStats"]);
+
+  const size_t kMaxChildNodesToExpand = 1000;
+  if (this->children.size() > kMaxChildNodesToExpand) {
+    // When the tree is very flat, don't expand child nodes to avoid cost of
+    // sending thousands of children and grandchildren to renderer.
+    depth = 0;
+  }
+
   if (depth < 0 && this->children.size() > 1) {
     (*out)["children"] = Json::Value();  // null
   } else {

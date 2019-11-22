@@ -8,7 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/browser/ui/webui/welcome/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/google_apps_handler.h"
@@ -52,7 +51,7 @@ bool ShouldHandleRequestCallback(base::WeakPtr<WelcomeUI> weak_ptr,
     return false;
   }
 
-  return !weak_ptr ? false : true;
+  return !!weak_ptr;
 }
 
 void HandleRequestCallback(
@@ -71,7 +70,7 @@ void HandleRequestCallback(
 }
 
 void AddStrings(content::WebUIDataSource* html_source) {
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       // Shared strings.
       {"bookmarkAdded", IDS_WELCOME_BOOKMARK_ADDED},
       {"bookmarksAdded", IDS_WELCOME_BOOKMARKS_ADDED},
@@ -109,8 +108,7 @@ void AddStrings(content::WebUIDataSource* html_source) {
       {"landingNewUser", IDS_WELCOME_LANDING_NEW_USER},
       {"landingExistingUser", IDS_WELCOME_LANDING_EXISTING_USER},
   };
-  AddLocalizedStringsBulk(html_source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 
 }  // namespace
@@ -140,32 +138,31 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Load unscaled images.
-  html_source->AddResourcePath("images/module_icons/google_dark.svg",
-                               IDR_WELCOME_MODULE_ICONS_GOOGLE_DARK);
-  html_source->AddResourcePath("images/module_icons/google_light.svg",
-                               IDR_WELCOME_MODULE_ICONS_GOOGLE_LIGHT);
-  html_source->AddResourcePath("images/module_icons/set_default_dark.svg",
-                               IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_DARK);
-  html_source->AddResourcePath("images/module_icons/set_default_light.svg",
-                               IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_LIGHT);
-  html_source->AddResourcePath("images/module_icons/wallpaper_dark.svg",
-                               IDR_WELCOME_MODULE_ICONS_WALLPAPER_DARK);
-  html_source->AddResourcePath("images/module_icons/wallpaper_light.svg",
-                               IDR_WELCOME_MODULE_ICONS_WALLPAPER_LIGHT);
-  html_source->AddResourcePath("images/ntp_thumbnails/art.jpg",
-                               IDR_WELCOME_NTP_THUMBNAILS_ART);
-  html_source->AddResourcePath("images/ntp_thumbnails/cityscape.jpg",
-                               IDR_WELCOME_NTP_THUMBNAILS_CITYSCAPE);
-  html_source->AddResourcePath("images/ntp_thumbnails/earth.jpg",
-                               IDR_WELCOME_NTP_THUMBNAILS_EARTH);
-  html_source->AddResourcePath("images/ntp_thumbnails/geometric_shapes.jpg",
-                               IDR_WELCOME_NTP_THUMBNAILS_GEOMETRIC_SHAPES);
-  html_source->AddResourcePath("images/ntp_thumbnails/landscape.jpg",
-                               IDR_WELCOME_NTP_THUMBNAILS_LANDSCAPE);
-  html_source->AddResourcePath("images/set_default_dark.svg",
-                               IDR_WELCOME_SET_DEFAULT_DARK);
-  html_source->AddResourcePath("images/set_default_light.svg",
-                               IDR_WELCOME_SET_DEFAULT_LIGHT);
+  static constexpr webui::ResourcePath kPaths[] = {
+      {"images/module_icons/google_dark.svg",
+       IDR_WELCOME_MODULE_ICONS_GOOGLE_DARK},
+      {"images/module_icons/google_light.svg",
+       IDR_WELCOME_MODULE_ICONS_GOOGLE_LIGHT},
+      {"images/module_icons/set_default_dark.svg",
+       IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_DARK},
+      {"images/module_icons/set_default_light.svg",
+       IDR_WELCOME_MODULE_ICONS_SET_DEFAULT_LIGHT},
+      {"images/module_icons/wallpaper_dark.svg",
+       IDR_WELCOME_MODULE_ICONS_WALLPAPER_DARK},
+      {"images/module_icons/wallpaper_light.svg",
+       IDR_WELCOME_MODULE_ICONS_WALLPAPER_LIGHT},
+      {"images/ntp_thumbnails/art.jpg", IDR_WELCOME_NTP_THUMBNAILS_ART},
+      {"images/ntp_thumbnails/cityscape.jpg",
+       IDR_WELCOME_NTP_THUMBNAILS_CITYSCAPE},
+      {"images/ntp_thumbnails/earth.jpg", IDR_WELCOME_NTP_THUMBNAILS_EARTH},
+      {"images/ntp_thumbnails/geometric_shapes.jpg",
+       IDR_WELCOME_NTP_THUMBNAILS_GEOMETRIC_SHAPES},
+      {"images/ntp_thumbnails/landscape.jpg",
+       IDR_WELCOME_NTP_THUMBNAILS_LANDSCAPE},
+      {"images/set_default_dark.svg", IDR_WELCOME_SET_DEFAULT_DARK},
+      {"images/set_default_light.svg", IDR_WELCOME_SET_DEFAULT_LIGHT},
+  };
+  webui::AddResourcePathsBulk(html_source, kPaths);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if defined(OS_WIN)

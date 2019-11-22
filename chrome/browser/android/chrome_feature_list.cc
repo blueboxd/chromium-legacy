@@ -121,7 +121,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeDuetLabeled,
     &kChromeSharingHub,
     &kChromeSmartSelection,
-    &kClickToCallOpenDialerDirectly,
     &kCommandLineOnNonRooted,
     &kContactsPickerSelectAll,
     &kContentSuggestionsScrollToLoad,
@@ -151,7 +150,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kJellyBeanSupported,
     &kNewPhotoPicker,
     &kNotificationSuspender,
-    &kNoCreditCardAbort,
     &kNTPLaunchAfterInactivity,
     &kOfflineHome,
     &kOfflineIndicatorV2,
@@ -359,9 +357,6 @@ const base::Feature kChromeSharingHub{"ChromeSharingHub",
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kClickToCallOpenDialerDirectly{
-    "ClickToCallOpenDialerDirectly", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kCommandLineOnNonRooted{"CommandLineOnNonRooted",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -465,9 +460,6 @@ const base::Feature kNewPhotoPicker{"NewPhotoPicker",
 // okay about leaving it on.
 const base::Feature kNotificationSuspender{"NotificationSuspender",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};

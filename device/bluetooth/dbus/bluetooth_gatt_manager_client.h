@@ -31,8 +31,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattManagerClient
   // The ErrorCallback is used by GATT manager methods to indicate failure. It
   // receives two arguments: the name of the error in |error_name| and an
   // optional message in |error_message|.
-  typedef base::Callback<void(const std::string& error_name,
-                              const std::string& error_message)> ErrorCallback;
+  typedef base::OnceCallback<void(const std::string& error_name,
+                                  const std::string& error_message)>
+      ErrorCallback;
 
   // Registers a GATT service implementation within the local process at the
   // D-Bus object path |service_path| with the remote GATT manager. The local
@@ -49,7 +50,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattManagerClient
                                    const dbus::ObjectPath& application_path,
                                    const Options& options,
                                    const base::Closure& callback,
-                                   const ErrorCallback& error_callback) = 0;
+                                   ErrorCallback error_callback) = 0;
 
   // Unregisters the GATT service with the D-Bus object path |service_path| from
   // the remote GATT manager.
@@ -57,7 +58,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattManagerClient
       const dbus::ObjectPath& adapter_object_path,
       const dbus::ObjectPath& application_path,
       const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+      ErrorCallback error_callback) = 0;
 
   // Creates the instance.
   static BluetoothGattManagerClient* Create();

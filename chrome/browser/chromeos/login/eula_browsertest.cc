@@ -129,9 +129,12 @@ class EulaTest : public OobeBaseTest {
     OobeScreenWaiter(EulaView::kScreenId).Wait();
   }
 
-  void set_allow_online_eula(bool allow) { allow_online_eula_ = allow; }
-
  protected:
+  // Used for customizing the response handler of the embedded server.
+  void set_force_http_unavailable(bool force_unavailable) {
+    force_http_unavailable_ = force_unavailable;
+  }
+
   content::WebContents* FindEulaContents() {
     // Tag the Eula webview in use with a unique name.
     constexpr char kUniqueEulaWebviewName[] = "unique-eula-webview-name";
@@ -228,18 +231,21 @@ class EulaTest : public OobeBaseTest {
     std::unique_ptr<BasicHttpResponse> http_response =
         std::make_unique<BasicHttpResponse>();
 
-    if (allow_online_eula_) {
+    if (force_http_unavailable_) {
+      http_response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
+    } else {
       http_response->set_code(net::HTTP_OK);
       http_response->set_content_type("text/html");
       http_response->set_content(kFakeOnlineEula);
-    } else {
-      http_response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
     }
 
     return std::move(http_response);
   }
 
-  bool allow_online_eula_ = true;
+  // The default behaviour for the embedded server is to service the
+  // online version properly. Offline tests may change this during construction
+  // of the class.
+  bool force_http_unavailable_ = false;
 
   // URL used for testing. Retrieved from the embedded server.
   std::string fake_eula_url_;
@@ -247,9 +253,27 @@ class EulaTest : public OobeBaseTest {
   DISALLOW_COPY_AND_ASSIGN(EulaTest);
 };
 
+// When testing the offline fallback mechanism, the requests reaching the
+// embedded server have to be handled differently.
+class EulaOfflineTest : public EulaTest {
+ public:
+  EulaOfflineTest() { set_force_http_unavailable(true); }
+
+  ~EulaOfflineTest() override = default;
+};
+
+// Tests that offline version is shown when the online version is not
+// accessible.
+IN_PROC_BROWSER_TEST_F(EulaOfflineTest, LoadOffline) {
+  ShowEulaScreen();
+
+  WaitForLocalWebviewLoad();
+  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
+                  .find(kOfflineEULAWarning) != std::string::npos);
+}
+
 // Tests that online version is shown when it is accessible.
 IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
-  set_allow_online_eula(true);
   ShowEulaScreen();
 
   // Wait until the webview has finished loading.
@@ -265,18 +289,6 @@ IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
   const std::string webview_contents =
       test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"});
   EXPECT_TRUE(webview_contents.find(kFakeOnlineEula) != std::string::npos);
-}
-
-// Tests that offline version is shown when the online version is not
-// accessible.
-IN_PROC_BROWSER_TEST_F(EulaTest, LoadOffline) {
-  set_allow_online_eula(false);
-  ShowEulaScreen();
-
-  WaitForLocalWebviewLoad();
-
-  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
-                  .find(kOfflineEULAWarning) != std::string::npos);
 }
 
 // Tests that clicking on "System security settings" button opens a dialog

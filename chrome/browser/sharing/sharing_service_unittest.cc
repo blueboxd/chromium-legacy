@@ -343,8 +343,6 @@ TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
 }
 
 TEST_F(SharingServiceTest, DeviceRegistration) {
-  // Enable the feature.
-  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(
@@ -383,8 +381,6 @@ TEST_F(SharingServiceTest, DeviceRegistration) {
 }
 
 TEST_F(SharingServiceTest, DeviceRegistrationPreferenceNotAvailable) {
-  // Enable the feature.
-  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(syncer::DEVICE_INFO);
@@ -401,10 +397,9 @@ TEST_F(SharingServiceTest, DeviceRegistrationPreferenceNotAvailable) {
 }
 
 TEST_F(SharingServiceTest, DeviceRegistrationTransportMode) {
-  // Enable the registration feature and transport mode required features.
+  // Enable the transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingDeviceRegistration, kSharingUseDeviceInfo,
-                            kSharingDeriveVapidKey},
+      /*enabled_features=*/{kSharingUseDeviceInfo, kSharingDeriveVapidKey},
       /*disabled_features=*/{});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
@@ -435,8 +430,6 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransportMode) {
 }
 
 TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
-  // Enable the feature.
-  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(
@@ -465,30 +458,7 @@ TEST_F(SharingServiceTest, DeviceRegistrationTransientError) {
             GetSharingService()->GetStateForTesting());
 }
 
-TEST_F(SharingServiceTest, DeviceUnregistrationFeatureDisabled) {
-  scoped_feature_list_.InitAndDisableFeature(kSharingDeviceRegistration);
-  test_sync_service_.SetTransportState(
-      syncer::SyncService::TransportState::ACTIVE);
-  sharing_device_registration_->SetResult(
-      SharingDeviceRegistrationResult::kSuccess);
-
-  EXPECT_EQ(SharingService::State::DISABLED,
-            GetSharingService()->GetStateForTesting());
-
-  test_sync_service_.FireStateChanged();
-  EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
-  EXPECT_EQ(SharingService::State::DISABLED,
-            GetSharingService()->GetStateForTesting());
-
-  // Further state changes are ignored.
-  test_sync_service_.FireStateChanged();
-  EXPECT_EQ(1, sharing_device_registration_->unregistration_attempts());
-  EXPECT_EQ(SharingService::State::DISABLED,
-            GetSharingService()->GetStateForTesting());
-}
-
 TEST_F(SharingServiceTest, DeviceUnregistrationSyncDisabled) {
-  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::DISABLED);
 
@@ -500,10 +470,9 @@ TEST_F(SharingServiceTest, DeviceUnregistrationSyncDisabled) {
 }
 
 TEST_F(SharingServiceTest, DeviceUnregistrationLocalSyncEnabled) {
-  // Enable the registration feature and transport mode required features.
+  // Enable the transport mode required features.
   scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingDeviceRegistration, kSharingUseDeviceInfo,
-                            kSharingDeriveVapidKey},
+      /*enabled_features=*/{kSharingUseDeviceInfo, kSharingDeriveVapidKey},
       /*disabled_features=*/{});
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
@@ -518,8 +487,6 @@ TEST_F(SharingServiceTest, DeviceUnregistrationLocalSyncEnabled) {
 }
 
 TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
-  // Enable the feature.
-  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(
@@ -596,7 +563,6 @@ TEST_F(SharingServiceTest, DeviceRegisterAndUnregister) {
 }
 
 TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
-  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
   test_sync_service_.SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_.SetActiveDataTypes(

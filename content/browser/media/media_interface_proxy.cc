@@ -37,8 +37,7 @@
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #if defined(OS_MACOSX)
 #include "sandbox/mac/seatbelt_extension.h"
 #endif  // defined(OS_MACOSX)
@@ -361,12 +360,13 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
 
 #if defined(OS_MACOSX)
   // LoadCdm() should always be called before CreateInterfaceFactory().
-  media::mojom::SeatbeltExtensionTokenProviderPtr token_provider_ptr;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<media::mojom::SeatbeltExtensionTokenProvider>
+      token_provider_remote;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<SeatbeltExtensionTokenProviderImpl>(cdm_path),
-      mojo::MakeRequest(&token_provider_ptr));
+      token_provider_remote.InitWithNewPipeAndPassReceiver());
 
-  cdm_service->LoadCdm(cdm_path, std::move(token_provider_ptr));
+  cdm_service->LoadCdm(cdm_path, std::move(token_provider_remote));
 #else
   cdm_service->LoadCdm(cdm_path);
 #endif  // defined(OS_MACOSX)

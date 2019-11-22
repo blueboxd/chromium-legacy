@@ -48,9 +48,9 @@ void ControlConnection::SetMuted(AudioContentType type, bool muted) {
   muted_[type] = muted;
   if (socket_) {
     Generic message;
-    auto* muted = message.mutable_set_device_muted();
-    muted->set_content_type(ConvertContentType(type));
-    muted->set_muted(muted);
+    auto* mute_message = message.mutable_set_device_muted();
+    mute_message->set_content_type(ConvertContentType(type));
+    mute_message->set_muted(muted);
     socket_->SendProto(message);
   }
 }

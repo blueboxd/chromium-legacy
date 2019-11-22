@@ -417,11 +417,10 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
       return false;
 
 #if defined(OS_WIN)
+    // TODO(crbug/1027107): Replace with a more generic CBCM check.
     // Don't show the update bubbles to enterprise users.
     if (base::IsMachineExternallyManaged() ||
-        policy::BrowserDMTokenStorage::Get()
-            ->RetrieveBrowserDMToken()
-            .is_valid()) {
+        policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid()) {
       return false;
     }
 #endif

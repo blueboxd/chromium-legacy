@@ -14,8 +14,6 @@ source_set("coordinators") {
     "infobar_password_coordinator.mm",
     "infobar_save_card_coordinator.h",
     "infobar_save_card_coordinator.mm",
-    "infobar_translate_coordinator.h",
-    "infobar_translate_coordinator.mm",
   ]
   deps = [
     "//base",
@@ -38,8 +36,40 @@ source_set("coordinators") {
     "//ios/chrome/browser/ui/infobars/banners:public",
     "//ios/chrome/browser/ui/infobars/modals",
     "//ios/chrome/browser/ui/infobars/presentation",
-    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/util",
+    "//ui/base",
+  ]
+}
+
+source_set("translate_public") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_translate_modal_consumer.h",
+  ]
+  deps = []
+}
+
+source_set("translate") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_translate_coordinator.h",
+    "infobar_translate_coordinator.mm",
+    "infobar_translate_mediator.h",
+    "infobar_translate_mediator.mm",
+  ]
+  deps = [
+    ":coordinators",
+    ":translate_public",
+    "//base",
+    "//components/translate/core/browser",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/infobars:public",
+    "//ios/chrome/browser/translate:public",
+    "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/chrome/browser/ui/infobars:public",
+    "//ios/chrome/browser/ui/infobars/banners",
+    "//ios/chrome/browser/ui/infobars/modals",
+    "//ios/chrome/browser/ui/table_view",
     "//ui/base",
   ]
 }

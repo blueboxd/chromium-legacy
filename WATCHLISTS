@@ -25,6 +25,9 @@
                   '|isimpledom' \
                   '|liblouis'
     },
+    'accessibility_component_extensions': {
+      'filepath': 'chrome/browser/resources/chromeos/accessibility'
+    },
     'add_to_homescreen': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/webapps/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/webapps/|'\
@@ -800,7 +803,8 @@
                   'chrome/browser/extensions/api/networking_private/|'\
                   'chrome/browser/resources/settings/internet_page/|'\
                   'extensions/browser/api/networking_private/|'\
-                  'ui/chromeos/network/',
+                  'ui/chromeos/network/|'\
+                  'ui/webui/resources/cr_components/chromeos/network/'
     },
     'chromeos_timezone': {
       'filepath': 'chromeos/timezone/',
@@ -1970,6 +1974,7 @@
                       'nektar+watch@chromium.org',
                       'sarakato+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
+    'accessibility_component_extensions': ['anastasi+watch@google.com'],
     'add_to_homescreen': ['dominickn+watch-a2hs@chromium.org',
                           'hanxi+watch@chromium.org',
                           'pkotwicz+watch@chromium.org',
@@ -2287,6 +2292,7 @@
                      'benchan+watch-network@chromium.org',
                      'ejcaruso+watch-network@chromium.org',
                      'jhawkins+watch-network@chromium.org',
+                     'jonmann+watch-network@chromium.org',
                      'khorimoto+watch-network@chromium.org',
                      'stevenjb+watch-network@chromium.org',
                      'vecore+watch-network@google.com'],

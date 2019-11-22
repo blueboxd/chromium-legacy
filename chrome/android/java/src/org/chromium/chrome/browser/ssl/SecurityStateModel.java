@@ -26,17 +26,6 @@ public class SecurityStateModel {
     }
 
     /**
-     * Returns true for a valid URL from a secure origin, e.g., http://localhost,
-     * file:///home/user/test.html, https://bobpay.com.
-     *
-     * @param url The URL to check.
-     * @return Whether the origin of the URL is secure.
-     */
-    public static boolean isOriginSecure(String url) {
-        return SecurityStateModelJni.get().isOriginSecure(url);
-    }
-
-    /**
      * Returns true for a valid URL with a cryptographic scheme, e.g., HTTPS, WSS.
      *
      * @param url The URL to check.
@@ -46,12 +35,23 @@ public class SecurityStateModel {
         return SecurityStateModelJni.get().isSchemeCryptographic(url);
     }
 
+    /**
+     * Returns whether to use a danger icon instead of an info icon in the URL bar.
+     *
+     * @param securityLevel The ConnectionSecurityLevel of the page.
+     * @param url The URL to check.
+     * @return Whether to downgrade the info icon to a danger triangle.
+     */
+    public static boolean shouldDowngradeNeutralStyling(int securityLevel, String url) {
+        return SecurityStateModelJni.get().shouldDowngradeNeutralStyling(securityLevel, url);
+    }
+
     private SecurityStateModel() {}
 
     @NativeMethods
     interface Natives {
         int getSecurityLevelForWebContents(WebContents webContents);
-        boolean isOriginSecure(String url);
         boolean isSchemeCryptographic(String url);
+        boolean shouldDowngradeNeutralStyling(int securityLevel, String url);
     }
 }

@@ -4,7 +4,9 @@
 
 package org.chromium.weblayer_private;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.res.AssetManager;
 import android.net.Uri;
@@ -21,6 +23,7 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.JNINamespace;
@@ -133,6 +136,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         Context appContext = ClassLoaderContextWrapperFactory.get(
                 ObjectWrapper.unwrap(appContextWrapper, Context.class));
         PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
+
+        // TODO: This can break some functionality of apps that are doing interesting things with
+        // Contexts, ideally we would find a better way to do this.
+        addWebViewAssetPath(appContext, packageInfo);
+
+        applySplitApkWorkaround(packageInfo.applicationInfo, appContext.getResources().getAssets());
         ContextUtils.initApplicationContext(appContext);
         BuildInfo.setBrowserPackageInfo(packageInfo);
         int resourcesPackageId = getPackageId(appContext, packageInfo.packageName);
@@ -194,6 +203,26 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         return WebLayerImplJni.get().isRemoteDebuggingEnabled();
     }
 
+    private static void addWebViewAssetPath(Context appContext, PackageInfo packageInfo) {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                Constructor constructor = WebViewDelegate.class.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                WebViewDelegate delegate = (WebViewDelegate) constructor.newInstance();
+                delegate.addWebViewAssetPath(appContext);
+            } else {
+                // In L WebViewDelegate did not yet exist, so we have to poke AssetManager directly.
+                // Note: like the implementation in WebView's Api21CompatibilityDelegate this does
+                // not support split APKs.
+                Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
+                addAssetPath.invoke(appContext.getResources().getAssets(),
+                        packageInfo.applicationInfo.sourceDir);
+            }
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Returns the package ID to use when calling R.onResourcesLoaded().
      */
@@ -221,6 +250,33 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             }
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /** Adds assets from split APKs on Android versions where this is broken. */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static void applySplitApkWorkaround(
+            ApplicationInfo applicationInfo, AssetManager assetManager) {
+        // Q already handles this correctly.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return;
+        }
+
+        if (applicationInfo.splitSourceDirs != null) {
+            try {
+                Method addAssetPath;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    addAssetPath = AssetManager.class.getMethod(
+                            "addAssetPathAsSharedLibrary", String.class);
+                } else {
+                    addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
+                }
+                for (String path : applicationInfo.splitSourceDirs) {
+                    addAssetPath.invoke(assetManager, path);
+                }
+            } catch (ReflectiveOperationException e) {
+                Log.e(TAG, "Unable to load assets from split APK.", e);
+            }
         }
     }
 

@@ -148,3 +148,28 @@ class ResultsProcessorUnitTests(unittest.TestCase):
   def testMeasurementToHistogramUnknownUnits(self):
     with self.assertRaises(ValueError):
       processor.MeasurementToHistogram('a', {'unit': 'yards', 'samples': [9]})
+
+  def testGetTraceUrlRemote(self):
+    test_result = testing.TestResult(
+        'benchmark/story',
+        output_artifacts={
+            'trace.html': testing.Artifact('trace.html', 'gs://trace.html')
+        },
+    )
+    url = processor.GetTraceUrl(test_result)
+    self.assertEqual(url, 'gs://trace.html')
+
+  def testGetTraceUrlLocal(self):
+    test_result = testing.TestResult(
+        'benchmark/story',
+        output_artifacts={
+            'trace.html': testing.Artifact('trace.html')
+        },
+    )
+    url = processor.GetTraceUrl(test_result)
+    self.assertEqual(url, 'file://trace.html')
+
+  def testGetTraceUrlEmpty(self):
+    test_result = testing.TestResult('benchmark/story')
+    url = processor.GetTraceUrl(test_result)
+    self.assertIsNone(url)

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/assistant/ui/base/assistant_button_listener.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/events/event_observer.h"
@@ -19,12 +20,12 @@ class EventMonitor;
 
 namespace ash {
 
-enum class AssistantButtonId;
+class AssistantButton;
 
 // CaptionBarDelegate ----------------------------------------------------------
 
 // TODO(wutao): Remove this class and call methods on AssistantViewDelegate
-// derectly.
+// directly.
 class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBarDelegate {
  public:
   // Invoked when the caption button identified by |id| is pressed. Return
@@ -38,7 +39,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBarDelegate {
 // CaptionBar ------------------------------------------------------------------
 
 class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBar : public views::View,
-                                                  public views::ButtonListener,
+                                                  public AssistantButtonListener
+    ,
                                                   public ui::EventObserver {
  public:
   // This is necessary to inform clang that our overload of |OnEvent|,
@@ -54,8 +56,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBar : public views::View,
   int GetHeightForWidth(int width) const override;
   void VisibilityChanged(views::View* starting_from, bool visible) override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // AssistantButtonListener:
+  void OnButtonPressed(AssistantButtonId button_id) override;
 
   // ui::EventObserver:
   void OnEvent(const ui::Event& event) override;
@@ -67,11 +69,14 @@ class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBar : public views::View,
 
  private:
   void InitLayout();
+  void AddButton(AssistantButton* button);
   void HandleButton(AssistantButtonId id);
+  AssistantButton* GetButtonWithId(AssistantButtonId id);
 
   CaptionBarDelegate* delegate_ = nullptr;
 
   std::unique_ptr<views::EventMonitor> event_monitor_;
+  std::vector<AssistantButton*> buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptionBar);
 };

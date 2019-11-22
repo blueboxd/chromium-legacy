@@ -341,7 +341,6 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestExpiredLocalCardTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestExtraShippingOptionsTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestFailCompleteTest.java",
-  "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestFieldTrialTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestFreeShippingTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestIdTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/PaymentRequestIncompleteContactDetailsAndFreeShippingTest.java",

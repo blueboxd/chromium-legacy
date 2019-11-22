@@ -19,7 +19,6 @@ import "services/device/public/mojom/wake_lock_provider.mojom";
 import "services/identity/public/mojom/identity_accessor.mojom";
 import "services/media_session/public/mojom/audio_focus.mojom";
 import "services/media_session/public/mojom/media_controller.mojom";
-import "services/preferences/public/mojom/preferences.mojom";
 import "ui/accessibility/mojom/ax_assistant_structure.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -251,10 +250,6 @@ interface Client {
   // Requests Ash's AssistantStateController interface from the browser.
   RequestAssistantStateController(
       pending_receiver<ash.mojom.AssistantStateController> receiver);
-
-  // Requests a PrefStoreConnector from the browser.
-  RequestPrefStoreConnector(
-      pending_receiver<prefs.mojom.PrefStoreConnector> receiver);
 
   // Requests a BatteryMonitor from the browser.
   RequestBatteryMonitor(pending_receiver<device.mojom.BatteryMonitor> receiver);

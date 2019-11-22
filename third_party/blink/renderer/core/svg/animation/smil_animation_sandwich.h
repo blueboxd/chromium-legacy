@@ -27,11 +27,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_ANIMATION_SANDWICH_H_
 
 #include "third_party/blink/renderer/core/svg/animation/smil_time.h"
-#include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+class SVGAnimationElement;
 
 // This class implements/helps with implementing the "sandwich model" from SMIL.
 // https://www.w3.org/TR/SMIL3/smil-animation.html#animationNS-AnimationSandwichModel
@@ -95,11 +96,10 @@ namespace blink {
 //
 class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
  public:
-  using ScheduledVector = HeapVector<Member<SVGSMILElement>>;
   SMILAnimationSandwich();
 
-  void Add(SVGSMILElement* animation);
-  void Remove(SVGSMILElement* animation);
+  void Add(SVGAnimationElement* animation);
+  void Remove(SVGAnimationElement* animation);
 
   void UpdateActiveAnimationStack(SMILTime presentation_time);
   bool ApplyAnimationValues();
@@ -112,15 +112,17 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   // Results are accumulated to the first animation element that animates and
   // contributes to a particular element/attribute pair. We refer to this as
   // the "result element".
-  SVGSMILElement* ResultElement() const;
+  SVGAnimationElement* ResultElement() const;
+
+  using AnimationsVector = HeapVector<Member<SVGAnimationElement>>;
 
   // All the animation (really: timed) elements that make up the sandwich,
   // sorted according to priority.
-  ScheduledVector sandwich_;
+  AnimationsVector sandwich_;
   // The currently active animation elements in the sandwich. Retains the
   // ordering of elements from |sandwich_| when created. This is the animation
   // elements from which the animation value is computed.
-  ScheduledVector active_;
+  AnimationsVector active_;
 };
 
 }  // namespace blink

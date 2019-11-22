@@ -11,6 +11,10 @@
 namespace printing {
 namespace features {
 
+#if defined(OS_WIN)
+extern const base::Feature kUseXpsForPrinting;
+#endif
+
 #if defined(OS_MACOSX)
 extern const base::Feature kEnableCustomMacPaperSizes;
 #endif

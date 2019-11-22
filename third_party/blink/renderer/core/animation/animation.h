@@ -289,7 +289,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   base::Optional<double> CalculateStartTime(double current_time) const;
   double CalculateCurrentTime() const;
 
-  void SetStartTimeInternal(base::Optional<double>);
   void UpdateCurrentTimingState(TimingUpdateReason);
 
   void BeginUpdatingState();

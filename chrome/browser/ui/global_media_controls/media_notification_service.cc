@@ -94,7 +94,10 @@ void MediaNotificationService::Session::MediaSessionInfoChanged(
 
   // If we've started playing, we don't want the inactive timer to be running.
   if (playing) {
-    inactive_timer_.Stop();
+    if (inactive_timer_.IsRunning()) {
+      RecordInteractionDelayAfterPause();
+      inactive_timer_.Stop();
+    }
     return;
   }
 
@@ -102,6 +105,7 @@ void MediaNotificationService::Session::MediaSessionInfoChanged(
   if (inactive_timer_.IsRunning())
     return;
 
+  last_interaction_time_ = base::TimeTicks::Now();
   StartInactiveTimer();
 }
 
@@ -129,6 +133,9 @@ void MediaNotificationService::Session::OnSessionInteractedWith() {
   if (!inactive_timer_.IsRunning())
     return;
 
+  RecordInteractionDelayAfterPause();
+  last_interaction_time_ = base::TimeTicks::Now();
+
   // Otherwise, reset the timer.
   inactive_timer_.Stop();
   StartInactiveTimer();
@@ -151,6 +158,15 @@ void MediaNotificationService::Session::OnInactiveTimerFired() {
   // If the session has been paused and inactive for long enough, then
   // dismiss it.
   item_->Dismiss();
+}
+
+void MediaNotificationService::Session::RecordInteractionDelayAfterPause() {
+  base::TimeDelta time_since_last_interaction =
+      base::TimeTicks::Now() - last_interaction_time_;
+  base::UmaHistogramCustomTimes(
+      "Media.GlobalMediaControls.InteractionDelayAfterPause",
+      time_since_last_interaction, base::TimeDelta::FromMinutes(1),
+      base::TimeDelta::FromDays(1), 100);
 }
 
 MediaNotificationService::MediaNotificationService(

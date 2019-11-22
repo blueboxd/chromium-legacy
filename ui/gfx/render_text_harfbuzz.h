@@ -252,7 +252,8 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   void OnLayoutTextAttributeChanged(bool text_changed) override;
   void OnDisplayTextAttributeChanged() override;
   void EnsureLayout() override;
-  void DrawVisualText(internal::SkiaTextRenderer* renderer) override;
+  void DrawVisualText(internal::SkiaTextRenderer* renderer,
+                      const Range& selection) override;
 
  private:
   friend class test::RenderTextTestApi;

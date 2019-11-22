@@ -8,22 +8,12 @@
 
 <body>
   <script>
-    // Requests permission to display Web Notifications.
-    function RequestNotificationsPermission() {
-      Notification.requestPermission(function (level) {
-        domAutomationController.send(level);
-      });
-    }
-
     // Instantiates a new non-persistent notification with the given |title|
     // and |options| and then closes it.
     function DisplayAndCloseNonPersistentNotification(title, options) {
       const notification = new Notification(title, options || {});
       notification.addEventListener('show', e => {
         notification.close();
-      });
-      notification.addEventListener('close', e => {
-        domAutomationController.send('ok');
       });
     }
 

@@ -235,7 +235,7 @@ TEST_P(VideoDecoderTest, DecodesFramesOfVaryingSizes) {
   WaitForAllVideoToBeDecoded();
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VideoDecoderTest,
                          ::testing::Values(CODEC_VIDEO_VP8));
 

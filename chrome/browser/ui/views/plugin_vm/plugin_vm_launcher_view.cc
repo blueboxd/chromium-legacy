@@ -29,7 +29,6 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -57,8 +56,7 @@ void plugin_vm::ShowPluginVmLauncherView(Profile* profile) {
     views::DialogDelegate::CreateDialogWidget(g_plugin_vm_launcher_view,
                                               nullptr, nullptr);
   }
-  g_plugin_vm_launcher_view->GetDialogClientView()->SetButtonRowInsets(
-      kButtonRowInsets);
+  g_plugin_vm_launcher_view->SetButtonRowInsets(kButtonRowInsets);
   g_plugin_vm_launcher_view->GetWidget()->Show();
 }
 

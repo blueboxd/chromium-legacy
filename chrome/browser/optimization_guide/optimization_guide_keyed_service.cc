@@ -178,8 +178,8 @@ void OptimizationGuideKeyedService::Initialize(
       optimization_guide::features::IsHintsFetchingEnabled()) {
     prediction_manager_ =
         std::make_unique<optimization_guide::PredictionManager>(
-            pre_initialized_optimization_targets_, top_host_provider_.get(),
-            url_loader_factory);
+            pre_initialized_optimization_targets_, profile_path,
+            database_provider, top_host_provider_.get(), url_loader_factory);
   }
 }
 

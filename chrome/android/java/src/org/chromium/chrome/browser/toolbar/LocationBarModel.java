@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -390,7 +389,6 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             return R.drawable.ic_offline_pin_24dp;
         }
 
-        boolean featureIsEnabled = FeatureUtilities.isMarkHttpAsDangerWarningEnabled();
         String url = getCurrentUrl();
 
         switch (securityLevel) {
@@ -399,8 +397,9 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
                 // is NONE, but the security indicator should be shown on all devices.
                 if (mNativeLocationBarModelAndroid != 0
                         && SecurityStateModel.isSchemeCryptographic(url)) {
-                    return featureIsEnabled ? R.drawable.omnibox_not_secure_warning
-                                            : R.drawable.omnibox_info;
+                    return SecurityStateModel.shouldDowngradeNeutralStyling(securityLevel, url)
+                            ? R.drawable.omnibox_not_secure_warning
+                            : R.drawable.omnibox_info;
                 }
                 return isSmallDevice
                                 && (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
@@ -411,7 +410,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
                 if (mNativeLocationBarModelAndroid == 0) {
                     return R.drawable.omnibox_info;
                 }
-                if (featureIsEnabled && !SecurityStateModel.isOriginSecure(url)) {
+                if (SecurityStateModel.shouldDowngradeNeutralStyling(securityLevel, url)) {
                     return R.drawable.omnibox_not_secure_warning;
                 }
                 return R.drawable.omnibox_info;

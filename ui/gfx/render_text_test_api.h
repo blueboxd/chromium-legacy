@@ -33,9 +33,9 @@ class RenderTextTestApi {
     return render_text_->GetRunList();
   }
 
-  void DrawVisualText(internal::SkiaTextRenderer* renderer) {
+  void DrawVisualText(internal::SkiaTextRenderer* renderer, Range selection) {
     render_text_->EnsureLayout();
-    render_text_->DrawVisualText(renderer);
+    render_text_->DrawVisualText(renderer, selection);
   }
 
   const BreakList<SkColor>& colors() const { return render_text_->colors(); }

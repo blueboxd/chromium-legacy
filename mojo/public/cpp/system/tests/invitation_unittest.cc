@@ -323,7 +323,7 @@ DEFINE_TEST_CLIENT(CppProcessErrorsClient) {
   EXPECT_EQ(kDisconnectMessage, ReadMessage(pipe));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          InvitationCppTest,
                          testing::Values(TransportType::kChannel
 #if !defined(OS_FUCHSIA)

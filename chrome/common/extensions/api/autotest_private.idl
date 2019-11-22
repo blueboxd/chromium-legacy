@@ -594,6 +594,16 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void importCrostini(DOMString path, VoidCallback callback);
 
+    // Installs Plugin VM via the installer and then launches the VM.
+    // |imageUrl|: URL to the image to install.
+    // |imageHash|: Hash for the provided image.
+    // |licenseKey|: License key for Plugin VM.
+    // |callback|: Called when the operation has completed.
+    static void installPluginVM(DOMString imageUrl,
+                                DOMString imageHash,
+                                DOMString licenseKey,
+                                VoidCallback callback);
+
     // Register a component with CrOSComponentManager.
     // |name|: The name of the component.
     // |path|: Path to the component.

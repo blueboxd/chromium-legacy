@@ -1233,4 +1233,4 @@ TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(, TabStripTest, ::testing::Values(false, true));
+INSTANTIATE_TEST_SUITE_P(All, TabStripTest, ::testing::Values(false, true));

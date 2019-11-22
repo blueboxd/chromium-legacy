@@ -936,8 +936,7 @@
     },
     {
       name: "MediaCapabilitiesEncryptedMedia",
-      origin_trial_feature_name: "MediaCapabilitiesEncryptedMedia",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "MediaCapture",
@@ -1717,9 +1716,11 @@
       origin_trial_feature_name: "WebAssemblyThreads",
       status: "experimental",
     },
+    // WebAuth is disabled on Android versions prior to N (7.0) due to lack of
+    // supporting APIs, see runtime_features.cc.
     {
       name: "WebAuth",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "WebAuthenticationFeaturePolicy",

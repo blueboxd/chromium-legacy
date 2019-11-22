@@ -210,7 +210,7 @@ TEST_F(P2PQuicStreamTest, StreamWritesData) {
         // order to check that it's what was written.
         std::string data_consumed_by_quic(write_length, 'a');
         quic::QuicDataWriter writer(write_length, &data_consumed_by_quic[0],
-                                    quic::NETWORK_BYTE_ORDER);
+                                    quiche::NETWORK_BYTE_ORDER);
         stream->WriteStreamData(offset, write_length, &writer);
 
         EXPECT_THAT(data_consumed_by_quic, ElementsAreArray(kSomeData));
@@ -238,7 +238,7 @@ TEST_F(P2PQuicStreamTest, StreamWritesDataWithFin) {
         // what was written.
         std::string data_consumed_by_quic(write_length, 'a');
         quic::QuicDataWriter writer(write_length, &data_consumed_by_quic[0],
-                                    quic::NETWORK_BYTE_ORDER);
+                                    quiche::NETWORK_BYTE_ORDER);
         stream->WriteStreamData(offset, write_length, &writer);
 
         EXPECT_THAT(data_consumed_by_quic, ElementsAreArray(kSomeData));

@@ -34,7 +34,10 @@ settings.StorageSizeStat;
 Polymer({
   is: 'settings-storage',
 
-  behaviors: [settings.RouteObserverBehavior, WebUIListenerBehavior],
+  behaviors: [
+    settings.RouteObserverBehavior, settings.RouteOriginBehavior,
+    WebUIListenerBehavior
+  ],
 
   properties: {
     androidEnabled: Boolean,
@@ -65,6 +68,12 @@ Polymer({
     /** @private {settings.StorageSizeStat} */
     sizeStat_: Object,
   },
+
+  /**
+   * The route corresponding to this page.
+   * @private {!settings.Route|undefined}
+   */
+  route_: settings.routes.STORAGE,
 
   observers: ['handleCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],
 
@@ -100,14 +109,28 @@ Polymer({
         this.handleAndroidRunningChanged_.bind(this));
   },
 
+  ready: function() {
+    const r = settings.routes;
+    this.addFocusConfig_(r.CROSTINI_DETAILS, '#crostiniSize');
+    this.addFocusConfig_(r.ACCOUNTS, '#otherUsersSize');
+    this.addFocusConfig_(
+        r.EXTERNAL_STORAGE_PREFERENCES, '#externalStoragePreferences');
+  },
+
   /**
-   * Overridden from settings.RouteObserverBehavior.
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function() {
-    if (settings.getCurrentRoute() == settings.routes.STORAGE) {
-      this.onPageShown_();
+  currentRouteChanged: function(newRoute, oldRoute) {
+    settings.RouteOriginBehaviorImpl.currentRouteChanged.call(
+        this, newRoute, oldRoute);
+
+    if (settings.getCurrentRoute() != settings.routes.STORAGE) {
+      return;
     }
+    this.onPageShown_();
   },
 
   /** @private */

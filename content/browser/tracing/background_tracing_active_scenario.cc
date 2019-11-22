@@ -94,17 +94,13 @@ class PerfettoTracingSession
     perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(
         interning_reset_interval_ms);
 
-    mojo::PendingRemote<tracing::mojom::TracingSessionClient>
-        tracing_session_client;
-    receiver_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
+    consumer_host_->EnableTracing(
+        tracing_session_host_.BindNewPipeAndPassReceiver(),
+        receiver_.BindNewPipeAndPassRemote(), std::move(perfetto_config),
+        tracing::mojom::TracingClientPriority::kBackground);
     receiver_.set_disconnect_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionEnded,
                        base::Unretained(this)));
-
-    consumer_host_->EnableTracing(
-        tracing_session_host_.BindNewPipeAndPassReceiver(),
-        std::move(tracing_session_client), std::move(perfetto_config),
-        tracing::mojom::TracingClientPriority::kBackground);
     tracing_session_host_.set_disconnect_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionEnded,
                        base::Unretained(this)));

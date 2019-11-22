@@ -34,6 +34,10 @@ namespace {
 
 class MockTabStripUIEmbedder : public TabStripUI::Embedder {
  public:
+  MOCK_METHOD(const ui::AcceleratorProvider*,
+              GetAcceleratorProvider,
+              (),
+              (const override));
   MOCK_METHOD(void, CloseContainer, (), (override));
   MOCK_METHOD(void,
               ShowContextMenuAtPoint,

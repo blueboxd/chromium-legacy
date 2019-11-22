@@ -17,6 +17,7 @@
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -24,6 +25,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
@@ -92,6 +94,69 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   aura::Window* tab_cycler_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
+};
+
+// The UMA histogram that logs smoothness of the fade-in animation.
+constexpr char kWindowCycleShowAnimationSmoothness[] =
+    "Ash.WindowCycleView.AnimationSmoothness.Show";
+// The UMA histogram that logs smoothness of the window container animation.
+constexpr char kContainerAnimationSmoothness[] =
+    "Ash.WindowCycleView.AnimationSmoothness.Container";
+// The UMA histogram that logs smoothness of the highlight animation.
+constexpr char kHighlightAnimationSmoothness[] =
+    "Ash.WindowCycleView.AnimationSmoothness.Highlight";
+
+class WindowCycleAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter {
+ public:
+  explicit WindowCycleAnimationMetricsReporter(const char* name)
+      : name_(name) {}
+  ~WindowCycleAnimationMetricsReporter() override = default;
+  WindowCycleAnimationMetricsReporter(
+      const WindowCycleAnimationMetricsReporter&) = delete;
+  WindowCycleAnimationMetricsReporter& operator=(
+      const WindowCycleAnimationMetricsReporter&) = delete;
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    base::UmaHistogramPercentage(name_, value);
+  }
+
+ private:
+  const std::string name_;
+};
+
+class WindowCycleAnimationObserver : public ui::LayerAnimationObserver {
+ public:
+  enum class Type { CONTAINER, HIGHLIGHT };
+
+  WindowCycleAnimationObserver(Type type) {
+    switch (type) {
+      case Type::CONTAINER:
+        animation_metrics_reporter_ =
+            std::make_unique<WindowCycleAnimationMetricsReporter>(
+                kContainerAnimationSmoothness);
+        break;
+      case Type::HIGHLIGHT:
+        animation_metrics_reporter_ =
+            std::make_unique<WindowCycleAnimationMetricsReporter>(
+                kHighlightAnimationSmoothness);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override {}
+  void OnLayerAnimationScheduled(
+      ui::LayerAnimationSequence* sequence) override {
+    sequence->SetAnimationMetricsReporter(animation_metrics_reporter_.get());
+  }
+
+  std::unique_ptr<WindowCycleAnimationMetricsReporter>
+      animation_metrics_reporter_;
 };
 
 }  // namespace
@@ -173,7 +238,14 @@ class WindowCycleView : public views::WidgetDelegateView {
   explicit WindowCycleView(const WindowCycleList::WindowList& windows)
       : mirror_container_(new views::View()),
         highlight_view_(new views::View()),
-        target_window_(nullptr) {
+        target_window_(nullptr),
+        animation_metrics_reporter_(
+            std::make_unique<WindowCycleAnimationMetricsReporter>(
+                kWindowCycleShowAnimationSmoothness)),
+        container_animation_observer_(
+            WindowCycleAnimationObserver::Type::CONTAINER),
+        highlight_animation_observer_(
+            WindowCycleAnimationObserver::Type::HIGHLIGHT) {
     DCHECK(!windows.empty());
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
@@ -181,6 +253,8 @@ class WindowCycleView : public views::WidgetDelegateView {
     layer()->SetOpacity(0.0);
     {
       ui::ScopedLayerAnimationSettings animate_fade(layer()->GetAnimator());
+      animate_fade.SetAnimationMetricsReporter(
+          animation_metrics_reporter_.get());
       animate_fade.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(100));
       layer()->SetOpacity(1.0);
@@ -299,12 +373,15 @@ class WindowCycleView : public views::WidgetDelegateView {
     if (first_layout) {
       // The preview list animates bounds changes (other animatable properties
       // never change).
-      mirror_container_->layer()->SetAnimator(
-          ui::LayerAnimator::CreateImplicitAnimator());
+      ui::LayerAnimator* animator = ui::LayerAnimator::CreateImplicitAnimator();
+      animator->AddObserver(&container_animation_observer_);
+      mirror_container_->layer()->SetAnimator(animator);
+
       // The selection highlight also animates all bounds changes and never
       // changes other animatable properties.
-      highlight_view_->layer()->SetAnimator(
-          ui::LayerAnimator::CreateImplicitAnimator());
+      animator = ui::LayerAnimator::CreateImplicitAnimator();
+      animator->AddObserver(&highlight_animation_observer_);
+      highlight_view_->layer()->SetAnimator(animator);
     }
   }
 
@@ -334,6 +411,13 @@ class WindowCycleView : public views::WidgetDelegateView {
   views::View* mirror_container_;
   views::View* highlight_view_;
   aura::Window* target_window_;
+
+  // Metric reporter for animation.
+  const std::unique_ptr<WindowCycleAnimationMetricsReporter>
+      animation_metrics_reporter_;
+
+  WindowCycleAnimationObserver container_animation_observer_;
+  WindowCycleAnimationObserver highlight_animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleView);
 };
@@ -487,7 +571,7 @@ void WindowCycleList::InitWindowCycleView() {
   views::Widget::InitParams params;
   params.delegate = cycle_view_;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   // Don't let the alt-tab cycler be activatable. This lets the currently
   // activated window continue to be in the foreground. This may affect
   // things such as video automatically pausing/playing.

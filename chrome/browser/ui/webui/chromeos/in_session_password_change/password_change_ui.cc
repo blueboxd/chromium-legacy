@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_dialogs.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/password_change_handler.h"
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/urgent_password_expiry_notification_handler.h"
-#include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -111,7 +111,7 @@ ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIConfirmPasswordChangeHost);
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"title", IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_TITLE},
       {"bothPasswordsPrompt",
        IDS_PASSWORD_CHANGE_CONFIRM_DIALOG_BOTH_PASSWORDS_PROMPT},
@@ -126,8 +126,7 @@ ConfirmPasswordChangeUI::ConfirmPasswordChangeUI(content::WebUI* web_ui)
       {"matchError", IDS_PASSWORD_CHANGE_PASSWORDS_DONT_MATCH},
       {"save", IDS_PASSWORD_CHANGE_CONFIRM_SAVE_BUTTON}};
 
-  AddLocalizedStringsBulk(source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(source, kLocalizedStrings);
 
   AddSize(source, "", ConfirmPasswordChangeDialog::GetSize(false, false));
   AddSize(source, "Old", ConfirmPasswordChangeDialog::GetSize(true, false));
@@ -166,11 +165,10 @@ UrgentPasswordExpiryNotificationUI::UrgentPasswordExpiryNotificationUI(
                       base::NumberToString(expiration_time.ToJsTime()));
   }
 
-  static constexpr LocalizedString kLocalizedStrings[] = {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"body", IDS_PASSWORD_EXPIRY_CALL_TO_ACTION_CRITICAL},
       {"button", IDS_OK}};
-  AddLocalizedStringsBulk(source, kLocalizedStrings,
-                          base::size(kLocalizedStrings));
+  AddLocalizedStringsBulk(source, kLocalizedStrings);
 
   source->UseStringsJs();
   source->SetDefaultResource(IDR_URGENT_PASSWORD_EXPIRY_NOTIFICATION_HTML);

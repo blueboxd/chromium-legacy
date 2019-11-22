@@ -722,6 +722,10 @@ source_set("unit_tests") {
       "//components/policy/core/browser",
     ]
   }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants" ]
+  }
 }
 
 if (is_android) {

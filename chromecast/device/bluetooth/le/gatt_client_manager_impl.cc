@@ -23,6 +23,8 @@ namespace bluetooth {
 
 namespace {
 
+const int kMaxDevicesInQueue = 6;
+
 #define RUN_ON_IO_THREAD(method, ...)                                       \
   io_task_runner_->PostTask(                                                \
       FROM_HERE, base::BindOnce(&GattClientManagerImpl::method, weak_this_, \
@@ -151,6 +153,22 @@ void GattClientManagerImpl::EnqueueConnectRequest(
 void GattClientManagerImpl::EnqueueReadRemoteRssiRequest(
     const bluetooth_v2_shlib::Addr& addr) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  // Get the last byte because whole address is PII.
+  std::string addr_str = util::AddrLastByteString(addr);
+
+  auto it = addr_to_device_.find(addr);
+  if (it == addr_to_device_.end()) {
+    LOG(ERROR) << "ReadRemoteRssi (" << addr_str << ") failed: no such device";
+    return;
+  }
+
+  if (pending_read_remote_rssi_requests_.size() >= kMaxDevicesInQueue) {
+    LOG(ERROR) << "ReadRemoteRssi (" << addr_str << ") failed: queue is full";
+    it->second->OnReadRemoteRssiComplete(false, 0);
+    return;
+  }
+
   pending_read_remote_rssi_requests_.push_back(addr);
 
   // Run the request if this is the only request in the queue. Otherwise, it

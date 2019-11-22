@@ -14,7 +14,9 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabrestore.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/sessions/content/content_live_tab.h"
@@ -101,8 +103,10 @@ base::Optional<base::Token> BrowserLiveTabContext::GetTabGroupForTab(
 BrowserLiveTabContext::TabGroupMetadata
 BrowserLiveTabContext::GetTabGroupMetadata(base::Token group) const {
   const TabGroupVisualData* metadata =
-      browser_->tab_strip_model()->GetVisualDataForGroup(
-          TabGroupId::FromRawToken(group));
+      browser_->tab_strip_model()
+          ->group_model()
+          ->GetTabGroup(TabGroupId::FromRawToken(group))
+          ->visual_data();
   DCHECK(metadata);
   return TabGroupMetadata{metadata->title(), metadata->color()};
 }
@@ -195,8 +199,10 @@ void BrowserLiveTabContext::SetTabGroupMetadata(
     TabGroupMetadata group_metadata) {
   TabGroupVisualData restored_data(std::move(group_metadata.title),
                                    group_metadata.color);
-  browser_->tab_strip_model()->SetVisualDataForGroup(
-      TabGroupId::FromRawToken(group), std::move(restored_data));
+  browser_->tab_strip_model()
+      ->group_model()
+      ->GetTabGroup(TabGroupId::FromRawToken(group))
+      ->SetVisualData(std::move(restored_data));
 }
 
 // static

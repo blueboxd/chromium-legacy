@@ -116,16 +116,12 @@ PerfettoFileTracer::PerfettoFileTracer()
   // We just need a single global trace buffer, for our data.
   trace_config.mutable_buffers()->front().set_size_kb(32 * 1024);
 
-  mojo::PendingRemote<tracing::mojom::TracingSessionClient>
-      tracing_session_client;
-  receiver_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
-  receiver_.set_disconnect_handler(base::BindOnce(
-      &PerfettoFileTracer::OnTracingSessionEnded, base::Unretained(this)));
-
   consumer_host_->EnableTracing(
       tracing_session_host_.BindNewPipeAndPassReceiver(),
-      std::move(tracing_session_client), std::move(trace_config),
+      receiver_.BindNewPipeAndPassRemote(), std::move(trace_config),
       tracing::mojom::TracingClientPriority::kBackground);
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &PerfettoFileTracer::OnTracingSessionEnded, base::Unretained(this)));
   ReadBuffers();
 }
 

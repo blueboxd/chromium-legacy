@@ -24,7 +24,8 @@ class ImageView;
 namespace ash {
 
 // This constant must be kept the same as SELECT_TO_SPEAK_TRAY_CLASS_NAME in
-// chrome/browser/resources/chromeos/select_to_speak/select_to_speak.js.
+// chrome/browser/resources/chromeos/accessibility/select_to_speak/
+// select_to_speak.js.
 const char kSelectToSpeakTrayClassName[] =
     "tray/TrayBackgroundView/SelectToSpeakTray";
 

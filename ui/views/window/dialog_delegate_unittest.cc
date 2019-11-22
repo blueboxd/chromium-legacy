@@ -16,7 +16,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_MACOSX)
@@ -178,9 +177,8 @@ class DialogTest : public ViewsTestBase {
 }  // namespace
 
 TEST_F(DialogTest, AcceptAndCancel) {
-  DialogClientView* client_view = dialog()->GetDialogClientView();
-  LabelButton* ok_button = client_view->ok_button();
-  LabelButton* cancel_button = client_view->cancel_button();
+  LabelButton* ok_button = dialog()->GetOkButton();
+  LabelButton* cancel_button = dialog()->GetCancelButton();
 
   // Check that return/escape accelerators accept/close dialogs.
   EXPECT_EQ(dialog()->input(), dialog()->GetFocusManager()->GetFocusedView());
@@ -227,8 +225,8 @@ TEST_F(DialogTest, AcceptAndCancel) {
 
 TEST_F(DialogTest, RemoveDefaultButton) {
   // Removing buttons from the dialog here should not cause a crash on close.
-  delete dialog()->GetDialogClientView()->ok_button();
-  delete dialog()->GetDialogClientView()->cancel_button();
+  delete dialog()->GetOkButton();
+  delete dialog()->GetCancelButton();
 }
 
 TEST_F(DialogTest, HitTest_HiddenTitle) {
@@ -373,8 +371,6 @@ class InitialFocusTestDialog : public DialogDelegateView {
   InitialFocusTestDialog() = default;
   ~InitialFocusTestDialog() override = default;
 
-  views::View* OkButton() { return GetDialogClientView()->ok_button(); }
-
   // DialogDelegateView overrides:
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_OK; }
 
@@ -394,13 +390,13 @@ TEST_F(DialogTest, InitialFocusWithDeactivatedWidget) {
 
   // Nothing should be focused, because the Widget is still deactivated.
   EXPECT_EQ(nullptr, dialog_widget->GetFocusManager()->GetFocusedView());
-  EXPECT_EQ(dialog->OkButton(),
+  EXPECT_EQ(dialog->GetOkButton(),
             dialog_widget->GetFocusManager()->GetStoredFocusView());
   dialog_widget->Show();
   // After activation, the initially focused View should have focus as intended.
-  EXPECT_EQ(dialog->OkButton(),
+  EXPECT_EQ(dialog->GetOkButton(),
             dialog_widget->GetFocusManager()->GetFocusedView());
-  EXPECT_TRUE(dialog->OkButton()->HasFocus());
+  EXPECT_TRUE(dialog->GetOkButton()->HasFocus());
   dialog_widget->CloseNow();
 }
 
@@ -423,9 +419,8 @@ TEST_F(DialogTest, UnfocusableInitialFocus) {
 #if !defined(OS_MACOSX)
   // For non-Mac, turn off focusability on all the dialog's buttons manually.
   // This achieves the same effect as disabling full keyboard access.
-  DialogClientView* dcv = dialog->GetDialogClientView();
-  dcv->ok_button()->SetFocusBehavior(View::FocusBehavior::NEVER);
-  dcv->cancel_button()->SetFocusBehavior(View::FocusBehavior::NEVER);
+  dialog->GetOkButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
+  dialog->GetCancelButton()->SetFocusBehavior(View::FocusBehavior::NEVER);
 #endif
 
   // On showing the dialog, the initially focused View will be the OK button.

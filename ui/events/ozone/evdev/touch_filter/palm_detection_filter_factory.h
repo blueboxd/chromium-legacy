@@ -18,24 +18,6 @@
 
 namespace ui {
 
-EVENTS_OZONE_EVDEV_EXPORT
-extern const base::Feature kEnableHeuristicPalmDetectionFilter;
-
-EVENTS_OZONE_EVDEV_EXPORT
-extern const base::Feature kEnableNeuralPalmDetectionFilter;
-
-EVENTS_OZONE_EVDEV_EXPORT
-extern const base::FeatureParam<std::string> kNeuralPalmRadiusPolynomial;
-
-EVENTS_OZONE_EVDEV_EXPORT
-extern const base::FeatureParam<double> kHeuristicCancelThresholdSeconds;
-
-EVENTS_OZONE_EVDEV_EXPORT
-extern const base::FeatureParam<double> kHeuristicHoldThresholdSeconds;
-
-EVENTS_OZONE_EVDEV_EXPORT
-extern const base::FeatureParam<int> kHeuristicStrokeCount;
-
 EVENTS_OZONE_EVDEV_EXPORT std::unique_ptr<PalmDetectionFilter>
 CreatePalmDetectionFilter(const EventDeviceInfo& devinfo,
                           SharedPalmDetectionFilterState* shared_palm_state);

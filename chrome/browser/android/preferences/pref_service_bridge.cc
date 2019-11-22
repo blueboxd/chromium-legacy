@@ -10,8 +10,8 @@
 
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "chrome/android/chrome_jni_headers/PrefServiceBridge_jni.h"
 #include "chrome/browser/android/preferences/prefs.h"
+#include "chrome/browser/preferences/jni_headers/PrefServiceBridge_jni.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/prefs/pref_service.h"
 

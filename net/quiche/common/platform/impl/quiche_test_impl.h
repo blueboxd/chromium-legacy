@@ -8,4 +8,10 @@
 #include "testing/gmock/include/gmock/gmock.h"  // IWYU pragma: export
 #include "testing/gtest/include/gtest/gtest.h"  // IWYU pragma: export
 
+namespace quiche {
+namespace test {
+class QuicheTest : public ::testing::Test {};
+}  // namespace test
+}  // namespace quiche
+
 #endif  // NET_QUICHE_COMMON_PLATFORM_IMPL_QUICHE_TEST_IMPL_H_

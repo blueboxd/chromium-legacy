@@ -42,7 +42,6 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/native_widget_private.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 // Donates an implementation of -[NSAnimation stopAnimation] which calls the
@@ -1869,7 +1868,7 @@ TEST_F(NativeWidgetMacTest, InvalidateShadow) {
   EXPECT_EQ(0, [window invalidateShadowCount]);
   widget->CloseNow();
 
-  init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   BridgedNativeWidgetTestApi test_api(window);
 
@@ -1911,20 +1910,20 @@ TEST_F(NativeWidgetMacTest, ContentOpacity) {
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
 
-  EXPECT_EQ(init_params.opacity, Widget::InitParams::INFER_OPACITY);
+  EXPECT_EQ(init_params.opacity, Widget::InitParams::WindowOpacity::kInferred);
   Widget* widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
 
   // Infer should default to opaque on Mac.
   EXPECT_TRUE([[window contentView] isOpaque]);
   widget->CloseNow();
 
-  init_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kTranslucent;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   EXPECT_FALSE([[window contentView] isOpaque]);
   widget->CloseNow();
 
   // Test opaque explicitly.
-  init_params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  init_params.opacity = Widget::InitParams::WindowOpacity::kOpaque;
   widget = CreateWidgetWithTestWindow(std::move(init_params), &window);
   EXPECT_TRUE([[window contentView] isOpaque]);
   widget->CloseNow();
@@ -2394,7 +2393,6 @@ NSArray* ExtractTouchBarGroupIdentifiers(NSView* view) {
 TEST_F(NativeWidgetMacTest, TouchBar) {
   ModalDialogDelegate* delegate = new ModalDialogDelegate(ui::MODAL_TYPE_NONE);
   views::DialogDelegate::CreateDialogWidget(delegate, nullptr, nullptr);
-  DialogClientView* client_view = delegate->GetDialogClientView();
   NSView* content =
       [delegate->GetWidget()->GetNativeWindow().GetNativeNSWindow()
               contentView];
@@ -2407,8 +2405,8 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 
   EXPECT_TRUE(content);
-  EXPECT_TRUE(client_view->ok_button());
-  EXPECT_TRUE(client_view->cancel_button());
+  EXPECT_TRUE(delegate->GetOkButton());
+  EXPECT_TRUE(delegate->GetCancelButton());
 
   if (@available(macOS 10.12.2, *)) {
     NSTouchBar* touch_bar = [content touchBar];
@@ -2431,8 +2429,8 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   // Remove the cancel button.
   delegate->set_buttons(ui::DIALOG_BUTTON_OK);
   delegate->DialogModelChanged();
-  EXPECT_TRUE(client_view->ok_button());
-  EXPECT_FALSE(client_view->cancel_button());
+  EXPECT_TRUE(delegate->GetOkButton());
+  EXPECT_FALSE(delegate->GetCancelButton());
 
   if (@available(macOS 10.12.2, *)) {
     NSTouchBar* touch_bar = [content touchBar];

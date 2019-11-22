@@ -15,14 +15,6 @@
     android:paddingTop="@dimen/toolbar_height_no_shadow"
     android:visibility="gone" >
 
-    <!-- Explore offline card -->
-    <ViewStub
-        android:id="@+id/explore_offline_card_stub"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout="@layout/new_tab_page_offline_card"
-        android:inflatedId="@+id/explore_offline_card" />
-
     <!-- Search provider logo -->
     <org.chromium.chrome.browser.ntp.LogoView
         android:id="@+id/search_provider_logo"
@@ -35,6 +27,15 @@
 
     <!-- Search box -->
     <include layout="@layout/fake_search_box_layout"/>
+
+    <!-- Explore offline card -->
+    <ViewStub
+        android:id="@+id/explore_offline_card_stub"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout="@layout/new_tab_page_offline_card"
+        android:inflatedId="@+id/explore_offline_card" />
 
     <!-- Middle spacer -->
     <View

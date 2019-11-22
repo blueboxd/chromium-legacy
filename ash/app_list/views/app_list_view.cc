@@ -632,7 +632,7 @@ void AppListView::InitWidget(gfx::NativeView parent) {
   params.name = "AppList";
   params.parent = parent;
   params.delegate = this;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.layer_type = ui::LAYER_NOT_DRAWN;
 
   views::Widget* widget = new views::Widget;
@@ -662,7 +662,7 @@ void AppListView::InitChildWidget() {
       views::Widget::InitParams::TYPE_CONTROL);
   search_box_widget_params.parent = GetWidget()->GetNativeView();
   search_box_widget_params.opacity =
-      views::Widget::InitParams::TRANSLUCENT_WINDOW;
+      views::Widget::InitParams::WindowOpacity::kTranslucent;
   search_box_widget_params.name = "SearchBoxView";
   search_box_widget_params.delegate = search_box_view_;
 

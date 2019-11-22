@@ -134,9 +134,9 @@ static const char* kBadFlags[] = {
     // be possible to read GPU data for other Chromium processes.
     switches::kEnableUnsafeWebGPU,
 
-    // A flag to support local file based BundledExchanges loading, only for
-    // testing purpose.
-    switches::kTrustableBundledExchangesFileUrl,
+    // A flag to support local file based WebBundle loading, only for testing
+    // purpose.
+    switches::kTrustableWebBundleFileUrl,
 };
 #endif  // OS_ANDROID
 

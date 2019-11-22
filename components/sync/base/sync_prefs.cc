@@ -126,10 +126,12 @@ const char* GetPrefNameForType(UserSelectableType type) {
 #if defined(OS_CHROMEOS)
 const char* GetPrefNameForOsType(UserSelectableOsType type) {
   switch (type) {
+    case UserSelectableOsType::kOsApps:
+      return prefs::kSyncOsApps;
     case UserSelectableOsType::kOsPreferences:
       return prefs::kSyncOsPreferences;
     case UserSelectableOsType::kPrinters:
-      return prefs::kSyncPrinters;
+      return prefs::kSyncOsPrinters;
   }
   NOTREACHED();
   return nullptr;

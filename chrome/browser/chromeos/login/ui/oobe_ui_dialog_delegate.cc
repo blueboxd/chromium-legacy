@@ -199,7 +199,7 @@ class CaptivePortalDialogDelegate
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.delegate = view_;
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
     ash_util::SetupWidgetInitParamsForContainer(
         &params, ash::kShellWindowId_LockSystemModalContainer);
 
@@ -327,7 +327,7 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
       &params, ash::kShellWindowId_LockScreenContainer);
   layout_view_ = new LayoutWidgetDelegateView(this, dialog_view_);
   params.delegate = layout_view_;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
 
   widget_ = new views::Widget();

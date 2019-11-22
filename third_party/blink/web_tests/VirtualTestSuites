@@ -186,7 +186,8 @@
   },
   {
     "prefix": "layout_ng_block_frag",
-    "bases": ["external/wpt/css/css-multicol",
+    "bases": ["external/wpt/css/css-break",
+              "external/wpt/css/css-multicol",
               "fast/multicol",
               "fragmentation",
               "printing"],
@@ -598,6 +599,11 @@
     "prefix": "out-of-blink-frame-ancestors",
     "bases": ["external/wpt/content-security-policy/frame-ancestors"],
     "args": ["--enable-features=OutOfBlinkFrameAncestors"]
+  },
+  {
+    "prefix": "import-maps-disabled",
+    "bases": ["external/wpt/import-maps/core/not-as-classic-script.html"],
+    "args": ["--disable-blink-features=ExperimentalProductivityFeatures"]
   },
   {
     "prefix": "import-maps-without-builtin-modules",

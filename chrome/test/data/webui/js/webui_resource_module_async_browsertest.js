@@ -19,11 +19,6 @@ var WebUIResourceModuleAsyncTest = class extends testing.Test {
   }
 
   /** @override */
-  get runAccessibilityChecks() {
-    return false;
-  }
-
-  /** @override */
   get webuiHost() {
     return 'dummyurl';
   }

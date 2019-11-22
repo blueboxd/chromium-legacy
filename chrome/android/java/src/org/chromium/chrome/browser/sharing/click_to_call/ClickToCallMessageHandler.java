@@ -20,7 +20,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.DeviceConditions;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
@@ -129,10 +128,6 @@ public class ClickToCallMessageHandler {
      * Returns true if we should open the dialer straight away.
      */
     private static boolean shouldOpenDialer() {
-        if (!FeatureUtilities.isClickToCallOpenDialerDirectlyEnabled()) {
-            return false;
-        }
-
         // On Android Q and above, we never open the dialer directly.
         if (BuildInfo.isAtLeastQ()) {
             return false;
@@ -155,10 +150,6 @@ public class ClickToCallMessageHandler {
      * Returns true if we should show notification to the user.
      */
     private static boolean shouldShowNotification() {
-        if (!FeatureUtilities.isClickToCallOpenDialerDirectlyEnabled()) {
-            return true;
-        }
-
         // Always show the notification for Android Q and above. For pre-Q, only show notification
         // if device is locked.
         return BuildInfo.isAtLeastQ()

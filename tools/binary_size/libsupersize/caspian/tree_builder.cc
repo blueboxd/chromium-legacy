@@ -36,6 +36,36 @@ std::string_view DirName(std::string_view path, char sep, char othersep) {
 }
 }  // namespace
 
+std::string_view IdPathLens::ParentName(
+    const BaseSymbol& symbol,
+    std::deque<std::string>* owned_strings) {
+  const char* source_path = symbol.SourcePath();
+  return source_path && *source_path ? source_path : symbol.ObjectPath();
+}
+
+std::string_view ComponentLens::ParentName(
+    const BaseSymbol& symbol,
+    std::deque<std::string>* owned_strings) {
+  std::string component;
+  if (symbol.Component() && *symbol.Component()) {
+    component = symbol.Component();
+  } else {
+    component = kNoComponent;
+  }
+  owned_strings->push_back(component + std::string(1, kComponentSep) +
+                           std::string(symbol.SourcePath()));
+  return owned_strings->back();
+}
+
+std::string_view TemplateLens::ParentName(
+    const BaseSymbol& symbol,
+    std::deque<std::string>* owned_strings) {
+  owned_strings->push_back(std::string(symbol.Name()) + std::string(1, '/') +
+                           std::string(symbol.SourcePath()));
+  return owned_strings->back();
+  // return symbol.Name();
+}
+
 TreeBuilder::TreeBuilder(SizeInfo* size_info) {
   symbols_.reserve(size_info->raw_symbols.size());
   for (const Symbol& sym : size_info->raw_symbols) {
@@ -53,13 +83,14 @@ TreeBuilder::TreeBuilder(DeltaSizeInfo* size_info) {
 TreeBuilder::~TreeBuilder() = default;
 
 void TreeBuilder::Build(
-    bool group_by_component,
+    std::unique_ptr<BaseLens> lens,
+    char separator,
     bool method_count_mode,
     std::vector<std::function<bool(const BaseSymbol&)>> filters) {
-  group_by_component_ = group_by_component;
+  lens_ = std::move(lens);
   method_count_mode_ = method_count_mode;
   filters_ = filters;
-  sep_ = group_by_component ? kComponentSep : kPathSep;
+  sep_ = separator;
 
   // Initialize tree root.
   root_.container_type = ContainerType::kDirectory;
@@ -71,10 +102,7 @@ void TreeBuilder::Build(
       symbols_by_source_path;
   for (const BaseSymbol* sym : symbols_) {
     if (ShouldIncludeSymbol(*sym)) {
-      std::string_view key = sym->SourcePath();
-      if (key == nullptr) {
-        key = sym->ObjectPath();
-      }
+      std::string_view key = lens_->ParentName(*sym, &owned_strings_);
       symbols_by_source_path[key].push_back(sym);
     }
   }
@@ -142,17 +170,6 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
     } else {
       file_node->id_path = source_path;
     }
-    if (group_by_component_) {
-      std::string component;
-      if (symbols[0]->Component() && *symbols[0]->Component()) {
-        component = symbols[0]->Component();
-      } else {
-        component = kNoComponent;
-      }
-      owned_strings_.push_back(component + std::string(1, kComponentSep) +
-                               std::string(file_node->id_path));
-      file_node->id_path = owned_strings_.back();
-    }
 
     file_node->short_name_index =
         LastSeparatorIndex(file_node->id_path, sep_, kPathSep) + 1;
@@ -172,7 +189,6 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
     AttachToParent(symbol_node, file_node);
   }
 
-  // TODO: Only add if there are unfiltered symbols in this file.
   TreeNode* orphan_node = file_node;
   while (orphan_node != &root_) {
     orphan_node = GetOrMakeParentNode(orphan_node);

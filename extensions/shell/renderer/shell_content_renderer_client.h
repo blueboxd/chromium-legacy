@@ -39,6 +39,7 @@ class ShellContentRendererClient : public content::ContentRendererClient {
   void WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,
+                       const blink::WebURL& site_for_cookies,
                        const url::Origin* initiator_origin,
                        GURL* new_url,
                        bool* attach_same_site_cookies) override;

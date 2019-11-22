@@ -24,19 +24,9 @@ struct CoreAccountId {
   CoreAccountId& operator=(const CoreAccountId&);
   CoreAccountId& operator=(CoreAccountId&&) noexcept;
 
-#if defined(OS_ANDROID)
-  // Those implicit constructor and conversion operator allow to
-  // progressively migrate the code to use this struct. Removing
-  // them is tracked by https://crbug.com/959161
-  CoreAccountId(const char* id);
-  CoreAccountId(std::string&& id);
-  CoreAccountId(const std::string& id);
-  operator std::string() const;
-#else
   explicit CoreAccountId(const char* id);
   explicit CoreAccountId(std::string&& id);
   explicit CoreAccountId(const std::string& id);
-#endif
 
   // Checks if the account is valid or not.
   // TODO(triploblastic): Possibly rename of remove this after

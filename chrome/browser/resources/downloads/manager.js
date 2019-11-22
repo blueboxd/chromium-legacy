@@ -12,7 +12,7 @@ import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
-import {getInstance as getToastManagerInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import {CrToastManagerElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {FindShortcutBehavior} from 'chrome://resources/js/find_shortcut_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -254,6 +254,14 @@ Polymer({
     }
   },
 
+  /**
+   * @return {!CrToastManagerElement}
+   * @private
+   */
+  getToastManagerInstance_: function() {
+    return /** @type {!CrToastManagerElement} */ (this.$$('cr-toast-manager'));
+  },
+
   /** @private */
   onClearAllCommand_() {
     if (!this.$.toolbar.canClearAll()) {
@@ -261,7 +269,7 @@ Polymer({
     }
 
     this.mojoHandler_.clearAll();
-    getToastManagerInstance().show(
+    this.getToastManagerInstance_().show(
         loadTimeData.getString('toastClearedAll'), true);
   },
 
@@ -271,7 +279,7 @@ Polymer({
       return;
     }
 
-    getToastManagerInstance().hide();
+    this.getToastManagerInstance_().hide();
     this.mojoHandler_.undo();
   },
 
@@ -311,7 +319,7 @@ Polymer({
 
   /** @private */
   onUndoClick_: function() {
-    getToastManagerInstance().hide();
+    this.getToastManagerInstance_().hide();
     this.mojoHandler_.undo();
   },
 

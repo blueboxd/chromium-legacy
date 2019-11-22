@@ -155,10 +155,6 @@ js2gtest("browser_tests_js_webui") {
     ]
   }
 
-  if (!is_chrome_branded) {
-    # crbug.com/230471
-    sources += [ "accessibility_audit_browsertest.js" ]
-  }
   if (enable_extensions) {
     sources += [
       "extensions/a11y/extensions_a11y_test.js",
@@ -262,25 +258,25 @@ js2gtest("unit_tests_js") {
   ]
   if (is_chromeos) {
     sources += [
-      "../../../browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs",
+      "../../../browser/resources/chromeos/accessibility/braille_ime/braille_ime_unittest.gtestjs",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/node_utils_unittest.gtestjs",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/paragraph_utils_unittest.gtestjs",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/rect_utils_unittest.gtestjs",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/select_to_speak_unittest.gtestjs",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/word_utils_unittest.gtestjs",
+      "../../../browser/resources/chromeos/accessibility/switch_access/rect_helper_unittest.gtestjs",
       "../../../browser/resources/chromeos/machine_learning/machine_learning_internals_utils_unittest.gtestjs",
-      "../../../browser/resources/chromeos/select_to_speak/node_utils_unittest.gtestjs",
-      "../../../browser/resources/chromeos/select_to_speak/paragraph_utils_unittest.gtestjs",
-      "../../../browser/resources/chromeos/select_to_speak/rect_utils_unittest.gtestjs",
-      "../../../browser/resources/chromeos/select_to_speak/select_to_speak_unittest.gtestjs",
-      "../../../browser/resources/chromeos/select_to_speak/word_utils_unittest.gtestjs",
-      "../../../browser/resources/chromeos/switch_access/rect_helper_unittest.gtestjs",
     ]
     extra_js_files += [
-      "../../../browser/resources/chromeos/braille_ime/braille_ime.js",
+      "../../../browser/resources/chromeos/accessibility/braille_ime/braille_ime.js",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/paragraph_utils.js",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/rect_utils.js",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/select_to_speak.js",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/test_support.js",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/word_utils.js",
+      "../../../browser/resources/chromeos/accessibility/select_to_speak/node_utils.js",
+      "../../../browser/resources/chromeos/accessibility/switch_access/rect_helper.js",
       "../../../browser/resources/chromeos/machine_learning/machine_learning_internals_utils.js",
-      "../../../browser/resources/chromeos/select_to_speak/paragraph_utils.js",
-      "../../../browser/resources/chromeos/select_to_speak/rect_utils.js",
-      "../../../browser/resources/chromeos/select_to_speak/select_to_speak.js",
-      "../../../browser/resources/chromeos/select_to_speak/test_support.js",
-      "../../../browser/resources/chromeos/select_to_speak/word_utils.js",
-      "../../../browser/resources/chromeos/select_to_speak/node_utils.js",
-      "../../../browser/resources/chromeos/switch_access/rect_helper.js",
     ]
   }
 }

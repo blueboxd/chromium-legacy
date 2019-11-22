@@ -518,8 +518,8 @@ void FillNavigationParamsRequest(
   }
 
   navigation_params->had_transient_activation = common_params.has_user_gesture;
-  navigation_params->base_url_override_for_bundled_exchanges =
-      commit_params.base_url_override_for_bundled_exchanges;
+  navigation_params->base_url_override_for_web_bundle =
+      commit_params.base_url_override_for_web_bundle;
 }
 
 mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
@@ -2198,7 +2198,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_SwapOut, OnSwapOut)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapIn, OnSwapIn)
     IPC_MESSAGE_HANDLER(FrameMsg_Stop, OnStop)
-    IPC_MESSAGE_HANDLER(FrameMsg_Collapse, OnCollapse)
     IPC_MESSAGE_HANDLER(FrameMsg_ContextMenuClosed, OnContextMenuClosed)
     IPC_MESSAGE_HANDLER(FrameMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
@@ -5035,7 +5034,7 @@ void RenderFrameImpl::WillSendRequestInternal(
           ? base::Optional<url::Origin>()
           : base::Optional<url::Origin>(request.RequestorOrigin());
   GetContentClient()->renderer()->WillSendRequest(
-      frame_, transition_type, request.Url(),
+      frame_, transition_type, request.Url(), request.SiteForCookies(),
       base::OptionalOrNullptr(initiator_origin), &new_url,
       &attach_same_site_cookies);
   if (!new_url.is_empty())
@@ -5100,7 +5099,7 @@ void RenderFrameImpl::WillSendRequestInternal(
 
   if (!render_view_->renderer_preferences_.enable_referrers)
     request.SetHttpReferrer(WebString(),
-                            network::mojom::ReferrerPolicy::kDefault);
+                            network::mojom::ReferrerPolicy::kNever);
 }
 
 void RenderFrameImpl::DidLoadResourceFromMemoryCache(
@@ -5384,10 +5383,6 @@ void RenderFrameImpl::OnDroppedNavigation() {
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
   frame_->DidDropNavigation();
-}
-
-void RenderFrameImpl::OnCollapse(bool collapsed) {
-  frame_->Collapse(collapsed);
 }
 
 void RenderFrameImpl::WasHidden() {
@@ -6695,7 +6690,8 @@ void RenderFrameImpl::BeginNavigationInternal(
           is_form_submission, was_initiated_by_link_click, searchable_form_url,
           searchable_form_encoding, client_side_redirect_url,
           initiator ? base::make_optional<base::Value>(std::move(*initiator))
-                    : base::nullopt);
+                    : base::nullopt,
+          info->url_request.GetExtraData()->attach_same_site_cookies());
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;

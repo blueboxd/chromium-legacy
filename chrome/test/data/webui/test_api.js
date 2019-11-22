@@ -177,98 +177,6 @@ Test.prototype = {
   closureModuleDeps: [],
 
   /**
-   * Whether to run the accessibility checks.
-   * @type {boolean}
-   */
-  runAccessibilityChecks: true,
-
-  /**
-   * Configuration for the accessibility audit.
-   * TODO(crbug/1000989): Enable type checks for axs.
-   * @type {Object} an axs.AuditConfiguration
-   */
-  accessibilityAuditConfig_: null,
-
-  /**
-   * Returns the configuration for the accessibility audit, creating it
-   * on-demand.
-   * TODO(crbug/1000989): Enable type checks for axs.
-   * @suppress {undefinedVars|missingProperties}
-   * @return {Object} an axs.AuditConfiguration!
-   */
-  get accessibilityAuditConfig() {
-    if (!this.accessibilityAuditConfig_) {
-      this.accessibilityAuditConfig_ = new axs.AuditConfiguration();
-
-      this.accessibilityAuditConfig_.showUnsupportedRulesWarning = false;
-
-      this.accessibilityAuditConfig_.auditRulesToIgnore = [
-        // The "elements with meaningful background image" accessibility
-        // audit (AX_IMAGE_01) does not apply, since Chrome doesn't
-        // disable background images in high-contrast mode like some
-        // browsers do.
-        'elementsWithMeaningfulBackgroundImage',
-
-        // Most WebUI pages are inside an IFrame, so the "web page should
-        // have a title that describes topic or purpose" test (AX_TITLE_01)
-        // generally does not apply.
-        'pageWithoutTitle',
-
-        // TODO(aboxhall): re-enable when crbug.com/267035 is fixed.
-        // Until then it's just noise.
-        'lowContrastElements',
-
-        // TODO(apacible): re-enable when following issue is fixed.
-        // github.com/GoogleChrome/accessibility-developer-tools/issues/251
-        'tableHasAppropriateHeaders',
-
-        // TODO(crbug.com/657514): This rule is flaky on Linux/ChromeOS.
-        'requiredOwnedAriaRoleMissing',
-      ];
-    }
-    return this.accessibilityAuditConfig_;
-  },
-
-  /**
-   * Whether to treat accessibility issues (errors or warnings) as test
-   * failures. If true, any accessibility issues will cause the test to fail.
-   * If false, accessibility issues will cause a console.warn.
-   * Off by default to begin with; as we add the ability to suppress false
-   * positives, we will transition this to true.
-   * @type {boolean}
-   */
-  accessibilityIssuesAreErrors: false,
-
-  /**
-   * Holds any accessibility results found during the accessibility audit.
-   * @type {Array<Object>}
-   */
-  a11yResults_: [],
-
-  /**
-   * Gets the list of accessibility errors found during the accessibility
-   * audit. Only for use in testing.
-   * @return {Array<Object>}
-   */
-  getAccessibilityResults: function() {
-    return this.a11yResults_;
-  },
-
-  /**
-   * Run accessibility checks after this test completes.
-   */
-  enableAccessibilityChecks: function() {
-    this.runAccessibilityChecks = true;
-  },
-
-  /**
-   * Don't run accessibility checks after this test completes.
-   */
-  disableAccessibilityChecks: function() {
-    this.runAccessibilityChecks = false;
-  },
-
-  /**
    * Create a new class to handle |messageNames|, assign it to
    * |this.mockHandler|, register its messages and return it.
    * @return {Mock} Mock handler class assigned to |this.mockHandler|.
@@ -301,20 +209,9 @@ Test.prototype = {
 
   /**
    * Override this method to perform tasks before running your test.
-   * TODO(crbug/1000989): Enable type checks for axs.
-   * @suppress {missingProperties}
    * @type {Function}
    */
-  setUp: function() {
-    // These should be ignored in many of the web UI tests.
-    // user-image-stream and supervised-user-creation-image-stream are
-    // streaming video elements used for capturing a user image so they
-    // won't have captions and should be ignored everywhere.
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'videoWithoutCaptions', '.user-image-stream');
-    this.accessibilityAuditConfig.ignoreSelectors(
-        'videoWithoutCaptions', '.supervised-user-creation-image-stream');
-  },
+  setUp: function() {},
 
   /**
    * Override this method to perform tasks after running your test. If you
@@ -339,26 +236,6 @@ Test.prototype = {
    */
   runTest: function(testBody) {
     testBody.call(this);
-  },
-
-  /**
-   * Called to run the accessibility audit from the perspective of this
-   * fixture.
-   */
-  runAccessibilityAudit: function() {
-    if (!this.runAccessibilityChecks || typeof document === 'undefined') {
-      return;
-    }
-
-    var auditConfig = this.accessibilityAuditConfig;
-    if (!runAccessibilityAudit(this.a11yResults_, auditConfig)) {
-      var report = accessibilityAuditReport(this.a11yResults_);
-      if (this.accessibilityIssuesAreErrors) {
-        throw new Error(report);
-      } else {
-        console.warn(report);
-      }
-    }
   },
 
   /**
@@ -480,15 +357,6 @@ TestCase.prototype = {
   runTest: function() {
     if (this.body && this.fixture) {
       this.fixture.runTest(this.body);
-    }
-  },
-
-  /**
-   * Called after a test is run (in testDone) to test accessibility.
-   */
-  runAccessibilityAudit: function() {
-    if (this.fixture) {
-      this.fixture.runAccessibilityAudit();
     }
   },
 
@@ -685,10 +553,6 @@ function testDone(result) {
     testIsDone = true;
     if (currentTestCase) {
       var ok = true;
-      ok = createExpect(
-               currentTestCase.runAccessibilityAudit.bind(currentTestCase))
-               .call(null) &&
-          ok;
       ok = createExpect(currentTestCase.tearDown.bind(currentTestCase))
                .call(null) &&
           ok;
@@ -910,61 +774,6 @@ function assertThrows(testFunction, opt_expected_or_constructor, opt_message) {
   chai.assert.throws(
       testFunction,
       /** @type{string} */ (opt_expected_or_constructor), opt_message);
-}
-
-/**
- * Run an accessibility audit on the current page state.
- * TODO(crbug/1000989): Enable type checks for axs.
- * @suppress {checkTypes}
- * @param {Array} a11yResults
- * @param {Object=} opt_config, an axs.AuditConfiguration=
- * @return {boolean} Whether there were any errors or warnings
- * @private
- */
-function runAccessibilityAudit(a11yResults, opt_config) {
-  var auditResults = axs.Audit.run(opt_config);
-  for (var i = 0; i < auditResults.length; i++) {
-    var auditResult = auditResults[i];
-    if (auditResult.result == axs.constants.AuditResult.FAIL) {
-      var auditRule = auditResult.rule;
-      // TODO(aboxhall): more useful error messages (sadly non-trivial)
-      a11yResults.push(auditResult);
-    }
-  }
-  // TODO(aboxhall): have strict (no errors or warnings) vs non-strict
-  // (warnings ok)
-  // TODO(aboxhall): some kind of info logging for warnings only??
-  return (a11yResults.length == 0);
-}
-
-/**
- * Concatenates the accessibility error messages for each result in
- * |a11yResults| and
- * |a11yWarnings| in to an accessibility report, appends it to the given
- * |message| and returns the resulting message string.
- * TODO(crbug/1000989): Enable type checks for axs.
- * @suppress {missingProperties}
- * @param {Array<Object>} a11yResults The list of accessibility results
- * @param {string=} opt_message
- * @return {string} |message| + accessibility report.
- */
-function accessibilityAuditReport(a11yResults, opt_message) {
-  let message = opt_message ? opt_message + '\n\n' : '\n';
-  message += 'Accessibility issues found on ' + window.location.href + '\n';
-  message += axs.Audit.createReport(a11yResults);
-  return message;
-}
-
-/**
- * Asserts that the current page state passes the accessibility audit.
- * @param {Array=} opt_results Array to fill with results, if desired.
- */
-function assertAccessibilityOk(opt_results) {
-  var a11yResults = opt_results || [];
-  var auditConfig = currentTestCase.fixture.accessibilityAuditConfig;
-  if (!runAccessibilityAudit(a11yResults, auditConfig)) {
-    throw new Error(accessibilityAuditReport(a11yResults));
-  }
 }
 
 /**
@@ -1619,7 +1428,6 @@ function exportExpects() {
   exports.expectLT = createExpect(assertLT);
   exports.expectNotEquals = createExpect(assertNotEquals);
   exports.expectNotReached = createExpect(assertNotReached);
-  exports.expectAccessibilityOk = createExpect(assertAccessibilityOk);
   exports.expectThrows = createExpect(assertThrows);
 }
 
@@ -1640,7 +1448,6 @@ function exportMock4JsHelpers() {
 testing.Test = Test;
 exports.testDone = testDone;
 exportChaiAsserts();
-exports.assertAccessibilityOk = assertAccessibilityOk;
 exportExpects();
 exportMock4JsHelpers();
 exports.preloadJavascriptLibraries = preloadJavascriptLibraries;
@@ -1648,7 +1455,6 @@ exports.setWaitUser = setWaitUser;
 exports.go = go;
 exports.registerMessageCallback = registerMessageCallback;
 exports.resetTestState = resetTestState;
-exports.runAccessibilityAudit = runAccessibilityAudit;
 exports.runAllActions = runAllActions;
 exports.runAllActionsAsync = runAllActionsAsync;
 exports.runTest = runTest;

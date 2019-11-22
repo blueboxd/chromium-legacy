@@ -302,10 +302,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
     NSMutableArray<NSString*>* descriptions = [profiles
         valueForKey:NSStringFromSelector(@selector(debugDescription))];
     NSString* message = [descriptions componentsJoinedByString:@"\n\n"];
-    UIAlertController* alertController = [UIAlertController
-        alertControllerWithTitle:@"Addresses"
-                         message:message
-                  preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertController* alertController = [self actionSheetWithTitle:@"Addresses"
+                                                            message:message];
     for (CWVAutofillProfile* profile in profiles) {
       NSString* title = [NSString
           stringWithFormat:@"Delete %@", @([profiles indexOfObject:profile])];
@@ -334,10 +332,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
     NSMutableArray<NSString*>* descriptions = [creditCards
         valueForKey:NSStringFromSelector(@selector(debugDescription))];
     NSString* message = [descriptions componentsJoinedByString:@"\n\n"];
-    UIAlertController* alertController = [UIAlertController
-        alertControllerWithTitle:@"Credit cards"
-                         message:message
-                  preferredStyle:UIAlertControllerStyleActionSheet];
+    UIAlertController* alertController =
+        [self actionSheetWithTitle:@"Credit cards" message:message];
     for (CWVCreditCard* creditCard in creditCards) {
       // Cards from Google Play can only be deleted on the Google Pay website.
       if (creditCard.fromGooglePay) {
@@ -391,10 +387,9 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
     NSMutableArray<NSString*>* descriptions = [passwords
         valueForKey:NSStringFromSelector(@selector(debugDescription))];
     NSString* message = [descriptions componentsJoinedByString:@"\n\n"];
-    UIAlertController* alertController = [UIAlertController
-        alertControllerWithTitle:@"Passwords"
-                         message:message
-                  preferredStyle:UIAlertControllerStyleActionSheet];
+
+    UIAlertController* alertController = [self actionSheetWithTitle:@"Passwords"
+                                                            message:message];
     for (CWVPassword* password in passwords) {
       NSString* title = [NSString
           stringWithFormat:@"Delete %@", @([passwords indexOfObject:password])];
@@ -415,10 +410,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 }
 
 - (void)showSyncMenu {
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Sync menu"
-                       message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
+  UIAlertController* alertController = [self actionSheetWithTitle:@"Sync menu"
+                                                          message:nil];
 
   CWVSyncController* syncController = _webView.configuration.syncController;
   CWVIdentity* currentIdentity = syncController.currentIdentity;
@@ -533,10 +526,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
 }
 
 - (void)showMainMenu {
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Main menu"
-                       message:nil
-                preferredStyle:UIAlertControllerStyleActionSheet];
+  UIAlertController* alertController = [self actionSheetWithTitle:@"Main menu"
+                                                          message:nil];
   [alertController
       addAction:[UIAlertAction actionWithTitle:@"Cancel"
                                          style:UIAlertActionStyleCancel
@@ -703,6 +694,19 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   }
 
   [_field setText:[[_webView visibleURL] absoluteString]];
+}
+
+- (UIAlertController*)actionSheetWithTitle:(nullable NSString*)title
+                                   message:(nullable NSString*)message {
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:title
+                       message:message
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  alertController.popoverPresentationController.sourceView = _menuButton;
+  alertController.popoverPresentationController.sourceRect =
+      CGRectMake(CGRectGetWidth(_menuButton.bounds) / 2,
+                 CGRectGetHeight(_menuButton.bounds), 1, 1);
+  return alertController;
 }
 
 #pragma mark CWVUIDelegate methods

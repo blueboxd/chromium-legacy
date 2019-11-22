@@ -36,6 +36,14 @@ function getAccessibleTitle(tab) {
   return tabTitle;
 }
 
+/**
+ * TODO(crbug.com/1025390): margin-inline-end cannot be animated yet.
+ * @return {string}
+ */
+function getMarginInlineEndProperty() {
+  return isRTL() ? 'marginLeft' : 'marginRight';
+}
+
 export class TabElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
@@ -246,8 +254,7 @@ export class TabElement extends CustomElement {
    * @return {!Promise}
    */
   slideIn() {
-    // TODO(crbug.com/1025390): margin-inline-end cannot be animated yet.
-    const marginInlineEnd = isRTL() ? 'marginLeft' : 'marginRight';
+    const marginInlineEnd = getMarginInlineEndProperty();
 
     const startState = {
       maxWidth: 0,
@@ -276,7 +283,7 @@ export class TabElement extends CustomElement {
    * @return {!Promise}
    */
   slideOut() {
-    if (!this.embedderApi_.isVisible()) {
+    if (!this.embedderApi_.isVisible() || this.tab_.pinned) {
       // There is no point in animating if the tab strip is hidden.
       this.remove();
       return Promise.resolve();
@@ -288,15 +295,36 @@ export class TabElement extends CustomElement {
         resolve();
       };
 
-      const animation = this.animate(
-          [
-            {maxWidth: 'var(--tabstrip-tab-width)', opacity: 1},
-            {maxWidth: 0, opacity: 0},
-          ],
+      const translateAnimation = this.animate(
           {
-            duration: DEFAULT_ANIMATION_DURATION,
+            transform: ['translateY(0)', 'translateY(-100%)'],
+          },
+          {
+            duration: 150,
+            easing: 'cubic-bezier(.4, 0, 1, 1)',
             fill: 'forwards',
           });
+      const opacityAnimation = this.animate(
+          {
+            opacity: [1, 0],
+          },
+          {
+            delay: 97.5,
+            duration: 50,
+            fill: 'forwards',
+          });
+
+      const widthAnimationKeyframes = {
+        maxWidth: ['var(--tabstrip-tab-width)', 0],
+      };
+      widthAnimationKeyframes[getMarginInlineEndProperty()] =
+          ['var(--tabstrip-tab-margin-inline-end)', 0];
+      const widthAnimation = this.animate(widthAnimationKeyframes, {
+        delay: 97.5,
+        duration: 300,
+        easing: 'cubic-bezier(.4, 0, 0, 1)',
+        fill: 'forwards',
+      });
 
       const visibilityChangeListener = () => {
         if (!this.embedderApi_.isVisible()) {
@@ -304,14 +332,18 @@ export class TabElement extends CustomElement {
           // event will not get fired until the tab strip becomes visible again.
           // Therefore, when the tab strip becomes hidden, immediately call the
           // finish callback.
-          animation.cancel();
+          translateAnimation.cancel();
+          opacityAnimation.cancel();
+          widthAnimation.cancel();
           finishCallback();
         }
       };
 
       document.addEventListener(
           'visibilitychange', visibilityChangeListener, {once: true});
-      animation.onfinish = () => {
+      // The onfinish handler is put on the width animation, as it will end
+      // last.
+      widthAnimation.onfinish = () => {
         document.removeEventListener(
             'visibilitychange', visibilityChangeListener);
         finishCallback();

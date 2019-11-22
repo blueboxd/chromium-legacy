@@ -55,8 +55,7 @@ class PrefServiceSyncable : public PrefService {
   // whose changes will be persisted by the returned incognito pref service.
   std::unique_ptr<PrefServiceSyncable> CreateIncognitoPrefService(
       PrefStore* incognito_extension_pref_store,
-      const std::vector<const char*>& persistent_pref_names,
-      std::unique_ptr<PrefValueStore::Delegate> delegate);
+      const std::vector<const char*>& persistent_pref_names);
 
   // Returns true if preferences state has synchronized with the remote
   // preferences. If true is returned it can be assumed the local preferences

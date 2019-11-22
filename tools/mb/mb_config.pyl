@@ -1634,7 +1634,7 @@
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'resource_whitelisting', 'static_angle', 'android_fastbuild'
+      'resource_whitelisting', 'static_angle', 'android_fastbuild', 'webview_google',
     ],
 
     'gpu_tests_android_release_trybot': [
@@ -1652,7 +1652,7 @@
 
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild': [
       'android', 'release_trybot', 'arm64', 'static_angle',
-      'resource_whitelisting', 'android_fastbuild',
+      'resource_whitelisting', 'android_fastbuild', 'webview_google',
     ],
 
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage': [

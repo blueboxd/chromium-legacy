@@ -307,7 +307,15 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     int wrap = 1;
     static const char my_version[] = ZLIB_VERSION;
 
+    // Needed to activate optimized insert_string() that helps compression
+    // for all wrapper formats (e.g. RAW, ZLIB, GZIP).
+    // Feature detection is not triggered while using RAW mode (i.e. we never
+    // call crc32() with a NULL buffer).
+#if defined(CRC32_ARMV8_CRC32)
+    arm_check_features();
+#elif defined(CRC32_SIMD_SSE42_PCLMUL)
     x86_check_features();
+#endif
 
     if (version == Z_NULL || version[0] != my_version[0] ||
         stream_size != sizeof(z_stream)) {

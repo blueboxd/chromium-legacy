@@ -104,6 +104,8 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
+  ash::ShelfModel::ScopedUserTriggeredMutation user_triggered(
+      controller_->shelf_model());
   switch (static_cast<ash::CommandId>(command_id)) {
     case ash::MENU_OPEN_NEW:
       // Use a copy of the id to avoid crashes, as this menu's owner will be

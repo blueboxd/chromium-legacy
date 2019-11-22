@@ -42,11 +42,9 @@
 #include "content/browser/gpu/gpu_main_thread_factory.h"
 #include "content/browser/gpu/gpu_memory_buffer_manager_singleton.h"
 #include "content/browser/gpu/shader_cache_factory.h"
-#include "content/browser/service_manager/service_manager_context.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/service_manager/child_connection.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -58,8 +56,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -650,8 +646,8 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
 
   g_gpu_process_hosts[kind] = this;
 
-  process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_GPU, this,
-                                                 mojom::kGpuServiceName));
+  process_.reset(new BrowserChildProcessHostImpl(
+      PROCESS_TYPE_GPU, this, ChildProcessHost::IpcMode::kNormal));
 }
 
 GpuProcessHost::~GpuProcessHost() {
@@ -789,10 +785,8 @@ bool GpuProcessHost::Init() {
     GpuDataManagerImpl::GetInstance()->UpdateGpuPreferences(
         &gpu_preferences, GPU_PROCESS_KIND_SANDBOXED);
     in_process_gpu_thread_.reset(GetGpuMainThreadFactory()(
-        InProcessChildThreadParams(
-            base::ThreadTaskRunnerHandle::Get(),
-            process_->GetInProcessMojoInvitation(),
-            process_->child_connection()->service_token()),
+        InProcessChildThreadParams(base::ThreadTaskRunnerHandle::Get(),
+                                   process_->GetInProcessMojoInvitation()),
         gpu_preferences));
     base::Thread::Options options;
 #if defined(OS_WIN) || defined(OS_MACOSX)

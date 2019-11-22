@@ -622,7 +622,7 @@ TEST_P(CastRemotingConnectorFullSessionTest, GoesThroughAllTheMotions) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CastRemotingConnectorFullSessionTest,
                          ::testing::Values(SOURCE_TERMINATES,
                                            MOJO_PIPE_CLOSES,
@@ -935,7 +935,7 @@ TEST_P(DeprecatedCastRemotingConnectorFullSessionTest,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          DeprecatedCastRemotingConnectorFullSessionTest,
                          ::testing::Values(SOURCE_TERMINATES,
                                            MOJO_PIPE_CLOSES,

@@ -55,13 +55,13 @@ namespace {
 typedef std::vector<GURL> URLs;
 
 // a nice long URL that we can append numbers to to get new URLs
-const char g_test_prefix[] =
-  "http://www.google.com/products/foo/index.html?id=45028640526508376&seq=";
-const int g_test_count = 1000;
+const char kTestPrefix[] =
+    "http://www.google.com/products/foo/index.html?id=45028640526508376&seq=";
+constexpr int kTestCount = 1000;
 
 // Returns a test URL for index |i|
 GURL TestURL(int i) {
-  return GURL(base::StringPrintf("%s%d", g_test_prefix, i));
+  return GURL(base::StringPrintf("%s%d", kTestPrefix, i));
 }
 
 std::vector<VisitedLinkSlave*> g_slaves;
@@ -202,7 +202,7 @@ class VisitedLinkTest : public testing::Test {
 
     // check that the table has the proper number of entries
     int used_count = master_->GetUsedCount();
-    ASSERT_EQ(used_count, g_test_count);
+    ASSERT_EQ(used_count, kTestCount);
 
     // Create a slave database.
     VisitedLinkSlave slave;
@@ -210,7 +210,7 @@ class VisitedLinkTest : public testing::Test {
     g_slaves.push_back(&slave);
 
     bool found;
-    for (int i = 0; i < g_test_count; i++) {
+    for (int i = 0; i < kTestCount; i++) {
       GURL cur = TestURL(i);
       found = master_->IsVisited(cur);
       EXPECT_TRUE(found) << "URL " << i << "not found in master.";
@@ -261,10 +261,34 @@ class VisitedLinkTest : public testing::Test {
 TEST_F(VisitedLinkTest, DatabaseIO) {
   ASSERT_TRUE(InitVisited(0, true, true));
 
-  for (int i = 0; i < g_test_count; i++)
+  for (int i = 0; i < kTestCount; i++)
     master_->AddURL(TestURL(i));
 
   // Test that the database was written properly
+  Reload();
+}
+
+// This test fills a database using AddURLs() and verifies that it can be read
+// back correctly.
+TEST_F(VisitedLinkTest, DatabaseIOAddURLs) {
+  ASSERT_TRUE(InitVisited(0, true, true));
+
+  constexpr int kHalfCount = kTestCount / 2;
+
+  // Add urls in pairs of two. Simulates calls to AddURLs() after navigations
+  // with redirects.
+  for (int i = 0; i < (kHalfCount - 1); i += 2)
+    master_->AddURLs({TestURL(i), TestURL(i + 1)});
+
+  // Add a big vector of URLs, exceeding kBulkOperationThreshold.
+  std::vector<GURL> urls;
+  static_assert(kHalfCount > VisitedLinkMaster::kBulkOperationThreshold,
+                "kBulkOperationThreshold not exceeded");
+  for (int i = kHalfCount; i < kTestCount; i++)
+    urls.push_back(TestURL(i));
+  master_->AddURLs(urls);
+
+  // Test that the database was written properly.
   Reload();
 }
 
@@ -306,20 +330,20 @@ TEST_F(VisitedLinkTest, Delete) {
         "Hash table has values in it.";
 }
 
-// When we delete more than kBigDeleteThreshold we trigger different behavior
-// where the entire file is rewritten.
+// When we delete more than kBulkOperationThreshold we trigger different
+// behavior where the entire file is rewritten.
 TEST_F(VisitedLinkTest, BigDelete) {
   ASSERT_TRUE(InitVisited(16381, true, true));
 
   // Add the base set of URLs that won't be deleted.
   // Reload() will test for these.
-  for (int32_t i = 0; i < g_test_count; i++)
+  for (int32_t i = 0; i < kTestCount; i++)
     master_->AddURL(TestURL(i));
 
   // Add more URLs than necessary to trigger this case.
-  const int kTestDeleteCount = VisitedLinkMaster::kBigDeleteThreshold + 2;
+  const int kTestDeleteCount = VisitedLinkMaster::kBulkOperationThreshold + 2;
   URLs urls_to_delete;
-  for (int32_t i = g_test_count; i < g_test_count + kTestDeleteCount; i++) {
+  for (int32_t i = kTestCount; i < kTestCount + kTestDeleteCount; i++) {
     GURL url(TestURL(i));
     master_->AddURL(url);
     urls_to_delete.push_back(url);
@@ -341,20 +365,20 @@ TEST_F(VisitedLinkTest, DeleteAll) {
     g_slaves.push_back(&slave);
 
     // Add the test URLs.
-    for (int i = 0; i < g_test_count; i++) {
+    for (int i = 0; i < kTestCount; i++) {
       master_->AddURL(TestURL(i));
       ASSERT_EQ(i + 1, master_->GetUsedCount());
     }
     master_->DebugValidate();
 
     // Make sure the slave picked up the adds.
-    for (int i = 0; i < g_test_count; i++)
+    for (int i = 0; i < kTestCount; i++)
       EXPECT_TRUE(slave.IsVisited(TestURL(i)));
 
     // Clear the table and make sure the slave picked it up.
     master_->DeleteAllURLs();
     EXPECT_EQ(0, master_->GetUsedCount());
-    for (int i = 0; i < g_test_count; i++) {
+    for (int i = 0; i < kTestCount; i++) {
       EXPECT_FALSE(master_->IsVisited(TestURL(i)));
       EXPECT_FALSE(slave.IsVisited(TestURL(i)));
     }
@@ -368,7 +392,7 @@ TEST_F(VisitedLinkTest, DeleteAll) {
   ASSERT_TRUE(InitVisited(0, true, true));
   master_->DebugValidate();
   EXPECT_EQ(0, master_->GetUsedCount());
-  for (int i = 0; i < g_test_count; i++)
+  for (int i = 0; i < kTestCount; i++)
     EXPECT_FALSE(master_->IsVisited(TestURL(i)));
 }
 
@@ -387,7 +411,7 @@ TEST_F(VisitedLinkTest, Resizing) {
   int32_t used_count = master_->GetUsedCount();
   ASSERT_EQ(used_count, 0);
 
-  for (int i = 0; i < g_test_count; i++) {
+  for (int i = 0; i < kTestCount; i++) {
     master_->AddURL(TestURL(i));
     used_count = master_->GetUsedCount();
     ASSERT_EQ(i + 1, used_count);
@@ -399,8 +423,8 @@ TEST_F(VisitedLinkTest, Resizing) {
   master_->GetUsageStatistics(&table_size, &table);
   used_count = master_->GetUsedCount();
   ASSERT_GT(table_size, used_count);
-  ASSERT_EQ(used_count, g_test_count) <<
-                "table count doesn't match the # of things we added";
+  ASSERT_EQ(used_count, kTestCount)
+      << "table count doesn't match the # of things we added";
 
   // Verify that the slave got the resize message and has the same
   // table information.
@@ -424,7 +448,7 @@ TEST_F(VisitedLinkTest, Resizing) {
 TEST_F(VisitedLinkTest, Rebuild) {
   // Add half of our URLs to history. This needs to be done before we
   // initialize the visited link DB.
-  int history_count = g_test_count / 2;
+  int history_count = kTestCount / 2;
   for (int i = 0; i < history_count; i++)
     delegate_.AddURLForRebuild(TestURL(i));
 
@@ -439,13 +463,13 @@ TEST_F(VisitedLinkTest, Rebuild) {
   // history thread, and it will take a while to catch up to actually
   // processing the rebuild that has queued behind it. We will generally
   // finish adding all of the URLs before it has even found the first URL.
-  for (int i = history_count; i < g_test_count; i++)
+  for (int i = history_count; i < kTestCount; i++)
     master_->AddURL(TestURL(i));
 
   // Add one more and then delete it.
-  master_->AddURL(TestURL(g_test_count));
+  master_->AddURL(TestURL(kTestCount));
   URLs urls_to_delete;
-  urls_to_delete.push_back(TestURL(g_test_count));
+  urls_to_delete.push_back(TestURL(kTestCount));
   TestURLIterator iterator(urls_to_delete);
   master_->DeleteURLs(&iterator);
 
@@ -462,7 +486,7 @@ TEST_F(VisitedLinkTest, Rebuild) {
   Reload();
 
   // Make sure the extra one was *not* written (Reload won't test this).
-  EXPECT_FALSE(master_->IsVisited(TestURL(g_test_count)));
+  EXPECT_FALSE(master_->IsVisited(TestURL(kTestCount)));
 }
 
 // Test that importing a large number of URLs will work
@@ -495,7 +519,7 @@ TEST_F(VisitedLinkTest, Listener) {
   EXPECT_EQ(0, listener->completely_reset_count());
 
   // Add test URLs.
-  for (int i = 0; i < g_test_count; i++) {
+  for (int i = 0; i < kTestCount; i++) {
     master_->AddURL(TestURL(i));
     ASSERT_EQ(i + 1, master_->GetUsedCount());
   }
@@ -510,7 +534,7 @@ TEST_F(VisitedLinkTest, Listener) {
   master_->DeleteAllURLs();
 
   // Verify that VisitedLinkMaster::Listener::Add was called for each added URL.
-  EXPECT_EQ(g_test_count, listener->add_count());
+  EXPECT_EQ(kTestCount, listener->add_count());
   // Verify that VisitedLinkMaster::Listener::Reset was called both when one and
   // all URLs are deleted.
   EXPECT_EQ(2, listener->reset_count());

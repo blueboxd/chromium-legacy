@@ -96,7 +96,9 @@ Boolean properties should be exposed as true.
   <div aria-selected="X-ILLEGAL" role="treeitem" aria-label="Selected illegal"></div>
 </div>
 <!-- Technically, aria-sort illegal value should be exposed in object attribute -->
-<div aria-sort="X-ILLEGAL" role="columnheader" aria-label="Sort illegal"></div>
+<div role="grid">
+  <div aria-sort="X-ILLEGAL" role="columnheader" aria-label="Sort illegal"></div>
+</div>
 <!-- Test aria-hidden at end because a broken test can have extra object, 
      and ruin the rest of the test. -->
 <div aria-hidden="X-ILLEGAL" aria-label="Hidden illegal"></div>

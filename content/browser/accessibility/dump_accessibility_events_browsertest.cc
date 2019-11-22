@@ -227,7 +227,7 @@ struct DumpAccessibilityEventsTestPassToString {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     DumpAccessibilityEventsTest,
     ::testing::Range(size_t{0},
                      AccessibilityEventRecorder::GetTestPasses().size()),

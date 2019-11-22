@@ -51,4 +51,16 @@ void SetupBundledWebUIDataSource(content::WebUIDataSource* source,
 }
 #endif
 
+void AddLocalizedStringsBulk(content::WebUIDataSource* html_source,
+                             base::span<const LocalizedString> strings) {
+  for (const auto& str : strings)
+    html_source->AddLocalizedString(str.name, str.id);
+}
+
+void AddResourcePathsBulk(content::WebUIDataSource* source,
+                          base::span<const ResourcePath> paths) {
+  for (const auto& path : paths)
+    source->AddResourcePath(path.path, path.id);
+}
+
 }  // namespace webui

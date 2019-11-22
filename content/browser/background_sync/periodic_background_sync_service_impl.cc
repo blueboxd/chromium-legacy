@@ -15,9 +15,9 @@ namespace content {
 
 PeriodicBackgroundSyncServiceImpl::PeriodicBackgroundSyncServiceImpl(
     BackgroundSyncContextImpl* background_sync_context,
-    mojo::InterfaceRequest<blink::mojom::PeriodicBackgroundSyncService> request)
+    mojo::PendingReceiver<blink::mojom::PeriodicBackgroundSyncService> receiver)
     : background_sync_context_(background_sync_context),
-      binding_(this, std::move(request)) {
+      receiver_(this, std::move(receiver)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(background_sync_context_);
 
@@ -25,8 +25,8 @@ PeriodicBackgroundSyncServiceImpl::PeriodicBackgroundSyncServiceImpl(
       background_sync_context_);
   DCHECK(registration_helper_);
 
-  binding_.set_connection_error_handler(base::BindOnce(
-      &PeriodicBackgroundSyncServiceImpl::OnConnectionError,
+  receiver_.set_disconnect_handler(base::BindOnce(
+      &PeriodicBackgroundSyncServiceImpl::OnMojoDisconnect,
       base::Unretained(this) /* the channel is owned by this */));
 }
 
@@ -34,7 +34,7 @@ PeriodicBackgroundSyncServiceImpl::~PeriodicBackgroundSyncServiceImpl() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 }
 
-void PeriodicBackgroundSyncServiceImpl::OnConnectionError() {
+void PeriodicBackgroundSyncServiceImpl::OnMojoDisconnect() {
   background_sync_context_->PeriodicSyncServiceHadConnectionError(this);
   // |this| is now deleted.
 }

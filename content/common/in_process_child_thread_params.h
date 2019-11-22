@@ -22,7 +22,7 @@ class CONTENT_EXPORT InProcessChildThreadParams {
   InProcessChildThreadParams(
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       mojo::OutgoingInvitation* mojo_invitation,
-      const std::string& service_request_token);
+      const std::string& service_request_token = {});
   InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
 

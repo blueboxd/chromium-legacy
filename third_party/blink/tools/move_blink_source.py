@@ -143,7 +143,7 @@ class MoveBlinkSource(object):
              [('third_party/WebKit/Source', 'third_party/blink/renderer'),
               ('third_party/WebKit/public', 'third_party/blink/public'),
               self._update_basename]),
-            ('chrome/browser/resources/chromeos/chromevox/tools/jsbundler.py',
+            ('chrome/browser/resources/chromeos/accessibility/chromevox/tools/jsbundler.py',
              [('third_party/WebKit/Source', 'third_party/blink/renderer')]),
             ('testing/buildbot/gn_isolate_map.pyl',
              [('third_party/WebKit/Source', 'third_party/blink/renderer')]),

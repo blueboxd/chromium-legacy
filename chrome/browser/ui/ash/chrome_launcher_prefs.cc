@@ -39,6 +39,9 @@
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "extensions/common/constants.h"
 
+using syncer::UserSelectableOsType;
+using syncer::UserSelectableType;
+
 namespace {
 
 // Chrome is pinned explicitly.
@@ -150,28 +153,35 @@ bool IsSafeToApplyDefaultPinLayout(Profile* profile) {
   if (!sync_service)
     return true;
 
-  const syncer::UserSelectableTypeSet selected_sync =
-      sync_service->GetUserSettings()->GetSelectedTypes();
+  const syncer::SyncUserSettings* settings = sync_service->GetUserSettings();
 
   // If App sync is not yet started, don't apply default pin apps once synced
   // apps is likely override it. There is a case when App sync is disabled and
   // in last case local cache is available immediately.
-  if (selected_sync.Has(syncer::UserSelectableType::kApps) &&
-      !app_list::AppListSyncableServiceFactory::GetForProfile(profile)
-           ->IsSyncing()) {
-    return false;
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    if (settings->GetSelectedOsTypes().Has(UserSelectableOsType::kOsApps) &&
+        !app_list::AppListSyncableServiceFactory::GetForProfile(profile)
+             ->IsSyncing()) {
+      return false;
+    }
+  } else {
+    if (settings->GetSelectedTypes().Has(UserSelectableType::kApps) &&
+        !app_list::AppListSyncableServiceFactory::GetForProfile(profile)
+             ->IsSyncing()) {
+      return false;
+    }
   }
 
   // If shelf pin layout rolls preference is not started yet then we cannot say
   // if we rolled layout or not.
   if (chromeos::features::IsSplitSettingsSyncEnabled()) {
-    if (sync_service->GetUserSettings()->GetSelectedOsTypes().Has(
-            syncer::UserSelectableOsType::kOsPreferences) &&
+    if (settings->GetSelectedOsTypes().Has(
+            UserSelectableOsType::kOsPreferences) &&
         !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
       return false;
     }
   } else {
-    if (selected_sync.Has(syncer::UserSelectableType::kPreferences) &&
+    if (settings->GetSelectedTypes().Has(UserSelectableType::kPreferences) &&
         !PrefServiceSyncableFromProfile(profile)->IsSyncing()) {
       return false;
     }

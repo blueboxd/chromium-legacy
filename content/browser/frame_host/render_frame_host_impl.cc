@@ -101,9 +101,9 @@
 #include "content/browser/sms/sms_service.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/web_package/bundled_exchanges_handle.h"
-#include "content/browser/web_package/bundled_exchanges_handle_tracker.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
+#include "content/browser/web_package/web_bundle_handle.h"
+#include "content/browser/web_package/web_bundle_handle_tracker.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
@@ -1838,7 +1838,7 @@ void RenderFrameHostImpl::RenderProcessExited(
   document_scoped_interface_provider_binding_.Close();
   broker_receiver_.reset();
   SetLastCommittedUrl(GURL());
-  bundled_exchanges_handle_.reset();
+  web_bundle_handle_.reset();
 
   // Execute any pending AX tree snapshot callbacks with an empty response,
   // since we're never going to get a response from this renderer.
@@ -2175,9 +2175,8 @@ void RenderFrameHostImpl::Init() {
         std::move(pending_navigate_->navigation_client),
         std::move(pending_navigate_->navigation_initiator),
         EnsurePrefetchedSignedExchangeCache(),
-        bundled_exchanges_handle_
-            ? bundled_exchanges_handle_->MaybeCreateTracker()
-            : nullptr);
+        web_bundle_handle_ ? web_bundle_handle_->MaybeCreateTracker()
+                           : nullptr);
     pending_navigate_.reset();
   }
 }
@@ -4576,9 +4575,7 @@ void RenderFrameHostImpl::BeginNavigation(
       frame_tree_node(), std::move(validated_params), std::move(begin_params),
       std::move(blob_url_loader_factory), std::move(navigation_client),
       std::move(navigation_initiator), EnsurePrefetchedSignedExchangeCache(),
-      bundled_exchanges_handle_
-          ? bundled_exchanges_handle_->MaybeCreateTracker()
-          : nullptr);
+      web_bundle_handle_ ? web_bundle_handle_->MaybeCreateTracker() : nullptr);
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(
@@ -4858,7 +4855,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
                    base::nullopt, base::nullopt /* subresource_overrides */,
                    nullptr /* provider_info */,
                    base::UnguessableToken::Create() /* not traced */,
-                   nullptr /* bundled_exchanges_factory */);
+                   nullptr /* web_bundle_factory */);
 }
 
 void RenderFrameHostImpl::Stop() {
@@ -5212,8 +5209,8 @@ void RenderFrameHostImpl::CommitNavigation(
         subresource_overrides,
     blink::mojom::ServiceWorkerProviderInfoForClientPtr provider_info,
     const base::UnguessableToken& devtools_navigation_token,
-    std::unique_ptr<BundledExchangesHandle> bundled_exchanges_handle) {
-  bundled_exchanges_handle_ = std::move(bundled_exchanges_handle);
+    std::unique_ptr<WebBundleHandle> web_bundle_handle) {
+  web_bundle_handle_ = std::move(web_bundle_handle);
 
   TRACE_EVENT2("navigation", "RenderFrameHostImpl::CommitNavigation",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
@@ -5436,19 +5433,18 @@ void RenderFrameHostImpl::CommitNavigation(
           bypass_redirect_checks);
     }
 
-    bool navigation_to_bundled_exchanges = false;
+    bool navigation_to_web_bundle = false;
 
-    if (bundled_exchanges_handle_ &&
-        bundled_exchanges_handle_->IsReadyForLoading()) {
-      navigation_to_bundled_exchanges = true;
+    if (web_bundle_handle_ && web_bundle_handle_->IsReadyForLoading()) {
+      navigation_to_web_bundle = true;
       mojo::Remote<network::mojom::URLLoaderFactory> fallback_factory(
           std::move(pending_default_factory));
-      bundled_exchanges_handle_->CreateURLLoaderFactory(
+      web_bundle_handle_->CreateURLLoaderFactory(
           pending_default_factory.InitWithNewPipeAndPassReceiver(),
           std::move(fallback_factory));
-      if (bundled_exchanges_handle_->base_url_override().is_valid()) {
-        commit_params->base_url_override_for_bundled_exchanges =
-            bundled_exchanges_handle_->base_url_override();
+      if (web_bundle_handle_->base_url_override().is_valid()) {
+        commit_params->base_url_override_for_web_bundle =
+            web_bundle_handle_->base_url_override();
       }
     }
 
@@ -5462,9 +5458,9 @@ void RenderFrameHostImpl::CommitNavigation(
     // only because they will inherit loaders from their parents instead of the
     // ones provided by the browser process here.
     //
-    // For loading bundled exchanges files, we don't set FileURLLoaderFactory.
-    // Because loading local files from bundled exchanges file is prohibited.
-    if (common_params->url.SchemeIsFile() && !navigation_to_bundled_exchanges) {
+    // For loading Web Bundle files, we don't set FileURLLoaderFactory.
+    // Because loading local files from a Web Bundle file is prohibited.
+    if (common_params->url.SchemeIsFile() && !navigation_to_web_bundle) {
       auto file_factory = std::make_unique<FileURLLoaderFactory>(
           browser_context->GetPath(),
           browser_context->GetSharedCorsOriginAccessList(),

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
@@ -21,12 +20,10 @@
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
-#include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_credentials_dialog.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -68,10 +65,6 @@ std::unique_ptr<NetBiosClientInterface> GetNetBiosClient(Profile* profile) {
   return std::make_unique<NetBiosClient>(network_context);
 }
 
-bool IsEnabledByFlag() {
-  return base::FeatureList::IsEnabled(features::kNativeSmb);
-}
-
 // Metric recording functions.
 
 // This enum is used to define the buckets for an enumerated UMA histogram.
@@ -107,7 +100,6 @@ std::unique_ptr<TempFileManager> CreateTempFileManager() {
 
 }  // namespace
 
-bool SmbService::service_should_run_ = false;
 bool SmbService::disable_share_discovery_for_testing_ = false;
 
 SmbService::SmbService(Profile* profile,
@@ -115,22 +107,30 @@ SmbService::SmbService(Profile* profile,
     : provider_id_(ProviderId::CreateFromNativeId("smb")),
       profile_(profile),
       tick_clock_(std::move(tick_clock)) {
-  service_should_run_ = IsEnabledByFlag() && IsAllowedByPolicy();
-  if (service_should_run_) {
-    StartSetup();
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  DCHECK(user);
+
+  SmbProviderClient* client = GetSmbProviderClient();
+  if (!client) {
+    return;
   }
+
+  if (user->IsActiveDirectoryUser()) {
+    auto account_id = user->GetAccountId();
+    const std::string account_id_guid = account_id.GetObjGuid();
+
+    GetSmbProviderClient()->SetupKerberos(
+        account_id_guid,
+        base::BindOnce(&SmbService::OnSetupKerberosResponse, AsWeakPtr()));
+    return;
+  }
+
+  SetupTempFileManagerAndCompleteSetup();
 }
 
 SmbService::~SmbService() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-}
-
-// static
-SmbService* SmbService::Get(content::BrowserContext* context) {
-  if (service_should_run_) {
-    return SmbServiceFactory::Get(context);
-  }
-  return nullptr;
 }
 
 // static
@@ -553,34 +553,6 @@ void SmbService::OnPremountResponse(const base::FilePath& share_path,
   }
 }
 
-void SmbService::StartSetup() {
-  user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-
-  if (!user) {
-    // An instance of SmbService is created on the lockscreen. When this
-    // instance is created, no setup will run.
-    return;
-  }
-
-  SmbProviderClient* client = GetSmbProviderClient();
-  if (!client) {
-    return;
-  }
-
-  if (user->IsActiveDirectoryUser()) {
-    auto account_id = user->GetAccountId();
-    const std::string account_id_guid = account_id.GetObjGuid();
-
-    GetSmbProviderClient()->SetupKerberos(
-        account_id_guid,
-        base::BindOnce(&SmbService::OnSetupKerberosResponse, AsWeakPtr()));
-    return;
-  }
-
-  SetupTempFileManagerAndCompleteSetup();
-}
-
 void SmbService::SetupTempFileManagerAndCompleteSetup() {
   // CreateTempFileManager() has to be called on a separate thread since it
   // contains a call that requires a blockable thread.
@@ -675,10 +647,6 @@ void SmbService::OpenFileManager(const std::string& file_system_id) {
       profile_, provider_id_, file_system_id);
 
   platform_util::ShowItemInFolder(profile_, mount_path);
-}
-
-bool SmbService::IsAllowedByPolicy() const {
-  return profile_->GetPrefs()->GetBoolean(prefs::kNetworkFileSharesAllowed);
 }
 
 bool SmbService::IsNetBiosDiscoveryEnabled() const {
@@ -792,14 +760,6 @@ bool SmbService::ShouldRunHostDiscoveryAgain() const {
 
 void SmbService::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-
-  if (!user) {
-    // If a network change occurs on the lockscreen, do nothing.
-    return;
-  }
-
   // Run host discovery to refresh list of cached hosts for subsequent name
   // resolution attempts.
   share_finder_->DiscoverHostsInNetwork(base::DoNothing()

@@ -61,18 +61,24 @@ scoped_refptr<TransformOperation> InterpolatedTransformOperation::Blend(
     bool blend_to_identity) {
   if (from && !from->IsSameType(*this))
     return this;
-
-  TransformOperations this_operations;
-  this_operations.Operations().push_back(this);
+  TransformOperations to_operations;
+  to_operations.Operations().push_back(this);
   TransformOperations from_operations;
-  if (blend_to_identity)
+  if (blend_to_identity) {
     from_operations.Operations().push_back(
         IdentityTransformOperation::Create());
-  else
+    return InterpolatedTransformOperation::Create(
+        to_operations, from_operations, 0, 1 - progress);
+  }
+  if (!from) {
+    from_operations.Operations().push_back(
+        IdentityTransformOperation::Create());
+  } else {
     from_operations.Operations().push_back(
         const_cast<TransformOperation*>(from));
-  return InterpolatedTransformOperation::Create(this_operations,
-                                                from_operations, 0, progress);
+  }
+  return InterpolatedTransformOperation::Create(from_operations, to_operations,
+                                                0, progress);
 }
 
 }  // namespace blink

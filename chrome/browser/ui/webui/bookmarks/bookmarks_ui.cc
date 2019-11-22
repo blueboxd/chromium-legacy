@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_message_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
@@ -73,7 +72,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
                                            undo_accelerator.GetShortcutText()));
 
   // Localized strings (alphabetical order).
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
       {"addBookmarkTitle", IDS_BOOKMARK_MANAGER_ADD_BOOKMARK_TITLE},
       {"addFolderTitle", IDS_BOOKMARK_MANAGER_ADD_FOLDER_TITLE},
       {"cancel", IDS_CANCEL},

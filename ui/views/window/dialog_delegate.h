@@ -160,24 +160,19 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     return view;
   }
 
-  // A helper for accessing the DialogClientView object contained by this
-  // delegate's Window.
-  const DialogClientView* GetDialogClientView() const;
-  DialogClientView* GetDialogClientView();
-
   // Returns the BubbleFrameView of this dialog delegate. A bubble frame view
   // will only be created when use_custom_frame() is true.
   BubbleFrameView* GetBubbleFrameView() const;
 
   // Helpers for accessing parts of the DialogClientView without needing to know
   // about DialogClientView. Do not call these before OnDialogInitialized.
-  views::LabelButton* GetOkButton();
-  views::LabelButton* GetCancelButton();
-  views::View* GetExtraView();
+  views::LabelButton* GetOkButton() const;
+  views::LabelButton* GetCancelButton() const;
+  views::View* GetExtraView() const;
 
   // Helper for accessing the footnote view. Unlike the three methods just
   // above, this *is* safe to call before OnDialogInitialized.
-  views::View* GetFootnoteViewForTesting();
+  views::View* GetFootnoteViewForTesting() const;
 
   // Add or remove an observer notified by calls to DialogModelChanged().
   void AddObserver(DialogObserver* observer);
@@ -261,6 +256,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Overridden from WidgetDelegate. If you need to hook after widget
   // initialization, use OnDialogInitialized above.
   void OnWidgetInitialized() final;
+
+  // A helper for accessing the DialogClientView object contained by this
+  // delegate's Window.
+  const DialogClientView* GetDialogClientView() const;
+  DialogClientView* GetDialogClientView();
 
   // The margins between the content and the inside of the border.
   // TODO(crbug.com/733040): Most subclasses assume they must set their own

@@ -1487,6 +1487,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
             @Override
             public void onSheetOpened(int reason) {
+                Tab activeTab = mActivityTabProvider.get();
+                if (activeTab != null) {
+                    WebContents webContents = activeTab.getWebContents();
+                    if (webContents != null) {
+                        SelectionPopupController.fromWebContents(webContents).clearSelection();
+                    }
+                }
+
                 BottomSheetContent content = mBottomSheetController.getCurrentSheetContent();
                 // Content with a custom scrim lifecycle should not obscure the tab. The feature
                 // is responsible for adding itself to the list of obscuring views when applicable.

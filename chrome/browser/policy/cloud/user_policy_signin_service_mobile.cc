@@ -64,7 +64,7 @@ void UserPolicySigninService::ShutdownUserCloudPolicyManager() {
 
 void UserPolicySigninService::RegisterForPolicyWithAccountId(
     const std::string& username,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     PolicyRegistrationCallback callback) {
   // Create a new CloudPolicyClient for fetching the DMToken.
   std::unique_ptr<CloudPolicyClient> policy_client =

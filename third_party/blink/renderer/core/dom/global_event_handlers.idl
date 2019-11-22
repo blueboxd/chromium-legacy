@@ -34,7 +34,6 @@
 ] interface mixin GlobalEventHandlers {
     attribute EventHandler onabort;
     [RuntimeEnabled=InvisibleDOM] attribute EventHandler onactivateinvisible;
-    [RuntimeEnabled=DisplayLocking] attribute EventHandler onbeforeactivate;
     attribute EventHandler onblur;
     attribute EventHandler oncancel;
     attribute EventHandler oncanplay;
@@ -83,6 +82,7 @@
     attribute EventHandler onplaying;
     attribute EventHandler onprogress;
     attribute EventHandler onratechange;
+    [RuntimeEnabled=DisplayLocking] attribute EventHandler onrendersubtreeactivation;
     attribute EventHandler onreset;
     attribute EventHandler onresize;
     attribute EventHandler onscroll;

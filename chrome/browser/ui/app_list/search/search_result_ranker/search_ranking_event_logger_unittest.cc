@@ -131,6 +131,8 @@ class SearchRankingEventLoggerTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(history_dir_.CreateUniqueTempDir());
+    ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
+
     history_service_ = std::make_unique<history::HistoryService>();
     history_service_->Init(
         history::TestHistoryDatabaseParamsForPath(history_dir_.GetPath()));
@@ -138,6 +140,7 @@ class SearchRankingEventLoggerTest : public testing::Test {
     TestingProfile::TestingFactories factories;
 
     TestingProfile::Builder profile_builder;
+    profile_builder.SetPath(profile_dir_.GetPath());
     profile_builder.SetProfileName("testuser@gmail.com");
     profile_builder.AddTestingFactory(
         HistoryServiceFactory::GetInstance(),
@@ -217,9 +220,10 @@ class SearchRankingEventLoggerTest : public testing::Test {
     run_loop.Run();
   }
 
+  base::ScopedTempDir history_dir_;
+  base::ScopedTempDir profile_dir_;
   content::BrowserTaskEnvironment task_environment_;
   base::ScopedMockClockOverride time_;
-  base::ScopedTempDir history_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   ukm::TestAutoSetUkmRecorder recorder_;

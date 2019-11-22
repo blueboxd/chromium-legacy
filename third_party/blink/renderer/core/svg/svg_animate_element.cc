@@ -105,6 +105,7 @@ SVGAnimateElement::SVGAnimateElement(Document& document)
 SVGAnimateElement::SVGAnimateElement(const QualifiedName& tag_name,
                                      Document& document)
     : SVGAnimationElement(tag_name, document),
+      attribute_name_(AnyQName()),
       type_(kAnimatedUnknown),
       css_property_id_(CSSPropertyID::kInvalid),
       from_property_value_type_(kRegularPropertyValue),

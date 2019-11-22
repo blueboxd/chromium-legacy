@@ -28,12 +28,6 @@ base::debug::CrashKeyString* GetRequestInitiatorCrashKey() {
 
 }  // namespace
 
-base::debug::CrashKeyString* GetRequestInitiatorSiteLockCrashKey() {
-  static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "request_initiator_site_lock", base::debug::CrashKeySize::Size64);
-  return crash_key;
-}
-
 ScopedOriginCrashKey::ScopedOriginCrashKey(
     base::debug::CrashKeyString* crash_key,
     const base::Optional<url::Origin>& value)

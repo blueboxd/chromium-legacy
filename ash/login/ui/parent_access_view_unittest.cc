@@ -119,12 +119,14 @@ class ParentAccessViewTest : public LoginTestBase {
   }
 
   // Shows parent access widget with the specified |reason|.
-  void ShowWidget(ParentAccessRequestReason reason) {
+  void ShowWidget(ParentAccessRequestReason reason =
+                      ParentAccessRequestReason::kUnlockTimeLimits) {
+    validation_time_ = base::Time::Now();
     ParentAccessWidget::Show(
         account_id_,
         base::BindRepeating(&ParentAccessViewTest::OnFinished,
                             base::Unretained(this)),
-        reason);
+        reason, false /*extra_dimmer*/, validation_time_);
     ParentAccessWidget* widget = ParentAccessWidget::Get();
     ASSERT_TRUE(widget);
   }
@@ -423,9 +425,11 @@ TEST_F(ParentAccessViewTest, Backspace) {
 
 // Tests input with virtual pin keyboard.
 TEST_F(ParentAccessViewTest, PinKeyboard) {
-  StartView();
+  ShowWidget();
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
+  ParentAccessWidget* widget = ParentAccessWidget::Get();
+  view_ = ParentAccessWidget::TestApi(widget).parent_access_view();
   ParentAccessView::TestApi test_api(view_);
   LoginPinView::TestApi test_pin_keyboard(test_api.pin_keyboard_view());
   EXPECT_FALSE(test_api.submit_button()->GetEnabled());
@@ -439,7 +443,6 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
     SimulatePinKeyboardPress(test_pin_keyboard.GetButton(i));
     base::RunLoop().RunUntilIdle();
   }
-  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
   EXPECT_EQ(1, successful_validation_);
   ExpectUMAActionReported(ParentAccessView::UMAAction::kValidationSuccess, 1,
                           1);

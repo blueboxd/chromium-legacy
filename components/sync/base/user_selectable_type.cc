@@ -55,9 +55,15 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
                FAVICON_TRACKING, USER_EVENTS}};
     case UserSelectableType::kExtensions:
       return {"extensions", EXTENSIONS, {EXTENSIONS, EXTENSION_SETTINGS}};
-    case UserSelectableType::kApps:
-      return {
-          "apps", APPS, {APPS, APP_SETTINGS, APP_LIST, ARC_PACKAGE, WEB_APPS}};
+    case UserSelectableType::kApps: {
+      ModelTypeSet model_types = {APPS, APP_SETTINGS, WEB_APPS};
+#if defined(OS_CHROMEOS)
+      // SplitSettingsSync moves ARC apps under a separate OS setting.
+      if (!chromeos::features::IsSplitSettingsSyncEnabled())
+        model_types.PutAll({APP_LIST, ARC_PACKAGE});
+#endif
+      return {"apps", APPS, model_types};
+    }
     case UserSelectableType::kReadingList:
       return {"readingList", READING_LIST, {READING_LIST}};
     case UserSelectableType::kTabs:
@@ -77,6 +83,8 @@ UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
   // UserSelectableTypeInfo::type_name is used in js code and shouldn't be
   // changed without updating js part.
   switch (type) {
+    case UserSelectableOsType::kOsApps:
+      return {"osApps", APP_LIST, {APP_LIST, ARC_PACKAGE}};
     case UserSelectableOsType::kOsPreferences:
       return {"osPreferences",
               OS_PREFERENCES,

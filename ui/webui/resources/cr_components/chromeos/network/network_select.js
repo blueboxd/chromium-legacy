@@ -116,6 +116,21 @@ Polymer({
     return this.$.networkList.$$('#networkList');
   },
 
+  /**
+   * Returns network list item object for testing.
+   */
+  getNetworkListItemByNameForTest: function(name) {
+    const networkList = this.$.networkList.$$('#networkList');
+    assert(networkList);
+    for (const network of networkList.children) {
+      if (network.is === 'network-list-item' &&
+          network.$$('#divText').children[0].innerText === name) {
+        return network;
+      }
+    }
+    return null;
+  },
+
   focus: function() {
     this.$.networkList.focus();
   },

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "chromeos/dbus/concierge/service.pb.h"
+#include "chromeos/dbus/concierge/concierge_service.pb.h"
 
 // This file contains simple C++ types (enums and Plain-Old-Data structs).
 // Importantly, #include'ing this file will not depend on eventually executing

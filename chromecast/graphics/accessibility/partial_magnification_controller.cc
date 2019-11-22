@@ -311,7 +311,7 @@ void PartialMagnificationController::CreateMagnifierWindow(
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = false;
   params.bounds = GetBounds(mouse);
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent = root_window;
   host_widget_->Init(std::move(params));
   host_widget_->set_focus_on_creation(false);

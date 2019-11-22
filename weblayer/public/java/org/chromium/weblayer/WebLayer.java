@@ -7,10 +7,10 @@ package org.chromium.weblayer;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Process;
 import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.util.AndroidRuntimeException;
@@ -28,7 +28,6 @@ import org.chromium.weblayer_private.interfaces.IWebLayer;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -45,6 +44,9 @@ public final class WebLayer {
     private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
 
     @Nullable
+    private static ClassLoader sRemoteClassLoader;
+
+    @Nullable
     private static WebLayerLoader sLoader;
 
     @NonNull
@@ -56,11 +58,9 @@ public final class WebLayer {
      */
     private static IWebLayer connectToWebLayerImplementation(@NonNull Context appContext)
             throws UnsupportedVersionException {
-        // Just in case the app passed an Activity context.
-        appContext = appContext.getApplicationContext();
         ClassLoader remoteClassLoader;
         try {
-            remoteClassLoader = createRemoteClassLoader(appContext);
+            remoteClassLoader = getOrCreateRemoteClassLoader(appContext);
         } catch (Exception e) {
             throw new AndroidRuntimeException(e);
         }
@@ -94,7 +94,7 @@ public final class WebLayer {
             throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
         if (sLoader == null) sLoader = new WebLayerLoader();
-        sLoader.loadAsync(appContext, callback);
+        sLoader.loadAsync(appContext.getApplicationContext(), callback);
     }
 
     /**
@@ -111,7 +111,7 @@ public final class WebLayer {
             throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
         if (sLoader == null) sLoader = new WebLayerLoader();
-        return sLoader.loadSync(appContext);
+        return sLoader.loadSync(appContext.getApplicationContext());
     }
 
     /**
@@ -250,17 +250,45 @@ public final class WebLayer {
         }
     }
 
+    @SuppressWarnings("NewApi")
+    static ClassLoader getOrCreateRemoteClassLoaderForChildProcess(Context appContext)
+            throws PackageManager.NameNotFoundException, ReflectiveOperationException {
+        if (sRemoteClassLoader != null) {
+            return sRemoteClassLoader;
+        }
+        if (getImplPackageName(appContext) == null && Process.isIsolated()
+                && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            // In <= M, the WebView update service is not available in isolated processes. This
+            // causes a crash when trying to initialize WebView through the normal machinery, so we
+            // need to directly make the remote context here.
+            String packageName = (String) Class.forName("android.webkit.WebViewFactory")
+                                         .getMethod("getWebViewPackageName")
+                                         .invoke(null);
+            sRemoteClassLoader =
+                    appContext
+                            .createPackageContext(packageName,
+                                    Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE)
+                            .getClassLoader();
+            return sRemoteClassLoader;
+        }
+        return getOrCreateRemoteClassLoader(appContext);
+    }
+
     /**
      * Creates a ClassLoader for the remote (weblayer implementation) side.
      */
-    static ClassLoader createRemoteClassLoader(Context appContext)
+    static ClassLoader getOrCreateRemoteClassLoader(Context appContext)
             throws PackageManager.NameNotFoundException, ReflectiveOperationException {
+        if (sRemoteClassLoader != null) {
+            return sRemoteClassLoader;
+        }
         String implPackageName = getImplPackageName(appContext);
         if (implPackageName == null) {
-            return createRemoteClassLoaderFromWebViewFactory(appContext);
+            sRemoteClassLoader = createRemoteClassLoaderFromWebViewFactory(appContext);
         } else {
-            return createRemoteClassLoaderFromPackage(appContext, implPackageName);
+            sRemoteClassLoader = createRemoteClassLoaderFromPackage(appContext, implPackageName);
         }
+        return sRemoteClassLoader;
     }
 
     /**
@@ -285,24 +313,6 @@ public final class WebLayer {
         Field sPackageInfo = webViewFactory.getDeclaredField("sPackageInfo");
         sPackageInfo.setAccessible(true);
         sPackageInfo.set(null, implPackageInfo);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            // Load assets using the WebViewDelegate.
-            Class<?> webViewDelegateClass = Class.forName("android.webkit.WebViewDelegate");
-            Constructor constructor = webViewDelegateClass.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            Method addWebViewAssetPath =
-                    webViewDelegateClass.getDeclaredMethod("addWebViewAssetPath", Context.class);
-            Object delegate = constructor.newInstance();
-            addWebViewAssetPath.invoke(delegate, appContext);
-        } else {
-            // In L WebViewDelegate did not yet exist, so we have to poke AssetManager directly.
-            // Note: like the implementation in WebView's Api21CompatibilityDelegate this does
-            // not support split APKs.
-            Method addAssetPath = AssetManager.class.getMethod("addAssetPath", String.class);
-            addAssetPath.invoke(appContext.getResources().getAssets(),
-                    implPackageInfo.applicationInfo.sourceDir);
-        }
 
         return remoteContext.getClassLoader();
     }

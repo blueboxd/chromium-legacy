@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.os.SystemClock;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
@@ -101,6 +102,12 @@ public interface TabSwitcher {
          * @return Whether or not the TabSwitcher consumed the event.
          */
         boolean onBackPressed();
+
+        /**
+         * Enable recording the first meaningful paint event of the Grid Tab Switcher.
+         * @param activityCreateTimeMs {@link SystemClock#elapsedRealtime} at activity creation.
+         */
+        void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs);
     }
 
     /**

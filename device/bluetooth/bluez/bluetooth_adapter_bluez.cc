@@ -140,8 +140,8 @@ namespace bluez {
 
 namespace {
 
-void OnRegisterationErrorCallback(
-    const device::BluetoothGattService::ErrorCallback& error_callback,
+void OnRegistrationErrorCallback(
+    device::BluetoothGattService::ErrorCallback error_callback,
     bool is_register_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -152,8 +152,8 @@ void OnRegisterationErrorCallback(
     BLUETOOTH_LOG(ERROR) << "Failed to Unregister service: " << error_name
                          << ", " << error_message;
   }
-  error_callback.Run(
-      BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
+  std::move(error_callback)
+      .Run(BluetoothGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
 void SetIntervalErrorCallbackConnector(
@@ -1337,11 +1337,12 @@ void BluetoothAdapterBlueZ::RemoveLocalGattService(
 void BluetoothAdapterBlueZ::RegisterGattService(
     BluetoothLocalGattServiceBlueZ* service,
     const base::Closure& callback,
-    const device::BluetoothGattService::ErrorCallback& error_callback) {
+    device::BluetoothGattService::ErrorCallback error_callback) {
   if (registered_gatt_services_.count(service->object_path()) > 0) {
     BLUETOOTH_LOG(ERROR)
         << "Re-registering a service that is already registered!";
-    error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(error_callback)
+        .Run(device::BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 
@@ -1352,25 +1353,26 @@ void BluetoothAdapterBlueZ::RegisterGattService(
   // introduce a race since we will always have a period when we may have been
   // registered with BlueZ, but not know that the registration succeeded
   // because the callback hasn't come back yet.
-  UpdateRegisteredApplication(true, callback, error_callback);
+  UpdateRegisteredApplication(true, callback, std::move(error_callback));
 }
 
 void BluetoothAdapterBlueZ::UnregisterGattService(
     BluetoothLocalGattServiceBlueZ* service,
     const base::Closure& callback,
-    const device::BluetoothGattService::ErrorCallback& error_callback) {
+    device::BluetoothGattService::ErrorCallback error_callback) {
   DCHECK(bluez::BluezDBusManager::Get());
 
   if (registered_gatt_services_.count(service->object_path()) == 0) {
     BLUETOOTH_LOG(ERROR)
         << "Unregistering a service that isn't registered! path: "
         << service->object_path().value();
-    error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(error_callback)
+        .Run(device::BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 
   registered_gatt_services_.erase(service->object_path());
-  UpdateRegisteredApplication(false, callback, error_callback);
+  UpdateRegisteredApplication(false, callback, std::move(error_callback));
 }
 
 bool BluetoothAdapterBlueZ::IsGattServiceRegistered(
@@ -1778,27 +1780,30 @@ void BluetoothAdapterBlueZ::OnSetDiscoveryFilterError(
 void BluetoothAdapterBlueZ::UpdateRegisteredApplication(
     bool ignore_unregister_failure,
     const base::Closure& callback,
-    const device::BluetoothGattService::ErrorCallback& error_callback) {
+    device::BluetoothGattService::ErrorCallback error_callback) {
   // If ignore_unregister_failure is set, we'll forward the error_callback to
   // the register call (to be called in case the register call fails). If not,
   // we'll call the error callback if this unregister itself fails.
+  auto adapted_error_callback =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattManagerClient()
       ->UnregisterApplication(
           object_path_, GetApplicationObjectPath(),
           base::Bind(&BluetoothAdapterBlueZ::RegisterApplication,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
+                     weak_ptr_factory_.GetWeakPtr(), callback,
+                     adapted_error_callback),
           ignore_unregister_failure
               ? base::Bind(&BluetoothAdapterBlueZ::RegisterApplicationOnError,
                            weak_ptr_factory_.GetWeakPtr(), callback,
-                           error_callback)
-              : base::Bind(&OnRegisterationErrorCallback, error_callback,
+                           adapted_error_callback)
+              : base::Bind(&OnRegistrationErrorCallback, adapted_error_callback,
                            false));
 }
 
 void BluetoothAdapterBlueZ::RegisterApplication(
     const base::Closure& callback,
-    const device::BluetoothGattService::ErrorCallback& error_callback) {
+    device::BluetoothGattService::ErrorCallback error_callback) {
   // Recreate our application service provider with the currently registered
   // GATT services before we register it.
   gatt_application_provider_.reset();
@@ -1815,18 +1820,19 @@ void BluetoothAdapterBlueZ::RegisterApplication(
   DCHECK(bluez::BluezDBusManager::Get());
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattManagerClient()
-      ->RegisterApplication(
-          object_path_, GetApplicationObjectPath(),
-          BluetoothGattManagerClient::Options(), callback,
-          base::Bind(&OnRegisterationErrorCallback, error_callback, true));
+      ->RegisterApplication(object_path_, GetApplicationObjectPath(),
+                            BluetoothGattManagerClient::Options(), callback,
+                            base::BindOnce(&OnRegistrationErrorCallback,
+                                           std::move(error_callback),
+                                           /*is_register_callback=*/true));
 }
 
 void BluetoothAdapterBlueZ::RegisterApplicationOnError(
     const base::Closure& callback,
-    const device::BluetoothGattService::ErrorCallback& error_callback,
+    device::BluetoothGattService::ErrorCallback error_callback,
     const std::string& /* error_name */,
     const std::string& /* error_message */) {
-  RegisterApplication(callback, error_callback);
+  RegisterApplication(callback, std::move(error_callback));
 }
 
 void BluetoothAdapterBlueZ::ServiceRecordErrorConnector(

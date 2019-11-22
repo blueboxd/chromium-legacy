@@ -12,6 +12,7 @@
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
 
 namespace content {
+class BrowserContext;
 class ResourceContext;
 }
 
@@ -41,7 +42,7 @@ class SafeBrowsingService {
   ~SafeBrowsingService();
 
   // Executed on UI thread
-  void Initialize();
+  void Initialize(content::BrowserContext* browser_context);
   std::unique_ptr<blink::URLLoaderThrottle> CreateURLLoaderThrottle(
       content::ResourceContext* resource_context,
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
@@ -84,6 +85,8 @@ class SafeBrowsingService {
 
   std::unique_ptr<safe_browsing::SafeBrowsingApiHandler>
       safe_browsing_api_handler_;
+
+  std::unique_ptr<PrefService> user_pref_service_;
 
   std::string user_agent_;
 

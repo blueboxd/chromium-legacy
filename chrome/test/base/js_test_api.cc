@@ -12,7 +12,6 @@ JsTestApiConfig::JsTestApiConfig() {
   constexpr const base::FilePath::CharType* kLibraries[] = {
       FILE_PATH_LITERAL("chrome/third_party/mock4js/mock4js.js"),
       FILE_PATH_LITERAL("third_party/chaijs/chai.js"),
-      FILE_PATH_LITERAL("third_party/accessibility-audit/axs_testing.js"),
   };
   constexpr base::FilePath::CharType kWebUITestFolder[] =
       FILE_PATH_LITERAL("webui");

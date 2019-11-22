@@ -27,7 +27,6 @@ static_library("vr_android") {
     "gl_browser_interface.h",
     "gvr_consent_helper_impl.cc",
     "gvr_consent_helper_impl.h",
-    "gvr_gamepad_data.h",
     "gvr_graphics_delegate.cc",
     "gvr_graphics_delegate.h",
     "gvr_input_delegate.cc",

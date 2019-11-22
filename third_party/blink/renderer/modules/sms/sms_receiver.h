@@ -28,12 +28,16 @@ class SMSReceiver final : public ScriptWrappable, public ContextClient {
   ~SMSReceiver() override;
 
   // SMSReceiver IDL interface.
-  ScriptPromise receive(ScriptState*, const SMSReceiverOptions*);
+  ScriptPromise receive(ScriptState*,
+                        const SMSReceiverOptions*,
+                        ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 
  private:
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;
+
+  void Abort(ScriptPromiseResolver* resolver);
 
   void OnReceive(ScriptPromiseResolver* resolver,
                  base::TimeTicks start_time,

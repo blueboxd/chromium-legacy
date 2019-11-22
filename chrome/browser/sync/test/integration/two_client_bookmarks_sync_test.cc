@@ -2145,7 +2145,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTest,
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(1));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TwoClientBookmarksSyncTest,
                          ::testing::Values(false, true));
 

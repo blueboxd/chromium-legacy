@@ -41,7 +41,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace media_router {
 

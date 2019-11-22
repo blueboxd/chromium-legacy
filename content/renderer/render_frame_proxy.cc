@@ -411,7 +411,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnForwardResourceTimingToParent)
     IPC_MESSAGE_HANDLER(FrameMsg_SetNeedsOcclusionTracking,
                         OnSetNeedsOcclusionTracking)
-    IPC_MESSAGE_HANDLER(FrameMsg_Collapse, OnCollapse)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicies,
                         OnAddContentSecurityPolicies)
@@ -505,10 +504,6 @@ void RenderFrameProxy::OnForwardResourceTimingToParent(
 
 void RenderFrameProxy::OnSetNeedsOcclusionTracking(bool needs_tracking) {
   web_frame_->SetNeedsOcclusionTracking(needs_tracking);
-}
-
-void RenderFrameProxy::OnCollapse(bool collapsed) {
-  web_frame_->Collapse(collapsed);
 }
 
 void RenderFrameProxy::OnDidUpdateName(const std::string& name,

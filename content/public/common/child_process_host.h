@@ -54,11 +54,18 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // This enum (given to |Create()|) determines how the ChildProcessHost uses
   // the pipe.
   enum class IpcMode {
+    // In this mode, the primordial pipe is a content.mojom.ChildProcess pipe.
+    // The ChildProcessHost is fully functional in this mode, and all new
+    // process hosts should prefer to use this mode.
+    kNormal,
+
     // In this mode, the primordial pipe is a service_manager.mojom.Service
     // pipe, and the owner of the ChildProcessHost is expected to pass the
     // Mojo invitation along to a content::ChildProcessConnection.
     //
     // In this mode, the ChildProcessHost is fully functional.
+    //
+    // DEPRECATED: Do not introduce new uses of this mode.
     kServiceManager,
 
     // In this mode, the primordial pipe is a legacy IPC Channel bootstrapping

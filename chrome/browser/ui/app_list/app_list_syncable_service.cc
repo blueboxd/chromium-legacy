@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
@@ -430,8 +429,6 @@ void AppListSyncableService::BuildModel() {
         std::make_unique<AppServiceAppModelBuilder>(controller);
   } else {
     ext_apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
-    if (arc::IsArcAllowedForProfile(profile_))
-      arc_apps_builder_ = std::make_unique<ArcAppModelBuilder>(controller);
   }
 
   DCHECK(profile_);
@@ -441,8 +438,6 @@ void AppListSyncableService::BuildModel() {
     app_service_apps_builder_->Initialize(this, profile_, model_updater_.get());
   } else {
     ext_apps_builder_->Initialize(this, profile_, model_updater_.get());
-    if (arc_apps_builder_.get())
-      arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
   }
 
   HandleUpdateFinished();
@@ -1030,7 +1025,6 @@ void AppListSyncableService::Shutdown() {
     app_service_apps_builder_.reset();
     return;
   }
-  arc_apps_builder_.reset();
   ext_apps_builder_.reset();
 }
 

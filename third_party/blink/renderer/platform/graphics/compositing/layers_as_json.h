@@ -29,7 +29,7 @@ enum {
   kLayerTreeIncludesDebugInfo = 1 << 0,
   kLayerTreeIncludesPaintInvalidations = 1 << 1,
   kLayerTreeIncludesPaintingPhases = 1 << 2,
-  kLayerTreeIncludesRootLayer = 1 << 3,
+  kLayerTreeIncludesAllLayers = 1 << 3,
   kLayerTreeIncludesCompositingReasons = 1 << 5,
   kLayerTreeIncludesPaintRecords = 1 << 6,
   // Outputs all layers as a layer tree. The default is output children
@@ -48,8 +48,6 @@ class PLATFORM_EXPORT LayerAsJSONClient {
 class PLATFORM_EXPORT LayersAsJSON {
  public:
   LayersAsJSON(LayerTreeFlags);
-
-  LayerTreeFlags Flags() const { return flags_; }
 
   void AddLayer(const cc::Layer& layer,
                 const FloatPoint& offset,

@@ -172,8 +172,8 @@ void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   window_->SetProperty(aura::client::kShowStateKey, params.show_state);
   if (params.type == Widget::InitParams::TYPE_BUBBLE)
     wm::SetHideOnDeactivate(window_, true);
-  window_->SetTransparent(
-      params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW);
+  window_->SetTransparent(params.opacity ==
+                          Widget::InitParams::WindowOpacity::kTranslucent);
 
   // Check for ShadowType::kNone before aura::Window::Init() to ensure observers
   // do not add useless shadow layers by deriving one from the window type.

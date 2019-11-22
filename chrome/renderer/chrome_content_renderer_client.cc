@@ -1245,6 +1245,7 @@ void ChromeContentRendererClient::WillSendRequest(
     WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
+    const blink::WebURL& site_for_cookies,
     const url::Origin* initiator_origin,
     GURL* new_url,
     bool* attach_same_site_cookies) {
@@ -1252,7 +1253,7 @@ void ChromeContentRendererClient::WillSendRequest(
 // URL to something invalid to prevent the request and cause an error.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->WillSendRequest(
-      frame, transition_type, url, initiator_origin, new_url,
+      frame, transition_type, url, site_for_cookies, initiator_origin, new_url,
       attach_same_site_cookies);
   if (!new_url->is_empty())
     return;

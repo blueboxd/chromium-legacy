@@ -82,12 +82,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // loaded from disk.
   const gfx::Image* GetGAIAPictureOfProfileAtIndex(size_t index) const override;
   bool IsUsingGAIAPictureOfProfileAtIndex(size_t index) const override;
-  bool ProfileIsSupervisedAtIndex(size_t index) const override;
-  bool ProfileIsChildAtIndex(size_t index) const override;
-  bool ProfileIsLegacySupervisedAtIndex(size_t index) const override;
-  bool IsOmittedProfileAtIndex(size_t index) const override;
   bool ProfileIsSigninRequiredAtIndex(size_t index) const override;
-  std::string GetSupervisedUserIdOfProfileAtIndex(size_t index) const override;
   bool ProfileIsUsingDefaultAvatarAtIndex(size_t index) const override;
 
   // Returns true if a GAIA picture has been loaded or has failed to load for
@@ -98,7 +93,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
-  void SetIsOmittedProfileAtIndex(size_t index, bool is_omitted);
   void SetSupervisedUserIdOfProfileAtIndex(size_t index, const std::string& id);
   void SetGAIAPictureOfProfileAtIndex(size_t index, gfx::Image image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
@@ -109,9 +103,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void NotifyIsSigninRequiredChanged(const base::FilePath& profile_path);
 
   const base::FilePath& GetUserDataDir() const;
-
-  // Gets the name of the profile, which is the one displayed in the User Menu.
-  base::string16 GetNameToDisplayOfProfileAtIndex(size_t index);
 
   // Register cache related preferences in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -133,8 +124,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   void NotifyProfileAuthInfoChanged(const base::FilePath& profile_path);
   void NotifyIfProfileNamesHaveChanged();
-
-  static const char kNameKey[];
+  void NotifyProfileSupervisedUserIdChanged(const base::FilePath& profile_path);
+  void NotifyProfileIsOmittedChanged(const base::FilePath& profile_path);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,

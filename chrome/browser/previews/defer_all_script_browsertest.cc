@@ -387,20 +387,15 @@ IN_PROC_BROWSER_TEST_F(
 
   ui_test_utils::NavigateToURL(browser(), client_redirect_url());
 
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "Navigation.ClientRedirectCycle.RedirectToReferrer",
-      2);
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "Previews.PageEndReason.DeferAllScript", 3);
-
   // If there is a redirect loop, call to NavigateToURL() would never finish.
   // The checks belows are additional checks to ensure that the logic to detect
   // redirect loops is being called.
   //
   // Client redirect loop is broken on 2nd pass around the loop so expect 3
   // previews before previews turned off to stop loop.
-  histogram_tester.ExpectTotalCount(
-      "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
+  RetryForHistogramUntilCountReached(
+      &histogram_tester,
+      "Previews.DeferAllScript.RedirectLoopDetectedUsingCache", 2);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
 
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
@@ -446,14 +441,10 @@ IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
   // Client redirect loop is broken on 2nd pass around the loop so expect 3
   // previews before previews turned off to stop loop.
   RetryForHistogramUntilCountReached(
-      &histogram_tester, "Navigation.ClientRedirectCycle.RedirectToReferrer",
-      2);
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "Previews.PageEndReason.DeferAllScript", 3);
-
-  histogram_tester.ExpectTotalCount(
-      "Navigation.ClientRedirectCycle.RedirectToReferrer", 2);
+      &histogram_tester,
+      "Previews.DeferAllScript.RedirectLoopDetectedUsingCache", 2);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
+
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
       server_redirect_url()));
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
@@ -497,14 +488,10 @@ IN_PROC_BROWSER_TEST_F(
   // The checks belows are additional checks to ensure that the logic to detect
   // redirect loops is being called.
   RetryForHistogramUntilCountReached(
-      &histogram_tester, "Navigation.ClientRedirectCycle.RedirectToReferrer",
-      1);
-  RetryForHistogramUntilCountReached(
-      &histogram_tester, "Previews.PageEndReason.DeferAllScript", 3);
-
-  histogram_tester.ExpectTotalCount(
-      "Navigation.ClientRedirectCycle.RedirectToReferrer", 1);
+      &histogram_tester,
+      "Previews.DeferAllScript.RedirectLoopDetectedUsingCache", 1);
   histogram_tester.ExpectTotalCount("Previews.PageEndReason.DeferAllScript", 3);
+
   EXPECT_FALSE(previews_service->IsUrlEligibleForDeferAllScriptPreview(
       server_redirect_base_redirect_to_final_server_redirect()));
   // https_url() is not in redirect chain and should still be eligible for the
@@ -515,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(
   // Verify UKM entry.
   using UkmEntry = ukm::builders::Previews;
   auto entries = test_ukm_recorder.GetEntriesByName(UkmEntry::kEntryName);
-  ASSERT_EQ(4u, entries.size());
+  ASSERT_EQ(5u, entries.size());
   auto* entry = entries.at(3);
   test_ukm_recorder.ExpectEntryMetric(
       entry, UkmEntry::kdefer_all_script_eligibility_reasonName,

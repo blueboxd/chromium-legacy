@@ -80,6 +80,7 @@ class FileTableList extends cr.ui.table.TableList {
 FileTableList.decorate = self => {
   self.__proto__ = FileTableList.prototype;
   self.setAttribute('aria-multiselectable', true);
+  self.setAttribute('aria-describedby', 'more-actions-info');
   /** @type {FileTableList} */ (self).onMergeItems_ = null;
 };
 
@@ -151,7 +152,6 @@ filelist.decorateListItem = (li, entry, metadataModel) => {
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.
   li.setAttribute('role', 'option');
-  li.setAttribute('aria-describedby', 'more-actions-info');
 
   Object.defineProperty(li, 'selected', {
     /**
@@ -297,8 +297,6 @@ filelist.handleTap = function(e, index, eventType) {
         sm.selectedIndex = index;
         sm.endChange();
         const name = this.filesView.getItemLabel(index);
-        this.filesView.a11y.speakA11yMessage(
-            strf('SELECTION_SINGLE_ENTRY', name));
       }
     }
 
@@ -347,8 +345,6 @@ filelist.handleTap = function(e, index, eventType) {
       sm.setCheckSelectMode(true);
     }
     const name = this.filesView.getItemLabel(index);
-    this.filesView.a11y.speakA11yMessage(
-        strf('SELECTION_ADD_SINGLE_ENTRY', name));
     sm.setIndexSelected(index, true);
     sm.leadIndex = index;
     sm.anchorIndex = index;
@@ -362,7 +358,6 @@ filelist.handleTap = function(e, index, eventType) {
     sm.beginChange();
     sm.unselectAll();
     const name = this.filesView.getItemLabel(index);
-    this.filesView.a11y.speakA11yMessage(strf('SELECTION_SINGLE_ENTRY', name));
     sm.setIndexSelected(index, true);
     sm.leadIndex = index;
     sm.anchorIndex = index;
@@ -454,8 +449,6 @@ filelist.handlePointerDownUp = function(e, index) {
           this.filesView.a11y.speakA11yMessage(msg);
         } else {
           const name = this.filesView.getItemLabel(index);
-          this.filesView.a11y.speakA11yMessage(
-              strf('SELECTION_SINGLE_ENTRY', name));
           sm.setIndexSelected(index, true);
         }
       }
@@ -480,8 +473,6 @@ filelist.handlePointerDownUp = function(e, index) {
         // announce the selection only in one of them.
         if (isDown) {
           const name = this.filesView.getItemLabel(index);
-          this.filesView.a11y.speakA11yMessage(
-              strf('SELECTION_SINGLE_ENTRY', name));
         }
         sm.selectedIndex = index;
       }
@@ -635,8 +626,6 @@ filelist.handleKeyDown = function(e) {
       }
       if (anchorIndex === -1) {
         const name = this.filesView.getItemLabel(newIndex);
-        this.filesView.a11y.speakA11yMessage(
-            strf('SELECTION_SINGLE_ENTRY', name));
         sm.setIndexSelected(newIndex, true);
         sm.anchorIndex = newIndex;
       } else {
@@ -659,8 +648,6 @@ filelist.handleKeyDown = function(e) {
         sm.unselectAll();
       }
       const name = this.filesView.getItemLabel(newIndex);
-      this.filesView.a11y.speakA11yMessage(
-          strf('SELECTION_SINGLE_ENTRY', name));
       sm.setIndexSelected(newIndex, true);
       sm.anchorIndex = newIndex;
     }

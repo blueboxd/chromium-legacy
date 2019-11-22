@@ -413,20 +413,6 @@ void VrShell::ToggleCardboardGamepad(bool enabled) {
   }
 }
 
-void VrShell::ToggleGvrGamepad(bool enabled) {
-  // Enable/disable updating gamepad state.
-  if (enabled) {
-    DCHECK(!gvr_gamepad_source_active_);
-    device::GvrDevice* gvr_device = delegate_provider_->GetGvrDevice();
-    if (!gvr_device)
-      return;
-    gvr_gamepad_source_active_ = true;
-  } else {
-    DCHECK(gvr_gamepad_source_active_);
-    gvr_gamepad_source_active_ = false;
-  }
-}
-
 void VrShell::OnTriggerEvent(JNIEnv* env,
                              const JavaParamRef<jobject>& obj,
                              bool touched) {
@@ -1071,11 +1057,6 @@ void VrShell::ProcessDialogGesture(std::unique_ptr<InputEvent> event) {
     return;
 
   dialog_gesture_target_->DispatchInputEvent(std::move(event));
-}
-
-void VrShell::UpdateGamepadData(GvrGamepadData pad) {
-  if (gvr_gamepad_source_active_ != pad.connected)
-    ToggleGvrGamepad(pad.connected);
 }
 
 bool VrShell::HasDaydreamSupport(JNIEnv* env) {

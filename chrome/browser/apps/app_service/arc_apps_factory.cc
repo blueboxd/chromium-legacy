@@ -32,6 +32,13 @@ bool ArcAppsFactory::IsEnabled() {
   return AppServiceProxyFactory::IsEnabled();
 }
 
+// static
+void ArcAppsFactory::ShutDownForTesting(content::BrowserContext* context) {
+  auto* factory = GetInstance();
+  factory->BrowserContextShutdown(context);
+  factory->BrowserContextDestroyed(context);
+}
+
 ArcAppsFactory::ArcAppsFactory()
     : BrowserContextKeyedServiceFactory(
           "ArcApps",

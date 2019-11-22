@@ -15,12 +15,39 @@
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
 namespace caspian {
+class BaseLens {
+ public:
+  virtual ~BaseLens() = default;
+  virtual std::string_view ParentName(
+      const BaseSymbol& symbol,
+      std::deque<std::string>* owned_strings) = 0;
+};
+
+class IdPathLens : public BaseLens {
+ public:
+  std::string_view ParentName(const BaseSymbol& symbol,
+                              std::deque<std::string>* owned_strings) override;
+};
+
+class ComponentLens : public BaseLens {
+ public:
+  std::string_view ParentName(const BaseSymbol& symbol,
+                              std::deque<std::string>* owned_strings) override;
+};
+
+class TemplateLens : public BaseLens {
+ public:
+  std::string_view ParentName(const BaseSymbol& symbol,
+                              std::deque<std::string>* owned_strings) override;
+};
+
 class TreeBuilder {
  public:
   TreeBuilder(SizeInfo* size_info);
   TreeBuilder(DeltaSizeInfo* size_info);
   ~TreeBuilder();
-  void Build(bool group_by_component,
+  void Build(std::unique_ptr<BaseLens> lens,
+             char separator,
              bool method_count_mode,
              std::vector<std::function<bool(const BaseSymbol&)>> filters);
   Json::Value Open(const char* path);
@@ -52,7 +79,7 @@ class TreeBuilder {
   // in |owned_strings_|.
   // Deque is used for stability, to support string_view.
   std::deque<std::string> owned_strings_;
-  bool group_by_component_;
+  std::unique_ptr<BaseLens> lens_;
   bool method_count_mode_;
   // The current path separator: '>' if grouping by component, '/' otherwise.
   // Note that we split paths on '/' no matter the value of separator, since

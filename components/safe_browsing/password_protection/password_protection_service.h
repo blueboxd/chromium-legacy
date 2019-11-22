@@ -255,6 +255,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   }
 #endif
 
+#if defined(UNIT_TEST)
+  void set_saved_passwords_matching_domains(
+      const std::vector<std::string>& matching_domains) {
+    saved_passwords_matching_domains_ = matching_domains;
+  }
+#endif
+
   virtual AccountInfo GetAccountInfo() const = 0;
 
  protected:
@@ -381,6 +388,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
   GetSyncAccountType() const = 0;
 
+  const std::vector<std::string>& saved_passwords_matching_domains() const {
+    return saved_passwords_matching_domains_;
+  }
+
  private:
   friend class PasswordProtectionServiceTest;
   friend class TestPasswordProtectionService;
@@ -438,6 +449,8 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // interstitial.
   ReusedPasswordAccountType
       reused_password_account_type_for_last_shown_warning_;
+
+  std::vector<std::string> saved_passwords_matching_domains_;
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 

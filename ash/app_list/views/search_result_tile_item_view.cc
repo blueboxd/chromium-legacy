@@ -222,6 +222,22 @@ base::string16 SearchResultTileItemView::ComputeAccessibleName() const {
   else
     accessible_name = title_->GetText();
 
+  if (result()->result_type() == AppListSearchResultType::kPlayStoreApp ||
+      result()->result_type() == AppListSearchResultType::kInstantApp) {
+    accessible_name +=
+        base::UTF8ToUTF16(", ") +
+        l10n_util::GetStringUTF16(IDS_APP_ACCESSIBILITY_ARC_APP_ANNOUNCEMENT);
+  } else if (result()->result_type() ==
+             AppListSearchResultType::kInstalledApp) {
+    accessible_name += base::UTF8ToUTF16(", ") +
+                       l10n_util::GetStringUTF16(
+                           IDS_APP_ACCESSIBILITY_INSTALLED_APP_ANNOUNCEMENT);
+  } else if (result()->result_type() == AppListSearchResultType::kInternalApp) {
+    accessible_name += base::UTF8ToUTF16(", ") +
+                       l10n_util::GetStringUTF16(
+                           IDS_APP_ACCESSIBILITY_INTERNAL_APP_ANNOUNCEMENT);
+  }
+
   if (rating_ && rating_->GetVisible()) {
     accessible_name +=
         base::UTF8ToUTF16(", ") +

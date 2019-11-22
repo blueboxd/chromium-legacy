@@ -98,9 +98,8 @@ class NetworkErrorScreenTest : public InProcessBrowserTest {
   std::string WifiElementSelector(const std::string& wifi_network_name) {
     return base::StrCat(
         {"$('offline-network-control').$$('#networkSelect')"
-         ".getNetworkListForTest()"
-         ".querySelector('network-list-item[aria-label=\"",
-         wifi_network_name, "\"]')"});
+         ".getNetworkListItemByNameForTest('",
+         wifi_network_name, "')"});
   }
 
   void ClickOnWifiNetwork(const std::string& wifi_network_name) {

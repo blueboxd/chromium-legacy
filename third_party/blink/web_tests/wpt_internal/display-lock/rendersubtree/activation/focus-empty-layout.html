@@ -24,7 +24,7 @@ promise_test((t) => {
     focusable.tabIndex = 0;
 
     const eventPromise = new Promise((resolve, reject) => {
-      container.onbeforeactivate = (e) => {
+      container.onrendersubtreeactivation = (e) => {
         t.step(() => assert_equals(e.target, container));
         t.step(() => assert_equals(e.activatedElement, focusable));
         resolve();
@@ -40,6 +40,6 @@ promise_test((t) => {
       });
     });
   });
-}, "Activating locked element through tabindex navigation fires beforeactivate, focuses element");
+}, "Activating locked element through tabindex navigation fires rendersubtreeactivation, focuses element");
 </script>
 </html>

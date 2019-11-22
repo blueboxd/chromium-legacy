@@ -9,8 +9,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/local_discovery/local_discovery_ui_handler.h"
-#include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -31,7 +31,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->AddResourcePath("local_discovery.css", IDR_LOCAL_DISCOVERY_CSS);
   source->AddResourcePath("local_discovery.js", IDR_LOCAL_DISCOVERY_JS);
 
-  static constexpr LocalizedString kStrings[] = {
+  static constexpr webui::LocalizedString kStrings[] = {
     {"serviceRegister", IDS_LOCAL_DISCOVERY_SERVICE_REGISTER},
     {"manageDevice", IDS_LOCAL_DISCOVERY_MANAGE_DEVICE},
 
@@ -79,7 +79,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
     {"titleConnector", IDS_LOCAL_DISCOVERY_CONNECTOR_SECTION},
 #endif
   };
-  AddLocalizedStringsBulk(source, kStrings, base::size(kStrings));
+  AddLocalizedStringsBulk(source, kStrings);
 
   source->UseStringsJs();
 

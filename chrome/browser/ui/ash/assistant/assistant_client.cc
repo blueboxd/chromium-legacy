@@ -30,7 +30,6 @@
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
 
 namespace {
 
@@ -168,12 +167,6 @@ void AssistantClient::RequestAssistantStateController(
     mojo::PendingReceiver<ash::mojom::AssistantStateController> receiver) {
   ash::AssistantInterfaceBinder::GetInstance()->BindStateController(
       std::move(receiver));
-}
-
-void AssistantClient::RequestPrefStoreConnector(
-    mojo::PendingReceiver<prefs::mojom::PrefStoreConnector> receiver) {
-  content::BrowserContext::GetConnectorFor(profile_)->Connect(
-      prefs::mojom::kServiceName, std::move(receiver));
 }
 
 void AssistantClient::RequestBatteryMonitor(

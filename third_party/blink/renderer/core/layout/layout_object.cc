@@ -2085,8 +2085,10 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
 
   if ((diff.NeedsPaintInvalidationObject() ||
        diff.NeedsPaintInvalidationSubtree()) &&
-      old_style && !old_style->ClipPathDataEquivalent(*style_))
+      old_style && !old_style->ClipPathDataEquivalent(*style_)) {
     InvalidateClipPathCache();
+    PaintingLayer()->SetNeedsCompositingInputsUpdate();
+  }
 
   if (diff.NeedsVisualRectUpdate())
     SetShouldCheckForPaintInvalidation();

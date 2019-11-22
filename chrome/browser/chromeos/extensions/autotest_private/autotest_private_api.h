@@ -413,6 +413,18 @@ class AutotestPrivateImportCrostiniFunction : public ExtensionFunction {
   void CrostiniImported(crostini::CrostiniResult);
 };
 
+class AutotestPrivateInstallPluginVMFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.installPluginVM",
+                             AUTOTESTPRIVATE_INSTALLPLUGINVM)
+
+ private:
+  ~AutotestPrivateInstallPluginVMFunction() override;
+  ResponseAction Run() override;
+
+  void OnInstallFinished(bool success);
+};
+
 class AutotestPrivateRegisterComponentFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.registerComponent",

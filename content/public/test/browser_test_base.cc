@@ -455,7 +455,7 @@ void BrowserTestBase::SetUp() {
     // run.
     base::RunLoop loop{base::RunLoop::Type::kNestableTasksAllowed};
 
-    auto ui_task = std::make_unique<base::Closure>(
+    auto ui_task = std::make_unique<base::OnceClosure>(
         base::Bind(&BrowserTestBase::WaitUntilJavaIsReady,
                    base::Unretained(this), loop.QuitClosure()));
 
@@ -499,7 +499,7 @@ void BrowserTestBase::SetUp() {
   // for the test harness to be able to delete temp dirs.
   base::ThreadRestrictions::SetIOAllowed(true);
 #else   // defined(OS_ANDROID)
-  auto ui_task = std::make_unique<base::Closure>(base::Bind(
+  auto ui_task = std::make_unique<base::OnceClosure>(base::BindOnce(
       &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =

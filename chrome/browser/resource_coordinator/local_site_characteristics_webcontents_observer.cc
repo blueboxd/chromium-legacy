@@ -285,10 +285,11 @@ bool LocalSiteCharacteristicsWebContentsObserver::ShouldIgnoreFeatureUsageEvent(
   }
 
   // Ignore events happening shortly after the tab being backgrounded, they're
-  // usually false positives.
+  // usually false positives, except for the non-persistent notifications.
   DCHECK(!backgrounded_time_.is_null());
-  if (NowTicks() - backgrounded_time_ <
-      kFeatureUsagePostBackgroundGracePeriod) {
+  if (feature_type != FeatureType::kNotificationUsage &&
+      (NowTicks() - backgrounded_time_ <
+       kFeatureUsagePostBackgroundGracePeriod)) {
     return true;
   }
 

@@ -468,6 +468,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   // enterprise password hashes.
   void OnWarningTriggerChanged();
 
+  // Gets the warning text for saved password reuse warnings.
+  base::string16 GetWarningDetailTextForSavedPasswords() const;
+
   // Informs PasswordReuseDetector that enterprise password URLs (login URL or
   // change password URL) have been changed.
   void OnEnterprisePasswordUrlChanged();

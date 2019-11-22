@@ -46,56 +46,26 @@ TEST(AccountConsistencyModeManagerTest, DefaultValue) {
 #if BUILDFLAG(ENABLE_MIRROR) || defined(OS_CHROMEOS)
   EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
             AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
-#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
-  EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
-            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
-#else
-  EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
-            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile.get()));
   EXPECT_FALSE(
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
-#endif
-}
-
-TEST(AccountConsistencyModeManagerTest, Basic) {
-  content::BrowserTaskEnvironment task_environment;
-
-  struct TestCase {
-    signin::AccountConsistencyMethod method;
-    bool expect_mirror_enabled;
-    bool expect_dice_enabled;
-  } test_cases[] = {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    {signin::AccountConsistencyMethod::kDice, false, true},
+#elif BUILDFLAG(ENABLE_DICE_SUPPORT)
+  EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
+            AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
+  EXPECT_FALSE(
+      AccountConsistencyModeManager::IsMirrorEnabledForProfile(profile.get()));
+  EXPECT_TRUE(
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
 #else
-    {signin::AccountConsistencyMethod::kMirror, true, false}
+#error Either Dice or Mirror should be enabled
 #endif
-  };
-
-  for (const TestCase& test_case : test_cases) {
-    ScopedAccountConsistency scoped_method(test_case.method);
-    std::unique_ptr<TestingProfile> profile =
-        BuildTestingProfile(/*is_new_profile=*/false);
-
-    EXPECT_EQ(
-        test_case.method,
-        AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
-    EXPECT_EQ(test_case.expect_mirror_enabled,
-              AccountConsistencyModeManager::IsMirrorEnabledForProfile(
-                  profile.get()));
-    EXPECT_EQ(
-        test_case.expect_dice_enabled,
-        AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
-  }
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Checks that changing the signin-allowed pref changes the Dice state on next
 // startup.
 TEST(AccountConsistencyModeManagerTest, SigninAllowedChangesDiceState) {
-  ScopedAccountConsistencyDice scoped_dice;
   content::BrowserTaskEnvironment task_environment;
   std::unique_ptr<TestingProfile> profile =
       BuildTestingProfile(/*is_new_profile=*/false);
@@ -131,7 +101,6 @@ TEST(AccountConsistencyModeManagerTest, SigninAllowedChangesDiceState) {
 
 // The command line switch "disallow-signin" only affects the current run.
 TEST(AccountConsistencyModeManagerTest, DisallowSigninSwitch) {
-  ScopedAccountConsistencyDice scoped_dice;
   content::BrowserTaskEnvironment task_environment;
   std::unique_ptr<TestingProfile> profile =
       BuildTestingProfile(/*is_new_profile=*/false);
@@ -177,40 +146,28 @@ TEST(AccountConsistencyModeManagerTest, ForceDiceMigration) {
   std::unique_ptr<TestingProfile> profile =
       BuildTestingProfile(/*is_new_profile=*/false);
   profile->GetPrefs()->SetBoolean(prefs::kTokenServiceDiceCompatible, true);
-  {
-    AccountConsistencyModeManager manager(profile.get());
-    EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
-              manager.GetAccountConsistencyMethod());
-    EXPECT_FALSE(manager.IsReadyForDiceMigration(profile.get()));
-    // Migration is not completed yet, |kDiceMigrationCompletePref| should not
-    // be written.
-    EXPECT_FALSE(manager.IsDiceMigrationCompleted(profile.get()));
-  }
-
-  AccountConsistencyModeManager::SetDiceMigrationOnStartup(profile->GetPrefs(),
-                                                           true);
-  {
-    AccountConsistencyModeManager manager(profile.get());
-    EXPECT_TRUE(manager.IsReadyForDiceMigration(profile.get()));
-    EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
-              manager.GetAccountConsistencyMethod());
-    // Migration completed.
-    EXPECT_TRUE(manager.IsDiceMigrationCompleted(profile.get()));
-  }
+  AccountConsistencyModeManager manager(profile.get());
+  EXPECT_EQ(signin::AccountConsistencyMethod::kDice,
+            manager.GetAccountConsistencyMethod());
+  // Migration is not completed yet, |kDiceMigrationCompletePref| should not
+  // be written.
+  EXPECT_FALSE(manager.IsDiceMigrationCompleted(profile.get()));
+  manager.SetDiceMigrationCompleted();
+  EXPECT_TRUE(manager.IsDiceMigrationCompleted(profile.get()));
 }
 
 // Checks that new profiles are migrated at creation.
 TEST(AccountConsistencyModeManagerTest, NewProfile) {
   content::BrowserTaskEnvironment task_environment;
-  ScopedAccountConsistencyDiceMigration scoped_dice_migration;
   std::unique_ptr<TestingProfile> profile =
       BuildTestingProfile(/*is_new_profile=*/true);
   EXPECT_TRUE(
       AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
+  EXPECT_TRUE(
+      AccountConsistencyModeManager::IsDiceMigrationCompleted(profile.get()));
 }
 
 TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
-  ScopedAccountConsistencyDice scoped_dice;
   content::BrowserTaskEnvironment task_environment;
 
   {

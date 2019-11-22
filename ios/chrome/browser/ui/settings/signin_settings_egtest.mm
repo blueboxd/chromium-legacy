@@ -54,7 +54,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 
 // Tests signing in, using the primary button with a warm state.
 - (void)testSignInPromoWithWarmStateUsingPrimaryButton {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -73,7 +73,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 
 // Tests signing in, using the secondary button with a warm state.
 - (void)testSignInPromoWithWarmStateUsingSecondaryButton {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 

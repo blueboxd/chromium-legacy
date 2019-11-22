@@ -167,7 +167,7 @@ void SignOut() {
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
   // Remove |identity| from the device.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabel(identity.userEmail)]
       performAction:grey_tap()];

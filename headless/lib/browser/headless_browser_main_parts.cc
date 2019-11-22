@@ -27,7 +27,7 @@ void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
   browser_->RunOnStartCallback();
 
   if (parameters_.ui_task) {
-    parameters_.ui_task->Run();
+    std::move(*parameters_.ui_task).Run();
     delete parameters_.ui_task;
     run_message_loop_ = false;
   }

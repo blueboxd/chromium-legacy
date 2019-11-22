@@ -352,6 +352,12 @@ const base::Feature kEnterpriseReportingInBrowser{
 #endif
 
 #if defined(OS_CHROMEOS)
+// Upload enterprise cloud reporting from Chrome OS.
+const base::Feature kEnterpriseReportingInChromeOS{
+    "EnterpriseReportingInChromeOS", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if defined(OS_CHROMEOS)
 // Enables event-based status reporting for child accounts in Chrome OS.
 const base::Feature kEventBasedStatusReporting{
     "EventBasedStatusReporting", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -60,15 +60,16 @@ Polymer({
       computed: 'getAriaLabel_(item, networkState)',
     },
 
-    /**
-     * Expose the aria role attribute based on the showButtons properties/
-     * attribute. When showButtons is true, the role is "button" otherwise it is
-     * left blank.
-     */
+    buttonLabel: {
+      type: String,
+      computed: 'getButtonLabel_(item)',
+    },
+
+    /** Expose the aria role attribute as "button". */
     role: {
       type: String,
       reflectToAttribute: true,
-      computed: 'getAriaRole_(showButtons)',
+      value: 'button',
     },
 
     /**
@@ -141,28 +142,112 @@ Polymer({
   },
 
   /**
+   * The aria label for the subpage button.
+   * @return {string}
+   * @private
+   */
+  getButtonLabel_: function() {
+    return this.i18n('networkListItemSubpageButtonLabel', this.getItemName_());
+  },
+
+  /**
    * Label for the row, used for accessibility announcement.
    * @return {string}
    * @private
    */
   getAriaLabel_: function() {
+    const NetworkType = chromeos.networkConfig.mojom.NetworkType;
+    const OncSource = chromeos.networkConfig.mojom.OncSource;
+    const SecurityType = chromeos.networkConfig.mojom.SecurityType;
     const status = this.getNetworkStateText_();
-    if (status) {
-      return this.i18n(
-          'networkListItemLabelTemplate', this.getItemName_(), status);
+    const isManaged = this.item.source === OncSource.kDevicePolicy ||
+        this.item.source === OncSource.kUserPolicy;
+    const index = this.parentElement.items.indexOf(this.item) + 1;
+    const total = this.parentElement.items.length;
+    switch (this.item.type) {
+      case NetworkType.kCellular:
+        if (isManaged) {
+          if (status) {
+            return this.i18n(
+                'networkListItemLabelCellularManagedWithConnectionStatus',
+                index, total, this.getItemName_(), status,
+                this.item.typeState.cellular.signalStrength);
+          }
+          return this.i18n(
+              'networkListItemLabelCellularManaged', index, total,
+              this.getItemName_(), this.item.typeState.cellular.signalStrength);
+        }
+        if (status) {
+          return this.i18n(
+              'networkListItemLabelCellularWithConnectionStatus', index, total,
+              this.getItemName_(), status,
+              this.item.typeState.cellular.signalStrength);
+        }
+        return this.i18n(
+            'networkListItemLabelCellular', index, total, this.getItemName_(),
+            this.item.typeState.cellular.signalStrength);
+      case NetworkType.kEthernet:
+        if (isManaged) {
+          if (status) {
+            return this.i18n(
+                'networkListItemLabelCellularManagedWithConnectionStatus',
+                index, total, this.getItemName_(), status);
+          }
+          return this.i18n(
+              'networkListItemLabelEthernetManaged', index, total,
+              this.getItemName_());
+        }
+        if (status) {
+          return this.i18n(
+              'networkListItemLabelEthernetWithConnectionStatus', index, total,
+              this.getItemName_(), status);
+        }
+        return this.i18n(
+            'networkListItemLabel', index, total, this.getItemName_());
+      case NetworkType.kTether:
+        // Tether networks will never be controlled by policy (only disabled).
+        if (status) {
+          return this.i18n(
+              'networkListItemLabelTetherWithConnectionStatus', index, total,
+              this.getItemName_(), status,
+              this.item.typeState.tether.signalStrength,
+              this.item.typeState.tether.batteryPercentage);
+        }
+        return this.i18n(
+            'networkListItemLabelTether', index, total, this.getItemName_(),
+            this.item.typeState.tether.signalStrength,
+            this.item.typeState.tether.batteryPercentage);
+      case NetworkType.kWiFi:
+        const secured =
+            this.item.typeState.wifi.security === SecurityType.kNone ?
+            this.i18n('wifiNetworkStatusUnsecured') :
+            this.i18n('wifiNetworkStatusSecured');
+        if (isManaged) {
+          if (status) {
+            return this.i18n(
+                'networkListItemLabelWifiManagedWithConnectionStatus', index,
+                total, this.getItemName_(), secured, status,
+                this.item.typeState.wifi.signalStrength);
+          }
+          return this.i18n(
+              'networkListItemLabelWifiManaged', index, total,
+              this.getItemName_(), secured,
+              this.item.typeState.wifi.signalStrength);
+        }
+        if (status) {
+          return this.i18n(
+              'networkListItemLabelWifiWithConnectionStatus', index, total,
+              this.getItemName_(), secured, status,
+              this.item.typeState.wifi.signalStrength);
+        }
+        return this.i18n(
+            'networkListItemLabelWifi', index, total, this.getItemName_(),
+            secured, this.item.typeState.wifi.signalStrength);
+      default:
+        return this.i18n(
+            'networkListItemLabel', index, total, this.getItemName_());
     }
-    return this.getItemName_();
   },
-
-  /**
-   * Compute the aria role based on the showButtons property value
-   * @return {string} the aria role
-   * @private
-   */
-  getAriaRole_: function() {
-    return this.showButtons ? 'button' : '';
-  },
-
 
   /**
    * @return {boolean}

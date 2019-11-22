@@ -28,6 +28,8 @@
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_network_state.h"
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
@@ -430,20 +432,28 @@ void BrowserTabStripController::OnKeyboardFocusedTabChanged(
       index);
 }
 
+// TODO(connily): The tab group methods below should not need to handle the
+// nullptr case. Other places should be checking for ContainsTabGroup(), which
+// may need to be added as a method here.
+
 const TabGroupVisualData* BrowserTabStripController::GetVisualDataForGroup(
     TabGroupId group) const {
-  return model_->GetVisualDataForGroup(group);
+  TabGroup* tab_group = model_->group_model()->GetTabGroup(group);
+  return tab_group ? tab_group->visual_data() : nullptr;
 }
 
 void BrowserTabStripController::SetVisualDataForGroup(
     TabGroupId group,
     TabGroupVisualData visual_data) {
-  model_->SetVisualDataForGroup(group, visual_data);
+  TabGroup* tab_group = model_->group_model()->GetTabGroup(group);
+  DCHECK(tab_group);
+  tab_group->SetVisualData(visual_data);
 }
 
 std::vector<int> BrowserTabStripController::ListTabsInGroup(
     TabGroupId group) const {
-  return model_->ListTabsInGroup(group);
+  TabGroup* tab_group = model_->group_model()->GetTabGroup(group);
+  return tab_group ? tab_group->ListTabs() : std::vector<int>();
 }
 
 bool BrowserTabStripController::IsFrameCondensed() const {

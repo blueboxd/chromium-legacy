@@ -1025,7 +1025,7 @@ int RenderText::GetBaseline() {
   return baseline_;
 }
 
-void RenderText::Draw(Canvas* canvas) {
+void RenderText::Draw(Canvas* canvas, bool select_all) {
   EnsureLayout();
 
   if (clip_to_display_rect()) {
@@ -1036,12 +1036,16 @@ void RenderText::Draw(Canvas* canvas) {
     canvas->ClipRect(clip_rect);
   }
 
-  if (!text().empty() && focused())
-    DrawSelection(canvas);
-
   if (!text().empty()) {
+    Range draw_selection;
+    if (select_all)
+      draw_selection = Range(0, text().length());
+    else if (focused())
+      draw_selection = selection();
+
+    DrawSelection(canvas, draw_selection);
     internal::SkiaTextRenderer renderer(canvas);
-    DrawVisualText(&renderer);
+    DrawVisualText(&renderer, draw_selection);
   }
 
   if (clip_to_display_rect())
@@ -1525,7 +1529,7 @@ const BreakList<size_t>& RenderText::GetLineBreaks() {
   return line_breaks_;
 }
 
-void RenderText::ApplyCompositionAndSelectionStyles() {
+void RenderText::ApplyCompositionAndSelectionStyles(const Range& selection) {
   // Save the underline and color breaks to undo the temporary styles later.
   DCHECK(!composition_and_selection_styles_applied_);
   saved_colors_ = colors_;
@@ -1536,8 +1540,8 @@ void RenderText::ApplyCompositionAndSelectionStyles() {
     styles_[TEXT_STYLE_HEAVY_UNDERLINE].ApplyValue(true, composition_range_);
 
   // Apply the selected text color to the [un-reversed] selection range.
-  if (!selection().is_empty() && focused()) {
-    const Range range(selection().GetMin(), selection().GetMax());
+  if (!selection.is_empty()) {
+    const Range range(selection.GetMin(), selection.GetMax());
     colors_.ApplyValue(selection_color_, range);
   }
   composition_and_selection_styles_applied_ = true;
@@ -2082,8 +2086,8 @@ void RenderText::UpdateCachedBoundsAndOffset() {
   SetDisplayOffset(display_offset_.x() + delta_x);
 }
 
-void RenderText::DrawSelection(Canvas* canvas) {
-  for (Rect s : GetSubstringBounds(selection())) {
+void RenderText::DrawSelection(Canvas* canvas, const Range& selection) {
+  for (Rect s : GetSubstringBounds(selection)) {
     if (symmetric_selection_visual_bounds() && !multiline())
       s = ExpandToBeVerticallySymmetric(s, display_rect());
     canvas->FillRect(s, selection_background_focused_color_);

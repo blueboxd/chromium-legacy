@@ -96,19 +96,21 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   if (!provider_->registrar().IsInstalled(params.app_id))
     return nullptr;
 
+  const GURL url = params.override_url.is_empty()
+                       ? provider_->registrar().GetAppLaunchURL(params.app_id)
+                       : params.override_url;
+
   // System Web Apps go through their own launch path.
   base::Optional<SystemAppType> system_app_type =
       GetSystemWebAppTypeForAppId(profile(), params.app_id);
   if (system_app_type) {
-    Browser* browser = LaunchSystemWebApp(profile(), *system_app_type, GURL());
+    Browser* browser =
+        LaunchSystemWebApp(profile(), *system_app_type, url, params);
     return browser->tab_strip_model()->GetActiveWebContents();
   }
 
   Browser* browser = CreateWebApplicationWindow(profile(), params.app_id);
 
-  const GURL url = params.override_url.is_empty()
-                       ? provider_->registrar().GetAppLaunchURL(params.app_id)
-                       : params.override_url;
   content::WebContents* web_contents =
       ShowWebApplicationWindow(params, params.app_id, url, browser,
                                WindowOpenDisposition::NEW_FOREGROUND_TAB);

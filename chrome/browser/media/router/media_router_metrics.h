@@ -78,6 +78,15 @@ enum class PresentationUrlType {
   kPresentationUrlTypeCount
 };
 
+// Whether audio has been played since the last navigation. Do not modify
+// existing values, since they are used for metrics reporting. Add new values
+// only at the bottom, and also update tools/metrics/histograms/enums.xml.
+enum class WebContentsAudioState {
+  kWasNeverAudible = 0,
+  kIsCurrentlyAudible = 1,
+  kWasPreviouslyAudible = 2,  // Was playing audio, but not currently.
+};
+
 class MediaRouterMetrics {
  public:
   MediaRouterMetrics();
@@ -106,8 +115,7 @@ class MediaRouterMetrics {
   static const char kHistogramUiFirstAction[];
 
   // Records where the user clicked to open the Media Router dialog.
-  static void RecordMediaRouterDialogOrigin(
-      MediaRouterDialogOpenOrigin origin);
+  static void RecordMediaRouterDialogOrigin(MediaRouterDialogOpenOrigin origin);
 
   // Records the duration it takes for the Media Router dialog to open and
   // finish painting after a user clicks to open the dialog.
@@ -124,8 +132,7 @@ class MediaRouterMetrics {
 
   // Records the first action the user took after the Media Router dialog
   // opened.
-  static void RecordMediaRouterInitialUserAction(
-      MediaRouterUserAction action);
+  static void RecordMediaRouterInitialUserAction(MediaRouterUserAction action);
 
   // Records the outcome in a create route response.
   static void RecordRouteCreationOutcome(

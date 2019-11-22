@@ -84,7 +84,8 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
 // mojom::CdmService implementation.
 #if defined(OS_MACOSX)
   void LoadCdm(const base::FilePath& cdm_path,
-               mojom::SeatbeltExtensionTokenProviderPtr token_provider) final;
+               mojo::PendingRemote<mojom::SeatbeltExtensionTokenProvider>
+                   token_provider) final;
 #else
   void LoadCdm(const base::FilePath& cdm_path) final;
 #endif  // defined(OS_MACOSX)

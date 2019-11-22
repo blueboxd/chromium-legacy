@@ -82,13 +82,6 @@ void AccessibilityBridge::TryCommit() {
         std::move(to_delete_),
         base::BindRepeating(
             [](SemanticTree* tree, std::vector<uint32_t> nodes) {
-              for (auto i : nodes) {
-                if (i == 0u) {
-                  // TODO(fxb/41533): Remove this once SemanticsManager supports
-                  // deletion of entire tree.
-                  return;
-                }
-              }
               tree->DeleteSemanticNodes(std::move(nodes));
             },
             base::Unretained(tree_ptr_.get())));

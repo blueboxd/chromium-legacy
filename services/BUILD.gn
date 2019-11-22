@@ -42,7 +42,6 @@ test("services_unittests") {
       "//services/image_annotation/public/cpp:tests",
       "//services/media_session:tests",
       "//services/media_session/public/cpp:tests",
-      "//services/preferences:tests",
       "//services/proxy_resolver:tests",
       "//services/resource_coordinator:tests",
       "//services/shape_detection:tests",

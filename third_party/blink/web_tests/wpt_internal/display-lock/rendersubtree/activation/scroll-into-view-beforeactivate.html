@@ -39,14 +39,14 @@ promise_test(() => {
       assert_equals(innermost.renderSubtree, "");
 
       let innerPromise = new Promise((resolve, reject) => {
-        inner.onbeforeactivate = (e) => {
+        inner.onrendersubtreeactivation = (e) => {
           assert_equals(e.activatedElement, innermost);
           resolve();
         }
       });
 
       let outerPromise = new Promise((resolve, reject) => {
-        outer.onbeforeactivate = (e) => {
+        outer.onrendersubtreeactivation = (e) => {
           assert_equals(e.activatedElement, innermost);
           // Resolve if this is directly targeted to #outer,
           // instead of bubbling here.
@@ -56,7 +56,7 @@ promise_test(() => {
       });
 
       let outermostPromise = new Promise((resolve, reject) => {
-        outermost.onbeforeactivate = (e) => {
+        outermost.onrendersubtreeactivation = (e) => {
           assert_equals(e.activatedElement, innermost);
           assert_not_equals(e.target, outermost);
           // Resolve if this is targeted to #outer, which is
@@ -66,13 +66,13 @@ promise_test(() => {
         }
       });
 
-      innermost.onbeforeactivate = reject;
-      // Navigating to element in locked subtree should fire beforeactivate
+      innermost.onrendersubtreeactivation = reject;
+      // Navigating to element in locked subtree should fire rendersubtreeactivation
       // on locked ancestors, but not itself.
       innermost.scrollIntoView();
       Promise.all([innerPromise, outerPromise, outermostPromise]).then(resolve);
     });
   });
-}, "Activation through scrollIntoView fires beforeactivate on locked ancestor");
+}, "Activation through scrollIntoView fires rendersubtreeactivation on locked ancestor");
 </script>
 </html>

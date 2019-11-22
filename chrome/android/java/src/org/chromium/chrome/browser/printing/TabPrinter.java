@@ -30,6 +30,7 @@ public class TabPrinter implements Printable {
 
     private final WeakReference<Tab> mTab;
     private final String mDefaultTitle;
+    private final String mErrorMessage;
 
     @CalledByNative
     private static TabPrinter getPrintable(Tab tab) {
@@ -38,8 +39,9 @@ public class TabPrinter implements Printable {
 
     public TabPrinter(Tab tab) {
         mTab = new WeakReference<Tab>(tab);
-        mDefaultTitle = ContextUtils.getApplicationContext().getResources().getString(
-                R.string.menu_print);
+        mDefaultTitle = ContextUtils.getApplicationContext().getString(R.string.menu_print);
+        mErrorMessage =
+                ContextUtils.getApplicationContext().getString(R.string.error_printing_failed);
     }
 
     @Override
@@ -73,6 +75,11 @@ public class TabPrinter implements Printable {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public String getErrorMessage() {
+        return mErrorMessage;
     }
 
     @NativeMethods

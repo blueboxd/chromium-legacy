@@ -1,4 +1,4 @@
-# MediaBrowserTest error during playback. https://crbug.com/963266
+# MediaBrowserTest error during playback. https://crbug.com/985387
 -DevToolsVideoConsumerTest.SetMinAndMaxFramesChangesDimensions
 -File/MediaTest.VideoBearMp4/0
 -File/MediaTest.VideoTulipWebm/0
@@ -6,6 +6,7 @@
 -Http/MediaTest.VideoBearMp4/0
 -Http/MediaTest.VideoBearSilentMp4/0
 -Http/MediaTest.VideoTulipWebm/0
+-MediaSourceTest.Playback_VideoOnly_WebM
 -MSE_*ClearKey/EncryptedMediaTest.ConfigChangeVideo_ClearToClear/0
 -MSE_*ClearKey/EncryptedMediaTest.ConfigChangeVideo_ClearToEncrypted/0
 -MSE_*ClearKey/EncryptedMediaTest.ConfigChangeVideo_EncryptedToEncrypted/0

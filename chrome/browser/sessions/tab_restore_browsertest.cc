@@ -27,6 +27,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
+#include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -931,15 +934,16 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
 
   const int tab_count = AddSomeTabs(browser(), 3);
 
+  TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
   TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
       {tab_count - 3, tab_count - 2});
   TabGroupVisualData group1_data(base::ASCIIToUTF16("Foo"), SK_ColorRED);
-  browser()->tab_strip_model()->SetVisualDataForGroup(group1, group1_data);
+  group_model->GetTabGroup(group1)->SetVisualData(group1_data);
 
   TabGroupId group2 =
       browser()->tab_strip_model()->AddToNewGroup({tab_count - 1});
   TabGroupVisualData group2_data(base::ASCIIToUTF16("Bar"), SK_ColorBLUE);
-  browser()->tab_strip_model()->SetVisualDataForGroup(group2, group2_data);
+  group_model->GetTabGroup(group2)->SetVisualData(group2_data);
 
   CloseBrowserSynchronously(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
@@ -948,6 +952,8 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
   ASSERT_EQ(2u, active_browser_list_->size());
 
   Browser* restored_window = GetBrowser(1);
+  TabGroupModel* restored_group_model =
+      restored_window->tab_strip_model()->group_model();
   ASSERT_EQ(tab_count, restored_window->tab_strip_model()->count());
   EXPECT_EQ(
       base::make_optional(group1),
@@ -960,9 +966,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTestWithTabGroupsEnabled,
       restored_window->tab_strip_model()->GetTabGroupForTab(tab_count - 1));
 
   EXPECT_EQ(group1_data,
-            *restored_window->tab_strip_model()->GetVisualDataForGroup(group1));
+            *restored_group_model->GetTabGroup(group1)->visual_data());
   EXPECT_EQ(group2_data,
-            *restored_window->tab_strip_model()->GetVisualDataForGroup(group2));
+            *restored_group_model->GetTabGroup(group2)->visual_data());
 }
 
 // Ensure tab groups aren't restored if |features::kTabGroups| is disabled.

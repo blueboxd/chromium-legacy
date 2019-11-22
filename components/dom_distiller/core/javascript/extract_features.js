@@ -4,9 +4,9 @@
 
 (function() {
 function hasOGArticle() {
-  var elems = document.head.querySelectorAll(
+  const elems = document.head.querySelectorAll(
       'meta[property="og:type"],meta[name="og:type"]');
-  for (var i in elems) {
+  for (const i in elems) {
     if (elems[i].content && elems[i].content.toUpperCase() == 'ARTICLE') {
       return true;
     }
@@ -14,7 +14,7 @@ function hasOGArticle() {
   return false;
 }
 
-var body = document.body;
+const body = document.body;
 if (!body) {
   return false;
 }

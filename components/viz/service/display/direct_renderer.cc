@@ -108,6 +108,10 @@ namespace viz {
 DirectRenderer::DrawingFrame::DrawingFrame() = default;
 DirectRenderer::DrawingFrame::~DrawingFrame() = default;
 
+DirectRenderer::SwapFrameData::SwapFrameData() = default;
+DirectRenderer::SwapFrameData::~SwapFrameData() = default;
+DirectRenderer::SwapFrameData::SwapFrameData(SwapFrameData&&) = default;
+
 DirectRenderer::DirectRenderer(const RendererSettings* settings,
                                OutputSurface* output_surface,
                                DisplayResourceProvider* resource_provider)

@@ -20,7 +20,7 @@
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
-#include "content/browser/web_package/bundled_exchanges_navigation_info.h"
+#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_state_serialization.h"
@@ -676,10 +676,8 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   copy->CloneDataFrom(*this);
   copy->replaced_entry_data_ = replaced_entry_data_;
   copy->should_skip_on_back_forward_ui_ = should_skip_on_back_forward_ui_;
-  if (bundled_exchanges_navigation_info_) {
-    copy->bundled_exchanges_navigation_info_ =
-        bundled_exchanges_navigation_info_->Clone();
-  }
+  if (web_bundle_navigation_info_)
+    copy->web_bundle_navigation_info_ = web_bundle_navigation_info_->Clone();
 
   return copy;
 }
@@ -758,7 +756,7 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           std::string(),
 #endif
           false, network::mojom::IPAddressSpace::kUnknown,
-          GURL() /* base_url_override_for_bundled_exchanges */);
+          GURL() /* base_url_override_for_web_bundle */);
 #if defined(OS_ANDROID)
   if (NavigationControllerImpl::ValidateDataURLAsString(GetDataURLAsString())) {
     commit_params->data_url_as_string = GetDataURLAsString()->data();
@@ -947,16 +945,14 @@ GURL NavigationEntryImpl::GetHistoryURLForDataURL() {
   return GetBaseURLForDataURL().is_empty() ? GURL() : GetVirtualURL();
 }
 
-void NavigationEntryImpl::set_bundled_exchanges_navigation_info(
-    std::unique_ptr<BundledExchangesNavigationInfo>
-        bundled_exchanges_navigation_info) {
-  bundled_exchanges_navigation_info_ =
-      std::move(bundled_exchanges_navigation_info);
+void NavigationEntryImpl::set_web_bundle_navigation_info(
+    std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info) {
+  web_bundle_navigation_info_ = std::move(web_bundle_navigation_info);
 }
 
-BundledExchangesNavigationInfo*
-NavigationEntryImpl::bundled_exchanges_navigation_info() const {
-  return bundled_exchanges_navigation_info_.get();
+WebBundleNavigationInfo* NavigationEntryImpl::web_bundle_navigation_info()
+    const {
+  return web_bundle_navigation_info_.get();
 }
 
 }  // namespace content

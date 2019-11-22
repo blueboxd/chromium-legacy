@@ -22,8 +22,6 @@ MediaEngagementWebUIBrowserTest.prototype = {
 
   featureList: {enabled: ['media::kRecordMediaEngagementScores']},
 
-  runAccessibilityChecks: false,
-
   isAsync: true,
 
   testGenPreamble: function() {

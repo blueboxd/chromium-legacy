@@ -4521,6 +4521,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="MediaRouter.TabMirroringStarted">
+  <owner>takumif@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Recorded whenever user starts a tab mirroring session via Media Router.
+  </summary>
+  <metric name="AudioState" enum="WebContentsAudioState">
+    <summary>
+      The audio playback state of the WebContents at the start of the tab
+      mirroring session.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Memory.Experimental">
   <owner>erikchen@chromium.org</owner>
   <owner>ssid@chromium.org</owner>

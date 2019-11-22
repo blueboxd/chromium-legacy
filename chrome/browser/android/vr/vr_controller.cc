@@ -62,11 +62,6 @@ VrController::VrController(gvr::GvrApi* gvr_api)
 
   options |= GVR_CONTROLLER_ENABLE_ARM_MODEL;
 
-  // Enable non-default options - WebVR needs gyro and linear acceleration, and
-  // since VrShell implements GvrGamepadDataProvider we need this always.
-  options |= GVR_CONTROLLER_ENABLE_GYRO;
-  options |= GVR_CONTROLLER_ENABLE_ACCEL;
-
   CHECK(controller_api_->Init(options, gvr_api_->cobj()));
   controller_api_->Resume();
 
@@ -93,31 +88,45 @@ void VrController::OnPause() {
     controller_api_->Pause();
 }
 
-GvrGamepadData VrController::GetGamepadData() {
-  GvrGamepadData pad = {};
-  pad.connected = IsConnected();
-  pad.timestamp = controller_state_->GetLastOrientationTimestamp();
+device::Gamepad VrController::GetGamepadData() {
+  device::Gamepad gamepad;
 
-  if (pad.connected) {
-    pad.touch_pos = {GetPositionInTrackpad().x(), GetPositionInTrackpad().y()};
-    pad.orientation = Orientation();
+  gamepad.connected = IsConnected();
+  gamepad.timestamp = controller_state_->GetLastOrientationTimestamp();
 
-    // Use orientation to rotate acceleration/gyro into seated space.
-    gfx::Transform pose_mat(Orientation());
-    const gvr::Vec3f& accel = controller_state_->GetAccel();
-    const gvr::Vec3f& gyro = controller_state_->GetGyro();
-    pad.accel = gfx::Vector3dF(accel.x, accel.y, accel.z);
-    pose_mat.TransformVector(&pad.accel);
-    pad.gyro = gfx::Vector3dF(gyro.x, gyro.y, gyro.z);
-    pose_mat.TransformVector(&pad.gyro);
+  if (!gamepad.connected)
+    return gamepad;
 
-    pad.is_touching = controller_state_->IsTouching();
-    pad.controller_button_pressed =
-        controller_state_->GetButtonState(GVR_CONTROLLER_BUTTON_CLICK);
-    pad.right_handed = handedness_ == GVR_CONTROLLER_RIGHT_HANDED;
+  if (handedness_ == GVR_CONTROLLER_RIGHT_HANDED) {
+    gamepad.hand = device::GamepadHand::kRight;
+  } else {
+    gamepad.hand = device::GamepadHand::kLeft;
   }
 
-  return pad;
+  bool touched = controller_state_->IsTouching();
+  bool pressed = controller_state_->GetButtonState(GVR_CONTROLLER_BUTTON_CLICK);
+  double value = pressed ? 1.0 : 0.0;
+
+  gamepad.buttons[gamepad.buttons_length++] =
+      device::GamepadButton(pressed, touched, value);
+
+  if (touched) {
+    // Trackpad values reported by the GVR Android SDK are clamped to
+    // [0.0, 1.0], with (0, 0) corresponding to the top-left of the touchpad.
+    // Normalize the values to use X axis range -1 (left) to 1 (right) and Y
+    // axis range -1 (top) to 1 (bottom).
+    double x = GetPositionInTrackpad().x();
+    double y = GetPositionInTrackpad().y();
+    gamepad.axes[0] = (x * 2.0) - 1.0;
+    gamepad.axes[1] = (y * 2.0) - 1.0;
+  } else {
+    gamepad.axes[0] = 0.0;
+    gamepad.axes[1] = 0.0;
+  }
+
+  gamepad.axes_length = 2;
+
+  return gamepad;
 }
 
 bool VrController::IsButtonDown(ButtonType type) const {

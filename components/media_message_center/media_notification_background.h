@@ -46,7 +46,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationBackground
 
  private:
   friend class MediaNotificationBackgroundTest;
-  friend class MediaNotificationViewTest;
+  friend class MediaNotificationViewImplTest;
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationBackgroundRTLTest,
                            BoundsSanityCheck);
 

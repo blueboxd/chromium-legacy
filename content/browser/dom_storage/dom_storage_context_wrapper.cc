@@ -40,26 +40,24 @@ namespace {
 
 const char kSessionStorageDirectory[] = "Session Storage";
 
-void GotMojoCallback(
-    scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
-    base::OnceClosure callback) {
-  reply_task_runner->PostTask(FROM_HERE, std::move(callback));
-}
-
-void GotMojoLocalStorageUsage(
-    scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
-    DOMStorageContext::GetLocalStorageUsageCallback callback,
-    std::vector<StorageUsageInfo> usage) {
-  reply_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(usage)));
-}
-
 void GotMojoSessionStorageUsage(
     scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
     DOMStorageContext::GetSessionStorageUsageCallback callback,
     std::vector<SessionStorageUsageInfo> usage) {
   reply_task_runner->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), std::move(usage)));
+}
+
+void AdaptUsageInfo(
+    DOMStorageContext::GetLocalStorageUsageCallback callback,
+    std::vector<storage::mojom::LocalStorageUsageInfoPtr> usage) {
+  std::vector<StorageUsageInfo> result;
+  result.reserve(usage.size());
+  for (const auto& info : usage) {
+    result.emplace_back(info->origin, info->size_in_bytes,
+                        info->last_modified_time);
+  }
+  std::move(callback).Run(result);
 }
 
 }  // namespace
@@ -75,13 +73,31 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
   auto mojo_task_runner =
       base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
-  LocalStorageContextMojo* mojo_local_state = new LocalStorageContextMojo(
-      data_path, mojo_task_runner,
-      base::CreateSequencedTaskRunner(
-          {base::ThreadPool(), base::MayBlock(),
-           base::TaskPriority::USER_BLOCKING,
-           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-      special_storage_policy);
+  // TODO(https://crbug.com/1000959): This should be bound in an instance of
+  // the Storage Service. For now we bind it alone on the IO thread, because the
+  // LocalStorageContextMojo implementation still has some details that must
+  // run on that thread.
+  mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control;
+  mojo_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](const base::FilePath& storage_root,
+             scoped_refptr<storage::SpecialStoragePolicy> storage_policy,
+             mojo::PendingReceiver<storage::mojom::LocalStorageControl>
+                 receiver) {
+            // Deletes itself on shutdown completion.
+            new LocalStorageContextMojo(
+                storage_root,
+                base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+                base::CreateSequencedTaskRunner(
+                    {base::ThreadPool(), base::MayBlock(),
+                     base::TaskPriority::USER_BLOCKING,
+                     base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+                storage_policy, std::move(receiver));
+          },
+          data_path, base::WrapRefCounted(special_storage_policy),
+          local_storage_control.BindNewPipeAndPassReceiver()));
+
   SessionStorageContextMojo* mojo_session_state = nullptr;
   mojo_session_state = new SessionStorageContextMojo(
       data_path,
@@ -102,46 +118,42 @@ scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
       std::string(kSessionStorageDirectory));
 
   return base::WrapRefCounted(new DOMStorageContextWrapper(
-      mojo_task_runner, mojo_local_state, mojo_session_state));
+      mojo_task_runner, mojo_session_state, std::move(local_storage_control)));
 }
 
 DOMStorageContextWrapper::DOMStorageContextWrapper(
     scoped_refptr<base::SequencedTaskRunner> mojo_task_runner,
-    LocalStorageContextMojo* mojo_local_storage_context,
-    SessionStorageContextMojo* mojo_session_storage_context)
-    : mojo_state_(mojo_local_storage_context),
-      mojo_session_state_(mojo_session_storage_context),
-      mojo_task_runner_(std::move(mojo_task_runner)) {
+    SessionStorageContextMojo* mojo_session_storage_context,
+    mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control)
+    : mojo_session_state_(mojo_session_storage_context),
+      mojo_task_runner_(std::move(mojo_task_runner)),
+      local_storage_control_(std::move(local_storage_control)) {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::BindRepeating(&DOMStorageContextWrapper::OnMemoryPressure,
                           base::Unretained(this))));
 }
 
 DOMStorageContextWrapper::~DOMStorageContextWrapper() {
-  DCHECK(!mojo_state_) << "Shutdown should be called before destruction";
-  DCHECK(!mojo_session_state_)
+  DCHECK(!local_storage_control_)
       << "Shutdown should be called before destruction";
+}
+
+storage::mojom::LocalStorageControl*
+DOMStorageContextWrapper::GetLocalStorageControl() {
+  DCHECK(local_storage_control_);
+  return local_storage_control_.get();
 }
 
 void DOMStorageContextWrapper::GetLocalStorageUsage(
     GetLocalStorageUsageCallback callback) {
-  if (!mojo_state_) {
+  if (!local_storage_control_) {
     // Shutdown() has been called.
     std::move(callback).Run(std::vector<StorageUsageInfo>());
     return;
   }
 
-  // base::Unretained is safe here, because the mojo_state_ won't be deleted
-  // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
-  // as soon as that task is posted, mojo_state_ is set to null, preventing
-  // further tasks from being queued.
-  mojo_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&LocalStorageContextMojo::GetStorageUsage,
-                     base::Unretained(mojo_state_),
-                     base::BindOnce(&GotMojoLocalStorageUsage,
-                                    base::ThreadTaskRunnerHandle::Get(),
-                                    std::move(callback))));
+  local_storage_control_->GetUsage(
+      base::BindOnce(&AdaptUsageInfo, std::move(callback)));
 }
 
 void DOMStorageContextWrapper::GetSessionStorageUsage(
@@ -168,39 +180,25 @@ void DOMStorageContextWrapper::GetSessionStorageUsage(
 void DOMStorageContextWrapper::DeleteLocalStorage(const url::Origin& origin,
                                                   base::OnceClosure callback) {
   DCHECK(callback);
-  if (!mojo_state_) {
+  if (!local_storage_control_) {
     // Shutdown() has been called.
     std::move(callback).Run();
     return;
   }
-  // base::Unretained is safe here, because the mojo_state_ won't be deleted
-  // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
-  // as soon as that task is posted, mojo_state_ is set to null, preventing
-  // further tasks from being queued.
-  mojo_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &LocalStorageContextMojo::DeleteStorage,
-          base::Unretained(mojo_state_), origin,
-          base::BindOnce(&GotMojoCallback, base::ThreadTaskRunnerHandle::Get(),
-                         std::move(callback))));
+
+  local_storage_control_->DeleteStorage(origin, std::move(callback));
 }
 
 void DOMStorageContextWrapper::PerformLocalStorageCleanup(
     base::OnceClosure callback) {
   DCHECK(callback);
-  if (!mojo_state_) {
+  if (!local_storage_control_) {
     // Shutdown() has been called.
     std::move(callback).Run();
     return;
   }
-  mojo_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &LocalStorageContextMojo::PerformStorageCleanup,
-          base::Unretained(mojo_state_),
-          base::BindOnce(&GotMojoCallback, base::ThreadTaskRunnerHandle::Get(),
-                         std::move(callback))));
+
+  local_storage_control_->CleanUpStorage(std::move(callback));
 }
 
 void DOMStorageContextWrapper::DeleteSessionStorage(
@@ -265,28 +263,18 @@ void DOMStorageContextWrapper::StartScavengingUnusedSessionStorage() {
 }
 
 void DOMStorageContextWrapper::SetForceKeepSessionState() {
-  if (!mojo_session_state_) {
+  if (!local_storage_control_) {
     // Shutdown() has been called.
     return;
   }
 
-  // base::Unretained is safe here, because the mojo_state_ won't be deleted
-  // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
-  // as soon as that task is posted, mojo_state_ is set to null, preventing
-  // further tasks from being queued.
-  mojo_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&LocalStorageContextMojo::SetForceKeepSessionState,
-                     base::Unretained(mojo_state_)));
+  local_storage_control_->ForceKeepSessionState();
 }
 
 void DOMStorageContextWrapper::Shutdown() {
-  if (mojo_state_) {
-    mojo_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&LocalStorageContextMojo::ShutdownAndDelete,
-                                  base::Unretained(mojo_state_)));
-    mojo_state_ = nullptr;
-  }
+  // Signals the implementation to perform shutdown operations.
+  local_storage_control_.reset();
+
   if (mojo_session_state_) {
     mojo_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SessionStorageContextMojo::ShutdownAndDelete,
@@ -297,15 +285,9 @@ void DOMStorageContextWrapper::Shutdown() {
 }
 
 void DOMStorageContextWrapper::Flush() {
-  if (mojo_state_) {
-    // base::Unretained is safe here, because the mojo_state_ won't be deleted
-    // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
-    // as soon as that task is posted, mojo_state_ is set to null, preventing
-    // further tasks from being queued.
-    mojo_task_runner_->PostTask(FROM_HERE,
-                                base::BindOnce(&LocalStorageContextMojo::Flush,
-                                               base::Unretained(mojo_state_)));
-  }
+  if (local_storage_control_)
+    local_storage_control_->Flush(base::NullCallback());
+
   if (mojo_session_state_) {
     // base::Unretained is safe here, because the mojo_session_state_ won't be
     // deleted until a ShutdownAndDelete task has been ran on the
@@ -321,15 +303,8 @@ void DOMStorageContextWrapper::Flush() {
 void DOMStorageContextWrapper::OpenLocalStorage(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
-  DCHECK(mojo_state_);
-  // base::Unretained is safe here, because the mojo_state_ won't be deleted
-  // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
-  // as soon as that task is posted, mojo_state_ is set to null, preventing
-  // further tasks from being queued.
-  mojo_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LocalStorageContextMojo::OpenLocalStorage,
-                                base::Unretained(mojo_state_), origin,
-                                std::move(receiver)));
+  DCHECK(local_storage_control_);
+  local_storage_control_->BindStorageArea(origin, std::move(receiver));
 }
 
 void DOMStorageContextWrapper::OpenSessionStorage(
@@ -358,16 +333,6 @@ void DOMStorageContextWrapper::OpenSessionStorage(
                      base::Unretained(mojo_session_state_), process_id,
                      namespace_id, std::move(wrapped_bad_message_callback),
                      std::move(receiver)));
-}
-
-void DOMStorageContextWrapper::SetLocalStorageDatabaseOpenCallbackForTesting(
-    LocalStorageDatabaseOpenCallback callback) {
-  mojo_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &LocalStorageContextMojo::SetDatabaseOpenCallbackForTesting,
-          base::Unretained(mojo_state_),
-          base::BindOnce(std::move(callback), mojo_state_)));
 }
 
 scoped_refptr<SessionStorageNamespaceImpl>
@@ -404,18 +369,14 @@ void DOMStorageContextWrapper::OnMemoryPressure(
 }
 
 void DOMStorageContextWrapper::PurgeMemory(PurgeOption purge_option) {
-  if (!mojo_state_) {
+  if (!local_storage_control_) {
     // Shutdown was called.
     return;
   }
+
   if (purge_option == PURGE_AGGRESSIVE) {
-    // base::Unretained is safe here, because the mojo_state_ won't be deleted
-    // until a ShutdownAndDelete task has been ran on the mojo_task_runner_, and
-    // as soon as that task is posted, mojo_state_ is set to null, preventing
-    // further tasks from being queued.
-    mojo_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&LocalStorageContextMojo::PurgeMemory,
-                                  base::Unretained(mojo_state_)));
+    local_storage_control_->PurgeMemory();
+
     // base::Unretained is safe here, because the mojo_session_state_ won't be
     // deleted until a ShutdownAndDelete task has been ran on the
     // mojo_task_runner_, and as soon as that task is posted,

@@ -52,8 +52,8 @@ void LoadBeforeSizeFile(const char* compressed, size_t size) {
   ParseSizeInfo(compressed, size, before_info.get());
 }
 
-void BuildTree(bool group_by_component,
-               bool method_count_mode,
+void BuildTree(bool method_count_mode,
+               const char* group_by,
                const char* include_regex_str,
                const char* exclude_regex_str,
                const char* include_sections,
@@ -129,7 +129,26 @@ void BuildTree(bool group_by_component,
   } else {
     builder.reset(new TreeBuilder(info.get()));
   }
-  builder->Build(group_by_component, method_count_mode, filters);
+
+  std::unique_ptr<BaseLens> lens;
+  char sep = '/';
+  std::cout << "group_by=" << group_by << std::endl;
+  if (!strcmp(group_by, "source_path")) {
+    lens = std::make_unique<IdPathLens>();
+  } else if (!strcmp(group_by, "component")) {
+    lens = std::make_unique<ComponentLens>();
+    sep = '>';
+  } else if (!strcmp(group_by, "template")) {
+    lens = std::make_unique<TemplateLens>();
+    filters.push_back([](const BaseSymbol& sym) -> bool {
+      return sym.IsTemplate() && sym.IsNative();
+    });
+  } else {
+    // TODO(jaspercb): Support group by generated path type.
+    std::cerr << "Unsupported group_by=" << group_by << std::endl;
+    exit(1);
+  }
+  builder->Build(std::move(lens), sep, method_count_mode, filters);
 }
 
 const char* Open(const char* path) {

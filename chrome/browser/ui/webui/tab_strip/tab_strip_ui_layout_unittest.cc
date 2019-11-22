@@ -19,7 +19,7 @@ TEST_P(TabStripUILayoutAspectRatioTest, ThumbnailHasSameAspectRatioAsViewport) {
   TabStripUILayout layout =
       TabStripUILayout::CalculateForWebViewportSize(viewport_size);
 
-  EXPECT_EQ(176, std::min(layout.tab_thumbnail_size.width(),
+  EXPECT_EQ(120, std::min(layout.tab_thumbnail_size.width(),
                           layout.tab_thumbnail_size.height()));
   EXPECT_FLOAT_EQ(
       viewport_size.width() / viewport_size.height(),

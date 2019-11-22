@@ -59,7 +59,7 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/web_package/bundled_exchanges_navigation_info.h"
+#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
@@ -1481,9 +1481,9 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
   new_entry->SetOriginalRequestURL(params.original_request_url);
   new_entry->SetIsOverridingUserAgent(params.is_overriding_user_agent);
 
-  if (request->bundled_exchanges_navigation_info()) {
-    new_entry->set_bundled_exchanges_navigation_info(
-        request->bundled_exchanges_navigation_info()->Clone());
+  if (request->web_bundle_navigation_info()) {
+    new_entry->set_web_bundle_navigation_info(
+        request->web_bundle_navigation_info()->Clone());
   }
 
   // Update the FrameNavigationEntry for new main frame commits.
@@ -3222,7 +3222,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
 #endif
           false, /* is_browser_initiated */
           network::mojom::IPAddressSpace::kUnknown,
-          GURL() /* base_url_override_for_bundled_exchanges */);
+          GURL() /* base_url_override_for_web_bundle */);
 #if defined(OS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();

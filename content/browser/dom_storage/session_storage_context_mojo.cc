@@ -29,7 +29,6 @@
 #include "content/browser/dom_storage/dom_storage_types.h"
 #include "content/browser/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
-#include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/features.h"

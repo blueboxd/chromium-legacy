@@ -222,6 +222,18 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(list, EvalJs(rfh, "window.testObservedEvents"));
   }
 
+  // Creates a minimal HTTPS server, accessible through https_server().
+  // Returns a pointer to the server.
+  net::EmbeddedTestServer* CreateHttpsServer() {
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server_->AddDefaultHandlers(GetTestDataFilePath());
+    https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+    return https_server();
+  }
+
+  net::EmbeddedTestServer* https_server() { return https_server_.get(); }
+
  private:
   void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
                           base::HistogramBase::Sample sample) {
@@ -244,6 +256,8 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
   std::vector<base::Bucket> expected_blocklisted_features_;
   std::vector<base::Bucket> expected_disabled_reasons_;
   std::vector<base::Bucket> expected_eviction_after_committing_;
+
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
@@ -2423,14 +2437,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MAYBE_WebSocketNotCached) {
 // Only HTTP/HTTPS main document can enter the BackForwardCache.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheHTTPDocumentOnly) {
   ASSERT_TRUE(embedded_test_server()->Start());
-
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(GetTestDataFilePath());
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  ASSERT_TRUE(https_server.Start());
+  ASSERT_TRUE(CreateHttpsServer()->Start());
 
   GURL http_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL https_url(https_server.GetURL("a.com", "/title1.html"));
+  GURL https_url(https_server()->GetURL("a.com", "/title1.html"));
   GURL file_url = net::FilePathToFileURL(GetTestFilePath("", "title1.html"));
   GURL data_url = GURL("data:text/html,");
   GURL blank_url = GURL(url::kAboutBlankURL);
@@ -2543,14 +2553,12 @@ std::unique_ptr<net::test_server::HttpResponse> RequestHandlerForUpdateWorker(
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DoesNotCachePagesWithServiceWorkers) {
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(GetTestDataFilePath());
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  ASSERT_TRUE(https_server.Start());
+  ASSERT_TRUE(CreateHttpsServer()->Start());
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(
-      shell(), https_server.GetURL("a.com", "/back_forward_cache/empty.html")));
+      shell(),
+      https_server()->GetURL("a.com", "/back_forward_cache/empty.html")));
 
   // Register a service worker.
   RegisterServiceWorker(current_frame_host());
@@ -2559,7 +2567,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   RenderFrameDeletedObserver deleted(rfh_a);
 
   // 2) Navigate away.
-  shell()->LoadURL(https_server.GetURL("b.com", "/title1.html"));
+  shell()->LoadURL(https_server()->GetURL("b.com", "/title1.html"));
 
   // The page is controlled by a service worker, so it shouldn't have been
   // cached.
@@ -2592,15 +2600,14 @@ class BackForwardCacheBrowserTestWithServiceWorkerEnabled
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                        CachedPagesWithServiceWorkers) {
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(GetTestDataFilePath());
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  SetupCrossSiteRedirector(&https_server);
-  ASSERT_TRUE(https_server.Start());
+  CreateHttpsServer();
+  SetupCrossSiteRedirector(https_server());
+  ASSERT_TRUE(https_server()->Start());
 
   // 1) Navigate to A.
   EXPECT_TRUE(NavigateToURL(
-      shell(), https_server.GetURL("a.com", "/back_forward_cache/empty.html")));
+      shell(),
+      https_server()->GetURL("a.com", "/back_forward_cache/empty.html")));
 
   // Register a service worker.
   RegisterServiceWorker(current_frame_host());
@@ -2610,7 +2617,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
 
   // 2) Navigate away.
   EXPECT_TRUE(
-      NavigateToURL(shell(), https_server.GetURL("b.com", "/title1.html")));
+      NavigateToURL(shell(), https_server()->GetURL("b.com", "/title1.html")));
 
   EXPECT_FALSE(deleted.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
@@ -2624,18 +2631,17 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
                        EvictIfCacheBlocksServiceWorkerVersionActivation) {
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.RegisterRequestHandler(
+  CreateHttpsServer();
+  https_server()->RegisterRequestHandler(
       base::BindRepeating(&RequestHandlerForUpdateWorker));
-  https_server.AddDefaultHandlers(GetTestDataFilePath());
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  SetupCrossSiteRedirector(&https_server);
-  ASSERT_TRUE(https_server.Start());
+  SetupCrossSiteRedirector(https_server());
+  ASSERT_TRUE(https_server()->Start());
   Shell* tab_x = shell();
   Shell* tab_y = CreateBrowser();
   // 1) Navigate to A in tab X.
   EXPECT_TRUE(NavigateToURL(
-      tab_x, https_server.GetURL("a.com", "/back_forward_cache/empty.html")));
+      tab_x,
+      https_server()->GetURL("a.com", "/back_forward_cache/empty.html")));
   // 2) Register a service worker.
   RegisterServiceWorker(current_frame_host());
 
@@ -2643,12 +2649,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithServiceWorkerEnabled,
   RenderFrameDeletedObserver deleted(rfh_a);
   // 3) Navigate away to B in tab X.
   EXPECT_TRUE(
-      NavigateToURL(tab_x, https_server.GetURL("b.com", "/title1.html")));
+      NavigateToURL(tab_x, https_server()->GetURL("b.com", "/title1.html")));
   EXPECT_FALSE(deleted.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
   // 4) Navigate to A in tab Y.
   EXPECT_TRUE(NavigateToURL(
-      tab_y, https_server.GetURL("a.com", "/back_forward_cache/empty.html")));
+      tab_y,
+      https_server()->GetURL("a.com", "/back_forward_cache/empty.html")));
   // 5) Close tab Y to activate a service worker version.
   // This should evict |rfh_a| from the cache.
   tab_y->Close();
@@ -3377,15 +3384,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
 // Check the BackForwardCache is disabled when the WebUSB feature is used.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
   // WebUSB requires HTTPS.
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(GetTestDataFilePath());
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  ASSERT_TRUE(https_server.Start());
+  ASSERT_TRUE(CreateHttpsServer()->Start());
 
   // Main document.
   {
     content::BackForwardCacheDisabledTester tester;
-    GURL url(https_server.GetURL("a.com", "/title1.html"));
+    GURL url(https_server()->GetURL("a.com", "/title1.html"));
 
     EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -3405,8 +3409,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
   // Nested document.
   {
     content::BackForwardCacheDisabledTester tester;
-    GURL url(
-        https_server.GetURL("c.com", "/cross_site_iframe_factory.html?c(d)"));
+    GURL url(https_server()->GetURL("c.com",
+                                    "/cross_site_iframe_factory.html?c(d)"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
     RenderFrameHostImpl* rfh_c = current_frame_host();
     RenderFrameHostImpl* rfh_d = rfh_c->child_at(0)->current_frame_host();
@@ -3428,7 +3432,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
   // Worker.
   {
     content::BackForwardCacheDisabledTester tester;
-    GURL url(https_server.GetURL("e.com", "/title1.html"));
+    GURL url(https_server()->GetURL("e.com", "/title1.html"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_FALSE(current_frame_host()->IsBackForwardCacheDisabled());
     EXPECT_EQ("Found 0 devices", content::EvalJs(current_frame_host(), R"(
@@ -3447,7 +3451,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
   // Nested worker.
   {
     content::BackForwardCacheDisabledTester tester;
-    GURL url(https_server.GetURL("f.com", "/title1.html"));
+    GURL url(https_server()->GetURL("f.com", "/title1.html"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_FALSE(current_frame_host()->IsBackForwardCacheDisabled());
     EXPECT_EQ("Found 0 devices", content::EvalJs(current_frame_host(), R"(
@@ -3469,15 +3473,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
 // Check that the back-forward cache is disabled when the Serial API is used.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
   // Serial API requires HTTPS.
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(GetTestDataFilePath());
-  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  ASSERT_TRUE(https_server.Start());
+  ASSERT_TRUE(CreateHttpsServer()->Start());
 
   // Main document.
   {
     content::BackForwardCacheDisabledTester tester;
-    GURL url(https_server.GetURL("a.com", "/title1.html"));
+    GURL url(https_server()->GetURL("a.com", "/title1.html"));
 
     EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -3497,8 +3498,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
   // Nested document.
   {
     content::BackForwardCacheDisabledTester tester;
-    GURL url(
-        https_server.GetURL("c.com", "/cross_site_iframe_factory.html?c(d)"));
+    GURL url(https_server()->GetURL("c.com",
+                                    "/cross_site_iframe_factory.html?c(d)"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
     RenderFrameHostImpl* rfh_c = current_frame_host();
     RenderFrameHostImpl* rfh_d = rfh_c->child_at(0)->current_frame_host();
@@ -3520,7 +3521,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
   // Worker.
   {
     content::BackForwardCacheDisabledTester tester;
-    GURL url(https_server.GetURL("e.com", "/title1.html"));
+    GURL url(https_server()->GetURL("e.com", "/title1.html"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_FALSE(current_frame_host()->IsBackForwardCacheDisabled());
     EXPECT_EQ("Found 0 ports", content::EvalJs(current_frame_host(), R"(
@@ -3539,7 +3540,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Serial) {
   // Nested worker.
   {
     content::BackForwardCacheDisabledTester tester;
-    GURL url(https_server.GetURL("f.com", "/title1.html"));
+    GURL url(https_server()->GetURL("f.com", "/title1.html"));
     EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_FALSE(current_frame_host()->IsBackForwardCacheDisabled());
     EXPECT_EQ("Found 0 ports", content::EvalJs(current_frame_host(), R"(

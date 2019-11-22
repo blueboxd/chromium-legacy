@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/shelf_model.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"

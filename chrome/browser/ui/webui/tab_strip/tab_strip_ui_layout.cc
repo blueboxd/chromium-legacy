@@ -13,7 +13,7 @@ TabStripUILayout TabStripUILayout::CalculateForWebViewportSize(
     const gfx::Size& viewport_size) {
   // The smaller of the thumbnail's height or width is fixed to this
   // value. The other dimension will be at least this long.
-  constexpr int kThumbnailMinDimensionLength = 176;
+  constexpr int kThumbnailMinDimensionLength = 120;
 
   TabStripUILayout layout;
   layout.padding_around_tab_list = 16;

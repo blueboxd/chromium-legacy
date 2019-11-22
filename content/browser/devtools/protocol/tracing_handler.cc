@@ -268,19 +268,15 @@ class TracingHandler::PerfettoTracingSession
     perfetto::TraceConfig perfetto_config =
         CreatePerfettoConfiguration(chrome_config);
 
-    mojo::PendingRemote<tracing::mojom::TracingSessionClient>
-        tracing_session_client;
-    receiver_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
-    receiver_.set_disconnect_handler(
-        base::BindOnce(&PerfettoTracingSession::OnTracingSessionFailed,
-                       base::Unretained(this)));
-
     on_recording_enabled_callback_ = std::move(on_recording_enabled_callback);
     consumer_host_->EnableTracing(
         tracing_session_host_.BindNewPipeAndPassReceiver(),
-        std::move(tracing_session_client), std::move(perfetto_config),
+        receiver_.BindNewPipeAndPassRemote(), std::move(perfetto_config),
         tracing::mojom::TracingClientPriority::kUserInitiated);
 
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&PerfettoTracingSession::OnTracingSessionFailed,
+                       base::Unretained(this)));
     tracing_session_host_.set_disconnect_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionFailed,
                        base::Unretained(this)));

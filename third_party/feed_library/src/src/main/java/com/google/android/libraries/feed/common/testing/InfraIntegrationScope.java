@@ -1,16 +1,6 @@
-// Copyright 2019 The Feed Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 package com.google.android.libraries.feed.common.testing;
 
@@ -48,6 +38,7 @@ import com.google.android.libraries.feed.testing.host.scheduler.FakeSchedulerApi
 import com.google.android.libraries.feed.testing.requestmanager.FakeActionUploadRequestManager;
 import com.google.android.libraries.feed.testing.requestmanager.FakeFeedRequestManager;
 import com.google.protobuf.GeneratedMessageLite.GeneratedExtension;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,222 +49,175 @@ import java.util.concurrent.TimeUnit;
  * Feed objects from ProtocolAdapter through the FeedSessionManager.
  */
 public class InfraIntegrationScope {
-  private static final boolean USE_TIMEOUT_SCHEDULER = true;
+    private static final boolean USE_TIMEOUT_SCHEDULER = true;
 
-  /**
-   * For the TimeoutSession tests, this is how long we allow it to run before declaring a timeout
-   * error.
-   */
-  public static final long TIMEOUT_TEST_TIMEOUT = TimeUnit.SECONDS.toMillis(20);
+    /**
+     * For the TimeoutSession tests, this is how long we allow it to run before declaring a timeout
+     * error.
+     */
+    public static final long TIMEOUT_TEST_TIMEOUT = TimeUnit.SECONDS.toMillis(20);
 
-  private final Configuration configuration;
-  private final ContentStorageDirect contentStorage;
-  private final FakeClock fakeClock;
-  private final FakeDirectExecutor fakeDirectExecutor;
-  private final FakeMainThreadRunner fakeMainThreadRunner;
-  private final FakeFeedRequestManager fakeFeedRequestManager;
-  private final FakeThreadUtils fakeThreadUtils;
-  private final FeedAppLifecycleListener appLifecycleListener;
-  private final FeedModelProviderFactory modelProviderFactory;
-  private final FeedProtocolAdapter feedProtocolAdapter;
-  private final FeedSessionManagerImpl feedSessionManager;
-  private final FeedStore store;
-  private final JournalStorageDirect journalStorage;
-  private final SchedulerApi schedulerApi;
-  private final TaskQueue taskQueue;
-  private final RequestManager requestManager;
+    private final Configuration configuration;
+    private final ContentStorageDirect contentStorage;
+    private final FakeClock fakeClock;
+    private final FakeDirectExecutor fakeDirectExecutor;
+    private final FakeMainThreadRunner fakeMainThreadRunner;
+    private final FakeFeedRequestManager fakeFeedRequestManager;
+    private final FakeThreadUtils fakeThreadUtils;
+    private final FeedAppLifecycleListener appLifecycleListener;
+    private final FeedModelProviderFactory modelProviderFactory;
+    private final FeedProtocolAdapter feedProtocolAdapter;
+    private final FeedSessionManagerImpl feedSessionManager;
+    private final FeedStore store;
+    private final JournalStorageDirect journalStorage;
+    private final SchedulerApi schedulerApi;
+    private final TaskQueue taskQueue;
+    private final RequestManager requestManager;
 
-  private InfraIntegrationScope(
-      FakeThreadUtils fakeThreadUtils,
-      FakeDirectExecutor fakeDirectExecutor,
-      SchedulerApi schedulerApi,
-      FakeClock fakeClock,
-      Configuration configuration,
-      ContentStorageDirect contentStorage,
-      JournalStorageDirect journalStorage,
-      FakeMainThreadRunner fakeMainThreadRunner) {
-    this.fakeClock = fakeClock;
-    this.configuration = configuration;
-    this.contentStorage = contentStorage;
-    this.journalStorage = journalStorage;
-    this.fakeDirectExecutor = fakeDirectExecutor;
-    this.fakeMainThreadRunner = fakeMainThreadRunner;
-    this.schedulerApi = schedulerApi;
-    this.fakeThreadUtils = fakeThreadUtils;
-    TimingUtils timingUtils = new TimingUtils();
-    appLifecycleListener = new FeedAppLifecycleListener(fakeThreadUtils);
-    FakeBasicLoggingApi fakeBasicLoggingApi = new FakeBasicLoggingApi();
+    private InfraIntegrationScope(FakeThreadUtils fakeThreadUtils,
+            FakeDirectExecutor fakeDirectExecutor, SchedulerApi schedulerApi, FakeClock fakeClock,
+            Configuration configuration, ContentStorageDirect contentStorage,
+            JournalStorageDirect journalStorage, FakeMainThreadRunner fakeMainThreadRunner) {
+        this.fakeClock = fakeClock;
+        this.configuration = configuration;
+        this.contentStorage = contentStorage;
+        this.journalStorage = journalStorage;
+        this.fakeDirectExecutor = fakeDirectExecutor;
+        this.fakeMainThreadRunner = fakeMainThreadRunner;
+        this.schedulerApi = schedulerApi;
+        this.fakeThreadUtils = fakeThreadUtils;
+        TimingUtils timingUtils = new TimingUtils();
+        appLifecycleListener = new FeedAppLifecycleListener(fakeThreadUtils);
+        FakeBasicLoggingApi fakeBasicLoggingApi = new FakeBasicLoggingApi();
 
-    FeedExtensionRegistry extensionRegistry = new FeedExtensionRegistry(new ExtensionProvider());
-    taskQueue =
-        new TaskQueue(fakeBasicLoggingApi, fakeDirectExecutor, fakeMainThreadRunner, fakeClock);
-    store =
-        new FeedStore(
-            configuration,
-            timingUtils,
-            extensionRegistry,
-            contentStorage,
-            journalStorage,
-            fakeThreadUtils,
-            taskQueue,
-            fakeClock,
-            fakeBasicLoggingApi,
-            fakeMainThreadRunner);
-    feedProtocolAdapter =
-        new FeedProtocolAdapter(
-            Collections.singletonList(new PietRequiredContentAdapter()), timingUtils);
-    fakeFeedRequestManager =
-        new FakeFeedRequestManager(
-            fakeThreadUtils, fakeMainThreadRunner, feedProtocolAdapter, taskQueue);
-    FakeActionUploadRequestManager fakeActionUploadRequestManager =
-        new FakeActionUploadRequestManager(FakeThreadUtils.withThreadChecks());
-    feedSessionManager =
-        new FeedSessionManagerFactory(
-                taskQueue,
-                store,
-                timingUtils,
-                fakeThreadUtils,
-                feedProtocolAdapter,
-                fakeFeedRequestManager,
-                fakeActionUploadRequestManager,
-                schedulerApi,
-                configuration,
-                fakeClock,
-                appLifecycleListener,
-                fakeMainThreadRunner,
-                fakeBasicLoggingApi)
-            .create();
-    new ClearAllListener(
-        taskQueue, feedSessionManager, store, fakeThreadUtils, appLifecycleListener);
-    feedSessionManager.initialize();
-    modelProviderFactory =
-        new FeedModelProviderFactory(
-            feedSessionManager,
-            fakeThreadUtils,
-            timingUtils,
-            taskQueue,
-            fakeMainThreadRunner,
-            configuration,
-            fakeBasicLoggingApi);
-    requestManager = new RequestManagerImpl(fakeFeedRequestManager, feedSessionManager);
-  }
+        FeedExtensionRegistry extensionRegistry =
+                new FeedExtensionRegistry(new ExtensionProvider());
+        taskQueue = new TaskQueue(
+                fakeBasicLoggingApi, fakeDirectExecutor, fakeMainThreadRunner, fakeClock);
+        store = new FeedStore(configuration, timingUtils, extensionRegistry, contentStorage,
+                journalStorage, fakeThreadUtils, taskQueue, fakeClock, fakeBasicLoggingApi,
+                fakeMainThreadRunner);
+        feedProtocolAdapter = new FeedProtocolAdapter(
+                Collections.singletonList(new PietRequiredContentAdapter()), timingUtils);
+        fakeFeedRequestManager = new FakeFeedRequestManager(
+                fakeThreadUtils, fakeMainThreadRunner, feedProtocolAdapter, taskQueue);
+        FakeActionUploadRequestManager fakeActionUploadRequestManager =
+                new FakeActionUploadRequestManager(FakeThreadUtils.withThreadChecks());
+        feedSessionManager = new FeedSessionManagerFactory(taskQueue, store, timingUtils,
+                fakeThreadUtils, feedProtocolAdapter, fakeFeedRequestManager,
+                fakeActionUploadRequestManager, schedulerApi, configuration, fakeClock,
+                appLifecycleListener, fakeMainThreadRunner, fakeBasicLoggingApi)
+                                     .create();
+        new ClearAllListener(
+                taskQueue, feedSessionManager, store, fakeThreadUtils, appLifecycleListener);
+        feedSessionManager.initialize();
+        modelProviderFactory = new FeedModelProviderFactory(feedSessionManager, fakeThreadUtils,
+                timingUtils, taskQueue, fakeMainThreadRunner, configuration, fakeBasicLoggingApi);
+        requestManager = new RequestManagerImpl(fakeFeedRequestManager, feedSessionManager);
+    }
 
-  public ProtocolAdapter getProtocolAdapter() {
-    return feedProtocolAdapter;
-  }
+    public ProtocolAdapter getProtocolAdapter() {
+        return feedProtocolAdapter;
+    }
 
-  public FeedSessionManager getFeedSessionManager() {
-    return feedSessionManager;
-  }
+    public FeedSessionManager getFeedSessionManager() {
+        return feedSessionManager;
+    }
 
-  public ModelProviderFactory getModelProviderFactory() {
-    return modelProviderFactory;
-  }
+    public ModelProviderFactory getModelProviderFactory() {
+        return modelProviderFactory;
+    }
 
-  public FakeClock getFakeClock() {
-    return fakeClock;
-  }
+    public FakeClock getFakeClock() {
+        return fakeClock;
+    }
 
-  public FakeDirectExecutor getFakeDirectExecutor() {
-    return fakeDirectExecutor;
-  }
+    public FakeDirectExecutor getFakeDirectExecutor() {
+        return fakeDirectExecutor;
+    }
 
-  public FakeMainThreadRunner getFakeMainThreadRunner() {
-    return fakeMainThreadRunner;
-  }
+    public FakeMainThreadRunner getFakeMainThreadRunner() {
+        return fakeMainThreadRunner;
+    }
 
-  public FakeThreadUtils getFakeThreadUtils() {
-    return fakeThreadUtils;
-  }
+    public FakeThreadUtils getFakeThreadUtils() {
+        return fakeThreadUtils;
+    }
 
-  public FeedStore getStore() {
-    return store;
-  }
+    public FeedStore getStore() {
+        return store;
+    }
 
-  public TaskQueue getTaskQueue() {
-    return taskQueue;
-  }
+    public TaskQueue getTaskQueue() {
+        return taskQueue;
+    }
 
-  public FakeFeedRequestManager getFakeFeedRequestManager() {
-    return fakeFeedRequestManager;
-  }
+    public FakeFeedRequestManager getFakeFeedRequestManager() {
+        return fakeFeedRequestManager;
+    }
 
-  public AppLifecycleListener getAppLifecycleListener() {
-    return appLifecycleListener;
-  }
+    public AppLifecycleListener getAppLifecycleListener() {
+        return appLifecycleListener;
+    }
 
-  public RequestManager getRequestManager() {
-    return requestManager;
-  }
+    public RequestManager getRequestManager() {
+        return requestManager;
+    }
 
-  @Override
-  public InfraIntegrationScope clone() {
-    return new InfraIntegrationScope(
-        fakeThreadUtils,
-        fakeDirectExecutor,
-        schedulerApi,
-        fakeClock,
-        configuration,
-        contentStorage,
-        journalStorage,
-        fakeMainThreadRunner);
-  }
-
-  private static class ExtensionProvider implements ProtoExtensionProvider {
     @Override
-    public List<GeneratedExtension<?, ?>> getProtoExtensions() {
-      return new ArrayList<>();
-    }
-  }
-
-  /** Builder for creating the {@link InfraIntegrationScope} */
-  public static class Builder {
-    private final FakeClock fakeClock = new FakeClock();
-    private final FakeMainThreadRunner fakeMainThreadRunner =
-        FakeMainThreadRunner.create(fakeClock);
-    private final FakeThreadUtils fakeThreadUtils = FakeThreadUtils.withThreadChecks();
-
-    private Configuration configuration = Configuration.getDefaultInstance();
-    private FakeDirectExecutor fakeDirectExecutor =
-        FakeDirectExecutor.runTasksImmediately(fakeThreadUtils);
-    private SchedulerApi schedulerApi = new FakeSchedulerApi(fakeThreadUtils);
-
-    public Builder() {}
-
-    public Builder setConfiguration(Configuration configuration) {
-      this.configuration = configuration;
-      return this;
+    public InfraIntegrationScope clone() {
+        return new InfraIntegrationScope(fakeThreadUtils, fakeDirectExecutor, schedulerApi,
+                fakeClock, configuration, contentStorage, journalStorage, fakeMainThreadRunner);
     }
 
-    public Builder setSchedulerApi(SchedulerApi schedulerApi) {
-      this.schedulerApi = schedulerApi;
-      return this;
+    private static class ExtensionProvider implements ProtoExtensionProvider {
+        @Override
+        public List<GeneratedExtension<?, ?>> getProtoExtensions() {
+            return new ArrayList<>();
+        }
     }
 
-    public Builder withQueuingTasks() {
-      fakeDirectExecutor = FakeDirectExecutor.queueAllTasks(fakeThreadUtils);
-      return this;
-    }
+    /** Builder for creating the {@link InfraIntegrationScope} */
+    public static class Builder {
+        private final FakeClock fakeClock = new FakeClock();
+        private final FakeMainThreadRunner fakeMainThreadRunner =
+                FakeMainThreadRunner.create(fakeClock);
+        private final FakeThreadUtils fakeThreadUtils = FakeThreadUtils.withThreadChecks();
 
-    public Builder withTimeoutSessionConfiguration(long timeoutMs) {
-      configuration =
-          configuration.toBuilder()
-              .put(ConfigKey.USE_TIMEOUT_SCHEDULER, USE_TIMEOUT_SCHEDULER)
-              .put(ConfigKey.TIMEOUT_TIMEOUT_MS, timeoutMs)
-              .build();
-      return this;
-    }
+        private Configuration configuration = Configuration.getDefaultInstance();
+        private FakeDirectExecutor fakeDirectExecutor =
+                FakeDirectExecutor.runTasksImmediately(fakeThreadUtils);
+        private SchedulerApi schedulerApi = new FakeSchedulerApi(fakeThreadUtils);
 
-    public InfraIntegrationScope build() {
-      return new InfraIntegrationScope(
-          fakeThreadUtils,
-          fakeDirectExecutor,
-          schedulerApi,
-          fakeClock,
-          configuration,
-          new InMemoryContentStorage(),
-          new InMemoryJournalStorage(),
-          fakeMainThreadRunner);
+        public Builder() {}
+
+        public Builder setConfiguration(Configuration configuration) {
+            this.configuration = configuration;
+            return this;
+        }
+
+        public Builder setSchedulerApi(SchedulerApi schedulerApi) {
+            this.schedulerApi = schedulerApi;
+            return this;
+        }
+
+        public Builder withQueuingTasks() {
+            fakeDirectExecutor = FakeDirectExecutor.queueAllTasks(fakeThreadUtils);
+            return this;
+        }
+
+        public Builder withTimeoutSessionConfiguration(long timeoutMs) {
+            configuration = configuration.toBuilder()
+                                    .put(ConfigKey.USE_TIMEOUT_SCHEDULER, USE_TIMEOUT_SCHEDULER)
+                                    .put(ConfigKey.TIMEOUT_TIMEOUT_MS, timeoutMs)
+                                    .build();
+            return this;
+        }
+
+        public InfraIntegrationScope build() {
+            return new InfraIntegrationScope(fakeThreadUtils, fakeDirectExecutor, schedulerApi,
+                    fakeClock, configuration, new InMemoryContentStorage(),
+                    new InMemoryJournalStorage(), fakeMainThreadRunner);
+        }
     }
-  }
 }

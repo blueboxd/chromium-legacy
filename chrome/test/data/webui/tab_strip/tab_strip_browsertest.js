@@ -20,10 +20,6 @@ var TabStripBrowserTest = class extends testing.Test {
     ];
   }
 
-  get runAccessibilityChecks() {
-    return false;
-  }
-
   /** @override */
   get featureList() {
     return {enabled: ['network::features::kOutOfBlinkCors']};

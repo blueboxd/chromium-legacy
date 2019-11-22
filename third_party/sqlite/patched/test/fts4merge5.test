@@ -24,13 +24,13 @@ ifcapable !fts3 {
 
 source $testdir/genesis.tcl
 
-do_execsql_test 1.1 { 
+do_execsql_test 1.1 {
   CREATE TABLE t1(docid, words);
 }
 fts_kjv_genesis
 
 do_execsql_test 1.2 {
-  CREATE VIRTUAL TABLE x1 USING fts3; 
+  CREATE VIRTUAL TABLE x1 USING fts3;
   INSERT INTO x1(x1) VALUES('nodesize=64');
   INSERT INTO x1(x1) VALUES('maxpending=64');
 }

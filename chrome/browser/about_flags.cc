@@ -189,7 +189,7 @@
 #include "components/arc/arc_features.h"
 #include "printing/printing_features_chromeos.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
-#include "ui/events/ozone/evdev/touch_filter/palm_detection_filter_factory.h"
+#include "ui/events/ozone/features.h"
 #endif  // OS_CHROMEOS
 
 #if defined(OS_MACOSX)
@@ -2620,11 +2620,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseSurfaceLayerForVideoName,
      flag_descriptions::kUseSurfaceLayerForVideoDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kUseSurfaceLayerForVideo)},
-#if defined(OS_ANDROID)
-    {"no-credit-card-abort", flag_descriptions::kNoCreditCardAbort,
-     flag_descriptions::kNoCreditCardAbortDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},
-#endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"arc-boot-completed-broadcast", flag_descriptions::kArcBootCompleted,
      flag_descriptions::kArcBootCompletedDescription, kOsCrOS,
@@ -3302,7 +3297,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"harfbuzz-pdf-subsetter", flag_descriptions::kHarfBuzzPDFSubsetterName,
      flag_descriptions::kHarfBuzzPDFSubsetterDescription, kOsAll,
      FEATURE_VALUE_TYPE(printing::features::kHarfBuzzPDFSubsetter)},
-#endif
+
+#if defined(OS_WIN)
+    {"use-xps-for-printing", flag_descriptions::kUseXpsForPrintingName,
+     flag_descriptions::kUseXpsForPrintingDescription, kOsWin,
+     FEATURE_VALUE_TYPE(printing::features::kUseXpsForPrinting)},
+#endif // defined(OS_WIN)
+#endif // BUILDFLAG(ENABLE_PRINTING)
 
     {"autofill-profile-client-validation",
      flag_descriptions::kAutofillProfileClientValidationName,
@@ -3773,23 +3774,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list_features::kEnableAssistantLauncherUI)},
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID)
-    {"click-to-call-open-dialer-directly",
-     flag_descriptions::kClickToCallOpenDialerDirectlyName,
-     flag_descriptions::kClickToCallOpenDialerDirectlyDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kClickToCallOpenDialerDirectly)},
-
-    {"click-to-call-receiver", flag_descriptions::kClickToCallReceiverName,
-     flag_descriptions::kClickToCallReceiverDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(kClickToCallReceiver)},
-#endif  // defined(OS_ANDROID)
-
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
-    {"click-to-call-context-menu-selected-text",
-     flag_descriptions::kClickToCallContextMenuForSelectedTextName,
-     flag_descriptions::kClickToCallContextMenuForSelectedTextDescription,
-     kOsDesktop, FEATURE_VALUE_TYPE(kClickToCallContextMenuForSelectedText)},
-
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
      flag_descriptions::kClickToCallUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
@@ -3840,11 +3825,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(data_reduction_proxy::features::
                             kDataReductionProxyEnabledWithNetworkService)},
-
-    {"enable-sharing-device-registration",
-     flag_descriptions::kSharingDeviceRegistrationName,
-     flag_descriptions::kSharingDeviceRegistrationDescription, kOsAll,
-     FEATURE_VALUE_TYPE(kSharingDeviceRegistration)},
 
     {"sharing-derive-vapid-key", flag_descriptions::kSharingDeriveVapidKeyName,
      flag_descriptions::kSharingDeriveVapidKeyDescription, kOsAll,
@@ -4257,13 +4237,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kEnterpriseReportingInBrowser)},
 #endif  // !defined(OS_ANDROID)
 
-    {"enable-autofill-do-not-migrate-unsupported-local-cards",
-     flag_descriptions::kEnableAutofillDoNotMigrateUnsupportedLocalCardsName,
-     flag_descriptions::
-         kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillDoNotMigrateUnsupportedLocalCards)},
+#if defined(OS_CHROMEOS)
+    {"enterprise-reporting-in-chromeos",
+     flag_descriptions::kEnterpriseReportingInChromeOSName,
+     flag_descriptions::kEnterpriseReportingInChromeOSDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kEnterpriseReportingInChromeOS)},
+#endif  // !defined(OS_CHROMEOS)
+
     {"enable-unsafe-webgpu", flag_descriptions::kUnsafeWebGPUName,
      flag_descriptions::kUnsafeWebGPUDescription, kOsMac | kOsWin,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeWebGPU)},

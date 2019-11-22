@@ -5,6 +5,7 @@
 package org.chromium.weblayer.shell;
 
 import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -88,6 +90,10 @@ public class WebLayerShellActivity extends FragmentActivity {
                     return false;
                 }
                 loadUrl(mUrlView.getText().toString());
+                mUrlView.clearFocus();
+                InputMethodManager imm =
+                        (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mUrlView.getWindowToken(), 0);
                 return true;
             }
         });
@@ -174,7 +180,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         loadUrl(startupUrl);
         mTab.registerTabCallback(new TabCallback() {
             @Override
-            public void onVisibleUrlChanged(Uri uri) {
+            public void onVisibleUriChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
         });
@@ -192,9 +198,9 @@ public class WebLayerShellActivity extends FragmentActivity {
         });
         mTab.setDownloadCallback(new DownloadCallback() {
             @Override
-            public void onDownloadRequested(String url, String userAgent, String contentDisposition,
+            public void onDownloadRequested(Uri uri, String userAgent, String contentDisposition,
                     String mimetype, long contentLength) {
-                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                DownloadManager.Request request = new DownloadManager.Request(uri);
                 request.setNotificationVisibility(
                         DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                 getSystemService(DownloadManager.class).enqueue(request);

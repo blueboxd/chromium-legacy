@@ -24,7 +24,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -661,9 +663,10 @@ void TabDragController::InitDragData(TabSlotView* view,
   base::Optional<TabGroupId> tab_group_id = view->group();
   if (tab_group_id.has_value()) {
     drag_data->tab_group_data = TabDragData::TabGroupData{
-        tab_group_id.value(),
-        *source_context_->GetTabStripModel()->GetVisualDataForGroup(
-            tab_group_id.value())};
+        tab_group_id.value(), *source_context_->GetTabStripModel()
+                                   ->group_model()
+                                   ->GetTabGroup(tab_group_id.value())
+                                   ->visual_data()};
   }
 }
 
@@ -1195,7 +1198,7 @@ void TabDragController::Attach(TabDragContext* attached_context,
       // restore, and allowing broken-up groups to be restored across windows
       // as separate group IDs.
       group_ = TabGroupId::GenerateNew();
-      attached_context_->GetTabStripModel()->RegisterGroup(
+      attached_context_->GetTabStripModel()->group_model()->AddTabGroup(
           group_.value(),
           source_view_drag_data()->tab_group_data.value().group_visual_data);
     }

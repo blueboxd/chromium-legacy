@@ -48,7 +48,7 @@ const char kChineseCangjieExtensionId[] = "aeebooiibjahgpgmhkeocbeekccfknbj";
 #endif
 
 const char kBrailleImeExtensionId[] = "jddehjeebkoimngcbdkaahpobgicbffp";
-const char kBrailleImeExtensionPath[] = "chromeos/braille_ime";
+const char kBrailleImeExtensionPath[] = "chromeos/accessibility/braille_ime";
 const char kBrailleImeEngineId[] =
     "_comp_ime_jddehjeebkoimngcbdkaahpobgicbffpbraille";
 

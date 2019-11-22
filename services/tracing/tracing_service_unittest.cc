@@ -9,7 +9,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "services/tracing/public/mojom/tracing_service.mojom.h"
@@ -37,19 +38,15 @@ class TestTracingClient : public mojom::TracingSessionClient {
  public:
   void StartTracing(mojom::TracingService* service,
                     base::OnceClosure on_tracing_enabled) {
-    service->BindConsumerHost(mojo::MakeRequest(&consumer_host_));
+    service->BindConsumerHost(consumer_host_.BindNewPipeAndPassReceiver());
 
     perfetto::TraceConfig perfetto_config =
         tracing::GetDefaultPerfettoConfig(base::trace_event::TraceConfig(""),
                                           /*privacy_filtering_enabled=*/false);
 
-    mojo::PendingRemote<tracing::mojom::TracingSessionClient>
-        tracing_session_client;
-    binding_.Bind(tracing_session_client.InitWithNewPipeAndPassReceiver());
-
     consumer_host_->EnableTracing(
-        mojo::MakeRequest(&tracing_session_host_),
-        std::move(tracing_session_client), std::move(perfetto_config),
+        tracing_session_host_.BindNewPipeAndPassReceiver(),
+        receiver_.BindNewPipeAndPassRemote(), std::move(perfetto_config),
         tracing::mojom::TracingClientPriority::kUserInitiated);
 
     tracing_session_host_->RequestBufferUsage(
@@ -63,9 +60,9 @@ class TestTracingClient : public mojom::TracingSessionClient {
   void OnTracingDisabled() override {}
 
  private:
-  mojom::ConsumerHostPtr consumer_host_;
-  mojom::TracingSessionHostPtr tracing_session_host_;
-  mojo::Binding<mojom::TracingSessionClient> binding_{this};
+  mojo::Remote<mojom::ConsumerHost> consumer_host_;
+  mojo::Remote<mojom::TracingSessionHost> tracing_session_host_;
+  mojo::Receiver<mojom::TracingSessionClient> receiver_{this};
 };
 
 TEST_F(TracingServiceTest, TracingServiceInstantiate) {

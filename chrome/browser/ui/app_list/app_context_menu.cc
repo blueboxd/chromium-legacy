@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 
+#include "ash/public/cpp/shelf_model.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/grit/generated_resources.h"
@@ -70,6 +71,8 @@ bool AppContextMenu::IsCommandIdEnabled(int command_id) const {
 void AppContextMenu::TogglePin(const std::string& shelf_app_id) {
   DCHECK_EQ(AppListControllerDelegate::PIN_EDITABLE,
             controller_->GetPinnable(shelf_app_id));
+  ash::ShelfModel::ScopedUserTriggeredMutation user_triggered(
+      ash::ShelfModel::Get());
   if (controller_->IsAppPinned(shelf_app_id))
     controller_->UnpinApp(shelf_app_id);
   else

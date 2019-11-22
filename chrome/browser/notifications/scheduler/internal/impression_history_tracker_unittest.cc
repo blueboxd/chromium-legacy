@@ -411,7 +411,7 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
   VerifyClientStates(test_case);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ImpressionHistoryTrackerUserActionTest,
                          testing::ValuesIn(kUserActionTestParams));
 

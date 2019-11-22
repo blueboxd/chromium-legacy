@@ -44,6 +44,7 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
   // TestSystemWebAppManager if initialized with |install_mock| true.
   SystemWebAppManager& GetManager();
 
+  void WaitForTestSystemAppInstall();
   Browser* WaitForSystemAppInstallAndLaunch(SystemAppType system_app_type);
 
  private:

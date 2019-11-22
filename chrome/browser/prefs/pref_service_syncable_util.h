@@ -35,7 +35,6 @@ sync_preferences::PrefServiceSyncable* PrefServiceSyncableFromProfile(
 std::unique_ptr<sync_preferences::PrefServiceSyncable>
 CreateIncognitoPrefServiceSyncable(
     sync_preferences::PrefServiceSyncable* pref_service,
-    PrefStore* incognito_extension_pref_store,
-    std::unique_ptr<PrefValueStore::Delegate> delegate);
+    PrefStore* incognito_extension_pref_store);
 
 #endif  // CHROME_BROWSER_PREFS_PREF_SERVICE_SYNCABLE_UTIL_H_

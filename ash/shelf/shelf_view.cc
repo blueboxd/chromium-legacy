@@ -1287,6 +1287,7 @@ bool ShelfView::StartDrag(const std::string& app_id,
   // When an item is dragged from overflow to shelf, IsShowingOverflowBubble()
   // returns true. At this time, we don't need to pin the item.
   if (!IsShowingOverflowBubble() && !model_->IsAppPinned(app_id)) {
+    ShelfModel::ScopedUserTriggeredMutation user_triggered(model_);
     model_->PinAppWithID(app_id);
     drag_and_drop_item_pinned_ = true;
   }
@@ -1349,6 +1350,7 @@ void ShelfView::EndDrag(bool cancel) {
 
   // Either destroy the temporarily created item - or - make the item visible.
   if (drag_and_drop_item_pinned_ && cancel) {
+    ShelfModel::ScopedUserTriggeredMutation user_triggered(model_);
     model_->UnpinAppWithID(drag_and_drop_shelf_id_.app_id);
   } else if (drag_and_drop_view) {
     std::unique_ptr<gfx::AnimationDelegate> animation_delegate;
@@ -1922,6 +1924,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
     } else {
       // Make sure the item stays invisible upon removal.
       drag_view_->SetVisible(false);
+      ShelfModel::ScopedUserTriggeredMutation user_triggered(model_);
       model_->UnpinAppWithID(model_->items()[current_index].id.app_id);
     }
   }
@@ -2076,7 +2079,8 @@ void ShelfView::AnnounceShelfAlignment() {
       break;
   }
   announcement_view_->GetViewAccessibility().OverrideName(announcement);
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                               /*send_native_event=*/true);
 }
 
 void ShelfView::AnnounceShelfAutohideBehavior() {
@@ -2093,7 +2097,21 @@ void ShelfView::AnnounceShelfAutohideBehavior() {
       break;
   }
   announcement_view_->GetViewAccessibility().OverrideName(announcement);
-  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                               /*send_native_event=*/true);
+}
+
+void ShelfView::AnnouncePinUnpinEvent(const ShelfItem& item, bool pinned) {
+  base::string16 item_title =
+      item.title.empty()
+          ? l10n_util::GetStringUTF16(IDS_SHELF_ITEM_GENERIC_NAME)
+          : item.title;
+  base::string16 announcement = l10n_util::GetStringFUTF16(
+      pinned ? IDS_SHELF_ITEM_WAS_PINNED : IDS_SHELF_ITEM_WAS_UNPINNED,
+      item_title);
+  announcement_view_->GetViewAccessibility().OverrideName(announcement);
+  announcement_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                               /*send_native_event=*/true);
 }
 
 gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
@@ -2220,6 +2238,11 @@ void ShelfView::ShelfItemAdded(int model_index) {
     // Undo the hiding if animation does not run.
     view->layer()->SetOpacity(1.0f);
   }
+
+  if (model_->is_current_mutation_user_triggered() &&
+      item.type == TYPE_PINNED_APP) {
+    AnnouncePinUnpinEvent(item, /*pinned=*/true);
+  }
 }
 
 void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
@@ -2269,6 +2292,11 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
 
   if (view == shelf_->tooltip()->GetCurrentAnchorView())
     shelf_->tooltip()->Close();
+
+  if (model_->is_current_mutation_user_triggered() &&
+      old_item.type == TYPE_PINNED_APP) {
+    AnnouncePinUnpinEvent(old_item, /*pinned=*/false);
+  }
 }
 
 void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
@@ -2303,8 +2331,11 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
 
     // If an item is being pinned or unpinned, show the new status of the
     // shelf immediately so that the separator gets drawn as needed.
-    if (old_item.type == TYPE_PINNED_APP || item.type == TYPE_PINNED_APP)
+    if (old_item.type == TYPE_PINNED_APP || item.type == TYPE_PINNED_APP) {
+      if (model_->is_current_mutation_user_triggered())
+        AnnouncePinUnpinEvent(old_item, item.type == TYPE_PINNED_APP);
       AnimateToIdealBounds();
+    }
     return;
   }
 

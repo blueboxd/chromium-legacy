@@ -6,6 +6,6 @@
 dictionary NDEFScanOptions {
     AbortSignal? signal;
     USVString id = "";
-    NDEFRecordType? recordType;
+    USVString recordType;
     USVString mediaType = "";
 };

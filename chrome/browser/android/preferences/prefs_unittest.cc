@@ -105,6 +105,7 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(WEBKIT_PASSWORD_ECHO_ENABLED));
   EXPECT_EQ(prefs::kWebKitForceDarkModeEnabled,
             GetPrefName(WEBKIT_FORCE_DARK_MODE_ENABLED));
+  EXPECT_EQ(prefs::kHomePage, GetPrefName(HOME_PAGE));
 
   // If this check fails, a pref is missing a test case above.
   EXPECT_EQ(Pref::PREF_NUM_PREFS, pref_count_);

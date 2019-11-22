@@ -26,7 +26,7 @@ constexpr int kPreferredSizeDip = 32;
 
 }  // namespace
 
-MicView::MicView(views::ButtonListener* listener,
+MicView::MicView(AssistantButtonListener* listener,
                  AssistantViewDelegate* delegate,
                  AssistantButtonId button_id)
     : AssistantButton(listener, button_id), delegate_(delegate) {

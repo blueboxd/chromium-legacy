@@ -70,6 +70,9 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
       XkbFlagMapEntry e = {kTestFlags[i], kTestFlags[i]};
       xkb_flag_map_.push_back(e);
     }
+
+    shift_mod_mask_ = EF_SHIFT_DOWN;
+    altgr_mod_mask_ = EF_ALTGR_DOWN;
   }
   ~VkTestXkbKeyboardLayoutEngine() override {}
 

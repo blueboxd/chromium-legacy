@@ -2971,7 +2971,7 @@ void GLRenderer::DrawQuadGeometryWithAA(const DrawQuad* quad,
                    CenteredRect(tile_rect));
 }
 
-void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
+void GLRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   DCHECK(visible_);
 
   TRACE_EVENT0("viz", "GLRenderer::SwapBuffers");
@@ -2980,7 +2980,7 @@ void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   gfx::Size surface_size = surface_size_for_swap_buffers();
 
   OutputSurfaceFrame output_frame;
-  output_frame.latency_info = std::move(latency_info);
+  output_frame.latency_info = std::move(swap_frame_data.latency_info);
   output_frame.size = surface_size;
   if (use_swap_with_bounds_) {
     output_frame.content_bounds = std::move(swap_content_bounds_);

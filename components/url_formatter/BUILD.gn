@@ -35,9 +35,12 @@ jumbo_static_library("url_formatter") {
     "//components/url_formatter/spoof_checks/top_domains:generate_top_domains_trie",
     "//net",
     "//net:preload_decoder",
-    "//third_party/icu",
     "//ui/gfx",
     "//url",
+  ]
+
+  public_deps = [
+    "//third_party/icu",
   ]
 
   if (is_android) {

@@ -57,11 +57,7 @@ class BrowserDMTokenStorage {
   void ClearDMToken(StoreCallback callback);
   // Returns an already stored DM token. An empty token is returned if no DM
   // token exists on the system or an error is encountered.
-  // TODO(domfc): Remove overload after updating callers. Note that the names
-  //              are different because you cannot overload functions that only
-  //              differ in their return type.
-  std::string RetrieveDMToken();
-  DMToken RetrieveBrowserDMToken();
+  DMToken RetrieveDMToken();
   // Must be called after the DM token is saved, to ensure that the callback is
   // invoked.
   void OnDMTokenStored(bool success);

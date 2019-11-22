@@ -767,9 +767,13 @@ bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
 CookieEffectiveSameSite CanonicalCookie::GetEffectiveSameSite(
     CookieAccessSemantics access_semantics) const {
   base::TimeDelta lax_allow_unsafe_threshold_age =
-      base::FeatureList::IsEnabled(features::kShortLaxAllowUnsafeThreshold)
-          ? kShortLaxAllowUnsafeMaxAge
-          : kLaxAllowUnsafeMaxAge;
+      base::FeatureList::IsEnabled(
+          features::kSameSiteDefaultChecksMethodRigorously)
+          ? base::TimeDelta::Min()
+          : (base::FeatureList::IsEnabled(
+                 features::kShortLaxAllowUnsafeThreshold)
+                 ? kShortLaxAllowUnsafeMaxAge
+                 : kLaxAllowUnsafeMaxAge);
 
   bool should_apply_same_site_lax_by_default =
       cookie_util::IsSameSiteByDefaultCookiesEnabled();

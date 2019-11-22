@@ -2,15 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "base/run_loop.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom-shared.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace ash {
 
 namespace {
+
+using chromeos::assistant::mojom::AssistantInteractionMetadata;
+using chromeos::assistant::mojom::AssistantInteractionType;
+
+#define EXPECT_INTERACTION_OF_TYPE(type_)                      \
+  ({                                                           \
+    base::Optional<AssistantInteractionMetadata> interaction = \
+        current_interaction();                                 \
+    ASSERT_TRUE(interaction.has_value());                      \
+    EXPECT_EQ(interaction->type, type_);                       \
+  })
+
+// Ensures that the given view has the focus. If it doesn't, this will print a
+// nice error message indicating which view has the focus instead.
+#define EXPECT_HAS_FOCUS(expected_)                                           \
+  ({                                                                          \
+    const views::View* actual =                                               \
+        main_view()->GetFocusManager()->GetFocusedView();                     \
+    EXPECT_TRUE(expected_->HasFocus())                                        \
+        << "Expected focus on '" << expected_->GetClassName()                 \
+        << "' but it is on '" << (actual ? actual->GetClassName() : "<null>") \
+        << "'.";                                                              \
+  })
 
 // Stubbed |FocusChangeListener| that simply remembers all the views that
 // received focus.
@@ -44,21 +69,17 @@ class FocusChangeListenerStub : public views::FocusChangeListener {
   DISALLOW_COPY_AND_ASSIGN(FocusChangeListenerStub);
 };
 
-// Ensures that the given view has the focus. If it doesn't, this will print a
-// nice error message indicating which view has the focus instead.
-#define EXPECT_HAS_FOCUS(expected_)                                           \
-  ({                                                                          \
-    const views::View* actual =                                               \
-        main_view()->GetFocusManager()->GetFocusedView();                     \
-    EXPECT_TRUE(expected_->HasFocus())                                        \
-        << "Expected focus on '" << expected_->GetClassName()                 \
-        << "' but it is on '" << (actual ? actual->GetClassName() : "<null>") \
-        << "'.";                                                              \
-  })
-
 class AssistantPageViewTest : public AssistantAshTestBase {
  public:
   AssistantPageViewTest() = default;
+
+  void ShowAssistantUiInTextMode() {
+    ShowAssistantUi(AssistantEntryPoint::kUnspecified);
+  }
+
+  void ShowAssistantUiInVoiceMode() {
+    ShowAssistantUi(AssistantEntryPoint::kHotword);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantPageViewTest);
@@ -127,7 +148,7 @@ TEST_F(AssistantPageViewTest, ShouldNotRequestFocusWhenOtherAppWindowOpens) {
   }
 }
 
-TEST_F(AssistantPageViewTest, ShouldFocusTextDialogWhenOpeningWithHotkey) {
+TEST_F(AssistantPageViewTest, ShouldFocusTextFieldWhenOpeningWithHotkey) {
   ShowAssistantUi(AssistantEntryPoint::kHotkey);
 
   EXPECT_HAS_FOCUS(input_text_field());
@@ -201,6 +222,42 @@ TEST_F(AssistantPageViewTest,
   EXPECT_FALSE(greeting_label()->GetVisible());
 }
 
+TEST_F(AssistantPageViewTest, ShouldFocusMicViewWhenPressingVoiceInputToggle) {
+  ShowAssistantUiInTextMode();
+
+  ClickOnAndWait(voice_input_toggle());
+
+  EXPECT_HAS_FOCUS(mic_view());
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldStartVoiceInteractionWhenPressingVoiceInputToggle) {
+  ShowAssistantUiInTextMode();
+
+  ClickOnAndWait(voice_input_toggle());
+
+  EXPECT_INTERACTION_OF_TYPE(AssistantInteractionType::kVoice);
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldStopVoiceInteractionWhenPressingKeyboardInputToggle) {
+  ShowAssistantUiInVoiceMode();
+  EXPECT_INTERACTION_OF_TYPE(AssistantInteractionType::kVoice);
+
+  ClickOnAndWait(keyboard_input_toggle());
+
+  EXPECT_FALSE(current_interaction().has_value());
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldFocusTextFieldWhenPressingKeyboardInputToggle) {
+  ShowAssistantUiInVoiceMode();
+
+  ClickOnAndWait(keyboard_input_toggle());
+
+  EXPECT_HAS_FOCUS(input_text_field());
+}
+
 // Tests the |AssistantPageView| with tablet mode enabled.
 class AssistantPageViewTabletModeTest : public AssistantAshTestBase {
  public:
@@ -228,8 +285,7 @@ TEST_F(AssistantPageViewTabletModeTest, ShouldFocusMicWhenOpeningWithHotword) {
   EXPECT_HAS_FOCUS(mic_view());
 }
 
-TEST_F(AssistantPageViewTabletModeTest,
-       ShouldFocusTextDialogAfterSendingQuery) {
+TEST_F(AssistantPageViewTabletModeTest, ShouldFocusTextFieldAfterSendingQuery) {
   ShowAssistantUi();
 
   SendQueryThroughTextField("The query");
@@ -251,7 +307,7 @@ TEST_F(AssistantPageViewTabletModeTest,
   ShowAssistantUi();
   EXPECT_FALSE(IsKeyboardShowing());
 
-  TapOnTextField();
+  TapOnAndWait(input_text_field());
 
   EXPECT_TRUE(IsKeyboardShowing());
 }

@@ -1611,20 +1611,6 @@
           'shards': 15,
         },
       },
-      'android-marshmallow-arm64-rel': {
-        'args': [
-          '--browser=android-chromium',
-          '--device=android',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'temp_band': '<30',
-            },
-          ],
-          'shards': 10,
-        },
-      },
       'android-pie-arm64-rel': {
         'args': [
           '--browser=android-chromium',
@@ -1686,6 +1672,9 @@
       },
     },
     'remove_from': [
+      # There's no need to run telemetry_perf_unittests on both kitkat and
+      # marshmallow on the CQ. https://crbug.com/1026487.
+      'android-marshmallow-arm64-rel',
       # crbug.com/936540
       'Mac10.10 Tests',
       'Mac10.11 Tests',
@@ -1715,6 +1704,9 @@
   'unit_tests': {
     'remove_from': [
       'android-code-coverage-native', # crbug/1018434
+      # There's no need to run unit_tests on both kitkat and marshmallow
+      # on the CQ. https://crbug.com/1026487.
+      'android-marshmallow-arm64-rel',
     ],
     'modifications': {
       # chromium.clang

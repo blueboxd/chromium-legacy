@@ -385,9 +385,9 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
     CloudPolicyStoreObserverStub observer;
 
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    auto browser_dm_token = dm_token.empty()
-                                ? DMToken::CreateEmptyTokenForTesting()
-                                : DMToken::CreateValidTokenForTesting(dm_token);
+    DMToken browser_dm_token =
+        dm_token.empty() ? DMToken::CreateEmptyTokenForTesting()
+                         : DMToken::CreateValidTokenForTesting(dm_token);
     std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
         MachineLevelUserCloudPolicyStore::Create(
             browser_dm_token, client_id, user_data_dir,
@@ -474,7 +474,7 @@ class ChromeBrowserCloudManagementEnrollmentTest
   }
 
   void VerifyEnrollmentResult() {
-    auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+    DMToken dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
     if (is_enrollment_token_valid()) {
       EXPECT_TRUE(dm_token.is_valid());
       EXPECT_EQ("fake_device_management_token", dm_token.value());

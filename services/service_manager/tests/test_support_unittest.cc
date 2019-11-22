@@ -8,8 +8,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -49,19 +50,21 @@ class TestCImpl : public mojom::TestC {
   DISALLOW_COPY_AND_ASSIGN(TestCImpl);
 };
 
-void OnTestBRequest(mojom::TestBRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<TestBImpl>(), std::move(request));
+void OnTestBReceiver(mojo::PendingReceiver<mojom::TestB> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<TestBImpl>(),
+                              std::move(receiver));
 }
 
-void OnTestCRequest(mojom::TestCRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<TestCImpl>(), std::move(request));
+void OnTestCReceiver(mojo::PendingReceiver<mojom::TestC> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<TestCImpl>(),
+                              std::move(receiver));
 }
 
 class TestBServiceImpl : public Service {
  public:
   TestBServiceImpl(mojom::ServiceRequest request)
       : service_binding_(this, std::move(request)) {
-    registry_.AddInterface(base::BindRepeating(&OnTestBRequest));
+    registry_.AddInterface(base::BindRepeating(&OnTestBReceiver));
   }
 
   ~TestBServiceImpl() override = default;
@@ -84,7 +87,7 @@ class TestCServiceImpl : public Service {
  public:
   TestCServiceImpl(mojom::ServiceRequest request)
       : service_binding_(this, std::move(request)) {
-    registry_.AddInterface(base::BindRepeating(&OnTestCRequest));
+    registry_.AddInterface(base::BindRepeating(&OnTestCReceiver));
   }
 
   ~TestCServiceImpl() override = default;
@@ -115,8 +118,8 @@ TEST(ServiceManagerTestSupport, TestConnectorFactoryUniqueService) {
   TestCServiceImpl c_service(factory.RegisterInstance(kServiceCName));
   auto* connector = factory.GetDefaultConnector();
 
-  mojom::TestCPtr c;
-  connector->BindInterface(kServiceCName, &c);
+  mojo::Remote<mojom::TestC> c;
+  connector->Connect(kServiceCName, c.BindNewPipeAndPassReceiver());
   base::RunLoop loop;
   c->C(loop.QuitClosure());
   loop.Run();
@@ -131,16 +134,16 @@ TEST(ServiceManagerTestSupport, TestConnectorFactoryMultipleServices) {
   auto* connector = factory.GetDefaultConnector();
 
   {
-    mojom::TestBPtr b;
-    connector->BindInterface(kServiceBName, &b);
+    mojo::Remote<mojom::TestB> b;
+    connector->Connect(kServiceBName, b.BindNewPipeAndPassReceiver());
     base::RunLoop loop;
     b->B(loop.QuitClosure());
     loop.Run();
   }
 
   {
-    mojom::TestCPtr c;
-    connector->BindInterface(kServiceCName, &c);
+    mojo::Remote<mojom::TestC> c;
+    connector->Connect(kServiceCName, c.BindNewPipeAndPassReceiver());
     base::RunLoop loop;
     c->C(loop.QuitClosure());
     loop.Run();

@@ -6,10 +6,10 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
-    "bundled_exchanges_parser.mojom",
     "data_decoder_service.mojom",
     "image_decoder.mojom",
     "json_parser.mojom",
+    "web_bundle_parser.mojom",
     "xml_parser.mojom",
   ]
 

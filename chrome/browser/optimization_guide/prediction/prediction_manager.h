@@ -19,9 +19,17 @@
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "url/origin.h"
 
+namespace base {
+class FilePath;
+}  // namespace base
+
 namespace content {
 class NavigationHandle;
 }  // namespace content
+
+namespace leveldb_proto {
+class ProtoDatabaseProvider;
+}  // namespace leveldb_proto
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -30,6 +38,7 @@ class SharedURLLoaderFactory;
 namespace optimization_guide {
 
 enum class OptimizationGuideDecision;
+class OptimizationGuideStore;
 class PredictionModel;
 class PredictionModelFetcher;
 class TopHostProvider;
@@ -43,24 +52,33 @@ class PredictionManager
   PredictionManager(
       const std::vector<optimization_guide::proto::OptimizationTarget>&
           optimization_targets_at_initialization,
+      const base::FilePath& profile_path,
+      leveldb_proto::ProtoDatabaseProvider* database_provider,
+      TopHostProvider* top_host_provider,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  // For tests only.
+  PredictionManager(
+      const std::vector<optimization_guide::proto::OptimizationTarget>&
+          optimization_targets_at_initialization,
+      std::unique_ptr<OptimizationGuideStore> model_and_features_store,
       TopHostProvider* top_host_provider,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PredictionManager() override;
 
-  // Registers the optimization targets that may have ShouldTargetNavigtation
+  // Register the optimization targets that may have ShouldTargetNavigtation
   // requested by consumers of the Optimization Guide.
   void RegisterOptimizationTargets(
       const std::vector<proto::OptimizationTarget>& optimization_targets);
 
-  // Determines if the navigation matches the critieria for
-  // |optimization_target|. Returns kUnknown if a PredictionModel for the
+  // Determine if the navigation matches the critieria for
+  // |optimization_target|. Return kUnknown if a PredictionModel for the
   // optimization target is not registered and kModelNotAvailableOnClient if the
   // if model for the optimization target is not currently on the client.
   OptimizationTargetDecision ShouldTargetNavigation(
       content::NavigationHandle* navigation_handle,
       proto::OptimizationTarget optimization_target) const;
 
-  // Updates |session_fcp_| and |previous_fcp_| with |fcp|.
+  // Update |session_fcp_| and |previous_fcp_| with |fcp|.
   void UpdateFCPSessionStatistics(base::TimeDelta fcp);
 
   OptimizationGuideSessionStatistic* GetFCPSessionStatisticsForTesting() const {
@@ -72,7 +90,7 @@ class PredictionManager
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType type) override;
 
-  // Sets the prediction model fetcher for testing.
+  // Set the prediction model fetcher for testing.
   void SetPredictionModelFetcherForTesting(
       std::unique_ptr<PredictionModelFetcher> prediction_model_fetcher);
 
@@ -80,29 +98,41 @@ class PredictionManager
     return prediction_model_fetcher_.get();
   }
 
- protected:
+  OptimizationGuideStore* model_and_features_store() const {
+    return model_and_features_store_.get();
+  }
 
-  // Returns the prediction model for the optimization target used by this
+  // Return whether there have been any optimization targets registered.
+  bool HasRegisteredOptimizationTargets() const {
+    return !registered_optimization_targets_.empty();
+  }
+
+ protected:
+  // Return the prediction model for the optimization target used by this
   // PredictionManager for testing.
   PredictionModel* GetPredictionModelForTesting(
       proto::OptimizationTarget optimization_target) const;
 
-  // Returns the host model features for all hosts used by this
+  // Return the host model features for all hosts used by this
   // PredictionManager for testing.
   base::flat_map<std::string, base::flat_map<std::string, float>>
   GetHostModelFeaturesForTesting() const;
 
-  // Creates a PredictionModel, virtual for testing.
+  // Return the set of features that each host in |host_model_features_map_|
+  // contains for testing.
+  base::flat_set<std::string> GetSupportedHostModelFeaturesForTesting() const;
+
+  // Create a PredictionModel, virtual for testing.
   virtual std::unique_ptr<PredictionModel> CreatePredictionModel(
       const proto::PredictionModel& model,
       const base::flat_set<std::string>& host_model_features) const;
 
-  // Processes |host_model_features| to be stored in |host_model_features_map|.
+  // Process |host_model_features| to be stored in |host_model_features_map|.
   void UpdateHostModelFeatures(
       const google::protobuf::RepeatedPtrField<proto::HostModelFeatures>&
           host_model_features);
 
-  // Processes |prediction_models| to be stored in
+  // Process |prediction_models| to be stored in
   // |optimization_target_prediction_model_map_|.
   void UpdatePredictionModels(
       google::protobuf::RepeatedPtrField<proto::PredictionModel>*
@@ -110,14 +140,20 @@ class PredictionManager
       const base::flat_set<std::string>& host_model_features);
 
  private:
-  // Constructs and returns  a map containing the current feature values for the
+  // Called on construction to register optimization targets, initialize the
+  // prediction model and host model features store, and register as an observer
+  // to the network quality tracker.
+  void Initialize(const std::vector<proto::OptimizationTarget>&
+                      optimization_targets_at_intialization);
+
+  // Construct and return a map containing the current feature values for the
   // requested set of model features.
   base::flat_map<std::string, float> BuildFeatureMap(
       content::NavigationHandle* navigation_handle,
       const base::flat_set<std::string>& model_features) const;
 
-  // Calculates and returns the current value for the client feature specified
-  // by |model_feature|. Returns nullopt if the client does not support the
+  // Calculate and return the current value for the client feature specified
+  // by |model_feature|. Return nullopt if the client does not support the
   // model feature.
   base::Optional<float> GetValueForClientFeature(
       const std::string& model_feature,
@@ -129,13 +165,59 @@ class PredictionManager
   // needed to evaluate these models.
   void FetchModelsAndHostModelFeatures();
 
-  // Called when the models and host model features have been fetched from the
+  // Callback when the models and host model features have been fetched from the
   // remote Optimization Guide Service and are ready for parsing. Processes the
   // prediction models and the host model features in the response and stores
   // them for use.
   void OnModelsAndHostFeaturesFetched(
       base::Optional<std::unique_ptr<proto::GetModelsResponse>>
           get_models_response_data);
+
+  // Callback run after the model and host model features store is fully
+  // initialized. The prediction manager can load models from
+  // the store for registered optimization targets. |store_is_ready_| is set to
+  // true.
+  void OnStoreInitialized();
+
+  // Request the store to load all the host model features it contains. This
+  // must be completed before any prediction models can be loaded from the
+  // store.
+  void LoadHostModelFeatures();
+
+  // Callback run after host model features are loaded from the store and are
+  // ready to be processed and placed in |host_model_features_map_|.
+  // |host_model_features_loaded_| is set to true when called. Prediction models
+  // for all registered optimization targets that are not already loaded are
+  // requested to be loaded.
+  void OnLoadHostModelFeatures(
+      std::unique_ptr<std::vector<proto::HostModelFeatures>>
+          all_host_model_features);
+
+  // Load models for every target in |optimization_targets| that have not yet
+  // been loaded from the store.
+  void LoadPredictionModels(
+      const base::flat_set<proto::OptimizationTarget>& optimization_targets);
+
+  // Callback run after a prediction model is loaded from the store.
+  // |prediction_model| is used to construct a PredictionModel capable of making
+  // prediction for the appropriate optimization target.
+  void OnLoadPredictionModel(
+      std::unique_ptr<proto::PredictionModel> prediction_model);
+
+  // Process |model| into a PredictionModel object and store it in the
+  // |optimization_target_prediction_model_map_|.
+  void ProcessAndStorePredictionModel(const proto::PredictionModel& model);
+
+  // Process |host_model_features| from the into host model features
+  // usable by the PredictionManager. The processed host model features are
+  // stored in |host_model_features_map_|.
+  void ProcessAndStoreHostModelFeatures(
+      const proto::HostModelFeatures& host_model_features);
+
+  // Capture the set of feature names that each host in
+  // |host_model_features_map_| has and store them in
+  // |supported_host_model_features_|
+  void UpdateSupportedHostModelFeatures();
 
   // A map of optimization target to the prediction model capable of making
   // an optimization target decision for it.
@@ -153,6 +235,10 @@ class PredictionManager
   base::flat_map<std::string, base::flat_map<std::string, float>>
       host_model_features_map_;
 
+  // The set of features available across all every host in
+  // |host_model_features_map_|.
+  base::flat_set<std::string> supported_host_model_features_;
+
   // The current session's FCP statistics for HTTP/HTTPS navigations.
   OptimizationGuideSessionStatistic session_fcp_;
 
@@ -168,6 +254,10 @@ class PredictionManager
   // The top host provider that can be queried. Not owned.
   TopHostProvider* top_host_provider_ = nullptr;
 
+  // The optimization guide store that contains prediction models and host
+  // model features from the remote Optimization Guide Service.
+  std::unique_ptr<OptimizationGuideStore> model_and_features_store_;
+
   // The URL loader factory used for fetching model and host feature updates
   // from the remote Optimization Guide Service.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -175,6 +265,13 @@ class PredictionManager
   // The current estimate of the EffectiveConnectionType.
   net::EffectiveConnectionType current_effective_connection_type_ =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  // Whether the |model_and_features_store_| is initialized and ready for use.
+  bool store_is_ready_ = false;
+
+  // Whether host model features have been loaded from the store and are ready
+  // for use.
+  bool host_model_features_loaded_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -30,11 +30,12 @@ Receiver::Receiver(std::unique_ptr<Renderer> renderer, RpcBroker* rpc_broker)
   DCHECK(renderer_);
   DCHECK(rpc_broker_);
   rpc_broker_->RegisterMessageReceiverCallback(
-      rpc_handle_,
-      base::Bind(&Receiver::OnReceivedRpc, weak_factory_.GetWeakPtr()));
+      rpc_handle_, base::BindRepeating(&Receiver::OnReceivedRpc,
+                                       weak_factory_.GetWeakPtr()));
   rpc_broker_->RegisterMessageReceiverCallback(
       RpcBroker::kAcquireHandle,
-      base::Bind(&Receiver::OnReceivedRpc, weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&Receiver::OnReceivedRpc,
+                          weak_factory_.GetWeakPtr()));
 }
 
 Receiver::~Receiver() {

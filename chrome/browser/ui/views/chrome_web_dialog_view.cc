@@ -102,7 +102,7 @@ gfx::NativeWindow CreateWebDialogWithBounds(gfx::NativeView parent,
   params.bounds = bounds;
   params.parent = parent;
   if (use_dialog_frame) {
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
     params.remove_standard_frame = true;
 #if !defined(OS_MACOSX)
     // Except on Mac, the bubble frame includes its own shadow; remove any

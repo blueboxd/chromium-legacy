@@ -461,6 +461,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
                            const WTF::String& message,
                            bool discard_duplicates) final;
+  void Collapse(bool collapsed) final;
 
  private:
   friend class FrameNavigationDisabler;

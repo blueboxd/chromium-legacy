@@ -34,18 +34,6 @@ ScenicSurface::~ScenicSurface() {
   scenic_surface_factory_->RemoveSurface(window_);
 }
 
-void ScenicSurface::SetTextureToNewImagePipe1(
-    fidl::InterfaceRequest<fuchsia::images::ImagePipe> image_pipe_request) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  uint32_t image_pipe_id = scenic_session_.AllocResourceId();
-  scenic_session_.Enqueue(scenic::NewCreateImagePipeCmd(
-      image_pipe_id, std::move(image_pipe_request)));
-  material_.SetTexture(image_pipe_id);
-  scenic_session_.ReleaseResource(image_pipe_id);
-  scenic_session_.Present(
-      /*presentation_time=*/0, [](fuchsia::images::PresentationInfo info) {});
-}
-
 void ScenicSurface::SetTextureToNewImagePipe(
     fidl::InterfaceRequest<fuchsia::images::ImagePipe2> image_pipe_request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

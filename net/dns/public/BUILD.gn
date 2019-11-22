@@ -17,6 +17,8 @@ source_set("public") {
     "dns_protocol.h",
     "dns_query_type.cc",
     "dns_query_type.h",
+    "resolve_error_info.cc",
+    "resolve_error_info.h",
     "util.cc",
     "util.h",
   ]

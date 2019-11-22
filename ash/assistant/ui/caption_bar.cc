@@ -29,10 +29,10 @@ constexpr int kVectorIconSizeDip = 12;
 
 // CaptionButton ---------------------------------------------------------------
 
-views::ImageButton* CreateCaptionButton(const gfx::VectorIcon& icon,
-                                        int accessible_name_id,
-                                        AssistantButtonId button_id,
-                                        views::ButtonListener* listener) {
+AssistantButton* CreateCaptionButton(const gfx::VectorIcon& icon,
+                                     int accessible_name_id,
+                                     AssistantButtonId button_id,
+                                     AssistantButtonListener* listener) {
   return AssistantButton::Create(listener, icon, kCaptionButtonSizeDip,
                                  kVectorIconSizeDip, accessible_name_id,
                                  button_id);
@@ -80,8 +80,8 @@ void CaptionBar::VisibilityChanged(views::View* starting_from, bool visible) {
       this, root_window, {ui::ET_KEY_PRESSED});
 }
 
-void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  HandleButton(static_cast<AssistantButtonId>(sender->GetID()));
+void CaptionBar::OnButtonPressed(AssistantButtonId button_id) {
+  HandleButton(button_id);
 }
 
 void CaptionBar::OnEvent(const ui::Event& event) {
@@ -104,7 +104,7 @@ void CaptionBar::OnEvent(const ui::Event& event) {
 }
 
 void CaptionBar::SetButtonVisible(AssistantButtonId id, bool visible) {
-  views::View* button = GetViewByID(static_cast<int>(id));
+  views::View* button = GetButtonWithId(id);
   if (button)
     button->SetVisible(visible);
 }
@@ -119,8 +119,8 @@ void CaptionBar::InitLayout() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Back.
-  AddChildView(CreateCaptionButton(kWindowControlBackIcon, IDS_APP_LIST_BACK,
-                                   AssistantButtonId::kBack, this));
+  AddButton(CreateCaptionButton(kWindowControlBackIcon, IDS_APP_LIST_BACK,
+                                AssistantButtonId::kBack, this));
 
   // Spacer.
   views::View* spacer = new views::View();
@@ -129,18 +129,23 @@ void CaptionBar::InitLayout() {
   layout_manager->SetFlexForView(spacer, 1);
 
   // Minimize.
-  AddChildView(CreateCaptionButton(views::kWindowControlMinimizeIcon,
-                                   IDS_APP_ACCNAME_MINIMIZE,
-                                   AssistantButtonId::kMinimize, this));
+  AddButton(CreateCaptionButton(views::kWindowControlMinimizeIcon,
+                                IDS_APP_ACCNAME_MINIMIZE,
+                                AssistantButtonId::kMinimize, this));
 
   // Close.
-  AddChildView(CreateCaptionButton(views::kWindowControlCloseIcon,
-                                   IDS_APP_ACCNAME_CLOSE,
-                                   AssistantButtonId::kClose, this));
+  AddButton(CreateCaptionButton(views::kWindowControlCloseIcon,
+                                IDS_APP_ACCNAME_CLOSE,
+                                AssistantButtonId::kClose, this));
+}
+
+void CaptionBar::AddButton(AssistantButton* button) {
+  buttons_.push_back(button);
+  AddChildView(button);
 }
 
 void CaptionBar::HandleButton(AssistantButtonId id) {
-  if (!GetViewByID(static_cast<int>(id))->GetVisible())
+  if (!GetButtonWithId(id)->GetVisible())
     return;
 
   // If the delegate returns |true| it has handled the event and wishes to
@@ -157,6 +162,14 @@ void CaptionBar::HandleButton(AssistantButtonId id) {
       NOTIMPLEMENTED();
       break;
   }
+}
+
+AssistantButton* CaptionBar::GetButtonWithId(AssistantButtonId id) {
+  for (auto* button : buttons_) {
+    if (button->GetAssistantButtonId() == id)
+      return button;
+  }
+  return nullptr;
 }
 
 }  // namespace ash

@@ -98,7 +98,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
        UpdateAccountListWith0SystemAccount0AccountAndNotSignedIn) {
   EXPECT_CALL(*delegate_, SetAccounts(kEmptyVector)).WillOnce(Return());
   // No observer call expected
-  delegate_->UpdateAccountList(std::string(), {}, {});
+  delegate_->UpdateAccountList(CoreAccountId(), {}, {});
   EXPECT_TRUE(account_tracker_service_.GetAccounts().empty());
 }
 
@@ -106,7 +106,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
        UpdateAccountListWith1SystemAccount0AccountAndNotSignedIn) {
   EXPECT_CALL(*delegate_, SetAccounts(kEmptyVector)).WillOnce(Return());
   // No observer call expected
-  delegate_->UpdateAccountList(std::string(), {}, {account1_.account_id});
+  delegate_->UpdateAccountList(CoreAccountId(), {}, {account1_.account_id});
   EXPECT_EQ(std::vector<AccountInfo>{account1_},
             account_tracker_service_.GetAccounts());
 }
@@ -122,7 +122,7 @@ TEST_F(OAuth2TokenServiceDelegateAndroidTest,
       .InSequence(seq)
       .WillOnce(Return());
 
-  delegate_->UpdateAccountList(std::string(), {account1_.account_id},
+  delegate_->UpdateAccountList(CoreAccountId(), {account1_.account_id},
                                {account1_.account_id});
   EXPECT_EQ(std::vector<AccountInfo>{account1_},
             account_tracker_service_.GetAccounts());

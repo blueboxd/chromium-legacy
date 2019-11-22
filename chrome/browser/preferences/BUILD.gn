@@ -7,10 +7,28 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   java_files = [
     "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeys.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/PrefChangeRegistrar.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/PrefServiceBridge.java",
     "android/java/src/org/chromium/chrome/browser/preferences/SharedPreferencesManager.java",
   ]
   deps = [
     "//base:base_java",
+    "//base:jni_java",
+  ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  srcjar_deps = [ ":java_enums_srcjar" ]
+}
+
+generate_jni("jni_headers") {
+  sources = [
+    "android/java/src/org/chromium/chrome/browser/preferences/PrefChangeRegistrar.java",
+    "android/java/src/org/chromium/chrome/browser/preferences/PrefServiceBridge.java",
+  ]
+}
+
+java_cpp_enum("java_enums_srcjar") {
+  sources = [
+    "//chrome/browser/android/preferences/prefs.h",
   ]
 }
 

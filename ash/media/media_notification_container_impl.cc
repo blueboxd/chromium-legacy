@@ -4,7 +4,7 @@
 
 #include "ash/media/media_notification_container_impl.h"
 
-#include "components/media_message_center/media_notification_view.h"
+#include "components/media_message_center/media_notification_view_impl.h"
 #include "components/media_message_center/media_session_notification_item.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -59,7 +59,7 @@ MediaNotificationContainerImpl::MediaNotificationContainerImpl(
   control_buttons_view_ =
       control_buttons_container_->AddChildView(std::move(control_buttons_view));
 
-  auto view = std::make_unique<media_message_center::MediaNotificationView>(
+  auto view = std::make_unique<media_message_center::MediaNotificationViewImpl>(
       this, std::move(item), std::move(control_buttons_container),
       message_center::MessageCenter::Get()->GetSystemNotificationAppName(),
       message_center::kNotificationWidth,

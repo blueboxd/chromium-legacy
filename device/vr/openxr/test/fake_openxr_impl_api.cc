@@ -629,7 +629,9 @@ XrResult xrLocateSpace(XrSpace space,
   g_test_helper.LocateSpace(space, &(location->pose));
 
   location->locationFlags = XR_SPACE_LOCATION_ORIENTATION_VALID_BIT |
-                            XR_SPACE_LOCATION_POSITION_VALID_BIT;
+                            XR_SPACE_LOCATION_POSITION_VALID_BIT |
+                            XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT |
+                            XR_SPACE_LOCATION_POSITION_TRACKED_BIT;
 
   return XR_SUCCESS;
 }

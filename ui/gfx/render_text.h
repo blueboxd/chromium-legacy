@@ -67,7 +67,6 @@ class GFX_EXPORT SkiaTextRenderer {
   void SetTextSize(SkScalar size);
   void SetForegroundColor(SkColor foreground);
   void SetShader(sk_sp<cc::PaintShader> shader);
-  void DrawSelection(const std::vector<Rect>& selection, SkColor color);
   // TODO(vmpstr): Change this API to mimic SkCanvas::drawTextBlob instead.
   virtual void DrawPosText(const SkPoint* pos,
                            const uint16_t* glyphs,
@@ -465,7 +464,8 @@ class GFX_EXPORT RenderText {
   // not depend on the text.
   int GetBaseline();
 
-  void Draw(Canvas* canvas);
+  // If |select_all| is true, draws as focused with all text selected.
+  void Draw(Canvas* canvas, bool select_all = false);
 
   // Gets the SelectionModel from a visual point in local coordinates. If
   // |drag_origin| is nonzero, it is used as the baseline for
@@ -705,8 +705,9 @@ class GFX_EXPORT RenderText {
   // Ensure the text is laid out, lines are computed, and |lines_| is valid.
   virtual void EnsureLayout() = 0;
 
-  // Draw the text.
-  virtual void DrawVisualText(internal::SkiaTextRenderer* renderer) = 0;
+  // Draw all text and make the given range appear selected.
+  virtual void DrawVisualText(internal::SkiaTextRenderer* renderer,
+                              const Range& selection) = 0;
 
   // Update the display text.
   void UpdateDisplayText(float text_width);
@@ -715,7 +716,7 @@ class GFX_EXPORT RenderText {
   const BreakList<size_t>& GetLineBreaks();
 
   // Apply (and undo) temporary composition underlines and selection colors.
-  void ApplyCompositionAndSelectionStyles();
+  void ApplyCompositionAndSelectionStyles(const Range& selection);
   void UndoCompositionAndSelectionStyles();
 
   // Convert points from the text space to the view space. Handles the display
@@ -808,8 +809,8 @@ class GFX_EXPORT RenderText {
   // cursor is within the visible display area.
   void UpdateCachedBoundsAndOffset();
 
-  // Draw the selection.
-  void DrawSelection(Canvas* canvas);
+  // Draws the specified range of text with a selected appearance.
+  void DrawSelection(Canvas* canvas, const Range& selection);
 
   // Returns the nearest word start boundary for |index|. First searches in the
   // CURSOR_BACKWARD direction, then in the CURSOR_FORWARD direction. Returns

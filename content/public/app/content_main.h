@@ -30,7 +30,7 @@ namespace content {
 class BrowserMainParts;
 class ContentMainDelegate;
 
-using CreatedMainPartsClosure = base::Callback<void(BrowserMainParts*)>;
+using CreatedMainPartsClosure = base::OnceCallback<void(BrowserMainParts*)>;
 
 struct ContentMainParams {
   explicit ContentMainParams(ContentMainDelegate* delegate)
@@ -51,7 +51,7 @@ struct ContentMainParams {
 
   // Used by browser_tests. If non-null BrowserMain schedules this task to run
   // on the MessageLoop. It's owned by the test code.
-  base::Closure* ui_task = nullptr;
+  base::OnceClosure* ui_task = nullptr;
 
   // Used by InProcessBrowserTest. If non-null this is Run() after
   // BrowserMainParts has been created and before PreEarlyInitialization().

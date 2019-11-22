@@ -541,7 +541,7 @@ void Animation::NotifyReady(double ready_time) {
   NotifyProbe();
 }
 
-// Microtask for planing an animation.
+// Microtask for playing an animation.
 // Refer to Step 8.3 'pending play task' in
 // https://drafts.csswg.org/web-animations/#playing-an-animation-section.
 void Animation::CommitPendingPlay(double ready_time) {
@@ -683,7 +683,7 @@ double Animation::CalculateCurrentTime() const {
 }
 
 // https://drafts.csswg.org/web-animations/#setting-the-start-time-of-an-animation
-void Animation::setStartTime(double start_time,
+void Animation::setStartTime(double start_time_ms,
                              bool is_null,
                              ExceptionState& exception_state) {
   // TODO(crbug.com/916117): Implement setting start time for scroll-linked
@@ -696,71 +696,87 @@ void Animation::setStartTime(double start_time,
     return;
   }
 
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
+  bool had_start_time = start_time_.has_value();
 
+  // 1. Let timeline time be the current time value of the timeline that
+  //    animation is associated with. If there is no timeline associated with
+  //    animation or the associated timeline is inactive, let the timeline time
+  //    be unresolved.
+  base::Optional<double> timeline_time = timeline_ && timeline_->IsActive()
+                                             ? timeline_->CurrentTimeSeconds()
+                                             : base::nullopt;
+
+  // 2. If timeline time is unresolved and new start time is resolved, make
+  //    animation’s hold time unresolved.
+  // This preserves the invariant that when we don’t have an active timeline it
+  // is only possible to set either the start time or the animation’s current
+  // time.
+  if (!timeline_time && !is_null)
+    hold_time_ = base::nullopt;
+
+  // 3. Let previous current time be animation’s current time.
+  double previous_current_time = CurrentTimeInternal();
+
+  // 4. Apply any pending playback rate on animation.
+  ApplyPendingPlaybackRate();
+
+  // 5. Set animation’s start time to new start time.
   base::Optional<double> new_start_time;
   if (!is_null)
-    new_start_time = start_time / 1000;
+    new_start_time = MillisecondsToSeconds(start_time_ms);
+  start_time_ = new_start_time;
 
-  // Setting the start time resolves the pending playback rate and cancels any
-  // pending tasks regardless of whether setting to the current value.
-  ResetPendingTasks();
+  // 6. Update animation’s hold time based on the first matching condition from
+  //    the following,
+  // 6a If new start time is resolved,
+  //      If animation’s playback rate is not zero, make animation’s hold time
+  //      unresolved.
+  // 6b Otherwise (new start time is unresolved),
+  //      Set animation’s hold time to previous current time even if previous
+  //      current time is unresolved.
+  if (start_time_) {
+    if (playback_rate_ != 0)
+      hold_time_ = base::nullopt;
+  } else {
+    hold_time_ = ValueOrUnresolved(previous_current_time);
+  }
 
-  // Reevaluate the play state, as setting the start time can affect the
-  // finished state.
+  // TODO(crbug.com/960944): prune use of legacy flags.
+  paused_ = hold_time_.has_value();
   current_time_pending_ = false;
   internal_play_state_ = kUnset;
 
-  SetStartTimeInternal(new_start_time);
-}
-
-void Animation::SetStartTimeInternal(base::Optional<double> new_start_time) {
-  bool had_start_time = start_time_.has_value();
-  double previous_current_time = CurrentTimeInternal();
-
-  // Scroll-linked animations are initialized with the start time of
-  // zero (i.e., scroll origin).
-  // Changing scroll-linked animation start_time initialization is under
-  // consideration here: https://github.com/w3c/csswg-drafts/issues/2075.
-  start_time_ =
-      (!timeline_ || timeline_->IsDocumentTimeline()) ? new_start_time : 0;
-
-  // When we don't have an active timeline it is only possible to set either the
-  // start time or the current time. Resetting the hold time clears current
-  // time.
-  if (!timeline_ && new_start_time.has_value())
-    hold_time_ = base::nullopt;
-
-  if (!new_start_time.has_value()) {
-    hold_time_ = ValueOrUnresolved(previous_current_time);
-    // Explicitly setting the start time to null pauses the animation. This
-    // prevents the start time from simply being overridden when reevaluating
-    // the play state.
-    paused_ = true;
-  } else if (hold_time_ && playback_rate_) {
-    // If held, the start time would still be derived from the hold time.
-    // Force a new, limited, current time.
-    hold_time_ = base::nullopt;
-    paused_ = false;
+  // 7. If animation has a pending play task or a pending pause task, cancel
+  //    that task and resolve animation’s current ready promise with animation.
+  if (pending()) {
     pending_pause_ = false;
-    double current_time = CalculateCurrentTime();
-    if (playback_rate_ > 0 && current_time > EffectEnd()) {
-      current_time = EffectEnd();
-    } else if (playback_rate_ < 0 && current_time < 0) {
-      current_time = 0;
-    }
-    SetCurrentTimeInternal(current_time, kTimingUpdateOnDemand);
+    pending_play_ = false;
+    if (ready_promise_ &&
+        ready_promise_->GetState() == AnimationPromise::kPending)
+      ResolvePromiseMaybeAsync(ready_promise_.Get());
   }
-  UpdateCurrentTimingState(kTimingUpdateOnDemand);
-  double new_current_time = CurrentTimeInternal();
 
+  // 8. Run the procedure to update an animation’s finished state for animation
+  //    with the did seek flag set to true (discontinuous), and the
+  //    synchronously notify flag set to false (async).
+  UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kAsync);
+
+  // TODO(crbug.com/960944): prune use of legacy flags.
+  internal_play_state_ = CalculatePlayState();
+  animation_play_state_ = CalculateAnimationPlayState();
+
+  // Update user agent.
+  double new_current_time = CurrentTimeInternal();
   if (!AreEqualOrNull(previous_current_time, new_current_time)) {
     SetOutdated();
-  } else if (!had_start_time && timeline_) {
+  } else if (!had_start_time && start_time_) {
     // Even though this animation is not outdated, time to effect change is
     // infinity until start time is set.
     ForceServiceOnNextFrame();
   }
+  SetCompositorPending(/*effect_changed=*/false);
+
+  NotifyProbe();
 }
 
 void Animation::setEffect(AnimationEffect* new_effect) {
@@ -1712,6 +1728,7 @@ void Animation::UpdateIfNecessary() {
 
 void Animation::EffectInvalidated() {
   SetOutdated();
+  UpdateFinishedState(UpdateType::kContinuous, NotificationType::kAsync);
   // FIXME: Needs to consider groups when added.
   SetCompositorPending(true);
 }

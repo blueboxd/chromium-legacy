@@ -374,7 +374,7 @@ class WebContentsVideoCaptureDeviceBrowserTestP
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     WebContentsVideoCaptureDeviceBrowserTestP,
     testing::Combine(
         // Note: On ChromeOS, software compositing is not an option.
@@ -385,7 +385,7 @@ INSTANTIATE_TEST_SUITE_P(
                         true /* page contains a cross-site iframe */)));
 #else
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     WebContentsVideoCaptureDeviceBrowserTestP,
     testing::Combine(
         testing::Values(false /* GPU-accelerated compositing */,

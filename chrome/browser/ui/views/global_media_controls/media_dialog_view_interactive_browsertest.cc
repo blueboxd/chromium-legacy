@@ -16,7 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/media_message_center/media_notification_view.h"
+#include "components/media_message_center/media_notification_view_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/media_start_stop_observer.h"
 #include "media/base/media_switches.h"
@@ -124,7 +124,7 @@ class MediaToolbarButtonWatcher : public MediaToolbarButtonObserver,
     for (const auto notification_pair :
          MediaDialogView::GetDialogViewForTesting()
              ->GetNotificationsForTesting()) {
-      const media_message_center::MediaNotificationView* view =
+      const media_message_center::MediaNotificationViewImpl* view =
           notification_pair.second->view_for_testing();
       if (view->title_label_for_testing()->GetText().find(text) !=
               std::string::npos ||
@@ -269,7 +269,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
 
   // Recursively tries to find a views::ImageButton for the given
   // MediaSessionAction. This operates under the assumption that
-  // media_message_center::MediaNotificationView sets the tags of its action
+  // media_message_center::MediaNotificationViewImpl sets the tags of its action
   // buttons to the MediaSessionAction value.
   views::ImageButton* GetButtonForAction(views::View* view, int action) {
     if (view->GetClassName() == views::ImageButton::kViewClassName) {
@@ -293,7 +293,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
     for (const auto notification_pair :
          MediaDialogView::GetDialogViewForTesting()
              ->GetNotificationsForTesting()) {
-      const media_message_center::MediaNotificationView* view =
+      const media_message_center::MediaNotificationViewImpl* view =
           notification_pair.second->view_for_testing();
       if (view->title_label_for_testing()->GetText() == title)
         return notification_pair.second;

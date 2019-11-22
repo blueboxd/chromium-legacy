@@ -26,7 +26,7 @@ interface CdmService {
   // needed files within the Mac sandbox.
   LoadCdm(mojo_base.mojom.FilePath cdm_path,
           [EnableIf=is_mac]
-          SeatbeltExtensionTokenProvider? token_provider);
+          pending_remote<SeatbeltExtensionTokenProvider>? token_provider);
 
   // Requests an CdmFactory. |host_interfaces| can optionally be used to provide
   // interfaces hosted by the caller to the remote CdmFactory implementation.

@@ -1,21 +1,12 @@
-// Copyright 2018 The Feed Authors.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 package com.google.android.libraries.feed.sharedstream.piet;
 
 import android.content.Context;
 import android.view.View;
+
 import com.google.android.libraries.feed.common.logging.Logger;
 import com.google.android.libraries.feed.piet.host.CustomElementProvider;
 import com.google.search.now.ui.piet.ElementsProto.CustomElementData;
@@ -25,37 +16,36 @@ import com.google.search.now.ui.piet.ElementsProto.CustomElementData;
  * and can delegate to a host custom element adapter if needed.
  */
 public class PietCustomElementProvider implements CustomElementProvider {
+    private static final String TAG = "PietCustomElementPro";
 
-  private static final String TAG = "PietCustomElementPro";
+    private final Context context;
+    /*@Nullable*/ private final CustomElementProvider hostCustomElementProvider;
 
-  private final Context context;
-  /*@Nullable*/ private final CustomElementProvider hostCustomElementProvider;
-
-  public PietCustomElementProvider(
-      Context context, /*@Nullable*/ CustomElementProvider hostCustomElementProvider) {
-    this.context = context;
-    this.hostCustomElementProvider = hostCustomElementProvider;
-  }
-
-  @Override
-  public View createCustomElement(CustomElementData customElementData) {
-    // We don't currently implement any custom elements yet.  Delegate to host if there is one.
-    if (hostCustomElementProvider != null) {
-      return hostCustomElementProvider.createCustomElement(customElementData);
+    public PietCustomElementProvider(
+            Context context, /*@Nullable*/ CustomElementProvider hostCustomElementProvider) {
+        this.context = context;
+        this.hostCustomElementProvider = hostCustomElementProvider;
     }
 
-    // Just return an empty view if there is not host.
-    Logger.w(TAG, "Received request for unknown custom element");
-    return new View(context);
-  }
+    @Override
+    public View createCustomElement(CustomElementData customElementData) {
+        // We don't currently implement any custom elements yet.  Delegate to host if there is one.
+        if (hostCustomElementProvider != null) {
+            return hostCustomElementProvider.createCustomElement(customElementData);
+        }
 
-  @Override
-  public void releaseCustomView(View customElementView, CustomElementData customElementData) {
-    if (hostCustomElementProvider != null) {
-      hostCustomElementProvider.releaseCustomView(customElementView, customElementData);
-      return;
+        // Just return an empty view if there is not host.
+        Logger.w(TAG, "Received request for unknown custom element");
+        return new View(context);
     }
 
-    Logger.w(TAG, "Received release for unknown custom element");
-  }
+    @Override
+    public void releaseCustomView(View customElementView, CustomElementData customElementData) {
+        if (hostCustomElementProvider != null) {
+            hostCustomElementProvider.releaseCustomView(customElementView, customElementData);
+            return;
+        }
+
+        Logger.w(TAG, "Received release for unknown custom element");
+    }
 }

@@ -205,7 +205,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
     @Test
     @MediumTest
     @Feature({"Payments"})
-    @CommandLineFlags.Add("disable-features=NoCreditCardAbort")
+    @CommandLineFlags.Add("disable-features=StrictHasEnrolledAutofillInstrument")
     public void testAllMissingFieldsRecorded() throws TimeoutException {
         // Don't add any cards
         mCreditCardsToAdd = new CreditCard[] {};

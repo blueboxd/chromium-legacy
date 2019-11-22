@@ -244,7 +244,7 @@ TEST_P(PlatformHandleTest, CStructConversion) {
   EXPECT_EQ(kTestData, GetObjectContents(handle));
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          PlatformHandleTest,
 #if defined(OS_WIN)
                          testing::Values(HandleType::kHandle)

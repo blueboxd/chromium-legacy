@@ -169,9 +169,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
     gfx::NativeViewAccessible GetNativeViewAccessible() const override;
     BrowserAccessibility* get() const;
     int GetIndexInParent() const override;
-
-    BrowserAccessibility& operator*() const;
-    BrowserAccessibility* operator->() const;
+    BrowserAccessibility& operator*() const override;
+    BrowserAccessibility* operator->() const override;
 
    private:
     const BrowserAccessibility* parent_;
@@ -588,6 +587,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // errors are present.
   ui::TextAttributeMap GetSpellingAndGrammarAttributes() const;
 
+  std::string SubtreeToStringHelper(size_t level) override;
+
  private:
   // Return the bounds after converting from this node's coordinate system
   // (which is relative to its nearest scrollable ancestor) to the coordinate
@@ -653,9 +654,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibility);
 };
-
-CONTENT_EXPORT std::ostream& operator<<(std::ostream& stream,
-                                        const BrowserAccessibility& object);
 
 }  // namespace content
 

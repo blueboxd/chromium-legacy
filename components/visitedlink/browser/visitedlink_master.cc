@@ -57,8 +57,6 @@ const size_t VisitedLinkMaster::kFileHeaderSize =
 // table in NewTableSizeForCount (prime number).
 const unsigned VisitedLinkMaster::kDefaultTableSize = 16381;
 
-const size_t VisitedLinkMaster::kBigDeleteThreshold = 64;
-
 namespace {
 
 // Fills the given salt structure with some quasi-random values
@@ -288,6 +286,19 @@ bool VisitedLinkMaster::Init() {
   return InitFromScratch(suppress_rebuild_);
 }
 
+void VisitedLinkMaster::AddURL(const GURL& url, bool update_file) {
+  TRACE_EVENT0("browser", "VisitedLinkMaster::AddURL");
+  Hash index = TryToAddURL(url);
+  if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_) {
+    // Not rebuilding, so we want to keep the file on disk up to date.
+    if (update_file && persist_to_disk_) {
+      WriteUsedItemCountToFile();
+      WriteHashRangeToFile(index, index);
+    }
+    ResizeTableIfNecessary();
+  }
+}
+
 VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
   // Extra check that we are not incognito. This should not happen.
   // TODO(boliu): Move this check to HistoryService when IsOffTheRecord is
@@ -340,29 +351,22 @@ void VisitedLinkMaster::PostIOTask(const base::Location& from_here,
 }
 
 void VisitedLinkMaster::AddURL(const GURL& url) {
-  TRACE_EVENT0("browser", "VisitedLinkMaster::AddURL");
-  Hash index = TryToAddURL(url);
-  if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_) {
-    // Not rebuilding, so we want to keep the file on disk up to date.
-    if (persist_to_disk_) {
-      WriteUsedItemCountToFile();
-      WriteHashRangeToFile(index, index);
-    }
-    ResizeTableIfNecessary();
-  }
+  AddURL(url, /*update_file=*/true);
 }
 
 void VisitedLinkMaster::AddURLs(const std::vector<GURL>& urls) {
   TRACE_EVENT0("browser", "VisitedLinkMaster::AddURLs");
-  for (const GURL& url : urls) {
-    Hash index = TryToAddURL(url);
-    if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_)
-      ResizeTableIfNecessary();
-  }
 
-  // Keeps the file on disk up to date.
-  if (!table_builder_ && !table_is_loading_from_file_ && persist_to_disk_)
+  bool bulk_write = (urls.size() > kBulkOperationThreshold);
+
+  for (const GURL& url : urls)
+    AddURL(url, !bulk_write);
+
+  // Write the full table if in bulk mode.
+  if (bulk_write && persist_to_disk_ && !table_builder_ &&
+      !table_is_loading_from_file_) {
     WriteFullTable();
+  }
 }
 
 void VisitedLinkMaster::DeleteAllURLs() {
@@ -476,7 +480,7 @@ VisitedLinkMaster::Hash VisitedLinkMaster::AddFingerprint(
 
 void VisitedLinkMaster::DeleteFingerprintsFromCurrentTable(
     const std::set<Fingerprint>& fingerprints) {
-  bool bulk_write = (fingerprints.size() > kBigDeleteThreshold);
+  bool bulk_write = (fingerprints.size() > kBulkOperationThreshold);
 
   // Delete the URLs from the table.
   for (auto i = fingerprints.begin(); i != fingerprints.end(); ++i)

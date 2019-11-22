@@ -27,7 +27,7 @@ TEST_F(CastViewsTest, ProgressBar) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = window_manager->GetRootWindow();
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.bounds = bounds;
   std::unique_ptr<views::Widget> widget(new views::Widget);

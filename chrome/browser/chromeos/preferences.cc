@@ -388,8 +388,6 @@ void Preferences::RegisterProfilePrefs(
 
   // We don't sync EOL related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kEolNotificationDismissed, false);
-  registry->RegisterIntegerPref(prefs::kEolStatus,
-                                update_engine::EndOfLifeStatus::kSupported);
   registry->RegisterTimePref(prefs::kEndOfLifeDate, base::Time());
   registry->RegisterBooleanPref(prefs::kFirstEolWarningDismissed, false);
   registry->RegisterBooleanPref(prefs::kSecondEolWarningDismissed, false);

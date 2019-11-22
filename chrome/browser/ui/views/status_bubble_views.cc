@@ -658,7 +658,7 @@ void StatusBubbleViews::InitPopup() {
     // revert this change once http://crbug.com/125248 is fixed.
     params.force_software_compositing = true;
 #endif
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
     params.accept_events = false;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     views::Widget* frame = base_view_->GetWidget();

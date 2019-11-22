@@ -18,6 +18,9 @@
 
 namespace blink {
 
+// TODO(wangxianzhu): Though these tests don't directly apply in
+// CompositeAfterPaint, we should ensure the cases are tested in
+// CompositeAfterPaint mode if applicable.
 class CompositedLayerMappingTest : public RenderingTest {
  public:
   CompositedLayerMappingTest()
@@ -999,12 +1002,12 @@ TEST_F(CompositedLayerMappingTest,
       true);
   SetBodyInnerHTML(R"HTML(
     <div id='container' style='position: relative; z-index: 1; overflow:
-    scroll; width: 300px; height: 300px'>
-        <div id='negative-composited-child' style='background-color: red;
-    width: 1px; height: 1px; position: absolute; backface-visibility:
-    hidden; z-index: -1'></div>
-        <div style='background-color: blue; width: 2000px; height: 2000px;
-    position: relative; top: 10px'></div>
+                               scroll; width: 300px; height: 300px'>
+      <div id='negative-composited-child' style='background-color: red;
+               width: 1px; height: 1px; position: absolute;
+               backface-visibility: hidden; z-index: -1'></div>
+      <div style='background-color: blue; width: 2000px; height: 2000px;
+                  position: relative; top: 10px'></div>
     </div>
   )HTML");
 
@@ -1513,8 +1516,6 @@ TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {
 }
 
 TEST_F(CompositedLayerMappingTest, SquashingScroll) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
   SetHtmlInnerHTML(R"HTML(
     <style>
       * { margin: 0 }
@@ -1536,8 +1537,6 @@ TEST_F(CompositedLayerMappingTest, SquashingScroll) {
 }
 
 TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
   SetHtmlInnerHTML(R"HTML(
     <style>
       * { margin: 0 }
@@ -1562,9 +1561,6 @@ TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
 
 TEST_F(CompositedLayerMappingTest,
        SquashingBoundsUnderCompositedScrollingWithTransform) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   SetHtmlInnerHTML(R"HTML(
     <div id=scroller style="will-change: transform; overflow: scroll;
         width: 200px; height: 400px;">
@@ -1597,9 +1593,6 @@ TEST_F(CompositedLayerMappingTest,
 }
 
 TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   SetHtmlInnerHTML(R"HTML(
     <style>
       div {
@@ -1622,9 +1615,6 @@ TEST_F(CompositedLayerMappingTest, ContentsNotOpaqueWithForegroundLayer) {
 }
 
 TEST_F(CompositedLayerMappingTest, EmptyBoundsDoesntDrawContent) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   SetHtmlInnerHTML(R"HTML(
     <style>
       div {
@@ -1644,9 +1634,6 @@ TEST_F(CompositedLayerMappingTest, EmptyBoundsDoesntDrawContent) {
 }
 
 TEST_F(CompositedLayerMappingTest, TouchActionRectsWithoutContent) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   SetBodyInnerHTML(
       "<div id='target' style='will-change: transform; width: 100px;"
       "    height: 100px; touch-action: none;'></div>");
@@ -1666,9 +1653,6 @@ TEST_F(CompositedLayerMappingTest, TouchActionRectsWithoutContent) {
 }
 
 TEST_F(CompositedLayerMappingTest, ContentsOpaque) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   SetHtmlInnerHTML(R"HTML(
     <style>
       div {
@@ -1690,15 +1674,51 @@ TEST_F(CompositedLayerMappingTest, ContentsOpaque) {
 }
 
 TEST_F(CompositedLayerMappingTest, NullOverflowControlsHostLayer) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
-
   SetHtmlInnerHTML("<div id='target' style='will-change: transform'></div>");
   CompositedLayerMapping* mapping =
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))
           ->Layer()
           ->GetCompositedLayerMapping();
   EXPECT_FALSE(mapping->DetachLayerForOverflowControls());
+}
+
+TEST_F(CompositedLayerMappingTest, CompositedHiddenAnimatingLayer) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    @keyframes slide {
+      0% { transform: translate3d(0px, 0px, 0px); }
+      100% { transform: translate3d(100px, 0px, 1px); }
+    }
+
+    div {
+      width: 123px;
+      height: 234px;
+      animation-duration: 2s;
+      animation-name: slide;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+    </style>
+    <div id="animated"></div>
+  )HTML");
+
+  PaintLayer* animated =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("animated"))->Layer();
+  CompositedLayerMapping* mapping = animated->GetCompositedLayerMapping();
+  ASSERT_TRUE(mapping);
+  EXPECT_TRUE(mapping->MainGraphicsLayer()->GetCompositingReasons() &
+              CompositingReason::kActiveTransformAnimation);
+
+  // We still composite the animated layer even if visibility: hidden.
+  // TODO(crbug.com/937573): Is this necessary?
+  GetDocument()
+      .getElementById("animated")
+      ->setAttribute(html_names::kStyleAttr, "visibility: hidden");
+  UpdateAllLifecyclePhasesForTest();
+  mapping = animated->GetCompositedLayerMapping();
+  ASSERT_TRUE(mapping);
+  EXPECT_TRUE(mapping->MainGraphicsLayer()->GetCompositingReasons() &
+              CompositingReason::kActiveTransformAnimation);
 }
 
 }  // namespace blink

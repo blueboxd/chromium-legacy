@@ -36,6 +36,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
@@ -988,6 +989,8 @@ void WizardController::OnEnrollmentDone() {
 
   if (KioskAppManager::Get()->IsAutoLaunchEnabled())
     AutoLaunchKioskApp();
+  else if (WebKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid())
+    AutoLaunchWebKioskApp();
   else
     ShowLoginScreen(LoginScreenContext());
 }
@@ -1602,6 +1605,38 @@ void WizardController::AutoLaunchKioskApp() {
   const bool diagnostic_mode = false;
   const bool auto_launch = true;
   GetLoginDisplayHost()->StartAppLaunch(app_id, diagnostic_mode, auto_launch);
+}
+
+void WizardController::AutoLaunchWebKioskApp() {
+  const AccountId account_id =
+      WebKioskAppManager::Get()->GetAutoLaunchAccountId();
+  CHECK(WebKioskAppManager::Get()->GetAppByAccountId(account_id));
+
+  // Wait for the |CrosSettings| to become either trusted or permanently
+  // untrusted.
+  const CrosSettingsProvider::TrustedStatus status =
+      CrosSettings::Get()->PrepareTrustedValues(
+          base::Bind(&WizardController::AutoLaunchWebKioskApp,
+                     weak_factory_.GetWeakPtr()));
+  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
+    return;
+
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    // If the |cros_settings_| are permanently untrusted, show an error message
+    // and refuse to auto-launch the kiosk app.
+    GetErrorScreen()->SetUIState(NetworkError::UI_STATE_LOCAL_STATE_ERROR);
+    GetLoginDisplayHost()->SetStatusAreaVisible(false);
+    ShowErrorScreen();
+    return;
+  }
+
+  if (system::DeviceDisablingManager::IsDeviceDisabledDuringNormalOperation()) {
+    // If the device is disabled, bail out. A device disabled screen will be
+    // shown by the DeviceDisablingManager.
+    return;
+  }
+
+  GetLoginDisplayHost()->StartWebKiosk(account_id);
 }
 
 // static

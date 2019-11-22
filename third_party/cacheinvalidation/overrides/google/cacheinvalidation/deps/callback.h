@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 
-#define INVALIDATION_CALLBACK1_TYPE(Arg1) ::base::Callback<void(Arg1)>
+#define INVALIDATION_CALLBACK1_TYPE(Arg1) ::base::RepeatingCallback<void(Arg1)>
 
 // Below are a collection of types and functions that adapt base::Callback's
 // pass-by-value semantics to the pointer-based callback system that
@@ -45,48 +45,50 @@ struct Identity {
 // Chromium Callback system requires returning a dynamically allocated
 // copy of the result of Bind().
 
-inline Closure* NewPermanentCallback(void (*fn)()) {
-  return new ::base::Closure(::base::Bind(fn));
+inline base::RepeatingClosure* NewPermanentCallback(void (*fn)()) {
+  return new ::base::RepeatingClosure(::base::BindRepeating(fn));
 }
 
 template <class T1, class T2>
-Closure* NewPermanentCallback(
-    T1* object, void (T2::*method)()) {
-  return new ::base::Closure(::base::Bind(method, base::Unretained(object)));
+base::RepeatingClosure* NewPermanentCallback(T1* object, void (T2::*method)()) {
+  return new ::base::RepeatingClosure(
+      ::base::BindRepeating(method, base::Unretained(object)));
 }
 
+// TODO(crbug.com/1027234) Make this method variadic to avoid having so many
+// expanded versions.
 template <class T1, class T2, typename Arg1>
 ::base::Callback<void(Arg1)>* NewPermanentCallback(
     T1* object, void (T2::*method)(Arg1)) {
   return new ::base::Callback<void(Arg1)>(
-      ::base::Bind(method, base::Unretained(object)));
+      ::base::BindRepeating(method, base::Unretained(object)));
 }
 
 template <class T1, class T2, typename Arg1>
-Closure* NewPermanentCallback(
+base::RepeatingClosure* NewPermanentCallback(
     T1* object,
     void (T2::*method)(Arg1),
     typename internal::Identity<Arg1>::type arg1) {
-  return new ::base::Closure(::base::Bind(method, base::Unretained(object),
-                                          arg1));
+  return new ::base::RepeatingClosure(
+      ::base::BindRepeating(method, base::Unretained(object), arg1));
 }
 
 template <typename Arg1, typename Arg2>
-Closure* NewPermanentCallback(
+base::RepeatingClosure* NewPermanentCallback(
     void (*fn)(Arg1, Arg2),
     typename internal::Identity<Arg1>::type arg1,
     typename internal::Identity<Arg2>::type arg2) {
-  return new ::base::Closure(::base::Bind(fn, arg1, arg2));
+  return new ::base::RepeatingClosure(::base::BindRepeating(fn, arg1, arg2));
 }
 
 template <class T1, class T2, typename Arg1, typename Arg2>
-Closure* NewPermanentCallback(
+base::RepeatingClosure* NewPermanentCallback(
     T1* object,
     void (T2::*method)(Arg1, Arg2),
     typename internal::Identity<Arg1>::type arg1,
     typename internal::Identity<Arg2>::type arg2) {
-  return new ::base::Closure(::base::Bind(method, base::Unretained(object),
-                                          arg1, arg2));
+  return new ::base::RepeatingClosure(
+      ::base::BindRepeating(method, base::Unretained(object), arg1, arg2));
 }
 
 template <class T1, class T2, typename Arg1, typename Arg2>
@@ -95,41 +97,45 @@ template <class T1, class T2, typename Arg1, typename Arg2>
     void (T2::*method)(Arg1, Arg2),
     typename internal::Identity<Arg1>::type arg1) {
   return new ::base::Callback<void(Arg2)>(
-      ::base::Bind(method, base::Unretained(object), arg1));
+      ::base::BindRepeating(method, base::Unretained(object), arg1));
 }
 
 template <class T1, class T2, typename Arg1, typename Arg2, typename Arg3>
-Closure* NewPermanentCallback(
+base::RepeatingClosure* NewPermanentCallback(
     T1* object,
     void (T2::*method)(Arg1, Arg2, Arg3),
     typename internal::Identity<Arg1>::type arg1,
     typename internal::Identity<Arg2>::type arg2,
     typename internal::Identity<Arg3>::type arg3) {
-  return new ::base::Closure(::base::Bind(method, base::Unretained(object),
-                                          arg1, arg2, arg3));
+  return new ::base::RepeatingClosure(::base::BindRepeating(
+      method, base::Unretained(object), arg1, arg2, arg3));
 }
 
-template <class T1, class T2, typename Arg1, typename Arg2, typename Arg3,
+template <class T1,
+          class T2,
+          typename Arg1,
+          typename Arg2,
+          typename Arg3,
           typename Arg4>
-Closure* NewPermanentCallback(
+base::RepeatingClosure* NewPermanentCallback(
     T1* object,
     void (T2::*method)(Arg1, Arg2, Arg3, Arg4),
     typename internal::Identity<Arg1>::type arg1,
     typename internal::Identity<Arg2>::type arg2,
     typename internal::Identity<Arg3>::type arg3,
     typename internal::Identity<Arg4>::type arg4) {
-  return new ::base::Closure(::base::Bind(method, base::Unretained(object),
-                                          arg1, arg2, arg3, arg4));
+  return new ::base::RepeatingClosure(::base::BindRepeating(
+      method, base::Unretained(object), arg1, arg2, arg3, arg4));
 }
 
 // Creates a Closure that runs |callback| on |arg|. The returned Closure owns
 // |callback|.
 template <typename ArgType>
-Closure* NewPermanentCallback(
-    INVALIDATION_CALLBACK1_TYPE(ArgType)* callback,
+base::RepeatingClosure* NewPermanentCallback(
+    INVALIDATION_CALLBACK1_TYPE(ArgType) * callback,
     typename internal::Identity<ArgType>::type arg) {
   std::unique_ptr<::base::Callback<void(ArgType)>> deleter(callback);
-  return new ::base::Closure(::base::Bind(*callback, arg));
+  return new ::base::RepeatingClosure(::base::BindRepeating(*callback, arg));
 }
 
 }  // namespace invalidation

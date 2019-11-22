@@ -12,10 +12,18 @@ import java.util.List;
 /**
  * Contains String constants with the SharedPreferences keys used by Chrome.
  *
- * All Chrome layer SharedPreferences keys should be:
- * - Added here as a constants
- * - Follow the format "Chrome.[Feature].[Key]"
- * - Added to the list of used keys in {@link ChromePreferenceKeys#createUsedKeys()}:
+ * All Chrome layer SharedPreferences keys should be declared in this class.
+ *
+ * To add a new key:
+ * 1. Declare it as a constant in this class. Its value should follow the format
+ *    "Chrome.[Feature].[Key]"
+ * 2. Add it to createKeysInUse().
+ *
+ * To deprecate a key that is not used anymore:
+ * 1. Add its constant value to createDeprecatedKeysForTesting().
+ * 2. Remove the key from createKeysInUse().
+ * 3. If the key is in createGrandfatheredFormatKeysForTesting(), remove it from there.
+ * 4. Delete the constant.
  *
  * Tests in ChromePreferenceKeysTest ensure the sanity of this file.
  */
@@ -306,12 +314,6 @@ public final class ChromePreferenceKeys {
     public static final String START_SURFACE_ENABLED_KEY = "start_surface_enabled";
 
     /**
-     * Whether or not grey triangle icon on non-secure connections feature is enabled.
-     * Default value is false.
-     */
-    public static final String MARK_HTTP_AS_DANGER_WARNING_KEY = "mark_http_as_danger_warning";
-
-    /**
      * Whether or not the grid tab switcher is enabled.
      * Default value is false.
      */
@@ -348,20 +350,12 @@ public final class ChromePreferenceKeys {
             "swap_pixel_format_to_fix_convert_from_translucent";
 
     /**
-     * Whether or not we should directly open the dialer when a click to call notification is
-     * received. Default value is false.
+     * These values are currently used as SharedPreferences keys.
+     *
+     * @return The list of [keys in use].
      */
-    public static final String CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY =
-            "click_to_call_open_dialer_directly";
-
     @CheckDiscard("Validation is performed in tests and in debug builds.")
-    static List<String> createUsedKeys() {
-        // These values are currently used as SharedPreferences keys.
-        // To deprecate a key that is not used anymore:
-        // 1. Add its constant value to |sDeprecatedKeys|
-        // 2. Remove the key from |sUsedKeys|
-        // 3. Delete the constant.
-
+    static List<String> createKeysInUse() {
         // clang-format off
         return Arrays.asList(
                 CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT,
@@ -427,23 +421,24 @@ public final class ChromePreferenceKeys {
                 NIGHT_MODE_CCT_AVAILABLE_KEY,
                 COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY,
                 START_SURFACE_ENABLED_KEY,
-                MARK_HTTP_AS_DANGER_WARNING_KEY,
                 GRID_TAB_SWITCHER_ENABLED_KEY,
                 TAB_GROUPS_ANDROID_ENABLED_KEY,
                 PRIORITIZE_BOOTSTRAP_TASKS_KEY,
                 NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
                 IMMERSIVE_UI_MODE_ENABLED,
-                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-                CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY
+                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT
         );
         // clang-format on
     }
 
+    /**
+     * These values have been used as SharedPreferences keys in the past and should not be reused
+     * reused. Do not remove values from this list.
+     *
+     * @return The list of [deprecated keys].
+     */
     @CheckDiscard("Validation is performed in tests and in debug builds.")
     static List<String> createDeprecatedKeysForTesting() {
-        // These values have been used as SharedPreferences keys in the past and should not be
-        // reused. Do not remove values from this list.
-
         // clang-format off
         return Arrays.asList(
                 "allow_low_end_device_ui",
@@ -462,16 +457,21 @@ public final class ChromePreferenceKeys {
                 "chrome_home_opt_out_snackbar_shown",
                 "chrome_home_info_promo_shown",
                 "chrome_home_enabled_date",
-                "PrefMigrationVersion"
+                "PrefMigrationVersion",
+                "click_to_call_open_dialer_directly"
         );
         // clang-format on
     }
 
+    /**
+     * Do not add new constants to this list. Instead, declare new keys in the format
+     * "Chrome.[Feature].[Key]", for example "Chrome.FooBar.FooEnabled".
+     *
+     * @return The list of [keys in use] that does not conform to the "Chrome.[Feature].[Key]"
+     *     format.
+     */
     @CheckDiscard("Validation is performed in tests and in debug builds.")
     static List<String> createGrandfatheredFormatKeysForTesting() {
-        // Do not add new constants to this list. Instead, declare new keys in the format
-        // "Chrome.[Feature].[Key]", for example "Chrome.FooBar.FooEnabled".
-
         // clang-format off
         return Arrays.asList(
                 CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT,
@@ -537,14 +537,12 @@ public final class ChromePreferenceKeys {
                 NIGHT_MODE_CCT_AVAILABLE_KEY,
                 COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY,
                 START_SURFACE_ENABLED_KEY,
-                MARK_HTTP_AS_DANGER_WARNING_KEY,
                 GRID_TAB_SWITCHER_ENABLED_KEY,
                 TAB_GROUPS_ANDROID_ENABLED_KEY,
                 PRIORITIZE_BOOTSTRAP_TASKS_KEY,
                 NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
                 IMMERSIVE_UI_MODE_ENABLED,
-                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
-                CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY
+                SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT
         );
         // clang-format on
     }

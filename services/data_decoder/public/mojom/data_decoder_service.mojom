@@ -4,9 +4,9 @@
 
 module data_decoder.mojom;
 
-import "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom";
 import "services/data_decoder/public/mojom/image_decoder.mojom";
 import "services/data_decoder/public/mojom/json_parser.mojom";
+import "services/data_decoder/public/mojom/web_bundle_parser.mojom";
 import "services/data_decoder/public/mojom/xml_parser.mojom";
 
 [EnableIf=is_chromeos]
@@ -23,9 +23,9 @@ interface DataDecoderService {
   // Binds an interface which can be used to parse XML data.
   BindXmlParser(pending_receiver<XmlParser> reciever);
 
-  // Binds an interface which can be used to parse bundled HTTP exchanges.
-  BindBundledExchangesParserFactory(
-      pending_receiver<BundledExchangesParserFactory> receiver);
+  // Binds an interface which can be used to parse Web Bundles.
+  BindWebBundleParserFactory(
+      pending_receiver<WebBundleParserFactory> receiver);
 
   // Binds an interface which can be used to parse raw BLE advertising packet
   // data.

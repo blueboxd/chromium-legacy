@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/window/dialog_client_view.h"
 
 class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
  public:
@@ -65,7 +64,7 @@ class NativeFileSystemPermissionViewTest : public DialogBrowserTest {
 IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
                        AcceptIsntDefaultFocused) {
   ShowUi("default");
-  EXPECT_NE(widget_->client_view()->AsDialogClientView()->ok_button(),
+  EXPECT_NE(widget_->widget_delegate()->AsDialogDelegate()->GetOkButton(),
             widget_->GetFocusManager()->GetFocusedView());
   widget_->Close();
   base::RunLoop().RunUntilIdle();
@@ -73,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest,
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest, AcceptRunsCallback) {
   ShowUi("default");
-  widget_->client_view()->AsDialogClientView()->AcceptWindow();
+  widget_->widget_delegate()->AsDialogDelegate()->AcceptDialog();
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(PermissionAction::GRANTED, callback_result_);
   base::RunLoop().RunUntilIdle();
@@ -81,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest, AcceptRunsCallback) {
 
 IN_PROC_BROWSER_TEST_F(NativeFileSystemPermissionViewTest, CancelRunsCallback) {
   ShowUi("default");
-  widget_->client_view()->AsDialogClientView()->CancelWindow();
+  widget_->widget_delegate()->AsDialogDelegate()->CancelDialog();
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(PermissionAction::DISMISSED, callback_result_);
   base::RunLoop().RunUntilIdle();

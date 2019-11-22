@@ -35,6 +35,11 @@
       alertControllerWithTitle:nil
                        message:@"Pick Translate Action"
                 preferredStyle:UIAlertControllerStyleActionSheet];
+  _beforeTranslateActionSheet.popoverPresentationController.sourceView =
+      UIApplication.sharedApplication.keyWindow;
+  CGRect bounds = UIApplication.sharedApplication.keyWindow.bounds;
+  _beforeTranslateActionSheet.popoverPresentationController.sourceRect =
+      CGRectMake(CGRectGetWidth(bounds) / 2, 60, 1, 1);
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:@"Nope."
                                style:UIAlertActionStyleCancel

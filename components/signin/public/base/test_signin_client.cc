@@ -21,7 +21,6 @@ TestSigninClient::TestSigninClient(
       are_signin_cookies_allowed_(true),
       network_calls_delayed_(false),
       is_signout_allowed_(true),
-      is_ready_for_dice_migration_(false),
       is_dice_migration_completed_(false) {}
 
 TestSigninClient::~TestSigninClient() {}
@@ -113,10 +112,6 @@ void TestSigninClient::PreGaiaLogout(base::OnceClosure callback) {
   if (!callback.is_null()) {
     std::move(callback).Run();
   }
-}
-
-void TestSigninClient::SetReadyForDiceMigration(bool ready) {
-  is_ready_for_dice_migration_ = ready;
 }
 
 void TestSigninClient::SetDiceMigrationCompleted() {

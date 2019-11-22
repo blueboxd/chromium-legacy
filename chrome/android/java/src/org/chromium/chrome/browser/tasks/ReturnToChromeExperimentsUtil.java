@@ -9,6 +9,8 @@ import android.app.Activity;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -23,8 +25,19 @@ import org.chromium.ui.base.PageTransition;
  * This is a utility class for managing experiments related to returning to Chrome.
  */
 public final class ReturnToChromeExperimentsUtil {
+    private static final String TAG = "TabSwitcherOnReturn";
+
     @VisibleForTesting
-    public static final String TAB_SWITCHER_ON_RETURN_MS = "tab_switcher_on_return_time_ms";
+    static final String TAB_SWITCHER_ON_RETURN_MS = "tab_switcher_on_return_time_ms";
+
+    @VisibleForTesting
+    static final String UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT =
+            "Startup.Android.TimeToGTSFirstMeaningfulPaint";
+
+    private static final String UMA_THUMBNAIL_FETCHED_FOR_GTS_FIRST_MEANINGFUL_PAINT =
+            "Startup.Android.ThumbnailFetchedForGTSFirstMeaningfulPaint";
+
+    private static boolean sGTSFirstMeaningfulPaintRecorded;
 
     private ReturnToChromeExperimentsUtil() {}
 
@@ -54,6 +67,55 @@ public final class ReturnToChromeExperimentsUtil {
         long expirationTime = lastBackgroundedTimeMillis + tabSwitcherAfterMillis;
 
         return System.currentTimeMillis() > expirationTime;
+    }
+
+    /**
+     * Record the elapsed time from activity creation to first meaningful paint of Grid Tab
+     * Switcher.
+     * @param elapsedMs Elapsed time in ms.
+     * @param numOfThumbnails Number of thumbnails fetched for the Grid Tab Switcher.
+     */
+    public static void recordTimeToGTSFirstMeaningfulPaint(long elapsedMs, int numOfThumbnails) {
+        Log.i(TAG,
+                UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + coldStartBucketName(!sGTSFirstMeaningfulPaintRecorded)
+                        + numThumbnailsBucketName(numOfThumbnails) + ": " + numOfThumbnails
+                        + " thumbnails " + elapsedMs + "ms");
+        RecordHistogram.recordTimesHistogram(UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + coldStartBucketName(!sGTSFirstMeaningfulPaintRecorded)
+                        + numThumbnailsBucketName(numOfThumbnails),
+                elapsedMs);
+        RecordHistogram.recordTimesHistogram(UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT
+                        + coldStartBucketName(!sGTSFirstMeaningfulPaintRecorded),
+                elapsedMs);
+        RecordHistogram.recordTimesHistogram(UMA_TIME_TO_GTS_FIRST_MEANINGFUL_PAINT, elapsedMs);
+        RecordHistogram.recordCount100Histogram(
+                UMA_THUMBNAIL_FETCHED_FOR_GTS_FIRST_MEANINGFUL_PAINT, numOfThumbnails);
+        sGTSFirstMeaningfulPaintRecorded = true;
+    }
+
+    @VisibleForTesting
+    static String coldStartBucketName(boolean isColdStart) {
+        if (isColdStart) return ".Cold";
+        return ".Warm";
+    }
+
+    @VisibleForTesting
+    static String numThumbnailsBucketName(int numOfThumbnails) {
+        return "." + numThumbnailsBucket(numOfThumbnails) + "thumbnails";
+    }
+
+    /**
+     * On Pixel 3 XL, at most 10 cards are fetched. Multi-thumbnail cards can have up to 4
+     * thumbnails, so the maximum should be 40.
+     */
+    private static String numThumbnailsBucket(int numOfThumbnails) {
+        if (numOfThumbnails == 0) return "0";
+        if (numOfThumbnails <= 2) return "1~2";
+        if (numOfThumbnails <= 5) return "3~5";
+        if (numOfThumbnails <= 10) return "6~10";
+        if (numOfThumbnails <= 20) return "11~20";
+        return "20+";
     }
 
     /**

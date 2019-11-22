@@ -244,12 +244,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_lifo_write_scheduler,
           true)
 
-// If true, QuicStreamSequencer will not take in new data if the stream is
-// reset.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_no_stream_data_after_reset,
-          false)
-
 // If true, enable IETF style probe timeout.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
 
@@ -327,12 +321,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_populate_nonretransmittable_frames,
           true)
 
-// If true, a stream will be reset if it receives fin that has offset less than
-// its highest offset.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_no_decrease_in_final_offset,
-          false)
-
 // If true, connection will be closed if a stream receives stream frame or
 // RESET_STREAM frame with bad close offset.
 QUIC_FLAG(bool,
@@ -391,3 +379,10 @@ QUIC_FLAG(double, FLAGS_quic_bbr2_default_inflight_hi_headroom, 0.01)
 // If true, for QUIC BBRv2: 1) don't grow inflight_hi unless it's fully used,
 // and 2) cap inflight_lo in PROBE_CRUISE.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_fix_inflight_bounds, true)
+
+// If true, when a stream receives data with wrong close offset, it closes the
+// connection. And the stream frame data will be discarded.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_close_connection_and_discard_data_on_wrong_offset,
+    false)

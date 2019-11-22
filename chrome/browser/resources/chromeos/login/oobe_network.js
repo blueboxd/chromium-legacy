@@ -104,16 +104,8 @@ Polymer({
    * @return {?NetworkList.NetworkListItemType}
    */
   getNetworkListItemByNameForTest: function(name) {
-    let networkList =
-        this.$.networkSelectLogin.$$('#networkSelect').getNetworkListForTest();
-    assert(networkList);
-    for (const network of networkList.children) {
-      if (network.is === 'network-list-item' &&
-          network.$$('#divText').children[0].innerText === name) {
-        return network;
-      }
-    }
-    return null;
+    return this.$.networkSelectLogin.$$('#networkSelect')
+        .getNetworkListItemByNameForTest(name);
   },
 
   /**

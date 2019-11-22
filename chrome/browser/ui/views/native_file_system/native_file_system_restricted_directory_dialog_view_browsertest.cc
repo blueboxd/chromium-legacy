@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using SensitiveDirectoryResult =
     content::NativeFileSystemPermissionContext::SensitiveDirectoryResult;
@@ -44,7 +43,7 @@ class NativeFileSystemRestrictedDirectoryDialogViewTest
 IN_PROC_BROWSER_TEST_F(NativeFileSystemRestrictedDirectoryDialogViewTest,
                        AcceptRunsCallback) {
   ShowUi(std::string());
-  widget_->client_view()->AsDialogClientView()->AcceptWindow();
+  widget_->widget_delegate()->AsDialogDelegate()->AcceptDialog();
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(SensitiveDirectoryResult::kTryAgain, callback_result_);
   base::RunLoop().RunUntilIdle();
@@ -53,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemRestrictedDirectoryDialogViewTest,
 IN_PROC_BROWSER_TEST_F(NativeFileSystemRestrictedDirectoryDialogViewTest,
                        CancelRunsCallback) {
   ShowUi(std::string());
-  widget_->client_view()->AsDialogClientView()->CancelWindow();
+  widget_->widget_delegate()->AsDialogDelegate()->CancelDialog();
   EXPECT_TRUE(callback_called_);
   EXPECT_EQ(SensitiveDirectoryResult::kAbort, callback_result_);
   base::RunLoop().RunUntilIdle();

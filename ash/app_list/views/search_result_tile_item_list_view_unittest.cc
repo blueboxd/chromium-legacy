@@ -20,6 +20,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/widget_test.h"
 
@@ -280,7 +282,9 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
     view()->children()[first_child + i * child_step]->GetAccessibleNodeData(
         &node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-    EXPECT_EQ("InstalledApp " + base::NumberToString(i),
+    EXPECT_EQ("InstalledApp " + base::NumberToString(i) + ", " +
+                  l10n_util::GetStringUTF8(
+                      IDS_APP_ACCESSIBILITY_INSTALLED_APP_ANNOUNCEMENT),
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 
@@ -294,9 +298,11 @@ TEST_P(SearchResultTileItemListViewTest, Basic) {
         ->children()[first_child + (i + kInstalledApps) * child_step]
         ->GetAccessibleNodeData(&node_data);
     EXPECT_EQ(ax::mojom::Role::kButton, node_data.role);
-    EXPECT_EQ("PlayStoreApp " + base::NumberToString(i) + ", Star rating " +
-                  base::NumberToString(i + 1) + ".0, Price " +
-                  base::NumberToString(i),
+    EXPECT_EQ("PlayStoreApp " + base::NumberToString(i) + ", " +
+                  l10n_util::GetStringUTF8(
+                      IDS_APP_ACCESSIBILITY_ARC_APP_ANNOUNCEMENT) +
+                  ", Star rating " + base::NumberToString(i + 1) +
+                  ".0, Price " + base::NumberToString(i),
               node_data.GetStringAttribute(ax::mojom::StringAttribute::kName));
   }
 

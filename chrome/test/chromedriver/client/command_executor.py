@@ -200,7 +200,7 @@ class CommandExecutor(object):
     self._server_url = server_url
     parsed_url = urlparse(server_url)
     self._http_client = httplib.HTTPConnection(
-      parsed_url.hostname, parsed_url.port, timeout=30)
+      parsed_url.hostname, parsed_url.port, timeout=10)
 
   @staticmethod
   def CreatePath(template_url_path, params):

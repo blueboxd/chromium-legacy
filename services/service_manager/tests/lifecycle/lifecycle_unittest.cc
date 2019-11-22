@@ -16,7 +16,8 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/identity.h"
@@ -117,9 +118,9 @@ struct Instance {
 
 class InstanceState : public mojom::ServiceManagerListener {
  public:
-  InstanceState(mojom::ServiceManagerListenerRequest request,
+  InstanceState(mojo::PendingReceiver<mojom::ServiceManagerListener> receiver,
                 base::OnceClosure on_init_complete)
-      : binding_(this, std::move(request)),
+      : receiver_(this, std::move(receiver)),
         on_init_complete_(std::move(on_init_complete)),
         on_destruction_(destruction_loop_.QuitClosure()) {}
   ~InstanceState() override {}
@@ -187,7 +188,7 @@ class InstanceState : public mojom::ServiceManagerListener {
   // The initial set of instances.
   std::map<std::string, Instance> initial_instances_;
 
-  mojo::Binding<mojom::ServiceManagerListener> binding_;
+  mojo::Receiver<mojom::ServiceManagerListener> receiver_;
   base::OnceClosure on_init_complete_;
 
   // Set when the client wants to wait for this object to track the destruction

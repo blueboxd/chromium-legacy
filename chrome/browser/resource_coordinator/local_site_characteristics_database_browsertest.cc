@@ -218,10 +218,8 @@ class LocalSiteCharacteristicsDatabaseTest : public InProcessBrowserTest {
   void AllowBackgroundNotificationInActiveTab() {
     content::WebContents* web_contents = GetActiveWebContents();
     NotificationPermissionContext::UpdatePermission(
-        browser()->profile(), web_contents->GetLastCommittedURL(),
+        browser()->profile(), web_contents->GetLastCommittedURL().GetOrigin(),
         CONTENT_SETTING_ALLOW);
-
-    ExecuteScriptInMainFrame("RequestNotificationsPermission();");
   }
 
   void ExpireTitleOrFaviconGracePeriod() {
@@ -409,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
 // TODO(sebmarchand): Figure out how to trigger a non-persistent notification in
 // this test.
 IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDatabaseTest,
-                       DISABLED_NotificationFeatureUsage) {
+                       NotificationFeatureUsage) {
   TestFeatureUsageDetection(
       &SiteCharacteristicsDataReader::UsesNotificationsInBackground,
       internal::LocalSiteCharacteristicsDataImpl::TrackedBackgroundFeatures::

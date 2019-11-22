@@ -61,9 +61,6 @@ class SmbService : public KeyedService,
   SmbService(Profile* profile, std::unique_ptr<base::TickClock> tick_clock);
   ~SmbService() override;
 
-  // Gets the singleton instance for the |context|.
-  static SmbService* Get(content::BrowserContext* context);
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Starts the process of mounting an SMB file system.
@@ -185,9 +182,6 @@ class SmbService : public KeyedService,
                           smbprovider::ErrorType error,
                           int32_t mount_id);
 
-  // Sets up SmbService, including setting up Keberos if the user is ChromAD.
-  void StartSetup();
-
   // Sets up |temp_file_manager_|. Calls CompleteSetup().
   void SetupTempFileManagerAndCompleteSetup();
 
@@ -213,9 +207,6 @@ class SmbService : public KeyedService,
   // Opens |file_system_id| in the File Manager. Must only be called on a
   // mounted share.
   void OpenFileManager(const std::string& file_system_id);
-
-  // Whether Network File Shares are allowed to be used. Controlled via policy.
-  bool IsAllowedByPolicy() const;
 
   // Whether NetBios discovery should be used. Controlled via policy.
   bool IsNetBiosDiscoveryEnabled() const;
@@ -285,7 +276,6 @@ class SmbService : public KeyedService,
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
-  static bool service_should_run_;
   static bool disable_share_discovery_for_testing_;
 
   base::TimeTicks previous_host_discovery_time_;

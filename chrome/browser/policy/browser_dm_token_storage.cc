@@ -124,11 +124,7 @@ void BrowserDMTokenStorage::ClearDMToken(StoreCallback callback) {
   StoreDMToken("", std::move(callback));
 }
 
-std::string BrowserDMTokenStorage::RetrieveDMToken() {
-  return RetrieveBrowserDMToken().value();
-}
-
-DMToken BrowserDMTokenStorage::RetrieveBrowserDMToken() {
+DMToken BrowserDMTokenStorage::RetrieveDMToken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_callback_);
 

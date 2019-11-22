@@ -83,11 +83,7 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
          paint_artifact);
   LayersAsJSON layers_as_json(flags);
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    if (!tracks_raster_invalidations_)
-      flags &= ~kLayerTreeIncludesPaintInvalidations;
     for (const auto& layer : root_layer_->children()) {
-      if (!layer->DrawsContent() && !(flags & kLayerTreeIncludesRootLayer))
-        continue;
       const LayerAsJSONClient* json_client = nullptr;
       const TransformPaintPropertyNode* transform = nullptr;
       for (const auto& client : content_layer_clients_) {
@@ -120,12 +116,10 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
       const auto& foreign_layer_display_item =
           static_cast<const ForeignLayerDisplayItem&>(display_item);
       cc::Layer* layer = foreign_layer_display_item.GetLayer();
-      if ((layer->DrawsContent()) || (flags & kLayerTreeIncludesRootLayer)) {
-        layers_as_json.AddLayer(
-            *layer, foreign_layer_display_item.Offset(),
-            paint_chunk.properties.Transform(),
-            foreign_layer_display_item.GetLayerAsJSONClient());
-      }
+      layers_as_json.AddLayer(
+          *layer, foreign_layer_display_item.Offset(),
+          paint_chunk.properties.Transform(),
+          foreign_layer_display_item.GetLayerAsJSONClient());
     }
   }
   return layers_as_json.Finalize();

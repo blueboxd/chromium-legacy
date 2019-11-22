@@ -58,6 +58,7 @@ component("ui") {
     "assistant_web_view_delegate.h",
     "base/assistant_button.cc",
     "base/assistant_button.h",
+    "base/assistant_button_listener.h",
     "base/assistant_scroll_view.cc",
     "base/assistant_scroll_view.h",
     "base/stack_layout.cc",

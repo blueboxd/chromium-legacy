@@ -248,9 +248,9 @@ AudioDevicesPrefHandlerImpl::~AudioDevicesPrefHandlerImpl() = default;
 
 void AudioDevicesPrefHandlerImpl::InitializePrefObservers() {
   pref_change_registrar_.Init(local_state_);
-  base::Closure callback =
-      base::Bind(&AudioDevicesPrefHandlerImpl::NotifyAudioPolicyChange,
-                 base::Unretained(this));
+  base::RepeatingClosure callback =
+      base::BindRepeating(&AudioDevicesPrefHandlerImpl::NotifyAudioPolicyChange,
+                          base::Unretained(this));
   pref_change_registrar_.Add(prefs::kAudioOutputAllowed, callback);
 }
 

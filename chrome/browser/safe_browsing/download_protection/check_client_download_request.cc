@@ -470,7 +470,7 @@ void CheckClientDownloadRequest::UploadBinary(
     request->set_request_malware_scan(std::move(malware_request));
   }
 
-  auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+  policy::DMToken dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
   DCHECK(dm_token.is_valid());
   request->set_dm_token(dm_token.value());
 
@@ -504,7 +504,7 @@ bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
 
   // If there's no valid DM token, the upload will fail, so we can skip
   // uploading now.
-  if (!BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken().is_valid())
+  if (!BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid())
     return false;
 
   const base::ListValue* domains = g_browser_process->local_state()->GetList(
@@ -544,7 +544,7 @@ bool CheckClientDownloadRequest::ShouldUploadForMalwareScan(
 
   // If there's no valid DM token, the upload will fail, so we can skip
   // uploading now.
-  return BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken().is_valid();
+  return BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid();
 }
 
 void CheckClientDownloadRequest::OnDeepScanningComplete(

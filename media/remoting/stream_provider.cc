@@ -120,8 +120,8 @@ MediaStream::MediaStream(RpcBroker* rpc_broker,
       error_callback_(std::move(error_callback)) {
   DCHECK(remote_handle_ != RpcBroker::kInvalidHandle);
   rpc_broker_->RegisterMessageReceiverCallback(
-      rpc_handle_,
-      base::Bind(&MediaStream::OnReceivedRpc, weak_factory_.GetWeakPtr()));
+      rpc_handle_, base::BindRepeating(&MediaStream::OnReceivedRpc,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 MediaStream::~MediaStream() {

@@ -17,9 +17,9 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
+#include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/test/gmock_util.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -126,7 +126,7 @@ TEST_F(SessionStorageAreaImplTest, BasicUsage) {
       ss_leveldb.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb.get(), &data));
   ASSERT_EQ(1ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -155,7 +155,7 @@ TEST_F(SessionStorageAreaImplTest, ExplicitlyEmptyMap) {
       ss_leveldb.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb.get(), &data));
   ASSERT_EQ(0ul, data.size());
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
@@ -186,7 +186,7 @@ TEST_F(SessionStorageAreaImplTest, DoubleBind) {
   ss_leveldb_impl->Bind(
       ss_leveldb2.BindNewEndpointAndPassDedicatedReceiverForTesting());
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb2.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb2.get(), &data));
   ASSERT_EQ(1ul, data.size());
 
   // Make sure the first binding was closed.
@@ -236,16 +236,16 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
       .Times(1);
   EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .Times(testing::AnyNumber());
-  EXPECT_TRUE(test::PutSync(ss_leveldb2.get(), StdStringToUint8Vector("key2"),
-                            StdStringToUint8Vector("data2"), base::nullopt,
-                            ""));
+  EXPECT_TRUE(storage::test::PutSync(
+      ss_leveldb2.get(), StdStringToUint8Vector("key2"),
+      StdStringToUint8Vector("data2"), base::nullopt, ""));
 
   // The maps were forked on the above put.
   EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
 
   // Check map 1 data.
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb1.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb1.get(), &data));
   ASSERT_EQ(1ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -253,7 +253,7 @@ TEST_F(SessionStorageAreaImplTest, Cloning) {
 
   // Check map 2 data.
   data.clear();
-  EXPECT_TRUE(test::GetAllSync(ss_leveldb2.get(), &data));
+  EXPECT_TRUE(storage::test::GetAllSync(ss_leveldb2.get(), &data));
   ASSERT_EQ(2ul, data.size());
   EXPECT_TRUE(base::Contains(
       data, blink::mojom::KeyValue::New(StdStringToUint8Vector("key1"),
@@ -289,7 +289,7 @@ TEST_F(SessionStorageAreaImplTest, NotifyAllDeleted) {
   ss_leveldb_impl1->Bind(
       ss_leveldb1.BindNewEndpointAndPassDedicatedReceiverForTesting());
 
-  testing::StrictMock<test::MockLevelDBObserver> mock_observer;
+  testing::StrictMock<storage::test::MockLevelDBObserver> mock_observer;
   mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
   ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
@@ -342,7 +342,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   // Create the observer, attach to the first namespace, and verify we don't see
   // any changes (see SessionStorageAreaImpl class comment about when observers
   // are called).
-  testing::StrictMock<test::MockLevelDBObserver> mock_observer;
+  testing::StrictMock<storage::test::MockLevelDBObserver> mock_observer;
   mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver> observer_receiver(
       &mock_observer);
   ss_leveldb1->AddObserver(observer_receiver.BindNewEndpointAndPassRemote());
@@ -355,7 +355,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   // There should be no commits, as we don't actually have to change any data.
   // |ss_leveldb_impl1| should just switch to a new, empty map.
   EXPECT_CALL(listener_, OnCommitResult(OKStatus())).Times(0);
-  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb1.get(), "source"));
+  EXPECT_TRUE(storage::test::DeleteAllSync(ss_leveldb1.get(), "source"));
 
   // The maps were forked on the above call.
   EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
@@ -386,7 +386,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBinding) {
   base::RunLoop loop;
   EXPECT_CALL(listener_, OnCommitResult(OKStatus()))
       .WillOnce(base::test::RunClosure(loop.QuitClosure()));
-  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
+  EXPECT_TRUE(storage::test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
   ss_leveldb_impl1->data_map()->storage_area()->ScheduleImmediateCommit();
   loop.Run();
 
@@ -431,7 +431,7 @@ TEST_F(SessionStorageAreaImplTest, DeleteAllWithoutBindingOnShared) {
   // There should be no commits, as we don't actually have to change any data.
   // |ss_leveldb_impl1| should just switch to a new, empty map.
   EXPECT_CALL(listener_, OnCommitResult(OKStatus())).Times(0);
-  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
+  EXPECT_TRUE(storage::test::DeleteAllSync(ss_leveldb_impl1.get(), "source"));
 
   // The maps were forked on the above call.
   EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());

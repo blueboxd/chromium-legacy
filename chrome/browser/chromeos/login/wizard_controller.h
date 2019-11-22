@@ -276,6 +276,9 @@ class WizardController {
   // Launched kiosk app configured for auto-launch.
   void AutoLaunchKioskApp();
 
+  // Launched webkiosk app configured for auto-launch.
+  void AutoLaunchWebKioskApp();
+
   // Called when LocalState is initialized.
   void OnLocalStateInitialized(bool /* succeeded */);
 

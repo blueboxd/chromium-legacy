@@ -8,6 +8,7 @@
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 #include <zircon/types.h>
 
+#include "base/auto_reset.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory_client.h"
@@ -15,7 +16,6 @@
 #include "base/test/bind_test_util.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "fuchsia/base/frame_test_util.h"
-#include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/frame_impl.h"
@@ -38,8 +38,8 @@ const char kPage2Title[] = "lots of nodes!";
 const char kButtonName[] = "a button";
 const char kNodeName[] = "last node";
 const char kParagraphName[] = "a third paragraph";
-const size_t kPage1NodeCount = 5;
-const size_t kPage2NodeCount = 200;
+const size_t kPage1NodeCount = 9;
+const size_t kPage2NodeCount = 190;
 
 class FakeSemanticTree
     : public fuchsia::accessibility::semantics::testing::SemanticTree_TestBase {
@@ -65,7 +65,7 @@ class FakeSemanticTree
   void CommitUpdates(CommitUpdatesCallback callback) final {
     callback();
     if (on_commit_updates_)
-      std::move(on_commit_updates_).Run();
+      on_commit_updates_.Run();
   }
 
   void NotImplemented_(const std::string& name) final {
@@ -74,16 +74,18 @@ class FakeSemanticTree
 
   void RunUntilNodeCountAtLeast(size_t count) {
     DCHECK(!on_commit_updates_);
-
     if (nodes_.size() >= count)
       return;
 
-    // May take multiple commits before node count is sufficient.
-    do {
-      base::RunLoop run_loop;
-      on_commit_updates_ = run_loop.QuitClosure();
-      run_loop.Run();
-    } while (nodes_.size() < count);
+    base::RunLoop run_loop;
+    base::AutoReset<base::RepeatingClosure> auto_reset(
+        &on_commit_updates_,
+        base::BindLambdaForTesting([this, count, &run_loop]() {
+          if (nodes_.size() >= count) {
+            run_loop.Quit();
+          }
+        }));
+    run_loop.Run();
   }
 
   bool HasNodeWithLabel(base::StringPiece name) {
@@ -98,7 +100,7 @@ class FakeSemanticTree
 
  private:
   std::vector<Node> nodes_;
-  base::OnceClosure on_commit_updates_;
+  base::RepeatingClosure on_commit_updates_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSemanticTree);
 };

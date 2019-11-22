@@ -1298,6 +1298,7 @@ bool OmniboxViewViews::HandleAccessibleAction(
     ui::AXActionData set_selection_action_data;
     set_selection_action_data.action = ax::mojom::Action::kSetSelection;
     set_selection_action_data.anchor_node_id = action_data.anchor_node_id;
+    set_selection_action_data.focus_node_id = action_data.focus_node_id;
     set_selection_action_data.focus_offset =
         action_data.focus_offset - friendly_suggestion_text_prefix_length_;
     set_selection_action_data.anchor_offset =

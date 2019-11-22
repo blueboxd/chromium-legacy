@@ -10,4 +10,4 @@
 #error "This file requires ARC support."
 #endif
 
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SignInEarlGreyUtilsAppInterface)
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninEarlGreyUtilsAppInterface)

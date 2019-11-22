@@ -27,7 +27,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
 
 namespace {

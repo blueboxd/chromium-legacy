@@ -58,7 +58,7 @@ WTF::Vector<uint8_t> GetBytesOfBufferSource(const ScriptValue& buffer_source) {
   return bytes;
 }
 
-// https://w3c.github.io/web-nfc/#the-ndefrecordtype-string
+// https://w3c.github.io/web-nfc/#ndef-record-types
 // Derives a formatted custom type for the external type record from |input|.
 // Returns a null string for an invalid |input|.
 //

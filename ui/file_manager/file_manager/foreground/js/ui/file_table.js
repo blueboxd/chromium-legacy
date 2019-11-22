@@ -1076,7 +1076,7 @@ class FileTable extends cr.ui.Table {
     item.querySelector('.entry-name').setAttribute('id', nameId);
     item.querySelector('.size').setAttribute('id', sizeId);
     item.querySelector('.date').setAttribute('id', dateId);
-    item.setAttribute('aria-labelledby', nameId + ' ' + sizeId + ' ' + dateId);
+    item.setAttribute('aria-labelledby', nameId);
     return item;
   }
 

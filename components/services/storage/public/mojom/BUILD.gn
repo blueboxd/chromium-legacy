@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
+    "local_storage_control.mojom",
     "origin_context.mojom",
     "partition.mojom",
     "storage_service.mojom",
@@ -13,6 +14,7 @@ mojom("mojom") {
 
   public_deps = [
     "//mojo/public/mojom/base",
+    "//third_party/blink/public/mojom/dom_storage",
     "//url/mojom:url_mojom_origin",
   ]
 }

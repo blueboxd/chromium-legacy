@@ -125,7 +125,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 // correctly when there is already an identity on the device.
 - (void)testSignInOneUser {
   // Set up a fake identity.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -147,8 +147,8 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
-  ChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
-  ChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
+  FakeChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
   identity_service->AddIdentity(identity1);
   identity_service->AddIdentity(identity2);
 
@@ -191,8 +191,8 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
-  ChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
-  ChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
+  FakeChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
   identity_service->AddIdentity(identity1);
   identity_service->AddIdentity(identity2);
 
@@ -225,7 +225,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 
 // Tests that signing out from the Settings works correctly.
 - (void)testSignInDisconnectFromChrome {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -239,7 +239,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 // Tests that signing out of a managed account from the Settings works
 // correctly.
 - (void)testSignInDisconnectFromChromeManaged {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeManagedIdentity];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeManagedIdentity];
 
   // Sign-in with a managed account.
   [SigninEarlGreyUI signinWithIdentity:identity isManagedAccount:YES];
@@ -255,7 +255,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 // and closing the Settings correctly leaves the user signed in without any
 // Settings shown.
 - (void)testSignInOpenSettings {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -283,7 +283,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 - (void)testSignInCancelIdentityPicker {
   // Add an identity to avoid arriving on the Add Account screen when opening
   // sign-in.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -319,8 +319,8 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
   // Set up the fake identities.
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
-  ChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
-  ChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
+  FakeChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
   identity_service->AddIdentity(identity1);
   identity_service->AddIdentity(identity2);
 
@@ -369,7 +369,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 // done. Ensures that the sign in screen is correctly dismissed.
 // Regression test for crbug.com/596029.
 - (void)testSignInCancelFromBookmarks {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -476,7 +476,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
   if (!base::ios::IsRunningOnOrLater(13, 0, 0)) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iOS 12 and lower.");
   }
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
   [self openSigninFromView:OpenSigninMethodFromSettings tapSettingsLink:YES];
@@ -539,7 +539,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 // |tapSettingsLink| if YES, the setting link is tapped before opening the URL.
 - (void)assertOpenURLWhenSigninFromView:(OpenSigninMethod)openSigninMethod
                         tapSettingsLink:(BOOL)tapSettingsLink {
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
   [self openSigninFromView:openSigninMethod tapSettingsLink:tapSettingsLink];
@@ -587,7 +587,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 // Tests to remove the last identity in the identity chooser.
 - (void)testRemoveLastAccount {
   // Set up a fake identity.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
@@ -615,7 +615,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 - (void)DISABLED_testSignInCancelAddAccount {
   // Add an identity to avoid arriving on the Add Account screen when opening
   // sign-in.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 

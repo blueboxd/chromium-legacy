@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
+#import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_mediator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
@@ -30,6 +31,9 @@
   std::unique_ptr<TranslateInfobarDelegateObserverBridge>
       _translateInfobarDelegateObserver;
 }
+
+// The mediator managed by this Coordinator.
+@property(nonatomic, strong) InfobarTranslateMediator* mediator;
 
 // Delegate that holds the Translate Infobar information and actions.
 @property(nonatomic, readonly)
@@ -77,6 +81,8 @@
 
 #pragma mark - TranslateInfobarDelegateObserving
 
+// TODO(crbug.com/1025440): Move this to the mediator once it can push
+// information to the banner.
 - (void)translateInfoBarDelegate:(translate::TranslateInfoBarDelegate*)delegate
           didChangeTranslateStep:(translate::TranslateStep)step
                    withErrorType:(translate::TranslateErrors::Type)errorType {
@@ -120,6 +126,8 @@
 - (void)start {
   if (!self.started) {
     self.started = YES;
+    self.mediator = [[InfobarTranslateMediator alloc]
+        initWithInfoBarDelegate:self.translateInfoBarDelegate];
     [self createBannerViewController];
   }
 }
@@ -128,6 +136,7 @@
   [super stop];
   if (self.started) {
     self.started = NO;
+    self.mediator = nil;
     // RemoveInfoBar() will delete the InfobarIOS that owns this Coordinator
     // from memory.
     self.delegate->RemoveInfoBar();
@@ -220,13 +229,8 @@
       [[InfobarTranslateTableViewController alloc] initWithDelegate:self];
   self.modalViewController.title =
       l10n_util::GetNSString(IDS_IOS_TRANSLATE_INFOBAR_MODAL_TITLE);
-  self.modalViewController.sourceLanguage = base::SysUTF16ToNSString(
-      self.translateInfoBarDelegate->original_language_name());
-  self.modalViewController.targetLanguage = base::SysUTF16ToNSString(
-      self.translateInfoBarDelegate->target_language_name());
-  self.modalViewController.shouldAlwaysTranslateSourceLanguage =
-      self.translateInfoBarDelegate->ShouldAlwaysTranslate();
   self.modalViewController.translateButtonText = [self infobarButtonText];
+  self.mediator.modalConsumer = self.modalViewController;
   // TODO(crbug.com/1014959): Need to be able to toggle the modal button for
   // when translate is in progress.
   return YES;

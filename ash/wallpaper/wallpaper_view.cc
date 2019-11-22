@@ -207,7 +207,7 @@ views::Widget* CreateWallpaperWidget(aura::Window* root_window,
   params.name = "WallpaperViewWidget";
   params.layer_type = ui::LAYER_NOT_DRAWN;
   if (controller->GetWallpaper().isNull())
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent = root_window->GetChildById(container_id);
   wallpaper_widget->Init(std::move(params));
   // Owned by views.

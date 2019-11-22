@@ -41,6 +41,7 @@
 #include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/bundle_utils.h"
 #include "base/android/path_utils.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "ui/base/resource/resource_bundle_android.h"
@@ -214,7 +215,7 @@ ContentBrowserClientImpl::CreateURLLoaderThrottles(
       // Note: Initialize() needs to happen on UI thread.
       safe_browsing_service_ =
           std::make_unique<SafeBrowsingService>(GetUserAgent());
-      safe_browsing_service_->Initialize();
+      safe_browsing_service_->Initialize(browser_context);
     }
 
     result.push_back(safe_browsing_service_->CreateURLLoaderThrottle(
@@ -300,11 +301,13 @@ void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kWebLayerLocalePakDescriptor, fd, region);
 
-  mappings->ShareWithRegion(kWebLayerSecondaryLocalePakDescriptor,
-                            base::GlobalDescriptors::GetInstance()->Get(
-                                kWebLayerSecondaryLocalePakDescriptor),
-                            base::GlobalDescriptors::GetInstance()->GetRegion(
-                                kWebLayerSecondaryLocalePakDescriptor));
+  if (!base::android::BundleUtils::IsBundle()) {
+    mappings->ShareWithRegion(kWebLayerSecondaryLocalePakDescriptor,
+                              base::GlobalDescriptors::GetInstance()->Get(
+                                  kWebLayerSecondaryLocalePakDescriptor),
+                              base::GlobalDescriptors::GetInstance()->GetRegion(
+                                  kWebLayerSecondaryLocalePakDescriptor));
+  }
 
   int crash_signal_fd =
       crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();

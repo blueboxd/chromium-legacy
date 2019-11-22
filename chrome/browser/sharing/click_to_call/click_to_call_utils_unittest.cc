@@ -83,31 +83,27 @@ class ClickToCallUtilsTest : public testing::Test {
 }  // namespace
 
 TEST_F(ClickToCallUtilsTest, NoSharingService_DoNotOfferAnyMenu) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallUI, kClickToCallContextMenuForSelectedText}, {});
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
   create_service_ = false;
   EXPECT_FALSE(ShouldOfferClickToCallForURL(&profile_, GURL(kTelUrl)));
   ExpectClickToCallDisabledForSelectionText(kSelectionTextWithNumber);
 }
 
 TEST_F(ClickToCallUtilsTest, UIFlagDisabled_DoNotOfferAnyMenu) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallContextMenuForSelectedText}, {kClickToCallUI});
+  scoped_feature_list_.InitAndDisableFeature(kClickToCallUI);
   EXPECT_FALSE(ShouldOfferClickToCallForURL(&profile_, GURL(kTelUrl)));
   ExpectClickToCallDisabledForSelectionText(kSelectionTextWithNumber);
 }
 
 TEST_F(ClickToCallUtilsTest, PolicyDisabled_DoNotOfferAnyMenu) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallContextMenuForSelectedText, kClickToCallUI}, {});
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
   profile_.GetPrefs()->SetBoolean(prefs::kClickToCallEnabled, false);
   EXPECT_FALSE(ShouldOfferClickToCallForURL(&profile_, GURL(kTelUrl)));
   ExpectClickToCallDisabledForSelectionText(kSelectionTextWithNumber);
 }
 
 TEST_F(ClickToCallUtilsTest, IncognitoProfile_DoNotOfferAnyMenu) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallUI, kClickToCallContextMenuForSelectedText}, {});
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
   EXPECT_FALSE(ShouldOfferClickToCallForURL(profile_.GetOffTheRecordProfile(),
                                             GURL(kTelUrl)));
   ExpectClickToCallDisabledForSelectionText(kSelectionTextWithNumber,
@@ -130,16 +126,8 @@ TEST_F(ClickToCallUtilsTest, NonTelLink_DoNotOfferForLink) {
 }
 
 TEST_F(ClickToCallUtilsTest,
-       SelectionTextWithNumber_ContextMenuFlagDisabled_DoNotOfferForSelection) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallUI}, {kClickToCallContextMenuForSelectedText});
-  ExpectClickToCallDisabledForSelectionText(kSelectionTextWithNumber);
-}
-
-TEST_F(ClickToCallUtilsTest,
        SelectionText_ValidPhoneNumberRegex_OfferForSelection) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallUI, kClickToCallContextMenuForSelectedText}, {});
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
 
   // Stores a mapping of selected text to expected phone number parsed.
   std::map<std::string, std::string> expectations;
@@ -174,8 +162,7 @@ TEST_F(ClickToCallUtilsTest,
 
 TEST_F(ClickToCallUtilsTest,
        SelectionText_InvalidPhoneNumberRegex_DoNotOfferForSelection) {
-  scoped_feature_list_.InitWithFeatures(
-      {kClickToCallUI, kClickToCallContextMenuForSelectedText}, {});
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
   std::vector<std::string> invalid_selection_texts;
 
   // Does not contain any number.

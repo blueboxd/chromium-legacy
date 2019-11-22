@@ -2,3 +2,7 @@ per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 per-file *_type_converter*.*=set noparent
 per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
+
+# For security review.
+per-file web_engine_browser_interface_binders.cc=set noparent
+per-file web_engine_browser_interface_binders.cc=file://ipc/SECURITY_OWNERS

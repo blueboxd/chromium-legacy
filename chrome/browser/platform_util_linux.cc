@@ -5,6 +5,7 @@
 #include "chrome/browser/platform_util.h"
 
 #include "base/bind.h"
+#include "base/no_destructor.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"

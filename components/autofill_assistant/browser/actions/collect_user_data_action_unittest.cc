@@ -1055,5 +1055,105 @@ TEST_F(CollectUserDataActionTest, SortsProfilesByCompleteness) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(CollectUserDataActionTest, AttachesCreditCardsWithAddress) {
+  ON_CALL(mock_personal_data_manager_, IsAutofillCreditCardEnabled)
+      .WillByDefault(Return(true));
+  ON_CALL(mock_personal_data_manager_, ShouldSuggestServerCards)
+      .WillByDefault(Return(true));
+
+  autofill::AutofillProfile billing_address;
+  autofill::test::SetProfileInfo(
+      &billing_address, "Berta", "", "West", "berta.west@gmail.com", "",
+      "Baker Street 221b", "", "London", "", "WC2N 5DU", "UK", "+44");
+
+  ON_CALL(mock_personal_data_manager_, GetProfileByGUID("GUID"))
+      .WillByDefault(Return(&billing_address));
+
+  autofill::CreditCard card_with_address;
+  autofill::test::SetCreditCardInfo(&card_with_address, "John Doe",
+                                    "4111111111111111", "1", "2050",
+                                    /* billing_address_id= */ "GUID");
+
+  ON_CALL(mock_personal_data_manager_, GetCreditCards())
+      .WillByDefault(
+          Return(std::vector<autofill::CreditCard*>({&card_with_address})));
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [=](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+              std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+
+            EXPECT_THAT(user_data->available_payment_instruments, SizeIs(1));
+            EXPECT_EQ(
+                user_data->available_payment_instruments[0]->card->Compare(
+                    card_with_address),
+                0);
+            EXPECT_EQ(user_data->available_payment_instruments[0]
+                          ->billing_address->Compare(billing_address),
+                      0);
+
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  ActionProto action_proto;
+  auto* user_data = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(user_data);
+  user_data->add_supported_basic_card_networks("visa");
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, AttachesCreditCardsWithoutAddress) {
+  ON_CALL(mock_personal_data_manager_, IsAutofillCreditCardEnabled)
+      .WillByDefault(Return(true));
+  ON_CALL(mock_personal_data_manager_, ShouldSuggestServerCards)
+      .WillByDefault(Return(true));
+
+  autofill::CreditCard card_without_address;
+  autofill::test::SetCreditCardInfo(&card_without_address, "John Doe",
+                                    "4111111111111111", "1", "2050",
+                                    /* billing_address_id= */ "");
+
+  ON_CALL(mock_personal_data_manager_, GetCreditCards())
+      .WillByDefault(
+          Return(std::vector<autofill::CreditCard*>({&card_without_address})));
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke([=](std::unique_ptr<CollectUserDataOptions>
+                                    collect_user_data_options,
+                                std::unique_ptr<UserData> user_data) {
+        user_data->succeed = true;
+
+        EXPECT_THAT(user_data->available_payment_instruments, SizeIs(1));
+        EXPECT_EQ(user_data->available_payment_instruments[0]->card->Compare(
+                      card_without_address),
+                  0);
+        EXPECT_EQ(
+            user_data->available_payment_instruments[0]->billing_address.get(),
+            nullptr);
+
+        std::move(collect_user_data_options->confirm_callback)
+            .Run(std::move(user_data));
+      }));
+
+  ActionProto action_proto;
+  auto* user_data = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(user_data);
+  user_data->add_supported_basic_card_networks("visa");
+
+  EXPECT_CALL(mock_personal_data_manager_, GetProfileByGUID(_)).Times(0);
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

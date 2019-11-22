@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1397 tests; 1357 PASS, 40 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1397 tests; 1356 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -409,7 +409,7 @@ FAIL SubmitEvent interface: existence and properties of interface prototype obje
 FAIL SubmitEvent interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
 FAIL SubmitEvent interface: attribute submitter assert_own_property: self does not have own property "SubmitEvent" expected property "SubmitEvent" missing
 PASS FormDataEvent interface: existence and properties of interface object
-PASS FormDataEvent interface object length
+FAIL FormDataEvent interface object length assert_equals: wrong value for FormDataEvent.length expected 2 but got 1
 PASS FormDataEvent interface object name
 PASS FormDataEvent interface: existence and properties of interface prototype object
 PASS FormDataEvent interface: existence and properties of interface prototype object's "constructor" property

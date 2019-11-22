@@ -2,22 +2,23 @@
   "layers": [
     {
       "name": "Scrolling Contents Layer",
-      "bounds": [800, 2016],
+      "bounds": [785, 2016],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "paintInvalidations": [
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='green'",
-          "rect": [8, 200, 100, 100],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV class='green'",
-          "rect": [8, 100, 100, 100],
-          "reason": "paint property change"
-        }
-      ],
       "transform": 1
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='green'",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#008000",
+      "transform": 2
+    },
+    {
+      "name": "ContentsLayer for Vertical Scrollbar Layer",
+      "position": [785, 0],
+      "bounds": [15, 600],
+      "contentsOpaque": true
     }
   ],
   "transforms": [
@@ -28,6 +29,15 @@
         [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, -100, 0, 1]
+      ]
+    },
+    {
+      "id": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 100, 0, 1]
       ]
     }
   ]

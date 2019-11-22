@@ -61,7 +61,7 @@ Source::Type InferSourceFromMetricsInstallSource(
 
     case WebappInstallSource::COUNT:
       NOTREACHED();
-      return Source::kMaxValue;
+      return Source::kSync;
   }
 }
 

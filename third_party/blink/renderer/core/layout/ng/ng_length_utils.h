@@ -469,9 +469,12 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
 // The following function clamps the calculated size based on the node
 // requirements. Specifically, this adjusts the size based on size containment
 // and display locking status.
-LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode&,
-                                   const NGBoxStrut& border_scrollbar_padding,
-                                   LayoutUnit current_intrinsic_block_size);
+LayoutUnit ClampIntrinsicBlockSize(
+    const NGConstraintSpace&,
+    const NGBlockNode&,
+    const NGBoxStrut& border_scrollbar_padding,
+    LayoutUnit current_intrinsic_block_size,
+    base::Optional<LayoutUnit> body_margin_block_sum = base::nullopt);
 
 // This function checks if the inline size of this node has to be calculated
 // without considering children. If so, it returns the calculated size.

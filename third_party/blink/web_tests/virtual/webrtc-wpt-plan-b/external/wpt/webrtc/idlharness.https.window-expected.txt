@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 499 tests; 402 PASS, 97 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 497 tests; 402 PASS, 95 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Test driver for asyncInitCertificate
@@ -401,7 +401,6 @@ PASS RTCDataChannel interface: attribute maxRetransmits
 PASS RTCDataChannel interface: attribute protocol
 PASS RTCDataChannel interface: attribute negotiated
 PASS RTCDataChannel interface: attribute id
-FAIL RTCDataChannel interface: attribute priority assert_true: The prototype object must have a property "priority" expected true got false
 PASS RTCDataChannel interface: attribute readyState
 PASS RTCDataChannel interface: attribute bufferedAmount
 PASS RTCDataChannel interface: attribute bufferedAmountLowThreshold
@@ -426,7 +425,6 @@ PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') mus
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "protocol" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "negotiated" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "id" with the proper type
-FAIL RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "priority" with the proper type assert_inherits: property "priority" not found in prototype chain
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "readyState" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "bufferedAmount" with the proper type
 PASS RTCDataChannel interface: new RTCPeerConnection().createDataChannel('') must inherit property "bufferedAmountLowThreshold" with the proper type

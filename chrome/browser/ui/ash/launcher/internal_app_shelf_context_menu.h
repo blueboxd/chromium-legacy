@@ -18,11 +18,11 @@ class InternalAppShelfContextMenu : public LauncherContextMenu {
 
   // LauncherContextMenu:
   void GetMenuModel(GetMenuModelCallback callback) override;
+  void BuildMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
+                 GetMenuModelCallback callback) override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
-  void BuildMenu(ui::SimpleMenuModel* menu_model);
-
   DISALLOW_COPY_AND_ASSIGN(InternalAppShelfContextMenu);
 };
 

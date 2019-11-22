@@ -137,19 +137,19 @@ class CrostiniManager : public KeyedService,
   class RestartObserver {
    public:
     virtual ~RestartObserver() {}
-    virtual void OnStageStarted(mojom::InstallerState stage) = 0;
-    virtual void OnComponentLoaded(CrostiniResult result) = 0;
-    virtual void OnConciergeStarted(bool success) = 0;
+    virtual void OnStageStarted(mojom::InstallerState stage) {}
+    virtual void OnComponentLoaded(CrostiniResult result) {}
+    virtual void OnConciergeStarted(bool success) {}
     virtual void OnDiskImageCreated(bool success,
                                     vm_tools::concierge::DiskImageStatus status,
-                                    int64_t disk_size_available) = 0;
-    virtual void OnVmStarted(bool success) = 0;
-    virtual void OnContainerDownloading(int32_t download_percent) = 0;
-    virtual void OnContainerCreated(CrostiniResult result) = 0;
-    virtual void OnContainerSetup(bool success) = 0;
-    virtual void OnContainerStarted(CrostiniResult result) = 0;
-    virtual void OnSshKeysFetched(bool success) = 0;
-    virtual void OnContainerMounted(bool success) = 0;
+                                    int64_t disk_size_available) {}
+    virtual void OnVmStarted(bool success) {}
+    virtual void OnContainerDownloading(int32_t download_percent) {}
+    virtual void OnContainerCreated(CrostiniResult result) {}
+    virtual void OnContainerSetup(bool success) {}
+    virtual void OnContainerStarted(CrostiniResult result) {}
+    virtual void OnSshKeysFetched(bool success) {}
+    virtual void OnContainerMounted(bool success) {}
   };
 
   struct RestartOptions {

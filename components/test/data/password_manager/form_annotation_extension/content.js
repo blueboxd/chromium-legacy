@@ -13,11 +13,11 @@
  * @return {string} One or two class names joined with a space.
  */
 function reduceClassName(list, doc) {
-  var minCount = 1000000;
-  var minCountClasses = '';
+  let minCount = 1000000;
+  let minCountClasses = '';
   for (i = 0; i < list.length; i++) {
-    var className = list.item(i);
-    var count = doc.getElementsByClassName(className).length;
+    const className = list.item(i);
+    const count = doc.getElementsByClassName(className).length;
     if (count == 1) {
       return '.' + className;
     }
@@ -27,10 +27,10 @@ function reduceClassName(list, doc) {
     }
   }
   for (i = 0; i < list.length; i++) {
-    var className1 = list.item(i);
+    const className1 = list.item(i);
     for (j = 0; j < list.length; j++) {
-      var className2 = list.item(j);
-      var count =
+      const className2 = list.item(j);
+      const count =
           doc.getElementsByClassName(className1 + ' ' + className2).length;
       if (count == 1) {
         return '.' + className1 + '.' + className2;
@@ -52,8 +52,8 @@ function reduceClassName(list, doc) {
  * @return {number} The number of siblings with LI tag.
  */
 function getIndexInChildrenList(elem) {
-  var result = 1;
-  var sibling = elem.previousSibling;
+  let result = 1;
+  let sibling = elem.previousSibling;
   while (sibling) {
     if (sibling.tagName == 'LI') {
       result++;
@@ -74,8 +74,8 @@ function getIndexInChildrenList(elem) {
  * @return {string} CSS selector of the element.
  */
 function getSmartSelector(elem) {
-  var doc = elem.ownerDocument;
-  var result = elem.tagName;
+  const doc = elem.ownerDocument;
+  let result = elem.tagName;
 
   if (elem.id) {
     result += '[id=\'' + elem.id + '\']';
@@ -97,7 +97,7 @@ function getSmartSelector(elem) {
   // selector.
   if (doc.querySelectorAll(result).length != 1) {
     if (elem.parentElement) {
-      var parentSelector = getSmartSelector(elem.parentElement);
+      const parentSelector = getSmartSelector(elem.parentElement);
       if (parentSelector) {
         return parentSelector + ' > ' + result;
       }
@@ -121,12 +121,12 @@ function getSmartSelector(elem) {
 function getFrames(elem) {
   frames = [];
   while (elem.ownerDocument.defaultView != top) {
-    var frameElement = elem.ownerDocument.defaultView.frameElement;
+    const frameElement = elem.ownerDocument.defaultView.frameElement;
     if (!frameElement) {
       console.error('frameElement is null. Unable to fetch data about iframes');
       break;
     }
-    var iframeSelector = getSmartSelector(frameElement);
+    const iframeSelector = getSmartSelector(frameElement);
     frames.unshift(iframeSelector);
     elem = elem.ownerDocument.defaultView.frameElement;
   }
@@ -158,13 +158,13 @@ function fixElementSelection(element) {
   if (isClickableElementOrInput(element)) {
     return element;
   }
-  var clickableChildren = element.querySelectorAll(
+  const clickableChildren = element.querySelectorAll(
       ':scope input, :scope a, :scope button, :scope submit, :scope [href]');
   if (clickableChildren.length > 0) {
     return clickableChildren[0];
   }
-  var parent = element;
-  for (var i = 0; i < 5; i++) {
+  let parent = element;
+  for (let i = 0; i < 5; i++) {
     parent = parent.parentElement;
     if (!parent) {
       break;
@@ -190,13 +190,13 @@ function fixElementSelection(element) {
  */
 function couldBeFirstStepOfScript(elem, selector) {
   try {
-    var xmlHttp = new XMLHttpRequest();
+    const xmlHttp = new XMLHttpRequest();
     xmlHttp.open('GET', elem.ownerDocument.URL,
                  false /* false for synchronous request */);
     xmlHttp.send();
-    var wrapper = document.createElement('html');
+    const wrapper = document.createElement('html');
     wrapper.innerHTML = xmlHttp.responseText;
-    var e = wrapper.querySelector(selector);
+    const e = wrapper.querySelector(selector);
     return e && (e.offsetWidth * e.offsetHeight > 0);
   } catch (err) {
     return false;
@@ -207,13 +207,13 @@ function couldBeFirstStepOfScript(elem, selector) {
  * Add click listener.
  */
 document.addEventListener('click', function(event) {
-  var element = fixElementSelection(event.target);
-  var url = element.ownerDocument.URL;
-  var isPwdField = (element.tagName == 'INPUT') && (element.type == 'password');
-  var selector = getSmartSelector(element);
-  var frames = getFrames(element);
-  var classifierOutcome = element.hasAttribute('pm_debug_pwd_creation_field');
-  var couldBeFirst = couldBeFirstStepOfScript(element, selector);
+  const element = fixElementSelection(event.target);
+  const url = element.ownerDocument.URL;
+  const isPwdField = (element.tagName == 'INPUT') && (element.type == 'password');
+  const selector = getSmartSelector(element);
+  const frames = getFrames(element);
+  const classifierOutcome = element.hasAttribute('pm_debug_pwd_creation_field');
+  const couldBeFirst = couldBeFirstStepOfScript(element, selector);
   chrome.runtime.sendMessage(
     {isPwdField: isPwdField, selector: selector, url: url, frames: frames,
      couldBeFirst: couldBeFirst, classifierOutcome: classifierOutcome},

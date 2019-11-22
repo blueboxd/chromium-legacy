@@ -22,6 +22,7 @@
 #include "content/public/common/socket_permission_request.h"
 #include "net/base/address_list.h"
 #include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
@@ -153,7 +154,8 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
       receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(
       base::BindOnce(&PepperHostResolverMessageFilter::OnComplete,
-                     base::Unretained(this), net::ERR_FAILED, base::nullopt));
+                     base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                     net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   host_resolve_context_ = context->MakeReplyMessageContext();
 
   return PP_OK_COMPLETIONPENDING;
@@ -161,6 +163,7 @@ int32_t PepperHostResolverMessageFilter::OnMsgResolve(
 
 void PepperHostResolverMessageFilter::OnComplete(
     int result,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<net::AddressList>& resolved_addresses) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   receiver_.reset();
@@ -168,7 +171,7 @@ void PepperHostResolverMessageFilter::OnComplete(
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&PepperHostResolverMessageFilter::OnLookupFinished, this,
-                     result, std::move(resolved_addresses),
+                     resolve_error_info.error, std::move(resolved_addresses),
                      host_resolve_context_));
   host_resolve_context_ = ppapi::host::ReplyMessageContext();
 

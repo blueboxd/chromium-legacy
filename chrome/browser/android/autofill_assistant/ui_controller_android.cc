@@ -996,6 +996,25 @@ void UiControllerAndroid::OnUserDataChanged(
     }
     Java_AssistantCollectUserDataModel_setAutofillProfiles(env, jmodel, jlist);
   }
+
+  if (field_change == UserData::FieldChange::ALL ||
+      field_change == UserData::FieldChange::AVAILABLE_PAYMENT_INSTRUMENTS) {
+    auto jlist =
+        Java_AssistantCollectUserDataModel_createAutofillPaymentMethodList(env);
+    for (const auto& instrument : state->available_payment_instruments) {
+      Java_AssistantCollectUserDataModel_addAutofillPaymentMethod(
+          env, jlist,
+          autofill::PersonalDataManagerAndroid::CreateJavaCreditCardFromNative(
+              env, *(instrument->card)),
+          instrument->billing_address == nullptr
+              ? nullptr
+              : autofill::PersonalDataManagerAndroid::
+                    CreateJavaProfileFromNative(
+                        env, *(instrument->billing_address)));
+    }
+    Java_AssistantCollectUserDataModel_setAutofillPaymentMethods(env, jmodel,
+                                                                 jlist);
+  }
 }
 
 // FormProto related methods.

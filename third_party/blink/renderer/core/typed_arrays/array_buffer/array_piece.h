@@ -38,18 +38,18 @@ class CORE_EXPORT ArrayPiece {
   bool IsDetached() const;
   void* Data() const;
   unsigned char* Bytes() const;
-  unsigned ByteLength() const;
+  size_t ByteLengthAsSizeT() const;
 
  protected:
   void InitWithArrayBuffer(ArrayBuffer*);
   void InitWithArrayBufferView(ArrayBufferView*);
-  void InitWithData(void* data, unsigned byte_length);
+  void InitWithData(void* data, size_t byte_length);
 
  private:
   void InitNull();
 
   void* data_;
-  unsigned byte_length_;
+  size_t byte_length_;
   bool is_null_;
   bool is_detached_;
 };

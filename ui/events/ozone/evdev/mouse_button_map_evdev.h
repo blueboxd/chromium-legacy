@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 
@@ -21,7 +21,7 @@ namespace ui {
 //
 // The mouse button map is shared between all input devices connected to the
 // system.
-class EVENTS_OZONE_EVDEV_EXPORT MouseButtonMapEvdev {
+class COMPONENT_EXPORT(EVDEV) MouseButtonMapEvdev {
  public:
   MouseButtonMapEvdev();
   ~MouseButtonMapEvdev();

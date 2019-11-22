@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 #include "media/fuchsia/cdm/client/mojo_fuchsia_cdm_provider.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 
 namespace media {
 
 MojoFuchsiaCdmProvider::MojoFuchsiaCdmProvider(
-    service_manager::InterfaceProvider* interface_provider)
-    : interface_provider_(interface_provider) {
-  DCHECK(interface_provider_);
+    blink::BrowserInterfaceBrokerProxy* interface_broker)
+    : interface_broker_(interface_broker) {
+  DCHECK(interface_broker_);
 }
 
 MojoFuchsiaCdmProvider::~MojoFuchsiaCdmProvider() = default;
@@ -20,8 +20,7 @@ void MojoFuchsiaCdmProvider::CreateCdmInterface(
     fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
         cdm_request) {
   if (!cdm_provider_) {
-    interface_provider_->GetInterface(
-        cdm_provider_.BindNewPipeAndPassReceiver());
+    interface_broker_->GetInterface(cdm_provider_.BindNewPipeAndPassReceiver());
   }
 
   cdm_provider_->CreateCdmInterface(key_system, std::move(cdm_request));

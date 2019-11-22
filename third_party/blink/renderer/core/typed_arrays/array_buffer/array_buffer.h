@@ -94,7 +94,7 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   ~ArrayBuffer() = default;
 
  protected:
-  explicit ArrayBuffer(ArrayBufferContents&);
+  inline explicit ArrayBuffer(ArrayBufferContents&);
 
  private:
   static inline scoped_refptr<ArrayBuffer> Create(
@@ -113,7 +113,7 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   inline unsigned ClampIndex(unsigned index) const;
 
   ArrayBufferContents contents_;
-  HashSet<ArrayBufferView*> views_;
+  ArrayBufferView* first_view_;
   bool is_detached_;
 };
 
@@ -205,6 +205,14 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(
                                ArrayBufferContents::kShared, policy);
   CHECK(contents.DataShared());
   return base::AdoptRef(new ArrayBuffer(contents));
+}
+
+ArrayBuffer::ArrayBuffer(ArrayBufferContents& contents)
+    : first_view_(nullptr), is_detached_(false) {
+  if (contents.IsShared())
+    contents.ShareWith(contents_);
+  else
+    contents.Transfer(contents_);
 }
 
 void* ArrayBuffer::Data() {

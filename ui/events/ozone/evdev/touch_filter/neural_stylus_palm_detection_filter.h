@@ -28,7 +28,7 @@ namespace ui {
 // An implementation of PalmDetectionFilter that relies on a DNN implementation
 // to decide on palm detection. Requires a configured model as an argument.
 // Heuristics are added for handling short strokes
-class EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilter
+class COMPONENT_EXPORT(EVDEV) NeuralStylusPalmDetectionFilter
     : public PalmDetectionFilter {
  public:
   // Takes ownership of the model.

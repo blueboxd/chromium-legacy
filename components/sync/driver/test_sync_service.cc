@@ -127,6 +127,11 @@ void TestSyncService::SetPassphraseRequiredForPreferredDataTypes(
   user_settings_.SetPassphraseRequiredForPreferredDataTypes(required);
 }
 
+void TestSyncService::SetTrustedVaultKeyRequiredForPreferredDataTypes(
+    bool required) {
+  user_settings_.SetTrustedVaultKeyRequiredForPreferredDataTypes(required);
+}
+
 void TestSyncService::SetIsUsingSecondaryPassphrase(bool enabled) {
   user_settings_.SetIsUsingSecondaryPassphrase(enabled);
 }

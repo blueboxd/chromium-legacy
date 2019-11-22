@@ -7,11 +7,11 @@
 
 #include <set>
 #include <vector>
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/events/devices/gamepad_device.h"
-#include "ui/events/ozone/events_ozone_export.h"
 #include "ui/events/ozone/gamepad/gamepad_observer.h"
 
 namespace base {
@@ -21,7 +21,7 @@ struct DefaultSingletonTraits;
 
 namespace ui {
 
-class EVENTS_OZONE_EXPORT GamepadProviderOzone {
+class COMPONENT_EXPORT(EVENTS_OZONE) GamepadProviderOzone {
  public:
   // Get the GamepadProviderOzone instance.
   static GamepadProviderOzone* GetInstance();

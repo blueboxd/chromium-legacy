@@ -932,8 +932,9 @@ void NGBlockNode::PlaceChildrenInFlowThread(
     const NGPhysicalBoxFragment& physical_fragment) {
   const NGBlockBreakToken* previous_break_token = nullptr;
   for (const auto& child : physical_fragment.Children()) {
-    if (child->GetLayoutObject() != box_) {
-      DCHECK(child->GetLayoutObject()->IsColumnSpanAll());
+    const LayoutObject* child_object = child->GetLayoutObject();
+    if (child_object && child_object != box_) {
+      DCHECK(child_object->IsColumnSpanAll());
       CopyChildFragmentPosition(To<NGPhysicalBoxFragment>(*child), child.offset,
                                 physical_fragment);
       continue;

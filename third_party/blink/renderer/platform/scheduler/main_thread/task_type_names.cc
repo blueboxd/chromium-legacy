@@ -85,8 +85,6 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "InternalMedia";
     case TaskType::kInternalMediaRealTime:
       return "InternalMediaRealTime";
-    case TaskType::kInternalIPC:
-      return "InternalIPC";
     case TaskType::kInternalUserInteraction:
       return "InternalUserInteraction";
     case TaskType::kInternalInspector:

@@ -14,6 +14,14 @@ namespace net {
 struct NET_EXPORT ResolveErrorInfo {
   ResolveErrorInfo();
   ResolveErrorInfo(int resolve_error);
+  ResolveErrorInfo(const ResolveErrorInfo& resolve_error_info);
+  ResolveErrorInfo(ResolveErrorInfo&& other);
+
+  ResolveErrorInfo& operator=(const ResolveErrorInfo& other);
+  ResolveErrorInfo& operator=(ResolveErrorInfo&& other);
+
+  bool operator==(const ResolveErrorInfo& other) const;
+  bool operator!=(const ResolveErrorInfo& other) const;
 
   int error = net::OK;
 };

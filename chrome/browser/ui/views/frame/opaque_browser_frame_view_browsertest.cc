@@ -137,6 +137,7 @@ IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, StaticTitleBarHeight) {
   if (!InstallAndLaunchWebApp())
     return;
 
+  opaque_browser_frame_view_->Layout();
   const int title_bar_height = GetRestoredTitleBarHeight();
   EXPECT_GT(title_bar_height, 0);
 

@@ -9,6 +9,6 @@
   Exposed=Window,
   RuntimeEnabled=SmsReceiver
 ] interface SMSReceiver {
-  [CallWith=ScriptState, RaisesException, MeasureAs=SMSReceiverStart]
+  [CallWith=ScriptState, MeasureAs=SMSReceiverStart]
   Promise<SMS> receive(optional SMSReceiverOptions options);
 };

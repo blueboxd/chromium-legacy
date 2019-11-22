@@ -23,10 +23,11 @@ bool NGOutlineUtils::HasPaintedOutline(const ComputedStyle& style,
 
 bool NGOutlineUtils::ShouldPaintOutline(
     const NGPhysicalBoxFragment& physical_fragment) {
+  if (!physical_fragment.IsInlineBox())
+    return true;
   const LayoutObject* layout_object = physical_fragment.GetLayoutObject();
   DCHECK(layout_object);
-  if (!layout_object->IsLayoutInline())
-    return true;
+  DCHECK(layout_object->IsLayoutInline());
 
   // A |LayoutInline| can be split across multiple objects. The first fragment
   // produced should paint the outline for *all* fragments.

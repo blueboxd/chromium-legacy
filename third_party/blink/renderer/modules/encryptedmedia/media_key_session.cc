@@ -460,7 +460,7 @@ ScriptPromise MediaKeySession::generateRequest(
 
   // 5. If initData is an empty array, return a promise rejected with a
   //    newly created TypeError.
-  if (!init_data.ByteLength()) {
+  if (!init_data.ByteLengthAsSizeT()) {
     return ScriptPromise::Reject(
         script_state,
         V8ThrowException::CreateTypeError(script_state->GetIsolate(),
@@ -487,7 +487,7 @@ ScriptPromise MediaKeySession::generateRequest(
 
   // 7. Let init data be a copy of the contents of the initData parameter.
   DOMArrayBuffer* init_data_buffer =
-      DOMArrayBuffer::Create(init_data.Data(), init_data.ByteLength());
+      DOMArrayBuffer::Create(init_data.Data(), init_data.ByteLengthAsSizeT());
 
   // 8. Let session type be this object's session type.
   //    (Done in constructor.)
@@ -699,7 +699,7 @@ ScriptPromise MediaKeySession::update(ScriptState* script_state,
 
   // 3. If response is an empty array, return a promise rejected with a
   //    newly created TypeError.
-  if (!response.ByteLength()) {
+  if (!response.ByteLengthAsSizeT()) {
     return ScriptPromise::Reject(
         script_state,
         V8ThrowException::CreateTypeError(script_state->GetIsolate(),
@@ -708,7 +708,7 @@ ScriptPromise MediaKeySession::update(ScriptState* script_state,
 
   // 4. Let response copy be a copy of the contents of the response parameter.
   DOMArrayBuffer* response_copy =
-      DOMArrayBuffer::Create(response.Data(), response.ByteLength());
+      DOMArrayBuffer::Create(response.Data(), response.ByteLengthAsSizeT());
 
   // 5. Let promise be a new promise.
   SimpleResultPromise* result = MakeGarbageCollected<SimpleResultPromise>(

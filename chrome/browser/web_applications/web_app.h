@@ -91,6 +91,7 @@ class WebApp {
   bool HasOnlySource(Source::Type source) const;
 
   bool IsSynced() const;
+  bool WasInstalledByUser() const;
 
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);
@@ -113,7 +114,7 @@ class WebApp {
   AppId app_id_;
 
   // This set always contains at least one source.
-  using Sources = std::bitset<Source::kMaxValue>;
+  using Sources = std::bitset<Source::kMaxValue + 1>;
   Sources sources_;
 
   std::string name_;

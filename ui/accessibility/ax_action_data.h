@@ -76,6 +76,10 @@ struct AX_EXPORT AXActionData {
   // scroll alignment controls where a node is scrolled within the viewport.
   ax::mojom::ScrollAlignment horizontal_scroll_alignment;
   ax::mojom::ScrollAlignment vertical_scroll_alignment;
+
+  // The behavior to use for a SCROLL_TO_MAKE_VISIBLE. This controls whether or
+  // not the viewport is scrolled when the node is already visible.
+  ax::mojom::ScrollBehavior scroll_behavior;
 };
 
 }  // namespace ui

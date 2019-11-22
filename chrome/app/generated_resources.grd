@@ -7820,6 +7820,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL" desc="Hyperlink text indicating user must re-enter their sync password.">
           Enter passphrase
         </message>
+        <message name="IDS_SYNC_STATUS_NEEDS_KEYS_LINK_LABEL" desc="Hyperlink text indicating user must reauthenticate to sync encrypted datatypes.">
+          Fix now
+        </message>
 
         <message name="IDS_SYNC_SERVER_IS_UNREACHABLE" desc="The message to display in the New Tab Page and Settings Page sync section when the server is unreachable.">
           Couldn't connect to the sync server. Retrying...
@@ -8931,6 +8934,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_PERMISSION_TITLE" desc="Title text for dialog requesting permission for a site to access the device's microphone and camera.">
           Media
+        </message>
+      </if>
+
+      <!-- NFC permission -->
+      <if expr="is_android">
+        <message name="IDS_NFC_INFOBAR_TEXT" desc="Text requesting permission for a site to use NFC">
+          <ph name="URL">$1<ex>google.com</ex></ph> wants to send and receive info when you tap your phone on an NFC device
+        </message>
+        <message name="IDS_NFC_PERMISSION_TITLE" desc="Title text for dialog requesting permission for a site to use NFC">
+          NFC
         </message>
       </if>
 

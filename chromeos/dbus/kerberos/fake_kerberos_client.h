@@ -55,6 +55,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   std::size_t GetNumberOfAccounts() const override;
 
  private:
+  using RepeatedAccountField =
+      google::protobuf::RepeatedPtrField<kerberos::Account>;
+
   struct AccountData {
     // User principal (user@EXAMPLE.COM) that identifies this account.
     std::string principal_name;
@@ -95,7 +98,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeKerberosClient
   // Appends |function_name| to |recorded_function_calls_| if the latter is set.
   void MaybeRecordFunctionCallForTesting(const char* function_name);
 
-  // Maps principal name (user@REALM.COM) to account data.
+  // Maps the list of account data into the given proto repeated field.
+  void MapAccountData(RepeatedAccountField* accounts);
+
+  // List of account data.
   std::vector<AccountData> accounts_;
 
   // For recording which methods have been called (for testing).

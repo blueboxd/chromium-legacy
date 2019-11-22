@@ -49,7 +49,10 @@ class PDF {
   // Needs to stay in sync with the C version.
   struct PrivateAccessibilityLinkInfo {
     std::string url;
+    // Index of this link in the collection of links in the page.
     uint32_t index_in_page;
+    // Index of the starting text run of this link in the collection of all
+    // text runs in the page.
     uint32_t text_run_index;
     uint32_t text_run_count;
     FloatRect bounds;
@@ -63,11 +66,25 @@ class PDF {
     FloatRect bounds;
   };
 
+  // C++ version of PP_PrivateAccessibilityHighlightInfo.
+  // Needs to stay in sync with the C version.
+  struct PrivateAccessibilityHighlightInfo {
+    std::string note_text;
+    // Index of this highlight in the collection of highlights in the page.
+    uint32_t index_in_page;
+    // Index of the starting text run of this highlight in the collection of all
+    // text runs in the page.
+    uint32_t text_run_index;
+    uint32_t text_run_count;
+    FloatRect bounds;
+  };
+
   // C++ version of PP_PrivateAccessibilityPageObjects.
   // Needs to stay in sync with the C version.
   struct PrivateAccessibilityPageObjects {
     std::vector<PrivateAccessibilityLinkInfo> links;
     std::vector<PrivateAccessibilityImageInfo> images;
+    std::vector<PrivateAccessibilityHighlightInfo> highlights;
   };
 
   // Returns true if the required interface is available.

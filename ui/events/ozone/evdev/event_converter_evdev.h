@@ -11,13 +11,13 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop_current.h"
 #include "ui/events/devices/gamepad_device.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/gfx/geometry/size.h"
 
 struct input_event;
@@ -25,7 +25,7 @@ struct input_event;
 namespace ui {
 enum class DomCode;
 
-class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
+class COMPONENT_EXPORT(EVDEV) EventConverterEvdev
     : public base::MessagePumpForUI::FdWatcher {
  public:
   EventConverterEvdev(int fd,

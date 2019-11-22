@@ -6,7 +6,7 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -185,14 +185,9 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
   // for each operation, and can avoid code duplication between here and other
   // uses.
   mojo::Remote<mojom::blink::NativeFileSystemManager> manager;
-  auto* provider = context->GetInterfaceProvider();
-  if (!provider) {
-    resolver->Reject(file_error::CreateDOMException(
-        base::File::FILE_ERROR_INVALID_OPERATION));
-    return result;
-  }
+  context->GetBrowserInterfaceBroker().GetInterface(
+      manager.BindNewPipeAndPassReceiver());
 
-  provider->GetInterface(manager.BindNewPipeAndPassReceiver());
   auto* raw_manager = manager.get();
   raw_manager->GetSandboxedFileSystem(WTF::Bind(
       [](ScriptPromiseResolver* resolver,

@@ -230,7 +230,10 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
       if (model && model->loaded())
         model->SetReadStatus(original_pending_url, true);
     }
-    if (last_committed_url.is_valid()) {
+    if (last_committed_url.is_valid() ||
+        !web_state_->GetNavigationManager()->GetLastCommittedItem()) {
+      // Launch the app if the URL is valid or if it is the first page of the
+      // tab.
       RequestToLaunchApp(request_url, last_committed_url, is_link_transition);
     }
     return false;

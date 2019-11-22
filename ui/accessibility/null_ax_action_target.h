@@ -42,7 +42,8 @@ class AX_EXPORT NullAXActionTarget : public AXActionTarget {
   bool ScrollToMakeVisibleWithSubFocus(
       const gfx::Rect& rect,
       ax::mojom::ScrollAlignment horizontal_scroll_alignment,
-      ax::mojom::ScrollAlignment vertical_scroll_alignment) const override;
+      ax::mojom::ScrollAlignment vertical_scroll_alignment,
+      ax::mojom::ScrollBehavior scroll_behavior) const override;
   bool ScrollToGlobalPoint(const gfx::Point& point) const override;
 };
 

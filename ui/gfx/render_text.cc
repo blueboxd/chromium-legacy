@@ -998,14 +998,6 @@ SizeF RenderText::GetStringSizeF() {
   return SizeF(GetStringSize());
 }
 
-Size RenderText::GetLineSize(const SelectionModel& caret) {
-  return GetStringSize();
-}
-
-float RenderText::TotalLineWidth() {
-  return GetStringSizeF().width();
-}
-
 float RenderText::GetContentWidthF() {
   const float string_size = GetStringSizeF().width();
   // The cursor is drawn one pixel beyond the int-enclosed text bounds.
@@ -1634,8 +1626,7 @@ HorizontalAlignment RenderText::GetCurrentHorizontalAlignment() {
 }
 
 Vector2d RenderText::GetAlignmentOffset(size_t line_number) {
-  // TODO(ckocagil): Enable |lines_| usage on RenderTextMac.
-  if (MultilineSupported() && multiline_)
+  if (multiline_)
     DCHECK_LT(line_number, lines_.size());
   Vector2d offset;
   HorizontalAlignment horizontal_alignment = GetCurrentHorizontalAlignment();
@@ -2148,16 +2139,6 @@ Range RenderText::ExpandRangeToWordBoundary(const Range& range) const {
 
   return range.is_reversed() ? Range(range_max, range_min)
                              : Range(range_min, range_max);
-}
-
-internal::TextRunList* RenderText::GetRunList() {
-  NOTREACHED();
-  return nullptr;
-}
-
-const internal::TextRunList* RenderText::GetRunList() const {
-  NOTREACHED();
-  return nullptr;
 }
 
 }  // namespace gfx

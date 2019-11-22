@@ -139,15 +139,22 @@ bool V4L2StatelessVideoDecoderBackend::Initialize() {
     return false;
   }
 
+  if (!IsSupportedProfile(profile_)) {
+    VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
+    return false;
+  }
+
   // Create codec-specific AcceleratedVideoDecoder.
   // TODO(akahuang): Check the profile is supported.
   if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
     if (supports_requests_) {
       avd_.reset(new H264Decoder(
-          std::make_unique<V4L2H264Accelerator>(this, device_.get())));
+          std::make_unique<V4L2H264Accelerator>(this, device_.get()),
+          profile_));
     } else {
       avd_.reset(new H264Decoder(
-          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get())));
+          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),
+          profile_));
     }
   } else if (profile_ >= VP8PROFILE_MIN && profile_ <= VP8PROFILE_MAX) {
     if (supports_requests_) {
@@ -159,7 +166,7 @@ bool V4L2StatelessVideoDecoderBackend::Initialize() {
     }
   } else if (profile_ >= VP9PROFILE_MIN && profile_ <= VP9PROFILE_MAX) {
     avd_.reset(new VP9Decoder(
-        std::make_unique<V4L2VP9Accelerator>(this, device_.get())));
+        std::make_unique<V4L2VP9Accelerator>(this, device_.get()), profile_));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile_);
     return false;
@@ -385,7 +392,26 @@ bool V4L2StatelessVideoDecoderBackend::PumpDecodeTask() {
   pause_reason_ = PauseReason::kNone;
   while (true) {
     switch (avd_->Decode()) {
-      case AcceleratedVideoDecoder::kAllocateNewSurfaces:
+      case AcceleratedVideoDecoder::kConfigChange:
+        if (profile_ != avd_->GetProfile()) {
+          DVLOGF(3) << "Profile is changed: " << profile_ << " -> "
+                    << avd_->GetProfile();
+          if (!IsSupportedProfile(avd_->GetProfile())) {
+            VLOGF(2) << "Unsupported profile: " << avd_->GetProfile();
+            return false;
+          }
+
+          profile_ = avd_->GetProfile();
+        }
+
+        if (pic_size_ == avd_->GetPicSize()) {
+          // There is no need to do anything in V4L2 API when only a profile is
+          // changed.
+          DVLOGF(3) << "Only profile is changed. No need to do anything.";
+          continue;
+        }
+        pic_size_ = avd_->GetPicSize();
+
         DVLOGF(3) << "Need to change resolution. Pause decoding.";
         client_->InitiateFlush();
 
@@ -504,13 +530,12 @@ void V4L2StatelessVideoDecoderBackend::ChangeResolution() {
   DCHECK(surfaces_at_device_.empty());
   DCHECK(output_request_queue_.empty());
   // Set output format with the new resolution.
-  gfx::Size pic_size = avd_->GetPicSize();
-  DCHECK(!pic_size.IsEmpty());
-  DVLOGF(3) << "Change resolution to " << pic_size.ToString();
+  DCHECK(!pic_size_.IsEmpty());
+  DVLOGF(3) << "Change resolution to " << pic_size_.ToString();
 
   size_t num_output_frames = avd_->GetRequiredNumOfPictures();
   gfx::Rect visible_rect = avd_->GetVisibleRect();
-  client_->ChangeResolution(pic_size, visible_rect, num_output_frames);
+  client_->ChangeResolution(pic_size_, visible_rect, num_output_frames);
 }
 
 void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
@@ -616,6 +641,27 @@ bool V4L2StatelessVideoDecoderBackend::AllocateRequests() {
   DCHECK_EQ(requests_.size(), kNumRequests);
 
   return true;
+}
+
+bool V4L2StatelessVideoDecoderBackend::IsSupportedProfile(
+    VideoCodecProfile profile) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(device_);
+  if (supported_profiles_.empty()) {
+    constexpr uint32_t kSupportedInputFourccs[] = {
+        V4L2_PIX_FMT_H264_SLICE,
+        V4L2_PIX_FMT_VP8_FRAME,
+        V4L2_PIX_FMT_VP9_FRAME,
+    };
+    scoped_refptr<V4L2Device> device = V4L2Device::Create();
+    VideoDecodeAccelerator::SupportedProfiles profiles =
+        device->GetSupportedDecodeProfiles(base::size(kSupportedInputFourccs),
+                                           kSupportedInputFourccs);
+    for (const auto& profile : profiles)
+      supported_profiles_.push_back(profile.profile);
+  }
+  return std::find(supported_profiles_.begin(), supported_profiles_.end(),
+                   profile) != supported_profiles_.end();
 }
 
 }  // namespace media

@@ -543,6 +543,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) override;
 
+  // Binds |receiver| to the NativeFileSystemManager instance owned by the
+  // render process host, and is used by workers via BrowserInterfaceBroker.
+  void BindNativeFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver)
+      override;
+
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();
   }
@@ -577,6 +584,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreatePaymentManagerForOrigin(
       const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) override;
+
+  // Binds |receiver| to the NotificationService instance owned by
+  // |storage_partition_impl_|, and is used by frames and workers via
+  // BrowserInterfaceBroker.
+  void CreateNotificationService(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::NotificationService> receiver)
+      override;
 
   // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
   // exception will be removed when the corresponding RenderProcessHostImpl is

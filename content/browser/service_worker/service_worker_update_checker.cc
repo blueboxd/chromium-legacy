@@ -82,25 +82,26 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
     std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare,
     const GURL& main_script_url,
     int64_t main_script_resource_id,
-    const GURL& referrer,
     scoped_refptr<ServiceWorkerVersion> version_to_update,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     bool force_bypass_cache,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     base::TimeDelta time_since_last_check,
-    ServiceWorkerContextCore* context)
+    ServiceWorkerContextCore* context,
+    blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object)
     : main_script_url_(main_script_url),
       main_script_resource_id_(main_script_resource_id),
-      referrer_(referrer),
       scripts_to_compare_(std::move(scripts_to_compare)),
       version_to_update_(std::move(version_to_update)),
       loader_factory_(std::move(loader_factory)),
       force_bypass_cache_(force_bypass_cache),
       update_via_cache_(update_via_cache),
       time_since_last_check_(time_since_last_check),
-      context_(context) {
+      context_(context),
+      fetch_client_settings_object_(std::move(fetch_client_settings_object)) {
   DCHECK(context_);
-  DCHECK(referrer.is_valid());
+  DCHECK(fetch_client_settings_object_);
+  DCHECK(fetch_client_settings_object_->outgoing_referrer.is_valid());
 }
 
 ServiceWorkerUpdateChecker::~ServiceWorkerUpdateChecker() = default;
@@ -255,8 +256,8 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
 
   auto writer = storage->CreateResponseWriter(storage->NewResourceId());
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
-      url, referrer_, is_main_script, main_script_url_,
-      version_to_update_->scope(), force_bypass_cache_, update_via_cache_,
+      url, is_main_script, main_script_url_, version_to_update_->scope(),
+      force_bypass_cache_, update_via_cache_, fetch_client_settings_object_,
       time_since_last_check_, default_headers_, browser_context_getter_,
       loader_factory_, std::move(compare_reader), std::move(copy_reader),
       std::move(writer),

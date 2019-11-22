@@ -46,6 +46,11 @@ class FunctionLike(WithIdentifier):
         return self._is_static
 
     @property
+    def is_variadic(self):
+        """Returns True if this function takes variadic arguments."""
+        return bool(self.arguments and self.arguments[-1].is_variadic)
+
+    @property
     def num_of_required_arguments(self):
         """Returns the number of required arguments."""
         return len(

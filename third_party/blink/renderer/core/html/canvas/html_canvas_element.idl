@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/multipage/canvas.html#htmlcanvaselement
+// https://html.spec.whatwg.org/C/canvas.html#htmlcanvaselement
 [
     Exposed=Window,
     HTMLConstructor
@@ -36,12 +36,9 @@
     [RaisesException=Setter, CEReactions] attribute unsigned long width;
     [RaisesException=Setter, CEReactions] attribute unsigned long height;
 
-    // Note: The arguments argument is variadic in the spec, but not here as
-    // only one extra argument is actually used.
-    // FIXME: type should not have a default value.
-    [HighEntropy, MeasureAs=CanvasToDataURL, RaisesException] DOMString toDataURL(optional DOMString type = null, optional any arguments);
+    [HighEntropy, MeasureAs=CanvasToDataURL, RaisesException] DOMString toDataURL(optional DOMString type = "image/png", optional any quality);
 
-    [HighEntropy, MeasureAs=CanvasToBlob, RaisesException] void toBlob(BlobCallback _callback, optional DOMString type = null, optional any arguments);
+    [HighEntropy, MeasureAs=CanvasToBlob, RaisesException] void toBlob(BlobCallback _callback, optional DOMString type = "image/png", optional any quality);
 
     [HighEntropy, RuntimeEnabled=CanvasColorManagement, MeasureAs=CanvasConvertToBlob, RaisesException, CallWith=ScriptState] Promise<Blob> convertToBlob(optional ImageEncodeOptions options);
 };

@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
@@ -539,6 +540,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
                     grey_descendant(mainTextLabelMatcher), nil);
 }
 
++ (id<GREYMatcher>)googleServicesSettingsView {
+  return grey_accessibilityID(kGoogleServicesSettingsViewIdentifier);
+}
+
 + (id<GREYMatcher>)settingsMenuBackButton {
   UINavigationBar* navBar = base::mac::ObjCCastStrict<UINavigationBar>(
       SubviewWithAccessibilityIdentifier(
@@ -767,6 +772,21 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)settingsBottomToolbarDeleteButton {
   return grey_accessibilityID(kSettingsToolbarDeleteButtonId);
+}
+
++ (id<GREYMatcher>)contentViewSmallerThanScrollView {
+  GREYMatchesBlock matches = ^BOOL(UIView* view) {
+    UIScrollView* scrollView = base::mac::ObjCCast<UIScrollView>(view);
+    return scrollView &&
+           scrollView.contentSize.height < scrollView.bounds.size.height;
+  };
+  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
+    [description
+        appendText:@"Not a scroll view or the scroll view content is bigger "
+                   @"than the scroll view bounds"];
+  };
+  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                              descriptionBlock:describe];
 }
 
 #pragma mark - Manual Fallback

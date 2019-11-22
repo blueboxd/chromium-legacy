@@ -13,8 +13,33 @@ group("closure_compile") {
 
 js_type_check("compile_resources") {
   deps = [
+    ":camera",
+    ":camera_intent",
     ":settings",
     ":view",
+  ]
+}
+
+js_library("camera") {
+  deps = [
+    "..:chrome_util",
+    "..:metrics",
+    "..:type",
+    "../models:result_saver",
+    "camera:layout",
+    "camera:modes",
+    "camera:options",
+    "camera:preview",
+    "camera:timertick",
+  ]
+}
+
+js_library("camera_intent") {
+  deps = [
+    ":camera",
+    "..:chrome_util",
+    "../models:video_saver",
+    "camera:review_result",
   ]
 }
 

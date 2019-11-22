@@ -19,7 +19,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
 import android.util.Pair;
-import android.view.KeyEvent;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -35,7 +34,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
@@ -371,30 +369,8 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
     }
 
     @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        Boolean result = KeyboardShortcuts.dispatchKeyEvent(event, this,
-                mToolbarCoordinator.toolbarIsInitialized());
-        return result != null ? result : super.dispatchKeyEvent(event);
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (!mToolbarCoordinator.toolbarIsInitialized()) {
-            return super.onKeyDown(keyCode, event);
-        }
-        return KeyboardShortcuts.onKeyDown(event, this, true, false)
-                || super.onKeyDown(keyCode, event);
-    }
-
-    @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
-        // Disable creating new tabs, bookmark, history, print, help, focus_url, etc.
-        if (id == R.id.focus_url_bar || id == R.id.all_bookmarks_menu_id
-                || id == R.id.help_id || id == R.id.recent_tabs_menu_id
-                || id == R.id.new_incognito_tab_menu_id || id == R.id.new_tab_menu_id
-                || id == R.id.open_history_menu_id) {
-            return true;
-        } else if (id == R.id.bookmark_this_page_id) {
+        if (id == R.id.bookmark_this_page_id) {
             addOrEditBookmark(getActivityTab());
             RecordUserAction.record("MobileMenuAddToBookmarks");
             return true;

@@ -25,12 +25,6 @@ import java.util.Locale;
  * structures.
  */
 public final class NdefMessageUtils {
-    private static final String TAG = "NdefMessageUtils";
-    private static final String AUTHOR_RECORD_DOMAIN = "w3.org";
-    private static final String AUTHOR_RECORD_TYPE = "A";
-    private static final String ENCODING_UTF8 = "utf-8";
-    private static final String ENCODING_UTF16 = "utf-16";
-
     public static final String RECORD_TYPE_EMPTY = "empty";
     public static final String RECORD_TYPE_TEXT = "text";
     public static final String RECORD_TYPE_URL = "url";
@@ -38,6 +32,55 @@ public final class NdefMessageUtils {
     public static final String RECORD_TYPE_MIME = "mime";
     public static final String RECORD_TYPE_UNKNOWN = "unknown";
     public static final String RECORD_TYPE_SMART_POSTER = "smart-poster";
+
+    private static final String AUTHOR_RECORD_DOMAIN = "w3.org";
+    private static final String AUTHOR_RECORD_TYPE = "A";
+    private static final String ENCODING_UTF8 = "utf-8";
+    private static final String ENCODING_UTF16 = "utf-16";
+
+    /**
+     * NFC Forum "URI Record Type Definition"
+     * This is a mapping of "URI Identifier Codes" to URI string prefixes,
+     * per section 3.2.2 of the NFC Forum URI Record Type Definition document.
+     */
+    private static final String[] URI_PREFIX_MAP = new String[] {
+            "", // 0x00
+            "http://www.", // 0x01
+            "https://www.", // 0x02
+            "http://", // 0x03
+            "https://", // 0x04
+            "tel:", // 0x05
+            "mailto:", // 0x06
+            "ftp://anonymous:anonymous@", // 0x07
+            "ftp://ftp.", // 0x08
+            "ftps://", // 0x09
+            "sftp://", // 0x0A
+            "smb://", // 0x0B
+            "nfs://", // 0x0C
+            "ftp://", // 0x0D
+            "dav://", // 0x0E
+            "news:", // 0x0F
+            "telnet://", // 0x10
+            "imap:", // 0x11
+            "rtsp://", // 0x12
+            "urn:", // 0x13
+            "pop:", // 0x14
+            "sip:", // 0x15
+            "sips:", // 0x16
+            "tftp:", // 0x17
+            "btspp://", // 0x18
+            "btl2cap://", // 0x19
+            "btgoep://", // 0x1A
+            "tcpobex://", // 0x1B
+            "irdaobex://", // 0x1C
+            "file://", // 0x1D
+            "urn:epc:id:", // 0x1E
+            "urn:epc:tag:", // 0x1F
+            "urn:epc:pat:", // 0x20
+            "urn:epc:raw:", // 0x21
+            "urn:epc:", // 0x22
+            "urn:nfc:", // 0x23
+    };
 
     private static class PairOfDomainAndType {
         private String mDomain;
@@ -110,21 +153,22 @@ public final class NdefMessageUtils {
                    UnsupportedEncodingException {
         switch (record.recordType) {
             case RECORD_TYPE_URL:
-                return createPlatformUrlRecord(record.data, false /* isAbsUrl */);
+                return createPlatformUrlRecord(record.data, record.id, false /* isAbsUrl */);
             case RECORD_TYPE_ABSOLUTE_URL:
-                return createPlatformUrlRecord(record.data, true /* isAbsUrl */);
+                return createPlatformUrlRecord(record.data, record.id, true /* isAbsUrl */);
             case RECORD_TYPE_TEXT:
-                byte[] payload = createPayloadForTextRecord(record);
-                return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
-                        android.nfc.NdefRecord.RTD_TEXT, null, payload);
+                return createPlatformTextRecord(
+                        record.id, record.lang, record.encoding, record.data);
             case RECORD_TYPE_MIME:
                 return createPlatformMimeRecord(record.mediaType, record.id, record.data);
             case RECORD_TYPE_UNKNOWN:
-                return new android.nfc.NdefRecord(
-                        android.nfc.NdefRecord.TNF_UNKNOWN, null, null, record.data);
+                return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_UNKNOWN,
+                        null /* type */,
+                        record.id == null ? null : ApiCompatibilityUtils.getBytesUtf8(record.id),
+                        record.data);
             case RECORD_TYPE_EMPTY:
-                return new android.nfc.NdefRecord(
-                        android.nfc.NdefRecord.TNF_EMPTY, null, null, null);
+                return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_EMPTY, null /* type */,
+                        null /* id */, null /* payload */);
             case RECORD_TYPE_SMART_POSTER:
                 // TODO(https://crbug.com/520391): Support 'smart-poster' type records.
                 throw new InvalidNdefMessageException();
@@ -286,18 +330,69 @@ public final class NdefMessageUtils {
     /**
      * Creates a TNF_WELL_KNOWN + RTD_URI or TNF_ABSOLUTE_URI android.nfc.NdefRecord.
      */
-    public static android.nfc.NdefRecord createPlatformUrlRecord(byte[] url, boolean isAbsUrl)
-            throws UnsupportedEncodingException {
+    public static android.nfc.NdefRecord createPlatformUrlRecord(
+            byte[] url, String id, boolean isAbsUrl) throws UnsupportedEncodingException {
+        Uri uri = Uri.parse(new String(url, "UTF-8"));
+        assert uri != null;
+        uri = uri.normalizeScheme();
+        String uriString = uri.toString();
+        if (uriString.length() == 0) throw new IllegalArgumentException("uri is empty");
+        byte[] idBytes = id == null ? null : ApiCompatibilityUtils.getBytesUtf8(id);
+
         if (isAbsUrl) {
-            Uri uri = Uri.parse(new String(url, "UTF-8"));
-            if (uri == null) throw new NullPointerException("uri is null");
-            uri = uri.normalizeScheme();
-            String uriString = uri.toString();
-            if (uriString.length() == 0) throw new IllegalArgumentException("uri is empty");
             return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_ABSOLUTE_URI,
-                    ApiCompatibilityUtils.getBytesUtf8(uriString), null, null);
+                    ApiCompatibilityUtils.getBytesUtf8(uriString), idBytes, null /* payload */);
         }
-        return android.nfc.NdefRecord.createUri(new String(url, "UTF-8"));
+
+        // We encode the URI in the same way with android.nfc.NdefRecord.createUri(), per NFC Forum
+        // URI Record Type Definition document.
+        byte prefix = 0;
+        for (int i = 1; i < URI_PREFIX_MAP.length; i++) {
+            if (uriString.startsWith(URI_PREFIX_MAP[i])) {
+                prefix = (byte) i;
+                uriString = uriString.substring(URI_PREFIX_MAP[i].length());
+                break;
+            }
+        }
+        byte[] uriBytes = ApiCompatibilityUtils.getBytesUtf8(uriString);
+        byte[] recordBytes = new byte[uriBytes.length + 1];
+        recordBytes[0] = prefix;
+        System.arraycopy(uriBytes, 0, recordBytes, 1, uriBytes.length);
+        return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
+                android.nfc.NdefRecord.RTD_URI, idBytes, recordBytes);
+    }
+
+    /**
+     * Creates a TNF_WELL_KNOWN + RTD_TEXT android.nfc.NdefRecord.
+     */
+    public static android.nfc.NdefRecord createPlatformTextRecord(String id, String lang,
+            String encoding, byte[] text) throws UnsupportedEncodingException {
+        // Blink always send us valid |lang| and |encoding|, we check them here against compromised
+        // data.
+        if (lang == null || lang.isEmpty()) throw new IllegalArgumentException("lang is invalid");
+        if (encoding == null || encoding.isEmpty()) {
+            throw new IllegalArgumentException("encoding is invalid");
+        }
+
+        byte[] languageCodeBytes = lang.getBytes(StandardCharsets.US_ASCII);
+        // We only have 6 bits in the status byte (the first byte of the payload) to indicate length
+        // of ISO/IANA language code. Blink already guarantees the length is less than 63, we check
+        // here against compromised data.
+        if (languageCodeBytes.length >= 64) {
+            throw new IllegalArgumentException("language code is too long, must be <64 bytes.");
+        }
+        byte status = (byte) languageCodeBytes.length;
+        if (!encoding.equals(ENCODING_UTF8)) {
+            status |= (byte) (1 << 7);
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(1 + languageCodeBytes.length + text.length);
+        buffer.put(status);
+        buffer.put(languageCodeBytes);
+        buffer.put(text);
+        return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
+                android.nfc.NdefRecord.RTD_TEXT,
+                id == null ? null : ApiCompatibilityUtils.getBytesUtf8(id), buffer.array());
     }
 
     /**
@@ -368,21 +463,6 @@ public final class NdefMessageUtils {
         if (!type.matches("[a-zA-Z0-9()+,\\-:=@;$_!*'.]+")) return null;
 
         return new PairOfDomainAndType(domain, type);
-    }
-
-    private static byte[] createPayloadForTextRecord(NdefRecord record)
-            throws UnsupportedEncodingException {
-        byte[] languageCodeBytes = record.lang.getBytes(StandardCharsets.US_ASCII);
-        ByteBuffer buffer = ByteBuffer.allocate(1 + languageCodeBytes.length + record.data.length);
-        // Lang length is always less than 64 as it is guaranteed by Blink.
-        byte status = (byte) languageCodeBytes.length;
-        if (!record.encoding.equals(ENCODING_UTF8)) {
-            status |= (byte) (1 << 7);
-        }
-        buffer.put(status);
-        buffer.put(languageCodeBytes);
-        buffer.put(record.data);
-        return buffer.array();
     }
 
     /**

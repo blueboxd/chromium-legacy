@@ -91,6 +91,8 @@ PermissionRequestType PermissionUtil::GetRequestType(ContentSettingsType type) {
       return PermissionRequestType::PERMISSION_CLIPBOARD_READ;
     case ContentSettingsType::PAYMENT_HANDLER:
       return PermissionRequestType::PERMISSION_PAYMENT_HANDLER;
+    case ContentSettingsType::NFC:
+      return PermissionRequestType::PERMISSION_NFC;
     default:
       NOTREACHED();
       return PermissionRequestType::UNKNOWN;
@@ -171,9 +173,7 @@ bool PermissionUtil::IsPermission(ContentSettingsType type) {
     case ContentSettingsType::PERIODIC_BACKGROUND_SYNC:
     case ContentSettingsType::WAKE_LOCK_SCREEN:
     case ContentSettingsType::WAKE_LOCK_SYSTEM:
-#if defined(OS_ANDROID)
     case ContentSettingsType::NFC:
-#endif
       return true;
     default:
       return false;

@@ -18,6 +18,7 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
@@ -362,10 +363,10 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
             ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
 
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
-      std::move(resources), script_url_, script_resource_id,
-      outside_fetch_client_settings_object_->outgoing_referrer,
-      version_to_update, std::move(loader_factory), force_bypass_cache_,
-      registration()->update_via_cache(), time_since_last_check, context_);
+      std::move(resources), script_url_, script_resource_id, version_to_update,
+      std::move(loader_factory), force_bypass_cache_,
+      registration()->update_via_cache(), time_since_last_check, context_,
+      outside_fetch_client_settings_object_.Clone());
   update_checker_->Start(
       base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,
                      weak_factory_.GetWeakPtr()));
@@ -799,7 +800,8 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
                true /* include_reserved_clients */);
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(), host->url())) {
+    if (!ServiceWorkerUtils::ScopeMatches(registration->scope(),
+                                          host->container_host()->url())) {
       continue;
     }
     host->AddMatchingRegistration(registration);

@@ -95,6 +95,8 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
       return "SecurityKeyAttestation";
     case PermissionRequestType::PERMISSION_PAYMENT_HANDLER:
       return "PaymentHandler";
+    case PermissionRequestType::PERMISSION_NFC:
+      return "Nfc";
     default:
       NOTREACHED();
       return "";
@@ -430,6 +432,10 @@ void PermissionUmaUtil::RecordPermissionAction(
       break;
     case ContentSettingsType::PAYMENT_HANDLER:
       UMA_HISTOGRAM_ENUMERATION("Permissions.Action.PaymentHandler", action,
+                                PermissionAction::NUM);
+      break;
+    case ContentSettingsType::NFC:
+      UMA_HISTOGRAM_ENUMERATION("Permissions.Action.Nfc", action,
                                 PermissionAction::NUM);
       break;
     // The user is not prompted for these permissions, thus there is no

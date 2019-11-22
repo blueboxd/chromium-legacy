@@ -273,6 +273,20 @@ void PDFiumPage::CalculatePageObjectTextRunBreaks() {
       }
     }
   }
+
+  PopulateHighlights();
+  for (const auto& highlight : highlights_) {
+    if (highlight.start_char_index >= 0 &&
+        highlight.start_char_index < chars_count) {
+      page_object_text_run_breaks_.insert(highlight.start_char_index);
+      int next_text_run_break_index =
+          highlight.start_char_index + highlight.char_count;
+      // Don't insert a break if the highlight is at the end of the page text.
+      if (next_text_run_break_index < chars_count) {
+        page_object_text_run_breaks_.insert(next_text_run_break_index);
+      }
+    }
+  }
 }
 
 void PDFiumPage::CalculateTextRunStyleInfo(
@@ -1009,6 +1023,43 @@ void PDFiumPage::PopulateImageAltTextForStructElement(
   }
 }
 
+void PDFiumPage::PopulateHighlights() {
+  if (calculated_highlights_)
+    return;
+
+  FPDF_PAGE page = GetPage();
+  if (!page)
+    return;
+
+  calculated_highlights_ = true;
+  // Populate highlights from within the pdf page into data structures ready
+  // to be passed to mimehandler. Currently scoped to highlights only.
+  int annotation_count = FPDFPage_GetAnnotCount(page);
+  for (int i = 0; i < annotation_count; ++i) {
+    ScopedFPDFAnnotation annot(FPDFPage_GetAnnot(page, i));
+    DCHECK(annot);
+    FPDF_ANNOTATION_SUBTYPE subtype = FPDFAnnot_GetSubtype(annot.get());
+    if (subtype != FPDF_ANNOT_HIGHLIGHT)
+      continue;
+
+    FS_RECTF rect;
+    if (!FPDFAnnot_GetRect(annot.get(), &rect))
+      continue;
+
+    Highlight highlight;
+    // We use the bounding box of the highlight as the bounding rect.
+    highlight.bounding_rect =
+        PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
+                     rect.bottom, PageOrientation::kOriginal);
+    GetUnderlyingTextRangeForRect(
+        pp::FloatRect(rect.left, rect.bottom, std::abs(rect.right - rect.left),
+                      std::abs(rect.bottom - rect.top)),
+        &highlight.start_char_index, &highlight.char_count);
+
+    highlights_.push_back(std::move(highlight));
+  }
+}
+
 bool PDFiumPage::GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
                                                int* start_index,
                                                int* char_len) {
@@ -1152,6 +1203,12 @@ PDFiumPage::Image::Image() = default;
 PDFiumPage::Image::Image(const Image& that) = default;
 
 PDFiumPage::Image::~Image() = default;
+
+PDFiumPage::Highlight::Highlight() = default;
+
+PDFiumPage::Highlight::Highlight(const Highlight& that) = default;
+
+PDFiumPage::Highlight::~Highlight() = default;
 
 int ToPDFiumRotation(PageOrientation orientation) {
   // Could static_cast<int>(orientation), but using an exhaustive switch will

@@ -5,9 +5,9 @@
 #ifndef UI_EVENTS_OZONE_CHROMEOS_GESTURE_PROPERTIES_SERVICE_H_
 #define UI_EVENTS_OZONE_CHROMEOS_GESTURE_PROPERTIES_SERVICE_H_
 
+#include "base/component_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/libgestures_glue/gesture_property_provider.h"
 #include "ui/ozone/public/mojom/gesture_properties_service.mojom.h"
 
@@ -15,7 +15,7 @@ class GesturePropertyProvider;
 
 namespace ui {
 
-class EVENTS_OZONE_EVDEV_EXPORT GesturePropertiesService
+class COMPONENT_EXPORT(EVDEV) GesturePropertiesService
     : public ui::ozone::mojom::GesturePropertiesService {
  public:
   GesturePropertiesService(

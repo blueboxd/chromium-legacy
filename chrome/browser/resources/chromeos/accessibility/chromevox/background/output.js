@@ -1140,11 +1140,7 @@ Output.prototype = {
 
     // Display.
     if (this.speechCategory_ != TtsCategory.LIVE) {
-      chrome.accessibilityPrivate.setFocusRings([{
-        rects: this.locations_,
-        type: chrome.accessibilityPrivate.FocusType.GLOW,
-        color: constants.FOCUS_COLOR
-      }]);
+      ChromeVoxState.instance.setFocusBounds(this.locations_);
     }
   },
 

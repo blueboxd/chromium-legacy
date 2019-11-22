@@ -2972,6 +2972,44 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   run_loop.Run();
 }
 
+namespace {
+
+void ExpectTwoValidImageCallback(base::OnceClosure quit_closure,
+                                 const std::vector<gfx::Size>& expected_sizes,
+                                 int id,
+                                 int status_code,
+                                 const GURL& image_url,
+                                 const std::vector<SkBitmap>& bitmap,
+                                 const std::vector<gfx::Size>& sizes) {
+  EXPECT_EQ(200, status_code);
+  ASSERT_EQ(bitmap.size(), expected_sizes.size());
+  ASSERT_EQ(sizes.size(), expected_sizes.size());
+  for (size_t i = 0; i < expected_sizes.size(); ++i) {
+    EXPECT_EQ(gfx::Size(bitmap[i].width(), bitmap[i].height()),
+              expected_sizes[i]);
+    EXPECT_EQ(sizes[i], expected_sizes[i]);
+  }
+  std::move(quit_closure).Run();
+}
+
+}  // anonymous namespace
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DownloadImage_MultipleImagesNoMaxSize) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kImageUrl =
+      embedded_test_server()->GetURL("/icon-with-two-entries.ico");
+  shell()->LoadURL(GURL("about:blank"));
+  base::RunLoop run_loop;
+  std::vector<gfx::Size> expected_sizes{{16, 16}, {32, 32}};
+  shell()->web_contents()->DownloadImage(
+      kImageUrl, false, 0, 0, false,
+      base::BindOnce(&ExpectTwoValidImageCallback, run_loop.QuitClosure(),
+                     expected_sizes));
+
+  run_loop.Run();
+}
+
 class MouseLockDelegate : public WebContentsDelegate {
  public:
   // WebContentsDelegate:

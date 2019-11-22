@@ -61,6 +61,9 @@ struct StructTraits<ax::mojom::AXActionDataDataView, ui::AXActionData> {
       const ui::AXActionData& a) {
     return a.vertical_scroll_alignment;
   }
+  static ax::mojom::ScrollBehavior scroll_behavior(const ui::AXActionData& a) {
+    return a.scroll_behavior;
+  }
 
   static bool Read(ax::mojom::AXActionDataDataView data, ui::AXActionData* out);
 };

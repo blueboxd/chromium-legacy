@@ -7,6 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
@@ -106,12 +107,12 @@ TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
   client.RunUntilComplete();
   EXPECT_EQ(net::OK, client.completion_status().error_code);
 
-  // The provider host should be set up.
-  base::WeakPtr<ServiceWorkerProviderHost> host =
-      service_worker_handle_->core()->provider_host();
-  EXPECT_TRUE(host->is_response_committed());
-  EXPECT_TRUE(host->is_execution_ready());
-  EXPECT_EQ(url, host->url());
+  // The container host should be set up.
+  ServiceWorkerContainerHost* container_host =
+      service_worker_handle_->core()->provider_host()->container_host();
+  EXPECT_TRUE(container_host->is_response_committed());
+  EXPECT_TRUE(container_host->is_execution_ready());
+  EXPECT_EQ(url, container_host->url());
 }
 
 // Test a null service worker handle. This typically only happens during

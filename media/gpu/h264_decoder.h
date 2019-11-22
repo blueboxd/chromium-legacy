@@ -147,6 +147,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   };
 
   H264Decoder(std::unique_ptr<H264Accelerator> accelerator,
+              VideoCodecProfile profile,
               const VideoColorSpace& container_color_space = VideoColorSpace());
   ~H264Decoder() override;
 
@@ -157,6 +158,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
   gfx::Rect GetVisibleRect() const override;
+  VideoCodecProfile GetProfile() const override;
   size_t GetRequiredNumOfPictures() const override;
   size_t GetNumReferenceFrames() const override;
 
@@ -345,6 +347,9 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   gfx::Size pic_size_;
   // Output visible cropping rect.
   gfx::Rect visible_rect_;
+
+  // Profile of input bitstream.
+  VideoCodecProfile profile_;
 
   // PicOrderCount of the previously outputted frame.
   int last_output_poc_;

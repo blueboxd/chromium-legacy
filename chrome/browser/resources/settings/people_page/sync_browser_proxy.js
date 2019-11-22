@@ -23,6 +23,7 @@ settings.StoredAccount;
  *            disabled: (boolean|undefined),
  *            domain: (string|undefined),
  *            hasError: (boolean|undefined),
+ *            hasPasswordsOnlyError: (boolean|undefined),
  *            hasUnrecoverableError: (boolean|undefined),
  *            managed: (boolean|undefined),
  *            firstSetupInProgress: (boolean|undefined),
@@ -51,6 +52,8 @@ settings.StatusAction = {
       'signOutAndSignIn',               // User needs to sign out and sign in.
   UPGRADE_CLIENT: 'upgradeClient',      // User needs to upgrade the client.
   ENTER_PASSPHRASE: 'enterPassphrase',  // User needs to enter passphrase.
+  // User needs to go through key retrieval.
+  RETRIEVE_TRUSTED_VAULT_KEYS: 'retrieveTrustedVaultKeys',
   CONFIRM_SYNC_SETTINGS:
       'confirmSyncSettings',  // User needs to confirm sync settings.
 };
@@ -93,6 +96,7 @@ settings.StatusAction = {
  *   themesEnforced: boolean,
  *   themesRegistered: boolean,
  *   themesSynced: boolean,
+ *   trustedVaultKeysRequired: boolean,
  *   typedUrlsEnforced: boolean,
  *   typedUrlsRegistered: boolean,
  *   typedUrlsSynced: boolean,
@@ -160,6 +164,11 @@ cr.define('settings', function() {
     attemptUserExit() {}
 
     // </if>
+
+    /**
+     * Starts the key retrieval process.
+     */
+    startKeyRetrieval() {}
 
     /**
      * Gets the current sync status.
@@ -264,6 +273,11 @@ cr.define('settings', function() {
       return chrome.send('AttemptUserExit');
     }
     // </if>
+
+    /** @override */
+    startKeyRetrieval() {
+      chrome.send('SyncStartKeyRetrieval');
+    }
 
     /** @override */
     getSyncStatus() {

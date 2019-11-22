@@ -7,8 +7,8 @@
 
 #include <stddef.h>
 
+#include "base/component_export.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 
@@ -17,7 +17,7 @@ namespace ui {
 const int kNumTouchEvdevSlots = 20;
 
 // Contains information about an in progress touch.
-struct EVENTS_OZONE_EVDEV_EXPORT InProgressTouchEvdev {
+struct COMPONENT_EXPORT(EVDEV) InProgressTouchEvdev {
   InProgressTouchEvdev();
   InProgressTouchEvdev(const InProgressTouchEvdev& other);
   ~InProgressTouchEvdev();

@@ -173,6 +173,8 @@ std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
       return "upgradeClient";
     case sync_ui_util::ENTER_PASSPHRASE:
       return "enterPassphrase";
+    case sync_ui_util::RETRIEVE_TRUSTED_VAULT_KEYS:
+      return "retrieveTrustedVaultKeys";
     case sync_ui_util::CONFIRM_SYNC_SETTINGS:
       return "confirmSyncSettings";
     default:
@@ -331,6 +333,10 @@ void PeopleHandler::RegisterMessages() {
       base::BindRepeating(&PeopleHandler::HandleStartSyncingWithEmail,
                           base::Unretained(this)));
 #endif
+  web_ui()->RegisterMessageCallback(
+      "SyncStartKeyRetrieval",
+      base::BindRepeating(&PeopleHandler::HandleStartKeyRetrieval,
+                          base::Unretained(this)));
 }
 
 void PeopleHandler::OnJavascriptAllowed() {
@@ -707,6 +713,15 @@ void PeopleHandler::HandlePauseSync(const base::ListValue* args) {
 }
 #endif
 
+void PeopleHandler::HandleStartKeyRetrieval(const base::ListValue* args) {
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
+  if (!browser)
+    return;
+
+  sync_ui_util::OpenTabForSyncKeyRetrieval(browser);
+}
+
 void PeopleHandler::HandleGetSyncStatus(const base::ListValue* args) {
   AllowJavascript();
 
@@ -886,12 +901,19 @@ std::unique_ptr<base::DictionaryValue> PeopleHandler::GetSyncStatusDictionary()
 
   const sync_ui_util::StatusLabels status_labels =
       sync_ui_util::GetStatusLabels(profile_);
+  // TODO(crbug.com/1027467): Consider unifying some of the fields below to
+  // avoid redundancy.
   sync_status->SetString("statusText",
                          GetStringUTF16(status_labels.status_label_string_id));
   sync_status->SetString("statusActionText",
                          GetStringUTF16(status_labels.link_label_string_id));
   sync_status->SetBoolean(
-      "hasError", status_labels.message_type == sync_ui_util::SYNC_ERROR);
+      "hasError", status_labels.message_type == sync_ui_util::SYNC_ERROR ||
+                      status_labels.message_type ==
+                          sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR);
+  sync_status->SetBoolean(
+      "hasPasswordsOnlyError",
+      status_labels.message_type == sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR);
   sync_status->SetString("statusAction",
                          GetSyncErrorAction(status_labels.action_type));
 
@@ -931,6 +953,8 @@ void PeopleHandler::PushSyncPrefs() {
   //   encryptAllData: true if user wants to encrypt all data (not just
   //       passwords)
   //   passphraseRequired: true if a passphrase is needed to start sync
+  //   trustedVaultKeysRequired: true if trusted vault keys are needed to start
+  //                             sync.
   //
   base::DictionaryValue args;
 
@@ -963,6 +987,10 @@ void PeopleHandler::PushSyncPrefs() {
   // passphrase UI even if no encrypted data types are enabled.
   args.SetBoolean("passphraseRequired",
                   sync_user_settings->IsPassphraseRequired());
+
+  args.SetBoolean(
+      "trustedVaultKeysRequired",
+      sync_user_settings->IsTrustedVaultKeyRequiredForPreferredDataTypes());
 
   syncer::PassphraseType passphrase_type =
       sync_user_settings->GetPassphraseType();

@@ -8,12 +8,12 @@
 #include <cstdint>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/time/time.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 
-struct EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilterModelConfig {
+struct COMPONENT_EXPORT(EVDEV) NeuralStylusPalmDetectionFilterModelConfig {
   // Explicit constructor to make chromium style happy.
   NeuralStylusPalmDetectionFilterModelConfig();
   NeuralStylusPalmDetectionFilterModelConfig(
@@ -64,7 +64,7 @@ struct EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilterModelConfig {
 };
 
 // An abstract model utilized by NueralStylusPalmDetectionFilter.
-class EVENTS_OZONE_EVDEV_EXPORT NeuralStylusPalmDetectionFilterModel {
+class COMPONENT_EXPORT(EVDEV) NeuralStylusPalmDetectionFilterModel {
  public:
   virtual ~NeuralStylusPalmDetectionFilterModel() {}
 

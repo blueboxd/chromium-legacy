@@ -49390,6 +49390,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="15" label="PERMISSION_ACCESSIBILITY_EVENTS"/>
   <int value="16" label="PERMISSION_CLIPBOARD_READ"/>
   <int value="17" label="PERMISSION_SECURITY_KEY_ATTESTATION"/>
+  <int value="18" label="PERMISSION_PAYMENT_HANDLER"/>
+  <int value="19" label="PERMISSION_NFC"/>
 </enum>
 
 <enum name="PermissionStatus">

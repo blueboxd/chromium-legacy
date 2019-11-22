@@ -6,13 +6,13 @@
 #define UI_EVENTS_OZONE_KEYBOARD_EVENT_AUTO_REPEAT_HANDLER_H
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "ui/events/ozone/events_ozone_export.h"
 
 namespace ui {
 
-class EVENTS_OZONE_EXPORT EventAutoRepeatHandler {
+class COMPONENT_EXPORT(EVENTS_OZONE) EventAutoRepeatHandler {
  public:
   class Delegate {
    public:

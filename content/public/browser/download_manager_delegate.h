@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/quarantine_connection.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/save_page_type.h"
@@ -161,6 +162,14 @@ class CONTENT_EXPORT DownloadManagerDelegate {
   // should be the case on return as well. I.e. |filename| cannot specify a
   // relative path.
   virtual void SanitizeSavePackageResourceName(base::FilePath* filename) {}
+
+  // Sanitize a download parameters
+  //
+  // If the delegate does nothing, the default parameters already populated in
+  // |params| will be used. Otherwise, the delegate can update |params| to
+  // the desired parameters.
+  virtual void SanitizeDownloadParameters(
+      download::DownloadUrlParameters* params) {}
 
   // Opens the file associated with this download.
   virtual void OpenDownload(download::DownloadItem* download) {}

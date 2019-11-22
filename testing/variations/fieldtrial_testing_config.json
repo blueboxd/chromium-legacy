@@ -7175,21 +7175,6 @@
             ]
         }
     ],
-    "VizHitTest": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "VizHitTestSurfaceLayer",
-                    "enable_features": [
-                        "VizHitTestSurfaceLayer"
-                    ]
-                }
-            ]
-        }
-    ],
     "WKHTTPSystemCookieStore": [
         {
             "platforms": [

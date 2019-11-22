@@ -256,8 +256,11 @@ bool AXTreeSourceArc::IsRootOfNodeTree(int32_t id) const {
 }
 
 int32_t AXTreeSourceArc::GetWindowId() const {
-  CHECK(window_id_.has_value());
-  return *window_id_;
+  if (window_id_.has_value())
+    return *window_id_;
+  // |window_id_| could be empty when called after OnNotificationStateChanged,
+  // but before OnAccessibilityEvent in ArcAccessibilityHelperBridge.
+  return ui::AXNode::kInvalidAXID;
 }
 
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
@@ -392,6 +395,7 @@ void AXTreeSourceArc::Reset() {
   cached_computed_bounds_.clear();
   current_tree_serializer_.reset(new AXTreeArcSerializer(this));
   root_id_.reset();
+  window_id_.reset();
   focused_id_.reset();
   extensions::AutomationEventRouterInterface* router =
       GetAutomationEventRouter();

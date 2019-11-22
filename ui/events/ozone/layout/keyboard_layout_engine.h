@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/ozone/layout/events_ozone_layout_export.h"
 
 namespace ui {
 
@@ -24,7 +24,7 @@ enum class DomCode;
 // This interface does not expose individual layouts because it must support
 // platforms that only provide for one active system layout, and/or platforms
 // where layouts have no accessible representation.
-class EVENTS_OZONE_LAYOUT_EXPORT KeyboardLayoutEngine {
+class COMPONENT_EXPORT(EVENTS_OZONE_LAYOUT) KeyboardLayoutEngine {
  public:
   KeyboardLayoutEngine() {}
   virtual ~KeyboardLayoutEngine() {}

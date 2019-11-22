@@ -133,7 +133,7 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
   // If bytes is more than 512 bytes long (the maximum length of an attribute
   // value, per Long Attribute Values) return a promise rejected with an
   // InvalidModificationError and abort.
-  if (value.ByteLength() > 512) {
+  if (value.ByteLengthAsSizeT() > 512) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kInvalidModificationError,
@@ -142,7 +142,8 @@ ScriptPromise BluetoothRemoteGATTDescriptor::writeValue(
 
   // Let valueVector be a copy of the bytes held by value.
   Vector<uint8_t> value_vector;
-  value_vector.Append(value.Bytes(), value.ByteLength());
+  value_vector.Append(value.Bytes(),
+                      static_cast<wtf_size_t>(value.ByteLengthAsSizeT()));
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();

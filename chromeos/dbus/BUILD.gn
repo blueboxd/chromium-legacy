@@ -23,6 +23,7 @@ component("dbus") {
     "//dbus",
   ]
   deps = [
+    ":anomaly_detector_proto",
     ":cicerone_proto",
     ":concierge_proto",
     ":metrics_event_proto",
@@ -42,6 +43,8 @@ component("dbus") {
     "//url",
   ]
   sources = [
+    "anomaly_detector_client.cc",
+    "anomaly_detector_client.h",
     "arc_appfuse_provider_client.cc",
     "arc_appfuse_provider_client.h",
     "arc_camera_client.cc",
@@ -69,6 +72,8 @@ component("dbus") {
     "dbus_thread_manager.h",
     "easy_unlock_client.cc",
     "easy_unlock_client.h",
+    "fake_anomaly_detector_client.cc",
+    "fake_anomaly_detector_client.h",
     "fake_arc_appfuse_provider_client.cc",
     "fake_arc_appfuse_provider_client.h",
     "fake_arc_camera_client.cc",
@@ -239,6 +244,14 @@ source_set("unit_tests") {
     "update_engine_client_unittest.cc",
     "util/version_loader_unittest.cc",
   ]
+}
+
+proto_library("anomaly_detector_proto") {
+  sources = [
+    "//third_party/cros_system_api/dbus/anomaly_detector/anomaly_detector.proto",
+  ]
+
+  proto_out_dir = "chromeos/dbus/anomaly_detector"
 }
 
 proto_library("cicerone_proto") {

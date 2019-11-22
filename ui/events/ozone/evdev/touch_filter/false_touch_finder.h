@@ -11,10 +11,10 @@
 #include <memory>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
 
 namespace ui {
@@ -22,7 +22,7 @@ namespace ui {
 class TouchFilter;
 
 // Finds touches which are should be filtered.
-class EVENTS_OZONE_EVDEV_EXPORT FalseTouchFinder {
+class COMPONENT_EXPORT(EVDEV) FalseTouchFinder {
  public:
   ~FalseTouchFinder();
 

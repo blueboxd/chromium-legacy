@@ -191,11 +191,7 @@ Background.prototype = {
     ChromeVox.braille.thaw();
 
     if (newRange && !newRange.isValid()) {
-      chrome.accessibilityPrivate.setFocusRings([{
-        rects: [],
-        type: chrome.accessibilityPrivate.FocusType.GLOW,
-        color: constants.FOCUS_COLOR
-      }]);
+      ChromeVoxState.instance.setFocusBounds([]);
       return;
     }
 
@@ -205,11 +201,7 @@ Background.prototype = {
     });
 
     if (!this.currentRange_) {
-      chrome.accessibilityPrivate.setFocusRings([{
-        rects: [],
-        type: chrome.accessibilityPrivate.FocusType.GLOW,
-        color: constants.FOCUS_COLOR
-      }]);
+      ChromeVoxState.instance.setFocusBounds([]);
       return;
     }
 

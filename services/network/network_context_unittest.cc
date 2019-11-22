@@ -2662,16 +2662,23 @@ class TestResolveHostClient : public ResolveHostClientBase {
   void CloseReceiver() { receiver_.reset(); }
 
   void OnComplete(int error,
+                  const net::ResolveErrorInfo& resolve_error_info,
                   const base::Optional<net::AddressList>& addresses) override {
     DCHECK(!complete_);
 
     complete_ = true;
-    result_error_ = error;
+    top_level_result_error_ = error;
+    result_error_ = resolve_error_info.error;
     result_addresses_ = addresses;
     run_loop_->Quit();
   }
 
   bool complete() const { return complete_; }
+
+  int top_level_result_error() const {
+    DCHECK(complete_);
+    return top_level_result_error_;
+  }
 
   int result_error() const {
     DCHECK(complete_);
@@ -2687,6 +2694,7 @@ class TestResolveHostClient : public ResolveHostClientBase {
   mojo::Receiver<mojom::ResolveHostClient> receiver_;
 
   bool complete_;
+  int top_level_result_error_;
   int result_error_;
   base::Optional<net::AddressList> result_addresses_;
   base::RunLoop* const run_loop_;
@@ -2714,6 +2722,7 @@ TEST_F(NetworkContextTest, ResolveHost_Sync) {
                                std::move(pending_response_client));
   run_loop.Run();
 
+  EXPECT_EQ(net::OK, response_client.top_level_result_error());
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(
       response_client.result_addresses().value().endpoints(),
@@ -2781,6 +2790,8 @@ TEST_F(NetworkContextTest, ResolveHost_Failure_Sync) {
                                std::move(pending_response_client));
   run_loop.Run();
 
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED,
+            response_client.top_level_result_error());
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, response_client.result_error());
   EXPECT_FALSE(response_client.result_addresses());
   EXPECT_EQ(0u,

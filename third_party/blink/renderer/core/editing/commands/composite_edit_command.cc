@@ -1498,9 +1498,10 @@ void CompositeEditCommand::MoveParagraphs(
                 GetDocument(),
                 CreateMarkup(start.ParentAnchoredEquivalent(),
                              end.ParentAnchoredEquivalent(),
-                             kDoNotAnnotateForInterchange,
-                             ConvertBlocksToInlines::kConvert,
-                             kDoNotResolveURLs, constraining_ancestor),
+                             CreateMarkupOptions::Builder()
+                                 .SetShouldConvertBlocksToInlines(true)
+                                 .SetConstrainingAncestor(constraining_ancestor)
+                                 .Build()),
                 "", kDisallowScriptingAndPluginContent)
           : nullptr;
 

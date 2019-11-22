@@ -123,6 +123,18 @@ struct EnumTraits<network::mojom::SecureDnsMode,
                         net::DnsConfig::SecureDnsMode* out);
 };
 
+template <>
+class StructTraits<network::mojom::ResolveErrorInfoDataView,
+                   net::ResolveErrorInfo> {
+ public:
+  static int error(net::ResolveErrorInfo resolve_error_info) {
+    return resolve_error_info.error;
+  }
+
+  static bool Read(network::mojom::ResolveErrorInfoDataView data,
+                   net::ResolveErrorInfo* out);
+};
+
 }  // namespace mojo
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_HOST_RESOLVER_MOJOM_TRAITS_H_

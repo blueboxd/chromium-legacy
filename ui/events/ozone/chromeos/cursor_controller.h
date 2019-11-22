@@ -7,12 +7,12 @@
 
 #include <map>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "ui/display/display.h"
-#include "ui/events/ozone/events_ozone_export.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -36,7 +36,7 @@ namespace ui {
 // ozone to activate this hack).
 //
 // TODO(spang): Don't worry, we have a plan to remove this.
-class EVENTS_OZONE_EXPORT CursorController {
+class COMPONENT_EXPORT(EVENTS_OZONE) CursorController {
  public:
   class CursorObserver {
    public:

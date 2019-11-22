@@ -17,7 +17,7 @@
 
 namespace ui {
 
-struct EVENTS_OZONE_EVDEV_EXPORT PalmFilterDeviceInfo {
+struct COMPONENT_EXPORT(EVDEV) PalmFilterDeviceInfo {
   float max_x = 0.f;
   float max_y = 0.f;
   float x_res = 1.f;
@@ -27,11 +27,11 @@ struct EVENTS_OZONE_EVDEV_EXPORT PalmFilterDeviceInfo {
   bool minor_radius_supported = false;
 };
 
-EVENTS_OZONE_EVDEV_EXPORT
+COMPONENT_EXPORT(EVDEV)
 PalmFilterDeviceInfo CreatePalmFilterDeviceInfo(const EventDeviceInfo& devinfo);
 
 // Data for a single touch event.
-struct EVENTS_OZONE_EVDEV_EXPORT PalmFilterSample {
+struct COMPONENT_EXPORT(EVDEV) PalmFilterSample {
   float major_radius = 0;
   float minor_radius = 0;
   float pressure = 0;
@@ -41,14 +41,14 @@ struct EVENTS_OZONE_EVDEV_EXPORT PalmFilterSample {
   base::TimeTicks time;
 };
 
-EVENTS_OZONE_EVDEV_EXPORT
+COMPONENT_EXPORT(EVDEV)
 PalmFilterSample CreatePalmFilterSample(
     const InProgressTouchEvdev& touch,
     const base::TimeTicks& time,
     const NeuralStylusPalmDetectionFilterModelConfig& model_config,
     const PalmFilterDeviceInfo& dev_info);
 
-class EVENTS_OZONE_EVDEV_EXPORT PalmFilterStroke {
+class COMPONENT_EXPORT(EVDEV) PalmFilterStroke {
  public:
   explicit PalmFilterStroke(size_t max_length);
   PalmFilterStroke(const PalmFilterStroke& other);

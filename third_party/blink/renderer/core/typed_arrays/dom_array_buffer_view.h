@@ -60,7 +60,12 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
   ViewType GetType() const { return View()->GetType(); }
   const char* TypeName() { return View()->TypeName(); }
   void* BaseAddress() const { return View()->BaseAddress(); }
-  unsigned byteOffset() const { return View()->ByteOffset(); }
+  size_t byteOffsetAsSizeT() const { return View()->ByteOffset(); }
+  // This function is deprecated and should not be used. Use {byteOffsetAsSizeT}
+  // instead.
+  unsigned deprecatedByteOffsetAsUnsigned() const {
+    return base::checked_cast<unsigned>(View()->ByteOffset());
+  }
   unsigned byteLength() const { return View()->ByteLength(); }
   unsigned TypeSize() const { return View()->TypeSize(); }
   void SetDetachable(bool flag) { return View()->SetDetachable(flag); }

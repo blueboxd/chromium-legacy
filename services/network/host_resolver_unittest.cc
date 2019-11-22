@@ -59,17 +59,20 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
                         base::RunLoop* run_loop)
       : receiver_(this, remote->InitWithNewPipeAndPassReceiver()),
         complete_(false),
+        top_level_result_error_(net::ERR_IO_PENDING),
         result_error_(net::ERR_UNEXPECTED),
         run_loop_(run_loop) {}
 
   void CloseReceiver() { receiver_.reset(); }
 
   void OnComplete(int error,
+                  const net::ResolveErrorInfo& resolve_error_info,
                   const base::Optional<net::AddressList>& addresses) override {
     DCHECK(!complete_);
 
     complete_ = true;
-    result_error_ = error;
+    top_level_result_error_ = error;
+    result_error_ = resolve_error_info.error;
     result_addresses_ = addresses;
     if (run_loop_)
       run_loop_->Quit();
@@ -86,6 +89,11 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
   }
 
   bool complete() const { return complete_; }
+
+  int top_level_result_error() const {
+    DCHECK(complete_);
+    return top_level_result_error_;
+  }
 
   int result_error() const {
     DCHECK(complete_);
@@ -111,6 +119,7 @@ class TestResolveHostClient : public mojom::ResolveHostClient {
   mojo::Receiver<mojom::ResolveHostClient> receiver_{this};
 
   bool complete_;
+  int top_level_result_error_;
   int result_error_;
   base::Optional<net::AddressList> result_addresses_;
   base::Optional<std::vector<std::string>> result_text_;
@@ -206,6 +215,7 @@ TEST_F(HostResolverTest, Sync) {
                        std::move(pending_response_client));
   run_loop.Run();
 
+  EXPECT_EQ(net::OK, response_client.top_level_result_error());
   EXPECT_EQ(net::OK, response_client.result_error());
   EXPECT_THAT(response_client.result_addresses().value().endpoints(),
               testing::ElementsAre(CreateExpectedEndPoint("127.0.0.1", 160)));
@@ -683,6 +693,8 @@ TEST_F(HostResolverTest, Failure_Sync) {
                        std::move(pending_response_client));
   run_loop.Run();
 
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED,
+            response_client.top_level_result_error());
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, response_client.result_error());
   EXPECT_FALSE(response_client.result_addresses());
   EXPECT_EQ(0u, resolver.GetNumOutstandingRequestsForTesting());

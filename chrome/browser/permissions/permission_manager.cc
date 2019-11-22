@@ -155,11 +155,7 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
     case PermissionType::WAKE_LOCK_SYSTEM:
       return ContentSettingsType::WAKE_LOCK_SYSTEM;
     case PermissionType::NFC:
-#if defined(OS_ANDROID)
       return ContentSettingsType::NFC;
-#else
-      break;
-#endif
     case PermissionType::NUM:
       break;
   }
@@ -362,10 +358,8 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
   permission_contexts_[ContentSettingsType::WAKE_LOCK_SYSTEM] =
       std::make_unique<WakeLockPermissionContext>(
           profile, ContentSettingsType::WAKE_LOCK_SYSTEM);
-#if defined(OS_ANDROID)
   permission_contexts_[ContentSettingsType::NFC] =
       std::make_unique<NfcPermissionContext>(profile);
-#endif
 }
 
 PermissionManager::~PermissionManager() {

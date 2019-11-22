@@ -32,7 +32,8 @@ TEST(NullAXActionTargetTest, TestMethods) {
   EXPECT_FALSE(action_target->ScrollToMakeVisible());
   EXPECT_FALSE(action_target->ScrollToMakeVisibleWithSubFocus(
       gfx::Rect(), ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
-      ax::mojom::ScrollAlignment::kScrollAlignmentCenter));
+      ax::mojom::ScrollAlignment::kScrollAlignmentCenter,
+      ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
   EXPECT_FALSE(action_target->ScrollToGlobalPoint(gfx::Point()));
 }
 

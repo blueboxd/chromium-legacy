@@ -29,6 +29,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_info.h"
@@ -245,6 +246,7 @@ void PepperTCPSocketMessageFilter::ThrottleStateChangedOnUIThread(
 
 void PepperTCPSocketMessageFilter::OnComplete(
     int result,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<net::AddressList>& resolved_addresses) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   receiver_.reset();
@@ -262,7 +264,7 @@ void PepperTCPSocketMessageFilter::OnComplete(
   }
 
   if (result != net::OK) {
-    SendConnectError(context, NetErrorToPepperError(result));
+    SendConnectError(context, NetErrorToPepperError(resolve_error_info.error));
     state_.CompletePendingTransition(false);
     return;
   }
@@ -406,7 +408,8 @@ int32_t PepperTCPSocketMessageFilter::OnMsgConnect(
                                receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(
       base::BindOnce(&PepperTCPSocketMessageFilter::OnComplete,
-                     base::Unretained(this), net::ERR_FAILED, base::nullopt));
+                     base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                     net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
 
   state_.SetPendingTransition(TCPSocketState::CONNECT);
   host_resolve_context_ = context->MakeReplyMessageContext();

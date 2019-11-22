@@ -12,11 +12,11 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
 #include "ui/events/ozone/evdev/event_dispatch_callback.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/libgestures_glue/event_reader_libevdev_cros.h"
 
 namespace ui {
@@ -39,7 +39,7 @@ class GesturePropertyProvider;
 // Once we have the state at sync, we convert it to a HardwareState object
 // and forward it to libgestures. If any gestures are produced, they are
 // converted to ui::Events and dispatched.
-class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
+class COMPONENT_EXPORT(EVDEV) GestureInterpreterLibevdevCros
     : public EventReaderLibevdevCros::Delegate {
  public:
   GestureInterpreterLibevdevCros(int id,

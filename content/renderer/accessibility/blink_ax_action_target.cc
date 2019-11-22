@@ -131,10 +131,11 @@ bool BlinkAXActionTarget::ScrollToMakeVisible() const {
 bool BlinkAXActionTarget::ScrollToMakeVisibleWithSubFocus(
     const gfx::Rect& rect,
     ax::mojom::ScrollAlignment horizontal_scroll_alignment,
-    ax::mojom::ScrollAlignment vertical_scroll_alignment) const {
+    ax::mojom::ScrollAlignment vertical_scroll_alignment,
+    ax::mojom::ScrollBehavior scroll_behavior) const {
   return web_ax_object_.ScrollToMakeVisibleWithSubFocus(
       WebRect(rect.x(), rect.y(), rect.width(), rect.height()),
-      horizontal_scroll_alignment, vertical_scroll_alignment);
+      horizontal_scroll_alignment, vertical_scroll_alignment, scroll_behavior);
 }
 
 bool BlinkAXActionTarget::ScrollToGlobalPoint(const gfx::Point& point) const {

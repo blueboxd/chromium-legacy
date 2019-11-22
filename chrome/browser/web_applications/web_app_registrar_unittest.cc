@@ -124,18 +124,23 @@ class WebAppRegistrarTest : public WebAppTest {
     return app_ids;
   }
 
-  std::unique_ptr<WebApp> CreateWebApp(const std::string& url) {
+  std::unique_ptr<WebApp> CreateWebAppWithSource(const std::string& url,
+                                                 Source::Type source) {
     const GURL launch_url(url);
     const AppId app_id = GenerateAppIdFromURL(launch_url);
 
     auto web_app = std::make_unique<WebApp>(app_id);
 
-    web_app->AddSource(Source::kSync);
+    web_app->AddSource(source);
     web_app->SetDisplayMode(DisplayMode::kStandalone);
     web_app->SetUserDisplayMode(DisplayMode::kStandalone);
     web_app->SetName("Name");
     web_app->SetLaunchUrl(launch_url);
     return web_app;
+  }
+
+  std::unique_ptr<WebApp> CreateWebApp(const std::string& url) {
+    return CreateWebAppWithSource(url, Source::kSync);
   }
 
   void SyncBridgeCommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update) {
@@ -672,6 +677,21 @@ TEST_F(WebAppRegistrarTest, CopyOnWrite) {
   EXPECT_EQ(app->name(), "New Name");
   EXPECT_FALSE(app->IsSynced());
   EXPECT_TRUE(app->HasAnySources());
+}
+
+TEST_F(WebAppRegistrarTest, CountUserInstalledApps) {
+  controller().Init();
+
+  const std::string base_url{"https://example.com/path"};
+
+  for (int i = Source::kMinValue + 1; i <= Source::kMaxValue; ++i) {
+    auto source = static_cast<Source::Type>(i);
+    auto web_app =
+        CreateWebAppWithSource(base_url + base::NumberToString(i), source);
+    RegisterApp(std::move(web_app));
+  }
+
+  EXPECT_EQ(2, registrar().CountUserInstalledApps());
 }
 
 }  // namespace web_app

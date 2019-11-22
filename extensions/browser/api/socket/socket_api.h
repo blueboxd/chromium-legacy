@@ -170,6 +170,7 @@ class SocketExtensionWithDnsLookupFunction
   // network::mojom::ResolveHostClient implementation:
   void OnComplete(
       int result,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override;
 
   mojo::PendingRemote<network::mojom::HostResolver> pending_host_resolver_;

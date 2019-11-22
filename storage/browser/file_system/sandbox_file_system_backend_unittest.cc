@@ -153,7 +153,7 @@ class SandboxFileSystemBackendTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(, SandboxFileSystemBackendTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, SandboxFileSystemBackendTest, ::testing::Bool());
 
 TEST_P(SandboxFileSystemBackendTest, Empty) {
   SetUpNewBackend(CreateAllowFileAccessOptions());

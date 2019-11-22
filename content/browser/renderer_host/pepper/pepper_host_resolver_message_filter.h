@@ -67,6 +67,7 @@ class CONTENT_EXPORT PepperHostResolverMessageFilter
   // network::mojom::ResolveHostClient overrides.
   void OnComplete(
       int result,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override;
 
   void OnLookupFinished(int net_result,

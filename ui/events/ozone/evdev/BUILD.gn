@@ -39,7 +39,6 @@ component("evdev") {
     "event_factory_evdev.h",
     "event_thread_evdev.cc",
     "event_thread_evdev.h",
-    "events_ozone_evdev_export.h",
     "gamepad_event_converter_evdev.cc",
     "gamepad_event_converter_evdev.h",
     "input_controller_evdev.cc",
@@ -100,7 +99,7 @@ component("evdev") {
     "touch_filter/touch_filter.h",
   ]
 
-  defines = [ "EVENTS_OZONE_EVDEV_IMPLEMENTATION" ]
+  defines = [ "IS_EVDEV_IMPL" ]
 
   deps = [
     "//base",

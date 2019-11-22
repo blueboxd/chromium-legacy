@@ -760,9 +760,9 @@ void RenderAccessibilityImpl::OnPerformAction(
       target->Increment();
       break;
     case ax::mojom::Action::kScrollToMakeVisible:
-      target->ScrollToMakeVisibleWithSubFocus(data.target_rect,
-                                              data.horizontal_scroll_alignment,
-                                              data.vertical_scroll_alignment);
+      target->ScrollToMakeVisibleWithSubFocus(
+          data.target_rect, data.horizontal_scroll_alignment,
+          data.vertical_scroll_alignment, data.scroll_behavior);
       break;
     case ax::mojom::Action::kScrollToPoint:
       target->ScrollToGlobalPoint(data.target_point);

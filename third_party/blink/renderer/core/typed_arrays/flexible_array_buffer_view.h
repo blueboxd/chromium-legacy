@@ -48,7 +48,7 @@ class CORE_EXPORT FlexibleArrayBufferView {
 
   unsigned ByteOffset() const {
     DCHECK(!IsEmpty());
-    return IsFull() ? full_->byteOffset() : 0;
+    return IsFull() ? full_->deprecatedByteOffsetAsUnsigned() : 0;
   }
 
   unsigned ByteLength() const {

@@ -7,10 +7,10 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 #include "ui/ozone/public/input_controller.h"
 
@@ -21,7 +21,7 @@ class KeyboardEvdev;
 class MouseButtonMapEvdev;
 
 // Ozone InputController implementation for the Linux input subsystem ("evdev").
-class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
+class COMPONENT_EXPORT(EVDEV) InputControllerEvdev : public InputController {
  public:
   InputControllerEvdev(KeyboardEvdev* keyboard,
                        MouseButtonMapEvdev* button_map);

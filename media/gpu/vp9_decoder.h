@@ -95,6 +95,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
 
   explicit VP9Decoder(
       std::unique_ptr<VP9Accelerator> accelerator,
+      VideoCodecProfile profile,
       const VideoColorSpace& container_color_space = VideoColorSpace());
   ~VP9Decoder() override;
 
@@ -105,6 +106,7 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
   gfx::Rect GetVisibleRect() const override;
+  VideoCodecProfile GetProfile() const override;
   size_t GetRequiredNumOfPictures() const override;
   size_t GetNumReferenceFrames() const override;
 
@@ -149,9 +151,10 @@ class MEDIA_GPU_EXPORT VP9Decoder : public AcceleratedVideoDecoder {
 
   // Current coded resolution.
   gfx::Size pic_size_;
-
   // Visible rectangle on the most recent allocation.
   gfx::Rect visible_rect_;
+  // Profile of input bitstream.
+  VideoCodecProfile profile_;
 
   size_t size_change_failure_counter_ = 0;
 

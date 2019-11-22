@@ -27,6 +27,7 @@ H264Decoder::H264Accelerator::Status H264Decoder::H264Accelerator::SetStream(
 }
 
 H264Decoder::H264Decoder(std::unique_ptr<H264Accelerator> accelerator,
+                         VideoCodecProfile profile,
                          const VideoColorSpace& container_color_space)
     : state_(kNeedStreamMetadata),
       container_color_space_(container_color_space),
@@ -34,6 +35,8 @@ H264Decoder::H264Decoder(std::unique_ptr<H264Accelerator> accelerator,
       max_pic_num_(0),
       max_long_term_frame_idx_(0),
       max_num_reorder_frames_(0),
+      // TODO(hiroh): Set profile to UNKNOWN.
+      profile_(profile),
       accelerator_(std::move(accelerator)) {
   DCHECK(accelerator_);
   Reset();
@@ -1070,12 +1073,17 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
     return false;
   }
 
-  if ((pic_size_ != new_pic_size) || (dpb_.max_num_pics() != max_dpb_size)) {
+  VideoCodecProfile new_profile =
+      H264Parser::ProfileIDCToVideoCodecProfile(sps->profile_idc);
+  if (pic_size_ != new_pic_size || dpb_.max_num_pics() != max_dpb_size ||
+      profile_ != new_profile) {
     if (!Flush())
       return false;
-    DVLOG(1) << "Codec level: " << level << ", DPB size: " << max_dpb_size
+    DVLOG(1) << "Codec profile: " << GetProfileName(new_profile)
+             << ", level: " << level << ", DPB size: " << max_dpb_size
              << ", Picture size: " << new_pic_size.ToString();
     *need_new_buffers = true;
+    profile_ = new_profile;
     pic_size_ = new_pic_size;
     dpb_.set_max_num_pics(max_dpb_size);
   }
@@ -1377,7 +1385,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
           ref_pic_list_b0_.clear();
           ref_pic_list_b1_.clear();
 
-          return kAllocateNewSurfaces;
+          return kConfigChange;
         }
         break;
       }
@@ -1418,6 +1426,10 @@ gfx::Size H264Decoder::GetPicSize() const {
 
 gfx::Rect H264Decoder::GetVisibleRect() const {
   return visible_rect_;
+}
+
+VideoCodecProfile H264Decoder::GetProfile() const {
+  return profile_;
 }
 
 size_t H264Decoder::GetRequiredNumOfPictures() const {

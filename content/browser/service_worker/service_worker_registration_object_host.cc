@@ -469,7 +469,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
 
   // TODO(falken): This check can be removed once crbug.com/439697 is fixed.
   // (Also see crbug.com/776408)
-  if (container_host_->provider_host()->url().is_empty()) {
+  if (container_host_->url().is_empty()) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kSecurity,
         error_prefix + ServiceWorkerConsts::kNoDocumentURLErrorMessage,
@@ -477,8 +477,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     return false;
   }
 
-  std::vector<GURL> urls = {container_host_->provider_host()->url(),
-                            registration_->scope()};
+  std::vector<GURL> urls = {container_host_->url(), registration_->scope()};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
     receivers_.ReportBadMessage(
         ServiceWorkerConsts::kBadMessageImproperOrigins);

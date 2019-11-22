@@ -27,6 +27,9 @@ class HTMLDocumentParserLoadingTest : public HTMLDocumentParserSimTest,
   HTMLDocumentParserLoadingTest() {
     Document::SetThreadedParsingEnabledForTesting(GetParam());
   }
+  static bool SheetInHeadBlocksParser() {
+    return RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled();
+  }
 };
 
 INSTANTIATE_TEST_SUITE_P(Threaded,
@@ -37,7 +40,7 @@ INSTANTIATE_TEST_SUITE_P(NotThreaded,
                          testing::Values(false));
 
 TEST_P(HTMLDocumentParserLoadingTest,
-       ShouldNotPauseParsingForExternalStylesheetsInHead) {
+       PauseParsingForExternalStylesheetsInHead) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimSubresourceRequest css_head_resource("https://example.com/testHead.css",
                                           "text/css");
@@ -54,14 +57,15 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().getElementById("bodyDiv"));
+  EXPECT_EQ(SheetInHeadBlocksParser(),
+            !GetDocument().getElementById("bodyDiv"));
   css_head_resource.Complete("");
   test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("bodyDiv"));
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
-       ShouldNotPauseParsingForExternalStylesheetsImportedInHead) {
+       BlockingParsingForExternalStylesheetsImportedInHead) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimSubresourceRequest css_head_resource("https://example.com/testHead.css",
                                           "text/css");
@@ -80,7 +84,8 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().getElementById("bodyDiv"));
+  EXPECT_EQ(SheetInHeadBlocksParser(),
+            !GetDocument().getElementById("bodyDiv"));
   css_head_resource.Complete("");
   test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("bodyDiv"));
@@ -108,10 +113,10 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
   EXPECT_FALSE(GetDocument().getElementById("after"));
 
-  // Completing the head css shouldn't change anything
+  // Completing the head css should progress parsing past #before.
   css_head_resource.Complete("");
   test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("before"));
@@ -150,7 +155,7 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
   EXPECT_FALSE(GetDocument().getElementById("after1"));
   EXPECT_FALSE(GetDocument().getElementById("after2"));
   EXPECT_FALSE(GetDocument().getElementById("after3"));
@@ -160,7 +165,7 @@ TEST_P(HTMLDocumentParserLoadingTest,
       "<div id=\"after2\"></div>");
 
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
   EXPECT_FALSE(GetDocument().getElementById("after1"));
   EXPECT_FALSE(GetDocument().getElementById("after2"));
   EXPECT_FALSE(GetDocument().getElementById("after3"));
@@ -172,12 +177,12 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
   EXPECT_FALSE(GetDocument().getElementById("after1"));
   EXPECT_FALSE(GetDocument().getElementById("after2"));
   EXPECT_FALSE(GetDocument().getElementById("after3"));
 
-  // Completing the head css shouldn't change anything
+  // Completing the head css should progress parsing past #before.
   css_head_resource.Complete("");
   test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("before"));
@@ -232,11 +237,15 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("after"));
+
+  // Completing the head css should progress parsing past both #before and
+  // #after.
+  css_head_resource.Complete("");
+  test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("before"));
   EXPECT_TRUE(GetDocument().getElementById("after"));
-
-  // Completing the head css shouldn't change anything
-  css_head_resource.Complete("");
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
@@ -263,10 +272,10 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
   EXPECT_FALSE(GetDocument().getElementById("after"));
 
-  // Completing the head css shouldn't change anything
+  // Completing the head css should progress parsing past #before.
   css_head_resource.Complete("");
   test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("before"));
@@ -304,10 +313,10 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
-  EXPECT_TRUE(GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
   EXPECT_FALSE(GetDocument().getElementById("after"));
 
-  // Completing the head css shouldn't change anything
+  // Completing the head css should progress parsing past #before.
   css_head_resource.Complete("");
   test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("before"));
@@ -322,7 +331,7 @@ TEST_P(HTMLDocumentParserLoadingTest,
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
-       PendingHeadStylesheetShouldNotBlockParserForBodyInlineStyle) {
+       PendingHeadStylesheetBlockingParserForBodyInlineStyle) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimSubresourceRequest css_head_resource("https://example.com/testHead.css",
                                           "text/css");
@@ -342,13 +351,16 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("after"));
+  css_head_resource.Complete("");
+  test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("before"));
   EXPECT_TRUE(GetDocument().getElementById("after"));
-  css_head_resource.Complete("");
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,
-       PendingHeadStylesheetShouldNotBlockParserForBodyShadowDom) {
+       PendingHeadStylesheetBlockingParserForBodyShadowDom) {
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimSubresourceRequest css_head_resource("https://example.com/testHead.css",
                                           "text/css");
@@ -368,9 +380,12 @@ TEST_P(HTMLDocumentParserLoadingTest,
   )HTML");
 
   test::RunPendingTasks();
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("before"));
+  EXPECT_EQ(SheetInHeadBlocksParser(), !GetDocument().getElementById("after"));
+  css_head_resource.Complete("");
+  test::RunPendingTasks();
   EXPECT_TRUE(GetDocument().getElementById("before"));
   EXPECT_TRUE(GetDocument().getElementById("after"));
-  css_head_resource.Complete("");
 }
 
 TEST_P(HTMLDocumentParserLoadingTest,

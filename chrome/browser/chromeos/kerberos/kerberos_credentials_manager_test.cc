@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/pref_names.h"
@@ -26,6 +27,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -98,6 +100,17 @@ class FakeKerberosCredentialsManagerObserver
   // OnAccountsChanged() call.
   int accounts_count_at_last_notification_ = 0;
 };
+
+class MockKerberosFilesHandler : public KerberosFilesHandler {
+ public:
+  explicit MockKerberosFilesHandler(base::RepeatingClosure get_kerberos_files)
+      : KerberosFilesHandler(get_kerberos_files) {}
+
+  ~MockKerberosFilesHandler() = default;
+
+  MOCK_METHOD(void, DeleteFiles, ());
+};
+
 }  // namespace
 
 class KerberosCredentialsManagerTest : public testing::Test {
@@ -204,6 +217,25 @@ class KerberosCredentialsManagerTest : public testing::Test {
                                     kAllowExisting, GetResultCallback());
     WaitAndVerifyResult({expected_error}, expected_notifications_count,
                         expected_accounts_count);
+  }
+
+  void RemoveAccount(const char* principal_name,
+                     kerberos::ErrorType expected_error,
+                     int expected_notifications_count,
+                     int expected_accounts_count) {
+    base::RunLoop run_loop;
+    mgr_->RemoveAccount(
+        principal_name,
+        base::BindLambdaForTesting([&](const kerberos::ErrorType error) {
+          EXPECT_EQ(expected_error, error);
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+
+    EXPECT_EQ(expected_notifications_count, observer_.notifications_count());
+    EXPECT_EQ(expected_accounts_count,
+              observer_.accounts_count_at_last_notification());
+    observer_.Reset();
   }
 
   // Calls |mgr_->ListAccounts()|, waits for the result and expects success.
@@ -529,13 +561,109 @@ TEST_F(KerberosCredentialsManagerTest,
   EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
 }
 
+// RemoveAccount fails with ERROR_PARSE_PRINCIPAL_FAILED when a bad principal
+// name is passed in.
+TEST_F(KerberosCredentialsManagerTest, RemoveAccountFailsForBadPrincipal) {
+  const kerberos::ErrorType expected_error =
+      kerberos::ERROR_PARSE_PRINCIPAL_FAILED;
+  RemoveAccount(kBadPrincipal1, expected_error, kNoNotification, kNoAccount);
+  RemoveAccount(kBadPrincipal2, expected_error, kNoNotification, kNoAccount);
+  RemoveAccount(kBadPrincipal3, expected_error, kNoNotification, kNoAccount);
+  RemoveAccount(kBadPrincipal4, expected_error, kNoNotification, kNoAccount);
+  RemoveAccount(kBadPrincipal5, expected_error, kNoNotification, kNoAccount);
+}
+
+// RemoveAccount normalizes |principal_name| before trying to find account.
+TEST_F(KerberosCredentialsManagerTest, RemoveAccountNormalizesPrincipalName) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  RemoveAccount(kPrincipal, kerberos::ERROR_NONE, kOneNotification, kNoAccount);
+}
+
+// RemoveAccount removes last account, should clear the active principal.
+TEST_F(KerberosCredentialsManagerTest,
+       RemoveAccountRemoveLastAccountClearsActivePrincipal) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+  client_test_interface()->StartRecordingFunctionCalls();
+
+  RemoveAccount(kPrincipal, kerberos::ERROR_NONE, kOneNotification, kNoAccount);
+
+  std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_EQ(calls, "RemoveAccount");
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+}
+
+// RemoveAccount removes last account, should delete kerberos files.
+TEST_F(KerberosCredentialsManagerTest,
+       RemoveAccountRemoveLastAccountDeletesKerberosFiles) {
+  auto files_handler = std::make_unique<MockKerberosFilesHandler>(
+      mgr_->GetGetKerberosFilesCallbackForTesting());
+  EXPECT_CALL(*files_handler, DeleteFiles());
+  mgr_->SetKerberosFilesHandlerForTesting(std::move(files_handler));
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+
+  RemoveAccount(kPrincipal, kerberos::ERROR_NONE, kOneNotification, kNoAccount);
+}
+
+// RemoveAccount removes active account while another account is available,
+// should set a new active principal.
+TEST_F(KerberosCredentialsManagerTest,
+       RemoveAccountRemoveActiveAccountAnotherAccountAvailable) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  AddAccountAndAuthenticate(kOtherPrincipal, kerberos::ERROR_NONE,
+                            kOneNotification, kTwoAccounts);
+  EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
+  client_test_interface()->StartRecordingFunctionCalls();
+
+  RemoveAccount(kOtherPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                kOneAccount);
+
+  std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_EQ(calls, "RemoveAccount,GetKerberosFiles");
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// RemoveAccount removes non-active account, no change on active account.
+TEST_F(KerberosCredentialsManagerTest, RemoveAccountNonActiveAccount) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  AddAccountAndAuthenticate(kOtherPrincipal, kerberos::ERROR_NONE,
+                            kOneNotification, kTwoAccounts);
+  EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
+
+  client_test_interface()->StartRecordingFunctionCalls();
+  RemoveAccount(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                kOneAccount);
+
+  std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_EQ(calls, "RemoveAccount");
+  EXPECT_EQ(kNormalizedOtherPrincipal, mgr_->GetActiveAccount());
+}
+
+// RemoveAccount fails to remove unknown account.
+TEST_F(KerberosCredentialsManagerTest, RemoveAccountFailsUnknownAccount) {
+  AddAccountAndAuthenticate(kPrincipal, kerberos::ERROR_NONE, kOneNotification,
+                            kOneAccount);
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+  client_test_interface()->StartRecordingFunctionCalls();
+
+  RemoveAccount(kOtherPrincipal, kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME,
+                kNoNotification, kNoAccount);
+
+  std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_EQ(calls, "RemoveAccount");
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
 // TODO(https://crbug.com/952251): Add more tests
-// - RemoveAccount
-//     + Normalization like in AddAccountAndAuthenticate
-//     + Calls the RemoveAccount KerberosClient method
-//     + On success and if active principal was removed, sets a new active
-//       principal (empty if no accounts left)
-//     + On success, calls OnAccountsChanged on observers
 // - ClearAccounts
 //     + Normalization like in AddAccountAndAuthenticate
 //     + Calls the ClearAccounts KerberosClient method

@@ -1384,10 +1384,6 @@ std::unique_ptr<RenderText> RenderTextHarfBuzz::CreateInstanceOfSameType()
   return std::make_unique<RenderTextHarfBuzz>();
 }
 
-bool RenderTextHarfBuzz::MultilineSupported() const {
-  return true;
-}
-
 const base::string16& RenderTextHarfBuzz::GetDisplayText() {
   // TODO(krb): Consider other elision modes for multiline.
   if ((multiline() && (max_lines() == 0 || elide_behavior() != ELIDE_TAIL)) ||

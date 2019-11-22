@@ -270,6 +270,9 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   State state_ = State::kInitializing;
 
+  // Profile of the video being decoded.
+  VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
+
   // Callback to get a command buffer helper.  Must be called from the gpu
   // main thread only.
   base::RepeatingCallback<scoped_refptr<CommandBufferHelper>()> get_helper_cb_;

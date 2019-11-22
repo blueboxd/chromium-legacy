@@ -288,17 +288,8 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   infobarBadgeTabHelper->SetDelegate(self);
   // Whenever the WebState changes ask the corresponding
   // InfobarBadgeTabHelper for all the badges for that WebState.
-  std::vector<id<BadgeItem>> infobarBadges =
-      infobarBadgeTabHelper->GetInfobarBadgeItems();
-  if (infobarBadges.size() == 0) {
-    // If there are no Infobar badges, then just set |badges| to nil since
-    // &infobarBadges[0] will fail.
-    self.badges = nil;
-  } else {
-    // Copy all contents of vector into array.
-    self.badges = [NSMutableArray arrayWithObjects:&infobarBadges[0]
-                                             count:infobarBadges.size()];
-  }
+  self.badges = [infobarBadgeTabHelper->GetInfobarBadgeItems() mutableCopy];
+
   id<BadgeItem> displayedBadge;
   if ([self.badges count] > 1) {
     // Show the overflow menu badge when there are multiple badges.

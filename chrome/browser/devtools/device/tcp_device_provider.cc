@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/completion_repeating_callback.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
@@ -50,16 +51,18 @@ class ResolveHostAndOpenSocket final : public network::ResolveHostClientBase {
         ->ResolveHost(address, nullptr, receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&ResolveHostAndOpenSocket::OnComplete,
-                       base::Unretained(this), net::ERR_FAILED, base::nullopt));
+                       base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   }
 
  private:
   // network::mojom::ResolveHostClient implementation:
   void OnComplete(
       int result,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override {
     if (result != net::OK) {
-      RunSocketCallback(callback_, nullptr, result);
+      RunSocketCallback(callback_, nullptr, resolve_error_info.error);
       delete this;
       return;
     }

@@ -330,6 +330,12 @@ gfx::Vector2dF GetPixelsPerInchForPointerDevice(HANDLE source_device) {
   return pixels_per_inch;
 }
 
+// Returns physical pixels per inch based on 96 dpi monitor.
+gfx::Vector2dF GetDefaultMonitorPhysicalPixelsPerInch() {
+  int default_dpi = GetDPIFromScalingFactor(1.0);
+  return gfx::Vector2dF(default_dpi, default_dpi);
+}
+
 BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
                                                 HDC hdc,
                                                 LPRECT rect,
@@ -353,7 +359,7 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
 
   // Map touch pointer device to |monitor| and retrieve pixels per inch
   // for the |monitor| based on pointer device handle.
-  gfx::Vector2dF pixels_per_inch;
+  gfx::Vector2dF pixels_per_inch = GetDefaultMonitorPhysicalPixelsPerInch();
   if (pointer_device_count != 0) {
     // Get all pointer devices.
     std::vector<POINTER_DEVICE_INFO> pointer_devices(pointer_device_count);
@@ -365,12 +371,6 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
               GetPixelsPerInchForPointerDevice(pointer_devices[i].device);
           break;
         }
-      }
-
-      if (pixels_per_inch.IsZero()) {
-        int default_pixels_per_inch = GetPerMonitorDPI(monitor);
-        pixels_per_inch.set_x(default_pixels_per_inch);
-        pixels_per_inch.set_y(default_pixels_per_inch);
       }
     }
   }

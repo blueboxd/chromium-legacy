@@ -461,6 +461,7 @@ TEST_F(PeopleHandlerTest,
   CheckBool(dictionary, "encryptAllDataAllowed", true);
   CheckBool(dictionary, "encryptAllData", false);
   CheckBool(dictionary, "passphraseRequired", false);
+  CheckBool(dictionary, "trustedVaultKeysRequired", false);
 }
 
 // Verifies the case where the user cancels after the sync engine has
@@ -945,6 +946,26 @@ TEST_F(PeopleHandlerTest, ShowSetupCustomPassphraseRequired) {
   const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
   CheckBool(dictionary, "passphraseRequired", true);
   EXPECT_TRUE(dictionary->FindKey("enterPassphraseBody"));
+}
+
+TEST_F(PeopleHandlerTest, ShowSetupTrustedVaultKeysRequired) {
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(),
+          IsTrustedVaultKeyRequiredForPreferredDataTypes())
+      .WillByDefault(Return(true));
+  ON_CALL(*mock_sync_service_->GetMockUserSettings(), GetPassphraseType())
+      .WillByDefault(Return(syncer::PassphraseType::kTrustedVaultPassphrase));
+  SetupInitializedSyncService();
+  SetDefaultExpectationsForConfigPage();
+
+  // This should display the sync setup dialog (not login).
+  handler_->HandleShowSetupUI(nullptr);
+
+  const base::DictionaryValue* dictionary = ExpectSyncPrefsChanged();
+  CheckBool(dictionary, "passphraseRequired", false);
+  CheckBool(dictionary, "trustedVaultKeysRequired", true);
+  EXPECT_FALSE(dictionary->FindKey("enterPassphraseBody"));
+  // TODO: See how to verify the appropriate action, once it's actually
+  // implemented.
 }
 
 TEST_F(PeopleHandlerTest, ShowSetupEncryptAll) {

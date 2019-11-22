@@ -71,6 +71,7 @@ class DnsProbeRunner : public network::ResolveHostClientBase {
   // network::ResolveHostClientBase impl:
   void OnComplete(
       int32_t result,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override;
 
  private:

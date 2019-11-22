@@ -148,20 +148,6 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void GetLinuxPackageInfoFromAptCallback(
-      base::OnceClosure closure,
-      const LinuxPackageInfo& expected_result,
-      const LinuxPackageInfo& result) {
-    EXPECT_EQ(result.success, expected_result.success);
-    EXPECT_EQ(result.failure_reason, expected_result.failure_reason);
-    EXPECT_EQ(result.package_id, expected_result.package_id);
-    EXPECT_EQ(result.name, expected_result.name);
-    EXPECT_EQ(result.version, expected_result.version);
-    EXPECT_EQ(result.summary, expected_result.summary);
-    EXPECT_EQ(result.description, expected_result.description);
-    std::move(closure).Run();
-  }
-
   CrostiniManagerTest()
       : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {
     chromeos::DBusThreadManager::Initialize();
@@ -630,8 +616,6 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
       Abort();
     }
   }
-
-  void OnContainerDownloading(int32_t download_percent) override {}
 
   void OnContainerCreated(CrostiniResult result) override {
     if (abort_on_container_created_) {

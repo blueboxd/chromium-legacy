@@ -15,8 +15,7 @@ namespace ui {
 // A simplified Neural stylus Palm Detection Model, trained on the data based on
 // a single device class but translatable to others. Neural inference
 // implementation based on inline neural net inference.
-class EVENTS_OZONE_EVDEV_EXPORT
-    OneDeviceTrainNeuralStylusPalmDetectionFilterModel
+class COMPONENT_EXPORT(EVDEV) OneDeviceTrainNeuralStylusPalmDetectionFilterModel
     : public NeuralStylusPalmDetectionFilterModel {
  public:
   OneDeviceTrainNeuralStylusPalmDetectionFilterModel();

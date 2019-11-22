@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/promise/abstract_promise.h"
 #include "base/time/time.h"
 
 namespace base {
@@ -133,10 +132,6 @@ class BASE_EXPORT TaskRunner
   bool PostTaskAndReply(const Location& from_here,
                         OnceClosure task,
                         OnceClosure reply);
-
-  // TODO(alexclarke): This should become pure virtual and replace
-  // PostDelayedTask. NB passing by reference to reduce binary size.
-  bool PostPromiseInternal(WrappedPromise promise, base::TimeDelta delay);
 
  protected:
   friend struct TaskRunnerTraits;

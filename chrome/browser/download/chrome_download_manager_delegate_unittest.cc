@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -49,6 +50,7 @@
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -495,6 +497,12 @@ void ExpectExtensionOnlyIn(const InsecureDownloadExtensions& ext,
       tester.ExpectTotalCount(histogram, 0);
     }
   }
+}
+
+GURL ForceGoogleSafeSearch(const GURL& url) {
+  GURL new_url;
+  safe_search_util::ForceGoogleSafeSearch(url, &new_url);
+  return new_url;
 }
 
 }  // namespace
@@ -983,6 +991,25 @@ TEST_F(ChromeDownloadManagerDelegateTest, WithHistoryDbNextId) {
   delegate()->GetDownloadIdReceiverCallback().Run(1u);
   std::vector<uint32_t> expected_ids = std::vector<uint32_t>{1u, 2u};
   EXPECT_EQ(expected_ids, download_ids());
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest, SanitizeGoogleSearchLink) {
+  static const GURL kGoogleSearchUrl("https://www.google.com/search?q=google");
+  static const GURL kGoogleSearchUrlSanitized(
+      ForceGoogleSafeSearch(kGoogleSearchUrl));
+
+  for (auto is_safe_search_enabled : {true, false}) {
+    auto* prefs = profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kForceGoogleSafeSearch, is_safe_search_enabled);
+
+    download::DownloadUrlParameters params(kGoogleSearchUrl,
+                                           TRAFFIC_ANNOTATION_FOR_TESTS);
+
+    delegate()->SanitizeDownloadParameters(&params);
+    const auto& actual_url =
+        is_safe_search_enabled ? kGoogleSearchUrlSanitized : kGoogleSearchUrl;
+    EXPECT_EQ(params.url(), actual_url);
+  }
 }
 
 #if !defined(OS_ANDROID)

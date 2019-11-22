@@ -24,9 +24,14 @@ class SyncService;
 namespace sync_ui_util {
 
 enum MessageType {
-  PRE_SYNCED,  // User has not set up sync.
-  SYNCED,      // We are synced and authenticated to a gmail account.
-  SYNC_ERROR,  // A sync error (such as invalid credentials) has occurred.
+  // User has not set up sync.
+  PRE_SYNCED,
+  // We are synced and authenticated to a gmail account.
+  SYNCED,
+  // A sync error (such as invalid credentials) has occurred.
+  SYNC_ERROR,
+  // Same as SYNC_ERROR but affecting passwords only.
+  PASSWORDS_ONLY_SYNC_ERROR,
 };
 
 // The action associated with the sync status.
@@ -41,6 +46,8 @@ enum ActionType {
   UPGRADE_CLIENT,
   // User needs to enter their passphrase.
   ENTER_PASSPHRASE,
+  // User needs to go through key retrieval.
+  RETRIEVE_TRUSTED_VAULT_KEYS,
   // User needs to confirm sync settings.
   CONFIRM_SYNC_SETTINGS,
 };

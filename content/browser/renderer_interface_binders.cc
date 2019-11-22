@@ -12,8 +12,6 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/native_file_system/native_file_system_manager_impl.h"
-#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -34,8 +32,6 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
-#include "third_party/blink/public/mojom/notifications/notification_service.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -108,36 +104,7 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<RenderProcessHostImpl*>(host)->BindCacheStorage(
             std::move(receiver), origin);
       }));
-  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
-    parameterized_binder_registry_.AddInterface(base::BindRepeating(
-        [](mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
-               receiver,
-           RenderProcessHost* host, const url::Origin& origin) {
-          // This code path is only for workers, hence always pass in
-          // MSG_ROUTING_NONE as frame ID. Frames themselves go through
-          // RenderFrameHostImpl instead.
-          auto* storage_partition =
-              static_cast<StoragePartitionImpl*>(host->GetStoragePartition());
-          auto* manager = storage_partition->GetNativeFileSystemManager();
-          manager->BindReceiver(
-              NativeFileSystemManagerImpl::BindingContext(
-                  origin,
-                  // TODO(https://crbug.com/989323): Obtain and use a better
-                  // URL for workers instead of the origin as source url.
-                  // This URL will be used for SafeBrowsing checks and for
-                  // the Quarantine Service.
-                  origin.GetURL(), host->GetID(), MSG_ROUTING_NONE),
-              std::move(receiver));
-        }));
-  }
 
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::NotificationServiceRequest request,
-         RenderProcessHost* host, const url::Origin& origin) {
-        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-            ->GetPlatformNotificationContext()
-            ->CreateService(origin, std::move(request));
-      }));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
 }

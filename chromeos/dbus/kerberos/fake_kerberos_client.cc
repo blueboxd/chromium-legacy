@@ -135,15 +135,18 @@ void FakeKerberosClient::RemoveAccount(
     const kerberos::RemoveAccountRequest& request,
     RemoveAccountCallback callback) {
   MaybeRecordFunctionCallForTesting(__FUNCTION__);
+  kerberos::RemoveAccountResponse response;
   auto it = std::find(accounts_.begin(), accounts_.end(),
                       AccountData(request.principal_name()));
   if (it == accounts_.end()) {
-    PostResponse(std::move(callback), kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME,
-                 mTaskDelay);
-    return;
+    response.set_error(kerberos::ERROR_UNKNOWN_PRINCIPAL_NAME);
+  } else {
+    accounts_.erase(it);
+    response.set_error(kerberos::ERROR_NONE);
   }
-  accounts_.erase(it);
-  PostResponse(std::move(callback), kerberos::ERROR_NONE, mTaskDelay);
+
+  MapAccountData(response.mutable_accounts());
+  PostProtoResponse(std::move(callback), response, mTaskDelay);
 }
 
 void FakeKerberosClient::ClearAccounts(
@@ -177,7 +180,10 @@ void FakeKerberosClient::ClearAccounts(
     }
   }
 
-  PostResponse(std::move(callback), kerberos::ERROR_NONE, mTaskDelay);
+  kerberos::ClearAccountsResponse response;
+  MapAccountData(response.mutable_accounts());
+  response.set_error(kerberos::ERROR_NONE);
+  PostProtoResponse(std::move(callback), response, mTaskDelay);
 }
 
 void FakeKerberosClient::ListAccounts(
@@ -185,18 +191,7 @@ void FakeKerberosClient::ListAccounts(
     ListAccountsCallback callback) {
   MaybeRecordFunctionCallForTesting(__FUNCTION__);
   kerberos::ListAccountsResponse response;
-  for (const AccountData& data : accounts_) {
-    kerberos::Account* account = response.add_accounts();
-    account->set_principal_name(data.principal_name);
-    account->set_krb5conf(data.krb5conf);
-    account->set_tgt_validity_seconds(data.has_tgt ? kTgtValidity.InSeconds()
-                                                   : 0);
-    account->set_tgt_renewal_seconds(data.has_tgt ? kTgtRenewal.InSeconds()
-                                                  : 0);
-    account->set_is_managed(data.is_managed);
-    account->set_password_was_remembered(!data.password.empty());
-    account->set_use_login_password(data.use_login_password);
-  }
+  MapAccountData(response.mutable_accounts());
   response.set_error(kerberos::ERROR_NONE);
   PostProtoResponse(std::move(callback), response, mTaskDelay);
 }
@@ -375,6 +370,21 @@ bool FakeKerberosClient::AccountData::operator==(
 bool FakeKerberosClient::AccountData::operator!=(
     const AccountData& other) const {
   return !(*this == other);
+}
+
+void FakeKerberosClient::MapAccountData(RepeatedAccountField* accounts) {
+  for (const AccountData& data : accounts_) {
+    kerberos::Account* account = accounts->Add();
+    account->set_principal_name(data.principal_name);
+    account->set_krb5conf(data.krb5conf);
+    account->set_tgt_validity_seconds(data.has_tgt ? kTgtValidity.InSeconds()
+                                                   : 0);
+    account->set_tgt_renewal_seconds(data.has_tgt ? kTgtRenewal.InSeconds()
+                                                  : 0);
+    account->set_is_managed(data.is_managed);
+    account->set_password_was_remembered(!data.password.empty());
+    account->set_use_login_password(data.use_login_password);
+  }
 }
 
 // static

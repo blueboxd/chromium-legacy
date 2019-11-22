@@ -8,6 +8,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/sync_engine_switches.h"
@@ -50,6 +52,31 @@ MATCHER_P(IsDataEncryptedWith, key_params, "") {
   EXPECT_TRUE(nigori->Permute(syncer::Nigori::Type::Password,
                               syncer::kNigoriKeyName, &nigori_name));
   return encrypted_data.key_name() == nigori_name;
+}
+
+MATCHER_P4(StatusLabelsMatch,
+           message_type,
+           status_label_string_id,
+           link_label_string_id,
+           action_type,
+           "") {
+  if (arg.message_type != message_type) {
+    *result_listener << "Wrong message type";
+    return false;
+  }
+  if (arg.status_label_string_id != status_label_string_id) {
+    *result_listener << "Wrong status label";
+    return false;
+  }
+  if (arg.link_label_string_id != link_label_string_id) {
+    *result_listener << "Wrong link label";
+    return false;
+  }
+  if (arg.action_type != action_type) {
+    *result_listener << "Wrong action type";
+    return false;
+  }
+  return true;
 }
 
 GURL GetTrustedVaultRetrievalURL(
@@ -474,6 +501,13 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
   ASSERT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
 
+  // Verify the string that would be displayed in settings.
+  ASSERT_THAT(sync_ui_util::GetStatusLabels(GetProfile(0)),
+              StatusLabelsMatch(sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR,
+                                IDS_SETTINGS_EMPTY_STRING,
+                                IDS_SYNC_STATUS_NEEDS_KEYS_LINK_LABEL,
+                                sync_ui_util::RETRIEVE_TRUSTED_VAULT_KEYS));
+
   // Mimic opening a web page where the user can interact with the retrieval
   // flow.
   sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
@@ -493,6 +527,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
                    ->GetUserSettings()
                    ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
   EXPECT_FALSE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
+  EXPECT_THAT(
+      sync_ui_util::GetStatusLabels(GetProfile(0)),
+      StatusLabelsMatch(sync_ui_util::SYNCED, IDS_SYNC_ACCOUNT_SYNCING,
+                        IDS_SETTINGS_EMPTY_STRING, sync_ui_util::NO_ACTION));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,

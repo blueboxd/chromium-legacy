@@ -17,7 +17,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.CardType;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataDelegate;
@@ -206,46 +205,17 @@ public class AutofillAssistantCollectUserDataTestHelper {
      * @param fullName The full name for the profile to create.
      * @param email The email for the profile to create.
      * @param postcode The postcode of the billing address.
-     * @return the GUID of the created profile.
+     * @return the profile.
      */
     public PersonalDataManager.AutofillProfile createDummyProfile(
             String fullName, String email, String postcode) {
         return new PersonalDataManager.AutofillProfile("" /* guid */,
                 "https://www.example.com" /* origin */, fullName, "Acme Inc.", "123 Main",
-                "California", "Los Angeles", "", postcode, "", "Uzbekistan", "555 123-4567", email,
-                "");
+                "California", "Los Angeles", "", postcode, "", "UZ", "555 123-4567", email, "");
     }
 
     public PersonalDataManager.AutofillProfile createDummyProfile(String fullName, String email) {
         return createDummyProfile(fullName, email, "90210");
-    }
-
-    public CreditCard getCreditCard(final String guid) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> PersonalDataManager.getInstance().getCreditCard(guid));
-    }
-
-    public String getShippingAddressLabelWithoutCountryForPaymentRequest(AutofillProfile profile) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
-                ()
-                        -> PersonalDataManager.getInstance()
-                                   .getShippingAddressLabelWithoutCountryForPaymentRequest(
-                                           profile));
-    }
-
-    public String getShippingAddressLabelWithCountryForPaymentRequest(AutofillProfile profile) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
-                ()
-                        -> PersonalDataManager.getInstance()
-                                   .getShippingAddressLabelWithCountryForPaymentRequest(profile));
-    }
-
-    public String setCreditCard(final CreditCard card) throws TimeoutException {
-        int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        String guid = TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> PersonalDataManager.getInstance().setCreditCard(card));
-        mOnPersonalDataChangedHelper.waitForCallback(callCount);
-        return guid;
     }
 
     /**
@@ -255,28 +225,29 @@ public class AutofillAssistantCollectUserDataTestHelper {
      * @return the GUID of the created credit card
      */
     public String addDummyCreditCard(String billingAddressId) throws TimeoutException {
+        PersonalDataManager.CreditCard card = createDummyCreditCard(billingAddressId);
+
+        int callCount = mOnPersonalDataChangedHelper.getCallCount();
+        String guid = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> PersonalDataManager.getInstance().setCreditCard(card));
+        mOnPersonalDataChangedHelper.waitForCallback(callCount);
+        return guid;
+    }
+
+    /**
+     * Create a credit card with dummy data.
+     *
+     * @param billingAddressId The billing address profile GUID.
+     * @return the card.
+     */
+    public PersonalDataManager.CreditCard createDummyCreditCard(String billingAddressId) {
         String profileName = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> PersonalDataManager.getInstance().getProfile(billingAddressId).getFullName());
 
-        PersonalDataManager.CreditCard creditCard = new PersonalDataManager.CreditCard("",
-                "https://example.com", true, true, profileName, "4111111111111111", "1111", "12",
-                "2050", "visa", org.chromium.chrome.autofill_assistant.R.drawable.visa_card,
-                CardType.UNKNOWN, billingAddressId, "" /* serverId */);
-        return setCreditCard(creditCard);
-    }
-
-    public void deleteProfile(final String guid) throws TimeoutException {
-        int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> PersonalDataManager.getInstance().deleteProfile(guid));
-        mOnPersonalDataChangedHelper.waitForCallback(callCount);
-    }
-
-    public void deleteCreditCard(final String guid) throws TimeoutException {
-        int callCount = mOnPersonalDataChangedHelper.getCallCount();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> PersonalDataManager.getInstance().deleteCreditCard(guid));
-        mOnPersonalDataChangedHelper.waitForCallback(callCount);
+        return new PersonalDataManager.CreditCard("", "https://example.com", true, true,
+                profileName, "4111111111111111", "1111", "12", "2050", "visa",
+                org.chromium.chrome.autofill_assistant.R.drawable.visa_card, CardType.UNKNOWN,
+                billingAddressId, "" /* serverId */);
     }
 
     private void registerDataObserver() throws TimeoutException {

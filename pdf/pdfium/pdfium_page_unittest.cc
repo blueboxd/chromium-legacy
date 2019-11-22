@@ -291,4 +291,98 @@ TEST_F(PDFiumPageTextTest, GetTextRunInfo) {
   ASSERT_FALSE(text_run_info_result.has_value());
 }
 
+TEST_F(PDFiumPageTextTest, TestHighlightTextRunInfo) {
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("highlights.pdf"));
+  ASSERT_TRUE(engine);
+
+  // Highlights span across text run indices 0, 2 and 3.
+  static const pp::PDF::PrivateAccessibilityTextStyleInfo kExpectedStyle = {
+      "Helvetica", 0,    PP_TEXTRENDERINGMODE_FILL, 16, 0xff000000, 0xff000000,
+      false,       false};
+  pp::PDF::PrivateAccessibilityTextRunInfo expected_text_runs[] = {
+      {5,
+       PP_MakeFloatRectFromXYWH(1.3333334f, 198.66667f, 46.666668f, 14.666672f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, kExpectedStyle},
+      {7,
+       PP_MakeFloatRectFromXYWH(50.666668f, 198.66667f, 47.999996f, 17.333328f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, kExpectedStyle},
+      {7,
+       PP_MakeFloatRectFromXYWH(106.66666f, 198.66667f, 73.333336f, 18.666672f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, kExpectedStyle},
+      {2, PP_MakeFloatRectFromXYWH(188.0f, 202.66667f, 9.333333f, 14.666667f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_NONE, kExpectedStyle},
+      {2,
+       PP_MakeFloatRectFromXYWH(198.66667f, 202.66667f, 21.333328f, 10.666672f),
+       PP_PrivateDirection::PP_PRIVATEDIRECTION_LTR, kExpectedStyle}};
+
+  if (IsRunningOnChromeOS()) {
+    expected_text_runs[2].bounds = PP_MakeFloatRectFromXYWH(
+        106.66666f, 198.66667f, 73.333336f, 19.999985f);
+    expected_text_runs[4].bounds = PP_MakeFloatRectFromXYWH(
+        198.66667f, 201.33333f, 21.333328f, 12.000015f);
+  }
+
+  PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
+  ASSERT_TRUE(page);
+
+  int current_char_index = 0;
+  for (const auto& expected_text_run : expected_text_runs) {
+    base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
+        text_run_info_result = engine->GetTextRunInfo(0, current_char_index);
+    ASSERT_TRUE(text_run_info_result.has_value());
+    const auto& text_run_info = text_run_info_result.value();
+
+    EXPECT_EQ(expected_text_run.len, text_run_info.len);
+    CompareRect(expected_text_run.bounds, text_run_info.bounds);
+    EXPECT_EQ(expected_text_run.direction, text_run_info.direction);
+    EXPECT_EQ(kExpectedStyle.font_name, text_run_info.style.font_name);
+    EXPECT_EQ(kExpectedStyle.font_weight, text_run_info.style.font_weight);
+    EXPECT_EQ(kExpectedStyle.render_mode, text_run_info.style.render_mode);
+    EXPECT_EQ(kExpectedStyle.font_size, text_run_info.style.font_size);
+    EXPECT_EQ(kExpectedStyle.fill_color, text_run_info.style.fill_color);
+    EXPECT_EQ(kExpectedStyle.stroke_color, text_run_info.style.stroke_color);
+    EXPECT_EQ(kExpectedStyle.is_italic, text_run_info.style.is_italic);
+    EXPECT_EQ(kExpectedStyle.is_bold, text_run_info.style.is_bold);
+
+    current_char_index += text_run_info.len;
+  }
+}
+
+using PDFiumPageHighlightTest = PDFiumTestBase;
+
+TEST_F(PDFiumPageHighlightTest, TestPopulateHighlights) {
+  struct ExpectedHighlight {
+    int32_t start_char_index;
+    int32_t char_count;
+    pp::Rect bounding_rect;
+  };
+
+  static const ExpectedHighlight kExpectedHighlights[] = {
+      {0, 5, {5, 196, 49, 26}},
+      {12, 7, {110, 196, 77, 26}},
+      {20, 1, {192, 196, 13, 26}}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("highlights.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PDFiumPage* page = GetPDFiumPageForTest(engine.get(), 0);
+  ASSERT_TRUE(page);
+  page->PopulateHighlights();
+  ASSERT_EQ(base::size(kExpectedHighlights), page->highlights_.size());
+
+  for (size_t i = 0; i < page->highlights_.size(); ++i) {
+    ASSERT_EQ(kExpectedHighlights[i].start_char_index,
+              page->highlights_[i].start_char_index);
+    ASSERT_EQ(kExpectedHighlights[i].char_count,
+              page->highlights_[i].char_count);
+    CompareRect(kExpectedHighlights[i].bounding_rect,
+                page->highlights_[i].bounding_rect);
+  }
+}
+
 }  // namespace chrome_pdf

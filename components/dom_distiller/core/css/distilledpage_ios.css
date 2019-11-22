@@ -5,11 +5,15 @@
 /* The following are iOS specific rules for rendering on WebKit instead of
  * Blink. */
 
-#main-content {
+#mainContent {
   -webkit-flex: 1 1 auto;
 }
 
-#content-wrap {
+#closeReaderView {
+  -webkit-flex: 0 0 auto;
+}
+
+#contentWrap {
   -webkit-flex-flow: column;
   display: -webkit-flex;
 }

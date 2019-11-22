@@ -61,6 +61,17 @@ void ConvertPrivateAccessibilityImageInfo(
   info->bounds = image.bounds;
 }
 
+void ConvertPrivateAccessibilityHighlightInfo(
+    const PDF::PrivateAccessibilityHighlightInfo& highlight,
+    PP_PrivateAccessibilityHighlightInfo* info) {
+  info->note_text = highlight.note_text.c_str();
+  info->note_text_length = highlight.note_text.size();
+  info->index_in_page = highlight.index_in_page;
+  info->text_run_index = highlight.text_run_index;
+  info->text_run_count = highlight.text_run_count;
+  info->bounds = highlight.bounds;
+}
+
 }  // namespace
 
 // static
@@ -262,11 +273,22 @@ void PDF::SetAccessibilityPageInfo(
     for (size_t i = 0; i < images.size(); ++i)
       ConvertPrivateAccessibilityImageInfo(images[i], &image_info[i]);
 
+    const std::vector<PrivateAccessibilityHighlightInfo>& highlights =
+        page_objects.highlights;
+    std::vector<PP_PrivateAccessibilityHighlightInfo> highlight_info(
+        highlights.size());
+    for (size_t i = 0; i < highlights.size(); ++i) {
+      ConvertPrivateAccessibilityHighlightInfo(highlights[i],
+                                               &highlight_info[i]);
+    }
+
     PP_PrivateAccessibilityPageObjects pp_page_objects;
     pp_page_objects.links = link_info.data();
     pp_page_objects.link_count = link_info.size();
     pp_page_objects.images = image_info.data();
     pp_page_objects.image_count = image_info.size();
+    pp_page_objects.highlights = highlight_info.data();
+    pp_page_objects.highlight_count = highlight_info.size();
 
     get_interface<PPB_PDF>()->SetAccessibilityPageInfo(
         instance.pp_instance(), page_info, text_run_info.data(), chars.data(),

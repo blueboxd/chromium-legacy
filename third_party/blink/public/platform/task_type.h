@@ -185,9 +185,6 @@ enum class TaskType : unsigned char {
   // * //media
   kInternalMediaRealTime = 30,
 
-  // Tasks to execute IPC (legacy IPC and mojo).
-  kInternalIPC = 31,
-
   // Tasks related to user interaction like clicking or inputting texts.
   kInternalUserInteraction = 32,
 

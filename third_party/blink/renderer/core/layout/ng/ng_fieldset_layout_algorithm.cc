@@ -117,8 +117,8 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
     intrinsic_block_size += padding.BlockSum();
   }
 
-  intrinsic_block_size =
-      ClampIntrinsicBlockSize(Node(), border_padding_, intrinsic_block_size);
+  intrinsic_block_size = ClampIntrinsicBlockSize(
+      ConstraintSpace(), Node(), border_padding_, intrinsic_block_size);
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(

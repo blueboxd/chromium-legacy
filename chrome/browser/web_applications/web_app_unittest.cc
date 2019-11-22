@@ -14,12 +14,12 @@ TEST(WebAppTest, HasAnySources) {
   WebApp app{GenerateAppIdFromURL(GURL("https://example.com"))};
 
   EXPECT_FALSE(app.HasAnySources());
-  for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {
+  for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
     app.AddSource(static_cast<Source::Type>(i));
     EXPECT_TRUE(app.HasAnySources());
   }
 
-  for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {
+  for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
     EXPECT_TRUE(app.HasAnySources());
     app.RemoveSource(static_cast<Source::Type>(i));
   }
@@ -29,7 +29,7 @@ TEST(WebAppTest, HasAnySources) {
 TEST(WebAppTest, HasOnlySource) {
   WebApp app{GenerateAppIdFromURL(GURL("https://example.com"))};
 
-  for (int i = Source::kMinValue; i < Source::kMaxValue; ++i) {
+  for (int i = Source::kMinValue; i <= Source::kMaxValue; ++i) {
     auto source = static_cast<Source::Type>(i);
 
     app.AddSource(source);
@@ -42,14 +42,14 @@ TEST(WebAppTest, HasOnlySource) {
   app.AddSource(Source::kMinValue);
   EXPECT_TRUE(app.HasOnlySource(Source::kMinValue));
 
-  for (int i = Source::kMinValue + 1; i < Source::kMaxValue; ++i) {
+  for (int i = Source::kMinValue + 1; i <= Source::kMaxValue; ++i) {
     auto source = static_cast<Source::Type>(i);
     app.AddSource(source);
     EXPECT_FALSE(app.HasOnlySource(source));
     EXPECT_FALSE(app.HasOnlySource(Source::kMinValue));
   }
 
-  for (int i = Source::kMinValue + 1; i < Source::kMaxValue; ++i) {
+  for (int i = Source::kMinValue + 1; i <= Source::kMaxValue; ++i) {
     auto source = static_cast<Source::Type>(i);
     EXPECT_FALSE(app.HasOnlySource(Source::kMinValue));
     app.RemoveSource(source);
@@ -60,6 +60,40 @@ TEST(WebAppTest, HasOnlySource) {
   app.RemoveSource(Source::kMinValue);
   EXPECT_FALSE(app.HasOnlySource(Source::kMinValue));
   EXPECT_FALSE(app.HasAnySources());
+}
+
+TEST(WebAppTest, WasInstalledByUser) {
+  WebApp app{GenerateAppIdFromURL(GURL("https://example.com"))};
+
+  app.AddSource(Source::kSync);
+  EXPECT_TRUE(app.WasInstalledByUser());
+
+  app.AddSource(Source::kWebAppStore);
+  EXPECT_TRUE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kSync);
+  EXPECT_TRUE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kWebAppStore);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.AddSource(Source::kDefault);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.AddSource(Source::kSystem);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.AddSource(Source::kPolicy);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kDefault);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kSystem);
+  EXPECT_FALSE(app.WasInstalledByUser());
+
+  app.RemoveSource(Source::kPolicy);
+  EXPECT_FALSE(app.WasInstalledByUser());
 }
 
 }  // namespace web_app

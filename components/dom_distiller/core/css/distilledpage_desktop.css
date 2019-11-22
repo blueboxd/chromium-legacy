@@ -2,275 +2,273 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-/* This file should contain style used on desktop but not Android or i-oS. */
+/* This file should contain style used on desktop but not Android or iOS. */
 
 :root {
-  --font-size-percent: 22%;
-  --google-blue-600: 26, 115, 232;
-  --google-grey-700: 95, 99, 104;
-  --google-grey-800: 60, 64, 67;
+  --fontSizePercent: 22%;
+  --mdblue: rgb(26, 115, 232);
+  --mdblue-faint: rgba(26, 115, 232, .2);
+  --mdgrey: rgb(95, 99, 104);
 }
 
 fieldset {
-  background: transparent;
   border: none;
+  background: transparent;
 }
 
-#main-content h1 {
+#mainContent h1 {
   font-size: 1.5em;
 }
 
-#main-content article {
+#mainContent article {
   margin-top: 2em;
 }
 
-.screen-reader-only {
-  border: none;
-  color: transparent;
+.screenReaderOnly {
   display: block;
-  height: 0;
+  color: transparent;
+  height: 0px;
   margin: 0;
   padding: 0;
+  border: none;
   user-select: none;
 }
 
-#main-content {
-  margin-bottom: 1em;
-  margin-top: 1em;
+#mainContent {
   max-width: 100%;
-  padding: 1em;
   width: 35em;
+  padding: 1em;
+  margin-top: 1em;
+  margin-bottom: 1em;
 }
 
-#settings-container {
-  border-bottom: thin solid gray;
-  display: flex;
-  flex: 1 1 auto;
-  justify-content: flex-end;
-  max-width: 90%;
+#settingsContainer {
   position: absolute;
   width: inherit;
+  max-width: 90%;
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: thin solid gray;
 }
 
-#settings-container button {
+#settingsContainer button {
   background: transparent;
   border: none;
   border-radius: 50%;
-  color: rgb(var(--google-grey-700));
+  color: var(--mdgrey);
 }
 
-#settings-container button .material-icons {
+#settingsContainer button .material-icons {
   user-select: none;
 }
 
-#settings-container button.activated {
+#settingsContainer button.activated {
   background-color: rgba(0, 0, 0, .1);
 }
 
-.dark #settings-container button.activated {
+.dark #settingsContainer button.activated {
   background-color: rgba(255, 255, 255, .1);
 }
 
-#settings-container button:focus {
+#settingsContainer button:focus {
   background-color: rgba(95, 99, 104, .2);
-  box-shadow: 0 0 0 8px rgba(95, 99, 104, .2);
+  box-shadow: 0px 0px 0px 8px rgba(95, 99, 104, .2);
   outline: none;
 }
 
-#settings-container button#settings-toggle {
+#settingsContainer button#settingsToggle {
   border-radius: 16px;
 }
 
-.dark #settings-toggle {
+.dark #settingsToggle {
   color: #E0E0E0;
 }
 
-#settings-dialog {
+#settingsDialog {
+  top: 3em;
+  left: auto;
   border: none;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
               0 4px 8px 3px rgba(60, 64, 67, 0.15);
-  box-sizing: border-box;
-  color: rgb(var(--google-grey-800));
-  font-family: 'Roboto Regular', 'Roboto', sans-serif;
-  font-size: 13px;
-  height: 168px;
-  left: auto;
-  padding: 16px;
-  top: 3em;
   width: 320px;
+  height: 168px;
+  padding: 16px;
+  box-sizing: border-box;
+  font-size: 13px;
+  font-family: 'Roboto Regular', 'Roboto', sans-serif;
+  color: #3C4043;
 
   /* The z-index is set so that any "positioned" elements in the article text
    * (e.g. footnotes) are rendered below the dialog. */
   z-index: 1;
 }
 
-#settings-dialog h2 {
-  font-family: 'Roboto Medium', 'Roboto', sans-serif;
+#settingsDialog h2 {
   font-size: 14px;
+  font-family: 'Roboto Medium', 'Roboto', sans-serif;
 }
 
-#settings-header {
+#settingsHeader {
   margin-bottom: 16px;
 }
 
-#settings-header > * {
+#settingsHeader > * {
   display: inline;
 }
 
-#close-settings {
+#closeSettingsButton {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
   height: 18px;
   padding: 0;
-  position: absolute;
-  right: 8px;
-  top: 8px;
-  width: 18px;
 }
 
-#close-settings > * {
+#closeSettingsButton > * {
   font-size: 18px;
   margin: 0;
 }
 
-#settings-fields {
+
+#settingsFields {
+  width: 100%;
   display: grid;
   grid-row-gap: 12px;
   grid-template:
-    'style color' 32px
-    'size size'  32px
+    "style color" 32px
+    "size size"  32px
     / 50% 50%;
-  width: 100%;
 }
 
-select#font-family-selection {
+select#fontFamilySelection {
   background: transparent;
   border: 1px solid silver;
   border-radius: 2px;
-  color: inherit;
-  font-family: inherit;
-  font-size: inherit;
-  height: 32px;
   width: 100%;
+  height: 32px;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
 }
 
-select#font-family-selection:focus {
-  outline-color: rgb(var(--google-blue-600));
+select#fontFamilySelection:focus {
+  outline-color: var(--mdblue);
 }
 
-#theme-selection ul {
+#themeSelection ul {
+  list-style-type: none;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  list-style-type: none;
 }
 
-.theme-option {
+.themeOption {
   display: block;
-  height: 32px;
   position: relative;
   width: 32px;
+  height: 32px;
 }
 
-.theme-option input[type='radio'] {
+.themeOption input[type="radio"] {
   -webkit-appearance: none;
   appearance: none;
-  border-radius: 50%;
+  width: 32px;
   height: 32px;
+  border-radius: 50%;
   margin: 0;
   padding: 0;
-  width: 32px;
 }
 
-.theme-option input[type='radio'].light {
+.themeOption input[type="radio"].light {
   border: 1px solid gray;
 }
 
-.theme-option input[type='radio']:focus {
-  border: 2px solid rgb(var(--google-blue-600));
+.themeOption input[type="radio"]:focus {
   outline: none;
+  border: 2px solid var(--mdblue);
 }
 
 .checkmark {
-  bottom: 0;
   display: none;
+  width: 16px;
   height: 16px;
   position: absolute;
+  bottom: 0;
   right: 0;
-  width: 16px;
 }
 
 .checkmark .material-icons {
+  font-size: 16px;
+  color: var(--mdblue);
   background-color: white;
   border-radius: 50%;
-  color: rgb(var(--google-blue-600));
-  font-size: 16px;
   user-select: none;
 }
 
-.theme-option input[type='radio']:checked + .checkmark {
+.themeOption input[type="radio"]:checked + .checkmark {
   display: inline;
 }
 
-#font-size-wrapper {
+#fontSizeWrapper {
   grid-area: size;
 }
 
-#font-size-selection {
+#fontSizeSelection {
   -webkit-appearance: none;
-  background: transparent;
-  margin: 0;
   width: 100%;
+  margin: 0;
+  background: transparent;
 }
 
-#font-size-selection:focus {
+#fontSizeSelection:focus {
   outline: none;
 }
 
-#font-size-selection::-webkit-slider-thumb {
+#fontSizeSelection::-webkit-slider-thumb {
   -webkit-appearance: none;
-  background-color: rgb(var(--google-blue-600));
   border-radius: 50%;
+  background-color: var(--mdblue);
+  width: 10px;
   height: 10px;
 
   /* Position the thumb over the slider track. */
   margin-top: -4px;
 
-  position: relative;
-  width: 10px;
-
   /* Render the thumb on top of the tickmarks. We can't just rearrange the HTML
    * because the tickmarks need to render above the slider's track but below the
    * thumb. */
+  position: relative;
   z-index: 1;
 }
 
-#font-size-selection:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 11px rgba(var(--google-blue-600), .2);
+#fontSizeSelection:focus::-webkit-slider-thumb {
+  box-shadow: 0px 0px 0px 11px var(--mdblue-faint);
 }
 
-#font-size-selection::-webkit-slider-container {
+#fontSizeSelection::-webkit-slider-container {
   /* Increase the clickable area of the slider. */
-  border-bottom: 5px solid transparent;
   border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
 }
 
-#font-size-selection::-webkit-slider-runnable-track {
+#fontSizeSelection::-webkit-slider-runnable-track {
+  height: 2px;
+  width: 100%;
+
   /* Make the track opaque blue to the left of the thumb and mostly transparent
    * to the right of the thumb. */
   background: linear-gradient(
-      to right,
-      rgb(var(--google-blue-600)),
-      rgb(var(--google-blue-600)) var(--font-size-percent),
-      rgba(var(--google-blue-600), .2) var(--font-size-percent),
-      rgba(var(--google-blue-600), .2)
-  );
-
-  height: 2px;
-  width: 100%;
+    to right, var(--mdblue), var(--mdblue) var(--fontSizePercent),
+    var(--mdblue-faint) var(--fontSizePercent), var(--mdblue-faint));
 }
 
 .tickmarks {
   display: flex;
-  height: 2px;
   justify-content: space-between;
+  width: 100%;
+  padding-top: 0;
+  height: 2px;
 
   /* Position the tickmarks over the slider track. */
   margin-top: -19px;
@@ -279,27 +277,24 @@ select#font-family-selection:focus {
    * datalist. Setting the height property directly does not seem to have an
    * impact. */
   overflow: hidden;
-
-  padding-top: 0;
-  width: 100%;
 }
 
 .tickmarks option {
-  padding: 0;
   width: 1px;
+  padding: 0;
 }
 
-.tickmarks option.before-thumb {
+.tickmarks option.beforeThumb {
   background: white;
 }
 
-.tickmarks option.after-thumb {
-  background: rgb(var(--google-blue-600));
+.tickmarks option.afterThumb {
+  background: var(--mdblue);
 }
 
 .label-container {
   display: flex;
-  font-size: 13px;
   justify-content: space-between;
+  font-size: 13px;
   padding-top: 8px;
 }

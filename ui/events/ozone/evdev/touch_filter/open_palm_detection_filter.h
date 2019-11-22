@@ -17,7 +17,7 @@ namespace ui {
 
 // A simple implementation of PalmDetectionFilter.
 // Does not delay or set anything to palm.
-class EVENTS_OZONE_EVDEV_EXPORT OpenPalmDetectionFilter
+class COMPONENT_EXPORT(EVDEV) OpenPalmDetectionFilter
     : public PalmDetectionFilter {
  public:
   explicit OpenPalmDetectionFilter(

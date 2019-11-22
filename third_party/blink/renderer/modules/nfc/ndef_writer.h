@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NDEF_WRITER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NDEF_WRITER_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
@@ -47,6 +49,15 @@ class NDEFWriter : public ScriptWrappable, public ContextClient {
   void Abort(const String& target, ScriptPromiseResolver* resolver);
   void OnRequestCompleted(ScriptPromiseResolver* resolver,
                           device::mojom::blink::NDEFErrorPtr error);
+
+  // Permission handling
+  void OnRequestPermission(ScriptPromiseResolver* resolver,
+                           const NDEFPushOptions* options,
+                           device::mojom::blink::NDEFMessagePtr ndef_message,
+                           mojom::blink::PermissionStatus status);
+  mojom::blink::PermissionService* GetPermissionService();
+
+  mojo::Remote<mojom::blink::PermissionService> permission_service_;
 
   // |requests_| are kept here to handle Mojo connection failures because
   // in that case the callback passed to Push() won't be called and

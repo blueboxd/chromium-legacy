@@ -48,6 +48,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // GpuDataManager implementation.
   void BlacklistWebGLForTesting() override;
   gpu::GPUInfo GetGPUInfo() override;
+  gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) override;
   bool GpuAccessAllowed(std::string* reason) override;
   void RequestDxdiagDx12VulkanGpuInfoIfNeeded(GpuInfoRequest request,
                                               bool delayed) override;
@@ -70,7 +71,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
 
   bool IsDx12VulkanVersionAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
-  gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
 
   void UpdateGpuInfo(
       const gpu::GPUInfo& gpu_info,

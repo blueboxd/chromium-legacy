@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/ozone/public/input_controller.h"
 
 namespace ui {
@@ -29,7 +29,7 @@ struct InputDeviceSettingsEvdev;
 //
 // This is used on the UI thread to proxy calls to the real object on
 // the device I/O thread.
-class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdevProxy {
+class COMPONENT_EXPORT(EVDEV) InputDeviceFactoryEvdevProxy {
  public:
   InputDeviceFactoryEvdevProxy(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,

@@ -12,6 +12,7 @@
 #include "extensions/common/api/dns.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/resolve_error_info.h"
 
 using content::BrowserThread;
 using extensions::api::dns::ResolveCallbackResolveInfo;
@@ -40,7 +41,8 @@ ExtensionFunction::ResponseAction DnsResolveFunction::Run() {
                     receiver_.BindNewPipeAndPassRemote());
   receiver_.set_disconnect_handler(
       base::BindOnce(&DnsResolveFunction::OnComplete, base::Unretained(this),
-                     net::ERR_FAILED, base::nullopt));
+                     net::ERR_NAME_NOT_RESOLVED,
+                     net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
 
   // Balanced in OnComplete().
   AddRef();
@@ -49,12 +51,13 @@ ExtensionFunction::ResponseAction DnsResolveFunction::Run() {
 
 void DnsResolveFunction::OnComplete(
     int result,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<net::AddressList>& resolved_addresses) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   receiver_.reset();
 
   ResolveCallbackResolveInfo resolve_info;
-  resolve_info.result_code = result;
+  resolve_info.result_code = resolve_error_info.error;
   if (result == net::OK) {
     DCHECK(resolved_addresses.has_value() && !resolved_addresses->empty());
     resolve_info.address = std::make_unique<std::string>(

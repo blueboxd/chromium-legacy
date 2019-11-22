@@ -18,7 +18,6 @@ component("layout") {
   output_name = "events_ozone_layout"
 
   sources = [
-    "events_ozone_layout_export.h",
     "keyboard_layout_engine.h",
     "keyboard_layout_engine_manager.cc",
     "keyboard_layout_engine_manager.h",
@@ -28,7 +27,7 @@ component("layout") {
     "stub/stub_keyboard_layout_engine.h",
   ]
 
-  defines = [ "EVENTS_OZONE_LAYOUT_IMPLEMENTATION" ]
+  defines = [ "IS_EVENTS_OZONE_LAYOUT_IMPL" ]
 
   deps = [
     "//base",

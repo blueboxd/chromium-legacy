@@ -303,9 +303,8 @@ class CORE_EXPORT NGInlineCursor {
   NGStyleVariant CurrentStyleVariant() const;
   bool UsesFirstLineStyle() const;
 
-  // True if current position is descendant or self of |layout_object|.
-  // Note: This function is used for moving cursor in culled inline boxes.
-  bool IsInclusiveDescendantOf(const LayoutObject& layout_object) const;
+  // True if current position is part of culled inline box |layout_inline|.
+  bool IsPartOfCulledInlineBox(const LayoutInline& layout_inline) const;
 
   // True if the current position is a last line in inline block. It is error
   // to call at end or the current position is not line.

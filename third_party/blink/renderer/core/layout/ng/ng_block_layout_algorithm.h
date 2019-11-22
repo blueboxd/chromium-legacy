@@ -333,9 +333,16 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       LayoutUnit child_bfc_line_offset,
       const base::Optional<LayoutUnit>& child_bfc_block_offset);
 
-  // Computes minimum size for HTML and BODY elements in quirks mode.
-  // Returns kIndefiniteSize in all other cases.
-  LayoutUnit CalculateMinimumBlockSize(const NGMarginStrut& end_margin_strut);
+  // In quirks mode the body element will stretch to fit the viewport.
+  //
+  // In order to determine the final block-size we need to take the available
+  // block-size minus the total block-direction margin.
+  //
+  // This block-direction margin is non-trivial to calculate for the body
+  // element, and is computed upfront for the |ClampIntrinsicBlockSize|
+  // function.
+  base::Optional<LayoutUnit> CalculateQuirkyBodyMarginBlockSum(
+      const NGMarginStrut& end_margin_strut);
 
   // Border + padding sum, resolved from the node's computed style.
   const NGBoxStrut border_padding_;

@@ -83,13 +83,13 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare,
       const GURL& main_script_url,
       int64_t main_script_resource_id,
-      const GURL& referrer,
       scoped_refptr<ServiceWorkerVersion> version_to_update,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
       base::TimeDelta time_since_last_check,
-      ServiceWorkerContextCore* context);
+      ServiceWorkerContextCore* context,
+      blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object);
   ~ServiceWorkerUpdateChecker();
 
   // |callback| is always triggered when the update check finishes.
@@ -119,8 +119,6 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
   const GURL main_script_url_;
   const int64_t main_script_resource_id_;
-
-  const GURL referrer_;
 
   std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
   size_t next_script_index_to_compare_ = 0;
@@ -155,6 +153,8 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
   // |context_| outlives |this| because it owns |this| through
   // ServiceWorkerJobCoordinator and ServiceWorkerRegisterJob.
   ServiceWorkerContextCore* const context_;
+
+  blink::mojom::FetchClientSettingsObjectPtr fetch_client_settings_object_;
 
   base::WeakPtrFactory<ServiceWorkerUpdateChecker> weak_factory_{this};
 

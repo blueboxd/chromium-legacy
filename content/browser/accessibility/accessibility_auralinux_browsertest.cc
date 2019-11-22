@@ -848,74 +848,58 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   ASSERT_EQ(3, atk_object_get_n_accessible_children(document));
 
   AtkObject* target1 = atk_object_ref_accessible_child(document, 0);
-  AtkObject* target2 = atk_object_ref_accessible_child(document, 1);
-
   ASSERT_TRUE(ATK_IS_TEXT(target1));
-  ASSERT_TRUE(ATK_IS_TEXT(target2));
-
   ASSERT_EQ(ATK_ROLE_SECTION, atk_object_get_role(target1));
-  ASSERT_EQ(ATK_ROLE_SECTION, atk_object_get_role(target2));
 
   AccessibilityNotificationWaiter waiter(
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kScrollPositionChanged);
-  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_EDGE));
   waiter.WaitForNotification();
   int x, y;
   atk_text_get_character_extents(ATK_TEXT(target1), 1, &x, &y, nullptr, nullptr,
                                  ATK_XY_SCREEN);
   EXPECT_EQ(y, doc_y);
-  EXPECT_EQ(x, doc_x);
-
-  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_TOP_LEFT));
-  waiter.WaitForNotification();
-  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
-                                 ATK_XY_SCREEN);
-  EXPECT_EQ(y, doc_y);
-  EXPECT_EQ(x, doc_x);
-
-  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
-  waiter.WaitForNotification();
-
-  ASSERT_TRUE(
-      ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_RIGHT_EDGE));
-  waiter.WaitForNotification();
-  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
-                                 ATK_XY_SCREEN);
   EXPECT_NE(x, doc_x);
 
   ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
   waiter.WaitForNotification();
+  atk_text_get_character_extents(ATK_TEXT(target1), 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_EQ(y, doc_y);
+  EXPECT_EQ(x, doc_x);
 
   ASSERT_TRUE(
-      ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_BOTTOM_EDGE));
+      ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_BOTTOM_EDGE));
   waiter.WaitForNotification();
-  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
+  atk_text_get_character_extents(ATK_TEXT(target1), 1, &x, &y, nullptr, nullptr,
                                  ATK_XY_SCREEN);
   EXPECT_NE(y, doc_y);
+  EXPECT_EQ(x, doc_x);
 
-  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
+  ASSERT_TRUE(
+      ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_RIGHT_EDGE));
   waiter.WaitForNotification();
+  atk_text_get_character_extents(ATK_TEXT(target1), 1, &x, &y, nullptr, nullptr,
+                                 ATK_XY_SCREEN);
+  EXPECT_NE(y, doc_y);
+  EXPECT_NE(x, doc_x);
 
-  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_LEFT_EDGE));
+  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_LEFT_EDGE));
   waiter.WaitForNotification();
-  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
+  atk_text_get_character_extents(ATK_TEXT(target1), 1, &x, &y, nullptr, nullptr,
                                  ATK_XY_SCREEN);
   EXPECT_NE(y, doc_y);
   EXPECT_EQ(x, doc_x);
 
   ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target1), 1, 2, ATK_SCROLL_TOP_LEFT));
   waiter.WaitForNotification();
-
-  ASSERT_TRUE(ScrollSubstringTo(ATK_TEXT(target2), 1, 2, ATK_SCROLL_TOP_LEFT));
-  waiter.WaitForNotification();
-  atk_text_get_character_extents(ATK_TEXT(target2), 1, &x, &y, nullptr, nullptr,
+  atk_text_get_character_extents(ATK_TEXT(target1), 1, &x, &y, nullptr, nullptr,
                                  ATK_XY_SCREEN);
   EXPECT_EQ(y, doc_y);
   EXPECT_EQ(x, doc_x);
 
   g_object_unref(target1);
-  g_object_unref(target2);
 }
 
 typedef gboolean (*ScrollSubstringToPointFunc)(AtkText* text,

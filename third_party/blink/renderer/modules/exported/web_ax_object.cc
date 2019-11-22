@@ -1594,7 +1594,8 @@ bool WebAXObject::ScrollToMakeVisible() const {
 bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
     const WebRect& subfocus,
     ax::mojom::ScrollAlignment horizontal_scroll_alignment,
-    ax::mojom::ScrollAlignment vertical_scroll_alignment) const {
+    ax::mojom::ScrollAlignment vertical_scroll_alignment,
+    ax::mojom::ScrollBehavior scroll_behavior) const {
   if (IsDetached())
     return false;
 
@@ -1603,10 +1604,20 @@ bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
       ToBlinkScrollAlignmentBehavior(horizontal_scroll_alignment);
   auto vertical_behavior =
       ToBlinkScrollAlignmentBehavior(vertical_scroll_alignment);
+
+  blink::ScrollAlignmentBehavior visible_horizontal_behavior =
+      scroll_behavior == ax::mojom::ScrollBehavior::kScrollIfVisible
+          ? horizontal_behavior
+          : kScrollAlignmentNoScroll;
+  blink::ScrollAlignmentBehavior visible_vertical_behavior =
+      scroll_behavior == ax::mojom::ScrollBehavior::kScrollIfVisible
+          ? vertical_behavior
+          : kScrollAlignmentNoScroll;
+
   blink::ScrollAlignment blink_horizontal_scroll_alignment = {
-      kScrollAlignmentNoScroll, horizontal_behavior, horizontal_behavior};
+      visible_horizontal_behavior, horizontal_behavior, horizontal_behavior};
   blink::ScrollAlignment blink_vertical_scroll_alignment = {
-      kScrollAlignmentNoScroll, vertical_behavior, vertical_behavior};
+      visible_vertical_behavior, vertical_behavior, vertical_behavior};
   return private_->RequestScrollToMakeVisibleWithSubFocusAction(
       subfocus, blink_horizontal_scroll_alignment,
       blink_vertical_scroll_alignment);

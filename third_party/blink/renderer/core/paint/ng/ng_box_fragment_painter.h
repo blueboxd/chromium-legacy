@@ -215,9 +215,7 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGPhysicalBoxFragment& box,
     const NGPaintFragment* paint_fragment,
     NGInlineCursor* descendants)
-    : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
-                     box.Style(),
-                     box.GetLayoutObject()->GeneratingNode()),
+    : BoxPainterBase(&box.GetDocument(), box.Style(), box.GeneratingNode()),
       box_fragment_(box),
       paint_fragment_(paint_fragment),
       items_(box.Items()),
@@ -235,8 +233,9 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
       if (paint_fragment)
         DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
     }
-  } else if (box.GetLayoutObject()->SlowFirstChild() &&
-             box.GetLayoutObject()->SlowFirstChild()->IsLayoutFlowThread()) {
+  } else if (box.IsColumnBox() ||
+             (box.GetLayoutObject()->SlowFirstChild() &&
+              box.GetLayoutObject()->SlowFirstChild()->IsLayoutFlowThread())) {
     // TODO(kojii): NGPaintFragment for multicol has non-inline children
     // (kColumnBox). Could this be regular box fragments?
   } else {

@@ -5,13 +5,13 @@
 #ifndef UI_EVENTS_OZONE_DEVICE_EVENT_H_
 #define UI_EVENTS_OZONE_DEVICE_EVENT_H_
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "ui/events/ozone/events_ozone_export.h"
 
 namespace ui {
 
-class EVENTS_OZONE_EXPORT DeviceEvent {
+class COMPONENT_EXPORT(EVENTS_OZONE) DeviceEvent {
  public:
   enum DeviceType {
     INPUT,

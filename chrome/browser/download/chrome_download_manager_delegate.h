@@ -110,6 +110,8 @@ class ChromeDownloadManagerDelegate
       bool can_save_as_complete,
       const content::SavePackagePathPickedCallback& callback) override;
   void SanitizeSavePackageResourceName(base::FilePath* filename) override;
+  void SanitizeDownloadParameters(
+      download::DownloadUrlParameters* params) override;
   void OpenDownload(download::DownloadItem* download) override;
   bool IsMostRecentDownloadItemAtFilePath(
       download::DownloadItem* download) override;

@@ -57,7 +57,9 @@ interface Decryptor {
   DecryptAndDecodeAudio(DecoderBuffer encrypted)
       => (Status status, array<AudioBuffer> audio_buffers);
   DecryptAndDecodeVideo(DecoderBuffer encrypted)
-      => (Status status, VideoFrame? video_frame, FrameResourceReleaser? releaser);
+      => (Status status,
+          VideoFrame? video_frame,
+          pending_remote<FrameResourceReleaser>? releaser);
 
   // Resets the decoder for |stream_type| to a clean initialized state and
   // cancels any pending decrypt-and-decode operations immediately with ERROR.

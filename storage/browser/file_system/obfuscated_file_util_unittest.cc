@@ -821,7 +821,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ObfuscatedFileUtilTest,
                          testing::Values(TestMode::kRegular,
                                          TestMode::kIncognito));

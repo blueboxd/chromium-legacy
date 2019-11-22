@@ -111,9 +111,6 @@ class CORE_EXPORT ArrayBufferContents {
  private:
   static void* AllocateMemoryWithFlags(size_t, InitializationPolicy, int);
 
-  static void DefaultAdjustAmountOfExternalAllocatedMemoryFunction(
-      int64_t diff);
-
   std::shared_ptr<v8::BackingStore> backing_store_;
 
   DISALLOW_COPY_AND_ASSIGN(ArrayBufferContents);

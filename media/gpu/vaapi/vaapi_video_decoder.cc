@@ -147,14 +147,14 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Create AcceleratedVideoDecoder for the specified profile.
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     decoder_.reset(new H264Decoder(
-        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_),
+        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_), profile,
         config.color_space_info()));
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     decoder_.reset(new VP8Decoder(
         std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
   } else if (profile >= VP9PROFILE_MIN && profile <= VP9PROFILE_MAX) {
     decoder_.reset(new VP9Decoder(
-        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_),
+        std::make_unique<VaapiVP9Accelerator>(this, vaapi_wrapper_), profile,
         config.color_space_info()));
   } else {
     VLOGF(1) << "Unsupported profile " << GetProfileName(profile);
@@ -253,7 +253,17 @@ void VaapiVideoDecoder::HandleDecodeTask() {
         SetState(State::kWaitingForInput);
       }
       break;
-    case AcceleratedVideoDecoder::kAllocateNewSurfaces:
+    case AcceleratedVideoDecoder::kConfigChange:
+      if (profile_ != decoder_->GetProfile()) {
+        DVLOGF(3) << "Profile is changed: " << profile_ << " -> "
+                  << decoder_->GetProfile();
+      }
+      if (pic_size_ == decoder_->GetPicSize()) {
+        // Profile only is changed.
+        // TODO(crbug.com/1022246): Handle profile change.
+        SetState(State::kError);
+        break;
+      }
       // A new set of output buffers is requested. We either didn't have any
       // output buffers yet or encountered a resolution change.
       // After the pipeline flushes all frames, OnPipelineFlushed() will be
@@ -404,21 +414,21 @@ void VaapiVideoDecoder::OnPipelineFlushed() {
   DCHECK(output_frames_.empty());
   VLOGF(2);
 
-  // TODO(hiroh): Handle profile changes.
   const gfx::Rect visible_rect = decoder_->GetVisibleRect();
   gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
-  gfx::Size pic_size = decoder_->GetPicSize();
+  pic_size_ = decoder_->GetPicSize();
+  profile_ = decoder_->GetProfile();
   const base::Optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
   CHECK(format);
-  frame_pool_->RequestFrames(Fourcc::FromVideoPixelFormat(*format), pic_size,
+  frame_pool_->RequestFrames(Fourcc::FromVideoPixelFormat(*format), pic_size_,
                              visible_rect, natural_size,
                              decoder_->GetRequiredNumOfPictures());
 
   // All pending decode operations will be completed before triggering a
   // resolution change, so we can safely destroy the context here.
   vaapi_wrapper_->DestroyContext();
-  vaapi_wrapper_->CreateContext(pic_size);
+  vaapi_wrapper_->CreateContext(pic_size_);
 
   // Retry the current decode task.
   decoder_task_runner_->PostTask(

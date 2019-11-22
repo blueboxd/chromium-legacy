@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_CURSOR_DELEGATE_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_CURSOR_DELEGATE_EVDEV_H_
 
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "base/component_export.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -16,7 +16,7 @@ class Rect;
 
 namespace ui {
 
-class EVENTS_OZONE_EVDEV_EXPORT CursorDelegateEvdev {
+class COMPONENT_EXPORT(EVDEV) CursorDelegateEvdev {
  public:
   virtual ~CursorDelegateEvdev() {}
 

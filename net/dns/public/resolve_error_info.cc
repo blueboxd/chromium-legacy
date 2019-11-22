@@ -12,4 +12,23 @@ ResolveErrorInfo::ResolveErrorInfo(int resolve_error) {
   error = resolve_error;
 }
 
+ResolveErrorInfo::ResolveErrorInfo(const ResolveErrorInfo& resolve_error_info) =
+    default;
+
+ResolveErrorInfo::ResolveErrorInfo(ResolveErrorInfo&& other) = default;
+
+ResolveErrorInfo& ResolveErrorInfo::operator=(const ResolveErrorInfo& other) =
+    default;
+
+ResolveErrorInfo& ResolveErrorInfo::operator=(ResolveErrorInfo&& other) =
+    default;
+
+bool ResolveErrorInfo::operator==(const ResolveErrorInfo& other) const {
+  return error == other.error;
+}
+
+bool ResolveErrorInfo::operator!=(const ResolveErrorInfo& other) const {
+  return !(*this == other);
+}
+
 }  // namespace net

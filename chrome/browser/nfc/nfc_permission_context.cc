@@ -4,12 +4,8 @@
 
 #include "chrome/browser/nfc/nfc_permission_context.h"
 
-#include "build/build_config.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_request_id.h"
-#if !defined(OS_ANDROID)
-#error This file currently only supports Android.
-#endif
 
 NfcPermissionContext::NfcPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
@@ -18,12 +14,14 @@ NfcPermissionContext::NfcPermissionContext(Profile* profile)
 
 NfcPermissionContext::~NfcPermissionContext() = default;
 
+#if !defined(OS_ANDROID)
 ContentSetting NfcPermissionContext::GetPermissionStatusInternal(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   return CONTENT_SETTING_BLOCK;
 }
+#endif
 
 void NfcPermissionContext::DecidePermission(
     content::WebContents* web_contents,
@@ -32,9 +30,13 @@ void NfcPermissionContext::DecidePermission(
     const GURL& embedding_origin,
     bool user_gesture,
     BrowserPermissionCallback callback) {
-  // The user should never be prompted to authorize NFC from
-  // NfcPermissionContext.
-  NOTREACHED();
+  if (!user_gesture) {
+    std::move(callback).Run(CONTENT_SETTING_BLOCK);
+    return;
+  }
+  PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
+                                          embedding_origin, user_gesture,
+                                          std::move(callback));
 }
 
 void NfcPermissionContext::UpdateTabContext(const PermissionRequestID& id,

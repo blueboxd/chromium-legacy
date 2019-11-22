@@ -37,48 +37,6 @@ void ArcLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   BuildMenu(std::make_unique<ui::SimpleMenuModel>(this), std::move(callback));
 }
 
-bool ArcLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
-  const ArcAppListPrefs* arc_prefs =
-      ArcAppListPrefs::Get(controller()->profile());
-
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs ? arc_prefs->GetApp(item().id.app_id) : nullptr;
-
-  switch (command_id) {
-    case ash::UNINSTALL:
-      return app_info && !app_info->sticky &&
-             (app_info->ready || app_info->shortcut);
-    case ash::SHOW_APP_INFO:
-      return app_info && app_info->ready;
-    default:
-      return LauncherContextMenu::IsCommandIdEnabled(command_id);
-  }
-  NOTREACHED();
-  return false;
-}
-
-void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
-  if (command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
-      command_id <= ash::LAUNCH_APP_SHORTCUT_LAST) {
-    DCHECK(app_shortcuts_menu_builder_);
-    app_shortcuts_menu_builder_->ExecuteCommand(command_id);
-    return;
-  }
-  if (command_id == ash::SHOW_APP_INFO) {
-    ShowPackageInfo();
-    return;
-  }
-  if (command_id == ash::UNINSTALL) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
-    DCHECK(proxy);
-    proxy->Uninstall(item().id.app_id, nullptr /* parent_window */);
-    return;
-  }
-
-  LauncherContextMenu::ExecuteCommand(command_id, event_flags);
-}
-
 void ArcLauncherContextMenu::BuildMenu(
     std::unique_ptr<ui::SimpleMenuModel> menu_model,
     GetMenuModelCallback callback) {
@@ -126,6 +84,48 @@ void ArcLauncherContextMenu::BuildMenu(
           ash::LAUNCH_APP_SHORTCUT_FIRST, ash::LAUNCH_APP_SHORTCUT_LAST);
   app_shortcuts_menu_builder_->BuildMenu(
       app_info->package_name, std::move(menu_model), std::move(callback));
+}
+
+bool ArcLauncherContextMenu::IsCommandIdEnabled(int command_id) const {
+  const ArcAppListPrefs* arc_prefs =
+      ArcAppListPrefs::Get(controller()->profile());
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs ? arc_prefs->GetApp(item().id.app_id) : nullptr;
+
+  switch (command_id) {
+    case ash::UNINSTALL:
+      return app_info && !app_info->sticky &&
+             (app_info->ready || app_info->shortcut);
+    case ash::SHOW_APP_INFO:
+      return app_info && app_info->ready;
+    default:
+      return LauncherContextMenu::IsCommandIdEnabled(command_id);
+  }
+  NOTREACHED();
+  return false;
+}
+
+void ArcLauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id >= ash::LAUNCH_APP_SHORTCUT_FIRST &&
+      command_id <= ash::LAUNCH_APP_SHORTCUT_LAST) {
+    DCHECK(app_shortcuts_menu_builder_);
+    app_shortcuts_menu_builder_->ExecuteCommand(command_id);
+    return;
+  }
+  if (command_id == ash::SHOW_APP_INFO) {
+    ShowPackageInfo();
+    return;
+  }
+  if (command_id == ash::UNINSTALL) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(controller()->profile());
+    DCHECK(proxy);
+    proxy->Uninstall(item().id.app_id, nullptr /* parent_window */);
+    return;
+  }
+
+  LauncherContextMenu::ExecuteCommand(command_id, event_flags);
 }
 
 void ArcLauncherContextMenu::ShowPackageInfo() {

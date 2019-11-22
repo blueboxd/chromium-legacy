@@ -238,6 +238,9 @@ id<GREYMatcher> ContentSettingsButton();
 // screen.
 id<GREYMatcher> GoogleServicesSettingsButton();
 
+// Returns matcher for the Google Services Settings view.
+id<GREYMatcher> GoogleServicesSettingsView();
+
 // Returns matcher for the back button on a settings menu.
 id<GREYMatcher> SettingsMenuBackButton();
 
@@ -389,6 +392,10 @@ id<GREYMatcher> SettingsBottomToolbarDeleteButton();
 
 // Returns a matcher for an autofill suggestion view.
 id<GREYMatcher> AutofillSuggestionViewMatcher();
+
+// Returns a matcher to test whether the element is a scroll view with a content
+// smaller than the scroll view bounds.
+id<GREYMatcher> ContentViewSmallerThanScrollView();
 
 #pragma mark - Manual Fallback
 

@@ -25,6 +25,24 @@ namespace sync_ui_util {
 
 namespace {
 
+// Returns whether current encrypted datatypes can be interpreted by the user as
+// "passwords", allowing the caller to use for accurate strings in the UI.
+bool IsEncryptionEnabledForPasswordsOnly(
+    const syncer::SyncService* sync_service) {
+  DCHECK(sync_service);
+
+  const syncer::ModelTypeSet currently_encrypted_types =
+      sync_service->GetUserSettings()->GetEncryptedDataTypes();
+
+  // Sync datatypes that can be interpreted by the user as "passwords".
+  // TODO(crbug.com/1019687): Link this to SensitiveTypes().
+  syncer::ModelTypeSet password_like_types;
+  password_like_types.Put(syncer::PASSWORDS);
+  password_like_types.Put(syncer::WIFI_CONFIGURATIONS);
+
+  return password_like_types.HasAll(currently_encrypted_types);
+}
+
 StatusLabels GetStatusForUnrecoverableError(bool is_user_signout_allowed) {
 #if !defined(OS_CHROMEOS)
   int status_label_string_id =
@@ -118,8 +136,20 @@ StatusLabels GetStatusLabelsImpl(const syncer::SyncService* service,
     // Check for a passphrase error.
     if (service->GetUserSettings()
             ->IsPassphraseRequiredForPreferredDataTypes()) {
+      // TODO(mastiz): This should return PASSWORDS_ONLY_SYNC_ERROR if only
+      // passwords are encrypted as per IsEncryptionEnabledForPasswordsOnly().
       return {SYNC_ERROR, IDS_SYNC_STATUS_NEEDS_PASSWORD,
               IDS_SYNC_STATUS_NEEDS_PASSWORD_LINK_LABEL, ENTER_PASSPHRASE};
+    }
+
+    if (service->IsSyncFeatureActive() &&
+        service->GetUserSettings()
+            ->IsTrustedVaultKeyRequiredForPreferredDataTypes()) {
+      return {IsEncryptionEnabledForPasswordsOnly(service)
+                  ? PASSWORDS_ONLY_SYNC_ERROR
+                  : SYNC_ERROR,
+              IDS_SETTINGS_EMPTY_STRING, IDS_SYNC_STATUS_NEEDS_KEYS_LINK_LABEL,
+              RETRIEVE_TRUSTED_VAULT_KEYS};
     }
 
     // At this point, there is no Sync error.

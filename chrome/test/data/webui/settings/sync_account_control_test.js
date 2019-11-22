@@ -272,7 +272,7 @@ cr.define('settings_sync_account_control', function() {
 
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
-      assertTrue(!!testElement.$$('[icon=\'settings:sync-problem\']'));
+      assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
       let displayedText =
           userInfo.querySelector('span:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
@@ -324,17 +324,39 @@ cr.define('settings_sync_account_control', function() {
         signedIn: true,
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.REAUTHENTICATE,
-        hasError: false,
+        hasError: true,
         hasUnrecoverableError: true,
         disabled: false,
       };
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
-      assertTrue(!!testElement.$$('[icon=\'settings:sync-problem\']'));
+      assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
       displayedText = userInfo.querySelector('span:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync isn\'t working'));
+
+      testElement.syncStatus = {
+        firstSetupInProgress: false,
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        statusAction: settings.StatusAction.RETRIEVE_TRUSTED_VAULT_KEYS,
+        hasError: true,
+        hasPasswordsOnlyError: true,
+        hasUnrecoverableError: false,
+        disabled: false,
+      };
+      assertTrue(testElement.$$('#sync-icon-container')
+                     .classList.contains('sync-problem'));
+      assertTrue(!!testElement.$$('[icon="settings:sync-problem"]'));
+      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      assertFalse(displayedText.includes('barName'));
+      assertFalse(displayedText.includes('fooName'));
+      assertFalse(displayedText.includes('Sync isn\'t working'));
+      assertTrue(displayedText.includes('Error syncing passwords'));
+      // The sync error button is shown to resolve the error.
+      assertVisible(testElement.$$('#sync-error-button'), true);
+      assertVisible(testElement.$$('#turn-off'), true);
     });
 
     test('signed in, setup in progress', function() {

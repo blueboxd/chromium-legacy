@@ -24,6 +24,7 @@ class Bus;
 namespace chromeos {
 
 // Style Note: Clients are sorted by names.
+class AnomalyDetectorClient;
 class ArcAppfuseProviderClient;
 class ArcKeymasterClient;
 class ArcMidisClient;
@@ -115,6 +116,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   // pointers after DBusThreadManager has been shut down.
   // TODO(jamescook): Replace this with calls to FooClient::Get().
   // http://crbug.com/647367
+  AnomalyDetectorClient* GetAnomalyDetectorClient();
   ArcAppfuseProviderClient* GetArcAppfuseProviderClient();
   ArcKeymasterClient* GetArcKeymasterClient();
   ArcMidisClient* GetArcMidisClient();

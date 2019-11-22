@@ -53,6 +53,11 @@ void AssistantCollectUserDataDelegate::OnContactInfoChanged(
     const base::android::JavaParamRef<jstring>& jpayer_name,
     const base::android::JavaParamRef<jstring>& jpayer_phone,
     const base::android::JavaParamRef<jstring>& jpayer_email) {
+  if (!jpayer_name && !jpayer_phone && !jpayer_email) {
+    ui_controller_->OnContactInfoChanged(nullptr);
+    return;
+  }
+
   std::string name = SafeConvertJavaStringToNative(env, jpayer_name);
   std::string phone = SafeConvertJavaStringToNative(env, jpayer_phone);
   std::string email = SafeConvertJavaStringToNative(env, jpayer_email);

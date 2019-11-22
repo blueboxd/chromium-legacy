@@ -107,8 +107,10 @@
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/midi_host.h"
 #include "content/browser/mime_registry_impl.h"
+#include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "content/browser/network_service_instance_impl.h"
+#include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
@@ -1929,6 +1931,27 @@ void RenderProcessHostImpl::BindFileSystemManager(
                      std::move(receiver)));
 }
 
+void RenderProcessHostImpl::BindNativeFileSystemManager(
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // This code path is only for workers, hence always pass in
+  // MSG_ROUTING_NONE as frame ID. Frames themselves go through
+  // RenderFrameHostImpl instead.
+  auto* storage_partition =
+      static_cast<StoragePartitionImpl*>(GetStoragePartition());
+  auto* manager = storage_partition->GetNativeFileSystemManager();
+  manager->BindReceiver(
+      NativeFileSystemManagerImpl::BindingContext(
+          origin,
+          // TODO(https://crbug.com/989323): Obtain and use a better
+          // URL for workers instead of the origin as source url.
+          // This URL will be used for SafeBrowsing checks and for
+          // the Quarantine Service.
+          origin.GetURL(), GetID(), MSG_ROUTING_NONE),
+      std::move(receiver));
+}
+
 void RenderProcessHostImpl::BindVideoDecodePerfHistory(
     mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1959,6 +1982,14 @@ void RenderProcessHostImpl::CreatePaymentManagerForOrigin(
   static_cast<StoragePartitionImpl*>(GetStoragePartition())
       ->GetPaymentAppContext()
       ->CreatePaymentManagerForOrigin(origin, std::move(receiver));
+}
+
+void RenderProcessHostImpl::CreateNotificationService(
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::NotificationService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  storage_partition_impl_->GetPlatformNotificationContext()->CreateService(
+      origin, std::move(receiver));
 }
 
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {

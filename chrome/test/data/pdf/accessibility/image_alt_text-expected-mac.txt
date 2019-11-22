@@ -1,5 +1,5 @@
-AXGroup AXDescription='Page 1'
-++AXGroup
+AXGroup AXDescription='PDF document containing 1 page'
+++AXGroup AXDescription='PDF document containing 1 page'
 ++++AXGroup AXDescription='Page 1'
 ++++++AXGroup
 ++++++++AXImage AXDescription='Image 1'

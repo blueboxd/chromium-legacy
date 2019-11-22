@@ -142,6 +142,11 @@ void AdaptiveNotificationPermissionUiSelector::DisableQuietUi() {
   ClearInteractionHistory(base::Time(), base::Time::Max());
 }
 
+void AdaptiveNotificationPermissionUiSelector::EnableQuietUi() {
+  profile_->GetPrefs()->SetBoolean(kEnableQuietNotificationPermissionUiPrefPath,
+                                   true /* value */);
+}
+
 void AdaptiveNotificationPermissionUiSelector::RecordPermissionPromptOutcome(
     PermissionAction action) {
   ListPrefUpdate update(profile_->GetPrefs(),
@@ -200,8 +205,7 @@ void AdaptiveNotificationPermissionUiSelector::RecordPermissionPromptOutcome(
       }
 
       if (rolling_denies_in_a_row >= kConsecutiveDeniesThresholdForActivation) {
-        profile_->GetPrefs()->SetBoolean(
-            kEnableQuietNotificationPermissionUiPrefPath, true /* value */);
+        EnableQuietUi();
         break;
       }
 

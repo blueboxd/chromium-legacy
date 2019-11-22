@@ -32,6 +32,7 @@
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
@@ -164,7 +165,8 @@ class PortForwardingHostResolver : public network::ResolveHostClientBase {
                       receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
         base::BindOnce(&PortForwardingHostResolver::OnComplete,
-                       base::Unretained(this), net::ERR_FAILED, base::nullopt));
+                       base::Unretained(this), net::ERR_NAME_NOT_RESOLVED,
+                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   }
 
  private:
@@ -175,6 +177,7 @@ class PortForwardingHostResolver : public network::ResolveHostClientBase {
   // network::mojom::ResolveHostClient:
   void OnComplete(
       int result,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

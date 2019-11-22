@@ -519,14 +519,27 @@ DesktopAutomationHandler.prototype = {
     }
 
     var cur = ChromeVoxState.instance.currentRange;
-    if (!cur) {
+    if (!cur || !cur.isValid()) {
+      if (ChromeVoxState.instance.getFocusBounds().length) {
+        ChromeVoxState.instance.setFocusBounds([]);
+      }
       return;
     }
 
-    if (AutomationUtil.isDescendantOf(cur.start.node, evt.target) ||
-        AutomationUtil.isDescendantOf(cur.end.node, evt.target)) {
-      new Output().withLocation(cur, null, evt.type).go();
+    // Rather than trying to figure out if the current range falls somewhere in
+    // |evt.target|, just update it if our cached bounds don't match.
+    var oldFocusBounds = ChromeVoxState.instance.getFocusBounds();
+    var startRect = cur.start.node.location;
+    var endRect = cur.end.node.location;
+
+    var found =
+        oldFocusBounds.some((rect) => this.areRectsEqual(rect, startRect)) &&
+        oldFocusBounds.some((rect) => this.areRectsEqual(rect, endRect));
+    if (found) {
+      return;
     }
+
+    new Output().withLocation(cur, null, evt.type).go();
   },
 
   /**
@@ -799,6 +812,17 @@ DesktopAutomationHandler.prototype = {
     o.withRichSpeechAndBraille(
          ChromeVoxState.instance.currentRange, null, evt.type)
         .go();
+  },
+
+  /**
+   * @param {!chrome.accessibilityPrivate.ScreenRect} rectA
+   * @param {!chrome.accessibilityPrivate.ScreenRect} rectB
+   * @return {boolean} Whether the rects are the same.
+   * @private
+   */
+  areRectsEqual: function(rectA, rectB) {
+    return rectA.left == rectB.left && rectA.top == rectB.top &&
+        rectA.width == rectB.width && rectA.height == rectB.height;
   }
 };
 

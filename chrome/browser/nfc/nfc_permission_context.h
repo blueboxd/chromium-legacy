@@ -18,10 +18,12 @@ class NfcPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
+#if !defined(OS_ANDROID)
   ContentSetting GetPermissionStatusInternal(
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
+#endif
   void DecidePermission(content::WebContents* web_contents,
                         const PermissionRequestID& id,
                         const GURL& requesting_origin,

@@ -56,6 +56,8 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
       return IDR_ANDROID_INFOBAR_ACCESSIBILITY_EVENTS;
     case ContentSettingsType::CLIPBOARD_READ:
       return IDR_ANDROID_INFOBAR_CLIPBOARD;
+    case ContentSettingsType::NFC:
+      return IDR_ANDROID_INFOBAR_NFC;
     default:
       NOTREACHED();
       return IDR_ANDROID_INFOBAR_WARNING;
@@ -118,6 +120,9 @@ base::string16 PermissionRequestImpl::GetTitleText() const {
     case ContentSettingsType::CLIPBOARD_READ:
       message_id = IDS_CLIPBOARD_PERMISSION_TITLE;
       break;
+    case ContentSettingsType::NFC:
+      message_id = IDS_NFC_PERMISSION_TITLE;
+      break;
     default:
       NOTREACHED();
       return base::string16();
@@ -154,6 +159,9 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
       break;
     case ContentSettingsType::CLIPBOARD_READ:
       message_id = IDS_CLIPBOARD_INFOBAR_TEXT;
+      break;
+    case ContentSettingsType::NFC:
+      message_id = IDS_NFC_INFOBAR_TEXT;
       break;
     default:
       NOTREACHED();

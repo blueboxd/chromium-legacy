@@ -13,10 +13,10 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/ozone/evdev/event_device_util.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 #if !defined(ABS_MT_TOOL_Y)
 #define ABS_MT_TOOL_Y 0x3d
@@ -34,7 +34,7 @@ class FilePath;
 namespace ui {
 
 // Input device types.
-enum EVENTS_OZONE_EVDEV_EXPORT EventDeviceType {
+enum COMPONENT_EXPORT(EVDEV) EventDeviceType {
   DT_KEYBOARD,
   DT_MOUSE,
   DT_TOUCHPAD,
@@ -48,7 +48,7 @@ enum EVENTS_OZONE_EVDEV_EXPORT EventDeviceType {
 //
 // This stores and queries information about input devices; in
 // particular it knows which events the device can generate.
-class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
+class COMPONENT_EXPORT(EVDEV) EventDeviceInfo {
  public:
   EventDeviceInfo();
   ~EventDeviceInfo();

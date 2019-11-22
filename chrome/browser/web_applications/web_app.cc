@@ -57,6 +57,10 @@ bool WebApp::IsSynced() const {
   return sources_[Source::kSync];
 }
 
+bool WebApp::WasInstalledByUser() const {
+  return sources_[Source::kSync] || sources_[Source::kWebAppStore];
+}
+
 void WebApp::SetName(const std::string& name) {
   name_ = name;
 }

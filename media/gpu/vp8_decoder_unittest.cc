@@ -80,7 +80,7 @@ void VP8DecoderTest::SetUp() {
 
 void VP8DecoderTest::DecodeFirstIFrame() {
   ASSERT_EQ(AcceleratedVideoDecoder::kRanOutOfStreamData, Decode(kNullFrame));
-  ASSERT_EQ(AcceleratedVideoDecoder::kAllocateNewSurfaces, Decode(kIFrame));
+  ASSERT_EQ(AcceleratedVideoDecoder::kConfigChange, Decode(kIFrame));
   EXPECT_EQ(kVideoSize, decoder_->GetPicSize());
   EXPECT_LE(kRequiredNumOfPictures, decoder_->GetRequiredNumOfPictures());
 }
@@ -115,11 +115,11 @@ AcceleratedVideoDecoder::DecodeResult VP8DecoderTest::Decode(
     return result;
   // Since |buffer| is destroyed in this function, Decode() must consume the
   // buffer by this Decode(). That happens if the return value is
-  // kRanOutOfStreamData, kAllocateNewSurfaces , or kDecodeError (on failure).
-  EXPECT_TRUE(
-      result == AcceleratedVideoDecoder::DecodeResult::kRanOutOfStreamData ||
-      result == AcceleratedVideoDecoder::DecodeResult::kAllocateNewSurfaces ||
-      result == AcceleratedVideoDecoder::DecodeResult::kDecodeError);
+  // kRanOutOfStreamData, kConfigChange , or kDecodeError (on failure).
+  EXPECT_TRUE(result ==
+                  AcceleratedVideoDecoder::DecodeResult::kRanOutOfStreamData ||
+              result == AcceleratedVideoDecoder::DecodeResult::kConfigChange ||
+              result == AcceleratedVideoDecoder::DecodeResult::kDecodeError);
   return result;
 }
 

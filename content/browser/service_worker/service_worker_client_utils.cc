@@ -18,6 +18,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -42,9 +43,13 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-// TODO(crbug.com/824858): Much of this file, which dealt with thread hops
-// between UI and IO, can likely be simplified when the service worker core
+// TODO(https://crbug.com/824858): Much of this file, which dealt with thread
+// hops between UI and IO, can likely be simplified when the service worker core
 // thread moves to the UI thread.
+
+// TODO(https://crbug.com/931087): Use ServiceWorkerContainerHost* instead of
+// ServiceWorkerProviderHost* throughout this file. See the design doc in the
+// crbug for details.
 
 namespace content {
 namespace service_worker_client_utils {
@@ -321,14 +326,14 @@ void AddWindowClient(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (host->client_type() != blink::mojom::ServiceWorkerClientType::kWindow)
     return;
-  if (!host->is_execution_ready())
+  if (!host->container_host()->is_execution_ready())
     return;
   client_info->push_back(std::make_tuple(host->process_id(), host->frame_id(),
                                          host->create_time(),
                                          host->client_uuid()));
 }
 
-void AddNonWindowClient(const ServiceWorkerProviderHost* host,
+void AddNonWindowClient(ServiceWorkerProviderHost* host,
                         blink::mojom::ServiceWorkerClientType client_type,
                         ServiceWorkerClientPtrs* out_clients) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -338,14 +343,15 @@ void AddNonWindowClient(const ServiceWorkerProviderHost* host,
   if (client_type != blink::mojom::ServiceWorkerClientType::kAll &&
       client_type != host_client_type)
     return;
-  if (!host->is_execution_ready())
+  if (!host->container_host()->is_execution_ready())
     return;
 
   // TODO(dtapuska): Need to get frozen state for dedicated workers from
   // DedicatedWorkerHost. crbug.com/968417
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
-      host->url(), network::mojom::RequestContextFrameType::kNone,
-      host->client_uuid(), host_client_type,
+      host->container_host()->url(),
+      network::mojom::RequestContextFrameType::kNone, host->client_uuid(),
+      host_client_type,
       /*page_hidden=*/true,
       /*is_focused=*/false,
       blink::mojom::ServiceWorkerClientLifecycleState::kActive,
@@ -507,7 +513,8 @@ void DidGetExecutionReadyClient(
 
   ServiceWorkerProviderHost* provider_host =
       context->GetProviderHostByClientID(client_uuid);
-  if (!provider_host || !provider_host->is_execution_ready()) {
+  if (!provider_host ||
+      !provider_host->container_host()->is_execution_ready()) {
     // The page was destroyed before it became execution ready.  Tell the
     // renderer the page opened but it doesn't have access to it.
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk,
@@ -515,7 +522,7 @@ void DidGetExecutionReadyClient(
     return;
   }
 
-  CHECK_EQ(provider_host->url().GetOrigin(), sane_origin);
+  CHECK_EQ(provider_host->container_host()->url().GetOrigin(), sane_origin);
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     blink::mojom::ServiceWorkerClientInfoPtr info = GetWindowClientInfoOnUI(
@@ -591,7 +598,7 @@ void NavigateClient(const GURL& url,
                          std::move(callback))));
 }
 
-void GetClient(const ServiceWorkerProviderHost* provider_host,
+void GetClient(ServiceWorkerProviderHost* provider_host,
                ClientCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
@@ -624,7 +631,8 @@ void GetClient(const ServiceWorkerProviderHost* provider_host,
   // TODO(dtapuska): Need to get frozen state for dedicated workers from
   // DedicatedWorkerHost. crbug.com/968417
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
-      provider_host->url(), network::mojom::RequestContextFrameType::kNone,
+      provider_host->container_host()->url(),
+      network::mojom::RequestContextFrameType::kNone,
       provider_host->client_uuid(), provider_host->client_type(),
       /*page_hidden=*/true,
       /*is_focused=*/false,
@@ -689,9 +697,11 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
     // DidNavigate must be called with a preparation complete client (the
     // navigation was committed), but the client might not be execution ready
     // yet (Blink hasn't yet created the Document).
-    DCHECK(provider_host->is_response_committed());
-    if (!provider_host->is_execution_ready()) {
-      provider_host->AddExecutionReadyCallback(base::BindOnce(
+    ServiceWorkerContainerHost* container_host =
+        provider_host->container_host();
+    DCHECK(container_host->is_response_committed());
+    if (!container_host->is_execution_ready()) {
+      container_host->AddExecutionReadyCallback(base::BindOnce(
           &DidGetExecutionReadyClient, context, provider_host->client_uuid(),
           origin, std::move(callback)));
       return;

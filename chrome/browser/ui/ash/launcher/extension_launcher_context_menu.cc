@@ -68,7 +68,69 @@ ExtensionLauncherContextMenu::~ExtensionLauncherContextMenu() = default;
 
 void ExtensionLauncherContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  BuildMenu(menu_model.get());
+  BuildMenu(std::move(menu_model), std::move(callback));
+}
+
+void ExtensionLauncherContextMenu::BuildMenu(
+    std::unique_ptr<ui::SimpleMenuModel> menu_model,
+    GetMenuModelCallback callback) {
+  Profile* profile = controller()->profile();
+  const std::string app_id = item().id.app_id;
+
+  extension_items_ = std::make_unique<extensions::ContextMenuMatcher>(
+      profile, this, menu_model.get(),
+      base::BindRepeating(MenuItemHasLauncherContext));
+  // V1 apps can be started from the menu - but V2 apps and system web apps
+  // should not.
+  bool is_system_web_app = web_app::WebAppProvider::Get(profile)
+                               ->system_web_app_manager()
+                               .IsSystemWebApp(app_id);
+  const bool is_platform_app = controller()->IsPlatformApp(item().id);
+
+  if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
+    if (!is_platform_app && !is_system_web_app)
+      CreateOpenNewSubmenu(menu_model.get());
+    AddPinMenu(menu_model.get());
+
+    if (controller()->IsOpen(item().id)) {
+      AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
+                           IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+    }
+  } else if (item().type == ash::TYPE_BROWSER_SHORTCUT) {
+    AddContextMenuOption(menu_model.get(), ash::MENU_NEW_WINDOW,
+                         IDS_APP_LIST_NEW_WINDOW);
+    if (!profile->IsGuestSession()) {
+      AddContextMenuOption(menu_model.get(), ash::MENU_NEW_INCOGNITO_WINDOW,
+                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
+    }
+    if (!BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty() ||
+        item().type == ash::TYPE_DIALOG || controller()->IsOpen(item().id)) {
+      AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
+                           IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+    }
+  }
+  if (app_id != extension_misc::kChromeAppId) {
+    AddContextMenuOption(menu_model.get(), ash::UNINSTALL,
+                         is_platform_app ? IDS_APP_LIST_UNINSTALL_ITEM
+                                         : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
+  }
+
+  if (controller()->CanDoShowAppInfoFlow() && !is_system_web_app) {
+    AddContextMenuOption(menu_model.get(), ash::SHOW_APP_INFO,
+                         IDS_APP_CONTEXT_MENU_SHOW_INFO);
+  }
+
+  if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
+    const extensions::MenuItem::ExtensionKey app_key(app_id);
+    if (!app_key.empty()) {
+      int index = 0;
+      extension_items_->AppendExtensionItems(app_key, base::string16(), &index,
+                                             false);  // is_action_menu
+      app_list::AddMenuItemIconsForSystemApps(
+          app_id, menu_model.get(), menu_model.get()->GetItemCount() - index,
+          index);
+    }
+  }
   std::move(callback).Run(std::move(menu_model));
 }
 
@@ -172,65 +234,6 @@ void ExtensionLauncherContextMenu::CreateOpenNewSubmenu(
       ash::MENU_OPEN_NEW, GetLaunchTypeStringId(),
       open_new_submenu_model_.get(),
       GetCommandIdVectorIcon(ash::MENU_OPEN_NEW, GetLaunchTypeStringId()));
-}
-
-void ExtensionLauncherContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
-  Profile* profile = controller()->profile();
-  const std::string app_id = item().id.app_id;
-
-  extension_items_ = std::make_unique<extensions::ContextMenuMatcher>(
-      profile, this, menu_model,
-      base::BindRepeating(MenuItemHasLauncherContext));
-  // V1 apps can be started from the menu - but V2 apps and system web apps
-  // should not.
-  bool is_system_web_app = web_app::WebAppProvider::Get(profile)
-                               ->system_web_app_manager()
-                               .IsSystemWebApp(app_id);
-  const bool is_platform_app = controller()->IsPlatformApp(item().id);
-
-  if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
-    if (!is_platform_app && !is_system_web_app)
-      CreateOpenNewSubmenu(menu_model);
-    AddPinMenu(menu_model);
-
-    if (controller()->IsOpen(item().id)) {
-      AddContextMenuOption(menu_model, ash::MENU_CLOSE,
-                           IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-    }
-  } else if (item().type == ash::TYPE_BROWSER_SHORTCUT) {
-    AddContextMenuOption(menu_model, ash::MENU_NEW_WINDOW,
-                         IDS_APP_LIST_NEW_WINDOW);
-    if (!profile->IsGuestSession()) {
-      AddContextMenuOption(menu_model, ash::MENU_NEW_INCOGNITO_WINDOW,
-                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
-    }
-    if (!BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty() ||
-        item().type == ash::TYPE_DIALOG || controller()->IsOpen(item().id)) {
-      AddContextMenuOption(menu_model, ash::MENU_CLOSE,
-                           IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-    }
-  }
-  if (app_id != extension_misc::kChromeAppId) {
-    AddContextMenuOption(menu_model, ash::UNINSTALL,
-                         is_platform_app ? IDS_APP_LIST_UNINSTALL_ITEM
-                                         : IDS_APP_LIST_EXTENSIONS_UNINSTALL);
-  }
-
-  if (controller()->CanDoShowAppInfoFlow() && !is_system_web_app) {
-    AddContextMenuOption(menu_model, ash::SHOW_APP_INFO,
-                         IDS_APP_CONTEXT_MENU_SHOW_INFO);
-  }
-
-  if (item().type == ash::TYPE_PINNED_APP || item().type == ash::TYPE_APP) {
-    const extensions::MenuItem::ExtensionKey app_key(app_id);
-    if (!app_key.empty()) {
-      int index = 0;
-      extension_items_->AppendExtensionItems(app_key, base::string16(), &index,
-                                             false);  // is_action_menu
-      app_list::AddMenuItemIconsForSystemApps(
-          app_id, menu_model, menu_model->GetItemCount() - index, index);
-    }
-  }
 }
 
 extensions::LaunchType ExtensionLauncherContextMenu::GetLaunchType() const {

@@ -38,6 +38,9 @@ ChromeVoxState = function() {
     throw 'Trying to create two instances of singleton ChromeVoxState.';
   }
   ChromeVoxState.instance = this;
+
+  /** @private {!Array<!chrome.accessibilityPrivate.ScreenRect>} */
+  this.focusBounds_ = [];
 };
 
 /**
@@ -101,7 +104,28 @@ ChromeVoxState.prototype = {
    * @param {!NavBraille} content
    * @return {boolean} True if evt was processed.
    */
-  onBrailleKeyEvent: goog.abstractMethod
+  onBrailleKeyEvent: goog.abstractMethod,
+
+  /**
+   * Gets the bounds of the focus ring.
+   * @return {Array<chrome.accessibilityPrivate.ScreenRect>}
+   */
+  getFocusBounds: function() {
+    return this.focusBounds_;
+  },
+
+  /**
+   * Sets the bounds of the focus ring.
+   * @param {!Array<!chrome.accessibilityPrivate.ScreenRect>} bounds
+   */
+  setFocusBounds: function(bounds) {
+    this.focusBounds_ = bounds;
+    chrome.accessibilityPrivate.setFocusRings([{
+      rects: bounds,
+      type: chrome.accessibilityPrivate.FocusType.GLOW,
+      color: constants.FOCUS_COLOR
+    }]);
+  }
 };
 
 /** @type {!Array<ChromeVoxStateObserver>} */

@@ -161,9 +161,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setupModalViewControllerWithPrefs:(NSDictionary*)prefs {
   self.sourceLanguage = prefs[kSourceLanguagePrefKey];
   self.targetLanguage = prefs[kTargetLanguagePrefKey];
-  self.shouldAlwaysTranslate = prefs[kShouldAlwaysTranslatePrefKey];
-  self.isTranslatableLanguage = prefs[kIsTranslatableLanguagePrefKey];
-  self.isSiteBlacklisted = prefs[kIsSiteBlacklistedPrefKey];
+  self.shouldAlwaysTranslate = [prefs[kShouldAlwaysTranslatePrefKey] boolValue];
+  self.isTranslatableLanguage =
+      [prefs[kIsTranslatableLanguagePrefKey] boolValue];
+  self.isSiteBlacklisted = [prefs[kIsSiteBlacklistedPrefKey] boolValue];
   [self.tableView reloadData];
 }
 

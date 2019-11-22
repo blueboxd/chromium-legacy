@@ -10,17 +10,17 @@
 #include "media/fuchsia/mojom/fuchsia_cdm_provider.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace service_manager {
-class InterfaceProvider;
+namespace blink {
+class BrowserInterfaceBrokerProxy;
 }
 
 namespace media {
 
 class MojoFuchsiaCdmProvider : public FuchsiaCdmProvider {
  public:
-  // |interface_provider| must outlive this class.
+  // |interface_broker| must outlive this class.
   explicit MojoFuchsiaCdmProvider(
-      service_manager::InterfaceProvider* interface_provider);
+      blink::BrowserInterfaceBrokerProxy* interface_broker);
   ~MojoFuchsiaCdmProvider() override;
 
   // FuchsiaCdmProvider implementation:
@@ -30,7 +30,7 @@ class MojoFuchsiaCdmProvider : public FuchsiaCdmProvider {
           cdm_request) override;
 
  private:
-  service_manager::InterfaceProvider* const interface_provider_;
+  blink::BrowserInterfaceBrokerProxy* const interface_broker_;
   mojo::Remote<media::mojom::FuchsiaCdmProvider> cdm_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoFuchsiaCdmProvider);

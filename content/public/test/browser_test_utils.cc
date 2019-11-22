@@ -462,12 +462,15 @@ CrossSiteRedirectResponseHandler(const net::EmbeddedTestServer* test_server,
 // WillStartRequest callback. RegisterThrottleForTesting has this behavior.
 class TestNavigationManagerThrottle : public NavigationThrottle {
  public:
-  TestNavigationManagerThrottle(NavigationHandle* handle,
-                                base::Closure on_will_start_request_closure,
-                                base::Closure on_will_process_response_closure)
+  TestNavigationManagerThrottle(
+      NavigationHandle* handle,
+      base::OnceClosure on_will_start_request_closure,
+      base::OnceClosure on_will_process_response_closure)
       : NavigationThrottle(handle),
-        on_will_start_request_closure_(on_will_start_request_closure),
-        on_will_process_response_closure_(on_will_process_response_closure) {}
+        on_will_start_request_closure_(
+            std::move(on_will_start_request_closure)),
+        on_will_process_response_closure_(
+            std::move(on_will_process_response_closure)) {}
   ~TestNavigationManagerThrottle() override {}
 
   const char* GetNameForLogging() override {
@@ -477,19 +480,21 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
  private:
   // NavigationThrottle:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
+    DCHECK(on_will_start_request_closure_);
     base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   on_will_start_request_closure_);
+                   std::move(on_will_start_request_closure_));
     return NavigationThrottle::DEFER;
   }
 
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
+    DCHECK(on_will_process_response_closure_);
     base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   on_will_process_response_closure_);
+                   std::move(on_will_process_response_closure_));
     return NavigationThrottle::DEFER;
   }
 
-  base::Closure on_will_start_request_closure_;
-  base::Closure on_will_process_response_closure_;
+  base::OnceClosure on_will_start_request_closure_;
+  base::OnceClosure on_will_process_response_closure_;
 };
 
 bool HasGzipHeader(const base::RefCountedMemory& maybe_gzipped) {
@@ -821,7 +826,7 @@ void WaitForResizeComplete(WebContents* web_contents) {
   if (!IsResizeComplete(&dispatcher_test, widget_host)) {
     WindowedNotificationObserver resize_observer(
         NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
-        base::Bind(IsResizeComplete, &dispatcher_test, widget_host));
+        base::BindRepeating(IsResizeComplete, &dispatcher_test, widget_host));
     resize_observer.Wait();
   }
 }
@@ -836,7 +841,7 @@ void WaitForResizeComplete(WebContents* web_contents) {
   if (!IsResizeComplete(widget_host)) {
     WindowedNotificationObserver resize_observer(
         NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
-        base::Bind(IsResizeComplete, widget_host));
+        base::BindRepeating(IsResizeComplete, widget_host));
     resize_observer.Wait();
   }
 }
@@ -1901,8 +1906,8 @@ void FetchHistogramsFromChildProcesses() {
 }
 
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server) {
-  embedded_test_server->RegisterRequestHandler(
-      base::Bind(&CrossSiteRedirectResponseHandler, embedded_test_server));
+  embedded_test_server->RegisterRequestHandler(base::BindRepeating(
+      &CrossSiteRedirectResponseHandler, embedded_test_server));
 }
 
 void WaitForInterstitialAttach(content::WebContents* web_contents) {
@@ -2475,8 +2480,8 @@ class WebContentsAddedObserver::RenderViewCreatedObserver
 
 WebContentsAddedObserver::WebContentsAddedObserver()
     : web_contents_created_callback_(
-          base::Bind(&WebContentsAddedObserver::WebContentsCreated,
-                     base::Unretained(this))),
+          base::BindRepeating(&WebContentsAddedObserver::WebContentsCreated,
+                              base::Unretained(this))),
       web_contents_(nullptr) {
   WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(
       web_contents_created_callback_);
@@ -2907,10 +2912,10 @@ void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
   std::unique_ptr<NavigationThrottle> throttle(
       new TestNavigationManagerThrottle(
           request_,
-          base::Bind(&TestNavigationManager::OnWillStartRequest,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&TestNavigationManager::OnWillProcessResponse,
-                     weak_factory_.GetWeakPtr())));
+          base::BindOnce(&TestNavigationManager::OnWillStartRequest,
+                         weak_factory_.GetWeakPtr()),
+          base::BindOnce(&TestNavigationManager::OnWillProcessResponse,
+                         weak_factory_.GetWeakPtr())));
   request_->RegisterThrottleForTesting(std::move(throttle));
 }
 

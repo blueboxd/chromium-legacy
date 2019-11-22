@@ -162,6 +162,7 @@ class PDFiumPage {
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestAnnotLinkGeneration);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageImageTest, TestImageAltText);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageHighlightTest, TestPopulateHighlights);
 
   // Returns a link index if the given character index is over a link, or -1
   // otherwise.
@@ -174,6 +175,8 @@ class PDFiumPage {
   void PopulateAnnotationLinks();
   // Calculate the locations of images on the page.
   void CalculateImages();
+  // Populate highlights on the page.
+  void PopulateHighlights();
   // Returns link type and fills target associated with a link. Returns
   // NONSELECTABLE_AREA if link detection failed.
   Area GetLinkTarget(FPDF_LINK link, LinkTarget* target);
@@ -248,6 +251,19 @@ class PDFiumPage {
     std::string alt_text;
   };
 
+  // Represents a highlight within the page.
+  struct Highlight {
+    Highlight();
+    Highlight(const Highlight& other);
+    ~Highlight();
+
+    // Start index of underlying text range. -1 indicates invalid value.
+    int32_t start_char_index = -1;
+    // Number of characters encompassed by this highlight.
+    int32_t char_count = 0;
+    pp::Rect bounding_rect;
+  };
+
   PDFiumEngine* engine_;
   ScopedFPDFPage page_;
   ScopedFPDFTextPage text_page_;
@@ -258,6 +274,8 @@ class PDFiumPage {
   std::vector<Link> links_;
   bool calculated_images_ = false;
   std::vector<Image> images_;
+  bool calculated_highlights_ = false;
+  std::vector<Highlight> highlights_;
   bool calculated_page_object_text_run_breaks_ = false;
   // The set of character indices on which text runs need to be broken for page
   // objects.

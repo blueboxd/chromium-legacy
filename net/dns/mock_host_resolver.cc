@@ -77,6 +77,7 @@ class MockHostResolverBase::RequestImpl
                                         : ResolveHostParameters()),
         priority_(parameters_.initial_priority),
         host_resolver_flags_(ParametersToHostResolverFlags(parameters_)),
+        resolve_error_info_(ResolveErrorInfo(ERR_IO_PENDING)),
         id_(0),
         resolver_(resolver),
         complete_(false) {}
@@ -159,6 +160,12 @@ class MockHostResolverBase::RequestImpl
     priority_ = priority;
   }
 
+  void SetError(int error) {
+    // Should only be called before request is marked completed.
+    DCHECK(!complete_);
+    resolve_error_info_ = ResolveErrorInfo(error);
+  }
+
   void set_address_results(
       const AddressList& address_results,
       base::Optional<HostCache::EntryStaleness> staleness) {
@@ -173,10 +180,11 @@ class MockHostResolverBase::RequestImpl
   }
 
   void OnAsyncCompleted(size_t id, int error) {
-    resolve_error_info_ = ResolveErrorInfo(error);
-
     DCHECK_EQ(id_, id);
     id_ = 0;
+
+    // Check that error information has been set
+    DCHECK(resolve_error_info_.error != ERR_IO_PENDING);
 
     DCHECK(!complete_);
     complete_ = true;
@@ -431,6 +439,7 @@ void MockHostResolverBase::ResolveNow(size_t id) {
       req->request_host(), req->network_isolation_key(),
       DnsQueryTypeToAddressFamily(req->parameters().dns_query_type),
       req->host_resolver_flags(), req->parameters().source, &addresses);
+  req->SetError(error);
   if (error == OK && !req->parameters().is_speculative)
     req->set_address_results(addresses, base::nullopt);
   req->OnAsyncCompleted(id, error);
@@ -552,6 +561,8 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
       request->parameters().dns_query_type, request->host_resolver_flags(),
       request->parameters().source, request->parameters().cache_usage,
       &addresses, &stale_info);
+
+  request->SetError(rv);
   if (rv == OK && !request->parameters().is_speculative)
     request->set_address_results(addresses, std::move(stale_info));
   if (rv != ERR_DNS_CACHE_MISS ||
@@ -561,8 +572,10 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
 
   // Just like the real resolver, refuse to do anything with invalid
   // hostnames.
-  if (!IsValidDNSDomain(request->request_host().host()))
+  if (!IsValidDNSDomain(request->request_host().host())) {
+    request->SetError(ERR_NAME_NOT_RESOLVED);
     return ERR_NAME_NOT_RESOLVED;
+  }
 
   if (synchronous_mode_) {
     int rv = ResolveProc(
@@ -570,6 +583,8 @@ int MockHostResolverBase::Resolve(RequestImpl* request) {
         DnsQueryTypeToAddressFamily(request->parameters().dns_query_type),
         request->host_resolver_flags(), request->parameters().source,
         &addresses);
+
+    request->SetError(rv);
     if (rv == OK && !request->parameters().is_speculative)
       request->set_address_results(addresses, base::nullopt);
     return rv;

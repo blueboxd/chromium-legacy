@@ -100,12 +100,13 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   // imported.
   ServiceWorkerSingleScriptUpdateChecker(
       const GURL& script_url,
-      const GURL& referrer,
       bool is_main_script,
       const GURL& main_script_url,
       const GURL& scope,
       bool force_bypass_cache,
       blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
+      const blink::mojom::FetchClientSettingsObjectPtr&
+          fetch_client_settings_object,
       base::TimeDelta time_since_last_check,
       const net::HttpRequestHeaders& default_headers,
       ServiceWorkerUpdatedScriptLoader::BrowserContextGetter

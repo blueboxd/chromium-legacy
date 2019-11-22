@@ -36,6 +36,9 @@ class AdaptiveNotificationPermissionUiSelector : public KeyedService {
   // Turns off the quiet UI, as per user request.
   void DisableQuietUi();
 
+  // Turns on the quiet UI.
+  void EnableQuietUi();
+
   // Records the outcome of a notification permission prompt, i.e. how the user
   // interacted with it, to be called once a permission request finishes.
   void RecordPermissionPromptOutcome(PermissionAction action);

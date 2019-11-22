@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
@@ -15,7 +16,6 @@
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 struct input_event;
 
@@ -23,7 +23,7 @@ namespace ui {
 
 class DeviceEventDispatcherEvdev;
 
-class EVENTS_OZONE_EVDEV_EXPORT GamepadEventConverterEvdev
+class COMPONENT_EXPORT(EVDEV) GamepadEventConverterEvdev
     : public EventConverterEvdev {
  public:
   GamepadEventConverterEvdev(base::ScopedFD fd,

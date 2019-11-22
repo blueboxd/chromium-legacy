@@ -2564,6 +2564,8 @@ bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
   DCHECK(web_view_helper_.GetWebView());
   element->scrollIntoViewIfNeeded();
 
+  // TODO(bokan): Technically incorrect, event positions should be in viewport
+  // space. crbug.com/371902.
   FloatPoint center(
       web_view_helper_.GetWebView()
           ->MainFrameImpl()
@@ -4499,25 +4501,13 @@ TEST_F(ShowUnhandledTapTest, ShowUnhandledTapUIIfNeeded) {
   EXPECT_EQ(82, mock_notifier_.GetTappedYPos());
 
   // Test correct conversion of coordinates to viewport space under pinch-zoom.
-  constexpr float scale = 1.5f;
-  constexpr float visual_x = 6.f;
-  constexpr float visual_y = 10.f;
-
-  web_view_->SetPageScaleFactor(scale);
-  web_view_->SetVisualViewportOffset(WebFloatPoint(visual_x, visual_y));
+  web_view_->SetPageScaleFactor(2);
+  web_view_->SetVisualViewportOffset(WebFloatPoint(50, 20));
 
   Tap("target");
-
-  // Ensure position didn't change as a result of scroll into view.
-  ASSERT_EQ(visual_x, web_view_->VisualViewportOffset().x);
-  ASSERT_EQ(visual_y, web_view_->VisualViewportOffset().y);
-
   EXPECT_TRUE(mock_notifier_.WasUnhandledTap());
-
-  constexpr float expected_x = 144 * scale - (scale * visual_x);
-  constexpr float expected_y = 82 * scale - (scale * visual_y);
-  EXPECT_EQ(expected_x, mock_notifier_.GetTappedXPos());
-  EXPECT_EQ(expected_y, mock_notifier_.GetTappedYPos());
+  EXPECT_EQ(188, mock_notifier_.GetTappedXPos());
+  EXPECT_EQ(124, mock_notifier_.GetTappedYPos());
   EXPECT_EQ(16, mock_notifier_.GetFontSize());
   EXPECT_EQ(28, mock_notifier_.GetElementTextRunLength());
 }

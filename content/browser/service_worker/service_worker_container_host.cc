@@ -5,22 +5,44 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/content_client.h"
+#include "content/public/common/origin_util.h"
 
 namespace content {
 
+namespace {
+
+void RunCallbacks(
+    std::vector<ServiceWorkerContainerHost::ExecutionReadyCallback> callbacks) {
+  for (auto& callback : callbacks) {
+    std::move(callback).Run();
+  }
+}
+
+}  // namespace
+
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     blink::mojom::ServiceWorkerProviderType type,
+    bool is_parent_frame_secure,
     ServiceWorkerProviderHost* provider_host,
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : type_(type), provider_host_(provider_host), context_(std::move(context)) {
+    : type_(type),
+      is_parent_frame_secure_(is_parent_frame_secure),
+      provider_host_(provider_host),
+      context_(std::move(context)) {
   DCHECK(provider_host_);
   DCHECK(context_);
 }
 
-ServiceWorkerContainerHost::~ServiceWorkerContainerHost() = default;
+ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
+  // Ensure callbacks awaiting execution ready are notified.
+  RunExecutionReadyCallbacks();
+}
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
 ServiceWorkerContainerHost::CreateServiceWorkerRegistrationObjectInfo(
@@ -115,6 +137,108 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerContainerHost::client_type()
   }
   NOTREACHED() << type_;
   return blink::mojom::ServiceWorkerClientType::kWindow;
+}
+
+void ServiceWorkerContainerHost::UpdateUrls(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin) {
+  DCHECK(!url.has_ref());
+  url_ = url;
+  site_for_cookies_ = site_for_cookies;
+  top_frame_origin_ = top_frame_origin;
+}
+
+bool ServiceWorkerContainerHost::AllowServiceWorker(const GURL& scope,
+                                                    const GURL& script_url,
+                                                    int render_process_id,
+                                                    int frame_id) {
+  DCHECK(context_);
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    return GetContentClient()->browser()->AllowServiceWorkerOnUI(
+        scope, site_for_cookies(), top_frame_origin(), script_url,
+        context_->wrapper()->browser_context(),
+        base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
+                            render_process_id, frame_id));
+  } else {
+    return GetContentClient()->browser()->AllowServiceWorkerOnIO(
+        scope, site_for_cookies(), top_frame_origin(), script_url,
+        context_->wrapper()->resource_context(),
+        base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
+                            render_process_id, frame_id));
+  }
+}
+
+bool ServiceWorkerContainerHost::IsContextSecureForServiceWorker() const {
+  DCHECK(IsContainerForClient());
+
+  if (!url_.is_valid())
+    return false;
+  if (!OriginCanAccessServiceWorkers(url_))
+    return false;
+
+  if (is_parent_frame_secure_)
+    return true;
+
+  std::set<std::string> schemes;
+  GetContentClient()->browser()->GetSchemesBypassingSecureContextCheckWhitelist(
+      &schemes);
+  return schemes.find(url_.scheme()) != schemes.end();
+}
+
+bool ServiceWorkerContainerHost::is_response_committed() const {
+  DCHECK(IsContainerForClient());
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+      return false;
+    case ClientPhase::kResponseCommitted:
+    case ClientPhase::kExecutionReady:
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+void ServiceWorkerContainerHost::AddExecutionReadyCallback(
+    ExecutionReadyCallback callback) {
+  DCHECK(!is_execution_ready());
+  execution_ready_callbacks_.push_back(std::move(callback));
+}
+
+bool ServiceWorkerContainerHost::is_execution_ready() const {
+  DCHECK(IsContainerForClient());
+  return client_phase_ == ClientPhase::kExecutionReady;
+}
+
+void ServiceWorkerContainerHost::SetExecutionReady() {
+  DCHECK(!is_execution_ready());
+  TransitionToClientPhase(ClientPhase::kExecutionReady);
+  RunExecutionReadyCallbacks();
+}
+
+void ServiceWorkerContainerHost::TransitionToClientPhase(
+    ClientPhase new_phase) {
+  if (client_phase_ == new_phase)
+    return;
+  switch (client_phase_) {
+    case ClientPhase::kInitial:
+      DCHECK_EQ(new_phase, ClientPhase::kResponseCommitted);
+      break;
+    case ClientPhase::kResponseCommitted:
+      DCHECK_EQ(new_phase, ClientPhase::kExecutionReady);
+      break;
+    case ClientPhase::kExecutionReady:
+      NOTREACHED();
+      break;
+  }
+  client_phase_ = new_phase;
+}
+
+void ServiceWorkerContainerHost::RunExecutionReadyCallbacks() {
+  std::vector<ExecutionReadyCallback> callbacks;
+  execution_ready_callbacks_.swap(callbacks);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&RunCallbacks, std::move(callbacks)));
 }
 
 }  // namespace content

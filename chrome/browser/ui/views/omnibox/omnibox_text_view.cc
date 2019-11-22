@@ -205,8 +205,7 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line,
   if (!line.text_fields().empty()) {
     constexpr int kMaxDisplayLines = 3;
     const SuggestionAnswer::TextField& first_field = line.text_fields().front();
-    if (first_field.has_num_lines() && first_field.num_lines() > 1 &&
-        render_text_->MultilineSupported()) {
+    if (first_field.has_num_lines() && first_field.num_lines() > 1) {
       render_text_->SetMultiline(true);
       render_text_->SetMaxLines(
           std::min(kMaxDisplayLines, first_field.num_lines()));

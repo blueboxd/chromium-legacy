@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "media/fuchsia/mojom/fuchsia_cdm_provider.mojom-forward.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 class RenderFrameHost;
@@ -19,19 +20,17 @@ class FuchsiaCdmManager;
 
 class WebEngineCdmService {
  public:
-  explicit WebEngineCdmService(
-      service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
-          registry);
+  WebEngineCdmService();
+  WebEngineCdmService(const WebEngineCdmService&) = delete;
+  WebEngineCdmService& operator=(const WebEngineCdmService&) = delete;
   ~WebEngineCdmService();
+
+  void BindFuchsiaCdmProvider(
+      content::RenderFrameHost* frame_host,
+      mojo::PendingReceiver<media::mojom::FuchsiaCdmProvider> receiver);
 
  private:
   std::unique_ptr<media::FuchsiaCdmManager> cdm_manager_;
-
-  // Not owned pointer. |registry_| must outlive |this|.
-  service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>* const
-      registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebEngineCdmService);
 };
 
 #endif  // FUCHSIA_ENGINE_BROWSER_WEB_ENGINE_CDM_SERVICE_H_

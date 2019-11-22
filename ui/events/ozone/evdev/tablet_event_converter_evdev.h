@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_OZONE_TABLET_EVENT_CONVERTER_EVDEV_H_
 #define UI_EVENTS_OZONE_TABLET_EVENT_CONVERTER_EVDEV_H_
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -14,7 +15,6 @@
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 struct input_event;
 
@@ -22,7 +22,7 @@ namespace ui {
 
 class DeviceEventDispatcherEvdev;
 
-class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
+class COMPONENT_EXPORT(EVDEV) TabletEventConverterEvdev
     : public EventConverterEvdev {
  public:
   TabletEventConverterEvdev(base::ScopedFD fd,

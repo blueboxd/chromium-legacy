@@ -28,4 +28,5 @@ struct AXActionData {
   Event hit_test_event_to_fire;
   ScrollAlignment horizontal_scroll_alignment;
   ScrollAlignment vertical_scroll_alignment;
+  ScrollBehavior scroll_behavior;
 };

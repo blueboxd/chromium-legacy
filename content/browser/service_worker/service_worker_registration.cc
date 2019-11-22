@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_info.h"
@@ -265,7 +266,7 @@ void ServiceWorkerRegistration::ClaimClients() {
     //     is set, continue."
     // |include_reserved_clients| ensures only execution ready clients are
     // returned.
-    DCHECK(host->is_execution_ready());
+    DCHECK(host->container_host()->is_execution_ready());
 
     // This is part of step 5 but performed here as an optimization. Do nothing
     // if this version is already the controller.
@@ -273,7 +274,7 @@ void ServiceWorkerRegistration::ClaimClients() {
       continue;
 
     // "2. If client is not a secure context, continue."
-    if (!host->IsContextSecureForServiceWorker())
+    if (!host->container_host()->IsContextSecureForServiceWorker())
       continue;
 
     // "3. Let registration be the result of running Match Service Worker

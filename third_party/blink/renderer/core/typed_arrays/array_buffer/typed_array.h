@@ -102,6 +102,26 @@ scoped_refptr<TypedArray<T, clamped>> TypedArray<T, clamped>::Create(
   return a;
 }
 
+namespace {
+// Helper to verify that a given sub-range of an ArrayBuffer is within range.
+template <typename T>
+bool VerifySubRange(const ArrayBuffer* buffer,
+                    size_t byte_offset,
+                    size_t num_elements) {
+  if (!buffer)
+    return false;
+  if (sizeof(T) > 1 && byte_offset % sizeof(T))
+    return false;
+  if (byte_offset > buffer->ByteLengthAsSizeT())
+    return false;
+  size_t remaining_elements =
+      (buffer->ByteLengthAsSizeT() - byte_offset) / sizeof(T);
+  if (num_elements > remaining_elements)
+    return false;
+  return true;
+}
+}  // namespace
+
 template <typename T, bool clamped>
 scoped_refptr<TypedArray<T, clamped>> TypedArray<T, clamped>::Create(
     scoped_refptr<ArrayBuffer> buffer,

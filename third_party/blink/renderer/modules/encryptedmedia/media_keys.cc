@@ -284,7 +284,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   //
   // 2. If serverCertificate is an empty array, return a promise rejected
   //    with a new a newly created TypeError.
-  if (!server_certificate.ByteLength()) {
+  if (!server_certificate.ByteLengthAsSizeT()) {
     return ScriptPromise::Reject(
         script_state, V8ThrowException::CreateTypeError(
                           script_state->GetIsolate(),
@@ -294,7 +294,7 @@ ScriptPromise MediaKeys::setServerCertificate(
   // 3. Let certificate be a copy of the contents of the serverCertificate
   //    parameter.
   DOMArrayBuffer* server_certificate_buffer = DOMArrayBuffer::Create(
-      server_certificate.Data(), server_certificate.ByteLength());
+      server_certificate.Data(), server_certificate.ByteLengthAsSizeT());
 
   // 4. Let promise be a new promise.
   SetCertificateResultPromise* result =

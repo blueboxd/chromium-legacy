@@ -75,6 +75,20 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityImageInfo {
   PP_FloatRect bounds;
 };
 
+// Needs to stay in sync with PP_PrivateAccessibilityHighlightInfo.
+struct PPAPI_SHARED_EXPORT PdfAccessibilityHighlightInfo {
+  PdfAccessibilityHighlightInfo();
+  explicit PdfAccessibilityHighlightInfo(
+      const PP_PrivateAccessibilityHighlightInfo& highlight);
+  ~PdfAccessibilityHighlightInfo();
+
+  std::string note_text;
+  uint32_t index_in_page;
+  uint32_t text_run_index;
+  uint32_t text_run_count;
+  PP_FloatRect bounds;
+};
+
 // Needs to stay in sync with PP_PrivateAccessibilityPageObjects.
 struct PPAPI_SHARED_EXPORT PdfAccessibilityPageObjects {
   PdfAccessibilityPageObjects();
@@ -84,6 +98,7 @@ struct PPAPI_SHARED_EXPORT PdfAccessibilityPageObjects {
 
   std::vector<PdfAccessibilityLinkInfo> links;
   std::vector<PdfAccessibilityImageInfo> images;
+  std::vector<PdfAccessibilityHighlightInfo> highlights;
 };
 
 }  // namespace ppapi

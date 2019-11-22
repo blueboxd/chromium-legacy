@@ -32,6 +32,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/editing/editing_style.h"
+#include "third_party/blink/renderer/core/editing/serializers/create_markup_options.h"
 #include "third_party/blink/renderer/core/editing/serializers/markup_formatter.h"
 #include "third_party/blink/renderer/core/editing/serializers/text_offset.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -46,12 +47,10 @@ class StyledMarkupAccumulator final {
   STACK_ALLOCATED();
 
  public:
-  StyledMarkupAccumulator(AbsoluteURLs,
-                          const TextOffset& start,
+  StyledMarkupAccumulator(const TextOffset& start,
                           const TextOffset& end,
                           Document*,
-                          AnnotateForInterchange,
-                          ConvertBlocksToInlines);
+                          const CreateMarkupOptions& options);
 
   void AppendEndTag(const Element&);
   void AppendInterchangeNewline();
@@ -75,7 +74,7 @@ class StyledMarkupAccumulator final {
 
   bool ShouldAnnotate() const;
   bool ShouldConvertBlocksToInlines() const {
-    return convert_blocks_to_inlines_ == ConvertBlocksToInlines::kConvert;
+    return options_.ShouldConvertBlocksToInlines();
   }
 
  private:
@@ -91,10 +90,9 @@ class StyledMarkupAccumulator final {
   const TextOffset start_;
   const TextOffset end_;
   const Member<Document> document_;
-  const AnnotateForInterchange should_annotate_;
+  const CreateMarkupOptions options_;
   StringBuilder result_;
   Vector<String> reversed_preceding_markup_;
-  const ConvertBlocksToInlines convert_blocks_to_inlines_;
 
   DISALLOW_COPY_AND_ASSIGN(StyledMarkupAccumulator);
 };

@@ -19,6 +19,7 @@
 #endif
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -27,7 +28,6 @@
 #include "ui/events/event_constants.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/touch_evdev_debug_buffer.h"
 #include "ui/events/ozone/evdev/touch_filter/palm_detection_filter.h"
 
@@ -37,9 +37,9 @@ class DeviceEventDispatcherEvdev;
 class FalseTouchFinder;
 struct InProgressTouchEvdev;
 
-EVENTS_OZONE_EVDEV_EXPORT extern const base::Feature kEnableSingleCancelTouch;
+COMPONENT_EXPORT(EVDEV) extern const base::Feature kEnableSingleCancelTouch;
 
-class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
+class COMPONENT_EXPORT(EVDEV) TouchEventConverterEvdev
     : public EventConverterEvdev {
  public:
   TouchEventConverterEvdev(base::ScopedFD fd,

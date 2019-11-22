@@ -247,6 +247,17 @@ This platform is used for
 
 This platform provides support for the [X window system](https://www.x.org/).
 
+The support for X11 is being actively developed by Igalia and the chromium
+community and is intended to replace the current legacy X11 path.
+
+You can try to compile and run it with the following configuration:
+
+``` shell
+gn args out/OzoneX11 --args="use_ozone=true"
+ninja -C out/OzoneX11 chrome
+./out/OzoneX11/chrome --ozone-platform=x11
+```
+
 ### Wayland
 
 This platform provides support for the
@@ -254,21 +265,37 @@ This platform provides support for the
 initially developed by Intel as
 [a fork of chromium](https://github.com/01org/ozone-wayland)
 and then partially upstreamed.
-It is still actively being developed by Igalia both on the
-[ozone-wayland-dev](https://github.com/Igalia/chromium/tree/ozone-wayland-dev)
-branch and the Chromium mainline repository, feel free to discuss
-with us on freenode.net, `#ozone-wayland` channel or on `ozone-dev`.
+
+Currently, the Ozone/Wayland is actively being developed by Igalia in
+the Chromium mainline repository with some features missing at the moment. The
+progress can be tracked in the [issue #578890](https://crbug.com/578890).
 
 Below are some quick build & run instructions. It is assumed that you are
 launching `chrome` from a Wayland environment such as `weston`. Execute the
-following commands (make sure a system version of gbm and drm is used, which are
-required by Ozone/Wayland by design, when running on Linux platforms.):
+following commands (make sure a system version of gbm and drm is used, which
+are required by Ozone/Wayland by design, when running on Linux platforms.):
 
 ``` shell
-gn args out/OzoneWayland --args="use_ozone=true use_system_minigbm=true use_system_libdrm=true"
+gn args out/OzoneWayland --args="use_ozone=true use_system_minigbm=true use_system_libdrm=true use_xkbcommon=true"
 ninja -C out/OzoneWayland chrome
 ./out/OzoneWayland/chrome --ozone-platform=wayland
 ```
+
+Native file dialogs are currently supported through the GTK toolkit. That
+implies that the browser is compiled with glib and gtk enabled. Please
+append the following gn args to your configuration:
+
+``` shell
+use_ozone=true
+use_system_minigbm=true
+use_system_libdrm=true
+use_xkbcommon=true
+use_glib=true
+use_gtk=true
+```
+
+Feel free to discuss with us on freenode.net, `#ozone-wayland` channel or on
+`ozone-dev`, or on `#ozone-wayland-x11` channel in [chromium slack](https://www.chromium.org/developers/slack).
 
 ### Caca
 

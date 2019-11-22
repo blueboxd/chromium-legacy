@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,7 +21,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/evdev/input_device_settings_evdev.h"
 #include "ui/events/ozone/evdev/touch_filter/shared_palm_detection_filter_state.h"
 #include "ui/ozone/public/input_controller.h"
@@ -43,7 +43,7 @@ class GesturePropertyProvider;
 #endif
 
 // Manager for event device objects. All device I/O starts here.
-class EVENTS_OZONE_EVDEV_EXPORT InputDeviceFactoryEvdev {
+class COMPONENT_EXPORT(EVDEV) InputDeviceFactoryEvdev {
  public:
   InputDeviceFactoryEvdev(
       std::unique_ptr<DeviceEventDispatcherEvdev> dispatcher,

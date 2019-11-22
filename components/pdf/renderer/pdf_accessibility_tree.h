@@ -39,8 +39,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
   static bool IsDataFromPluginValid(
       const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
+      const ppapi::PdfAccessibilityPageObjects& page_objects);
 
   void SetAccessibilityViewportInfo(
       const PP_PrivateAccessibilityViewportInfo& viewport_info);
@@ -50,8 +49,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       const PP_PrivateAccessibilityPageInfo& page_info,
       const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
+      const ppapi::PdfAccessibilityPageObjects& page_objects);
   void HandleAction(const PP_PdfAccessibilityActionData& action_data);
   bool GetPdfLinkInfoFromAXNode(int32_t ax_node_id,
                                 uint32_t* page_index,
@@ -98,8 +96,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       uint32_t page_index,
       const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
+      const ppapi::PdfAccessibilityPageObjects& page_objects);
   void AddRemainingAnnotations(
       ui::AXNodeData* page_node,
       const gfx::RectF& page_bounds,
@@ -135,14 +132,14 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
                                  uint32_t page_index);
   ui::AXNodeData* CreateImageNode(
       const ppapi::PdfAccessibilityImageInfo& image);
-  void AddTextToLinkNode(
+  void AddTextToAXNode(
       uint32_t start_text_run_index,
       uint32_t end_text_run_index,
       const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
       const gfx::RectF& page_bounds,
       uint32_t* char_index,
-      ui::AXNodeData* link_node,
+      ui::AXNodeData* ax_node,
       ui::AXNodeData** previous_on_line_node);
   float GetDeviceScaleFactor() const;
   content::RenderAccessibility* GetRenderAccessibility();

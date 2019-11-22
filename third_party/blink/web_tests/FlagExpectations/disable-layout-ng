@@ -82,6 +82,9 @@ crbug.com/591099 external/wpt/css/css-text/hyphens/hyphens-shaping-001.html [ Fa
 
 ### external/wpt/css/css-text/line-break/
 crbug.com/591099 external/wpt/css/css-text/line-break/line-break-anywhere-001.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/line-break/line-break-anywhere-and-white-space-004.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/line-break/line-break-anywhere-and-white-space-006.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-text/line-break/line-break-anywhere-and-white-space-007.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/line-break/line-break-shaping-001.html [ Failure ]
 
 ### external/wpt/css/css-text/line-breaking/
@@ -378,6 +381,7 @@ crbug.com/1016759 paint/invalidation/svg/animated-path-inside-transformed-html.x
 crbug.com/1016759 paint/invalidation/svg/circle-move-invalidation.svg [ Failure ]
 
 # display-locking
+crbug.com/591099 wpt_internal/display-lock/css-render-subtree/invisible-size-contained.html [ Failure ]
 crbug.com/1007506 wpt_internal/display-lock/rendersubtree/sizing/overflow-auto-with-overflow.html [ Failure ]
 
 # 10/02/2019 Mark tests as failing. Mostly shapes, slight image differences

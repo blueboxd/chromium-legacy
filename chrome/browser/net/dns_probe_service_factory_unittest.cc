@@ -110,46 +110,71 @@ class DnsProbeServiceTest : public testing::Test {
 };
 
 TEST_F(DnsProbeServiceTest, Probe_OK_OK) {
-  ConfigureTest({{net::OK, FakeHostResolver::kOneAddressResponse}},
-                {{net::OK, FakeHostResolver::kOneAddressResponse}});
+  ConfigureTest({{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse}},
+                {{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_TIMEOUT_OK) {
-  ConfigureTest({{net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}},
-                {{net::OK, FakeHostResolver::kOneAddressResponse}});
+  ConfigureTest({{net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}},
+                {{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_BAD_CONFIG);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_TIMEOUT_TIMEOUT) {
-  ConfigureTest({{net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}},
-                {{net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}});
+  ConfigureTest({{net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}},
+                {{net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_NO_INTERNET);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_OK_FAIL) {
-  ConfigureTest({{net::OK, FakeHostResolver::kOneAddressResponse}},
-                {{net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse}});
+  ConfigureTest({{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse}},
+                {{net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED),
+                  FakeHostResolver::kNoResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_FAIL_OK) {
-  ConfigureTest({{net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse}},
-                {{net::OK, FakeHostResolver::kOneAddressResponse}});
+  ConfigureTest({{net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED),
+                  FakeHostResolver::kNoResponse}},
+                {{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_BAD_CONFIG);
 }
 
 TEST_F(DnsProbeServiceTest, Probe_FAIL_FAIL) {
-  ConfigureTest({{net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse}},
-                {{net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse}});
+  ConfigureTest({{net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED),
+                  FakeHostResolver::kNoResponse}},
+                {{net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED),
+                  FakeHostResolver::kNoResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_INCONCLUSIVE);
 }
 
 TEST_F(DnsProbeServiceTest, Cache) {
-  ConfigureTest({{net::OK, FakeHostResolver::kOneAddressResponse},
-                 {net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}},
-                {{net::OK, FakeHostResolver::kOneAddressResponse},
-                 {net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}});
+  ConfigureTest({{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse},
+                 {net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}},
+                {{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse},
+                 {net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   // Advance clock, but not enough to expire the cache.
   AdvanceTime(base::TimeDelta::FromSeconds(4));
@@ -158,10 +183,16 @@ TEST_F(DnsProbeServiceTest, Cache) {
 }
 
 TEST_F(DnsProbeServiceTest, Expire) {
-  ConfigureTest({{net::OK, FakeHostResolver::kOneAddressResponse},
-                 {net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}},
-                {{net::OK, FakeHostResolver::kOneAddressResponse},
-                 {net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}});
+  ConfigureTest({{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse},
+                 {net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}},
+                {{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse},
+                 {net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   // Advance clock enough to trigger cache expiration.
   AdvanceTime(base::TimeDelta::FromSeconds(6));
@@ -170,10 +201,16 @@ TEST_F(DnsProbeServiceTest, Expire) {
 }
 
 TEST_F(DnsProbeServiceTest, DnsConfigChange) {
-  ConfigureTest({{net::OK, FakeHostResolver::kOneAddressResponse},
-                 {net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}},
-                {{net::OK, FakeHostResolver::kOneAddressResponse},
-                 {net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}});
+  ConfigureTest({{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse},
+                 {net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}},
+                {{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse},
+                 {net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   // Simulate dns config change notification.
   SimulateDnsConfigChange();
@@ -182,10 +219,16 @@ TEST_F(DnsProbeServiceTest, DnsConfigChange) {
 }
 
 TEST_F(DnsProbeServiceTest, MojoConnectionError) {
-  ConfigureTest({{net::OK, FakeHostResolver::kOneAddressResponse},
-                 {net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}},
-                {{net::OK, FakeHostResolver::kOneAddressResponse},
-                 {net::ERR_DNS_TIMED_OUT, FakeHostResolver::kNoResponse}});
+  ConfigureTest({{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse},
+                 {net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}},
+                {{net::OK, net::ResolveErrorInfo(net::OK),
+                  FakeHostResolver::kOneAddressResponse},
+                 {net::ERR_NAME_NOT_RESOLVED,
+                  net::ResolveErrorInfo(net::ERR_DNS_TIMED_OUT),
+                  FakeHostResolver::kNoResponse}});
   RunTest(error_page::DNS_PROBE_FINISHED_NXDOMAIN);
   DestroyDnsConfigChangeManager();
   RunLoop().RunUntilIdle();

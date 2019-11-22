@@ -12,13 +12,13 @@
 #include <string>
 #include <vector>
 
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
+#include "base/component_export.h"
 
 namespace ui {
 
 class EventDeviceInfo;
 
-class EVENTS_OZONE_EVDEV_EXPORT TouchEventLogEvdev {
+class COMPONENT_EXPORT(EVDEV) TouchEventLogEvdev {
  public:
   TouchEventLogEvdev();
   ~TouchEventLogEvdev();

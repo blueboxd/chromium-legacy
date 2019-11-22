@@ -123,11 +123,17 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Allocate necessary request buffers is request api is supported.
   bool AllocateRequests();
 
+  // Returns whether |profile| is supported by a v4l2 stateless decoder driver.
+  bool IsSupportedProfile(VideoCodecProfile profile);
+
   // Video frame pool provided by the decoder.
   DmabufVideoFramePool* const frame_pool_;
 
-  // Video profile we will be decoding.
-  const VideoCodecProfile profile_;
+  // Video profile we are decoding.
+  VideoCodecProfile profile_;
+
+  // Video coded size we are decoding.
+  gfx::Size pic_size_;
 
   // Video decoder used to parse stream headers by software.
   std::unique_ptr<AcceleratedVideoDecoder> avd_;
@@ -159,6 +165,8 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // Callbacks of EOS buffer passed from Decode().
   VideoDecoder::DecodeCB flush_cb_;
 
+  // VideoCodecProfiles supported by a v4l2 stateless decoder driver.
+  std::vector<VideoCodecProfile> supported_profiles_;
   // Set to true during Initialize() if the codec driver supports request API.
   bool supports_requests_ = false;
   // FIFO queue of requests, only used if supports_requests_ is true.

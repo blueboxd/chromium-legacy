@@ -367,6 +367,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/content_settings:content_settings",
     "//ios/chrome/browser/device_sharing:eg_app_support+eg2",
     "//ios/chrome/browser/find_in_page",
+    "//ios/chrome/browser/metrics:eg_app_support+eg2",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/passwords:eg_app_support+eg2",

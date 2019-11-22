@@ -9,6 +9,7 @@
 
 #include "chrome/browser/net/dns_probe_runner.h"
 #include "net/base/ip_address.h"
+#include "net/dns/public/resolve_error_info.h"
 
 namespace chrome_browser_net {
 
@@ -33,6 +34,16 @@ static base::Optional<net::AddressList> AddressListForResponse(
 
 }  // namespace
 
+FakeHostResolver::SingleResult::SingleResult(
+    int32_t result,
+    net::ResolveErrorInfo resolve_error_info,
+    Response response)
+    : result(result),
+      resolve_error_info(resolve_error_info),
+      response(response) {
+  DCHECK(result == net::OK || result == net::ERR_NAME_NOT_RESOLVED);
+}
+
 FakeHostResolver::FakeHostResolver(
     mojo::PendingReceiver<network::mojom::HostResolver> resolver_receiver,
     std::vector<SingleResult> result_list)
@@ -42,9 +53,10 @@ FakeHostResolver::FakeHostResolver(
 FakeHostResolver::FakeHostResolver(
     mojo::PendingReceiver<network::mojom::HostResolver> resolver_receiver,
     int32_t result,
+    net::ResolveErrorInfo resolve_error_info,
     Response response)
     : FakeHostResolver(std::move(resolver_receiver),
-                       {SingleResult(result, response)}) {}
+                       {SingleResult(result, resolve_error_info, response)}) {}
 
 FakeHostResolver::~FakeHostResolver() = default;
 
@@ -58,7 +70,7 @@ void FakeHostResolver::ResolveHost(
     next_result_++;
   mojo::Remote<network::mojom::ResolveHostClient> response_client(
       std::move(pending_response_client));
-  response_client->OnComplete(cur_result.result,
+  response_client->OnComplete(cur_result.result, cur_result.resolve_error_info,
                               AddressListForResponse(cur_result.response));
 }
 

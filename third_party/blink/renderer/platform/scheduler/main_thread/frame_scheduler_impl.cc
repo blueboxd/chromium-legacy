@@ -476,7 +476,6 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
       }
     case TaskType::kInternalNavigationAssociated:
       return FreezableTaskQueueTraits();
-    case TaskType::kInternalIPC:
     // Some tasks in the tests need to run when objects are paused e.g. to hook
     // when recovering from debugger JavaScript statetment.
     case TaskType::kInternalTest:

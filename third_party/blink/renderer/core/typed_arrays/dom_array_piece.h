@@ -42,13 +42,13 @@ class CORE_EXPORT DOMArrayPiece : public ArrayPiece {
                 InitWithUnionOption = kTreatNullAsNull);
 
   bool operator==(const DOMArrayBuffer& other) const {
-    return ByteLength() == other.DeprecatedByteLengthAsUnsigned() &&
-           memcmp(Data(), other.Data(), ByteLength()) == 0;
+    return ByteLengthAsSizeT() == other.ByteLengthAsSizeT() &&
+           memcmp(Data(), other.Data(), ByteLengthAsSizeT()) == 0;
   }
 
   bool operator==(const DOMArrayBufferView& other) const {
-    return ByteLength() == other.byteLength() &&
-           memcmp(Data(), other.BaseAddress(), ByteLength()) == 0;
+    return ByteLengthAsSizeT() == static_cast<size_t>(other.byteLength()) &&
+           memcmp(Data(), other.BaseAddress(), ByteLengthAsSizeT()) == 0;
   }
 };
 

@@ -195,18 +195,6 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(ChromeNetResourceProvider);
   media::SetLocalizedStringProvider(ChromeMediaLocalizedStringProvider);
-
-  // chrome-native: is a scheme used for placeholder navigations that allow
-  // UIs to be drawn with platform native widgets instead of HTML.  These pages
-  // should not be accessible.  No code should be runnable in these pages,
-  // so it should not need to access anything nor should it allow javascript
-  // URLs since it should never be visible to the user.
-  // See also ChromeContentClient::AddAdditionalSchemes that adds it as an
-  // empty document scheme.
-  WebString native_scheme(WebString::FromASCII(chrome::kChromeNativeScheme));
-  WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(native_scheme);
-  WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
-      native_scheme);
 }
 
 ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}

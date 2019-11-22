@@ -1232,9 +1232,27 @@ LayoutUnit CalculateChildPercentageBlockSizeForMinMax(
   return child_percentage_block_size;
 }
 
-LayoutUnit ClampIntrinsicBlockSize(const NGBlockNode& node,
-                                   const NGBoxStrut& border_scrollbar_padding,
-                                   LayoutUnit current_intrinsic_block_size) {
+LayoutUnit ClampIntrinsicBlockSize(
+    const NGConstraintSpace& space,
+    const NGBlockNode& node,
+    const NGBoxStrut& border_scrollbar_padding,
+    LayoutUnit current_intrinsic_block_size,
+    base::Optional<LayoutUnit> body_margin_block_sum) {
+  const ComputedStyle& style = node.Style();
+
+  // Apply the "fills viewport" quirk if needed.
+  LayoutUnit available_block_size = space.AvailableSize().block_size;
+  if (node.IsQuirkyAndFillsViewport() && style.LogicalHeight().IsAuto() &&
+      available_block_size != kIndefiniteSize) {
+    DCHECK_EQ(node.IsBody() && !node.CreatesNewFormattingContext(),
+              body_margin_block_sum.has_value());
+    LayoutUnit margin_sum = body_margin_block_sum.value_or(
+        ComputeMarginsForSelf(space, style).BlockSum());
+    current_intrinsic_block_size = std::max(
+        current_intrinsic_block_size,
+        (space.AvailableSize().block_size - margin_sum).ClampNegativeToZero());
+  }
+
   // If the intrinsic size was overridden, then use that.
   LayoutUnit intrinsic_size_override = node.OverrideIntrinsicContentBlockSize();
   if (intrinsic_size_override != kIndefiniteSize)

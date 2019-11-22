@@ -4,6 +4,7 @@
 
 from .composition_parts import WithIdentifier
 from .function_like import FunctionLike
+from .idl_type import IdlType
 
 
 class OverloadGroup(WithIdentifier):
@@ -57,8 +58,55 @@ class OverloadGroup(WithIdentifier):
         """
         return min(map(lambda func: func.num_of_required_arguments, self))
 
+    def effective_overload_set(self, argument_count=None):
+        """
+        Returns the effective overload set.
+
+        Returns:
+            List of (FunctionLike, (IdlType...), (IdlType.Optionality...)).
+        """
+        assert argument_count is None or isinstance(argument_count,
+                                                    (int, long))
+
+        # https://heycam.github.io/webidl/#compute-the-effective-overload-set
+        N = argument_count
+        S = []
+        F = self
+
+        maxarg = max(map(lambda X: len(X.arguments), F))
+        if N is None:
+            N = 1 + max([len(X.arguments) for X in F if not X.is_variadic])
+
+        for X in F:
+            n = len(X.arguments)
+
+            S.append((X, map(lambda arg: arg.idl_type, X.arguments),
+                      map(lambda arg: arg.optionality, X.arguments)))
+
+            if X.is_variadic:
+                for i in xrange(n, max(maxarg, N)):
+                    t = map(lambda arg: arg.idl_type, X.arguments)
+                    o = map(lambda arg: arg.optionality, X.arguments)
+                    for _ in xrange(n, i + 1):
+                        t.append(X.arguments[-1].idl_type)
+                        o.append(X.arguments[-1].optionality)
+                    S.append((X, t, o))
+
+            t = map(lambda arg: arg.idl_type, X.arguments)
+            o = map(lambda arg: arg.optionality, X.arguments)
+            for i in xrange(n - 1, -1, -1):
+                if X.arguments[i].optionality == IdlType.Optionality.REQUIRED:
+                    break
+                S.append((X, t[:i], o[:i]))
+
+        return S
+
     @staticmethod
     def are_distinguishable_types(idl_type1, idl_type2):
+        """Returns True if the two given types are distinguishable."""
+        assert isinstance(idl_type1, IdlType)
+        assert isinstance(idl_type2, IdlType)
+
         # https://heycam.github.io/webidl/#dfn-distinguishable
         # step 1. If one type includes a nullable type and the other type either
         #   includes a nullable type, is a union type with flattened member

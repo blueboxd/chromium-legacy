@@ -445,6 +445,15 @@ enum ScrollAlignment {
   kScrollAlignmentClosestEdge
 };
 
+// A list of valid values for the scroll behavior argument to argument in
+// |AXActionData|. These values control whether a node is scrolled in the
+// viewport if it is already visible.
+enum ScrollBehavior {
+  kNone,
+  kDoNotScrollIfVisible,
+  kScrollIfVisible,
+};
+
 // A list of valid values for the |AXIntAttribute| |default_action_verb|.
 // These will describe the action that will be performed on a given node when
 // executing the default action, which is a click.

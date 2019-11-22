@@ -10,13 +10,11 @@
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/sms/sms.h"
 #include "third_party/blink/renderer/modules/sms/sms_metrics.h"
-#include "third_party/blink/renderer/modules/sms/sms_receiver_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -27,38 +25,20 @@ namespace blink {
 
 SMSReceiver::SMSReceiver(ExecutionContext* context) : ContextClient(context) {}
 
-SMSReceiver::~SMSReceiver() = default;
-
 ScriptPromise SMSReceiver::receive(ScriptState* script_state,
-                                   const SMSReceiverOptions* options,
-                                   ExceptionState& exception_state) {
+                                   const SMSReceiverOptions* options) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
   LocalFrame* frame = GetFrame();
   if (!frame->IsMainFrame() && frame->IsCrossOriginSubframe()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotAllowedError,
-        "Must have the same origin as the top-level frame.");
-    return ScriptPromise();
-  }
-
-  if (options->hasSignal() && options->signal()->aborted()) {
-    RecordSMSOutcome(SMSReceiverOutcome::kAborted, GetDocument()->UkmSourceID(),
-                     GetDocument()->UkmRecorder());
-    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
-                                      "Request has been aborted.");
-    return ScriptPromise();
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kNotAllowedError,
+                          "Must have the same origin as the top-level frame."));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-
-  if (options->hasSignal()) {
-    options->signal()->AddAlgorithm(WTF::Bind(&SMSReceiver::Abort,
-                                              WrapWeakPersistent(this),
-                                              WrapPersistent(resolver)));
-  }
-
   requests_.insert(resolver);
 
   // See https://bit.ly/2S0zRAS for task types.
@@ -79,16 +59,7 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
   return resolver->Promise();
 }
 
-void SMSReceiver::Abort(ScriptPromiseResolver* resolver) {
-  RecordSMSOutcome(SMSReceiverOutcome::kAborted, GetDocument()->UkmSourceID(),
-                   GetDocument()->UkmRecorder());
-  service_->Abort();
-
-  resolver->Reject(
-      MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
-
-  requests_.erase(resolver);
-}
+SMSReceiver::~SMSReceiver() = default;
 
 void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
                             base::TimeTicks start_time,

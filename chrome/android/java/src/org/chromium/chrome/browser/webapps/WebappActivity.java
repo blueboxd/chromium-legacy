@@ -715,6 +715,10 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
+        // Disable creating bookmark.
+        if (id == R.id.bookmark_this_page_id) {
+            return true;
+        }
         if (id == R.id.open_in_browser_id) {
             openCurrentUrlInChrome();
             if (fromMenu) {

@@ -62,6 +62,15 @@ struct LoginChoice {
   base::Optional<InfoPopupProto> info_popup;
 };
 
+// Tuple for holding credit card and billing address;
+struct PaymentInstrument {
+  PaymentInstrument();
+  ~PaymentInstrument();
+
+  std::unique_ptr<autofill::CreditCard> card;
+  std::unique_ptr<autofill::AutofillProfile> billing_address;
+};
+
 // Struct for holding the user data.
 struct UserData {
   UserData();
@@ -80,6 +89,7 @@ struct UserData {
     DATE_TIME_RANGE_END,
     ADDITIONAL_VALUES,
     AVAILABLE_PROFILES,
+    AVAILABLE_PAYMENT_INSTRUMENTS,
   };
 
   bool succeed = false;
@@ -96,6 +106,7 @@ struct UserData {
   std::map<std::string, std::string> additional_values_to_store;
 
   std::vector<std::unique_ptr<autofill::AutofillProfile>> available_profiles;
+  std::vector<std::unique_ptr<PaymentInstrument>> available_payment_instruments;
 };
 
 // Struct for holding the payment request options.

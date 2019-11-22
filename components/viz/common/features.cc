@@ -17,13 +17,8 @@ namespace features {
 const base::Feature kVizDisplayCompositor{"VizDisplayCompositor",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_CHROMEOS)
-const base::Feature kEnableVizHitTestSurfaceLayer{
-    "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
-#else
 const base::Feature kEnableVizHitTestSurfaceLayer{
     "VizHitTestSurfaceLayer", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
 
 // Use Skia's readback API instead of GLRendererCopier.
 const base::Feature kUseSkiaForGLReadback{"UseSkiaForGLReadback",

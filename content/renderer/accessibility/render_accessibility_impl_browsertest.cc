@@ -638,7 +638,8 @@ TEST_F(BlinkAXActionTargetTest, TestMethods) {
   EXPECT_EQ(gfx::Point(0, 0), scroller_action_target->GetScrollOffset());
   EXPECT_TRUE(scroller_child_action_target->ScrollToMakeVisibleWithSubFocus(
       gfx::Rect(0, 0, 50, 50), ax::mojom::ScrollAlignment::kScrollAlignmentLeft,
-      ax::mojom::ScrollAlignment::kScrollAlignmentTop));
+      ax::mojom::ScrollAlignment::kScrollAlignmentTop,
+      ax::mojom::ScrollBehavior::kDoNotScrollIfVisible));
   EXPECT_GE(scroller_action_target->GetScrollOffset().y(), 900);
 
   scroller_action_target->SetScrollOffset(gfx::Point(0, 0));

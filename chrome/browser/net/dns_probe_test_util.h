@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +28,12 @@ class FakeHostResolver : public network::mojom::HostResolver {
   };
 
   struct SingleResult {
-    SingleResult(int32_t result, Response response)
-        : result(result), response(response) {}
+    SingleResult(int32_t result,
+                 net::ResolveErrorInfo resolve_error_info,
+                 Response response);
+
     int32_t result;
+    net::ResolveErrorInfo resolve_error_info;
     Response response;
   };
 
@@ -40,6 +44,7 @@ class FakeHostResolver : public network::mojom::HostResolver {
   FakeHostResolver(
       mojo::PendingReceiver<network::mojom::HostResolver> resolver_receiver,
       int32_t result,
+      net::ResolveErrorInfo resolve_error_info,
       Response response);
 
   ~FakeHostResolver() override;

@@ -45,6 +45,7 @@ enum class PermissionRequestType {
   PERMISSION_CLIPBOARD_READ = 16,
   PERMISSION_SECURITY_KEY_ATTESTATION = 17,
   PERMISSION_PAYMENT_HANDLER = 18,
+  PERMISSION_NFC = 19,
   // NUM must be the last value in the enum.
   NUM
 };

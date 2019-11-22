@@ -81,6 +81,17 @@ var Resolution = class {
 };
 
 /**
+ * Capture modes.
+ * @enum {string}
+ */
+var Mode = {
+  PHOTO: 'photo-mode',
+  VIDEO: 'video-mode',
+  SQUARE: 'square-mode',
+  PORTRAIT: 'portrait-mode',
+};
+
+/**
  * @typedef {{
  *   width: number,
  *   height: number,

@@ -570,6 +570,8 @@ AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromTreeId(
 
 void ArcAccessibilityHelperBridge::OnAction(
     const ui::AXActionData& data) const {
+  DCHECK(data.target_node_id);
+
   arc::mojom::AccessibilityActionDataPtr action_data =
       arc::mojom::AccessibilityActionData::New();
 
@@ -578,7 +580,11 @@ void ArcAccessibilityHelperBridge::OnAction(
   AXTreeSourceArc* tree_source = GetFromTreeId(data.target_tree_id);
   if (!tree_source)
     return;
-  action_data->window_id = tree_source->GetWindowId();
+
+  const int window_id = tree_source->GetWindowId();
+  if (window_id == ui::AXNode::kInvalidAXID)
+    return;
+  action_data->window_id = window_id;
 
   switch (data.action) {
     case ax::mojom::Action::kDoDefault:

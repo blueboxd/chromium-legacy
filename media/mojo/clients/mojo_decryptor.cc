@@ -25,7 +25,8 @@ namespace media {
 
 namespace {
 
-void ReleaseFrameResource(mojom::FrameResourceReleaserPtr releaser) {
+void ReleaseFrameResource(
+    mojo::PendingRemote<mojom::FrameResourceReleaser> releaser) {
   // Close the connection, which will result in the service realizing the frame
   // resource is no longer needed.
   releaser.reset();
@@ -263,10 +264,11 @@ void MojoDecryptor::OnAudioDecoded(
   std::move(audio_decode_cb).Run(status, audio_frames);
 }
 
-void MojoDecryptor::OnVideoDecoded(VideoDecodeOnceCB video_decode_cb,
-                                   Status status,
-                                   const scoped_refptr<VideoFrame>& video_frame,
-                                   mojom::FrameResourceReleaserPtr releaser) {
+void MojoDecryptor::OnVideoDecoded(
+    VideoDecodeOnceCB video_decode_cb,
+    Status status,
+    const scoped_refptr<VideoFrame>& video_frame,
+    mojo::PendingRemote<mojom::FrameResourceReleaser> releaser) {
   DVLOG_IF(1, status != kSuccess) << __func__ << ": status = " << status;
   DVLOG_IF(3, status == kSuccess) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());

@@ -163,7 +163,7 @@ class QuotaBackendImplTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(QuotaBackendImplTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, QuotaBackendImplTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, QuotaBackendImplTest, testing::Bool());
 
 TEST_P(QuotaBackendImplTest, ReserveQuota_Basic) {
   storage::FileSystemType type = storage::kFileSystemTypeTemporary;

@@ -279,17 +279,18 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   }
 
   bool allow_service_worker = false;
+  ServiceWorkerContainerHost* container_host = provider_host_->container_host();
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnUI(
-            registration->scope(), provider_host_->site_for_cookies(),
-            provider_host_->top_frame_origin(), /*script_url=*/GURL(),
+            registration->scope(), container_host->site_for_cookies(),
+            container_host->top_frame_origin(), /*script_url=*/GURL(),
             browser_context_, provider_host_->web_contents_getter());
   } else {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnIO(
-            registration->scope(), provider_host_->site_for_cookies(),
-            provider_host_->top_frame_origin(), /*script_url=*/GURL(),
+            registration->scope(), container_host->site_for_cookies(),
+            container_host->top_frame_origin(), /*script_url=*/GURL(),
             resource_context_, provider_host_->web_contents_getter());
   }
 
@@ -304,7 +305,7 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     return;
   }
 
-  if (!provider_host_->IsContextSecureForServiceWorker()) {
+  if (!provider_host_->container_host()->IsContextSecureForServiceWorker()) {
     // TODO(falken): Figure out a way to surface in the page's DevTools
     // console that the service worker was blocked for security.
     TRACE_EVENT_WITH_FLOW1(

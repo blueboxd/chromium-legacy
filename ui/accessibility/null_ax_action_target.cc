@@ -82,7 +82,8 @@ bool NullAXActionTarget::ScrollToMakeVisible() const {
 bool NullAXActionTarget::ScrollToMakeVisibleWithSubFocus(
     const gfx::Rect& rect,
     ax::mojom::ScrollAlignment horizontal_scroll_alignment,
-    ax::mojom::ScrollAlignment vertical_scroll_alignment) const {
+    ax::mojom::ScrollAlignment vertical_scroll_alignment,
+    ax::mojom::ScrollBehavior scroll_behavior) const {
   return false;
 }
 

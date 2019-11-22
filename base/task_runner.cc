@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/task/promise/abstract_promise.h"
-#include "base/task/promise/helpers.h"
 #include "base/threading/post_task_and_reply_impl.h"
 
 namespace base {
@@ -52,16 +50,6 @@ bool TaskRunner::PostTaskAndReply(const Location& from_here,
                                   OnceClosure reply) {
   return PostTaskAndReplyTaskRunner(this).PostTaskAndReply(
       from_here, std::move(task), std::move(reply));
-}
-
-bool TaskRunner::PostPromiseInternal(WrappedPromise promise,
-                                     base::TimeDelta delay) {
-  Location from_here = promise.from_here();
-  return PostDelayedTask(
-      from_here,
-      BindOnce([](WrappedPromise promise) { promise.Execute(); },
-               std::move(promise)),
-      delay);
 }
 
 TaskRunner::TaskRunner() = default;

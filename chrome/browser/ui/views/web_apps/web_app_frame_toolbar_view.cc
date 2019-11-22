@@ -105,8 +105,9 @@ int HorizontalPaddingBetweenItems() {
 // Insets are kept small to avoid increasing web app frame toolbar height.
 void SetInsetsForWebAppToolbarButton(ToolbarButton* toolbar_button,
                                      bool is_browser_focus_mode) {
-  toolbar_button->SetLayoutInsets(gfx::Insets());
   if (!is_browser_focus_mode) {
+    toolbar_button->SetLayoutInsets(gfx::Insets(2));
+
     constexpr gfx::Insets kInkDropInsets(2);
     toolbar_button->SetProperty(views::kInternalPaddingKey, kInkDropInsets);
   }

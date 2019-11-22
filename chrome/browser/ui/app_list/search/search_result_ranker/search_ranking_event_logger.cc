@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/containers/flat_map.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"

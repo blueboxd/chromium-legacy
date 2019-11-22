@@ -64,7 +64,7 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   }
   void* BaseAddressMaybeShared() const { return base_address_; }
 
-  unsigned ByteOffset() const { return byte_offset_; }
+  size_t ByteOffset() const { return byte_offset_; }
 
   virtual unsigned ByteLength() const = 0;
   virtual unsigned TypeSize() const = 0;
@@ -76,54 +76,22 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   virtual ~ArrayBufferView();
 
  protected:
-  ArrayBufferView(scoped_refptr<ArrayBuffer>, unsigned byte_offset);
-
-  inline bool SetImpl(ArrayBufferView*, unsigned byte_offset);
-
-  // Helper to verify that a given sub-range of an ArrayBuffer is
-  // within range.
-  template <typename T>
-  static bool VerifySubRange(const ArrayBuffer* buffer,
-                             unsigned byte_offset,
-                             unsigned num_elements) {
-    if (!buffer)
-      return false;
-    if (sizeof(T) > 1 && byte_offset % sizeof(T))
-      return false;
-    if (byte_offset > buffer->ByteLengthAsUnsigned())
-      return false;
-    unsigned remaining_elements = static_cast<unsigned>(
-        (buffer->ByteLengthAsUnsigned() - byte_offset) / sizeof(T));
-    if (num_elements > remaining_elements)
-      return false;
-    return true;
-  }
+  ArrayBufferView(scoped_refptr<ArrayBuffer>, size_t byte_offset);
 
   virtual void Detach();
 
   // This is the address of the ArrayBuffer's storage, plus the byte offset.
   void* base_address_;
 
-  unsigned byte_offset_ : 31;
-  unsigned is_detachable_ : 1;
+  size_t byte_offset_;
+  bool is_detachable_;
 
  private:
   friend class ArrayBuffer;
   scoped_refptr<ArrayBuffer> buffer_;
+  ArrayBufferView* prev_view_;
+  ArrayBufferView* next_view_;
 };
-
-bool ArrayBufferView::SetImpl(ArrayBufferView* array, unsigned byte_offset) {
-  if (byte_offset > ByteLength() ||
-      byte_offset + array->ByteLength() > ByteLength() ||
-      byte_offset + array->ByteLength() < byte_offset) {
-    // Out of range offset or overflow
-    return false;
-  }
-
-  char* base = static_cast<char*>(BaseAddress());
-  memmove(base + byte_offset, array->BaseAddress(), array->ByteLength());
-  return true;
-}
 
 }  // namespace blink
 

@@ -42,6 +42,7 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/native_widget_private.h"
+#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 // Donates an implementation of -[NSAnimation stopAnimation] which calls the
@@ -2393,6 +2394,7 @@ NSArray* ExtractTouchBarGroupIdentifiers(NSView* view) {
 TEST_F(NativeWidgetMacTest, TouchBar) {
   ModalDialogDelegate* delegate = new ModalDialogDelegate(ui::MODAL_TYPE_NONE);
   views::DialogDelegate::CreateDialogWidget(delegate, nullptr, nullptr);
+  DialogClientView* client_view = delegate->GetDialogClientView();
   NSView* content =
       [delegate->GetWidget()->GetNativeWindow().GetNativeNSWindow()
               contentView];
@@ -2405,8 +2407,8 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
 
   EXPECT_TRUE(content);
-  EXPECT_TRUE(delegate->GetOkButton());
-  EXPECT_TRUE(delegate->GetCancelButton());
+  EXPECT_TRUE(client_view->ok_button());
+  EXPECT_TRUE(client_view->cancel_button());
 
   if (@available(macOS 10.12.2, *)) {
     NSTouchBar* touch_bar = [content touchBar];
@@ -2429,8 +2431,8 @@ TEST_F(NativeWidgetMacTest, TouchBar) {
   // Remove the cancel button.
   delegate->set_buttons(ui::DIALOG_BUTTON_OK);
   delegate->DialogModelChanged();
-  EXPECT_TRUE(delegate->GetOkButton());
-  EXPECT_FALSE(delegate->GetCancelButton());
+  EXPECT_TRUE(client_view->ok_button());
+  EXPECT_FALSE(client_view->cancel_button());
 
   if (@available(macOS 10.12.2, *)) {
     NSTouchBar* touch_bar = [content touchBar];

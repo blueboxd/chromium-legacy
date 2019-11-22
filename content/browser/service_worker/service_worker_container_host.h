@@ -51,9 +51,12 @@ class ServiceWorkerVersion;
 // class lives, and add sequence checkers to ensure it.
 class CONTENT_EXPORT ServiceWorkerContainerHost {
  public:
+  using ExecutionReadyCallback = base::OnceClosure;
+
   // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
   // ServiceWorkerContainerType.
   ServiceWorkerContainerHost(blink::mojom::ServiceWorkerProviderType type,
+                             bool is_parent_frame_secure,
                              ServiceWorkerProviderHost* provider_host,
                              base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerContainerHost();
@@ -109,8 +112,98 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // Can only be called when IsContainerForClient() is true.
   blink::mojom::ServiceWorkerClientType client_type() const;
 
+  // For service worker clients. Sets |url_|, |site_for_cookies_| and
+  // |top_frame_origin_|.
+  void UpdateUrls(const GURL& url,
+                  const GURL& site_for_cookies,
+                  const base::Optional<url::Origin>& top_frame_origin);
+
+  // The URL of this context. For service worker clients, this is the document
+  // URL (for documents) or script URL (for workers). For service worker
+  // execution contexts, this is the script URL.
+  //
+  // For clients, url() may be empty if loading has not started, or our custom
+  // loading handler didn't see the load (because e.g. another handler did
+  // first, or the initial request URL was such that
+  // OriginCanAccessServiceWorkers returned false).
+  //
+  // The URL may also change on redirects during loading. Once
+  // is_response_committed() is true, the URL should no longer change.
+  const GURL& url() const { return url_; }
+
+  // The URL representing the site_for_cookies for this context. See
+  // |URLRequest::site_for_cookies()| for details.
+  // For service worker execution contexts, site_for_cookies() always
+  // returns the service worker script URL.
+  const GURL& site_for_cookies() const { return site_for_cookies_; }
+
+  // The URL representing the first-party site for this context.
+  // For service worker execution contexts, top_frame_origin() always
+  // returns the origin of the service worker script URL.
+  // For shared worker it is the origin of the document that created the worker.
+  // For dedicated worker it is the top-frame origin of the document that owns
+  // the worker.
+  base::Optional<url::Origin> top_frame_origin() const {
+    return top_frame_origin_;
+  }
+
+  // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
+  // settings allows service workers to run at |scope|. If this container is for
+  // a window client, the check involves the topmost frame url as well as
+  // |scope|, and may display tab-level UI.
+  // If non-empty, |script_url| is the script the service worker will run.
+  bool AllowServiceWorker(const GURL& scope,
+                          const GURL& script_url,
+                          int render_process_id,
+                          int frame_id);
+
+  // Returns whether this provider host is secure enough to have a service
+  // worker controller.
+  // Analogous to Blink's Document::IsSecureContext. Because of how service
+  // worker intercepts main resource requests, this check must be done
+  // browser-side once the URL is known (see comments in
+  // ServiceWorkerNetworkProviderForFrame::Create). This function uses
+  // |url_| and |is_parent_frame_secure_| to determine context security, so they
+  // must be set properly before calling this function.
+  bool IsContextSecureForServiceWorker() const;
+
+  // For service worker clients. True if the response for the main resource load
+  // was committed to the renderer. When this is false, the client's URL may
+  // still change due to redirects.
+  bool is_response_committed() const;
+
+  // For service worker clients. |callback| is called when this client becomes
+  // execution ready or if it is destroyed first.
+  void AddExecutionReadyCallback(ExecutionReadyCallback callback);
+
+  // For service worker clients. True if the client is execution ready and
+  // therefore can be exposed to JavaScript. Execution ready implies response
+  // committed.
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
+  bool is_execution_ready() const;
+
   // TODO(https://crbug.com/931087): Remove this getter and |provider_host_|.
   ServiceWorkerProviderHost* provider_host() { return provider_host_; }
+
+  // For service worker clients. The flow is kInitial -> kResponseCommitted ->
+  // kExecutionReady.
+  //
+  // - kInitial: The initial phase.
+  // - kResponseCommitted: The response for the main resource has been
+  //   committed to the renderer. This client's URL should no longer change.
+  // - kExecutionReady: This client can be exposed to JavaScript as a Client
+  //   object.
+  // TODO(https://crbug.com/931087): Move this enum into the private section.
+  enum class ClientPhase { kInitial, kResponseCommitted, kExecutionReady };
+
+  // Sets |execution_ready_| and runs execution ready callbacks.
+  // TODO(https://crbug.com/931087): Move this function into the private
+  // section.
+  void SetExecutionReady();
+
+  // TODO(https://crbug.com/931087): Move this function into the private
+  // section.
+  void TransitionToClientPhase(ClientPhase new_phase);
 
  private:
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
@@ -121,7 +214,30 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
                            RegisterWithoutLiveSWRegistration);
 
+  void RunExecutionReadyCallbacks();
+
   const blink::mojom::ServiceWorkerProviderType type_;
+
+  // See comments for the getter functions.
+  GURL url_;
+  GURL site_for_cookies_;
+  base::Optional<url::Origin> top_frame_origin_;
+
+  // |is_parent_frame_secure_| is false if the container host is created for a
+  // document whose parent frame is not secure. This doesn't mean the document
+  // is necessarily an insecure context, because the document may have a URL
+  // whose scheme is granted an exception that allows bypassing the ancestor
+  // secure context check. If the container is not created for a document, or
+  // the document does not have a parent frame, is_parent_frame_secure_| is
+  // true.
+  const bool is_parent_frame_secure_;
+
+  // For service worker clients.
+  ClientPhase client_phase_ = ClientPhase::kInitial;
+
+  // For service worker clients. Callbacks to run upon transition to
+  // kExecutionReady.
+  std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution

@@ -422,4 +422,12 @@ bool EnumTraits<network::mojom::SecureDnsMode, net::DnsConfig::SecureDnsMode>::
   return false;
 }
 
+bool StructTraits<
+    network::mojom::ResolveErrorInfoDataView,
+    net::ResolveErrorInfo>::Read(network::mojom::ResolveErrorInfoDataView data,
+                                 net::ResolveErrorInfo* out) {
+  *out = net::ResolveErrorInfo(data.error());
+  return true;
+}
+
 }  // namespace mojo

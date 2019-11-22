@@ -73,7 +73,7 @@ void NavigateClient(const GURL& url,
 
 // Gets the client specified by |provider_host|. |callback| is called with the
 // client information on completion.
-void GetClient(const ServiceWorkerProviderHost* provider_host,
+void GetClient(ServiceWorkerProviderHost* provider_host,
                ClientCallback callback);
 
 // Collects clients matched with |options|. |callback| is called with the client

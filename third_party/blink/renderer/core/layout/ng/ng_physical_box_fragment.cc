@@ -82,7 +82,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
               : kFragmentBox,
           builder->BoxType()),
       baselines_(builder->baselines_) {
-  DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
+  DCHECK(layout_object_->IsBoxModelObject());
   if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {
     has_fragment_items_ = true;
     NGFragmentItems* items =
@@ -123,6 +123,8 @@ NGPhysicalBoxFragment::CloneAsHiddenForPaint() const {
 }
 
 bool NGPhysicalBoxFragment::HasSelfPaintingLayer() const {
+  if (!IsCSSBox())
+    return false;
   SECURITY_DCHECK(GetLayoutObject() && GetLayoutObject()->IsBoxModelObject());
   return (static_cast<const LayoutBoxModelObject*>(GetLayoutObject()))
       ->HasSelfPaintingLayer();
@@ -212,9 +214,10 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
   if (!NGOutlineUtils::ShouldPaintOutline(*this))
     return;
 
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  if (layout_object->IsLayoutInline()) {
+  if (IsInlineBox()) {
+    const LayoutObject* layout_object = GetLayoutObject();
+    DCHECK(layout_object);
+    DCHECK(layout_object->IsLayoutInline());
     Vector<PhysicalRect> blockflow_outline_rects =
         layout_object->OutlineRects(PhysicalOffset(), outline_type);
     // The rectangles returned are offset from the containing block. We need the
@@ -234,12 +237,11 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
     }
     return;
   }
-  DCHECK(layout_object->IsBox());
 
   // For anonymous blocks, the children add outline rects.
-  if (!layout_object->IsAnonymous()) {
+  if (!IsAnonymousBlock())
     outline_rects->emplace_back(additional_offset, Size().ToLayoutSize());
-  }
+
   if (outline_type == NGOutlineType::kIncludeBlockVisualOverflow &&
       !HasOverflowClip() && !HasControlClip(*this)) {
     // Tricky code ahead: we pass a 0,0 additional_offset to

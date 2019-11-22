@@ -358,6 +358,12 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
                       size_t ip_buffer_index,
                       scoped_refptr<VideoFrame> frame);
 
+  // Returns whether |profile| is supported by a v4l2 decoder driver.
+  bool IsSupportedProfile(VideoCodecProfile profile);
+
+  // VideoCodecProfiles supported by a v4l2 decoder driver.
+  std::vector<VideoCodecProfile> supported_profiles_;
+
   size_t input_planes_count_;
   size_t output_planes_count_;
 

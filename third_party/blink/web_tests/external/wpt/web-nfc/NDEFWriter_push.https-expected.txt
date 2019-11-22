@@ -1,6 +1,7 @@
 This is a testharness.js-based test.
 PASS Test that promise is rejected with TypeError if NDEFMessageSource is invalid.
 PASS Test that promise is rejected with SyntaxError if NDEFMessageSource contains invalid records.
+PASS NDEFWriter.push should fail if user permission is not granted.
 PASS NDEFWriter.push should fail if abort push request before push happends.
 PASS NDEFWriter.push should fail if signal's aborted flag is set.
 PASS NDEFWriter.push should fail if signal is not an AbortSignal.

@@ -1,5 +1,5 @@
 [embedded component]
-++[document frame]
+++[document frame] name='PDF document containing 2 pages'
 ++++[landmark] name='Page 1'
 ++++++[paragraph]
 ++++++++[static] name='Page 1'

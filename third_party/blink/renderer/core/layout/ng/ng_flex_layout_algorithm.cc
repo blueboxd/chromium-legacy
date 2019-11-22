@@ -595,6 +595,10 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
 
   LayoutUnit intrinsic_block_size = algorithm_->IntrinsicContentBlockSize() +
                                     border_scrollbar_padding_.BlockSum();
+
+  intrinsic_block_size =
+      ClampIntrinsicBlockSize(ConstraintSpace(), Node(),
+                              border_scrollbar_padding_, intrinsic_block_size);
   LayoutUnit block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), border_padding_, intrinsic_block_size);
 

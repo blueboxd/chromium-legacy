@@ -214,7 +214,6 @@ cca.device.DeviceInfoUpdater = class {
    * Gets MediaDeviceInfo of specific video device.
    * @param {string} deviceId Device id of video device to get information from.
    * @return {!Promise<?MediaDeviceInfo>}
-   * @private
    */
   async getDeviceInfo(deviceId) {
     const /** !Array<!MediaDeviceInfo> */ infos = await this.getDevicesInfo();

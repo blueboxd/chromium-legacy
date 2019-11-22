@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/numerics/safe_conversions.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
@@ -233,17 +233,15 @@ void NotificationManager::DidGetNotifications(
 const mojo::Remote<mojom::blink::NotificationService>&
 NotificationManager::GetNotificationService() {
   if (!notification_service_) {
-    if (auto* provider = GetSupplementable()->GetInterfaceProvider()) {
-      // See https://bit.ly/2S0zRAS for task types
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-          GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-      provider->GetInterface(
-          notification_service_.BindNewPipeAndPassReceiver(task_runner));
+    // See https://bit.ly/2S0zRAS for task types
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        GetSupplementable()->GetTaskRunner(TaskType::kMiscPlatformAPI);
+    GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
+        notification_service_.BindNewPipeAndPassReceiver(task_runner));
 
-      notification_service_.set_disconnect_handler(
-          WTF::Bind(&NotificationManager::OnNotificationServiceConnectionError,
-                    WrapWeakPersistent(this)));
-    }
+    notification_service_.set_disconnect_handler(
+        WTF::Bind(&NotificationManager::OnNotificationServiceConnectionError,
+                  WrapWeakPersistent(this)));
   }
 
   return notification_service_;

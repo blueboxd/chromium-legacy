@@ -72,10 +72,6 @@ const std::string GetLoadingImage();
 // Returns the default JS to be used for a viewer.
 const std::string GetJavaScript();
 
-// Returns HTML related to the desktop appearance settings dialog. The result
-// will be an empty string ("") for non-desktop platforms.
-const std::string GetSettingsContainer();
-
 // Based on the given path, calls into the DomDistillerServiceInterface for
 // viewing distilled content based on the |path|.
 std::unique_ptr<ViewerHandle> CreateViewRequest(

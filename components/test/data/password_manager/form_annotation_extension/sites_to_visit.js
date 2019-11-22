@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // The list of sites to generate Python tests for.
-var sites_to_visit = [
+const sitesToVisit = [
 '360.cn',
 '9gag.com',
 'adf.ly',

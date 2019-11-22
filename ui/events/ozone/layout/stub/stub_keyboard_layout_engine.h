@@ -5,12 +5,12 @@
 #ifndef UI_EVENTS_OZONE_LAYOUT_STUB_STUB_KEYBOARD_LAYOUT_ENGINE_H_
 #define UI_EVENTS_OZONE_LAYOUT_STUB_STUB_KEYBOARD_LAYOUT_ENGINE_H_
 
-#include "ui/events/ozone/layout/events_ozone_layout_export.h"
+#include "base/component_export.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 
 namespace ui {
 
-class EVENTS_OZONE_LAYOUT_EXPORT StubKeyboardLayoutEngine
+class COMPONENT_EXPORT(EVENTS_OZONE_LAYOUT) StubKeyboardLayoutEngine
     : public KeyboardLayoutEngine {
  public:
   StubKeyboardLayoutEngine();

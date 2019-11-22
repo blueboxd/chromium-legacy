@@ -14,6 +14,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
@@ -43,6 +44,7 @@ ResolveHostClientImpl::~ResolveHostClientImpl() = default;
 
 void ResolveHostClientImpl::OnComplete(
     int result,
+    const net::ResolveErrorInfo& resolve_error_info,
     const base::Optional<net::AddressList>& resolved_addresses) {
   std::move(callback_).Run(result == net::OK);
 }

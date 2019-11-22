@@ -330,6 +330,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   size_t requested_num_reference_frames_;
   size_t previously_requested_num_reference_frames_;
 
+  // The video stream's profile.
   VideoCodecProfile profile_;
 
   // Callback to make GL context current.

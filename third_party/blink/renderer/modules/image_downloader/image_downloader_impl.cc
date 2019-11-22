@@ -43,6 +43,7 @@ WTF::Vector<SkBitmap> DecodeImageData(const std::string& data,
         blink::WebImage::FramesFromData(buffer);
     bitmaps.AppendRange(std::make_move_iterator(original_bitmaps.begin()),
                         std::make_move_iterator(original_bitmaps.end()));
+    bitmaps.Reverse();
   }
   return bitmaps;
 }

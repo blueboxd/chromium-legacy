@@ -24,6 +24,8 @@
 #include "content/public/common/user_agent.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/common/window_container_type.mojom.h"
+#include "net/proxy_resolution/proxy_config.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -58,6 +60,15 @@
 #include "sandbox/win/src/sandbox.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #endif
+
+namespace switches {
+// Specifies a list of hosts for whom we bypass proxy settings and use direct
+// connections. Ignored if --proxy-auto-detect or --no-proxy-server are also
+// specified. This is a comma-separated list of bypass rules. See:
+// "net/proxy_resolution/proxy_bypass_rules.h" for the format of these rules.
+// TODO(alexclarke): Find a better place for this.
+const char kProxyBypassList[] = "proxy-bypass-list";
+}  // namespace switches
 
 namespace {
 
@@ -183,6 +194,21 @@ ContentBrowserClientImpl::CreateNetworkContext(
     base::FilePath cookie_path = context->GetPath();
     cookie_path = cookie_path.Append(FILE_PATH_LITERAL("Cookies"));
     context_params->cookie_path = cookie_path;
+  }
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kProxyServer)) {
+    std::string proxy_server =
+        command_line->GetSwitchValueASCII(switches::kProxyServer);
+    net::ProxyConfig proxy_config;
+    proxy_config.proxy_rules().ParseFromString(proxy_server);
+    if (command_line->HasSwitch(switches::kProxyBypassList)) {
+      std::string bypass_list =
+          command_line->GetSwitchValueASCII(switches::kProxyBypassList);
+      proxy_config.proxy_rules().bypass_rules.ParseFromString(bypass_list);
+    }
+    context_params->initial_proxy_config = net::ProxyConfigWithAnnotation(
+        proxy_config,
+        net::DefineNetworkTrafficAnnotation("undefined", "Nothing here yet."));
   }
   content::GetNetworkService()->CreateNetworkContext(
       network_context.BindNewPipeAndPassReceiver(), std::move(context_params));

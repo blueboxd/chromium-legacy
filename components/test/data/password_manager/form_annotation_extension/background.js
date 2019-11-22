@@ -7,7 +7,7 @@
  *
  * @type {string}
  */
-var IDENT_PAD = '  ';
+const IDENT_PAD = '  ';
 
 /**
  * If the extension should generate Python code for signup or change password
@@ -17,7 +17,7 @@ var IDENT_PAD = '  ';
  *
  * @type {string}
  */
-var IS_PWD_CREATION_VALUE = 'False';
+const IS_PWD_CREATION_VALUE = 'False';
 
 /**
  * Used by the extension to store the steps that user performs to reach
@@ -30,14 +30,14 @@ var IS_PWD_CREATION_VALUE = 'False';
  *
  * @type {Array}
  */
-var steps = [];
+let steps = [];
 
 /**
  * The index of the last visited site from |sitesToVisit| (sites_to_visit.js).
  *
  * @type {number}
  */
-var lastVisitedSiteIndex = 0;
+let lastVisitedSiteIndex = 0;
 
 /**
  * Generated Python tests.
@@ -51,7 +51,7 @@ var lastVisitedSiteIndex = 0;
  *
  * @type {string}
  */
-var allTests = '\n';
+let allTests = '\n';
 
 /**
  * Return the name of the test based on the form's url |url|
@@ -61,7 +61,7 @@ var allTests = '\n';
  * @return {string} The test name.
  */
 function getTestName(url) {
-  var a = document.createElement('a');
+  const a = document.createElement('a');
   a.href = url;
   return 'test_' + a.hostname.split(/[.-]+/).join('_');
 }
@@ -74,7 +74,7 @@ function getTestName(url) {
  * @return {string} The url w/o parameters and anchors.
  */
 function stripUrl(url) {
-  var a = document.createElement('a');
+  const a = document.createElement('a');
   a.href = url;
   return a.origin + a.pathname;
 }
@@ -88,9 +88,9 @@ function stripUrl(url) {
  * @return {Array} Reduced list of steps.
  */
 function removeUnnecessarySteps(steps) {
-  var n = steps.length;
-  var result = [];
-  for (var i = n - 1; i >= 0; i--) {
+  const n = steps.length;
+  const result = [];
+  for (let i = n - 1; i >= 0; i--) {
     result.unshift(steps[i]);
     if (steps[i].couldBeFirst) {
       break;
@@ -106,8 +106,8 @@ function removeUnnecessarySteps(steps) {
  * @return {string} Python code that performs frame switching.
  */
 function switchToIframeIfNecessary(step) {
-  var result = '';
-  for (var i = 0; i < step.frames.length; i++) {
+  let result = '';
+  for (let i = 0; i < step.frames.length; i++) {
      result += IDENT_PAD + IDENT_PAD + 'self.SwitchTo(\'' + step.frames[i] +
          '\')\n';
   }
@@ -119,14 +119,14 @@ function switchToIframeIfNecessary(step) {
  * accumulated in |steps|. Also appends the test code to |allTests|.
  */
 function outputPythonTestCode() {
-  var lastStepUrl = stripUrl(steps[steps.length - 1].url);
-  var test = '';
+  const lastStepUrl = stripUrl(steps[steps.length - 1].url);
+  let test = '';
   test += IDENT_PAD + 'def ' + getTestName(steps[steps.length - 1].url) +
       '(self):\n';
   steps = removeUnnecessarySteps(steps);
   test += IDENT_PAD + IDENT_PAD + 'self.GoTo("' + stripUrl(steps[0].url) +
       '")\n';
-  for (var i = 0; i <= steps.length - 2; i++) {
+  for (let i = 0; i <= steps.length - 2; i++) {
     test += switchToIframeIfNecessary(steps[i]);
     test += IDENT_PAD + IDENT_PAD + 'self.Click("' + steps[i].selector + '")\n';
   }

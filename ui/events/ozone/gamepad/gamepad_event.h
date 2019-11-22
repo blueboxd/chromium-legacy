@@ -5,15 +5,15 @@
 #ifndef UI_EVENTS_OZONE_GAMEPAD_GAMEPAD_EVENT_H_
 #define UI_EVENTS_OZONE_GAMEPAD_GAMEPAD_EVENT_H_
 
+#include "base/component_export.h"
 #include "base/time/time.h"
-#include "ui/events/ozone/events_ozone_export.h"
 
 namespace ui {
 
 // We care about three type of gamepad events.
 enum class GamepadEventType { BUTTON, AXIS, FRAME };
 
-class EVENTS_OZONE_EXPORT GamepadEvent {
+class COMPONENT_EXPORT(EVENTS_OZONE) GamepadEvent {
  public:
   GamepadEvent(int device_id,
                GamepadEventType type,

@@ -40,15 +40,14 @@ unsigned char* ArrayPiece::Bytes() const {
   return static_cast<unsigned char*>(Data());
 }
 
-unsigned ArrayPiece::ByteLength() const {
+size_t ArrayPiece::ByteLengthAsSizeT() const {
   DCHECK(!IsNull());
   return byte_length_;
 }
 
 void ArrayPiece::InitWithArrayBuffer(ArrayBuffer* buffer) {
   if (buffer) {
-    InitWithData(buffer->Data(),
-                 SafeCast<unsigned>(buffer->ByteLengthAsUnsigned()));
+    InitWithData(buffer->Data(), buffer->ByteLengthAsSizeT());
     is_detached_ = buffer->IsDetached();
   } else {
     InitNull();
@@ -64,7 +63,7 @@ void ArrayPiece::InitWithArrayBufferView(ArrayBufferView* buffer) {
   }
 }
 
-void ArrayPiece::InitWithData(void* data, unsigned byte_length) {
+void ArrayPiece::InitWithData(void* data, size_t byte_length) {
   byte_length_ = byte_length;
   data_ = data;
   is_null_ = false;

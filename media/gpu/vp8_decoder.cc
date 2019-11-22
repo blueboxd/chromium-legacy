@@ -94,7 +94,7 @@ VP8Decoder::DecodeResult VP8Decoder::Decode() {
       last_decoded_stream_id_ = stream_id_;
       size_change_failure_counter_ = 0;
 
-      return kAllocateNewSurfaces;
+      return kConfigChange;
     }
 
     state_ = kDecoding;
@@ -171,6 +171,10 @@ gfx::Size VP8Decoder::GetPicSize() const {
 
 gfx::Rect VP8Decoder::GetVisibleRect() const {
   return gfx::Rect(pic_size_);
+}
+
+VideoCodecProfile VP8Decoder::GetProfile() const {
+  return VP8PROFILE_ANY;
 }
 
 size_t VP8Decoder::GetRequiredNumOfPictures() const {

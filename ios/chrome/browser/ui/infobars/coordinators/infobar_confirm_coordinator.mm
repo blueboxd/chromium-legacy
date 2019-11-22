@@ -125,6 +125,9 @@
   // Release these strong ViewControllers at the time of infobar dismissal.
   self.bannerViewController = nil;
   self.modalViewController = nil;
+  // Since the InfobarConfirmCoordinator has no badge or modal (meaning it can't
+  // be re-presented), destroy the Infobar once the banner has been dismissed.
+  [self stop];
 }
 
 - (CGFloat)infobarModalHeightForWidth:(CGFloat)width {

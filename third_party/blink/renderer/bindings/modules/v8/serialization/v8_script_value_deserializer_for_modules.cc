@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/v8_script_value_deserializer_for_modules.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-blink.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -420,14 +420,9 @@ V8ScriptValueDeserializerForModules::ReadNativeFileSystemHandle(
   // FileSystemHandle.
   ExecutionContext* execution_context =
       ExecutionContext::From(GetScriptState());
-  service_manager::InterfaceProvider* interface_provider =
-      execution_context->GetInterfaceProvider();
-  if (!interface_provider) {
-    return nullptr;
-  }
   mojo::Remote<mojom::blink::NativeFileSystemManager>
       native_file_system_manager;
-  interface_provider->GetInterface(
+  execution_context->GetBrowserInterfaceBroker().GetInterface(
       native_file_system_manager.BindNewPipeAndPassReceiver());
 
   // Clone the FileSystemHandle object.

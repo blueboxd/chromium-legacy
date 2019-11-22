@@ -51,8 +51,6 @@ static_library("test_support") {
     "bind_test_util.h",
     "copy_only_int.cc",
     "copy_only_int.h",
-    "do_nothing_promise.cc",
-    "do_nothing_promise.h",
     "gmock_callback_support.h",
     "gtest_util.cc",
     "gtest_util.h",
@@ -184,6 +182,8 @@ static_library("test_support") {
 
   if (is_ios) {
     sources += [
+      "../ios/weak_nsobject.h",
+      "../ios/weak_nsobject.mm",
       "ios/wait_util.h",
       "ios/wait_util.mm",
       "launcher/unit_test_launcher_ios.cc",

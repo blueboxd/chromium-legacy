@@ -40,6 +40,7 @@ class ResolveHostClientImpl : public network::ResolveHostClientBase {
   // network::mojom::ResolveHostClient:
   void OnComplete(
       int result,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override;
 
   void OnConnectionError();

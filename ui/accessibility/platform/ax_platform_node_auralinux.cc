@@ -4278,6 +4278,7 @@ void AXPlatformNodeAuraLinux::ScrollNodeRectIntoView(
   action_data.action = ax::mojom::Action::kScrollToMakeVisible;
   action_data.target_rect = rect;
 
+  action_data.scroll_behavior = ax::mojom::ScrollBehavior::kScrollIfVisible;
   action_data.horizontal_scroll_alignment = ax::mojom::ScrollAlignment::kNone;
   action_data.vertical_scroll_alignment = ax::mojom::ScrollAlignment::kNone;
 

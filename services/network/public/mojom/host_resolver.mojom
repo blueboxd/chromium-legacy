@@ -111,6 +111,13 @@ struct DnsConfigOverrides {
   array<string>? disabled_upgrade_providers;
 };
 
+// Host resolution error info.
+struct ResolveErrorInfo {
+  // Underlying network error code. See net/base/net_error_list.h for error
+  // descriptions.
+  int32 error;
+};
+
 // Control handle used to control outstanding NetworkContext::ResolveHost
 // requests. Handle is optional for all requests, and may be closed at any time
 // without affecting the request.
@@ -133,14 +140,20 @@ interface ResolveHostHandle {
 // implementation that allows overriding just expected result types.
 interface ResolveHostClient {
   // Called on completion of a resolve host request. Results are a network error
-  // code, and on success (network error code OK) and when results are in
-  // address form, an AddressList.
+  // code, additional error info, and on success (result == OK,
+  // resolve_error_info.error == OK) and when results are in address form, an
+  // AddressList. The error code in |resolve_error_info.error| should be used
+  // when detailed error information is needed, whereas the error code in
+  // |result| should be used when less specific error information (i.e. OK vs
+  // ERR_NAME_NOT_RESOLVED) is sufficient.
   //
   // Always called last to signal completion of the ResolveHost() request.
   // Unless the ResolveHostClient is closed, this method will always be called
   // exactly once, and afterwards, no more methods in the interface will be
   // called.
-  OnComplete(int32 result, AddressList? resolved_addresses);
+  OnComplete(int32 result,
+             ResolveErrorInfo resolve_error_info,
+             AddressList? resolved_addresses);
 
   // One or more On...Results() methods may be called when non-address results
   // are available. Always called before OnComplete().

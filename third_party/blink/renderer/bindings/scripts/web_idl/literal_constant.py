@@ -59,3 +59,35 @@ class LiteralConstant(object):
     def literal(self):
         """Returns the literal representation."""
         return self._literal
+
+    def is_type_compatible_with(self, idl_type):
+        """Returns True if |idl_type| can store this value."""
+        assert isinstance(idl_type, IdlType)
+
+        idl_type = idl_type.unwrap(nullable=False)
+
+        if idl_type.is_any:
+            return True
+
+        if self.idl_type.is_nullable:
+            return idl_type.does_include_nullable_type
+
+        idl_type = idl_type.unwrap()
+
+        if idl_type.is_union:
+            return any(
+                self.is_type_compatible_with(member_type)
+                for member_type in idl_type.flattened_member_types)
+
+        if self.idl_type.is_sequence:
+            return idl_type.is_sequence
+        if self.idl_type.is_object:
+            return idl_type.is_dictionary
+        if self.idl_type.is_boolean:
+            return idl_type.is_boolean
+        if self.idl_type.is_integer:
+            return idl_type.is_numeric
+        if self.idl_type.is_floating_point_numeric:
+            return idl_type.is_floating_point_numeric
+        if self.idl_type.is_string:
+            return idl_type.is_string or idl_type.is_enumeration

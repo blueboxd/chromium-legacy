@@ -11,6 +11,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/system/sys_info.h"
 #include "base/threading/thread.h"
+#include "chromeos/dbus/anomaly_detector_client.h"
 #include "chromeos/dbus/arc_keymaster_client.h"
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
@@ -105,6 +106,11 @@ DBusThreadManager::~DBusThreadManager() {
 
 dbus::Bus* DBusThreadManager::GetSystemBus() {
   return system_bus_.get();
+}
+
+AnomalyDetectorClient* DBusThreadManager::GetAnomalyDetectorClient() {
+  return clients_browser_ ? clients_browser_->anomaly_detector_client_.get()
+                          : nullptr;
 }
 
 ArcAppfuseProviderClient* DBusThreadManager::GetArcAppfuseProviderClient() {

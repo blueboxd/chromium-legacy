@@ -1933,7 +1933,8 @@ IFACEMETHODIMP AXPlatformNodeWin::ScrollIntoView() {
       ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
   action_data.vertical_scroll_alignment =
       ax::mojom::ScrollAlignment::kScrollAlignmentCenter;
-  action_data.action = ax::mojom::Action::kScrollToMakeVisible;
+  action_data.scroll_behavior =
+      ax::mojom::ScrollBehavior::kDoNotScrollIfVisible;
   if (GetDelegate()->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;

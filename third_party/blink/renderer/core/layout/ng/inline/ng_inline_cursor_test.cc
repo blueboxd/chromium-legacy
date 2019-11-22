@@ -165,6 +165,39 @@ TEST_P(NGInlineCursorTest, ContainingLine) {
   EXPECT_EQ(line2, cursor);
 }
 
+TEST_P(NGInlineCursorTest, CulledInlineWithAtomicInline) {
+  SetBodyInnerHTML(
+      "<div id=root>"
+      "<b id=culled>abc<div style=display:inline>ABC<br>XYZ</div>xyz</b>"
+      "</div>");
+  NGInlineCursor cursor;
+  cursor.MoveTo(*GetLayoutObjectByElementId("culled"));
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextForSameLayoutObject();
+  }
+  EXPECT_THAT(list, ElementsAre("abc", "ABC", "", "XYZ", "xyz"));
+}
+
+// For https://crbug.com/1026022
+TEST_P(NGInlineCursorTest, CulledInlineWithFloat) {
+  SetBodyInnerHTML(
+      "<div id=root>"
+      "<b id=culled>abc<div style=float:right></div>xyz</b>"
+      "</div>");
+  NGInlineCursor cursor;
+  cursor.MoveTo(*GetLayoutObjectByElementId("culled"));
+  Vector<String> list;
+  while (cursor) {
+    list.push_back(ToDebugString(cursor));
+    cursor.MoveToNextForSameLayoutObject();
+  }
+  EXPECT_THAT(list, ElementsAre("abc", "xyz"))
+      << "We should not have float:right fragment, because it isn't in-flow in "
+         "an inline formatting context.";
+}
+
 TEST_P(NGInlineCursorTest, CulledInlineWithRoot) {
   NGInlineCursor cursor =
       SetupCursor("<div id=root><a><b>abc</b><br><i>xyz</i></a></div>");

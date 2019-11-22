@@ -160,6 +160,11 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     return view;
   }
 
+  // A helper for accessing the DialogClientView object contained by this
+  // delegate's Window.
+  const DialogClientView* GetDialogClientView() const;
+  DialogClientView* GetDialogClientView();
+
   // Returns the BubbleFrameView of this dialog delegate. A bubble frame view
   // will only be created when use_custom_frame() is true.
   BubbleFrameView* GetBubbleFrameView() const;
@@ -256,11 +261,6 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   // Overridden from WidgetDelegate. If you need to hook after widget
   // initialization, use OnDialogInitialized above.
   void OnWidgetInitialized() final;
-
-  // A helper for accessing the DialogClientView object contained by this
-  // delegate's Window.
-  const DialogClientView* GetDialogClientView() const;
-  DialogClientView* GetDialogClientView();
 
   // The margins between the content and the inside of the border.
   // TODO(crbug.com/733040): Most subclasses assume they must set their own

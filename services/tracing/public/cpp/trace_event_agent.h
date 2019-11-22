@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/no_destructor.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/remote.h"

@@ -422,6 +422,15 @@ bool VideoFrameSubmitter::SubmitFrame(
       rotation_ == media::VIDEO_ROTATION_270) {
     frame_size = gfx::Size(frame_size.height(), frame_size.width());
   }
+
+  if (frame_size.IsEmpty()) {
+    // We're not supposed to get 0x0 frames.  For now, just ignore it until we
+    // track down where they're coming from.  Creating a CompositorFrame with an
+    // empty output rectangle isn't allowed.
+    // crbug.com/979564
+    return false;
+  }
+
   if (frame_size_ != frame_size) {
     if (!frame_size_.IsEmpty())
       GenerateNewSurfaceId();

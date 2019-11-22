@@ -131,7 +131,8 @@ bool PdfAXActionTarget::ScrollToMakeVisible() const {
 bool PdfAXActionTarget::ScrollToMakeVisibleWithSubFocus(
     const gfx::Rect& rect,
     ax::mojom::ScrollAlignment horizontal_scroll_alignment,
-    ax::mojom::ScrollAlignment vertical_scroll_alignment) const {
+    ax::mojom::ScrollAlignment vertical_scroll_alignment,
+    ax::mojom::ScrollBehavior scroll_behavior) const {
   PP_PdfAccessibilityActionData pdf_action_data = {};
   pdf_action_data.action =
       PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_MAKE_VISIBLE;

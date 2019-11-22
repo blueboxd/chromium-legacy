@@ -45,9 +45,7 @@ class InfobarBadgeTabHelper
   void UpdateBadgeForInfobarBannerDismissed(InfobarType infobar_type);
 
   // Returns all BadgeItems for the TabHelper Webstate.
-  // TODO(crbug.com/1016360): Consider changing to return an array instead of a
-  // vector here.
-  std::vector<id<BadgeItem>> GetInfobarBadgeItems();
+  NSArray<id<BadgeItem>>* GetInfobarBadgeItems();
 
   ~InfobarBadgeTabHelper() override;
 
@@ -57,10 +55,12 @@ class InfobarBadgeTabHelper
   // Delegate which displays the Infobar badge.
   __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
   // Holds the state of each displaying badge keyed by its InfobarType.
-  std::unordered_map<InfobarType, InfobarBadgeModel*> infobar_badge_models_;
+  NSMutableDictionary<NSNumber*, InfobarBadgeModel*>* infobar_badge_models_;
 
  private:
   friend class web::WebStateUserData<InfobarBadgeTabHelper>;
+  // Helper method to get Obj-C key for InfobarType.
+  NSNumber* GetNumberKeyForInfobarType(InfobarType infobar_type);
   // InfoBarManagerObserver implementation.
   void OnInfoBarAdded(infobars::InfoBar* infobar) override;
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;

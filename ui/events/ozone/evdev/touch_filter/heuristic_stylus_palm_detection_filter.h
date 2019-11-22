@@ -32,7 +32,7 @@ namespace ui {
 // poor interaction between a mutually exclusive stylus and finger input:
 // Turning it on for devices where is not intended will probably degrade
 // performance and create a poor UX.
-class EVENTS_OZONE_EVDEV_EXPORT HeuristicStylusPalmDetectionFilter
+class COMPONENT_EXPORT(EVDEV) HeuristicStylusPalmDetectionFilter
     : public PalmDetectionFilter {
  public:
   HeuristicStylusPalmDetectionFilter(

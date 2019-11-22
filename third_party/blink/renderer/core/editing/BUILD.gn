@@ -264,6 +264,8 @@ blink_core_sources("editing") {
     "selection_template.cc",
     "selection_template.h",
     "selection_type.h",
+    "serializers/create_markup_options.cc",
+    "serializers/create_markup_options.h",
     "serializers/html_interchange.cc",
     "serializers/html_interchange.h",
     "serializers/markup_accumulator.cc",

@@ -280,8 +280,8 @@ int32_t PepperPDFHost::OnHostMsgSetAccessibilityPageInfo(
   if (!host_->GetPluginInstance(pp_instance()))
     return PP_ERROR_FAILED;
   CreatePdfAccessibilityTreeIfNeeded();
-  pdf_accessibility_tree_->SetAccessibilityPageInfo(
-      page_info, text_run_info, chars, page_objects.links, page_objects.images);
+  pdf_accessibility_tree_->SetAccessibilityPageInfo(page_info, text_run_info,
+                                                    chars, page_objects);
   return PP_OK;
 }
 

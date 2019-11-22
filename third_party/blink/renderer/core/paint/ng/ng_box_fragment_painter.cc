@@ -390,13 +390,19 @@ void NGBoxFragmentPainter::PaintObject(
     }
 
     if (paint_phase != PaintPhase::kFloat) {
-      if (physical_box_fragment.ChildrenInline()) {
-        DCHECK(paint_fragment_ || PhysicalFragment().HasItems() ||
-               descendants_);
-        if (UNLIKELY(descendants_)) {
-          PaintInlineItems(paint_info.ForDescendants(), paint_offset,
-                           descendants_);
-        } else if (physical_box_fragment.IsBlockFlow()) {
+      if (UNLIKELY(descendants_)) {
+        // Use the descendants cursor for this painter if it is given.
+        // Self-painting inline box paints only parts of the container block.
+        PaintInlineItems(paint_info.ForDescendants(), paint_offset,
+                         descendants_);
+      } else if (items_) {
+        // Paint |NGFragmentItems| for this block if we have one.
+        NGInlineCursor cursor(*items_);
+        PaintInlineItems(paint_info.ForDescendants(), paint_offset, &cursor);
+      } else if (physical_box_fragment.ChildrenInline()) {
+        DCHECK(!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
+        DCHECK(paint_fragment_);
+        if (physical_box_fragment.IsBlockFlow()) {
           PaintBlockFlowContents(paint_info, paint_offset);
         } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
           // TODO(kojii): |PaintInlineChildrenOutlines()| should do the work
@@ -453,13 +459,7 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   const LayoutObject* layout_object = fragment.GetLayoutObject();
 
   DCHECK(fragment.ChildrenInline());
-  DCHECK(paint_fragment_ || items_);
-
-  if (items_) {
-    NGInlineCursor cursor(*items_);
-    PaintInlineItems(paint_info.ForDescendants(), paint_offset, &cursor);
-    return;
-  }
+  DCHECK(paint_fragment_);
 
   // When the layout-tree gets into a bad state, we can end up trying to paint
   // a fragment with inline children, without a paint fragment. See:

@@ -25,6 +25,9 @@ LoginChoice::LoginChoice(const std::string& _identifier,
 LoginChoice::LoginChoice(const LoginChoice& another) = default;
 LoginChoice::~LoginChoice() = default;
 
+PaymentInstrument::PaymentInstrument() = default;
+PaymentInstrument::~PaymentInstrument() = default;
+
 UserData::UserData() = default;
 UserData::~UserData() = default;
 

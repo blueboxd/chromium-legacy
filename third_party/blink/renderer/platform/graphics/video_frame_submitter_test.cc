@@ -918,4 +918,14 @@ TEST_F(VideoFrameSubmitterTest, NoDuplicateFramesDidReceiveFrame) {
   task_environment_.RunUntilIdle();
 }
 
+TEST_F(VideoFrameSubmitterTest, ZeroSizedFramesAreNotSubmitted) {
+  auto vf = media::VideoFrame::CreateEOSFrame();
+  ASSERT_TRUE(vf->natural_size().IsEmpty());
+
+  EXPECT_CALL(*video_frame_provider_, GetCurrentFrame()).WillOnce(Return(vf));
+  EXPECT_CALL(*sink_, DoSubmitCompositorFrame(_, _)).Times(0);
+  submitter_->DidReceiveFrame();
+  task_environment_.RunUntilIdle();
+}
+
 }  // namespace blink

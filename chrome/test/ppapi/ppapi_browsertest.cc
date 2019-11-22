@@ -48,6 +48,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/ssl/ssl_info.h"
 #include "ppapi/shared_impl/test_utils.h"
 #include "rlz/buildflags/buildflags.h"
@@ -824,7 +825,8 @@ class MockNetworkContext : public network::TestNetworkContext {
                        pending_response_client) override {
     mojo::Remote<network::mojom::ResolveHostClient> response_client(
         std::move(pending_response_client));
-    response_client->OnComplete(net::OK, net::AddressList(LocalAddress()));
+    response_client->OnComplete(net::OK, net::ResolveErrorInfo(net::OK),
+                                net::AddressList(LocalAddress()));
   }
 
  private:

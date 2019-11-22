@@ -18,6 +18,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
 using base::ASCIIToUTF16;
@@ -294,7 +295,7 @@ void DialogExample::ContentsChanged(Textfield* sender,
     return;
 
   if (sender == extra_button_label_)
-    PrintStatus("DialogDelegate can never refresh the extra view.");
+    PrintStatus("DialogClientView can never refresh the extra view.");
 
   if (sender == title_) {
     last_dialog_->GetWidget()->UpdateWindowTitle();

@@ -19,7 +19,7 @@ namespace ui {
 // 2. To decide which touches to suppress / "cancel".
 // Interface is similar to that of TouchFilter but enshrines the "hold" as a
 // first class citizen.
-class EVENTS_OZONE_EVDEV_EXPORT PalmDetectionFilter {
+class COMPONENT_EXPORT(EVDEV) PalmDetectionFilter {
  public:
   // shared_palm_state is not owned!
   explicit PalmDetectionFilter(

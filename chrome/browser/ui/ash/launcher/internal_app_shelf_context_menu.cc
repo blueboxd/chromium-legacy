@@ -24,32 +24,34 @@ InternalAppShelfContextMenu::InternalAppShelfContextMenu(
 
 void InternalAppShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  BuildMenu(menu_model.get());
-  std::move(callback).Run(std::move(menu_model));
+  BuildMenu(std::move(menu_model), std::move(callback));
 }
 
-void InternalAppShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
+void InternalAppShelfContextMenu::BuildMenu(
+    std::unique_ptr<ui::SimpleMenuModel> menu_model,
+    GetMenuModelCallback callback) {
   const bool app_is_open = controller()->IsOpen(item().id);
   if (!app_is_open) {
-    AddContextMenuOption(menu_model, ash::MENU_OPEN_NEW,
+    AddContextMenuOption(menu_model.get(), ash::MENU_OPEN_NEW,
                          IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
   }
 
   const auto* internal_app = app_list::FindInternalApp(item().id.app_id);
   DCHECK(internal_app);
   if (internal_app->show_in_launcher)
-    AddPinMenu(menu_model);
+    AddPinMenu(menu_model.get());
 
   if (app_is_open) {
-    AddContextMenuOption(menu_model, ash::MENU_CLOSE,
+    AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
                          IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
 
     if (internal_app->internal_app_name == apps::BuiltInAppName::kPluginVm &&
         plugin_vm::IsPluginVmRunning(controller()->profile())) {
-      AddContextMenuOption(menu_model, ash::STOP_APP,
+      AddContextMenuOption(menu_model.get(), ash::STOP_APP,
                            IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM);
     }
   }
+  std::move(callback).Run(std::move(menu_model));
 }
 
 void InternalAppShelfContextMenu::ExecuteCommand(int command_id,

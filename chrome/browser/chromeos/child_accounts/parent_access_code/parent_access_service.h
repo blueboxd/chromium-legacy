@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/config_source.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "components/account_id/account_id.h"

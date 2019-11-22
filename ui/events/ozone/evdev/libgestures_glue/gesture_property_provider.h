@@ -17,9 +17,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
-#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 
@@ -56,7 +56,7 @@ struct GestureDeviceProperties {
 // initialize the specified property values. The configuration files are
 // currently in the xorg-conf format so that they can be shared with non-Ozone
 // builds.
-class EVENTS_OZONE_EVDEV_EXPORT GesturePropertyProvider {
+class COMPONENT_EXPORT(EVDEV) GesturePropertyProvider {
  public:
   // Property types.
   enum PropertyType {

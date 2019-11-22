@@ -177,7 +177,6 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
       // Get(LocalFrame). (https://crbug.com/670534)
       return pausable_task_queue_->CreateTaskRunner(type);
     case TaskType::kDeprecatedNone:
-    case TaskType::kInternalIPC:
     case TaskType::kInternalInspector:
     case TaskType::kInternalTest:
     case TaskType::kInternalNavigationAssociatedUnfreezable:

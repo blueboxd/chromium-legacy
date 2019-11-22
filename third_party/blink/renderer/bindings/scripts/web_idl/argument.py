@@ -55,6 +55,11 @@ class Argument(WithIdentifier, WithOwner):
         return self.idl_type.is_variadic
 
     @property
+    def optionality(self):
+        """Returns the optionality value."""
+        return self.idl_type.optionality
+
+    @property
     def default_value(self):
         """Returns the default value or None."""
         return self._default_value

@@ -311,8 +311,8 @@ void WebSocketStream::UnderlyingSink::SendAny(ScriptState* script_state,
     }
 
     SendArrayBuffer(script_state, data.View()->buffer(),
-                    data.View()->byteOffset(), data.View()->byteLength(),
-                    resolver, std::move(callback));
+                    data.View()->deprecatedByteOffsetAsUnsigned(),
+                    data.View()->byteLength(), resolver, std::move(callback));
     return;
   }
 

@@ -939,7 +939,6 @@ void Label::Init(const base::string16& text,
                  const gfx::FontList& font_list,
                  gfx::DirectionalityMode directionality_mode) {
   full_text_ = gfx::RenderText::CreateHarfBuzzInstance();
-  DCHECK(full_text_->MultilineSupported());
   full_text_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   full_text_->SetDirectionalityMode(directionality_mode);
   // NOTE: |full_text_| should not be elided at all. This is used to keep

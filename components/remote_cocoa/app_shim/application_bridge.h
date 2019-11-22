@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_REMOTE_COCOA_APP_SHIM_APPLICATION_BRIDGE_H_
 #define COMPONENTS_REMOTE_COCOA_APP_SHIM_APPLICATION_BRIDGE_H_
 
+#include "base/no_destructor.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/alert.mojom.h"
 #include "components/remote_cocoa/common/application.mojom.h"

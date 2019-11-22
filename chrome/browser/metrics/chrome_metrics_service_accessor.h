@@ -110,6 +110,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromePasswordManagerClient;
   friend void welcome::JoinOnboardingGroup(Profile* profile);
   friend class NavigationMetricsRecorder;
+  friend class ChromeBrowserMainExtraPartsGpu;
 
   // Testing related friends.
   friend class first_run::FirstRunMasterPrefsVariationsSeedTest;

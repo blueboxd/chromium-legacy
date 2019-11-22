@@ -74,7 +74,11 @@ class CollectUserDataAction : public Action,
       const CollectUserDataOptions& collect_user_data_options);
 
   // Update user data with the new state from personal data manager.
-  void UpdatePersonalDataManagerFields(
+  void UpdatePersonalDataManagerProfiles(
+      const CollectUserDataOptions* collect_user_data_options,
+      UserData* user_data,
+      UserData::FieldChange* field_change = nullptr);
+  void UpdatePersonalDataManagerCards(
       const CollectUserDataOptions* collect_user_data_options,
       UserData* user_data,
       UserData::FieldChange* field_change = nullptr);

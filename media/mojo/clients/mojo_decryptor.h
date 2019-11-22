@@ -13,7 +13,6 @@
 #include "base/threading/thread_checker.h"
 #include "media/base/decryptor.h"
 #include "media/mojo/mojom/decryptor.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -78,10 +77,11 @@ class MojoDecryptor : public Decryptor {
   void OnAudioDecoded(AudioDecodeOnceCB audio_decode_cb,
                       Status status,
                       std::vector<mojom::AudioBufferPtr> audio_buffers);
-  void OnVideoDecoded(VideoDecodeOnceCB video_decode_cb,
-                      Status status,
-                      const scoped_refptr<VideoFrame>& video_frame,
-                      mojom::FrameResourceReleaserPtr releaser);
+  void OnVideoDecoded(
+      VideoDecodeOnceCB video_decode_cb,
+      Status status,
+      const scoped_refptr<VideoFrame>& video_frame,
+      mojo::PendingRemote<mojom::FrameResourceReleaser> releaser);
 
   void OnConnectionError(uint32_t custom_reason,
                          const std::string& description);

@@ -62,8 +62,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   png_infop info_ptr = png_create_info_struct(png_ptr);
   assert(info_ptr);
 
-  base::ScopedClosureRunner struct_deleter(base::Bind(
-        &png_destroy_read_struct, &png_ptr, &info_ptr, nullptr));
+  base::ScopedClosureRunner struct_deleter(
+      base::BindOnce(&png_destroy_read_struct, &png_ptr, &info_ptr, nullptr));
 
   if (setjmp(png_jmpbuf(png_ptr))) {
     return 0;

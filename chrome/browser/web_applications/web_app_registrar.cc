@@ -40,22 +40,15 @@ bool WebAppRegistrar::WasExternalAppUninstalledByUser(
 }
 
 bool WebAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
-  // TODO(crbug.com/1012171): Implement.
-  NOTIMPLEMENTED();
-  return true;
+  const WebApp* web_app = GetAppById(app_id);
+  return web_app && web_app->WasInstalledByUser();
 }
 
 int WebAppRegistrar::CountUserInstalledApps() const {
-  NOTIMPLEMENTED();
-
   int num_user_installed = 0;
   for (const WebApp& app : AllApps()) {
-    if (!app.is_locally_installed())
-      continue;
-
-    // TODO(crbug.com/1012171): Exclude if not installed by user.
-
-    ++num_user_installed;
+    if (app.is_locally_installed() && app.WasInstalledByUser())
+      ++num_user_installed;
   }
   return num_user_installed;
 }

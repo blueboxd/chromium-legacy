@@ -7,14 +7,14 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "ui/events/ozone/layout/events_ozone_layout_export.h"
 
 namespace ui {
 
 class KeyboardLayoutEngine;
 
-class EVENTS_OZONE_LAYOUT_EXPORT KeyboardLayoutEngineManager {
+class COMPONENT_EXPORT(EVENTS_OZONE_LAYOUT) KeyboardLayoutEngineManager {
  public:
   virtual ~KeyboardLayoutEngineManager();
 

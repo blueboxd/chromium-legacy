@@ -24,6 +24,7 @@ from .typedef import Typedef
 from .union import Union
 from .user_defined_type import StubUserDefinedType
 from .user_defined_type import UserDefinedType
+from .validator import validate_after_resolve_references
 
 
 class IdlCompiler(object):
@@ -95,6 +96,7 @@ class IdlCompiler(object):
         # Resolve references.
         self._resolve_references_to_idl_def()
         self._resolve_references_to_idl_type()
+        validate_after_resolve_references(self._ir_map)
 
         # Build union API objects.
         self._create_public_unions()

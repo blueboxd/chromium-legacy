@@ -202,8 +202,7 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
     scoped_refptr<ServiceWorkerVersion> version)
     : context_(context),
       container_host_(container_host),
-      container_origin_(
-          url::Origin::Create(container_host_->provider_host()->url())),
+      container_origin_(url::Origin::Create(container_host_->url())),
       version_(std::move(version)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_ && container_host_ && version_);
@@ -288,8 +287,7 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
     std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
   }
-  DCHECK_EQ(container_origin_,
-            url::Origin::Create(container_host_->provider_host()->url()));
+  DCHECK_EQ(container_origin_, url::Origin::Create(container_host_->url()));
   switch (container_host_->provider_host()->provider_type()) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
       service_worker_client_utils::GetClient(

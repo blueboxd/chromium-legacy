@@ -12,6 +12,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/transform.h"
 
 #ifndef INTERNAL_CONTENT_COMMON_SYNC_COMPOSITOR_MESSAGES_H_
 #define INTERNAL_CONTENT_COMMON_SYNC_COMPOSITOR_MESSAGES_H_

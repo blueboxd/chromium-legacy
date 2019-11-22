@@ -118,6 +118,10 @@ Polymer({
       useFileIcon_: Boolean,
     },
 
+    hostAttributes: {
+      role: 'row',
+    },
+
     observers: [
       // TODO(dbeam): this gets called way more when I observe data.byExtId
       // and data.byExtName directly. Why?
@@ -228,6 +232,11 @@ Polymer({
         return '';
       }
       return assert(this.data.sinceString || this.data.dateString);
+    },
+
+    /** @private @return {boolean} */
+    computeDescriptionVisible_: function() {
+      return this.computeDescription_() != '';
     },
 
     /**

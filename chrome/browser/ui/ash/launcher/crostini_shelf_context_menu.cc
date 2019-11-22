@@ -54,7 +54,59 @@ CrostiniShelfContextMenu::~CrostiniShelfContextMenu() = default;
 
 void CrostiniShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(this);
-  BuildMenu(menu_model.get());
+  BuildMenu(std::move(menu_model), std::move(callback));
+}
+
+void CrostiniShelfContextMenu::BuildMenu(
+    std::unique_ptr<ui::SimpleMenuModel> menu_model,
+    GetMenuModelCallback callback) {
+  const crostini::CrostiniRegistryService* registry_service =
+      crostini::CrostiniRegistryServiceFactory::GetForProfile(
+          controller()->profile());
+  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
+      registry_service->GetRegistration(item().id.app_id);
+
+  // For apps which Crostini knows about (i.e. those with .desktop files), we
+  // allow the user to pin them and open new windows. Otherwise this window is
+  // not associated with an app.
+  if (registration) {
+    AddPinMenu(menu_model.get());
+    AddContextMenuOption(menu_model.get(), ash::MENU_NEW_WINDOW,
+                         IDS_APP_LIST_NEW_WINDOW);
+  }
+
+  if (item().id.app_id == crostini::kCrostiniTerminalId &&
+      crostini::IsCrostiniRunning(controller()->profile())) {
+    AddContextMenuOption(menu_model.get(), ash::STOP_APP,
+                         IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
+  }
+
+  if (IsUninstallable()) {
+    AddContextMenuOption(menu_model.get(), ash::UNINSTALL,
+                         IDS_APP_LIST_UNINSTALL_ITEM);
+  }
+
+  if (controller()->IsOpen(item().id)) {
+    AddContextMenuOption(menu_model.get(), ash::MENU_CLOSE,
+                         IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+  } else {
+    AddContextMenuOption(menu_model.get(), ash::MENU_OPEN_NEW,
+                         IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+  }
+
+  // Offer users the ability to toggle per-application UI scaling.
+  // Some apps have high-density display support and do not require scaling
+  // to match the system display density, but others are density-unaware and
+  // look better when scaled to match the display density.
+  if (ShouldShowDisplayDensityMenuItem(registration, display_id())) {
+    if (registration->IsScaled()) {
+      AddContextMenuOption(menu_model.get(), ash::CROSTINI_USE_HIGH_DENSITY,
+                           IDS_CROSTINI_USE_HIGH_DENSITY);
+    } else {
+      AddContextMenuOption(menu_model.get(), ash::CROSTINI_USE_LOW_DENSITY,
+                           IDS_CROSTINI_USE_LOW_DENSITY);
+    }
+  }
   std::move(callback).Run(std::move(menu_model));
 }
 
@@ -106,54 +158,4 @@ void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
 bool CrostiniShelfContextMenu::IsUninstallable() const {
   return crostini::IsUninstallable(controller()->profile(), item().id.app_id);
-}
-
-void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
-  const crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(
-          controller()->profile());
-  base::Optional<crostini::CrostiniRegistryService::Registration> registration =
-      registry_service->GetRegistration(item().id.app_id);
-
-  // For apps which Crostini knows about (i.e. those with .desktop files), we
-  // allow the user to pin them and open new windows. Otherwise this window is
-  // not associated with an app.
-  if (registration) {
-    AddPinMenu(menu_model);
-    AddContextMenuOption(menu_model, ash::MENU_NEW_WINDOW,
-                         IDS_APP_LIST_NEW_WINDOW);
-  }
-
-  if (item().id.app_id == crostini::kCrostiniTerminalId &&
-      crostini::IsCrostiniRunning(controller()->profile())) {
-    AddContextMenuOption(menu_model, ash::STOP_APP,
-                         IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM);
-  }
-
-  if (IsUninstallable()) {
-    AddContextMenuOption(menu_model, ash::UNINSTALL,
-                         IDS_APP_LIST_UNINSTALL_ITEM);
-  }
-
-  if (controller()->IsOpen(item().id)) {
-    AddContextMenuOption(menu_model, ash::MENU_CLOSE,
-                         IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-  } else {
-    AddContextMenuOption(menu_model, ash::MENU_OPEN_NEW,
-                         IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
-  }
-
-  // Offer users the ability to toggle per-application UI scaling.
-  // Some apps have high-density display support and do not require scaling
-  // to match the system display density, but others are density-unaware and
-  // look better when scaled to match the display density.
-  if (ShouldShowDisplayDensityMenuItem(registration, display_id())) {
-    if (registration->IsScaled()) {
-      AddContextMenuOption(menu_model, ash::CROSTINI_USE_HIGH_DENSITY,
-                           IDS_CROSTINI_USE_HIGH_DENSITY);
-    } else {
-      AddContextMenuOption(menu_model, ash::CROSTINI_USE_LOW_DENSITY,
-                           IDS_CROSTINI_USE_LOW_DENSITY);
-    }
-  }
 }

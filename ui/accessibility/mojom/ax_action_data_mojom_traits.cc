@@ -26,6 +26,7 @@ bool StructTraits<ax::mojom::AXActionDataDataView, ui::AXActionData>::Read(
   out->custom_action_id = data.custom_action_id();
   out->horizontal_scroll_alignment = data.horizontal_scroll_alignment();
   out->vertical_scroll_alignment = data.vertical_scroll_alignment();
+  out->scroll_behavior = data.scroll_behavior();
   return data.ReadTargetRect(&out->target_rect) &&
          data.ReadTargetPoint(&out->target_point) &&
          data.ReadValue(&out->value) &&

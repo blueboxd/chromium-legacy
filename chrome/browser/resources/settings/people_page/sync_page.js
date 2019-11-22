@@ -130,7 +130,8 @@ Polymer({
       value: false,
       computed: 'computeSyncSectionDisabled_(' +
           'syncStatus.signedIn, syncStatus.disabled, ' +
-          'syncStatus.hasError, syncStatus.statusAction)',
+          'syncStatus.hasError, syncStatus.statusAction, ' +
+          'syncPrefs.trustedVaultKeysRequired)',
     },
 
     // <if expr="not chromeos">
@@ -245,7 +246,9 @@ Polymer({
         (!this.syncStatus.signedIn || !!this.syncStatus.disabled ||
          (!!this.syncStatus.hasError &&
           this.syncStatus.statusAction !==
-              settings.StatusAction.ENTER_PASSPHRASE));
+              settings.StatusAction.ENTER_PASSPHRASE &&
+          this.syncStatus.statusAction !==
+              settings.StatusAction.RETRIEVE_TRUSTED_VAULT_KEYS));
   },
 
   /**
@@ -585,7 +588,8 @@ Polymer({
    * (a) full data encryption is enabled, or,
    * (b) full data encryption is not allowed (so far, only applies to
    * supervised accounts), or,
-   * (c) the user is a supervised account.
+   * (c) current encryption keys are missing, or,
+   * (d) the user is a supervised account.
    * @return {boolean}
    * @private
    */
@@ -593,7 +597,8 @@ Polymer({
     return !!(
         (this.syncPrefs &&
          (this.syncPrefs.encryptAllData ||
-          !this.syncPrefs.encryptAllDataAllowed)) ||
+          !this.syncPrefs.encryptAllDataAllowed ||
+          this.syncPrefs.trustedVaultKeysRequired)) ||
         (this.syncStatus && this.syncStatus.supervisedUser));
   },
 

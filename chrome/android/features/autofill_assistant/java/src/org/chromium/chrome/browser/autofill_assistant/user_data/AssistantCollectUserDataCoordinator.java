@@ -143,7 +143,6 @@ public class AssistantCollectUserDataCoordinator {
      * Explicitly clean up.
      */
     public void destroy() {
-        mViewHolder.destroy();
         mViewHolder = null;
     }
 

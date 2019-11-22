@@ -246,8 +246,7 @@ PdfAccessibilityTree::~PdfAccessibilityTree() {
 bool PdfAccessibilityTree::IsDataFromPluginValid(
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+    const ppapi::PdfAccessibilityPageObjects& page_objects) {
   base::CheckedNumeric<uint32_t> char_length = 0;
   for (const ppapi::PdfAccessibilityTextRunInfo& text_run : text_runs)
     char_length += text_run.len;
@@ -255,6 +254,8 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
   if (!char_length.IsValid() || char_length.ValueOrDie() != chars.size())
     return false;
 
+  const std::vector<ppapi::PdfAccessibilityLinkInfo>& links =
+      page_objects.links;
   if (!std::is_sorted(links.begin(), links.end(),
                       CompareTextRuns<ppapi::PdfAccessibilityLinkInfo>)) {
     return false;
@@ -270,6 +271,8 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
       return false;
   }
 
+  const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
+      page_objects.images;
   if (!std::is_sorted(images.begin(), images.end(),
                       CompareTextRuns<ppapi::PdfAccessibilityImageInfo>)) {
     return false;
@@ -278,6 +281,22 @@ bool PdfAccessibilityTree::IsDataFromPluginValid(
   // of a |link| as mentioned above.
   for (const ppapi::PdfAccessibilityImageInfo& image : images) {
     if (image.text_run_index > text_runs.size())
+      return false;
+  }
+
+  const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights =
+      page_objects.highlights;
+  if (!std::is_sorted(highlights.begin(), highlights.end(),
+                      CompareTextRuns<ppapi::PdfAccessibilityHighlightInfo>)) {
+    return false;
+  }
+
+  // Since highlights also span across text runs similar to links, the
+  // validation method is the same.
+  for (const auto& highlight : highlights) {
+    base::CheckedNumeric<uint32_t> index = highlight.text_run_index;
+    index += highlight.text_run_count;
+    if (!index.IsValid() || index.ValueOrDie() > text_runs.size())
       return false;
   }
 
@@ -317,6 +336,10 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
 
   doc_info_ = doc_info;
   doc_node_ = CreateNode(ax::mojom::Role::kDocument);
+  doc_node_->AddStringAttribute(
+      ax::mojom::StringAttribute::kName,
+      l10n_util::GetPluralStringFUTF8(IDS_PDF_DOCUMENT_PAGE_COUNT,
+                                      doc_info.page_count));
 
   // Because all of the coordinates are expressed relative to the
   // doc's coordinates, the origin of the doc must be (0, 0). Its
@@ -329,8 +352,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo& page_info,
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+    const ppapi::PdfAccessibilityPageObjects& page_objects) {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (!render_accessibility)
     return;
@@ -339,7 +361,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   // stop creation of the accessibility tree.
   if (!invalid_plugin_message_received_) {
     invalid_plugin_message_received_ =
-        !IsDataFromPluginValid(text_runs, chars, links, images);
+        !IsDataFromPluginValid(text_runs, chars, page_objects);
   }
   if (invalid_plugin_message_received_)
     return;
@@ -360,8 +382,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   doc_node_->relative_bounds.bounds.Union(page_node->relative_bounds.bounds);
   doc_node_->child_ids.push_back(page_node->id);
 
-  AddPageContent(page_node, page_bounds, page_index, text_runs, chars, links,
-                 images);
+  AddPageContent(page_node, page_bounds, page_index, text_runs, chars,
+                 page_objects);
 
   if (page_index == doc_info_.page_count - 1)
     Finish();
@@ -373,8 +395,7 @@ void PdfAccessibilityTree::AddPageContent(
     uint32_t page_index,
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
-    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+    const ppapi::PdfAccessibilityPageObjects& page_objects) {
   DCHECK(page_node);
   double heading_font_size_threshold = 0;
   double paragraph_spacing_threshold = 0;
@@ -389,6 +410,10 @@ void PdfAccessibilityTree::AddPageContent(
   uint32_t current_link_index = 0;
   uint32_t current_image_index = 0;
   LineHelper line_helper(text_runs);
+  const std::vector<ppapi::PdfAccessibilityLinkInfo>& links =
+      page_objects.links;
+  const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
+      page_objects.images;
 
   for (size_t text_run_index = 0; text_run_index < text_runs.size();
        ++text_run_index) {
@@ -417,9 +442,9 @@ void PdfAccessibilityTree::AddPageContent(
       // Make the text runs contained by the link children of the link node.
       uint32_t link_end_text_run_index =
           std::min(text_run_index + link.text_run_count, text_runs.size()) - 1;
-      AddTextToLinkNode(text_run_index, link_end_text_run_index, text_runs,
-                        chars, page_bounds, &char_index, link_node,
-                        &previous_on_line_node);
+      AddTextToAXNode(text_run_index, link_end_text_run_index, text_runs, chars,
+                      page_bounds, &char_index, link_node,
+                      &previous_on_line_node);
 
       para_node->relative_bounds.bounds.Union(
           link_node->relative_bounds.bounds);
@@ -783,19 +808,19 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
   return image_node;
 }
 
-void PdfAccessibilityTree::AddTextToLinkNode(
+void PdfAccessibilityTree::AddTextToAXNode(
     uint32_t start_text_run_index,
     uint32_t end_text_run_index,
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const gfx::RectF& page_bounds,
     uint32_t* char_index,
-    ui::AXNodeData* link_node,
+    ui::AXNodeData* ax_node,
     ui::AXNodeData** previous_on_line_node) {
-  ui::AXNodeData* link_static_text_node = CreateStaticTextNode(*char_index);
-  link_node->child_ids.push_back(link_static_text_node->id);
-  // Accumulate the text of the link.
-  std::string link_name;
+  ui::AXNodeData* ax_static_text_node = CreateStaticTextNode(*char_index);
+  ax_node->child_ids.push_back(ax_static_text_node->id);
+  // Accumulate the text of the node.
+  std::string ax_name;
   LineHelper line_helper(text_runs);
 
   for (size_t text_run_index = start_text_run_index;
@@ -805,11 +830,11 @@ void PdfAccessibilityTree::AddTextToLinkNode(
     // Add this text run to the current static text node.
     ui::AXNodeData* inline_text_box_node =
         CreateInlineTextBoxNode(text_run, chars, *char_index, page_bounds);
-    link_static_text_node->child_ids.push_back(inline_text_box_node->id);
+    ax_static_text_node->child_ids.push_back(inline_text_box_node->id);
 
-    link_static_text_node->relative_bounds.bounds.Union(
+    ax_static_text_node->relative_bounds.bounds.Union(
         inline_text_box_node->relative_bounds.bounds);
-    link_name += inline_text_box_node->GetStringAttribute(
+    ax_name += inline_text_box_node->GetStringAttribute(
         ax::mojom::StringAttribute::kName);
 
     *char_index += text_run.len;
@@ -833,9 +858,9 @@ void PdfAccessibilityTree::AddTextToLinkNode(
     }
   }
 
-  link_node->AddStringAttribute(ax::mojom::StringAttribute::kName, link_name);
-  link_static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                            link_name);
+  ax_node->AddStringAttribute(ax::mojom::StringAttribute::kName, ax_name);
+  ax_static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                          ax_name);
 }
 
 float PdfAccessibilityTree::GetDeviceScaleFactor() const {

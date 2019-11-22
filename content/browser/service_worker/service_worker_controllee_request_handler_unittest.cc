@@ -17,6 +17,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -415,7 +416,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, SkipServiceWorker) {
   EXPECT_FALSE(version_->HasControllee());
 
   // The host should still have the correct URL.
-  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->url());
+  EXPECT_EQ(GURL("https://host/scope/doc"),
+            provider_host_->container_host()->url());
 }
 
 // Tests interception after the context core has been destroyed and the provider
@@ -459,7 +461,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, NullContext) {
   EXPECT_FALSE(version_->HasControllee());
 
   // The host should still have the correct URL.
-  EXPECT_EQ(GURL("https://host/scope/doc"), provider_host_->url());
+  EXPECT_EQ(GURL("https://host/scope/doc"),
+            provider_host_->container_host()->url());
 }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

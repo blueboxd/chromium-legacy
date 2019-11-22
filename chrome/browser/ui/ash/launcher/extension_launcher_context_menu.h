@@ -25,6 +25,8 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
 
   // LauncherContextMenu overrides:
   void GetMenuModel(GetMenuModelCallback callback) override;
+  void BuildMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
+                 GetMenuModelCallback callback) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
   bool IsCommandIdChecked(int command_id) const override;
@@ -35,7 +37,6 @@ class ExtensionLauncherContextMenu : public LauncherContextMenu {
   // Creates the actionable submenu for MENU_OPEN_NEW.
   void CreateOpenNewSubmenu(ui::SimpleMenuModel* menu_model);
 
-  void BuildMenu(ui::SimpleMenuModel* menu_model);
 
   // Helpers to get and set the launch type for the extension item.
   extensions::LaunchType GetLaunchType() const;

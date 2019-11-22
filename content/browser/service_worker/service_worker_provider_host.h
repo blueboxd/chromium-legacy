@@ -119,7 +119,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       public service_manager::mojom::InterfaceProvider {
  public:
   using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
-  using ExecutionReadyCallback = base::OnceClosure;
 
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerProviderContext will later be created in the renderer, should
@@ -183,16 +182,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return web_contents_getter_;
   }
   int frame_tree_node_id() const { return frame_tree_node_id_; }
-
-  // Returns whether this provider host is secure enough to have a service
-  // worker controller.
-  // Analogous to Blink's Document::IsSecureContext. Because of how service
-  // worker intercepts main resource requests, this check must be done
-  // browser-side once the URL is known (see comments in
-  // ServiceWorkerNetworkProviderForFrame::Create). This function uses
-  // |url_| and |is_parent_frame_secure_| to determine context security, so they
-  // must be set properly before calling this function.
-  bool IsContextSecureForServiceWorker() const;
 
   // For service worker clients. Describes whether the client has a controller
   // and if it has a fetch event handler.
@@ -258,35 +247,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void UpdateUrls(const GURL& url,
                   const GURL& site_for_cookies,
                   const base::Optional<url::Origin>& top_frame_origin);
-
-  // The URL of this context. For service worker clients, this is the document
-  // URL (for documents) or script URL (for workers). For service worker
-  // execution contexts, this is the script URL.
-  //
-  // For clients, url() may be empty if loading has not started, or our custom
-  // loading handler didn't see the load (because e.g. another handler did
-  // first, or the initial request URL was such that
-  // OriginCanAccessServiceWorkers returned false).
-  //
-  // The URL may also change on redirects during loading. Once
-  // is_response_committed() is true, the URL should no longer change.
-  const GURL& url() const { return url_; }
-
-  // The URL representing the site_for_cookies for this context. See
-  // |URLRequest::site_for_cookies()| for details.
-  // For service worker execution contexts, site_for_cookies() always
-  // returns the service worker script URL.
-  const GURL& site_for_cookies() const { return site_for_cookies_; }
-
-  // The URL representing the first-party site for this context.
-  // For service worker execution contexts, top_frame_origin() always
-  // returns the origin of the service worker script URL.
-  // For shared worker it is the origin of the document that created the worker.
-  // For dedicated worker it is the top-frame origin of the document that owns
-  // the worker.
-  base::Optional<url::Origin> top_frame_origin() const {
-    return top_frame_origin_;
-  }
 
   // TODO(https://crbug.com/931087): Remove these functions in favor of the
   // equivalent functions on ServiceWorkerContainerHost.
@@ -390,21 +350,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // load. All service workers are updated.
   void AddServiceWorkerToUpdate(scoped_refptr<ServiceWorkerVersion> version);
 
-  // For service worker clients. |callback| is called when this client becomes
-  // execution ready or if it is destroyed first.
-  void AddExecutionReadyCallback(ExecutionReadyCallback callback);
-
-  // For service worker clients. True if the response for the main resource load
-  // was committed to the renderer. When this is false, the client's URL may
-  // still change due to redirects.
-  bool is_response_committed() const;
-
-  // For service worker clients. True if the client is execution ready and
-  // therefore can be exposed to JavaScript. Execution ready implies response
-  // committed.
-  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
-  bool is_execution_ready() const;
-
   // For service worker execution contexts.
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
@@ -425,16 +370,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   }
 
  private:
-  // For service worker clients. The flow is kInitial -> kResponseCommitted ->
-  // kExecutionReady.
-  //
-  // - kInitial: The initial phase.
-  // - kResponseCommitted: The response for the main resource has been
-  //   committed to the renderer. This client's URL should no longer change.
-  // - kExecutionReady: This client can be exposed to JavaScript as a Client
-  //   object.
-  enum class ClientPhase { kInitial, kResponseCommitted, kExecutionReady };
-
   friend class ServiceWorkerProviderHostTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
   FRIEND_TEST_ALL_PREFIXES(BackgroundSyncManagerTest,
@@ -572,13 +507,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                                     const char* error_prefix,
                                     Args... args);
 
-  // Sets |execution_ready_| and runs execution ready callbacks.
-  void SetExecutionReady();
-
-  void RunExecutionReadyCallbacks();
-
-  void TransitionToClientPhase(ClientPhase new_phase);
-
   void SetRenderProcessId(int process_id);
 
   void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
@@ -607,14 +535,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Otherwise, |MSG_ROUTING_NONE|.
   int frame_id_;
 
-  // |is_parent_frame_secure_| is false if the provider host is created for a
-  // document whose parent frame is not secure. This doesn't mean the document
-  // is necessarily an insecure context, because the document may have a URL
-  // whose scheme is granted an exception that allows bypassing the ancestor
-  // secure context check. If the provider is not created for a document, or the
-  // document does not have a parent frame, is_parent_frame_secure_| is true.
-  const bool is_parent_frame_secure_;
-
   // FrameTreeNode id if this is a service worker window client.
   // Otherwise, |FrameTreeNode::kFrameTreeNodeInvalidId|.
   const int frame_tree_node_id_;
@@ -622,11 +542,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Only set when this object is pre-created for a navigation. It indicates the
   // tab where the navigation occurs. Otherwise, a null callback.
   const WebContentsGetter web_contents_getter_;
-
-  // See comments for the getter functions.
-  GURL url_;
-  GURL site_for_cookies_;
-  base::Optional<url::Origin> top_frame_origin_;
 
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =
@@ -693,13 +608,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       broker_{this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
       &broker_};
-
-  // For service worker clients.
-  ClientPhase client_phase_ = ClientPhase::kInitial;
-
-  // For service worker clients. Callbacks to run upon transition to
-  // kExecutionReady.
-  std::vector<ExecutionReadyCallback> execution_ready_callbacks_;
 
   // For service worker clients. The service workers in the chain of redirects
   // during the main resource request for this client. These workers should be

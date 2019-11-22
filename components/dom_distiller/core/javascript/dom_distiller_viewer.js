@@ -42,13 +42,14 @@ function fillYouTubePlaceholders() {
 }
 
 function showLoadingIndicator(isLastPage) {
-  document.getElementById('loading-indicator').className =
+  document.getElementById('loadingIndicator').className =
       isLastPage ? 'hidden' : 'visible';
 }
 
 // Sets the title.
 function setTitle(title) {
-  const holder = document.getElementById('title-holder');
+  const holder = document.getElementById('titleHolder');
+
   holder.textContent = title;
   document.title = title;
 }
@@ -140,20 +141,19 @@ function maybeSetWebFont() {
 const supportedTextSizes = [14, 15, 16, 18, 20, 24, 28, 32, 40, 48];
 function updateSlider(position) {
   document.documentElement.style.setProperty(
-      '--font-size-percent', (position / 9 * 100) + '%');
+      '--fontSizePercent', (position / 9 * 100) + '%');
   for (let i = 0; i < supportedTextSizes.length; i++) {
-    const option =
-        document.querySelector('.tickmarks option[value="' + i + '"]');
+    const option = document.querySelector('.tickmarks option[value="' + i + '"]');
     if (!option) {
       continue;
     }
 
     const optionClasses = option.classList;
-    removeAll(optionClasses, ['before-thumb', 'after-thumb']);
+    removeAll(optionClasses, ['beforeThumb', 'afterThumb']);
     if (i < position) {
-      optionClasses.add('before-thumb');
+      optionClasses.add('beforeThumb');
     } else {
-      optionClasses.add('after-thumb');
+      optionClasses.add('afterThumb');
     }
   }
 }
@@ -164,9 +164,17 @@ function updateSliderFromElement(element) {
   }
 }
 
+// Add a listener to the "View Original" link to report opt-outs.
+document.getElementById('closeReaderView')
+    .addEventListener('click', function(e) {
+      if (distiller) {
+        distiller.closePanel(true);
+      }
+    }, true);
+
 updateToolbarColor();
 maybeSetWebFont();
-updateSliderFromElement(document.querySelector('#font-size-selection'));
+updateSliderFromElement(document.querySelector('#fontSizeSelection'));
 
 const pincher = (function() {
   'use strict';
@@ -414,9 +422,9 @@ window.addEventListener('touchend', pincher.handleTouchEnd, {passive: false});
 window.addEventListener(
     'touchcancel', pincher.handleTouchCancel, {passive: false});
 
-document.querySelector('#settings-toggle').addEventListener('click', (e) => {
-  const dialog = document.querySelector('#settings-dialog');
-  const toggle = document.querySelector('#settings-toggle');
+document.querySelector('#settingsToggle').addEventListener('click', (e) => {
+  const dialog = document.querySelector('#settingsDialog');
+  const toggle = document.querySelector('#settingsToggle');
   if (dialog.open) {
     toggle.classList.remove('activated');
     dialog.close();
@@ -426,27 +434,26 @@ document.querySelector('#settings-toggle').addEventListener('click', (e) => {
   }
 });
 
-document.querySelector('#close-settings').addEventListener('click', (e) => {
-  document.querySelector('#settings-toggle').classList.remove('activated');
-  document.querySelector('#settings-dialog').close();
-});
+document.querySelector('#closeSettingsButton')
+    .addEventListener('click', (e) => {
+      document.querySelector('#settingsToggle').classList.remove('activated');
+      document.querySelector('#settingsDialog').close();
+    });
 
-document.querySelector('#theme-selection').addEventListener('change', (e) => {
+document.querySelector('#themeSelection').addEventListener('change', (e) => {
   useTheme(e.target.value);
 });
 
-document.querySelector('#font-size-selection')
-    .addEventListener('change', (e) => {
-      document.body.style.fontSize = supportedTextSizes[e.target.value] + 'px';
-      updateSlider(e.target.value);
-    });
+document.querySelector('#fontSizeSelection').addEventListener('change', (e) => {
+  document.body.style.fontSize = supportedTextSizes[e.target.value] + 'px';
+  updateSlider(e.target.value);
+});
 
-document.querySelector('#font-size-selection')
-    .addEventListener('input', (e) => {
-      updateSlider(e.target.value);
-    });
+document.querySelector('#fontSizeSelection').addEventListener('input', (e) => {
+  updateSlider(e.target.value);
+});
 
-document.querySelector('#font-family-selection')
+document.querySelector('#fontFamilySelection')
     .addEventListener('change', (e) => {
       useFontFamily(e.target.value);
     });

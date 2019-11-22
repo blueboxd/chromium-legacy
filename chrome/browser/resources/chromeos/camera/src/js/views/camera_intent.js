@@ -15,6 +15,11 @@ var cca = cca || {};
 cca.views = cca.views || {};
 
 /**
+ * import {assert, assertNotReached} from '../chrome_util.js';
+ */
+var {assert, assertNotReached} = {assert, assertNotReached};
+
+/**
  * The maximum number of pixels in the downscaled intent photo result. Reference
  * from GCA: https://goto.google.com/gca-inline-bitmap-max-pixel-num
  * @type {number}
@@ -33,7 +38,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
    * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
    */
   constructor(intent, infoUpdater, photoPreferrer, videoPreferrer) {
-    const resultSaver = {
+    const resultSaver = /** @type {!cca.models.ResultSaver} */ ({
       savePhoto: async (blob) => {
         if (intent.shouldDownScale) {
           const image = await cca.util.blobToImage(blob);
@@ -53,7 +58,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
       finishSaveVideo: async (video, savedName) => {
         this.videoResultFile_ = await video.endWrite();
       },
-    };
+    });
     super(resultSaver, infoUpdater, photoPreferrer, videoPreferrer);
 
     /**
@@ -117,9 +122,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
    * @override
    */
   beginTake_() {
-    if (this.photoResult_ !== null) {
-      URL.revokeObjectURL(this.photoResult_.blob);
-    }
+    // TODO(inker): Clean unused photo result blob properly.
     this.photoResult_ = null;
     this.videoResult_ = null;
 
@@ -130,16 +133,17 @@ cca.views.CameraIntent = class extends cca.views.Camera {
     return (async () => {
       await take;
 
-      if (this.photoResult_ === null && this.videoResult_ === null) {
-        console.warn('End take without intent result.');
-        return;
-      }
       cca.state.set('suspend', true);
       await this.restart();
-      const confirmed = await (
-          this.photoResult_ !== null ?
-              this.reviewResult_.openPhoto(this.photoResult_.blob) :
-              this.reviewResult_.openVideo(this.videoResultFile_));
+      const confirmed = await (() => {
+        if (this.photoResult_ !== null) {
+          return this.reviewResult_.openPhoto(this.photoResult_.blob);
+        } else if (this.videoResultFile_ !== null) {
+          return this.reviewResult_.openVideo(this.videoResultFile_);
+        } else {
+          assertNotReached('End take without intent result.');
+        }
+      })();
       const result = this.photoResult_ || this.videoResult_;
       cca.metrics.log(
           cca.metrics.Type.CAPTURE, this.facingMode_, result.duration || 0,
@@ -162,6 +166,6 @@ cca.views.CameraIntent = class extends cca.views.Camera {
    * @override
    */
   async startWithDevice_(deviceId) {
-    return this.startWithMode_(deviceId, this.defaultMode);
+    return this.startWithMode_(deviceId, this.defaultMode_);
   }
 };

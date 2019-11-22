@@ -7,15 +7,15 @@
 
 #include <memory>
 
-namespace service_manager {
-class InterfaceProvider;
+namespace blink {
+class BrowserInterfaceBrokerProxy;
 }
 
 namespace media {
 class CdmFactory;
 
 std::unique_ptr<CdmFactory> CreateFuchsiaCdmFactory(
-    service_manager::InterfaceProvider* interface_provider);
+    blink::BrowserInterfaceBrokerProxy* interface_broker);
 
 }  // namespace media
 

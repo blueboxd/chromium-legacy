@@ -232,10 +232,13 @@ bool NGInlineCursor::IsInlineLeaf() const {
   return !IsListMarker();
 }
 
-bool NGInlineCursor::IsInclusiveDescendantOf(
-    const LayoutObject& layout_object) const {
-  return CurrentLayoutObject() &&
-         CurrentLayoutObject()->IsDescendantOf(&layout_object);
+bool NGInlineCursor::IsPartOfCulledInlineBox(
+    const LayoutInline& layout_inline) const {
+  const LayoutObject* const layout_object = CurrentLayoutObject();
+  // We use |IsInline()| to exclude floating and out-of-flow objects.
+  if (!layout_object || !layout_object->IsInline())
+    return false;
+  return layout_object->IsDescendantOf(&layout_inline);
 }
 
 bool NGInlineCursor::IsLastLineInInlineBlock() const {
@@ -662,7 +665,7 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
     return;
 
   MoveToFirst();
-  while (IsNotNull() && !IsInclusiveDescendantOf(layout_object))
+  while (IsNotNull() && !IsPartOfCulledInlineBox(*layout_inline_))
     MoveToNext();
 }
 
@@ -775,7 +778,7 @@ void NGInlineCursor::MoveToNextForSameLayoutObject() {
     // Move to next fragment in culled inline box undef |layout_inline_|.
     do {
       MoveToNext();
-    } while (IsNotNull() && !IsInclusiveDescendantOf(*layout_inline_));
+    } while (IsNotNull() && !IsPartOfCulledInlineBox(*layout_inline_));
     return;
   }
   if (current_paint_fragment_) {

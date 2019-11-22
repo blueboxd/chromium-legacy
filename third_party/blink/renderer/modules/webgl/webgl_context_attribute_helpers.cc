@@ -50,9 +50,9 @@ Platform::ContextAttributes ToPlatformContextAttributes(
 
 gl::GpuPreference PowerPreferenceToGpuPreference(String power_preference) {
   // This code determines the handling of the "default" power preference.
-  if (power_preference == "low-power")
-    return gl::GpuPreference::kLowPower;
-  return gl::GpuPreference::kHighPerformance;
+  if (power_preference == "high-performance")
+    return gl::GpuPreference::kHighPerformance;
+  return gl::GpuPreference::kLowPower;
 }
 
 }  // namespace blink

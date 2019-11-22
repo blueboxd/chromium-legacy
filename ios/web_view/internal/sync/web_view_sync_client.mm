@@ -47,6 +47,7 @@ namespace ios_web_view {
 namespace {
 syncer::ModelTypeSet GetDisabledTypes() {
   syncer::ModelTypeSet disabled_types = syncer::UserTypes();
+  disabled_types.Remove(syncer::AUTOFILL);
   disabled_types.Remove(syncer::AUTOFILL_WALLET_DATA);
   disabled_types.Remove(syncer::AUTOFILL_WALLET_METADATA);
   disabled_types.Remove(syncer::AUTOFILL_PROFILE);

@@ -95,7 +95,8 @@
                 action:@selector(translateBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
   button.accessibilityIdentifier = kBadgeButtonTranslateAccessibilityIdentifier;
-  // TODO(crbug.com/1014959): Create a11y label hint.
+  button.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_INFOBAR_BADGES_TRANSLATE_HINT);
   return button;
 }
 

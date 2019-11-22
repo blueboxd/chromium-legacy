@@ -1,5 +1,5 @@
-AXGroup AXDescription='Page 1 Page 2'
-++AXGroup
+AXGroup AXDescription='PDF document containing 2 pages'
+++AXGroup AXDescription='PDF document containing 2 pages'
 ++++AXGroup AXDescription='Page 1'
 ++++++AXHeading AXValue='2'
 ++++++++AXStaticText AXValue='Link Annotations - Page 1<newline>'

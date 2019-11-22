@@ -43,6 +43,7 @@
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,20 +77,22 @@ class DnsLookupClient : public network::mojom::ResolveHostClient {
       : receiver_(this, std::move(receiver)), callback_(std::move(callback)) {
     receiver_.set_disconnect_handler(
         base::BindOnce(&DnsLookupClient::OnComplete, base::Unretained(this),
-                       net::ERR_FAILED, base::nullopt));
+                       net::ERR_NAME_NOT_RESOLVED,
+                       net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt));
   }
   ~DnsLookupClient() override {}
 
   // network::mojom::ResolveHostClient:
   void OnComplete(
       int32_t error,
+      const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override {
     std::string result;
     if (error == net::OK) {
       CHECK(resolved_addresses->size() == 1);
       result = resolved_addresses.value()[0].ToStringWithoutPort();
     } else {
-      result = net::ErrorToString(error);
+      result = net::ErrorToString(resolve_error_info.error);
     }
     base::Value value(result);
     std::move(callback_).Run(&value);

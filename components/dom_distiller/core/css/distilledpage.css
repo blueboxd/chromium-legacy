@@ -194,12 +194,12 @@ body {
   border-left: 1px solid #555;
 }
 
-/* #content-wrap is added to be more specific than the color theme rules */
-#content-wrap th:first-child {
+/* #contentWrap is added to be more specific than the color theme rules */
+#contentWrap th:first-child {
   border-left: none;
 }
 
-#content-wrap td:first-child {
+#contentWrap td:first-child {
   border-left: none;
 }
 
@@ -253,13 +253,13 @@ h6 {
 
 /* Content. */
 
-#loading-indicator {
+#loadingIndicator {
   padding-bottom: 2em;
   width: 100%;
 }
 
-#loading-indicator > img,
-#loading-indicator > svg {
+#loadingIndicator > img,
+#loadingIndicator > svg {
   display: block;
   height: 2.5em;
   margin: auto;
@@ -268,27 +268,59 @@ h6 {
 
 /* Margins for Show Original link. */
 
+.light #closeReaderView {
+  border-top: 1px solid #E0E0E0;
+  color: rgb(66, 133, 244);
+}
+
+.dark #closeReaderView {
+  border-top: 1px solid #555;
+  color: rgb(58, 218, 255);
+}
+
+.sepia #closeReaderView {
+  border-top: 1px solid rgb(147, 125, 102);
+  color: rgb(85, 85, 255);
+}
+
 video::-webkit-media-controls-fullscreen-button {
   display: none;
+}
+
+#closeReaderView {
+  /*
+  TODO(mdjones): Remove the "display: none;" style when the Reader Mode bar
+                 behaves like the toolbar when scrolling.
+  */
+  display: none;
+  flex: 0 0 auto;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 14px;
+  padding: 24px 16px;
+  text-align: right;
+  text-decoration: none;
+  text-transform: uppercase;
+  width: 100%;
 }
 
 #content {
   margin: 24px 16px 24px 16px;
 }
 
-#main-content {
+#mainContent {
   flex: 1 1 auto;
   margin: 0 auto;
-  max-width: 35em;
   width: 100%;
 }
 
-#article-header {
+#articleHeader {
   margin-top: 24px;
   width: 100%;
 }
 
-#title-holder {
+#titleHolder {
   font-size: 1.714rem;
   line-height: 1.417;
   margin: 0 16px;

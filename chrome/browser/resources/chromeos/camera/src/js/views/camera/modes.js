@@ -19,6 +19,11 @@ cca.views = cca.views || {};
  */
 cca.views.camera = cca.views.camera || {};
 
+/**
+ * import {Mode} from '../chrome_util.js';
+ */
+var Mode = Mode || {};
+
 /* eslint-disable no-unused-vars */
 
 /**
@@ -80,17 +85,6 @@ cca.views.camera.PlayShutterEffect;
 /* eslint-enable no-unused-vars */
 
 /**
- * Capture modes.
- * @enum {string}
- */
-cca.views.camera.Mode = {
-  PHOTO: 'photo-mode',
-  VIDEO: 'video-mode',
-  SQUARE: 'square-mode',
-  PORTRAIT: 'portrait-mode',
-};
-
-/**
  * The abstract interface for the mode configuration.
  * @interface
  */
@@ -129,7 +123,7 @@ cca.views.camera.ModeConfig = class {
 
   /**
    * Mode to be fallbacked to when fail to configure this mode.
-   * @return {!cca.views.camera.Mode}
+   * @return {!Mode}
    * @abstract
    */
   get nextMode() {}
@@ -149,7 +143,7 @@ cca.views.camera.ModeConfig = class {
  */
 cca.views.camera.Modes = class {
   /**
-   * @param {!cca.views.camera.Mode} defaultMode Default mode to be switched to.
+   * @param {!Mode} defaultMode Default mode to be switched to.
    * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
    * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
    * @param {!cca.views.camera.DoSwitchMode} doSwitchMode
@@ -230,11 +224,11 @@ cca.views.camera.Modes = class {
 
     /**
      * Mode classname and related functions and attributes.
-     * @type {!Object<!cca.views.camera.Mode, !cca.views.camera.ModeConfig>}
+     * @type {!Object<!Mode, !cca.views.camera.ModeConfig>}
      * @private
      */
     this.allModes_ = {
-      [cca.views.camera.Mode.VIDEO]: {
+      [Mode.VIDEO]: {
         captureFactory: () => new cca.views.camera.Video(
             /** @type {!MediaStream} */ (this.stream_), createVideoSaver,
             doSaveVideo),
@@ -244,7 +238,7 @@ cca.views.camera.Modes = class {
         nextMode: 'photo-mode',
         captureIntent: cros.mojom.CaptureIntent.VIDEO_RECORD,
       },
-      [cca.views.camera.Mode.PHOTO]: {
+      [Mode.PHOTO]: {
         captureFactory: () => new cca.views.camera.Photo(
             /** @type {!MediaStream} */ (this.stream_), doSavePhoto,
             this.captureResolution_, playShutterEffect),
@@ -254,7 +248,7 @@ cca.views.camera.Modes = class {
         nextMode: 'square-mode',
         captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
       },
-      [cca.views.camera.Mode.SQUARE]: {
+      [Mode.SQUARE]: {
         captureFactory: () => new cca.views.camera.Square(
             /** @type {!MediaStream} */ (this.stream_), doSavePhoto,
             this.captureResolution_, playShutterEffect),
@@ -264,7 +258,7 @@ cca.views.camera.Modes = class {
         nextMode: 'portrait-mode',
         captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
       },
-      [cca.views.camera.Mode.PORTRAIT]: {
+      [Mode.PORTRAIT]: {
         captureFactory: () => new cca.views.camera.Portrait(
             /** @type {!MediaStream} */ (this.stream_), doSavePhoto,
             this.captureResolution_, playShutterEffect),
@@ -312,7 +306,7 @@ cca.views.camera.Modes = class {
 
   /**
    * Updates state of mode related UI to the target mode.
-   * @param {!cca.views.camera.Mode} mode Mode to be toggled.
+   * @param {!Mode} mode Mode to be toggled.
    * @private
    */
   updateModeUI_(mode) {
@@ -338,13 +332,13 @@ cca.views.camera.Modes = class {
   /**
    * Gets all mode candidates. Desired trying sequence of candidate modes is
    * reflected in the order of the returned array.
-   * @return {!Array<string>} Mode candidates to be tried out.
+   * @return {!Array<!Mode>} Mode candidates to be tried out.
    */
   getModeCandidates() {
     const tried = {};
     const results = [];
-    let mode = /** @type {!cca.views.camera.Mode} */ (
-        Object.keys(this.allModes_).find(cca.state.get));
+    let mode =
+        /** @type {!Mode} */ (Object.keys(this.allModes_).find(cca.state.get));
     while (!tried[mode]) {
       tried[mode] = true;
       results.push(mode);
@@ -356,7 +350,7 @@ cca.views.camera.Modes = class {
   /**
    * Gets all available capture resolution and its corresponding preview
    * constraints for the given mode.
-   * @param {!cca.views.camera.Mode} mode
+   * @param {!Mode} mode
    * @param {string} deviceId
    * @param {!ResolutionList} previewResolutions
    * @return {!Array<!CaptureCandidate>}
@@ -369,7 +363,7 @@ cca.views.camera.Modes = class {
   /**
    * Gets capture resolution and its corresponding preview constraints for the
    * given mode on camera HALv1 device.
-   * @param {!cca.views.camera.Mode} mode
+   * @param {!Mode} mode
    * @param {?string} deviceId
    * @return {!Promise<!Array<!CaptureCandidate>>}
    */
@@ -381,7 +375,7 @@ cca.views.camera.Modes = class {
 
   /**
    * Gets capture intent for the given mode.
-   * @param {!cca.views.camera.Mode} mode
+   * @param {!Mode} mode
    * @return {cros.mojom.CaptureIntent} Capture intent for the given mode.
    */
   getCaptureIntent(mode) {
@@ -391,7 +385,7 @@ cca.views.camera.Modes = class {
   /**
    * Gets supported modes for video device of given device id.
    * @param {?string} deviceId Device id of the video device.
-   * @return {!Promise<!Array<!cca.views.camera.Mode>>} All supported mode for
+   * @return {!Promise<!Array<!Mode>>} All supported mode for
    *     the video device.
    */
   async getSupportedModes(deviceId) {
@@ -422,7 +416,7 @@ cca.views.camera.Modes = class {
 
   /**
    * Creates and updates new current mode object.
-   * @param {!cca.views.camera.Mode} mode Classname of mode to be updated.
+   * @param {!Mode} mode Classname of mode to be updated.
    * @param {!MediaStream} stream Stream of the new switching mode.
    * @param {?string} deviceId Device id of currently working video device.
    * @param {?Resolution} captureResolution Capturing resolution width and

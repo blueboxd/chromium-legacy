@@ -233,7 +233,7 @@ class GFX_EXPORT RenderText {
   void SetVerticalAlignment(VerticalAlignment alignment);
 
   const FontList& font_list() const { return font_list_; }
-  virtual void SetFontList(const FontList& font_list);
+  void SetFontList(const FontList& font_list);
 
   bool cursor_enabled() const { return cursor_enabled_; }
   void SetCursorEnabled(bool cursor_enabled);
@@ -275,7 +275,6 @@ class GFX_EXPORT RenderText {
   // cleared when SetText or SetObscured is called.
   void SetObscuredRevealIndex(int index);
 
-  // TODO(ckocagil): Multiline text rendering is not supported on Mac.
   bool multiline() const { return multiline_; }
   void SetMultiline(bool multiline);
 
@@ -290,9 +289,6 @@ class GFX_EXPORT RenderText {
   // TODO(mukai): ELIDE_LONG_WORDS is not supported.
   WordWrapBehavior word_wrap_behavior() const { return word_wrap_behavior_; }
   void SetWordWrapBehavior(WordWrapBehavior behavior);
-
-  // Returns true if this instance supports multiline rendering.
-  virtual bool MultilineSupported() const = 0;
 
   // TODO(ckocagil): Add vertical alignment and line spacing support instead.
   int min_line_height() const { return min_line_height_; }
@@ -446,10 +442,10 @@ class GFX_EXPORT RenderText {
   virtual SizeF GetStringSizeF();
 
   // Returns the size of the line containing |caret|.
-  virtual Size GetLineSize(const SelectionModel& caret);
+  virtual Size GetLineSize(const SelectionModel& caret) = 0;
 
   // Returns the sum of all the line widths.
-  virtual float TotalLineWidth();
+  virtual float TotalLineWidth() = 0;
 
   // Returns the width of the content (which is the wrapped width in multiline
   // mode). Reserves room for the cursor if |cursor_enabled_| is true.
@@ -481,7 +477,7 @@ class GFX_EXPORT RenderText {
 
   // Returns true if the position is a valid logical index into text(). Indices
   // amid multi-character graphemes are allowed here, unlike IsValidCursorIndex.
-  virtual bool IsValidLogicalIndex(size_t index) const;
+  bool IsValidLogicalIndex(size_t index) const;
 
   // Returns true if this instance supports text selection.
   virtual bool IsSelectionSupported() const = 0;
@@ -700,7 +696,7 @@ class GFX_EXPORT RenderText {
   virtual void OnDisplayTextAttributeChanged() = 0;
 
   // Called when the text color changes.
-  virtual void OnTextColorChanged();
+  void OnTextColorChanged();
 
   // Ensure the text is laid out, lines are computed, and |lines_| is valid.
   virtual void EnsureLayout() = 0;
@@ -822,8 +818,8 @@ class GFX_EXPORT RenderText {
   Range ExpandRangeToWordBoundary(const Range& range) const;
 
   // Returns an implementation-specific run list, if implemented.
-  virtual internal::TextRunList* GetRunList();
-  virtual const internal::TextRunList* GetRunList() const;
+  virtual internal::TextRunList* GetRunList() = 0;
+  virtual const internal::TextRunList* GetRunList() const = 0;
 
   // Returns the decorated text corresponding to |range|. Returns false if the
   // text cannot be retrieved, e.g. if the text is obscured.

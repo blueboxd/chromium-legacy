@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/editing/editing_strategy.h"
 #include "third_party/blink/renderer/core/editing/editing_style.h"
 #include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/editing/serializers/create_markup_options.h"
 #include "third_party/blink/renderer/core/editing/serializers/styled_markup_accumulator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -44,26 +45,22 @@ class StyledMarkupSerializer final {
   STACK_ALLOCATED();
 
  public:
-  StyledMarkupSerializer(AbsoluteURLs,
-                         AnnotateForInterchange,
-                         const PositionTemplate<Strategy>& start,
+  StyledMarkupSerializer(const PositionTemplate<Strategy>& start,
                          const PositionTemplate<Strategy>& end,
                          Node* highest_node_to_be_serialized,
-                         ConvertBlocksToInlines);
+                         const CreateMarkupOptions& options);
 
   String CreateMarkup();
 
  private:
   bool ShouldAnnotate() const {
-    return should_annotate_ == kAnnotateForInterchange;
+    return options_.ShouldAnnotateForInterchange();
   }
 
   const PositionTemplate<Strategy> start_;
   const PositionTemplate<Strategy> end_;
-  const AbsoluteURLs should_resolve_urls_;
-  const AnnotateForInterchange should_annotate_;
   const Member<Node> highest_node_to_be_serialized_;
-  const ConvertBlocksToInlines convert_blocks_to_inlines_;
+  const CreateMarkupOptions options_;
   Member<Node> last_closed_;
   Member<EditingStyle> wrapping_style_;
 };

@@ -42,7 +42,7 @@ class FileSystemUsageCacheTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(FileSystemUsageCacheTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(, FileSystemUsageCacheTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, FileSystemUsageCacheTest, testing::Bool());
 
 TEST_P(FileSystemUsageCacheTest, CreateTest) {
   base::FilePath usage_file_path = GetUsageFilePath();

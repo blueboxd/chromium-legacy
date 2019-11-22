@@ -622,7 +622,8 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
     return cdm_factory_.get();
 
 #if defined(OS_FUCHSIA)
-  cdm_factory_ = media::CreateFuchsiaCdmFactory(remote_interfaces_);
+  cdm_factory_ = media::CreateFuchsiaCdmFactory(
+      render_frame_->GetBrowserInterfaceBroker());
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_ =
       std::make_unique<media::MojoCdmFactory>(GetMediaInterfaceFactory());

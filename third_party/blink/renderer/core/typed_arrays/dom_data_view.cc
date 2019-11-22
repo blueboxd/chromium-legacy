@@ -63,7 +63,7 @@ v8::Local<v8::Object> DOMDataView::Wrap(
   DCHECK(v8_buffer->IsArrayBuffer());
 
   v8::Local<v8::Object> wrapper = v8::DataView::New(
-      v8_buffer.As<v8::ArrayBuffer>(), byteOffset(), byteLength());
+      v8_buffer.As<v8::ArrayBuffer>(), byteOffsetAsSizeT(), byteLength());
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
 }

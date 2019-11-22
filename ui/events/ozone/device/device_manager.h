@@ -7,13 +7,13 @@
 
 #include <memory>
 
-#include "ui/events/ozone/events_ozone_export.h"
+#include "base/component_export.h"
 
 namespace ui {
 
 class DeviceEventObserver;
 
-class EVENTS_OZONE_EXPORT DeviceManager {
+class COMPONENT_EXPORT(EVENTS_OZONE) DeviceManager {
  public:
   virtual ~DeviceManager() {}
 
@@ -30,7 +30,8 @@ class EVENTS_OZONE_EXPORT DeviceManager {
   virtual void RemoveObserver(DeviceEventObserver* observer) = 0;
 };
 
-EVENTS_OZONE_EXPORT std::unique_ptr<DeviceManager> CreateDeviceManager();
+COMPONENT_EXPORT(EVENTS_OZONE)
+std::unique_ptr<DeviceManager> CreateDeviceManager();
 
 }  // namespace ui
 

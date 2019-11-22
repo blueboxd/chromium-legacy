@@ -5,12 +5,13 @@
 #ifndef UI_EVENTS_OZONE_LAYOUT_XKB_XKB_EVDEV_CODES_H_
 #define UI_EVENTS_OZONE_LAYOUT_XKB_XKB_EVDEV_CODES_H_
 
-#include "ui/events/ozone/layout/events_ozone_layout_export.h"
+#include "base/component_export.h"
 #include "ui/events/ozone/layout/xkb/xkb_key_code_converter.h"
 
 namespace ui {
 
-class EVENTS_OZONE_LAYOUT_EXPORT XkbEvdevCodes : public XkbKeyCodeConverter {
+class COMPONENT_EXPORT(EVENTS_OZONE_LAYOUT) XkbEvdevCodes
+    : public XkbKeyCodeConverter {
  public:
   XkbEvdevCodes();
   ~XkbEvdevCodes() override;

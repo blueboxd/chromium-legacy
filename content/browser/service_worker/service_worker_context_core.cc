@@ -23,6 +23,7 @@
 #include "content/browser/log_console_message.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_info.h"
@@ -134,8 +135,10 @@ bool IsSameOriginClientProviderHost(const GURL& origin,
     if (host->IsInBackForwardCache())
       return false;
   }
-  return host->IsProviderForClient() && host->url().GetOrigin() == origin &&
-         (allow_reserved_client || host->is_execution_ready());
+  return host->IsProviderForClient() &&
+         host->container_host()->url().GetOrigin() == origin &&
+         (allow_reserved_client ||
+          host->container_host()->is_execution_ready());
 }
 
 bool IsSameOriginWindowProviderHost(const GURL& origin,
@@ -151,7 +154,8 @@ bool IsSameOriginWindowProviderHost(const GURL& origin,
   }
   return host->provider_type() ==
              blink::mojom::ServiceWorkerProviderType::kForWindow &&
-         host->url().GetOrigin() == origin && host->is_execution_ready();
+         host->container_host()->url().GetOrigin() == origin &&
+         host->container_host()->is_execution_ready();
 }
 
 // Returns true if any of the frames specified by |frames| is a top-level frame.

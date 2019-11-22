@@ -299,6 +299,10 @@ id<GREYMatcher> GoogleServicesSettingsButton() {
   return [ChromeMatchersAppInterface googleServicesSettingsButton];
 }
 
+id<GREYMatcher> GoogleServicesSettingsView() {
+  return [ChromeMatchersAppInterface googleServicesSettingsView];
+}
+
 id<GREYMatcher> SettingsMenuBackButton() {
   return [ChromeMatchersAppInterface settingsMenuBackButton];
 }
@@ -485,6 +489,10 @@ id<GREYMatcher> SettingsBottomToolbarDeleteButton() {
 
 id<GREYMatcher> AutofillSuggestionViewMatcher() {
   return [ChromeMatchersAppInterface autofillSuggestionViewMatcher];
+}
+
+id<GREYMatcher> ContentViewSmallerThanScrollView() {
+  return [ChromeMatchersAppInterface contentViewSmallerThanScrollView];
 }
 
 #pragma mark - Manual Fallback

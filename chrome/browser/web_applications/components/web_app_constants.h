@@ -26,7 +26,7 @@ enum Type {
   // set.
   kSync,
   kDefault,
-  kMaxValue
+  kMaxValue = kDefault
 };
 }  // namespace Source
 

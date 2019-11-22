@@ -1,5 +1,5 @@
 group
-++document
+++document Name='PDF document containing 2 pages'
 ++++region Name='Page 1'
 ++++++group
 ++++++++description Name='Page 1'

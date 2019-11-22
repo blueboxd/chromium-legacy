@@ -22,27 +22,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-// Returns a matcher to test whether the element is a scroll view with a content
-// smaller than the scroll view bounds.
-id<GREYMatcher> ContentViewSmallerThanScrollView() {
-  GREYMatchesBlock matches = ^BOOL(UIView* view) {
-    UIScrollView* scrollView = base::mac::ObjCCast<UIScrollView>(view);
-    return scrollView &&
-           scrollView.contentSize.height < scrollView.bounds.size.height;
-  };
-  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
-    [description appendText:
-                     @"Not a scroll view or the scroll view content is bigger "
-                     @"than the scroll view bounds"];
-  };
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
-}  // namespace
-
 using chrome_test_util::AccountConsistencyConfirmationOkButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::PrimarySignInButton;
@@ -117,7 +96,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
       grey_accessibilityID(kUnifiedConsentScrollViewIdentifier);
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
-      assertWithMatcher:ContentViewSmallerThanScrollView()
+      assertWithMatcher:chrome_test_util::ContentViewSmallerThanScrollView()
                   error:&error];
   if (error) {
     // If the consent is bigger than the scroll view, the primary button should
@@ -139,7 +118,7 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   NSError* error = nil;
   [[EarlGrey selectElementWithMatcher:confirmationScrollViewMatcher]
-      assertWithMatcher:ContentViewSmallerThanScrollView()
+      assertWithMatcher:chrome_test_util::ContentViewSmallerThanScrollView()
                   error:&error];
   if (error) {
     // If the consent is bigger than the scroll view, the primary button should

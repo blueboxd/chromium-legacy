@@ -278,13 +278,21 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     VLOGF(1) << "Using config store";
   }
 
+  // Check if |video_profile_| is supported by a decoder driver.
+  if (!IsSupportedProfile(video_profile_)) {
+    VLOGF(1) << "Unsupported profile " << GetProfileName(video_profile_);
+    return false;
+  }
+
   if (video_profile_ >= H264PROFILE_MIN && video_profile_ <= H264PROFILE_MAX) {
     if (supports_requests_) {
       decoder_.reset(new H264Decoder(
-          std::make_unique<V4L2H264Accelerator>(this, device_.get())));
+          std::make_unique<V4L2H264Accelerator>(this, device_.get()),
+          video_profile_));
     } else {
       decoder_.reset(new H264Decoder(
-          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get())));
+          std::make_unique<V4L2LegacyH264Accelerator>(this, device_.get()),
+          video_profile_));
     }
   } else if (video_profile_ >= VP8PROFILE_MIN &&
              video_profile_ <= VP8PROFILE_MAX) {
@@ -298,7 +306,8 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   } else if (video_profile_ >= VP9PROFILE_MIN &&
              video_profile_ <= VP9PROFILE_MAX) {
     decoder_.reset(new VP9Decoder(
-        std::make_unique<V4L2VP9Accelerator>(this, device_.get())));
+        std::make_unique<V4L2VP9Accelerator>(this, device_.get()),
+        video_profile_));
   } else {
     NOTREACHED() << "Unsupported profile " << GetProfileName(video_profile_);
     return false;
@@ -1132,7 +1141,12 @@ void V4L2SliceVideoDecodeAccelerator::DecodeBufferTask() {
     const AcceleratedVideoDecoder::DecodeResult res = decoder_->Decode();
     TRACE_EVENT_END0("media,gpu", "V4L2SVDA::DecodeBufferTask AVD::Decode");
     switch (res) {
-      case AcceleratedVideoDecoder::kAllocateNewSurfaces:
+      case AcceleratedVideoDecoder::kConfigChange:
+        if (!IsSupportedProfile(decoder_->GetProfile())) {
+          VLOGF(2) << "Unsupported profile: " << decoder_->GetProfile();
+          NOTIFY_ERROR(PLATFORM_FAILURE);
+          return;
+        }
         VLOGF(2) << "Decoder requesting a new set of surfaces";
         InitiateSurfaceSetChange();
         return;
@@ -2208,6 +2222,18 @@ V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles() {
 
   return device->GetSupportedDecodeProfiles(
       base::size(supported_input_fourccs_), supported_input_fourccs_);
+}
+
+bool V4L2SliceVideoDecodeAccelerator::IsSupportedProfile(
+    VideoCodecProfile profile) {
+  DCHECK(device_);
+  if (supported_profiles_.empty()) {
+    SupportedProfiles profiles = GetSupportedProfiles();
+    for (const SupportedProfile& profile : profiles)
+      supported_profiles_.push_back(profile.profile);
+  }
+  return std::find(supported_profiles_.begin(), supported_profiles_.end(),
+                   profile) != supported_profiles_.end();
 }
 
 size_t V4L2SliceVideoDecodeAccelerator::GetNumOfOutputRecordsAtDevice() const {

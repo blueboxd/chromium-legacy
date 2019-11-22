@@ -385,7 +385,7 @@ void DOMWebSocket::send(NotShared<DOMArrayBufferView> array_buffer_view,
   DCHECK(channel_);
   buffered_amount_ += array_buffer_view.View()->byteLength();
   channel_->Send(*array_buffer_view.View()->buffer(),
-                 array_buffer_view.View()->byteOffset(),
+                 array_buffer_view.View()->deprecatedByteOffsetAsUnsigned(),
                  array_buffer_view.View()->byteLength(), base::OnceClosure());
 }
 

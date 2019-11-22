@@ -101,6 +101,7 @@
 <div id="mainContainer" on-scroll="onScroll_">
   <managed-footnote hidden="[[inSearchMode_]]"></managed-footnote>
   <iron-list id="downloadsList" items="[[items_]]"
+      role="grid" aria-rowcount$="[[items_.length]]"
       hidden="[[!hasDownloads_]]" scroll-target="mainContainer"
       preserve-focus>
     <template>

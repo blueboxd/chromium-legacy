@@ -236,10 +236,16 @@ void PDFResource::SetAccessibilityPageInfo(
   for (size_t i = 0; i < page_objects->image_count; i++) {
     image_vector.emplace_back(page_objects->images[i]);
   }
+  std::vector<ppapi::PdfAccessibilityHighlightInfo> highlight_vector;
+  highlight_vector.reserve(page_objects->highlight_count);
+  for (size_t i = 0; i < page_objects->highlight_count; i++) {
+    highlight_vector.emplace_back(page_objects->highlights[i]);
+  }
 
   ppapi::PdfAccessibilityPageObjects ppapi_page_objects;
   ppapi_page_objects.links = std::move(link_vector);
   ppapi_page_objects.images = std::move(image_vector);
+  ppapi_page_objects.highlights = std::move(highlight_vector);
 
   Post(RENDERER,
        PpapiHostMsg_PDF_SetAccessibilityPageInfo(

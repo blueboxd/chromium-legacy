@@ -269,10 +269,6 @@ void NGPhysicalFragment::Destroy() const {
   }
 }
 
-Node* NGPhysicalFragment::GetNode() const {
-  return !IsLineBox() ? layout_object_->GetNode() : nullptr;
-}
-
 PaintLayer* NGPhysicalFragment::Layer() const {
   if (!HasLayer())
     return nullptr;
@@ -292,20 +288,8 @@ bool NGPhysicalFragment::HasSelfPaintingLayer() const {
       ->HasSelfPaintingLayer();
 }
 
-bool NGPhysicalFragment::HasOverflowClip() const {
-  return !IsLineBox() && layout_object_->HasOverflowClip();
-}
-
-bool NGPhysicalFragment::ShouldClipOverflow() const {
-  return !IsLineBox() && layout_object_->ShouldClipOverflow();
-}
-
 bool NGPhysicalFragment::IsBlockFlow() const {
   return !IsLineBox() && layout_object_->IsLayoutBlockFlow();
-}
-
-bool NGPhysicalFragment::IsListMarker() const {
-  return !IsLineBox() && layout_object_->IsLayoutNGListMarker();
 }
 
 bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
@@ -313,6 +297,8 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   // to set.
   if (IsLineBox())
     return false;
+  if (IsColumnBox())
+    return true;
   const LayoutBlock* container = layout_object_->ContainingBlock();
   if (!container)
     return false;
@@ -396,8 +382,7 @@ void NGPhysicalFragment::CheckType() const {
 void NGPhysicalFragment::CheckCanUpdateInkOverflow() const {
   if (!GetLayoutObject())
     return;
-  const DocumentLifecycle& lifecycle =
-      GetLayoutObject()->GetDocument().Lifecycle();
+  const DocumentLifecycle& lifecycle = GetDocument().Lifecycle();
   DCHECK(lifecycle.GetState() >= DocumentLifecycle::kLayoutClean &&
          lifecycle.GetState() < DocumentLifecycle::kCompositingClean)
       << lifecycle.GetState();

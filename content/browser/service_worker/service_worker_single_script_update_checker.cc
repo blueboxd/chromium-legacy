@@ -91,12 +91,13 @@ class ServiceWorkerSingleScriptUpdateChecker::WrappedIOBuffer
 
 ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     const GURL& script_url,
-    const GURL& referrer,
     bool is_main_script,
     const GURL& main_script_url,
     const GURL& scope,
     bool force_bypass_cache,
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
+    const blink::mojom::FetchClientSettingsObjectPtr&
+        fetch_client_settings_object,
     base::TimeDelta time_since_last_check,
     const net::HttpRequestHeaders& default_headers,
     ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
@@ -129,7 +130,17 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   resource_request.site_for_cookies = main_script_url;
   resource_request.do_not_prompt_for_login = true;
   resource_request.headers = default_headers;
-  resource_request.referrer = referrer;
+  resource_request.referrer_policy = Referrer::ReferrerPolicyForUrlRequest(
+      fetch_client_settings_object->referrer_policy);
+  // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
+  resource_request.referrer =
+      Referrer::SanitizeForRequest(
+          script_url, Referrer(fetch_client_settings_object->outgoing_referrer,
+                               fetch_client_settings_object->referrer_policy))
+          .url;
+  resource_request.upgrade_if_insecure =
+      fetch_client_settings_object->insecure_requests_policy ==
+      blink::mojom::InsecureRequestsPolicy::kUpgrade;
 
   // ResourceRequest::request_initiator is the request's origin in the spec.
   // https://fetch.spec.whatwg.org/#concept-request-origin

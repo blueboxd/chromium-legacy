@@ -1779,7 +1779,7 @@ TEST_F(FrameSchedulerImplTest, TaskTypeToTaskQueueMapping) {
   EXPECT_EQ(GetTaskQueue(TaskType::kWebSocket), DeferrableTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kDatabaseAccess), PausableTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kPostedMessage), PausableTaskQueue());
-  EXPECT_EQ(GetTaskQueue(TaskType::kInternalIPC), UnpausableTaskQueue());
+  EXPECT_EQ(GetTaskQueue(TaskType::kWebLocks), UnpausableTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworking), LoadingTaskQueue());
   EXPECT_EQ(GetTaskQueue(TaskType::kNetworkingControl),
             LoadingControlTaskQueue());
@@ -1847,7 +1847,7 @@ TEST_F(ThrottleableAndFreezableTaskTypesTest, QueueTraitsFromFieldTrialParams) {
 
   // Test some task types that were not configured through field trial
   // parameters.
-  task_queue = GetTaskQueue(TaskType::kInternalIPC);
+  task_queue = GetTaskQueue(TaskType::kWebLocks);
   EXPECT_EQ(
       task_queue->GetQueueTraits(),
       MainThreadTaskQueue::QueueTraits().SetCanRunWhenVirtualTimePaused(false));
@@ -1903,7 +1903,7 @@ TEST_F(FreezableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
 
   // Test some task types that were not configured through field trial
   // parameters.
-  task_queue = GetTaskQueue(TaskType::kInternalIPC);
+  task_queue = GetTaskQueue(TaskType::kWebLocks);
   EXPECT_EQ(task_queue->GetQueueTraits(), MainThreadTaskQueue::QueueTraits());
 
   task_queue = GetTaskQueue(TaskType::kMiscPlatformAPI);
@@ -1959,7 +1959,7 @@ TEST_F(ThrottleableOnlyTaskTypesTest, QueueTraitsFromFieldTrialParams) {
 
   // Test some task types that were not configured through field trial
   // parameters.
-  task_queue = GetTaskQueue(TaskType::kInternalIPC);
+  task_queue = GetTaskQueue(TaskType::kWebLocks);
   EXPECT_EQ(
       task_queue->GetQueueTraits(),
       MainThreadTaskQueue::QueueTraits().SetCanRunWhenVirtualTimePaused(false));

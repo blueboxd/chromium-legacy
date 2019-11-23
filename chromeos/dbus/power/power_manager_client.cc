@@ -166,8 +166,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
         dbus::ObjectPath(power_manager::kPowerManagerServicePath));
 
     power_manager_proxy_->SetNameOwnerChangedCallback(
-        base::Bind(&PowerManagerClientImpl::NameOwnerChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&PowerManagerClientImpl::NameOwnerChangedReceived,
+                            weak_ptr_factory_.GetWeakPtr()));
 
     power_manager_proxy_->WaitForServiceToBeAvailable(
         base::BindOnce(&PowerManagerClientImpl::NotifyServiceBecameAvailable,

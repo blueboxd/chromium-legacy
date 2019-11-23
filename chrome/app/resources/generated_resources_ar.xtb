@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">أزرق فاتح</translation>
 <translation id="1734824808160898225">قد لا يتمكَّن <ph name="PRODUCT_NAME" /> من الاستمرار في تحديث نفسه.</translation>
 <translation id="1736419249208073774">استكشاف</translation>
-<translation id="1736420071277903564">جهاز الكمبيوتر</translation>
 <translation id="1737968601308870607">الإبلاغ عن خطأ</translation>
 <translation id="1741314857973421784">متابعة</translation>
 <translation id="1743570585616704562">لم يتم التعرف عليها</translation>
@@ -1129,6 +1128,7 @@
 <translation id="2617342710774726426">‏تم قفل شريحة SIM</translation>
 <translation id="2619761439309613843">التحديث يوميًا</translation>
 <translation id="2620436844016719705">النظام</translation>
+<translation id="2621713457727696555">مؤمّنة</translation>
 <translation id="26224892172169984">عدم السماح لأي موقع ويب بمعالجة البروتوكولات</translation>
 <translation id="2624142942574147739">هذه الصفحة تدخل إلى الكاميرا والميكروفون التابعين لك.</translation>
 <translation id="2626799779920242286">يُرجى إعادة المحاولة لاحقًا.</translation>
@@ -1580,6 +1580,7 @@
 <translation id="328571385944182268">هل تريد حفظ كلمات المرور؟</translation>
 <translation id="3288047731229977326">يمكن أن تؤدي الإضافات التي تعمل في وضع مطور البرامج إلى إلحاق الضرر بجهاز الكمبيوتر. إذا لم تكن مطور برامج، فيجب إيقاف هذه الإضافات التي تعمل في وضع مطور البرامج للبقاء في أمان.</translation>
 <translation id="3289856944988573801">‏للتحقق من وجود تحديثات، يُرجى استخدام شبكة Ethernet أو Wi-Fi.</translation>
+<translation id="3290356915286466215">غير مؤمّن</translation>
 <translation id="3293644607209440645">إرسال هذه الصفحة</translation>
 <translation id="32939749466444286">‏يتعذَّر بدء حاوية نظام التشغيل Linux. يُرجى إعادة المحاولة.</translation>
 <translation id="3294437725009624529">ضيف</translation>
@@ -2021,7 +2022,6 @@
 <translation id="3900966090527141178">تصدير كلمات المرور</translation>
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME" /></translation>
 <translation id="3905761538810670789">إصلاح التطبيق</translation>
-<translation id="3906954721959377182">جهاز لوحي</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> قديم</translation>
 <translation id="3908501907586732282">تفعيل الإضافة</translation>
 <translation id="3909477809443608991">‏يريد <ph name="URL" /> تشغيل المحتوى المُحمي. ستتحقَّق Google من هوية جهازك ويمكن الوصول إليه من خلال هذا الموقع.</translation>
@@ -2318,7 +2318,6 @@
 <translation id="4364327530094270451">شمام</translation>
 <translation id="4364567974334641491">يشارك <ph name="APP_NAME" /> نافذة.</translation>
 <translation id="4364830672918311045">عرض الإشعارات</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> مع <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">البريد الإلكتروني وكلمة المرور اللذان أدخلتهما غير متطابقين</translation>
 <translation id="437184764829821926">الإعدادات المتقدمة للخط</translation>
 <translation id="4374831787438678295">‏أداة تثبيت Linux</translation>
@@ -2435,7 +2434,7 @@
 <translation id="4546308221697447294">‏استمتع بالتصفح السريع باستخدام Google Chrome</translation>
 <translation id="4547659257713117923">ليست هناك علامات تبويب من أجهزة أخرى</translation>
 <translation id="4547672827276975204">ضبط المنطقة الزمنية تلقائيًا</translation>
-<translation id="4549791035683739768">لا يتضمّن مفتاح الأمان على بصمات أصابع مخزّنة.</translation>
+<translation id="4549791035683739768">لا يتضمّن مفتاح الأمان بصمات أصابع مخزّنة.</translation>
 <translation id="4551763574344810652">اضغط على <ph name="MODIFIER_KEY_DESCRIPTION" /> للتراجع</translation>
 <translation id="4552089082226364758">الفلاش</translation>
 <translation id="4554591392113183336">الإضافة الخارجية في نفس الإصدار أو إصدار أقل مقارنة بالموجودة حاليًا.</translation>
@@ -2960,7 +2959,6 @@
 <translation id="5363109466694494651">إجراء المحو الكامل والعودة</translation>
 <translation id="5365881113273618889">يتضمَّن المجلَّد الذي اخترته ملفات حساسة. هل تريد بالتأكيد منح "<ph name="APP_NAME" />" إمكانية الوصول الدائم للكتابة في هذا المجلَّد؟</translation>
 <translation id="5367091008316207019">جارٍ قراءة الملف..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">هاتفك مغلق. ألغ قفله للدخول.</translation>
 <translation id="5368779022775404937">تسجيل الدخول إلى <ph name="REALM" /></translation>
 <translation id="5369491905435686894">تفعيل تسريع الماوس</translation>
@@ -3068,7 +3066,7 @@
 <translation id="5511823366942919280">‏هل أنت متأكد من أنك تريد إعداد هذا الجهاز كـ "Shark"؟</translation>
 <translation id="5512653252560939721">يجب أن تكون شهادة المستخدم مستندة إلى الأجهزة.</translation>
 <translation id="5517304475148761050">‏يتطلّب هذا التطبيق الوصول إلى "متجر Play"</translation>
-<translation id="5517412723934627386">الشبكة <ph name="NETWORK_TYPE" />، الاسم المعروض للشبكة <ph name="NETWORK_DISPLAY_NAME" /></translation>
+<translation id="5517412723934627386">نوع الشبكة <ph name="NETWORK_TYPE" /> - الاسم المعروض للشبكة <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">إضافة الطابعة إلى حسابك - قد يستغرق ذلك القليل من الوقت...</translation>
 <translation id="5518219166343146486">طلب الإذن عند محاولة أحد المواقع الاطلاع على النصوص والصور التي تم نسختها إلى الحافظة</translation>
 <translation id="5518584115117143805">شهادة تشفير البريد الإلكتروني</translation>
@@ -4400,7 +4398,7 @@
 <translation id="7476454130948140105">مستوى البطارية ضعيف جدًا لإجراء التحديث (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">التحكم في الموسيقى والفيديوهات وغير ذلك</translation>
 <translation id="7478485216301680444">‏تعذر تثبيت تطبيق Kiosk.</translation>
-<translation id="7479221278376295180">نظرة عامة على "استخدام مساحة التخزين"</translation>
+<translation id="7479221278376295180">نظرة عامة على استخدام مساحة التخزين</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="748138892655239008">القيود الأساسية على الشهادة</translation>
 <translation id="7487067081878637334">التقنية</translation>
@@ -4719,6 +4717,7 @@
 <translation id="7912080627461681647">تم تغيير كلمة المرور على الخادم. يُرجى الخروج ثم تسجيل الدخول مجددًا.</translation>
 <translation id="7915457674565721553">الاتصال بالإنترنت لإعداد أدوات الرقابة الأبوية</translation>
 <translation id="7915471803647590281">يُرجى إخبارنا بما يحدث قبل إرسال التعليقات.</translation>
+<translation id="7918257978052780342">تسجيل</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> ثوانٍ</translation>
 <translation id="792514962475806987">مستوى التكبير الذي تم إرساؤه:</translation>
 <translation id="7925247922861151263">‏تعذّر فحص AAA</translation>

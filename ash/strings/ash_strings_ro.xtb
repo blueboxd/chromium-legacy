@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">Oprește</translation>
 <translation id="1275285675049378717">Se încarcă <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, gestionată de administratorul tău</translation>
 <translation id="1289185460362160437">Revino <ph name="COME_BACK_DAY_OF_WEEK" /> la <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Semnal slab</translation>
 <translation id="1293264513303784526">Dispozitiv USB-C (portul din stânga)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Afișează setările Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Afișează întotdeauna raftul</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, bateria telefonului: <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Suplimentar</translation>
 <translation id="1346748346194534595">Dreapta</translation>
 <translation id="1351937230027495976">Restrânge meniul</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">Eliminați acest utilizator</translation>
 <translation id="1654477262762802994">Începe o interogare vocală</translation>
 <translation id="1658406695958299976">Ne pare rău, parola tot nu a putut fi confirmată. Notă: dacă ți-ai schimbat recent parola, aceasta se va aplica după ce te deconectezi. Te rugăm să folosești aici parola veche.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, gestionată de administratorul tău</translation>
 <translation id="1677472565718498478">Timp rămas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresă IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Nu este recunoscută</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl + tasta de căutare + H</translation>
 <translation id="2016340657076538683">Scrie un mesaj</translation>
 <translation id="2050339315714019657">Portret</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Luminozitatea tastaturii</translation>
 <translation id="209965399369889474">Fără conexiune la rețea</translation>
 <translation id="2126242104232412123">Desktop nou</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
 <translation id="3249513730522716925">Fereastra <ph name="WINDOW_TITLE" /> a fost mutată de pe desktopul <ph name="ACTIVE_DESK" /> pe desktopul <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Ce poți face?</translation>
-<translation id="3277674767125718685">Sunetul este activat.</translation>
 <translation id="3290356915286466215">Nesecurizată</translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se poate conecta în continuare mai târziu.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">Cont gestionat de <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Modifică înapoi la „<ph name="FROM_LOCALE" />” (este necesară repornirea)</translation>
 <translation id="3576141592585647168">Modifică fusul orar</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, gestionată de administratorul tău</translation>
 <translation id="3595596368722241419">Baterie încărcată</translation>
 <translation id="3604801046548457007">A fost creat desktopul <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Afișajul Braille este conectat.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">Puternic</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4924411785043111640">Repornește și resetează</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Derulează în sus</translation>
 <translation id="4961318399572185831">Proiectează ecranul</translation>
 <translation id="5030687792513154421">Timpul a expirat</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> conectat la un telefon nou</translation>
 <translation id="5083553833479578423">Deblochează mai multe funcții ale Asistentului.</translation>
 <translation id="5136175204352732067">Altă tastatură conectată</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5207949376430453814">Evidențiază cursorul pentru text</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="523505283826916779">Setări de accesibilitate</translation>
 <translation id="5260676007519551770">Desktop 4</translation>
 <translation id="5283198616748585639">Adaugă 1 min.</translation>
+<translation id="5286194356314741248">Scanare</translation>
 <translation id="5302048478445481009">Limbă</translation>
 <translation id="5313326810920013265">Setări Bluetooth</translation>
 <translation id="5331975486040154427">Dispozitiv USB-C (portul din stânga spate)</translation>
 <translation id="5379115545237091094">Prea multe încercări</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">Datele privind utilizarea și istoricul ale acestui utilizator pot fi examinate de administrator (<ph name="MANAGER_EMAIL" />) pe chrome.com.</translation>
 <translation id="5430931332414098647">Tethering instantaneu</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">Veți fi deconectat(ă) automat peste <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Ne pare rău, parola nu a putut fi confirmată. Încearcă din nou.</translation>
 <translation id="607652042414456612">Computerul poate fi detectat de dispozitivele Bluetooth din apropiere și va apărea ca „<ph name="NAME" />” cu adresa <ph name="ADDRESS" /></translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, gestionată de administratorul tău</translation>
 <translation id="612734058257491180">Asistentul Google nu este disponibil într-o sesiune pentru invitați.</translation>
 <translation id="615957422585914272">Afișați tastatura pe ecran</translation>
 <translation id="6164005077879661055">Toate fișierele și datele locale asociate acestui utilizator monitorizat vor fi șterse definitiv după eliminarea acestui utilizator monitorizat. Site-urile web accesate și setările acestui utilizator monitorizat pot fi în continuare vizibile pentru manager la <ph name="MANAGEMENT_URL" />.</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">Parolă</translation>
 <translation id="6665545700722362599">să permită site-urilor, aplicațiilor și extensiilor să folosească serviciile de localizare, microfonul, camera foto sau alte funcții ale dispozitivului;</translation>
 <translation id="6670153871843998651">Desktop 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, gestionată de administratorul tău</translation>
 <translation id="6691659475504239918">Tasta de căutare + Shift + H</translation>
 <translation id="6696025732084565524">Tastatura detașabilă necesită o actualizare esențială</translation>
 <translation id="6700713906295497288">Butonul de meniu IME</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">Urmărirea performanțelor este activată</translation>
 <translation id="6752912906630585008">Desktopul <ph name="REMOVED_DESK" /> a fost eliminat și îmbinat cu desktopul <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Se încarcă dispozitivele USB-C conectate</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Redă</translation>
 <translation id="6803622936009808957">Afișajele nu au putut fi oglindite, deoarece nu au fost găsite rezoluții acceptate. Ați intrat, în schimb, în modul monitor extins.</translation>
 <translation id="6820676911989879663">Fă o pauză!</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">Este posibil ca rețeaua să fie monitorizată</translation>
 <translation id="7536035074519304529">Adresă IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Este timpul pentru culcare</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, bateria telefonului: <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nu acceptă <ph name="SPECIFIED_RESOLUTION" />. Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paletă cu emoji</translation>
 <translation id="7564874036684306347">Mutarea ferestrelor pe alt desktop poate duce la un comportament neașteptat. Notificările, ferestrele și casetele de dialog ulterioare ar putea fi împărțite între ecrane.</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">Comută poziția meniului</translation>
 <translation id="9089416786594320554">Metode de introducere</translation>
 <translation id="9091626656156419976">S-a eliminat afișajul <ph name="DISPLAY_NAME" /></translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" />, gestionată de administratorul tău</translation>
 <translation id="9151726767154816831">Pentru a actualiza, repornește și folosește Powerwash</translation>
 <translation id="9179259655489829027">Cu această funcție poți să accesezi rapid orice utilizator conectat fără solicitarea parolei. Folosește funcția numai pentru conturile în care ai încredere.</translation>
 <translation id="9183456764293710005">Lupă de ecran complet</translation>

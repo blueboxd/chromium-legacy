@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Light blue</translation>
 <translation id="1734824808160898225">Maaaring hindi patuloy na ma-update ng <ph name="PRODUCT_NAME" /> ang sarili nito</translation>
 <translation id="1736419249208073774">I-explore</translation>
-<translation id="1736420071277903564">Computer</translation>
 <translation id="1737968601308870607">I-file ang bug</translation>
 <translation id="1741314857973421784">Magpatuloy</translation>
 <translation id="1743570585616704562">Hindi nakilala</translation>
@@ -1129,6 +1128,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2617342710774726426">Naka-lock ang SIM card</translation>
 <translation id="2619761439309613843">Araw-araw na Pag-refresh</translation>
 <translation id="2620436844016719705">System</translation>
+<translation id="2621713457727696555">Na-secure</translation>
 <translation id="26224892172169984">Huwag payagan ang anumang site na mangasiwa ng mga protocol</translation>
 <translation id="2624142942574147739">Ina-access ng pahinang ito ang iyong camera at mikropono.</translation>
 <translation id="2626799779920242286">Pakisubukang muli sa ibang pagkakataon.</translation>
@@ -1580,6 +1580,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="328571385944182268">I-save ang iyong mga password?</translation>
 <translation id="3288047731229977326">Ang mga extension na tumatakbo sa developer mode ay maaaring makapinsala sa iyong computer. Kung hindi ka isang developer, dapat mong i-disable ang mga extension na tumatakbo sa developer mode upang manatiling ligtas.</translation>
 <translation id="3289856944988573801">Upang tumingin ng mga update, mangyaring gumamit ng Ethernet o Wi-Fi.</translation>
+<translation id="3290356915286466215">Hindi naka-secure</translation>
 <translation id="3293644607209440645">Ipadala ang page na ito</translation>
 <translation id="32939749466444286">Hindi nalunsad ang Linux container. Pakisubukang muli.</translation>
 <translation id="3294437725009624529">Bisita</translation>
@@ -2021,7 +2022,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3900966090527141178">I-export ang mga password</translation>
 <translation id="3901991538546252627">Kumokonekta sa <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Ayusin ang app</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098">Hindi napapanahon ang <ph name="PLUGIN_NAME" /></translation>
 <translation id="3908501907586732282">Paganahin ang extension</translation>
 <translation id="3909477809443608991">Gusto ng <ph name="URL" /> na mag-play ng pinoprotektahang content. Ive-verify ng Google ang pagkakakilanlan ng iyong device, at maaari itong i-access ng site na ito.</translation>
@@ -2321,7 +2321,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491">Nagbabahagi ng window ang <ph name="APP_NAME" />.</translation>
 <translation id="4364830672918311045">Ipakita ang mga notification</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> sa <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Hindi nagtutugma ang inilagay mong email at password</translation>
 <translation id="437184764829821926">Mga advanced na setting ng font</translation>
 <translation id="4374831787438678295">Installer ng Linux</translation>
@@ -2963,7 +2962,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5363109466694494651">I-Powerwash at I-revert</translation>
 <translation id="5365881113273618889">Naglalaman ng mga sensitibong file ang pinili mong folder. Sigurado ka bang gusto mong bigyan ang "<ph name="APP_NAME" />" ng permanenteng access sa pag-write sa folder na ito?</translation>
 <translation id="5367091008316207019">Binabasa ang file..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Naka-lock ang iyong telepono. I-unlock ito upang makapasok.</translation>
 <translation id="5368779022775404937">Mag-sign in sa <ph name="REALM" /></translation>
 <translation id="5369491905435686894">I-enable ang pag-accelerate ng mouse</translation>
@@ -4721,6 +4719,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7912080627461681647">Napalitan na ang iyong password sa server. Mag-sign out at muling mag-sign in.</translation>
 <translation id="7915457674565721553">Kumonekta sa internet para i-set up ang mga kontrol ng magulang</translation>
 <translation id="7915471803647590281">Mangyaring sabihin sa amin kung ano ang nangyayari bago ang pagpapadala ng feedback.</translation>
+<translation id="7918257978052780342">Magpatala</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />s</translation>
 <translation id="792514962475806987">Antas ng naka-dock na pag-zoom:</translation>
 <translation id="7925247922861151263">Nabigo ang pagsusuri sa AAA</translation>

@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Svetlo modra</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> se morda ne bo mogel posodabljati</translation>
 <translation id="1736419249208073774">Razišči</translation>
-<translation id="1736420071277903564">Računalnik</translation>
 <translation id="1737968601308870607">Prijavi napako</translation>
 <translation id="1741314857973421784">Naprej</translation>
 <translation id="1743570585616704562">Ni prepoznano</translation>
@@ -1129,6 +1128,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2617342710774726426">Kartica SIM je zaklenjena</translation>
 <translation id="2619761439309613843">Dnevno osveževanje</translation>
 <translation id="2620436844016719705">Sistem</translation>
+<translation id="2621713457727696555">Varno</translation>
 <translation id="26224892172169984">Ne dovoli nobenemu spletnemu mestu obravnave protokolov</translation>
 <translation id="2624142942574147739">Ta stran dostopa do kamere in mikrofona.</translation>
 <translation id="2626799779920242286">Poskusite ponovno pozneje.</translation>
@@ -1580,6 +1580,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="328571385944182268">Želite shranjevati gesla?</translation>
 <translation id="3288047731229977326">Razširitve, ki se izvajajo v razvijalskem načinu, lahko škodijo vašemu računalniku. Če niste razvijalec, zaradi varnosti onemogočite razširitve, ki se izvajajo v razvijalskem načinu.</translation>
 <translation id="3289856944988573801">Če želite preveriti, ali so na voljo posodobitve, uporabite ethernet ali Wi-Fi.</translation>
+<translation id="3290356915286466215">Ni varno</translation>
 <translation id="3293644607209440645">Pošlji to stran</translation>
 <translation id="32939749466444286">Vsebnik za Linux se ni zagnal. Poskusite znova.</translation>
 <translation id="3294437725009624529">Gost</translation>
@@ -2021,7 +2022,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3900966090527141178">Izvoz gesel</translation>
 <translation id="3901991538546252627">Vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Popravi aplikacijo</translation>
-<translation id="3906954721959377182">Tablični računalnik</translation>
 <translation id="3908393983276948098">Vtičnik <ph name="PLUGIN_NAME" /> je zastarel.</translation>
 <translation id="3908501907586732282">Omogoči razširitev</translation>
 <translation id="3909477809443608991"><ph name="URL" /> želi predvajati zaščiteno vsebino. Google bo preveril identiteto naprave in do nje bo morda dostopalo to spletno mesto.</translation>
@@ -2321,7 +2321,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4364327530094270451">Melona</translation>
 <translation id="4364567974334641491">Aplikacija <ph name="APP_NAME" /> je v skupno rabo dala okno.</translation>
 <translation id="4364830672918311045">Prikaz obvestil</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> z aplikacijo <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">E-poštni naslov in geslo, ki ste ju vnesli, se ne ujemata.</translation>
 <translation id="437184764829821926">Napredne nastavitve pisave</translation>
 <translation id="4374831787438678295">Namestitveni program za Linux</translation>
@@ -2963,7 +2962,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5363109466694494651">Izvedi Powerwash in povrni</translation>
 <translation id="5365881113273618889">Izbrana mapa vsebuje občutljive datoteke. Ali ste prepričani, da želite aplikaciji »<ph name="APP_NAME" />« odobriti trajni dostop za pisanje v tej mapi?</translation>
 <translation id="5367091008316207019">Branje datoteke ...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Telefon je zaklenjen. Za dostop ga odklenite.</translation>
 <translation id="5368779022775404937">Prijavite se v domeno <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Omogočanje pospeševanja miške</translation>
@@ -4723,6 +4721,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7912080627461681647">Geslo je bilo spremenjeno v strežniku. Odjavite se in se nato znova prijavite.</translation>
 <translation id="7915457674565721553">Vzpostavite povezavo z internetom, če želite nastaviti starševski nadzor</translation>
 <translation id="7915471803647590281">Povejte nam, kaj se dogaja, preden nam pošljete povratne informacije.</translation>
+<translation id="7918257978052780342">Včlanitev</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Stopnja povečave zasidrane lupe:</translation>
 <translation id="7925247922861151263">Preverjanje AAA ni uspelo</translation>

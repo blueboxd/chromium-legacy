@@ -20,6 +20,7 @@
 #include "base/i18n/character_encoding.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
@@ -36,7 +37,6 @@
 #include "build/build_config.h"
 #include "chrome/app/builtin_service_manifests.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
-#include "chrome/app/chrome_content_renderer_overlay_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -3307,6 +3307,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // Apply caption style from preferences if system caption style is undefined.
   if (!style && base::FeatureList::IsEnabled(features::kCaptionSettings)) {
     style = pref_names_util::GetCaptionStyleFromPrefs(prefs);
+
+    base::UmaHistogramBoolean("Accessibility.CaptionSettingsLoadedFromPrefs",
+                              style.has_value());
   }
 
   if (style) {
@@ -3709,8 +3712,6 @@ base::Optional<service_manager::Manifest>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetChromeContentBrowserOverlayManifest();
-  if (name == content::mojom::kRendererServiceName)
-    return GetChromeContentRendererOverlayManifest();
   return base::nullopt;
 }
 

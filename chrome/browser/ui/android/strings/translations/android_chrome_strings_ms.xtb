@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="290376772003165898">Halaman bukan dalam <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Senarai peranti untuk berkongsi tab dibuka pada ketinggian penuh.</translation>
+<translation id="2905036901251765993">Benarkan orang berdekatan mengimbas kod QR ini untuk berkongsi dengan mereka</translation>
 <translation id="2909615210195135082">Platform Pemberitahuan Google</translation>
 <translation id="2910701580606108292">Tanya sebelum membenarkan tapak memainkan kandungan yang dilindungi</translation>
 <translation id="2913331724188855103">Benarkan tapak untuk menyimpan dan membaca data kuki (disyorkan)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">Buka topeng kata laluan</translation>
 <translation id="363596933471559332">Log masuk secara automatik ke tapak web menggunakan bukti kelayakan yang disimpan. Apabila ciri ini dimatikan, anda akan diminta memberikan pengesahan setiap kali sebelum log masuk ke tapak web.</translation>
 <translation id="3658159451045945436">Penetapan semula akan memadamkan sejarah penjimatan data anda, termasuk senarai tapak yang dilawati.</translation>
+<translation id="3682730288090679318">Dayakan untuk menyekat tapak secara automatik daripada meminta untuk menunjukkan pemberitahuan kepada anda. Jika tapak meminta pemberitahuan, bar maklumat akan dipaparkan di bahagian bawah halaman.</translation>
 <translation id="3692944402865947621">Muat turun <ph name="FILE_NAME" /> gagal kerana lokasi storan tidak dapat dicapai.</translation>
 <translation id="3714981814255182093">Buka Bar Cari</translation>
 <translation id="3716182511346448902">Halaman ini menggunakan terlalu banyak memori, jadi Chrome menjeda halaman ini.</translation>
@@ -542,6 +544,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5048398596102334565">Benarkan tapak mengakses penderia gerakan (disyorkan)</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
 <translation id="5087580092889165836">Tambah kad</translation>
+<translation id="5096950519211870196">Tapak akan disekat daripada meminta untuk menunjukkan pemberitahuan kepada anda. Jika tapak meminta pemberitahuan, bar maklumat akan dipaparkan di bahagian bawah halaman.</translation>
 <translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
 <translation id="5123685120097942451">Tab Inkognito</translation>
@@ -589,6 +592,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5414836363063783498">Mengesahkan…</translation>
 <translation id="5423934151118863508">Halaman yang paling kerap anda kunjungi akan muncul di sini</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB tersedia</translation>
+<translation id="5427766642345310212">OK. Secara lalai, permintaan pemberitahuan baharu akan dipaparkan di sini.</translation>
 <translation id="543338862236136125">Edit kata laluan</translation>
 <translation id="5433691172869980887">Nama pengguna disalin</translation>
 <translation id="543509235395288790">Memuat turun <ph name="COUNT" /> fail (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +691,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="6108923351542677676">Persediaan sedang berjalan...</translation>
 <translation id="6111020039983847643">data digunakan</translation>
 <translation id="6112702117600201073">Memuat semula halaman</translation>
+<translation id="6113400363611269907">Tunjukkan gesaan secara senyap</translation>
 <translation id="6127379762771434464">Item dialih keluar</translation>
 <translation id="6140912465461743537">Negara/Rantau</translation>
 <translation id="614940544461990577">Cuba:</translation>
@@ -774,7 +779,6 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="6697947395630195233">Chrome memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini.</translation>
 <translation id="6698801883190606802">Urus data yang disegerakkan</translation>
 <translation id="6699370405921460408">Pelayan Google akan mengoptimumkan halaman yang anda lawati.</translation>
-<translation id="6706288973712894588">Anda luar talian sekarang.\n<ph name="BEGIN_LINK" />Terokai suapan luar talian anda.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Berita</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="671481426037969117">Pemasa <ph name="FQDN" /> anda sudah tamat. Pemasa akan bermula lagi esok.</translation>
@@ -1020,6 +1024,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="8503813439785031346">Nama pengguna</translation>
 <translation id="8514477925623180633">Eksport kata laluan yang disimpan dengan menggunakan Chrome</translation>
 <translation id="8514577642972634246">Masuk ke mod inkognito</translation>
+<translation id="8516012719330875537">Editor Imej</translation>
 <translation id="851751545965956758">Sekat tapak daripada menyambung ke peranti</translation>
 <translation id="8523928698583292556">Padam kata laluan yang disimpan</translation>
 <translation id="854522910157234410">Buka halaman ini</translation>

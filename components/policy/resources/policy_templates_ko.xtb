@@ -531,6 +531,15 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="1852294065645015766">미디어 자동 재생 허용</translation>
+<translation id="1853782273088286010"><ph name="PRODUCT_NAME" />에서 내장 DNS 클라이언트 사용 여부를 제어합니다.
+
+      이는 사용되는 DNS 서버에는 영향을 주지 않고 DNS 서버와 통신하는 데 사용되는 소프트웨어 스택에만 영향을 줍니다. 예를 들어 운영체제가 엔터프라이즈 DNS 서버를 사용하도록 구성된 경우 동일한 서버가 내장 DNS 클라이언트에서 사용됩니다. 하지만 내장 DNS 클라이언트가 DNS over TLS와 같은 더 최신의 DNS 관련 프로토콜을 사용하여 다른 방식으로 서버를 처리할 수도 있습니다.
+
+      정책이 true로 설정되어 있으면 가능한 경우 내장 DNS 클라이언트가 사용됩니다.
+
+      false로 설정되면 내장 DNS가 사용되지 않습니다.
+
+      설정되지 않으면 macOS, Android(비공개 DNS와 VPN이 모두 사용 설정되지 않은 경우), ChromeOS에서 내장 DNS 클라이언트가 기본으로 사용 설정되며 사용자는 chrome://flags를 수정하거나 명령줄 플래그를 지정하여 내장 DNS 클라이언트 사용 여부를 변경할 수 있습니다.</translation>
 <translation id="1857152770025485173">이 정책은 사용자가 블랙리스트에 포함된 URL의 웹페이지를 로드하지 못하도록 차단합니다. 블랙리스트에는 어떤 URL이 블랙리스트에 포함될지 지정하는 URL 패턴 목록이 있습니다.
 
       URL 패턴 형식은 https://www.chromium.org/administrators/url-blacklist-filter-format에 따라 지정되어야 합니다.
@@ -1407,6 +1416,13 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
           이 정책은 선택사항입니다. 설정하지 않으면 검색어가 대체됩니다.
 
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
+<translation id="3049248142961638857">DHCP 요청에서 사용된 기기의 호스트 이름을 결정합니다.
+
+      정책이 비어 있지 않은 문자열로 설정된 경우 DHCP 요청 중에 이 문자열이 기기 호스트 이름으로 사용됩니다.
+
+      문자열에는 <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />, <ph name="LOCATION_PLACEHOLDER" /> 변수가 포함될 수 있으며, 이러한 변수는 호스트 이름으로 사용되기 전에 기기의 값으로 대체됩니다. 그 결과로 나오는 대체 값은 유효한 호스트 이름이어여 합니다(RFC 1035, 섹션 3.1 준수).
+
+      정책이 설정되어 있지 않거나 대체 후 값이 유효한 호스트 이름이 아닌 경우 DHCP 요청에서 어떠한 호스트 이름도 설정되지 않습니다. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" />에서 WPAD(Web Proxy Auto-Discovery) 최적화를 사용 중지하도록 허용합니다.
 
@@ -2701,6 +2717,11 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 <translation id="5208240613060747912">알림 표시가 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultNotificationsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
+<translation id="5212118847531454979"><ph name="PRODUCT_NAME" />을(를) 다시 실행할 필요가 있거나 대기 중인 업데이트를 적용하기 위해 <ph name="PRODUCT_OS_NAME" /> 기기를 다시 시작해야 한다고 사용자에게 알릴 기간을 밀리초 단위로 설정할 수 있습니다.
+
+      이 기간 동안 업데이트를 해야 한다는 알림이 사용자에게 반복적으로 표시됩니다. <ph name="PRODUCT_OS_NAME" /> 기기의 경우 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 정책에 따라 다시 시작 알림이 작업 표시줄에 나타납니다. <ph name="PRODUCT_NAME" /> 브라우저의 경우 알림 기간 중 3분의 1이 지나면 다시 실행이 필요하다는 의미로 앱 메뉴가 변경됩니다. 알림 기간 중 3분의 2가 지나면 알림 색상이 바뀌며, 알림 기간이 모두 지나면 다시 한번 바뀝니다. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 정책을 통해 사용 설정된 추가 알림도 이와 동일한 일정을 따릅니다.
+
+      정책이 설정되어 있지 않으면 기본값인 604,800,000밀리초(1주일)가 사용됩니다.</translation>
 <translation id="5212810195096589189">VM CLI 권한 지정</translation>
 <translation id="5213038356678567351">브라우저 전환을 실행해서는 안 되는 웹사이트입니다.</translation>
 <translation id="5219844027738217407">Android 앱의 경우 이 정책은 마이크에만 영향을 줍니다. 이 정책이 true로 설정되면 마이크는 모든 앱에서 음소거되며 예외는 없습니다.</translation>
@@ -2967,6 +2988,9 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
 
       지정하지 않으면 버전 시드 URL을 수정할 수 없습니다.</translation>
 <translation id="5561811616825571914">로그인 화면에서 이 사이트의 클라이언트 인증서를 자동으로 선택합니다.</translation>
+<translation id="5564865786900450806">더 이상 지원되지 않는 컴퓨터 또는 운영체제에서 <ph name="PRODUCT_NAME" />이(가) 실행될 때 표시되는 경고를 무시합니다.
+
+      정책이 false로 설정되어 있거나 설정되어 있지 않은 경우 지원되지 않는 컴퓨터 또는 운영체제에서 경고가 표시됩니다.</translation>
 <translation id="5565178130821694365">2일(48시간)마다 비밀번호를 입력해야 합니다.</translation>
 <translation id="5566210228171064229">PIN이 있을 때 또는 없을 때 모두 인쇄를 허용합니다.</translation>
 <translation id="556865034069957245">이 정책은 모든 <ph name="PRODUCT_NAME" /> UI가 숨겨지고 웹 콘텐츠만 볼 수 있는 전체 화면 모드를 사용할 수 있는지를 제어합니다.
@@ -4554,6 +4578,9 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
           이 설정을 사용 중지하면 메타 태그에 대해 페이지가 스캔됩니다.
 
           이 정책이 설정되지 않은 경우 메타 태그에 대해 페이지가 스캔됩니다.</translation>
+<translation id="829641334878002866">대기 중인 업데이트를 적용하기 위해 <ph name="PRODUCT_OS_NAME" /> 기기가 다시 시작되어야 한다는 첫 번째 알림과 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 정책에서 지정된 기간 종료 시점 사이의 기간을 밀리초 단위로 설정할 수 있습니다.
+
+      설정되지 않으면 <ph name="PRODUCT_OS_NAME" /> 기기에 기본 기간인 259,200,000밀리초(3일)가 사용됩니다.</translation>
 <translation id="8300455783946254851">True로 설정하면 셀룰러 연결을 사용할 때 <ph name="PRODUCT_OS_NAME" /> 파일 앱에서 Google 드라이브 동기화를 사용 중지합니다. 이런 경우 Wi-Fi나 이더넷을 통해 연결되었을 때에만 데이터가 Google 드라이브에 동기화됩니다.
 
           설정하지 않거나 False로 설정한 사용자는 셀룰러 연결을 통해 Google 드라이브에 파일을 전송할 수 있습니다.</translation>

@@ -194,7 +194,7 @@
 <translation id="3533436815740441613">പുതിയ ടാബ്</translation>
 <translation id="3551320343578183772">ടാബ് അടയ്‌ക്കുക</translation>
 <translation id="3581564640715911333">പേജുകൾ മറ്റ് ഭാഷകളിലേക്ക് വിവർത്തനം ചെയ്യാനുള്ള ഓഫർ</translation>
-<translation id="3588820906588687999">ചിത്രം പുതിയ ടാബിൽ തുറക്കുക</translation>
+<translation id="3588820906588687999">പുതിയ ടാബിൽ ചിത്രം തുറക്കുക</translation>
 <translation id="3603009562372709545">ലിങ്ക് URL പകർത്തുക</translation>
 <translation id="3607167657931203000">സ്വയമേവ പൂരിപ്പിക്കൽ ഡാറ്റ</translation>
 <translation id="3609785682760573515">സമന്വയിപ്പിക്കുന്നു...</translation>
@@ -204,7 +204,7 @@
 <translation id="3771033907050503522">ആൾമാറാട്ട ടാബുകൾ</translation>
 <translation id="3775743491439407556">സമന്വയം പ്രവർത്തിക്കുന്നില്ല</translation>
 <translation id="3779810277399252432">ഇന്റർനെറ്റ് കണക്ഷനില്ല.</translation>
-<translation id="3783017676699494206">ഇമേജ് സംരക്ഷിക്കുക</translation>
+<translation id="3783017676699494206">ചിത്രം സംരക്ഷിക്കുക</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റാൾ ചെയ്യുക</translation>
 <translation id="385051799172605136">പിന്നോട്ട്</translation>
 <translation id="3897092660631435901">മെനു</translation>
@@ -307,7 +307,7 @@
 <translation id="5300589172476337783">കാണിക്കുക</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5327248766486351172">പേര്</translation>
-<translation id="5388358297987318779">ഇമേജ് തുറക്കുക</translation>
+<translation id="5388358297987318779">ചിത്രം തുറക്കുക</translation>
 <translation id="5407969256130905701">മാറ്റങ്ങൾ നിരസിക്കുക</translation>
 <translation id="5409365236829784218">ഈ ഫയലിൽ തുറക്കാൻ കഴിയുന്ന അപ്ലിക്കേഷനുകളൊന്നും ഇൻസ്റ്റാൾ ചെയ്‌തില്ല.</translation>
 <translation id="5416022985862681400">കഴിഞ്ഞ 7 ദിവസം</translation>
@@ -549,7 +549,7 @@
 <translation id="8820817407110198400">ബുക്ക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="8840513115188359703">നിങ്ങൾ Google അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ആകില്ല.</translation>
 <translation id="8870413625673593573">സമീപകാലത്ത് അടച്ചവ</translation>
-<translation id="8881801611828450202">ഈ ചിത്രത്തിന് <ph name="SEARCH_ENGINE" />-ൽ തിരയുക</translation>
+<translation id="8881801611828450202">ഈ ചിത്രത്തിനായി <ph name="SEARCH_ENGINE" />-ൽ തിരയുക</translation>
 <translation id="895541991026785598">ഒരു പ്രശ്നം റിപ്പോര്‍ട്ടുചെയ്യുക</translation>
 <translation id="8976382372951310360">സഹായം</translation>
 <translation id="8981454092730389528">Google പ്രവർത്തന നിയന്ത്രണങ്ങൾ</translation>

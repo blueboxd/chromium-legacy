@@ -99,8 +99,9 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
     dbus_proxy_->ConnectToSignal(
         media_perception::kMediaPerceptionInterface,
         media_perception::kDetectionSignal,
-        base::Bind(&MediaAnalyticsClientImpl::OnDetectionSignalReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(
+            &MediaAnalyticsClientImpl::OnDetectionSignalReceived,
+            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&MediaAnalyticsClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }

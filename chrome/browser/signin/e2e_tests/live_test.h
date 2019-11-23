@@ -15,6 +15,7 @@ class LiveTest : public InProcessBrowserTest {
  protected:
   void SetUpInProcessBrowserTestFixture() override;
   void SetUp() override;
+  void TearDown() override;
 
   const TestAccountsUtil* GetTestAccountsUtil() const {
     return &test_accounts_;
@@ -22,6 +23,7 @@ class LiveTest : public InProcessBrowserTest {
 
  private:
   TestAccountsUtil test_accounts_;
+  bool skip_test_ = false;
 };
 
 }  // namespace test

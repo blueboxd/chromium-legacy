@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">Anwani</translation>
 <translation id="290376772003165898">Je, ukurasa huu haupo katika <ph name="LANGUAGE" />?</translation>
 <translation id="2904414404539560095">Orodha ya vifaa vinavyoweza kutumia kichupo pamoja imefunguliwa kwenye skrini nzima.</translation>
+<translation id="2905036901251765993">Ili ushiriki na watu walio karibu, waruhusu wachanganue msimbo huu wa QR</translation>
 <translation id="2909615210195135082">Mfumo wa Arifa za Google</translation>
 <translation id="2910701580606108292">Iulize kabla ya kuruhusu tovuti kucheza maudhui yanayolindwa</translation>
 <translation id="2913331724188855103">Ruhusu tovuti zihifadhi na kusoma data ya vidakuzi (imependekezwa)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">Onyesha nenosiri</translation>
 <translation id="363596933471559332">Ingia katika tovuti kiotomatiki kwa kutumia kitambulisho kilichohifadhiwa. Kipengele kikiwa kimezimwa, utaombwa kuthibitisha kila wakati kabla ya kuingia katika tovuti.</translation>
 <translation id="3658159451045945436">Hatua ya kuweka upya hufuta historia ya uokoaji wa data, ikiwa ni pamoja na orodha ya tovuti unazotembelea.</translation>
+<translation id="3682730288090679318">Washa ili izuie tovuti kiotomatiki zisiombe kukuonyesha arifa. Ikiwa tovuti inaomba arifa, upau wa maelezo utaonekana kwenye sehemu ya chini ya ukurasa.</translation>
 <translation id="3692944402865947621">Imeshindwa kupakua <ph name="FILE_NAME" /> kwa sababu haikupata eneo la kuhifadhi.</translation>
 <translation id="3714981814255182093">Fungua Upau wa Kutafuta</translation>
 <translation id="3716182511346448902">Ukurasa huu unatumia hifadhi kubwa zaidi, kwa hivyo Chrome imeusitisha.</translation>
@@ -542,6 +544,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5048398596102334565">Ruhusu tovuti zifikie vitambuzi vyako vya mwendo (inapendekezwa)</translation>
 <translation id="5063480226653192405">Matumizi</translation>
 <translation id="5087580092889165836">Ongeza kadi</translation>
+<translation id="5096950519211870196">Tovuti zitazuiwa ili zisikuulize iwapo ungependa kuonyeshwa arifa. Ikiwa tovuti inaomba arifa, upau wa maelezo utaonekana kwenye sehemu ya chini ya ukurasa.</translation>
 <translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
 <translation id="510275257476243843">Imesalia saa 1</translation>
 <translation id="5123685120097942451">Kichupo fiche</translation>
@@ -589,6 +592,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="5414836363063783498">Inathibitisha...</translation>
 <translation id="5423934151118863508">Kurasa zako zilizotembelewa sana zitaonekana hapa</translation>
 <translation id="5424588387303617268">GB <ph name="GIGABYTES" /> zinapatikana</translation>
+<translation id="5427766642345310212">Nimeelewa. Kwa chaguomsingi, maombi mapya ya arifa yataonekana hapa.</translation>
 <translation id="543338862236136125">Badilisha nenosiri</translation>
 <translation id="5433691172869980887">Jina la mtumiaji limenakiliwa</translation>
 <translation id="543509235395288790">Inapakua faili <ph name="COUNT" /> (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +691,7 @@ Ili ubadilishe mipangilio hii, <ph name="BEGIN_LINK" />fanya usawazishaji upya<p
 <translation id="6108923351542677676">Usanidi unaendelea...</translation>
 <translation id="6111020039983847643">data iliyotumiwa</translation>
 <translation id="6112702117600201073">Inaonyesha upya ukurasa</translation>
+<translation id="6113400363611269907">Onyesha vidokezo bila kutoa sauti</translation>
 <translation id="6127379762771434464">Kipengee kimeondolewa</translation>
 <translation id="6140912465461743537">Nchi/Eneo</translation>
 <translation id="614940544461990577">Jaribu:</translation>
@@ -774,7 +779,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="6697947395630195233">Chrome inahitaji kufikia maelezo ya mahali ulipo ili kuyashiriki na tovuti hii.</translation>
 <translation id="6698801883190606802">Dhibiti data iliyosawazishwa</translation>
 <translation id="6699370405921460408">Seva za Google zitaboresha kurasa unazotembelea.</translation>
-<translation id="6706288973712894588">Kwa sasa uko nje ya mtandao.\n<ph name="BEGIN_LINK" />Pitia mipasho yako ya nje ya mtandao.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Habari</translation>
 <translation id="6710213216561001401">Iliyotangulia</translation>
 <translation id="671481426037969117">Kipindi cha kipima muda cha <ph name="FQDN" /> kimeisha. Kitaanza tena kesho.</translation>
@@ -1019,6 +1023,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8503813439785031346">Jina la mtumiaji</translation>
 <translation id="8514477925623180633">Tuma manenosiri yaliyohifadhiwa kwenye Chrome</translation>
 <translation id="8514577642972634246">Ingia kwenye hali fiche</translation>
+<translation id="8516012719330875537">Kihariri cha Picha</translation>
 <translation id="851751545965956758">Zuia tovuti zisiunganishe kwenye vifaa</translation>
 <translation id="8523928698583292556">Futa manenosiri yaliyohifadhiwa</translation>
 <translation id="854522910157234410">Fungua ukurasa huu</translation>

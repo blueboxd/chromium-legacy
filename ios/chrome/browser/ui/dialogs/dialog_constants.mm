@@ -8,6 +8,8 @@
 #error "This file requires ARC support."
 #endif
 
-// Externed accessibility identifier.
+// Externed accessibility identifiers.
+NSString* const kJavaScriptDialogAccessibilityIdentifier =
+    @"JavaScriptDialogAccessibilityIdentifier";
 NSString* const kJavaScriptDialogTextFieldAccessibilityIdentifier =
-    @"JavaScriptDialogTextFieldAccessibilityIdentifier";
+    @"JavaScriptDialogTextFieldAccessibiltyIdentifier";

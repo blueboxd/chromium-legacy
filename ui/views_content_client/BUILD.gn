@@ -5,6 +5,12 @@
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("views_content_client") {
   testonly = true
   sources = [
@@ -15,11 +21,17 @@ jumbo_component("views_content_client") {
     "views_content_client_export.h",
     "views_content_client_main_parts.cc",
     "views_content_client_main_parts.h",
-    "views_content_client_main_parts_chromeos.cc",
-    "views_content_client_main_parts_mac.mm",
     "views_content_main_delegate.cc",
     "views_content_main_delegate.h",
   ]
+
+  if (is_chromeos) {
+    sources += [ "views_content_client_main_parts_chromeos.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [ "views_content_client_main_parts_mac.mm" ]
+  }
 
   defines = [ "VIEWS_CONTENT_CLIENT_IMPLEMENTATION" ]
 

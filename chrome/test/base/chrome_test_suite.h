@@ -31,7 +31,6 @@ class ChromeTestSuite : public content::ContentTestSuiteBase {
   // Alternative path to browser binaries.
   base::FilePath browser_dir_;
 
-
   DISALLOW_COPY_AND_ASSIGN(ChromeTestSuite);
 };
 

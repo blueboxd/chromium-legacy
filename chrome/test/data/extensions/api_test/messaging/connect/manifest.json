@@ -17,6 +17,7 @@
       "all_frames": true,
       "matches": [
         "http://*/*?testSendMessageFromFrame*",
+        "http://*/*?testSendMessageFromSandboxedFrame*",
         "http://*/*?testConnectChildFrameAndNavigate*"
       ],
       "js": ["frame.js"]

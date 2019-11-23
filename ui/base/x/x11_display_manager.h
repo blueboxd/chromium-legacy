@@ -79,9 +79,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager {
   // decoding events regarding output add/remove.
   int xrandr_event_base_ = 0;
 
-  // The task to delay fetching display info. We delay it so that we can
-  // coalesce events.
-  base::CancelableOnceClosure delayed_update_task_;
+  // The task which fetches/updates display list info asynchronously.
+  base::CancelableOnceClosure update_task_;
 
   DISALLOW_COPY_AND_ASSIGN(XDisplayManager);
 };

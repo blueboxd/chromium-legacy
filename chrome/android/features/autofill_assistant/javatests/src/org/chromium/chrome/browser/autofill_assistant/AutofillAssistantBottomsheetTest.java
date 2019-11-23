@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
@@ -136,7 +136,7 @@ public class AutofillAssistantBottomsheetTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = 21)
+    @DisabledTest
     public void testNoResize() {
         AutofillAssistantTestService testService = new AutofillAssistantTestService(
                 Collections.singletonList(makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE)));
@@ -160,7 +160,7 @@ public class AutofillAssistantBottomsheetTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = 21)
+    @DisabledTest
     public void testResizeLayoutViewport() {
         AutofillAssistantTestService testService = new AutofillAssistantTestService(
                 Collections.singletonList(makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE)));
@@ -183,7 +183,7 @@ public class AutofillAssistantBottomsheetTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = 21)
+    @DisabledTest
     public void testResizeVisualViewport() {
         AutofillAssistantTestService testService = new AutofillAssistantTestService(
                 Collections.singletonList(makeScript(RESIZE_VISUAL_VIEWPORT, HANDLE)));
@@ -207,7 +207,7 @@ public class AutofillAssistantBottomsheetTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = 21)
+    @DisabledTest
     public void testHandleHeader() {
         AutofillAssistantTestService testService = new AutofillAssistantTestService(
                 Collections.singletonList(makeScript(RESIZE_LAYOUT_VIEWPORT, HANDLE_HEADER)));
@@ -230,7 +230,7 @@ public class AutofillAssistantBottomsheetTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_less_than = 21)
+    @DisabledTest
     public void testHandleHeaderCarousels() {
         AutofillAssistantTestService testService =
                 new AutofillAssistantTestService(Collections.singletonList(

@@ -496,6 +496,15 @@
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
 <translation id="1852294065645015766">允许自动播放媒体内容</translation>
+<translation id="1853782273088286010">控制是否在 <ph name="PRODUCT_NAME" /> 中使用内置 DNS 客户端。
+
+      此政策不会影响使用的 DNS 服务器，只会影响与相应服务器通信时使用的软件堆栈。例如，如果操作系统已配置为使用企业 DNS 服务器，那么内置 DNS 客户端将会使用同一台服务器。不过，内置 DNS 客户端可能会使用更新型的 DNS 相关协议（例如 DNS-over-TLS），以不同的方式对各台服务器进行寻址。
+
+      如果此政策设为 True，系统将会使用内置 DNS 客户端（如果可用）。
+
+      如果此政策设为 False，系统将永远不会使用内置 DNS 客户端。
+
+      如果此政策未设置，那么在 MacOS、Android（当私人 DNS 和 VPN 均未启用时）和 ChromeOS 中，内置 DNS 客户端将会默认处于启用状态，并且用户将能够通过修改 chrome://flags 或指定命令行标记来更改是否使用内置 DNS 客户端。</translation>
 <translation id="1857152770025485173">此政策可禁止用户从已列入黑名单的网址加载网页。黑名单提供了一系列网址格式，从而指定了哪些网址会被禁止。
 
       网址格式必须符合 https://www.chromium.org/administrators/url-blacklist-filter-format 中的规定。
@@ -1334,6 +1343,13 @@
           此为可选政策。如果未设置此政策，系统将不会替换搜索字词。
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
+<translation id="3049248142961638857">确定要在 DHCP 请求中使用的设备主机名。
+
+      如果此政策设为一个非空字符串，该字符串将会用作 DHCP 请求中的设备主机名。
+
+      该字符串可以包含变量 <ph name="ASSET_ID_PLACEHOLDER" />、<ph name="SERIAL_NUM_PLACEHOLDER" />、<ph name="MAC_ADDR_PLACEHOLDER" />、<ph name="MACHINE_NAME_PLACEHOLDER" />、<ph name="LOCATION_PLACEHOLDER" />。系统会先将这些变量替换为设备上的相应值，然后再将该字符串用作主机名。替换后的字符串应是有效的主机名（符合 RFC 1035 第 3.1 节中的规定）。
+
+      如果此政策未设置，或替换后的值不是有效的主机名，系统将不会在 DHCP 请求中设置任何主机名。 </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740">允许停用 <ph name="PRODUCT_NAME" /> 中的 WPAD（网络代理自动发现）优化设置。
 
@@ -2573,6 +2589,11 @@
 
           此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="5208240613060747912">可让您设置网址格式的列表，这些网址格式用于指定不允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
+<translation id="5212118847531454979">让您能够设置一个时间段（以毫秒为单位），在该时间段内，如果必须重新启动 <ph name="PRODUCT_NAME" /> 或必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新，用户将会收到通知。
+
+      在该时间段内，如果需要更新，系统会反复通知用户。对于 <ph name="PRODUCT_OS_NAME" />设备，系统会根据 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策在系统任务栏中显示重启通知。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会在通知时间段过去三分之一后立即发生变化，以指示需要重新启动浏览器。此通知会在通知时间段过去三分之二后立即改变颜色，并会在整个通知时间段过后再次立即改变颜色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策启用的其他通知也会遵循这一时间表。
+
+      如果此政策未设置，系统会使用 604800000 毫秒（1 周）的默认通知时间段。</translation>
 <translation id="5212810195096589189">指定虚拟机 CLI 权限</translation>
 <translation id="5213038356678567351">始终不应触发浏览器切换的网站。</translation>
 <translation id="5219844027738217407">对于 Android 应用，此政策仅会影响麦克风。当此政策设为 true 时，系统会针对所有 Android 应用（无一例外）将麦克风设为静音。</translation>
@@ -2828,6 +2849,9 @@
 
       如果未指定，则不会修改变体种子网址。</translation>
 <translation id="5561811616825571914">在登录屏幕上自动为这些网站选择客户端证书</translation>
+<translation id="5564865786900450806">禁止在 <ph name="PRODUCT_NAME" /> 的运行环境为不再受支持的计算机或操作系统时显示警告。
+
+      如果此政策设为 False 或未设置，系统将会在此类不受支持的计算机或操作系统上显示警告。</translation>
 <translation id="5565178130821694365">必须每两天（48 小时）输入一次密码</translation>
 <translation id="5566210228171064229">允许打印（无论是否有 PIN 码）</translation>
 <translation id="556865034069957245">此政策用于控制全屏模式的可用性。在全屏模式下，所有 <ph name="PRODUCT_NAME" /> 界面都将隐藏，只显示屏幕内容。
@@ -4349,6 +4373,9 @@
           如果停用了该设置，将扫描网页的元标记。
 
           如果未设置该政策，将扫描网页的元标记。</translation>
+<translation id="829641334878002866">此政策让您能够设置一个时间段（以毫秒为单位），从而指定第一条通知（提示用户必须重启 <ph name="PRODUCT_OS_NAME" />设备以应用待应用的更新）的发出时间应与 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策所设时间段的结束时间相隔多久。
+
+      如果此政策未设置，系统将会在 <ph name="PRODUCT_OS_NAME" />设备上使用 259200000 毫秒（3 天）的默认时间段。</translation>
 <translation id="8300455783946254851">此政策设为 True 时，在使用移动网络连接的情况下，系统会在 <ph name="PRODUCT_OS_NAME" /> 的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，只有当通过 WiFi 网络或以太网连接时，才能将数据同步到 Google 云端硬盘。
 
           如果此政策未设置或设为 False，那么用户将能够通过移动网络连接将文件传输到 Google 云端硬盘。</translation>

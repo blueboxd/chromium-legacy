@@ -54,9 +54,9 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 
 // Tests signing in, using the primary button with a warm state.
 - (void)testSignInPromoWithWarmStateUsingPrimaryButton {
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
+      fakeIdentity);
 
   [ChromeEarlGreyUI openSettingsMenu];
   [SigninEarlGreyUI
@@ -65,7 +65,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];
@@ -73,19 +73,19 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 
 // Tests signing in, using the secondary button with a warm state.
 - (void)testSignInPromoWithWarmStateUsingSecondaryButton {
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
+      fakeIdentity);
 
   [ChromeEarlGreyUI openSettingsMenu];
   [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
+  [SigninEarlGreyUI selectIdentityWithEmail:fakeIdentity.userEmail];
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];

@@ -108,7 +108,6 @@ class APP_LIST_EXPORT SearchResultView
 
   // SearchResultActionsViewDelegate overrides:
   void OnSearchResultActionActivated(size_t index, int event_flags) override;
-  void OnSearchResultActionsUnSelected() override;
   bool IsSearchResultHoveredOrSelected() override;
 
   // Invoked when the context menu closes.

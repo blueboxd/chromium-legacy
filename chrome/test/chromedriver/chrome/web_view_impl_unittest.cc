@@ -299,6 +299,27 @@ std::unique_ptr<SyncWebSocket> CreateMockSyncWebSocket(
 
 }  // namespace
 
+TEST(CreateChild, MultiLevel) {
+  SyncWebSocketFactory factory =
+      base::Bind(&CreateMockSyncWebSocket, SyncWebSocket::kOk);
+  // CreateChild relies on client_ being a DevToolsClientImpl, so no mocking
+  std::unique_ptr<DevToolsClientImpl> client_uptr =
+      std::make_unique<DevToolsClientImpl>(factory, "http://url", "id");
+  DevToolsClientImpl* client_ptr = client_uptr.get();
+  BrowserInfo browser_info;
+  WebViewImpl level1(client_ptr->GetId(), true, nullptr, &browser_info,
+                     std::move(client_uptr), nullptr, PageLoadStrategy::kEager);
+  std::string sessionid = "2";
+  std::unique_ptr<WebViewImpl> level2 =
+      std::unique_ptr<WebViewImpl>(level1.CreateChild(sessionid, "1234"));
+  sessionid = "3";
+  std::unique_ptr<WebViewImpl> level3 =
+      std::unique_ptr<WebViewImpl>(level2->CreateChild(sessionid, "3456"));
+  sessionid = "4";
+  std::unique_ptr<WebViewImpl> level4 =
+      std::unique_ptr<WebViewImpl>(level3->CreateChild(sessionid, "5678"));
+}
+
 TEST(CreateChild, IsNonBlocking_NoErrors) {
   SyncWebSocketFactory factory =
       base::Bind(&CreateMockSyncWebSocket, SyncWebSocket::kOk);

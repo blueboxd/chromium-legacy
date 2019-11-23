@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1275285675049378717">Напаја се <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, управља администратор</translation>
 <translation id="1289185460362160437">Вратите се у: <ph name="COME_BACK_DAY_OF_WEEK" /> у <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Слаб сигнал</translation>
 <translation id="1293264513303784526">Уређај са USB прикључком типа C (леви порт)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Прегледајте Bluetooth подешавања. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Увек приказуј полицу</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, батерија телефона <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Прекорачење</translation>
 <translation id="1346748346194534595">Удесно</translation>
 <translation id="1351937230027495976">Скупи мени</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">Уклони овог корисника</translation>
 <translation id="1654477262762802994">Започните гласовну претрагу</translation>
 <translation id="1658406695958299976">Жао нам је, верификација лозинке још увек није успела. Напомена: ако сте недавно променили лозинку, нова лозинка ће се применити када се одјавите. Овде користите стару лозинку.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, управља администратор</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> је преостало</translation>
 <translation id="1698760176351776263">IPv6 адреса: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Није препознат</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl + тастер за претрагу + H</translation>
 <translation id="2016340657076538683">Унесите поруку</translation>
 <translation id="2050339315714019657">Вертикално</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Осветљеност тастатуре</translation>
 <translation id="209965399369889474">Нисте повезани на мрежу</translation>
 <translation id="2126242104232412123">Нови радни простор</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">Није доступна ниједна мобилна мрежа</translation>
 <translation id="3249513730522716925">Прозор <ph name="WINDOW_TITLE" /> је премештен са радне површине <ph name="ACTIVE_DESK" /> на радну површину <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Шта можеш да радиш?</translation>
-<translation id="3277674767125718685">Звук је укључен.</translation>
 <translation id="3290356915286466215">Незаштићено</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ће и даље моћи да се пријави касније.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">Налогом управља <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
 <translation id="3576141592585647168">Промените временску зону</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, управља администратор</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
 <translation id="3604801046548457007">Радна површина <ph name="DESK_TITILE" /> је направљена</translation>
 <translation id="3606978283550408104">Повезан је екран са Брајевом азбуком.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">Јак</translation>
 <translation id="4918086044614829423">Прихвати</translation>
 <translation id="4924411785043111640">Рестартуј и ресетуј</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Помери нагоре</translation>
 <translation id="4961318399572185831">Пребацивање екрана</translation>
 <translation id="5030687792513154421">Време је истекло</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> се повезао са новим телефоном</translation>
 <translation id="5083553833479578423">Откључајте још функција Помоћника.</translation>
 <translation id="5136175204352732067">Нека друга тастатура је повезана</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Доступни су уређаји за пребацивање</translation>
 <translation id="5207949376430453814">Истакни курсор за текст</translation>
 <translation id="5222676887888702881">Одјави ме</translation>
 <translation id="523505283826916779">Подешавања приступачности</translation>
 <translation id="5260676007519551770">Радна површина 4</translation>
 <translation id="5283198616748585639">Додај 1 мин</translation>
+<translation id="5286194356314741248">Скенирање</translation>
 <translation id="5302048478445481009">Језик</translation>
 <translation id="5313326810920013265">Подешавања Bluetooth-а</translation>
 <translation id="5331975486040154427">Уређај са USB прикључком типа C (леви задњи порт)</translation>
 <translation id="5379115545237091094">Превише покушаја</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">Менаџер (<ph name="MANAGER_EMAIL" />) може да прегледа коришћење и историју овог корисника на chrome.com.</translation>
 <translation id="5430931332414098647">Тренутно привезивање</translation>
 <translation id="5431825016875453137">Отворени VPN/L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">Аутоматски ћете бити одјављени за <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Жао нам је, верификација лозинке није успела. Пробајте поново.</translation>
 <translation id="607652042414456612">Оближњи Bluetooth уређаји могу да открију рачунар и он ће се приказивати као „<ph name="NAME" />“ са адресом <ph name="ADDRESS" /></translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, управља администратор</translation>
 <translation id="612734058257491180">Google помоћник није доступан у сесији госта.</translation>
 <translation id="615957422585914272">Прикажи тастатуру на екрану</translation>
 <translation id="6164005077879661055">Све датотеке и локални подаци повезани са корисником под надзором ће бити трајно избрисани када уклоните овог корисника под надзором. Менаџер ће можда и даље моћи да види посећене веб-сајтове и подешавања за овог корисника под надзором на <ph name="MANAGEMENT_URL" />.</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6665545700722362599">Дозволите веб-сајтовима, апликацијама и додацима да користе услуге локације или микрофон, камеру или друге функције уређаја</translation>
 <translation id="6670153871843998651">Радна површина 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, управља администратор</translation>
 <translation id="6691659475504239918">Тастер за претрагу + Shift + H</translation>
 <translation id="6696025732084565524">Треба да инсталирате важно ажурирање за одвојиву тастатуру</translation>
 <translation id="6700713906295497288">Дугме IME менија</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">Праћење учинка је укључено</translation>
 <translation id="6752912906630585008">Радна површина <ph name="REMOVED_DESK" /> је уклоњена и спојена са радном површином <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Напаја повезане уређаје са USB прикључком типа C</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6803622936009808957">Није могуће пресликати екране зато што није пронађена ниједна подржана резолуција. Уместо тога, приказује се проширена радна површина.</translation>
 <translation id="6820676911989879663">Направите паузу!</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">Мрежа се можда надгледа</translation>
 <translation id="7536035074519304529">IP адреса: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Време је за спавање</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, батерија телефона <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> не подржава <ph name="SPECIFIED_RESOLUTION" />. Резолуција је промењена на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Палета емоџија</translation>
 <translation id="7564874036684306347">Премештање прозора на други рачунар може да доведе до неочекиваног понашања. Накнадна обавештења, прозори и дијалози ће можда бити подељени између рачунара.</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">Промените положај менија</translation>
 <translation id="9089416786594320554">Методи уноса</translation>
 <translation id="9091626656156419976">Уклоњен је приказ <ph name="DISPLAY_NAME" /></translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, управља администратор</translation>
 <translation id="9151726767154816831">Поново покрените и обавите Powerwash да бисте ажурирали</translation>
 <translation id="9179259655489829027">Ова функција вам омогућава да брзо приступите било ком пријављеном кориснику без лозинке. Користите ову функцију само са налозима у које имате поверења.</translation>
 <translation id="9183456764293710005">Лупа за цео екран</translation>

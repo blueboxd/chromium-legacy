@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.history;
 
 import static org.chromium.chrome.browser.history.HistoryTestUtils.checkAdapterContents;
 
+import android.os.Build;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -30,7 +31,8 @@ import java.util.concurrent.TimeUnit;
  * Tests for the {@link HistoryAdapter}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/1023426")
+@DisableIf.Build(supported_abis_includes = "arm64-v8a",
+        sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1023426")
 public class HistoryAdapterTest {
     private StubbedHistoryProvider mHistoryProvider;
     private HistoryAdapter mAdapter;

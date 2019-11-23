@@ -11,11 +11,15 @@ namespace blink {
 namespace scheduler {
 
 WebSchedulingTaskQueueImpl::WebSchedulingTaskQueueImpl(
-    WebSchedulingPriority priority,
-    MainThreadTaskQueue* task_queue)
-    : priority_(priority),
-      task_runner_(
-          task_queue->CreateTaskRunner(TaskType::kExperimentalWebScheduling)) {}
+    base::WeakPtr<MainThreadTaskQueue> task_queue)
+    : task_runner_(
+          task_queue->CreateTaskRunner(TaskType::kExperimentalWebScheduling)),
+      task_queue_(std::move(task_queue)) {}
+
+void WebSchedulingTaskQueueImpl::SetPriority(WebSchedulingPriority priority) {
+  if (task_queue_)
+    task_queue_->SetWebSchedulingPriority(priority);
+}
 
 scoped_refptr<base::SingleThreadTaskRunner>
 WebSchedulingTaskQueueImpl::GetTaskRunner() {

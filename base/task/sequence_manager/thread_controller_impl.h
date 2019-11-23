@@ -67,6 +67,9 @@ class BASE_EXPORT ThreadControllerImpl : public ThreadController,
 #if defined(OS_IOS) || defined(OS_ANDROID)
   void AttachToMessagePump() override;
 #endif
+#if defined(OS_IOS)
+  void DetachFromMessagePump() override;
+#endif
   bool ShouldQuitRunLoopWhenIdle() override;
 
   // RunLoop::NestingObserver:

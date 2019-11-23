@@ -86,6 +86,9 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
 @property(nonatomic, copy)
     NSArray<TextFieldConfiguration*>* textFieldConfigurations;
 
+// The alert view's accessibility identifier.
+@property(nonatomic, copy) NSString* alertAccessibilityIdentifier;
+
 // The text fields that had been added to this alert.
 @property(nonatomic, strong) NSArray<UITextField*>* textFields;
 
@@ -137,6 +140,7 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
   [self.view addGestureRecognizer:self.tapRecognizer];
 
   self.contentView = [[UIView alloc] init];
+  self.contentView.accessibilityIdentifier = self.alertAccessibilityIdentifier;
   self.contentView.clipsToBounds = YES;
   self.contentView.backgroundColor = UIColor.cr_systemBackgroundColor;
   self.contentView.layer.cornerRadius = kCornerRadius;

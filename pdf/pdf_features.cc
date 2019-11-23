@@ -25,5 +25,8 @@ const base::Feature kPDFAnnotations {
 #endif  // defined(OS_CHROMEOS)
 };
 
+const base::Feature kAccessiblePDFHighlight{"AccessiblePDFHighlight",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace chrome_pdf

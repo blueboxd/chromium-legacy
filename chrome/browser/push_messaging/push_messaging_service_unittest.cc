@@ -149,7 +149,6 @@ class PushMessagingServiceTest : public ::testing::Test {
 #if defined(OS_ANDROID)
   instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
       block_async_;
-  instance_id::ScopedUseFakeInstanceIDAndroid use_fake_;
 #endif  // OS_ANDROID
 };
 

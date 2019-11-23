@@ -276,6 +276,15 @@ const char kOmniboxPopupShortcutIconsInZeroStateDescription[] =
     "Instead of ZeroSuggest, show most visited sites and collection shortcuts "
     "in the omnibox popup.";
 
+const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[] =
+    "Omnibox Preserve Default Match Against Async Update";
+const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[] =
+    "Preserves the default match against change when providers return results "
+    "asynchronously. This prevents the default match from changing after the "
+    "user finishes typing. Without this feature, if the default match is "
+    "updated right when the user presses Enter, the user may go to a "
+    "surprising destination.";
+
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =

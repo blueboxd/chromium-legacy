@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromecast/browser/webview/cast_app_controller.h"
+#include "content/public/browser/web_contents.h"
 
 namespace chromecast {
 
@@ -11,6 +12,12 @@ CastAppController::CastAppController(Client* client,
     : WebContentController(client), contents_(contents) {
   std::unique_ptr<webview::WebviewResponse> response =
       std::make_unique<webview::WebviewResponse>();
+
+  auto ax_id = contents->GetMainFrame()->GetAXTreeID().ToString();
+  response->mutable_create_response()
+      ->mutable_accessibility_info()
+      ->set_ax_tree_id(ax_id);
+
   client->EnqueueSend(std::move(response));
 }
 

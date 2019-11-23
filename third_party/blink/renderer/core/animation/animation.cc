@@ -224,7 +224,7 @@ double Animation::EffectEnd() const {
   return content_ ? content_->SpecifiedTiming().EndTimeInternal() : 0;
 }
 
-bool Animation::Limited(double current_time) const {
+bool Animation::Limited(base::Optional<double> current_time) const {
   return (EffectivePlaybackRate() < 0 && current_time <= 0) ||
          (EffectivePlaybackRate() > 0 && current_time >= EffectEnd());
 }
@@ -368,21 +368,24 @@ void Animation::UpdateCurrentTimingState(TimingUpdateReason reason) {
     return;
 
   if (hold_time_) {
-    double new_current_time = hold_time_.value();
+    base::Optional<double> new_current_time = hold_time_;
     if (internal_play_state_ == kFinished && start_time_ && timeline_) {
       // Add hystersis due to floating point error accumulation
-      if (!Limited(CalculateCurrentTime() + 0.001 * playback_rate_)) {
+      base::Optional<double> current_time = CalculateCurrentTime();
+      DCHECK(current_time);
+      if (!Limited(current_time.value() + 0.001 * playback_rate_)) {
         // The current time became unlimited, eg. due to a backwards
         // seek of the timeline.
-        new_current_time = CalculateCurrentTime();
-      } else if (!Limited(hold_time_.value())) {
+        new_current_time = current_time;
+      } else if (!Limited(hold_time_)) {
         // The hold time became unlimited, eg. due to the effect
         // becoming longer.
         new_current_time =
-            clampTo<double>(CalculateCurrentTime(), 0, EffectEnd());
+            clampTo<double>(current_time.value(), 0, EffectEnd());
       }
     }
-    SetCurrentTimeInternal(new_current_time, reason);
+    DCHECK(new_current_time);
+    SetCurrentTimeInternal(new_current_time.value(), reason);
   } else if (Limited(CalculateCurrentTime())) {
     hold_time_ = playback_rate_ < 0 ? 0 : EffectEnd();
   }
@@ -435,15 +438,15 @@ double Animation::currentTime() {
 }
 
 double Animation::CurrentTimeInternal() const {
-  return hold_time_.value_or(CalculateCurrentTime());
+  return hold_time_.value_or(CalculateCurrentTime().value_or(NullValue()));
 }
 
-double Animation::UnlimitedCurrentTimeInternal() const {
+base::Optional<double> Animation::UnlimitedCurrentTimeInternal() const {
 #if DCHECK_IS_ON()
   CurrentTimeInternal();
 #endif
   return PlayStateInternal() == kPaused || !start_time_
-             ? CurrentTimeInternal()
+             ? ValueOrUnresolved(CurrentTimeInternal())
              : CalculateCurrentTime();
 }
 
@@ -670,14 +673,14 @@ base::Optional<double> Animation::CalculateStartTime(
   return start_time;
 }
 
-double Animation::CalculateCurrentTime() const {
+base::Optional<double> Animation::CalculateCurrentTime() const {
   if (!start_time_ || !timeline_ || !timeline_->IsActive())
-    return NullValue();
+    return base::nullopt;
   base::Optional<double> timeline_time = timeline_->CurrentTimeSeconds();
   // TODO(crbug.com/916117): Handle NaN time for scroll-linked animations.
   if (!timeline_time) {
     DCHECK(timeline_->IsScrollTimeline());
-    return NullValue();
+    return base::nullopt;
   }
   return (timeline_time.value() - start_time_.value()) * playback_rate_;
 }
@@ -1191,7 +1194,8 @@ void Animation::UpdateFinishedState(UpdateType update_type,
   // distinction, a once-finished animation would remain finished even when its
   // timeline progresses in the opposite direction.
   double unconstrained_current_time =
-      did_seek ? CurrentTimeInternal() : CalculateCurrentTime();
+      did_seek ? CurrentTimeInternal()
+               : CalculateCurrentTime().value_or(NullValue());
 
   // 2. Conditionally update the hold time.
   if (!IsNull(unconstrained_current_time) && start_time_ && !pending_play_ &&
@@ -1348,14 +1352,18 @@ void Animation::updatePlaybackRate(double playback_rate,
     //         animation with the did seek flag set to false, and the
     //         synchronously notify flag set to false.
     case kFinished: {
-      double unconstrained_current_time = CalculateCurrentTime();
+      base::Optional<double> unconstrained_current_time =
+          CalculateCurrentTime();
       base::Optional<double> timeline_time =
           timeline_ ? timeline_->CurrentTimeSeconds() : base::nullopt;
       if (playback_rate) {
         if (timeline_time) {
           start_time_ =
-              ValueOrUnresolved(timeline_time.value() -
-                                unconstrained_current_time / playback_rate);
+              (timeline_time && unconstrained_current_time)
+                  ? ValueOrUnresolved((timeline_time.value() -
+                                       unconstrained_current_time.value()) /
+                                      playback_rate)
+                  : base::nullopt;
         }
       } else {
         start_time_ = timeline_time;
@@ -1385,7 +1393,11 @@ ScriptPromise Animation::finished(ScriptState* script_state) {
     finished_promise_ = MakeGarbageCollected<AnimationPromise>(
         ExecutionContext::From(script_state), this,
         AnimationPromise::kFinished);
-    if (PlayStateInternal() == kFinished)
+    // Defer resolving the finished promise if the finish notification task is
+    // pending. The finished state could change before the next microtask
+    // checkpoint.
+    if (CalculateAnimationPlayState() == kFinished &&
+        !pending_finish_notification_)
       finished_promise_->Resolve(this);
   }
   return finished_promise_->Promise(script_state->World());

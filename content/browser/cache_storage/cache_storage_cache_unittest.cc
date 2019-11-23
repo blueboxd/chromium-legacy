@@ -398,8 +398,12 @@ class CacheStorageCacheTest : public testing::Test {
         ChromeBlobStorageContext::GetFor(&browser_context_);
     // Wait for chrome_blob_storage_context to finish initializing.
     base::RunLoop().RunUntilIdle();
-    blob_storage_context_ = base::MakeRefCounted<BlobStorageContextWrapper>(
-        blob_storage_context->MojoContext());
+
+    mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
+    blob_storage_context->BindMojoContext(
+        remote.InitWithNewPipeAndPassReceiver());
+    blob_storage_context_ =
+        base::MakeRefCounted<BlobStorageContextWrapper>(std::move(remote));
 
     const bool is_incognito = MemoryOnly();
     if (!is_incognito) {

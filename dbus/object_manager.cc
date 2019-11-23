@@ -61,9 +61,8 @@ ObjectManager::ObjectManager(Bus* bus,
   DCHECK(bus_);
   bus_->AssertOnOriginThread();
   object_proxy_ = bus_->GetObjectProxy(service_name_, object_path_);
-  object_proxy_->SetNameOwnerChangedCallback(
-      base::Bind(&ObjectManager::NameOwnerChanged,
-                 weak_ptr_factory_.GetWeakPtr()));
+  object_proxy_->SetNameOwnerChangedCallback(base::BindRepeating(
+      &ObjectManager::NameOwnerChanged, weak_ptr_factory_.GetWeakPtr()));
 }
 
 ObjectManager::~ObjectManager() {
@@ -148,11 +147,9 @@ void ObjectManager::GetManagedObjects() {
   MethodCall method_call(kObjectManagerInterface,
                          kObjectManagerGetManagedObjects);
 
-  object_proxy_->CallMethod(
-      &method_call,
-      ObjectProxy::TIMEOUT_USE_DEFAULT,
-      base::Bind(&ObjectManager::OnGetManagedObjects,
-                 weak_ptr_factory_.GetWeakPtr()));
+  object_proxy_->CallMethod(&method_call, ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::BindOnce(&ObjectManager::OnGetManagedObjects,
+                                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ObjectManager::CleanUp() {
@@ -235,20 +232,18 @@ void ObjectManager::OnSetupMatchRuleAndFilterComplete(bool success) {
     return;
 
   object_proxy_->ConnectToSignal(
-      kObjectManagerInterface,
-      kObjectManagerInterfacesAdded,
-      base::Bind(&ObjectManager::InterfacesAddedReceived,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ObjectManager::InterfacesAddedConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
+      kObjectManagerInterface, kObjectManagerInterfacesAdded,
+      base::BindRepeating(&ObjectManager::InterfacesAddedReceived,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ObjectManager::InterfacesAddedConnected,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   object_proxy_->ConnectToSignal(
-      kObjectManagerInterface,
-      kObjectManagerInterfacesRemoved,
-      base::Bind(&ObjectManager::InterfacesRemovedReceived,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ObjectManager::InterfacesRemovedConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
+      kObjectManagerInterface, kObjectManagerInterfacesRemoved,
+      base::BindRepeating(&ObjectManager::InterfacesRemovedReceived,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ObjectManager::InterfacesRemovedConnected,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   if (!service_name_owner_.empty())
     GetManagedObjects();

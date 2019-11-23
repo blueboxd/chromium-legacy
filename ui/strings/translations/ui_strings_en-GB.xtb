@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="7814458197256864873">&amp;Copy</translation>
+<translation id="7848989271541991537">Moved to page <ph name="PAGE_NUMBER" />, row <ph name="ROW_NUMBER" />, column <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Don't block</translation>
 <translation id="7907591526440419938">Open File</translation>
 <translation id="7969046989155602842">Command</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Shelf always hidden</translation>
 <translation id="8996630695507351249">Make sure that <ph name="TARGET_DEVICE_NAME" /> is connected to the Internet.</translation>
 <translation id="9002566407876343676">open</translation>
-<translation id="9039076430527029379">Move to Page <ph name="PAGE_NUMBER" />, row <ph name="ROW_NUMBER" />, column <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sec}other{# secs}}</translation>
 <translation id="9059834730836941392">Collapse notification</translation>
 <translation id="9150735707954472829">Tab</translation>

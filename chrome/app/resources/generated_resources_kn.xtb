@@ -518,7 +518,6 @@
 <translation id="1734212868489994726">ತಿಳಿ ನೀಲಿ</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> ತಾನಾಗಿಯೇ ಅಪ್‌ಡೇಟ್‌‌ ಆಗಲು ಸಾಧ್ಯವಾಗದಿರಬಹುದು</translation>
 <translation id="1736419249208073774">ಎಕ್ಸ್‌ಪ್ಲೋರ್ ಮಾಡಿ</translation>
-<translation id="1736420071277903564">ಕಂಪ್ಯೂಟರ್</translation>
 <translation id="1737968601308870607">ಫೈಲ್ ಬಗ್</translation>
 <translation id="1741314857973421784">ಮುಂದುವರಿಸಿ</translation>
 <translation id="1743570585616704562">ಗುರುತಿಸಲಾಗಿಲ್ಲ</translation>
@@ -565,7 +564,7 @@
 <translation id="1794791083288629568">ಈ ಸಮಸ್ಯೆಯನ್ನು ಸರಿಪಡಿಸಲು ನಮಗೆ ಸಹಾಯ ಮಾಡುವುದಕ್ಕಾಗಿ ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸಿ.</translation>
 <translation id="1795214765651529549">ಕ್ಲಾಸಿಕ್ ಬಳಸಿ</translation>
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" ವಿಸ್ತರಣೆಯನ್ನು ಸ್ವಯಂಚಾಲಿಕವಾಗಿ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
-<translation id="1802624026913571222">ಮುಚ್ಚಿದ ನಂತರ ಸ್ಲೀಪ್ ಮೋಡ್‌ಗೆ ಬದಲಿಸಿ</translation>
+<translation id="1802624026913571222">ಕವರ್ ಮುಚ್ಚಿದಾಗ ಸ್ಲೀಪ್ ಮೋಡ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="1802687198411089702">ಪುಟವು ಪ್ರತಿಕ್ರಿಯಿಸುತ್ತಿಲ್ಲ. ನೀವು ಅದಕ್ಕಾಗಿ ಕಾಯಬಹುದು ಅಥವಾ ನಿರ್ಗಮಿಸಬಹುದು.</translation>
 <translation id="1802931390041703523">ಈ ಪುಟದಲ್ಲಿ ಫ್ಲ್ಯಾಶ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="1803531841600994172">ಈ ಭಾಷೆಯಿಂದ ಈ ಭಾಷೆಗೆ ಅನುವಾದಿಸಬೇಕು</translation>
@@ -1129,6 +1128,7 @@
 <translation id="2617342710774726426">ಸಿಮ್‌ ಕಾರ್ಡ್ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2619761439309613843">ಪ್ರತಿದಿನವು ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
 <translation id="2620436844016719705">ಸಿಸ್ಟಂ</translation>
+<translation id="2621713457727696555">ಸುರಕ್ಷಿತವಾಗಿದೆ</translation>
 <translation id="26224892172169984">ಪ್ರೊಟೋಕಾಲ್‌‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಯಾವ ಸೈಟ್‌ ಅನ್ನು  ಅನುಮತಿಸಬೇಡ</translation>
 <translation id="2624142942574147739">ಈ ಪುಟವು ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಹಾಗೂ ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ಪ್ರವೇಶಿಸುತ್ತಿದೆ.</translation>
 <translation id="2626799779920242286">ದಯವಿಟ್ಟು ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -1580,6 +1580,7 @@
 <translation id="328571385944182268">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸುವುದೇ?</translation>
 <translation id="3288047731229977326">ಡೆವಲಪರ್ ಮೋಡ್‌ನಲ್ಲಿ ಚಾಲನೆಯಾಗುವ ವಿಸ್ತರಣೆಗಳು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ಗೆ ಹಾನಿಮಾಡಬಹುದು. ನೀವು ಡೆವಲಪರ್ ಆಗಿರದಿದ್ದರೇ, ಸುರಕ್ಷಿತವಾಗಿರಲು ಡೆವಲಪರ್ ಮೋಡ್‌ನಲ್ಲಿ ಈ ವಿಸ್ತರಣೆಗಳ ಚಾಲನೆಯನ್ನು ನೀವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಬೇಕು.</translation>
 <translation id="3289856944988573801">ನವೀಕರಣಗಳಿಗಾಗಿ ಪರಿಶೀಲಿಸಲು, ದಯವಿಟ್ಟು Ethernet ಅಥವಾ ವೈ-ಫೈ ಬಳಸಿ.</translation>
+<translation id="3290356915286466215">ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ</translation>
 <translation id="3293644607209440645">ಈ ಪುಟವನ್ನು ಕಳುಹಿಸಿ</translation>
 <translation id="32939749466444286">Linux ಕಂಟೇನರ್ ಪ್ರಾರಂಭವಾಗಿಲ್ಲ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3294437725009624529">ಅತಿಥಿ</translation>
@@ -2021,7 +2022,6 @@
 <translation id="3900966090527141178">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಎಕ್ಸ್‌ಪೋರ್ಟ್ ಮಾಡಿ</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="3905761538810670789">ಅಪ್ಲಿಕೇಶನ್ ಸರಿಪಡಿಸು</translation>
-<translation id="3906954721959377182">ಟ್ಯಾಬ್ಲೆಟ್</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="3908501907586732282">ವಿಸ್ತರಣೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="3909477809443608991"><ph name="URL" />, ಸಂರಕ್ಷಿತ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಬಯಸುತ್ತದೆ. ನಿಮ್ಮ ಸಾಧನದ ಗುರುತನ್ನು Google ಪರಿಶೀಲಿಸುತ್ತದೆ ಮತ್ತು ಅದಕ್ಕೆ ಈ ಸೈಟ್ ಪ್ರವೇಶ ಪಡೆಯಬಹುದು.</translation>
@@ -2321,7 +2321,6 @@
 <translation id="4364327530094270451">ಕರಬೂಜ ಹಣ್ಣು</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> ವಿಂಡೋವನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="4364830672918311045">ಅಧಿಸೂಚನೆಗಳನ್ನು ಪ್ರದರ್ಶಿಸಿ</translation>
-<translation id="4366956553771076218"><ph name="APP_NAME" /> ಮೂಲಕ <ph name="ACTION_NAME" />.</translation>
 <translation id="4370975561335139969">ನೀವು ನಮೂದಿಸಿದ ಇಮೇಲ್ ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಹೊಂದಿಕೆಯಾಗುತ್ತಿಲ್ಲ</translation>
 <translation id="437184764829821926">ಸುಧಾರಿತ ಫಾಂಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="4374831787438678295">Linux ಇನ್‌ಸ್ಟಾಲರ್‌‌</translation>
@@ -2964,7 +2963,6 @@
 <translation id="5363109466694494651">ಪವರ್‌ವಾಶ್ ಮತ್ತು ಹಿಂದಿರುಗಿಸು</translation>
 <translation id="5365881113273618889">ನೀವು ಆಯ್ಕೆ ಮಾಡಿದ ಫೋಲ್ಡ‌ರ್‌ನಲ್ಲಿ ಸೂಕ್ಷ್ಮವಾದ ಫೈಲ್‌ಗಳಿವೆ. ಈ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಬರೆಯಲು "<ph name="APP_NAME" />" ಗೆ ಶಾಶ್ವತ ಪ್ರವೇಶ ಒದಗಿಸಲು ನೀವು ಖಂಡಿತವಾಗಿಯೂ ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="5367091008316207019">ಓದುತ್ತಿರುವ ಫೈಲ್..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">ನಿಮ್ಮ ಫೋನ್ ಲಾಕ್ ಮಾಡಲಾಗಿದೆ. ಪ್ರವೇಶಿಸಲು ಅದನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ.</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> ಗೆ ಸೈನ್‌ಇನ್ ಮಾಡಿ</translation>
 <translation id="5369491905435686894">ಮೌಸ್ ವೇಗವರ್ಧನೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -4723,6 +4721,7 @@
 <translation id="7912080627461681647">ಸರ್ವರ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ. ಸೈನ್ ಔಟ್ ಮಾಡಿ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಆಗಿರಿ.</translation>
 <translation id="7915457674565721553">ಪೋಷಕ ನಿಯಂತ್ರಣಗಳನ್ನು ಸೆಟಪ್ ಮಾಡಲು ಇಂಟರ್ನೆಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಿ</translation>
 <translation id="7915471803647590281">ದಯವಿಟ್ಟು ಪ್ರತಿಕ್ರಿಯೆ ಕಳುಹಿಸುವ ಮುಂಚಿತವಾಗಿ ಏನು ನಡೆಯುತ್ತಿದೆ ಎಂದು ನಮಗೆ ತಿಳಿಸಿ.</translation>
+<translation id="7918257978052780342">ನೋಂದಾಯಿಸಿ</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />ಸೆ</translation>
 <translation id="792514962475806987">ಡಾಕ್ ಮಾಡಿರುವುದಕ್ಕೆ ಝೂಮ್‌ ಮಟ್ಟ:</translation>
 <translation id="7925247922861151263">AAA ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ</translation>

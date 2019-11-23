@@ -50,34 +50,6 @@ Vector<uint8_t> UnwrapMessage(const mojom::blink::DevToolsMessagePtr& message) {
   return unwrap_message;
 }
 
-// Platform allows us to inject the string<->double conversion
-// routines from Blink into the inspector_protocol JSON parser / serializer.
-class JsonPlatform : public crdtp::json::Platform {
- public:
-  bool StrToD(const char* str, double* result) const override {
-    bool ok;
-    *result = String(str).ToDouble(&ok);
-    return ok;
-  }
-
-  // Prints |value| in a format suitable for JSON.
-  std::unique_ptr<char[]> DToStr(double value) const override {
-    String str = String::NumberToStringECMAScript(value);
-    DCHECK(str.Is8Bit());
-    std::unique_ptr<char[]> result(new char[str.length() + 1]);
-    memcpy(result.get(), str.Characters8(), str.length());
-    result.get()[str.length()] = '\0';
-    return result;
-  }
-};
-
-crdtp::Status ConvertCBORToJSON(crdtp::span<uint8_t> cbor,
-                                std::vector<uint8_t>* json) {
-  DCHECK(crdtp::cbor::IsCBORMessage(cbor));
-  JsonPlatform platform;
-  return ConvertCBORToJSON(platform, cbor, json);
-}
-
 std::vector<uint8_t> Get8BitStringFrom(v8_inspector::StringBuffer* msg) {
   const v8_inspector::StringView& s = msg->string();
   DCHECK(s.is8Bit());
@@ -359,7 +331,7 @@ blink::mojom::blink::DevToolsMessagePtr DevToolsSession::FinalizeMessage(
   if (!client_expects_binary_responses_) {
     std::vector<uint8_t> json;
     crdtp::Status status =
-        ConvertCBORToJSON(crdtp::SpanFrom(message_to_send), &json);
+        crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(message_to_send), &json);
     CHECK(status.ok()) << status.ToASCIIString();
     message_to_send = std::move(json);
   }

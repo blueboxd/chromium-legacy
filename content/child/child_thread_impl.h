@@ -61,7 +61,6 @@ class BackgroundTracingAgentProviderImpl;
 
 namespace content {
 class InProcessChildThreadParams;
-class ServiceManagerConnection;
 class ThreadSafeSender;
 
 // The main thread of a child process derives from this class.
@@ -157,12 +156,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // Called when the process refcount is 0.
   virtual void OnProcessFinalRelease();
 
-  // Called by subclasses to manually start the ServiceManagerConnection. Must
-  // only be called if
-  // ChildThreadImpl::Options::auto_start_service_manager_connection was set to
-  // |false| on ChildThreadImpl construction.
-  void StartServiceManagerConnection();
-
   // Must be called by subclasses during initialization if and only if they set
   // |Options::expose_interfaces_to_browser| to |true|. This makes |binders|
   // available to handle incoming interface requests from the browser.
@@ -198,10 +191,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   void Init(const Options& options);
 
-  // We create the channel first without connecting it so we can add filters
-  // prior to any messages being received, then connect it afterwards.
-  void ConnectLegacyIpcChannelThroughServiceManager();
-
   // IPC message handlers.
 
   void EnsureConnected();
@@ -223,7 +212,6 @@ class CONTENT_EXPORT ChildThreadImpl
 #endif
 
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
-  std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
 
   mojo::AssociatedReceiver<mojom::RouteProvider> route_provider_receiver_{this};
   mojo::AssociatedReceiverSet<blink::mojom::AssociatedInterfaceProvider,
@@ -289,7 +277,6 @@ struct ChildThreadImpl::Options {
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
   mojo::OutgoingInvitation* mojo_invitation;
-  std::string in_process_service_request_token;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner;
 
   // Indicates that this child process exposes one or more Mojo interfaces to

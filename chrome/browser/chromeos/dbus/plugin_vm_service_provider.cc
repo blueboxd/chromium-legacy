@@ -68,7 +68,7 @@ void PluginVmServiceProvider::GetLicenseData(
   payload.set_license_key(plugin_vm::GetPluginVmLicenseKey());
   dbus::MessageWriter writer(response.get());
   writer.AppendProtoAsArrayOfBytes(payload);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void PluginVmServiceProvider::ShowSettingsPage(
@@ -82,8 +82,9 @@ void PluginVmServiceProvider::ShowSettingsPage(
     constexpr char error_message[] =
         "Unable to parse ShowSettingsPageRequest from message";
     LOG(ERROR) << error_message;
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, error_message));
     return;
   }
 
@@ -92,14 +93,15 @@ void PluginVmServiceProvider::ShowSettingsPage(
       (request.subpage_path() != chrome::kPluginVmSharedPathsSubPage)) {
     constexpr char error_message[] = "Invalid subpage_path";
     LOG(ERROR) << error_message;
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, error_message));
     return;
   }
 
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetPrimaryUserProfile(), request.subpage_path());
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 }  // namespace chromeos

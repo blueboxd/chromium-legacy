@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">হালকা নীল</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> নিজেকে আপডেট রাখতে হয়ত সক্ষম নয়</translation>
 <translation id="1736419249208073774">ঘুরে দেখুন</translation>
-<translation id="1736420071277903564">কম্পিউটার</translation>
 <translation id="1737968601308870607">ফাইল বাগ</translation>
 <translation id="1741314857973421784">চালিয়ে যান</translation>
 <translation id="1743570585616704562">শনাক্ত করা যায়নি</translation>
@@ -1128,6 +1127,7 @@
 <translation id="2617342710774726426">সিম কার্ড লক করা আছে</translation>
 <translation id="2619761439309613843">প্রতিদিন রিফ্রেশ করা হবে</translation>
 <translation id="2620436844016719705">সিস্টেম</translation>
+<translation id="2621713457727696555">সুরক্ষিত করা হয়েছে</translation>
 <translation id="26224892172169984">প্রোটোকল পরিচালনার জন্য কোনও সাইটকে মঞ্জুরি দেবেন না</translation>
 <translation id="2624142942574147739">এই পৃষ্ঠাটি আপনার ক্যামেরা এবং মাইক্রোফোন অ্যাক্সেস করছে৷</translation>
 <translation id="2626799779920242286">দয়া করে পরে আবার চেষ্টা করুন৷</translation>
@@ -1579,6 +1579,7 @@
 <translation id="328571385944182268">আপনার পাসওয়ার্ড সেভ করবেন?</translation>
 <translation id="3288047731229977326">ডেভেলপার মোডে চলমান এক্সটেনশনগুলি আপনার কম্পিউটারের ক্ষতি করতে পারে৷ যদি আপনি একজন ডেভেলপার না হন, তবে সুরক্ষিত থাকার জন্য আপনার এই এক্সটেনশনগুলিকে ডেভেলপার মোডে চালানো বন্ধ করা উচিৎ৷</translation>
 <translation id="3289856944988573801">আপডেটগুলি পরীক্ষা করার জন্য, অনুগ্রহ করে Ethernet বা ওয়াই-ফাই ব্যবহার করুন৷</translation>
+<translation id="3290356915286466215">সুরক্ষিত নেই</translation>
 <translation id="3293644607209440645">এই পৃষ্ঠা পাঠিয়ে দিন</translation>
 <translation id="32939749466444286">Linux কন্টেনারটি শুরু হয়নি। আবার চেষ্টা করুন।</translation>
 <translation id="3294437725009624529">অতিথি</translation>
@@ -2020,7 +2021,6 @@
 <translation id="3900966090527141178">পাসওয়ার্ড এক্সপোর্ট করুন</translation>
 <translation id="3901991538546252627"><ph name="NAME" />-এ সংযোগ করা হচ্ছে</translation>
 <translation id="3905761538810670789">অ্যাপ্লিকেশান মেরামত করুন</translation>
-<translation id="3906954721959377182">ট্যাবলেট</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> পুরনো হয়ে গেছে</translation>
 <translation id="3908501907586732282">এক্সটেনশন চালু করুন</translation>
 <translation id="3909477809443608991"><ph name="URL" /> সুরক্ষিত কন্টেন্ট চালাতে চায়। আপনার ডিভাইসের পরিচয় Google যাচাই করে দেখবে এবং এই সাইট সম্ভবত সেটি অ্যাক্সেস করবে।</translation>
@@ -2319,7 +2319,6 @@
 <translation id="4364327530094270451">ফুটি</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> একটি উইন্ডো শেয়ার করছে।</translation>
 <translation id="4364830672918311045">বিজ্ঞপ্তিগুলি প্রদর্শন করুন</translation>
-<translation id="4366956553771076218"><ph name="APP_NAME" />-এর মাধ্যমে <ph name="ACTION_NAME" />।</translation>
 <translation id="4370975561335139969">আপনার লেখা ইমেল আইডি এবং পাসওয়ার্ড মিলছে না</translation>
 <translation id="437184764829821926">উন্নত ফন্ট সেটিংস</translation>
 <translation id="4374831787438678295">Linux ইনস্টলার</translation>
@@ -2961,7 +2960,6 @@
 <translation id="5363109466694494651">পাওয়ারওয়াশ এবং প্রত্যাবর্তন করুন</translation>
 <translation id="5365881113273618889">আপনি যে ফোল্ডার বেছে নিয়েছেন সেটিতে সংবেদনশীল ফাইল আছে। আপনি কি "<ph name="APP_NAME" />"-কে স্থায়ীভাবে লেখার অ্যাক্সেস দেওয়ার ব্যাপারে নিশ্চিত?</translation>
 <translation id="5367091008316207019">ফাইল পড়া হচ্ছে..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">আপনার ফোন লক করা আছে৷ লিখতে আনলক করুন৷</translation>
 <translation id="5368779022775404937"><ph name="REALM" />-এ সাইন-ইন করুন</translation>
 <translation id="5369491905435686894">মাউস অ্যাক্সিলারেশন বিকল্পটি চালু করুন</translation>
@@ -4720,6 +4718,7 @@
 <translation id="7912080627461681647">সার্ভারে আপনার পাসওয়ার্ড পাল্টানো হয়েছে। অনুগ্রহ করে সাইন-আউট করে আবার সাইন-ইন করুন।</translation>
 <translation id="7915457674565721553">অভিভাবকীয় নিয়ন্ত্রণ সেট-আপ করতে ইন্টারনেটে কানেক্ট করুন</translation>
 <translation id="7915471803647590281">প্রতিক্রিয়াটি প্রেরণের আগে কী ঘটছে তা দয়া করে আমাদের জানান৷ </translation>
+<translation id="7918257978052780342">নথিভুক্ত করুন</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> সেকেন্ড</translation>
 <translation id="792514962475806987">ডক করা জুম লেভেল:</translation>
 <translation id="7925247922861151263">AAA চেক করা যায়নি</translation>

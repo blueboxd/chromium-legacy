@@ -40,8 +40,8 @@ class SMSReceiveHandler {
       : callback_(std::move(callback)), sms_received_(false) {
     property_set_ = std::make_unique<dbus::PropertySet>(
         object_proxy, modemmanager::kModemManager1SmsInterface,
-        base::Bind(&SMSReceiveHandler::OnPropertyChanged,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&SMSReceiveHandler::OnPropertyChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
     property_set_->RegisterProperty(SMSClient::kSMSPropertyState, &state_);
     property_set_->ConnectSignals();
     property_set_->Get(&state_, dbus::PropertySet::GetCallback());

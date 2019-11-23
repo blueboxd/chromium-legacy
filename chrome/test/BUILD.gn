@@ -696,6 +696,7 @@ if (!is_android) {
       "//components/resources",
       "//components/safe_browsing:buildflags",
       "//components/safe_browsing/db:test_database_manager",
+      "//components/services/paint_preview_compositor/public/mojom",
       "//components/services/patch/public/mojom",
       "//components/services/quarantine:test_support",
       "//components/signin/core/browser",
@@ -1040,6 +1041,7 @@ if (!is_android) {
       "../browser/page_load_metrics/observers/subresource_loading_page_load_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/observers/third_party_metrics_observer_browsertest.cc",
       "../browser/page_load_metrics/page_load_metrics_browsertest.cc",
+      "../browser/paint_preview/paint_preview_compositor_browsertest.cc",
       "../browser/password_manager/credential_manager_browsertest.cc",
       "../browser/password_manager/password_manager_browsertest.cc",
       "../browser/pdf/pdf_extension_test.cc",
@@ -1139,6 +1141,7 @@ if (!is_android) {
       "../browser/signin/e2e_tests/live_test.h",
       "../browser/site_isolation/chrome_site_per_process_browsertest.cc",
       "../browser/site_isolation/site_details_browsertest.cc",
+      "../browser/ssl/known_interception_disclosure_ui_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
       "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_browsertest.cc",
       "../browser/ui/blocked_content/tab_under_blocker_browsertest.cc",
@@ -1467,7 +1470,10 @@ if (!is_android) {
         "//url",
       ]
 
-      sources += [ "../browser/policy/accessibility_policy_browsertest.cc" ]
+      sources += [
+        "../browser/policy/accessibility_policy_browsertest.cc",
+        "../browser/policy/arc_policy_browsertest.cc",
+      ]
     }
 
     if (include_js_tests) {
@@ -1874,7 +1880,7 @@ if (!is_android) {
         "../browser/payments/payment_request_can_make_payment_browsertest.cc",
         "../browser/payments/personal_data_manager_test_util.cc",
         "../browser/payments/personal_data_manager_test_util.h",
-        "../browser/payments/service_worker_payment_app_factory_browsertest.cc",
+        "../browser/payments/service_worker_payment_app_finder_browsertest.cc",
         "../browser/payments/site_per_process_payments_browsertest.cc",
         "../browser/ui/global_error/global_error_browsertest.cc",
         "../browser/ui/global_error/global_error_service_browsertest.cc",
@@ -1884,7 +1890,7 @@ if (!is_android) {
         "../browser/ui/views/autofill/payments/card_unmask_prompt_view_tester_views.h",
         "../browser/ui/views/autofill/payments/local_card_migration_browsertest.cc",
         "../browser/ui/views/autofill/payments/save_card_bubble_views_browsertest.cc",
-        "../browser/ui/views/autofill/payments/webauthn_offer_dialog_browsertest.cc",
+        "../browser/ui/views/autofill/payments/webauthn_dialog_browsertest.cc",
         "../browser/ui/views/bookmarks/bookmark_bubble_view_browsertest.cc",
         "../browser/ui/views/bookmarks/bookmark_editor_view_browsertest.cc",
         "../browser/ui/views/certificate_selector_dialog_browsertest.cc",

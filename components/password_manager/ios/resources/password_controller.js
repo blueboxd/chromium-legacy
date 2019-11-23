@@ -270,22 +270,26 @@ const fillPasswordFormWithData = function(
       continue;
     }
     const inputs = getFormInputElements(form);
-    const usernameInput =
-        findInputByFieldIdentifier(inputs, formData.fields[0].name);
-    if (usernameInput == null || !__gCrWeb.common.isTextField(usernameInput) ||
-        usernameInput.disabled) {
-      continue;
+    const usernameIdentifier = formData.fields[0].name;
+    var usernameInput = null;
+    if (usernameIdentifier != '') {
+      usernameInput = findInputByFieldIdentifier(inputs, usernameIdentifier);
+      if (!usernameInput || !__gCrWeb.common.isTextField(usernameInput) ||
+          usernameInput.disabled) {
+        continue;
+      }
     }
+
     const passwordInput =
         findInputByFieldIdentifier(inputs, formData.fields[1].name);
-    if (passwordInput == null || passwordInput.type != 'password' ||
+    if (!passwordInput || passwordInput.type != 'password' ||
         passwordInput.readOnly || passwordInput.disabled) {
       continue;
     }
 
     // If username was provided on a read-only field and it matches the
     // requested username, fill the form.
-    if (usernameInput.readOnly) {
+    if (usernameInput && usernameInput.readOnly) {
       if (usernameInput.value == username) {
         __gCrWeb.fill.setInputElementValue(password, passwordInput);
         filled = true;

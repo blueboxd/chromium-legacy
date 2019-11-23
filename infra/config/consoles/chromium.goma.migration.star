@@ -830,5 +830,35 @@ luci.console_view(
             category = 'cros|week1',
             short_name = 'code',
         ),
+        luci.console_view_entry(
+            builder = 'ci/Linux ChromiumOS Full',
+            category = 'cros|week2',
+            short_name = 'full',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/ChromiumOS ASAN Release',
+            category = 'cros|week2',
+            short_name = 'asan',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux Chromium OS ASan LSan Builder',
+            category = 'cros|week2',
+            short_name = 'asan lsan',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Linux ChromiumOS MSan Builder',
+            category = 'cros|week2',
+            short_name = 'msan',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Mojo ChromiumOS',
+            category = 'cros|week2',
+            short_name = 'mojo',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Libfuzzer Upload Chrome OS ASan',
+            category = 'cros|week2',
+            short_name = 'fuzz',
+        ),
     ],
 )

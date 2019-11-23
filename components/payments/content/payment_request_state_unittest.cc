@@ -15,7 +15,8 @@
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/payments/content/mock_identity_observer.h"
+#include "components/payments/content/payment_app_service.h"
+#include "components/payments/content/payment_app_service_factory.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/test_content_payment_request_delegate.h"
 #include "components/payments/core/journey_logger.h"
@@ -76,11 +77,16 @@ class PaymentRequestStateTest : public testing::Test,
     spec_ = std::make_unique<PaymentRequestSpec>(
         std::move(options), std::move(details), std::move(method_data),
         /*observer=*/nullptr, "en-US");
+    PaymentAppServiceFactory::SetForTesting(
+        std::make_unique<PaymentAppService>());
     state_ = std::make_unique<PaymentRequestState>(
-        nullptr /* context */, GURL("https://example.com"),
+        /*web_contents=*/nullptr, GURL("https://example.com"),
         GURL("https://example.com/pay"), spec_.get(), this, "en-US",
         &test_personal_data_manager_, &test_payment_request_delegate_,
-        identity_observer_.AsWeakPtr(), &journey_logger_);
+        base::Bind(
+            [](const url::Origin& origin,
+               int64_t registration_id) { /* Intentionally left blank. */ }),
+        &journey_logger_);
     state_->AddObserver(this);
   }
 
@@ -138,7 +144,6 @@ class PaymentRequestStateTest : public testing::Test,
   mojom::PaymentAddressPtr selected_shipping_address_;
   autofill::TestPersonalDataManager test_personal_data_manager_;
   TestContentPaymentRequestDelegate test_payment_request_delegate_;
-  MockIdentityObserver identity_observer_;
   JourneyLogger journey_logger_;
 
   // Test data.

@@ -194,6 +194,15 @@ Polymer({
   },
 
   /**
+   * Set the title of the dialog for a11y reader.
+   * @param {string} title Title of the dialog.
+   */
+  setTitleAriaLabel: function(title) {
+    this.$.dialog.removeAttribute('aria-labelledby');
+    this.$.dialog.setAttribute('aria-label', title);
+  },
+
+  /**
    * @private
    * @param {Event} e
    */

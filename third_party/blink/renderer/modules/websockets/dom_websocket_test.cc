@@ -236,26 +236,6 @@ TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
   EXPECT_EQ(KURL("ws://example.com/endpoint"), websocket_scope.Socket().url());
 }
 
-TEST(DOMWebSocketTest, mixedContentAutoUpgrade) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kMixedContentAutoupgrade);
-  V8TestingScope scope(KURL("https://example.com"));
-  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
-  {
-    InSequence s;
-    EXPECT_CALL(websocket_scope.Channel(),
-                Connect(KURL("wss://example.com/endpoint"), String()))
-        .WillOnce(Return(true));
-  }
-  scope.GetDocument().SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
-  websocket_scope.Socket().Connect("ws://example.com/endpoint",
-                                   Vector<String>(), scope.GetExceptionState());
-
-  EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
-  EXPECT_EQ(KURL("wss://example.com/endpoint"), websocket_scope.Socket().url());
-}
-
 TEST(DOMWebSocketTest, channelConnectSuccess) {
   V8TestingScope scope;
   DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());

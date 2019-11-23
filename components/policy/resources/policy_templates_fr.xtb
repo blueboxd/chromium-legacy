@@ -2825,7 +2825,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si elle est associée à la valeur "true" ou si elle n'est pas configurée, cet utilisateur peut créer et gérer des comptes utilisateur supervisés.</translation>
 <translation id="5369937289900051171">Impression couleur seulement</translation>
 <translation id="5370279767682621504">Activer la compatibilité avec HTTP 0.9 sur les ports non utilisés par défaut</translation>
-<translation id="5378985487213287085">Permet de définir si les sites Web sont autorisés à afficher des notifications de bureau. L'affichage des notifications de bureau peut être autorisé par défaut, refusé par défaut, ou l'utilisateur peut recevoir un message chaque fois qu'un site veut afficher des notifications de bureau. 
+<translation id="5378985487213287085">Permet de définir si les sites Web sont autorisés à afficher des notifications sur le bureau. L'affichage des notifications sur le bureau peut être autorisé par défaut, refusé par défaut, ou bien l'utilisateur peut recevoir un message chaque fois qu'un site veut afficher ces notifications. 
 
 Si cette règle n'est pas configurée, le paramètre "AskNotifications" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="5380329473151894945">Permet de définir l'état par défaut de la fonctionnalité d'accessibilité de grand curseur sur l'écran de connexion.
@@ -3266,7 +3266,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="6048199181629830227">Activer l'alimentation alternée en heures pleines</translation>
 <translation id="605475635122964053">Limite le mode d'impression par code. Si cette règle n'est pas définie, aucune limite ne s'applique. Si le mode est indisponible, cette règle est ignorée. Notez que la fonctionnalité d'impression par code n'est activée que pour les imprimantes utilisant l'un des protocoles IPPS, USB ou IPP sur USB. </translation>
 <translation id="6070667616071269965">Dispositions de clavier de l'écran de connexion de l'appareil</translation>
-<translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le Bureau</translation>
+<translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le bureau</translation>
 <translation id="6074964551275531965">Définir la période d'affichage des notifications de mise à jour</translation>
 <translation id="6076099373507468537">Définit la liste des appareils USB autorisés à être dissociés de leur pilote de noyau afin d'être utilisés directement au sein d'une application Web via l'API chrome.usb. Les entrées sont des paires composées d'un identifiant de fournisseur USB et d'un identifiant produit associé à un appareil spécifique.
 

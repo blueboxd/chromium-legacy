@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
+
+#include <utility>
+
 #include "chrome/browser/optimization_guide/prediction/decision_tree_prediction_model.h"
 
 namespace optimization_guide {
@@ -10,8 +13,7 @@ namespace optimization_guide {
 // static
 std::unique_ptr<PredictionModel> PredictionModel::Create(
     std::unique_ptr<optimization_guide::proto::PredictionModel>
-        prediction_model,
-    const base::flat_set<std::string>& host_model_features) {
+        prediction_model) {
   // TODO(crbug/1009123): Add a histogram to record if the provided model is
   // constructed successfully or not.
   // TODO(crbug/1009123): Adding timing metrics around initialization due to
@@ -55,7 +57,7 @@ std::unique_ptr<PredictionModel> PredictionModel::Create(
     return nullptr;
   }
   model = std::make_unique<DecisionTreePredictionModel>(
-      std::move(prediction_model), host_model_features);
+      std::move(prediction_model));
 
   // Any constructed model must be validated for correctness according to its
   // model type before being returned.
@@ -67,12 +69,11 @@ std::unique_ptr<PredictionModel> PredictionModel::Create(
 
 PredictionModel::PredictionModel(
     std::unique_ptr<optimization_guide::proto::PredictionModel>
-        prediction_model,
-    const base::flat_set<std::string>& host_model_features) {
+        prediction_model) {
   version_ = prediction_model->model_info().version();
   model_features_.reserve(
       prediction_model->model_info().supported_model_features_size() +
-      host_model_features.size());
+      prediction_model->model_info().supported_host_model_features_size());
   // Insert all the client model features for the owned |model_|.
   for (const auto& client_model_feature :
        prediction_model->model_info().supported_model_features()) {
@@ -80,8 +81,10 @@ PredictionModel::PredictionModel(
         client_model_feature));
   }
   // Insert all the host model features for the owned |model_|.
-  for (const auto& host_model_feature : host_model_features)
+  for (const auto& host_model_feature :
+       prediction_model->model_info().supported_host_model_features()) {
     model_features_.emplace(host_model_feature);
+  }
   model_ = std::make_unique<optimization_guide::proto::Model>(
       prediction_model->model());
 }

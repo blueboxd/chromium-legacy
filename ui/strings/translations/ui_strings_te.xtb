@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">అర ఎల్లప్పుడూ దాచబడుతుంది</translation>
 <translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> ఇంటర్నెట్‌కు కనెక్ట్ చేయబడి ఉందని నిర్ధారించుకోండి.</translation>
 <translation id="9002566407876343676">తెరువు</translation>
-<translation id="9039076430527029379">పేజీ నంబర్ <ph name="PAGE_NUMBER" />, అడ్డు వరుస <ph name="ROW_NUMBER" />, నిలువు వరుస <ph name="COLUMN_NUMBER" />కు తరలించండి.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 సెక.}other{# సెక.}}</translation>
 <translation id="9059834730836941392">నోటిఫికేషన్‌ను కుదించు</translation>
 <translation id="9150735707954472829">ట్యాబ్</translation>

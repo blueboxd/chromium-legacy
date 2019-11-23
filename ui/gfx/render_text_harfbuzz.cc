@@ -1520,21 +1520,6 @@ bool RenderTextHarfBuzz::IsSelectionSupported() const {
   return true;
 }
 
-std::vector<RenderText::FontSpan> RenderTextHarfBuzz::GetFontSpansForTesting() {
-  EnsureLayout();
-
-  internal::TextRunList* run_list = GetRunList();
-  std::vector<RenderText::FontSpan> spans;
-  for (const auto& run : run_list->runs()) {
-    spans.push_back(
-        RenderText::FontSpan(run->font_params.font,
-                             Range(DisplayIndexToTextIndex(run->range.start()),
-                                   DisplayIndexToTextIndex(run->range.end()))));
-  }
-
-  return spans;
-}
-
 std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
   EnsureLayout();
   DCHECK(!update_display_run_list_);

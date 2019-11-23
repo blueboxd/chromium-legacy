@@ -37,7 +37,7 @@ void LivenessServiceProvider::OnExported(const std::string& interface_name,
 void LivenessServiceProvider::CheckLiveness(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 }  // namespace ash

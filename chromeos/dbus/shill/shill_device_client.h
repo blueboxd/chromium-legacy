@@ -35,7 +35,6 @@ class ShillPropertyChangedObserver;
 // DBusThreadManager instance.
 class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
  public:
-  typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef ShillClientHelper::StringCallback StringCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
@@ -97,15 +96,15 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
   // Calls GetProperties method.
   // |callback| is called after the method call finishes.
   virtual void GetProperties(const dbus::ObjectPath& device_path,
-                             const DictionaryValueCallback& callback) = 0;
+                             DictionaryValueCallback callback) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call finishes.
   virtual void SetProperty(const dbus::ObjectPath& device_path,
                            const std::string& name,
                            const base::Value& value,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) = 0;
+                           base::OnceClosure callback,
+                           ErrorCallback error_callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call finishes.
@@ -118,60 +117,59 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
   virtual void RequirePin(const dbus::ObjectPath& device_path,
                           const std::string& pin,
                           bool require,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) = 0;
+                          base::OnceClosure callback,
+                          ErrorCallback error_callback) = 0;
 
   // Calls the EnterPin method.
   // |callback| is called after the method call finishes.
   virtual void EnterPin(const dbus::ObjectPath& device_path,
                         const std::string& pin,
-                        const base::Closure& callback,
-                        const ErrorCallback& error_callback) = 0;
+                        base::OnceClosure callback,
+                        ErrorCallback error_callback) = 0;
 
   // Calls the UnblockPin method.
   // |callback| is called after the method call finishes.
   virtual void UnblockPin(const dbus::ObjectPath& device_path,
                           const std::string& puk,
                           const std::string& pin,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) = 0;
+                          base::OnceClosure callback,
+                          ErrorCallback error_callback) = 0;
 
   // Calls the ChangePin method.
   // |callback| is called after the method call finishes.
   virtual void ChangePin(const dbus::ObjectPath& device_path,
                          const std::string& old_pin,
                          const std::string& new_pin,
-                         const base::Closure& callback,
-                         const ErrorCallback& error_callback) = 0;
+                         base::OnceClosure callback,
+                         ErrorCallback error_callback) = 0;
 
   // Calls the Register method.
   // |callback| is called after the method call finishes.
   virtual void Register(const dbus::ObjectPath& device_path,
                         const std::string& network_id,
-                        const base::Closure& callback,
-                        const ErrorCallback& error_callback) = 0;
+                        base::OnceClosure callback,
+                        ErrorCallback error_callback) = 0;
 
   // Calls the Reset method.
   // |callback| is called after the method call finishes.
   virtual void Reset(const dbus::ObjectPath& device_path,
-                     const base::Closure& callback,
-                     const ErrorCallback& error_callback) = 0;
+                     base::OnceClosure callback,
+                     ErrorCallback error_callback) = 0;
 
   // Calls the PerformTDLSOperation method.
   // |callback| is called after the method call finishes.
   virtual void PerformTDLSOperation(const dbus::ObjectPath& device_path,
                                     const std::string& operation,
                                     const std::string& peer,
-                                    const StringCallback& callback,
-                                    const ErrorCallback& error_callback) = 0;
+                                    StringCallback callback,
+                                    ErrorCallback error_callback) = 0;
 
   // Adds |ip_endpoint| to the list of tcp connections that the device should
   // monitor to wake the system from suspend.
-  virtual void AddWakeOnPacketConnection(
-      const dbus::ObjectPath& device_path,
-      const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void AddWakeOnPacketConnection(const dbus::ObjectPath& device_path,
+                                         const net::IPEndPoint& ip_endpoint,
+                                         base::OnceClosure callback,
+                                         ErrorCallback error_callback) = 0;
 
   // Adds |types| to the list of packet types that the device should monitor to
   // wake the system from suspend. |types| corresponds to "Wake on WiFi Packet
@@ -179,33 +177,31 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
   // third_party/cros_system_api/dbus/shill/dbus-constants.h.
   virtual void AddWakeOnPacketOfTypes(const dbus::ObjectPath& device_path,
                                       const std::vector<std::string>& types,
-                                      const base::Closure& callback,
-                                      const ErrorCallback& error_callback) = 0;
+                                      base::OnceClosure callback,
+                                      ErrorCallback error_callback) = 0;
 
   // Removes |ip_endpoint| from the list of tcp connections that the device
   // should monitor to wake the system from suspend.
-  virtual void RemoveWakeOnPacketConnection(
-      const dbus::ObjectPath& device_path,
-      const net::IPEndPoint& ip_endpoint,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void RemoveWakeOnPacketConnection(const dbus::ObjectPath& device_path,
+                                            const net::IPEndPoint& ip_endpoint,
+                                            base::OnceClosure callback,
+                                            ErrorCallback error_callback) = 0;
 
   // Removes |types| from the list of packet types that the device should
   // monitor to wake the system from suspend. |types| corresponds to "Wake on
   // WiFi Packet Type Constants." in
   // third_party/cros_system_api/dbus/shill/dbus-constants.h.
-  virtual void RemoveWakeOnPacketOfTypes(
-      const dbus::ObjectPath& device_path,
-      const std::vector<std::string>& types,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void RemoveWakeOnPacketOfTypes(const dbus::ObjectPath& device_path,
+                                         const std::vector<std::string>& types,
+                                         base::OnceClosure callback,
+                                         ErrorCallback error_callback) = 0;
 
   // Clears the list of tcp connections that the device should monitor to wake
   // the system from suspend.
   virtual void RemoveAllWakeOnPacketConnections(
       const dbus::ObjectPath& device_path,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+      base::OnceClosure callback,
+      ErrorCallback error_callback) = 0;
 
   // Set MAC address source for USB Ethernet adapter. |source| corresponds to
   // "USB Ethernet MAC address sources." in
@@ -213,8 +209,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
   virtual void SetUsbEthernetMacAddressSource(
       const dbus::ObjectPath& device_path,
       const std::string& source,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+      base::OnceClosure callback,
+      ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;

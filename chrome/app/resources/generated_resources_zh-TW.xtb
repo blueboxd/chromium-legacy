@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">淺藍色</translation>
 <translation id="1734824808160898225">「<ph name="PRODUCT_NAME" />」可能無法自動更新</translation>
 <translation id="1736419249208073774">探索</translation>
-<translation id="1736420071277903564">電腦</translation>
 <translation id="1737968601308870607">回報錯誤</translation>
 <translation id="1741314857973421784">繼續</translation>
 <translation id="1743570585616704562">無法識別</translation>
@@ -730,7 +729,7 @@
 <translation id="2046702855113914483">拉麵</translation>
 <translation id="2048182445208425546">存取你的網路流量</translation>
 <translation id="2048653237708779538">無法執行操作</translation>
-<translation id="2050339315714019657">縱向</translation>
+<translation id="2050339315714019657">直向</translation>
 <translation id="2053312383184521053">閒置狀態資料</translation>
 <translation id="205560151218727633">Google 助理標誌</translation>
 <translation id="2058456167109518507">偵測到裝置</translation>
@@ -1128,6 +1127,7 @@
 <translation id="2617342710774726426">SIM 卡已鎖定</translation>
 <translation id="2619761439309613843">每日變換新桌布</translation>
 <translation id="2620436844016719705">系統</translation>
+<translation id="2621713457727696555">已受到安全保護</translation>
 <translation id="26224892172169984">不允許任何網站處理通訊協定</translation>
 <translation id="2624142942574147739">這個網頁正在存取你的攝影機和麥克風。</translation>
 <translation id="2626799779920242286">請稍後再試。</translation>
@@ -1579,6 +1579,7 @@
 <translation id="328571385944182268">要儲存密碼嗎？</translation>
 <translation id="3288047731229977326">在開發人員模式中執行擴充功能可能會損害你的電腦。如果你不是開發人員，最好在開發人員模式中停用這些擴充功能，以策安全。</translation>
 <translation id="3289856944988573801">如要檢查更新，請使用乙太網路或 Wi-Fi。</translation>
+<translation id="3290356915286466215">不安全</translation>
 <translation id="3293644607209440645">傳送這個頁面</translation>
 <translation id="32939749466444286">無法啟動 Linux 容器，請再試一次。</translation>
 <translation id="3294437725009624529">訪客</translation>
@@ -2020,7 +2021,6 @@
 <translation id="3900966090527141178">匯出密碼</translation>
 <translation id="3901991538546252627">正在連線至：<ph name="NAME" /></translation>
 <translation id="3905761538810670789">修復應用程式</translation>
-<translation id="3906954721959377182">平板電腦</translation>
 <translation id="3908393983276948098">「<ph name="PLUGIN_NAME" />」版本過舊</translation>
 <translation id="3908501907586732282">啟用擴充功能</translation>
 <translation id="3909477809443608991"><ph name="URL" /> 想要播放受到保護的內容。Google 會驗證你的裝置身分，這個網站可能也會存取你的裝置身分。</translation>
@@ -2319,7 +2319,6 @@
 <translation id="4364327530094270451">瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共用視窗。</translation>
 <translation id="4364830672918311045">顯示通知</translation>
-<translation id="4366956553771076218">使用「<ph name="APP_NAME" />」<ph name="ACTION_NAME" />。</translation>
 <translation id="4370975561335139969">您所輸入的電子郵件和密碼不相符</translation>
 <translation id="437184764829821926">進階字型設定</translation>
 <translation id="4374831787438678295">Linux 安裝程式</translation>
@@ -2961,7 +2960,6 @@
 <translation id="5363109466694494651">執行 Powerwash 並恢復原廠設定</translation>
 <translation id="5365881113273618889">你選取的資料夾包含敏感檔案。你確定要將這個資料夾的寫入權限永久授予「<ph name="APP_NAME" />」嗎？</translation>
 <translation id="5367091008316207019">正在讀取檔案...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">你的手機已鎖定，必須解鎖才能繼續操作。</translation>
 <translation id="5368779022775404937">登入 <ph name="REALM" /></translation>
 <translation id="5369491905435686894">啟用滑鼠加速</translation>
@@ -4719,6 +4717,7 @@
 <translation id="7912080627461681647">伺服器上的密碼已變更。請先登出然後重新登入。</translation>
 <translation id="7915457674565721553">如要設定家長監護功能，請連線至網際網路</translation>
 <translation id="7915471803647590281">請將發生的狀況告訴我們，然後再提供意見。</translation>
+<translation id="7918257978052780342">註冊</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> 秒</translation>
 <translation id="792514962475806987">停駐縮放比例：</translation>
 <translation id="7925247922861151263">AAA 檢查失敗</translation>

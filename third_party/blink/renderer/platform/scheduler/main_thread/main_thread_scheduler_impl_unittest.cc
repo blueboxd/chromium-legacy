@@ -3869,7 +3869,7 @@ TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
 
 TEST_P(VeryHighPriorityForCompositingAfterDelayExperimentTest,
        TestCompositorPolicy_FirstCompositorTaskSetToVeryHighPriority) {
-  // 1.5ms task to complete the countdown and prioritze compositing.
+  // 150ms task to complete the countdown and prioritze compositing.
   AdvanceTimeWithTask(0.15);
 
   Vector<String> run_order;
@@ -3965,6 +3965,126 @@ TEST_P(VeryHighPriorityForCompositingBudgetExperimentTest,
   // before default tasks.
   EXPECT_THAT(run_order,
               testing::ElementsAre("P1", "C1", "C2", "D1", "D2", "I1"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+class VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingAlternating,
+                                     kPrioritizeCompositingUntilBeginMainFrame},
+                                    {}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest,
+    testing::Values(AntiStarvationLogic::kEnabled,
+                    AntiStarvationLogic::kDisabled),
+    GetTestNameSuffix);
+
+TEST_P(VeryHighPriorityForCompositingAlternatingBeginMainFrameExperimentTest,
+       TestCompositorPolicy_AlternatingCompositorTasks) {
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "C1 D1 C2 D2");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "C2", "D1", "D2"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+
+  // Next compositor task is the BeginMainFrame. Compositor priority is set
+  // to normal for a single task before being prioritized again.
+  DoMainFrame();
+
+  run_order.clear();
+  PostTestTasks(&run_order, "C1 D1 D2 C2");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("C1", "D1", "C2", "D2"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+class VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingAfterDelay,
+                                     kPrioritizeCompositingUntilBeginMainFrame},
+                                    {}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest,
+    testing::Values(AntiStarvationLogic::kEnabled,
+                    AntiStarvationLogic::kDisabled),
+    GetTestNameSuffix);
+
+TEST_P(
+    VeryHighPriorityForCompositingAfterDelayUntilBeginMainFrameExperimentTest,
+    TestCompositorPolicy_FirstCompositorTaskSetToVeryHighPriority) {
+  // 150ms task to complete the countdown and prioritze compositing.
+  AdvanceTimeWithTask(0.15);
+
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 C1 D2 C2 P1");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "C1", "C2", "D1", "D2"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+
+  // Next compositor task is the BeginMainFrame.
+  DoMainFrame();
+  run_order.clear();
+  PostTestTasks(&run_order, "C1 D1 D2 C2 P1");
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "C1", "D1", "D2", "C2"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+class VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest()
+      : MainThreadSchedulerImplTest({kVeryHighPriorityForCompositingBudget,
+                                     kPrioritizeCompositingUntilBeginMainFrame},
+                                    {}) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest,
+    testing::Values(AntiStarvationLogic::kEnabled,
+                    AntiStarvationLogic::kDisabled),
+    GetTestNameSuffix);
+
+TEST_P(
+    VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest,
+    TestCompositorPolicy_CompositorPriorityNonBeginMainFrameDoesntExhaustBudget) {
+  // 1000ms compositor task will not exhaust the budget.
+  RunSlowCompositorTask();
+
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 C1 D2 C2 P1");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "C1", "C2", "D1", "D2"));
+  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
+}
+
+TEST_P(VeryHighPriorityForCompositingBudgetBeginMainFrameExperimentTest,
+       TestCompositorPolicy_CompositorPriorityBeginMainFrameExhaustsBudget) {
+  // 1000ms BeginMainFrame will exhaust the budget.
+  DoMainFrame();
+  RunSlowCompositorTask();
+
+  Vector<String> run_order;
+  PostTestTasks(&run_order, "D1 C1 D2 C2 P1");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(run_order, testing::ElementsAre("P1", "D1", "C1", "D2", "C2"));
   EXPECT_EQ(UseCase::kNone, CurrentUseCase());
 }
 

@@ -227,7 +227,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   SelectionModel FindCursorPosition(const Point& point,
                                     const Point& drag_origin) override;
   bool IsSelectionSupported() const override;
-  std::vector<FontSpan> GetFontSpansForTesting() override;
   std::vector<Rect> GetSubstringBounds(const Range& range) override;
   RangeF GetCursorSpan(const Range& text_range) override;
   size_t GetLineContainingCaret(const SelectionModel& caret) override;

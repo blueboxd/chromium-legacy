@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> або <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Режим огляду</translation>
 <translation id="4382340674111381977">Повернутися до попередньої сторінки</translation>
+<translation id="4458670250301149821">Перемістити значок додатка у папці/з папки в його сітку</translation>
 <translation id="4472417192667361414">Налаштування системи й екрана</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, тоді <ph name="LEFT" /> або <ph name="RIGHT" /> або <ph name="UP" /> або <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Показати довідник із комбінацій клавіш</translation>
 <translation id="4628718545549558538">Відкрити панель стану (де розташоване зображення облікового запису)</translation>
 <translation id="4642092649622328492">Зробити частковий знімок екрана</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Видалити наступну літеру (видалення вперед)</translation>
 <translation id="7500368597227394048">дефіс</translation>
 <translation id="7611271430932669992">Виділити спливаючі або діалогові вікна</translation>
+<translation id="7635348532214572995">Перемістити значок додатка по сітці</translation>
 <translation id="766326951329901120">Вставити вміст із буфера обміну як простий текст</translation>
 <translation id="7703010453515335249">ліва квадратна дужка</translation>
 <translation id="7724603315864178912">Вирізати</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Вставити вміст із буфера обміну</translation>
 <translation id="9052808072970550123">Перейти в наступний профіль користувача</translation>
 <translation id="906458777597946297">Розгорнути вікно</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, тоді <ph name="LEFT" /> або <ph name="RIGHT" /> або <ph name="UP" /> або <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Перейти на початок рядка</translation>
 <translation id="9106898733795143799">Сторінка та веб-переглядач</translation>
 <translation id="9162942292291287644">Немає результатів пошуку за запитом "<ph name="QUERY" />"</translation>

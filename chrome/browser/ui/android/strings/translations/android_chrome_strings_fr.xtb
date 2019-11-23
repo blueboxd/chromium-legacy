@@ -635,7 +635,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5689516760719285838">Position</translation>
 <translation id="569536719314091526">Traduire cette page dans n'importe quelle langue à partir du bouton "Plus d'options"</translation>
-<translation id="5710871682236653961">Demander avant d'autoriser les sites à envoyer et recevoir des informations lorsque vous appuyez sur des appareils NFC (recommandé)</translation>
+<translation id="5710871682236653961">Demander avant d'autoriser les sites à envoyer et recevoir des informations lorsque vous utilisez des appareils NFC (recommandé)</translation>
 <translation id="572328651809341494">Onglets récents</translation>
 <translation id="5726692708398506830">Agrandir tous les éléments de la page</translation>
 <translation id="5748802427693696783">Onglets standards sélectionnés</translation>
@@ -774,7 +774,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6697947395630195233">Chrome a besoin d'accéder à votre position pour la partager avec ce site.</translation>
 <translation id="6698801883190606802">Gérer les données synchronisées</translation>
 <translation id="6699370405921460408">Grâce aux serveurs Google, les pages que vous consultez sont optimisées.</translation>
-<translation id="6706288973712894588">Vous êtes actuellement hors connexion.\n<ph name="BEGIN_LINK" />Consultez votre flux hors connexion.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Actualités</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="671481426037969117">Votre minuteur <ph name="FQDN" /> a expiré. Il redémarrera demain.</translation>
@@ -886,7 +885,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7559975015014302720">Mode simplifié désactivé</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
-<translation id="7572498721684305250">Empêcher les sites d'envoyer et de recevoir des informations lorsque vous appuyez sur des appareils NFC</translation>
+<translation id="7572498721684305250">Empêcher les sites d'envoyer et de recevoir des informations lorsque vous utilisez des appareils NFC</translation>
 <translation id="757524316907819857">Empêcher les sites de lire les contenus protégés</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fichier téléchargé}one{<ph name="FILES_DOWNLOADED_MANY" /> fichier téléchargé}other{<ph name="FILES_DOWNLOADED_MANY" /> fichiers téléchargés}}</translation>
 <translation id="7588219262685291874">Activer le thème sombre lorsque l'économiseur de batterie de l'appareil est activé</translation>

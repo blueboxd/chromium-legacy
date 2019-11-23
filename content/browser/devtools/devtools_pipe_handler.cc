@@ -44,7 +44,7 @@ const int kWriteFD = 4;
 // entire remaining message. Thereby, the length of the byte string
 // also tells us the message size on the wire.
 // The details of the encoding are implemented in
-// third_party/inspector_protocol/crdtp/encoding.h.
+// third_party/inspector_protocol/crdtp/cbor.h.
 namespace content {
 
 class PipeReaderBase {

@@ -333,7 +333,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   };
 
   // Sets the collection of viewport property ids, defined to allow viewport
-  // pinch-zoom etc. on the compositor thread.
+  // pinch-zoom etc. on the compositor thread. This is set only on the
+  // main-frame's compositor, i.e., will be unset in OOPIF and UI compositors.
   void RegisterViewportPropertyIds(const ViewportPropertyIds&);
 
   LayerTreeHost::ViewportPropertyIds ViewportPropertyIdsForTesting() const {

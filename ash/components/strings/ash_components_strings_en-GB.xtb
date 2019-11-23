@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> or <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Overview mode</translation>
 <translation id="4382340674111381977">Go back to previous page</translation>
+<translation id="4458670250301149821">Move an app icon in or out of a folder in the app grid</translation>
 <translation id="4472417192667361414">System &amp; Display Settings</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, then <ph name="LEFT" /> or <ph name="RIGHT" /> or <ph name="UP" /> or <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">See Keyboard Shortcut Helper</translation>
 <translation id="4628718545549558538">Open the status area (where your account picture appears)</translation>
 <translation id="4642092649622328492">Take partial screenshot</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Delete the next letter (forward delete)</translation>
 <translation id="7500368597227394048">hyphen</translation>
 <translation id="7611271430932669992">Move focus to pop-ups and dialogues</translation>
+<translation id="7635348532214572995">Move an app icon around the app grid</translation>
 <translation id="766326951329901120">Paste content from the clipboard as plain text</translation>
 <translation id="7703010453515335249">bracket left</translation>
 <translation id="7724603315864178912">Cut</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Paste content from the clipboard</translation>
 <translation id="9052808072970550123">Switch to the next user</translation>
 <translation id="906458777597946297">Maximise window</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, then <ph name="LEFT" /> or <ph name="RIGHT" /> or <ph name="UP" /> or <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Go to beginning of line</translation>
 <translation id="9106898733795143799">Page &amp; Web Browser</translation>
 <translation id="9162942292291287644">No search result for <ph name="QUERY" /></translation>

@@ -57,6 +57,13 @@ void TestNavigationListener::RunUntilUrlEquals(const GURL& expected_url) {
   RunUntilNavigationStateMatches(state);
 }
 
+void TestNavigationListener::RunUntilTitleEquals(
+    const base::StringPiece expected_title) {
+  fuchsia::web::NavigationState state;
+  state.set_title(expected_title.as_string());
+  RunUntilNavigationStateMatches(state);
+}
+
 void TestNavigationListener::RunUntilUrlAndTitleEquals(
     const GURL& expected_url,
     const base::StringPiece expected_title) {

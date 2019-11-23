@@ -9,7 +9,4 @@ namespace switches {
 // Stops new Shell objects from navigating to a default url.
 const char kNoInitialNavigation[] = "no-initial-navigation";
 
-// Makes WebLayer Shell use the given path for its data directory.
-const char kWebLayerShellDataPath[] = "data-path";
-
 }  // namespace switches

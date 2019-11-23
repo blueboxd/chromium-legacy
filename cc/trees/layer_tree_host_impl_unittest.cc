@@ -451,9 +451,10 @@ class LayerTreeHostImplTest : public testing::Test,
     gfx::Size scroll_content_size = gfx::Size(345, 3800);
     gfx::Size scrollbar_size = gfx::Size(15, 600);
 
-    LayerImpl* root = SetupRootLayer<LayerImpl>(layer_tree_impl, content_size);
+    SetupViewportLayersNoScrolls(content_size);
+    LayerImpl* outer_scroll = OuterViewportScrollLayer();
     LayerImpl* scroll =
-        AddScrollableLayer(root, content_size, scroll_content_size);
+        AddScrollableLayer(outer_scroll, content_size, scroll_content_size);
 
     auto* squash2 = AddLayer<LayerImpl>(layer_tree_impl);
     squash2->SetBounds(gfx::Size(140, 300));
@@ -470,7 +471,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
     auto* squash1 = AddLayer<LayerImpl>(layer_tree_impl);
     squash1->SetBounds(gfx::Size(140, 300));
-    CopyProperties(root, squash1);
+    CopyProperties(outer_scroll, squash1);
     squash1->SetOffsetToTransformParent(gfx::Vector2dF(220, 0));
     if (transparent_layer) {
       CreateEffectNode(squash1).opacity = 0.0f;
@@ -1293,9 +1294,9 @@ TEST_F(LayerTreeHostImplTest, ScrolledOverlappingDrawnScrollbarLayer) {
   gfx::Size scroll_content_size = gfx::Size(345, 3800);
   gfx::Size scrollbar_size = gfx::Size(15, 600);
 
-  LayerImpl* root = SetupDefaultRootLayer(content_size);
-  LayerImpl* scroll =
-      AddScrollableLayer(root, content_size, scroll_content_size);
+  SetupViewportLayersNoScrolls(content_size);
+  LayerImpl* scroll = AddScrollableLayer(OuterViewportScrollLayer(),
+                                         content_size, scroll_content_size);
 
   auto* drawn_scrollbar = AddLayer<PaintedScrollbarLayerImpl>(
       layer_tree_impl, VERTICAL, false, true);
@@ -7400,17 +7401,13 @@ TEST_F(LayerTreeHostImplTest, OverscrollChildWithoutBubbling) {
   InputHandlerScrollResult scroll_result;
   gfx::Size scroll_container_size(5, 5);
   gfx::Size surface_size(10, 10);
-  LayerImpl* root_clip = SetupDefaultRootLayer(surface_size);
-  LayerImpl* root =
-      AddScrollableLayer(root_clip, scroll_container_size, surface_size);
+  SetupViewportLayersNoScrolls(surface_size);
+  LayerImpl* root = AddScrollableLayer(OuterViewportScrollLayer(),
+                                       scroll_container_size, surface_size);
   LayerImpl* child_layer =
       AddScrollableLayer(root, scroll_container_size, surface_size);
   LayerImpl* grand_child_layer =
       AddScrollableLayer(child_layer, scroll_container_size, surface_size);
-
-  LayerTreeImpl::ViewportPropertyIds viewport_property_ids;
-  viewport_property_ids.inner_scroll = root->scroll_tree_index();
-  host_impl_->active_tree()->SetViewportPropertyIds(viewport_property_ids);
 
   UpdateDrawProperties(host_impl_->active_tree());
   host_impl_->active_tree()->DidBecomeActive();
@@ -7890,10 +7887,13 @@ TEST_F(LayerTreeHostImplTest, RootScrollerScrollNonDescendant) {
   // of the outer viewport scroll layer.
   LayerImpl* outer_scroll_layer =
       AddScrollableLayer(content_layer, content_size, gfx::Size(1200, 1200));
-  GetScrollNode(outer_scroll_layer)->scrolls_outer_viewport = true;
   LayerImpl* sibling_scroll_layer = AddScrollableLayer(
       content_layer, gfx::Size(600, 600), gfx::Size(1200, 1200));
 
+  GetScrollNode(InnerViewportScrollLayer())
+      ->prevent_viewport_scrolling_from_inner = true;
+  GetScrollNode(OuterViewportScrollLayer())->scrolls_outer_viewport = false;
+  GetScrollNode(outer_scroll_layer)->scrolls_outer_viewport = true;
   auto viewport_property_ids = layer_tree_impl->ViewportPropertyIdsForTesting();
   viewport_property_ids.outer_scroll = outer_scroll_layer->scroll_tree_index();
   layer_tree_impl->SetViewportPropertyIds(viewport_property_ids);
@@ -10338,7 +10338,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
                                   InputHandler::TOUCHSCREEN)
                 .thread);
   EXPECT_EQ(host_impl_->CurrentlyScrollingNode(),
-            host_impl_->ViewportMainScrollNode());
+            host_impl_->OuterViewportScrollNode());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
             host_impl_
@@ -13388,9 +13388,9 @@ TEST_F(LayerTreeHostImplTest, TouchScrollOnAndroidScrollbar) {
   gfx::Size scroll_content_size = gfx::Size(360, 3800);
   gfx::Size scrollbar_size = gfx::Size(15, 600);
 
-  LayerImpl* root = SetupDefaultRootLayer(viewport_size);
-  LayerImpl* content =
-      AddScrollableLayer(root, viewport_size, scroll_content_size);
+  SetupViewportLayersNoScrolls(viewport_size);
+  LayerImpl* content = AddScrollableLayer(OuterViewportScrollLayer(),
+                                          viewport_size, scroll_content_size);
 
   auto* scrollbar = AddLayer<SolidColorScrollbarLayerImpl>(
       layer_tree_impl, VERTICAL, 10, 0, false);

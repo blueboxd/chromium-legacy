@@ -1,4 +1,54 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ka">
+<translation id="1282031177488366470">შეუწყვეთ ხელი Chrome-ის ფუნქციებისა და წარმადობის გაუმჯობესებას</translation>
+<translation id="1682483655351012182">თქვენი Chrome მონაცემების სინქრონიზაცია</translation>
+<translation id="1759842336958782510">Chrome</translation>
+<translation id="1816764564654397850">Google Chrome-ის კონფიდენციალურობის დებულება</translation>
+<translation id="1863312987075920112">ამ აპლიკაციის გამოყენებით თქვენ ეთანხმებით Chrome-ის <ph name="BEGIN_LINK_TOS" />მომსახურების პირობებსა<ph name="END_LINK_TOS" /> და <ph name="BEGIN_LINK_PRIVACY" />კონფიდენციალურობის დებულებას<ph name="END_LINK_PRIVACY" />.</translation>
+<translation id="2147651015520127414">Chrome-მა დაადასტურა, რომ ამ ვებსაიტის სერტიფიკატის გამცემია <ph name="ISSUER" />.</translation>
+<translation id="2199719347983604670">Chrome-ის სინქრონიზაციის მონაცემები</translation>
+<translation id="2347208864470321755">თუ ეს ფუნქცია ჩართულია, Chrome შემოგთავაზებთ სხვა ენებზე შედგენილი გვერდების თარგმნას Google Translate-ით. <ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
+<translation id="2441696206556358796">სურათების შესანახად, შეეხეთ პარამეტრებს, რათა Chrome-მა თქვენი ფოტოების გამოყენება შეძლოს</translation>
+<translation id="2576431527583832481">Chrome გაუმჯობესდა! ხელმისაწვდომია ახალი ვერსია.</translation>
+<translation id="257708665678654955">გსურთ, Google Chrome-მა შემდგომში ამ საიტის <ph name="LANGUAGE_NAME" /> გვერდების თარგმნა შემოგთავაზოთ?</translation>
+<translation id="3030414234702425231">ვინაიდან თქვენ გადიხართ ანგარიშიდან, რომელსაც მართავს <ph name="SIGNOUT_MANAGED_DOMAIN" />, ამ მოწყობილობიდან წაიშლება თქვენი Chrome მონაცემები, თუმცა ისინი შენარჩუნდება თქვენს Google ანგარიშში.</translation>
+<translation id="3148688391461398285">გააუმჯობესეთ Chrome-ის ფუნქციები თქვენი მდებარეობის საფუძველზე.</translation>
+<translation id="3167189358072330585">თქვენი ანგარიში არ მუშაობს Google Chrome-ში. გთხოვთ, დაუკავშირდეთ თქვენი დომენის ადმინისტრატორს, ან სისტემაში შესასვლელად, ჩვეულებრივი Google ანგარიში გამოიყენოთ.</translation>
+<translation id="3196546062792660320">თქვენი ანგარიშების ვებში გამოყენებით, Chrome დროის დაზოგვაში დაგეხმარებათ. ანგარიშების დამატება ან ამოშლა პარამეტრებიდან შეგიძლიათ.</translation>
+<translation id="3282568296779691940">შესვლა Chrome-ში</translation>
+<translation id="3345341804167540816">გამოიყენეთ Chrome ყველგან</translation>
+<translation id="384394811301901750">Google Chrome ამჟამად თქვენს კამერას ვერ გამოიყენებს</translation>
+<translation id="3980220367029651214">თქვენ ცვლით სინქრონიზაციის ანგარიშს — <ph name="USER_EMAIL1" /> ანგარიშით — <ph name="USER_EMAIL2" />. თქვენს არსებულ Chrome მონაცემებს მართავს <ph name="DOMAIN" />. ეს მოქმედება წაშლის თქვენს მონაცემებს ამ მოწყობილობიდან, თუმცა ისინი <ph name="USER_EMAIL1" />-ში შენარჩუნდება.</translation>
+<translation id="3988789688219830639">Google Chrome-ს არ აქვს წვდომა თქვენს ფოტოებსა და ვიდეოებზე. ჩართეთ წვდომა iOS-ის მენიუში: პარამეტრები &gt; კონფიდენციალურობა &gt; ფოტოები.</translation>
+<translation id="4099578267706723511">დაგვეხმარეთ Chrome-ის გაუმჯობესებაში, გამოყენების სტატისტიკისა და შეცდომების შესახებ მოხსენებების Google-ში გაგზავნით.</translation>
+<translation id="415767770115540173">გააუმჯობესეთ Chrome-ის ფუნქციები თქვენი მდებარეობის საფუძველზე.</translation>
+<translation id="424864128008805179">გსურთ Chrome-იდან გამოსვლა?</translation>
+<translation id="4249068189593983585">Chrome მინიშნება: ჩანართებთან დაკავშირებული სხვა ვარიანტის სანახავად ხანგრძლივად შეეხეთ „ჩანართების ჩვენების“ ღილაკს ხელსაწყოთა ზოლში, რომელიც მდებარეობს ეკრანის ქვედა ან ზედა ნაწილში.</translation>
+<translation id="4523886039239821078">ზოგიერთი დანამატი იწვევს Chrome-ის შეცდომას. წაშალეთ:</translation>
+<translation id="5389212809648216794">Google Chrome ვერ ისარგებლებს თქვენი კამერით, რადგან მას სხვა აპლიკაცია იყენებს</translation>
+<translation id="5621912349729388018"><ph name="BEGIN_LINK" />გადახედეთ Chrome-ის მომსახურების განახლებულ პირობებს.<ph name="END_LINK" /></translation>
+<translation id="5639704535586432836">გახსენით: პარამეტრები &gt; კონფიდენციალურობა &gt; კამერა &gt; Google Chrome და ჩართეთ კამერა.</translation>
+<translation id="5642200033778930880">Google Chrome თქვენს კამერას გაყოფილი ხედის რეჟიმში ვერ გამოიყენებს</translation>
+<translation id="5690427481109656848">Google LLC</translation>
+<translation id="5854621639439811139">Chrome მინიშნება: ზოგიერთი ღილაკი (როგორიცაა „უკან“, „წინ“ და „ძიება“) ახლა მდებარეობს ეკრანის ქვედა ნაწილში.</translation>
+<translation id="6036420186814142909">Google Chrome-ის ფუნქციების საშუალებით შეგიძლიათ მართოთ ინტერნეტ-მონაცემები და ვებგვერდების ჩატვირთვის სისწრაფე.
+<ph name="BEGIN_LINK" />შეიტყვეთ მეტი<ph name="END_LINK" /></translation>
+<translation id="6573431926118603307">სხვა მოწყობილობებზე თქვენ მიერ Chrome-ით გახსნილი ჩანართები აქ გამოჩნდება.</translation>
+<translation id="6600954340915313787">დაკოპირდა Chrome-ში</translation>
+<translation id="6648150602980899529">თქვენ შედიხართ ანგარიშით, რომელსაც მართავს <ph name="DOMAIN" /> და მის ადმინისტრატორს თქვენი Chrome მონაცემების მართვის საშუალებას აძლევთ. Chrome-იდან გასვლის შემთხვევაში, თქვენი მონაცემები წაიშლება ამ მოწყობილობიდან, თუმცა ისინი თქვენს Google ანგარიშში შენარჩუნდება.</translation>
+<translation id="6676840375528380067">გასუფთავდეს თქვენი Chrome მონაცემები ამ მოწყობილობიდან?</translation>
+<translation id="690638524486313356">Google Chrome-ის მომსახურების პირობები</translation>
+<translation id="7165736900384873061">Google Chrome-ის QR სკანერის გამოყენების დაწყება</translation>
+<translation id="7172660552945675509">მინიშნება: <ph name="BEGIN_LINK" />გადაიტანეთ Chrome თქვენს დოკში<ph name="END_LINK" /></translation>
+<translation id="7173660919484573146">თქვენს პაროლებზე ავტორიზებული წვდომის უზრუნველსაყოფად Chrome იყენებს Face ID-ს.</translation>
+<translation id="7265369419224458312">იქონიეთ წვდომა თქვენ მიერ კომპიუტერში გახსნილ ჩანართებზე პირდაპირ აქ. უბრალოდ, გახსენით Chrome თქვენს კომპიუტერში, გადადით მენიუზე და აირჩიეთ „Chrome-ში შესვლა…“</translation>
+<translation id="7400722733683201933">Google Chrome-ის შესახებ</translation>
+<translation id="756809126120519699">Chrome მონაცემები გასუფთავდა</translation>
+<translation id="7626032353295482388">მოგესალმებათ Chrome!</translation>
+<translation id="7698568245838009292">Chrome-ს კამერაზე წვდომის მიღება სურს</translation>
+<translation id="8370517070665726704">© <ph name="YEAR" />, Google LLC. ყველა უფლება დაცულია.</translation>
+<translation id="840168496893712993">ზოგიერთი დანამატი იწვევს Chrome-ის შეცდომას. სცადეთ მათი წაშლა.</translation>
+<translation id="8459495907675268833">არჩეული მონაცემები ამოიშალა Chrome-იდან და სინქრონიზებული მოწყობილობებიდან. თქვენს Google ანგარიშში შეიძლება სხვა ტიპის დათვალიერების ისტორია იყოს შენახული (მაგალითად, ძიებები და Google-ის სხვა სერვისებზე აქტივობა), რომელიც ხელმისაწვდომია მისამართზე: history.google.com.</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
 </translationbundle>

@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Bleu clair</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> risque de ne pas rester à jour</translation>
 <translation id="1736419249208073774">Découvrir</translation>
-<translation id="1736420071277903564">Ordinateur</translation>
 <translation id="1737968601308870607">Signaler un problème</translation>
 <translation id="1741314857973421784">Continuer</translation>
 <translation id="1743570585616704562">Non reconnu</translation>
@@ -564,7 +563,7 @@
 <translation id="1794791083288629568">Envoyer des commentaires pour nous aider à résoudre ce problème.</translation>
 <translation id="1795214765651529549">Utiliser le thème classique</translation>
 <translation id="1799071797295057738">L'extension "<ph name="EXTENSION_NAME" />" a été désactivée automatiquement.</translation>
-<translation id="1802624026913571222">Mettre en veille quand l'écran est rabattu</translation>
+<translation id="1802624026913571222">Mettre en veille lorsque l'appareil est refermé</translation>
 <translation id="1802687198411089702">La page ne répond plus. Vous pouvez attendre qu'elle soit de nouveau accessible ou la fermer.</translation>
 <translation id="1802931390041703523">Flash a été bloqué sur cette page</translation>
 <translation id="1803531841600994172">Langue cible</translation>
@@ -666,7 +665,7 @@
 <translation id="1937774647013465102">Impossible d'importer le type d'architecture de conteneur <ph name="ARCHITECTURE_CONTAINER" /> avec l'appareil <ph name="ARCHITECTURE_DEVICE" />. Vous pouvez essayer de restaurer ce conteneur dans un autre appareil ou accéder aux fichiers inclus dans l'image de ce conteneur en les ouvrant dans l'application Fichiers.</translation>
 <translation id="1938351510777341717">Commande externe</translation>
 <translation id="1940546824932169984">Appareils connectés</translation>
-<translation id="1942600407708803723">Éteindre quand l'écran est rabattu</translation>
+<translation id="1942600407708803723">Éteindre lorsque l'appareil est refermé</translation>
 <translation id="1944921356641260203">Mise à jour trouvée</translation>
 <translation id="1946577776959096882">Afficher les comptes</translation>
 <translation id="1951012854035635156">Assistant</translation>
@@ -1129,6 +1128,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
 <translation id="2619761439309613843">Actualisation quotidienne</translation>
 <translation id="2620436844016719705">Système</translation>
+<translation id="2621713457727696555">Sécurisé</translation>
 <translation id="26224892172169984">Interdire à tous les sites de gérer les protocoles</translation>
 <translation id="2624142942574147739">Cette page accède à votre caméra et à votre micro</translation>
 <translation id="2626799779920242286">Veuillez réessayer ultérieurement.</translation>
@@ -1580,6 +1580,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="328571385944182268">Enregistrer vos mots de passe ?</translation>
 <translation id="3288047731229977326">Les extensions exécutées en mode développeur peuvent nuire à votre ordinateur. Si vous n'êtes pas un développeur, nous vous recommandons de désactiver celles-ci afin d'assurer la sécurité de votre ordinateur.</translation>
 <translation id="3289856944988573801">Pour rechercher des mises à jour, veuillez utiliser une connexion Ethernet ou Wi-Fi.</translation>
+<translation id="3290356915286466215">Non sécurisé</translation>
 <translation id="3293644607209440645">Envoyer cette page</translation>
 <translation id="32939749466444286">Impossible de démarrer le conteneur Linux. Veuillez réessayer.</translation>
 <translation id="3294437725009624529">Invité</translation>
@@ -2021,7 +2022,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3900966090527141178">Exporter des mots de passe</translation>
 <translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours…</translation>
 <translation id="3905761538810670789">Réparer l'application</translation>
-<translation id="3906954721959377182">Tablette</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> est obsolète.</translation>
 <translation id="3908501907586732282">Activer l'extension</translation>
 <translation id="3909477809443608991"><ph name="URL" /> souhaite lire un contenu protégé. L'identité de votre appareil sera validée par Google et peut être accessible à ce site.</translation>
@@ -2321,7 +2321,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> partage une fenêtre.</translation>
 <translation id="4364830672918311045">Afficher les notifications</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> avec <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">L'adresse e-mail et le mot de passe saisis ne correspondent pas.</translation>
 <translation id="437184764829821926">Paramètres de police avancés</translation>
 <translation id="4374831787438678295">Programme d'installation de Linux</translation>
@@ -2618,7 +2617,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4839303808932127586">En&amp;registrer la vidéo sous...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 autre}one{# autre}other{# autres}}</translation>
 <translation id="4842976633412754305">Cette page tente de charger des scripts à partir de sources non authentifiées.</translation>
-<translation id="4843488774506045600">Informations de connexion fournies par <ph name="EXTENSION_NAME" /></translation>
+<translation id="4843488774506045600">Écran de connexion fourni par <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Autres claviers</translation>
 <translation id="4846680374085650406">Vous suivez la recommandation de l'administrateur pour ce paramètre.</translation>
 <translation id="4848518990323155912">Activer le verrouillage de la carte SIM (code obligatoire pour utiliser les données mobiles)</translation>
@@ -2963,7 +2962,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5363109466694494651">Powerwash et rétablir</translation>
 <translation id="5365881113273618889">Le dossier que vous avez sélectionné contient des fichiers sensibles. Voulez-vous vraiment accorder à "<ph name="APP_NAME" />" un accès en écriture permanent à ce dossier ?</translation>
 <translation id="5367091008316207019">Lecture du fichier en cours…</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Votre téléphone est verrouillé. Déverrouillez-le pour y accéder.</translation>
 <translation id="5368779022775404937">Se connecter à <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Activer l'accélération du curseur</translation>
@@ -4403,7 +4401,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7476454130948140105">Batterie trop faible pour la mise à jour (<ph name="BATTERY_PERCENT" /> %)</translation>
 <translation id="7477793887173910789">Contrôler votre musique, vos vidéos et d'autres contenus</translation>
 <translation id="7478485216301680444">Impossible d'installer l'application kiosque.</translation>
-<translation id="7479221278376295180">Utilisation de l'espace de stockage</translation>
+<translation id="7479221278376295180">Aperçu de l'espace de stockage utilisé</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="748138892655239008">Contraintes de base du certificat</translation>
 <translation id="7487067081878637334">Technologie</translation>
@@ -4722,6 +4720,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7912080627461681647">Votre mot de passe a été modifié sur le serveur. Veuillez vous déconnecter, puis vous reconnecter.</translation>
 <translation id="7915457674565721553">Connectez-vous à Internet pour configurer le contrôle parental</translation>
 <translation id="7915471803647590281">Veuillez nous indiquer ce qu'il se passe avant d'envoyer votre rapport.</translation>
+<translation id="7918257978052780342">Enregistrer</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Niveau de zoom ancré :</translation>
 <translation id="7925247922861151263">Échec de la vérification AAA</translation>
@@ -5380,7 +5379,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8845001906332463065">Obtenir de l'aide</translation>
 <translation id="8846132060409673887">Lire le fabricant et le modèle de cet ordinateur</translation>
 <translation id="8846141544112579928">Recherche du clavier en cours…</translation>
-<translation id="8847523528195140327">Se déconnecter lorsque l'écran est rabattu</translation>
+<translation id="8847523528195140327">Se déconnecter lorsque l'appareil est refermé</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Voir plus…</translation>
 <translation id="885246833287407341">Arguments de fonction API</translation>

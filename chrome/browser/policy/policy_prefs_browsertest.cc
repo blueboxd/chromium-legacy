@@ -76,49 +76,74 @@ std::string GetPolicyName(const std::string& policy_name_decorated) {
 // Contains the details of a single test case verifying that the controlled
 // setting indicators for a pref affected by a policy work correctly. This is
 // part of the data loaded from chrome/test/data/policy/policy_test_cases.json.
-class IndicatorTestCase {
+class PrefIndicatorTest {
  public:
-  IndicatorTestCase(const base::DictionaryValue& policy,
-                    const std::string& value,
-                    bool readonly)
-      : policy_(policy.DeepCopy()), value_(value), readonly_(readonly) {}
-  ~IndicatorTestCase() {}
+  explicit PrefIndicatorTest(const base::Value& indicator_test) {
+    base::Optional<bool> readonly = indicator_test.FindBoolKey("readonly");
+    const std::string* value = indicator_test.FindStringKey("value");
+    const std::string* selector = indicator_test.FindStringKey("selector");
+    const std::string* test_url = indicator_test.FindStringKey("test_url");
+    const std::string* pref = indicator_test.FindStringKey("pref");
+    const std::string* test_setup_js =
+        indicator_test.FindStringKey("test_setup_js");
 
-  const base::DictionaryValue& policy() const { return *policy_; }
+    readonly_ = readonly.value_or(false);
+    value_ = value ? *value : std::string();
+    test_url_ = test_url ? *test_url : std::string();
+    test_setup_js_ = test_setup_js ? *test_setup_js : std::string();
+    selector_ = selector ? *selector : std::string();
+    pref_ = pref ? *pref : std::string();
+  }
+
+  ~PrefIndicatorTest() {}
 
   const std::string& value() const { return value_; }
+  const std::string& test_url() const { return test_url_; }
+  const std::string& test_setup_js() const { return test_setup_js_; }
+  const std::string& selector() const { return selector_; }
+  const std::string& pref() const { return pref_; }
 
   bool readonly() const { return readonly_; }
 
  private:
-  std::unique_ptr<base::DictionaryValue> policy_;
-  std::string value_;
   bool readonly_;
+  std::string value_;
+  std::string test_url_;
+  std::string test_setup_js_;
+  std::string selector_;
+  std::string pref_;
 
-  DISALLOW_COPY_AND_ASSIGN(IndicatorTestCase);
+  DISALLOW_COPY_AND_ASSIGN(PrefIndicatorTest);
 };
 
-// Contains the testing details for a single pref affected by a policy. This is
-// part of the data loaded from chrome/test/data/policy/policy_test_cases.json.
-class PrefMapping {
+// Contains the testing details for a single pref affected by one or multiple
+// policies. This is part of the data loaded from
+// chrome/test/data/policy/policy_test_cases.json.
+class PrefTestCase {
  public:
-  PrefMapping(const std::string& pref,
-              bool is_local_state,
-              bool check_for_mandatory,
-              bool check_for_recommended,
-              const std::string& indicator_test_url,
-              const std::string& indicator_test_setup_js,
-              const std::string& indicator_selector)
-      : pref_(pref),
-        is_local_state_(is_local_state),
-        check_for_mandatory_(check_for_mandatory),
-        check_for_recommended_(check_for_recommended),
-        indicator_test_url_(indicator_test_url),
-        indicator_test_setup_js_(indicator_test_setup_js),
-        indicator_selector_(indicator_selector) {}
-  ~PrefMapping() {}
+  explicit PrefTestCase(const std::string& name, const base::Value& settings) {
+    const base::Value* value = settings.FindKey("value");
+    const base::Value* indicator_test = settings.FindDictKey("indicator_test");
+    is_local_state_ = settings.FindBoolKey("local_state").value_or(false);
+    check_for_mandatory_ =
+        settings.FindBoolKey("check_for_mandatory").value_or(true);
+    check_for_recommended_ =
+        settings.FindBoolKey("check_for_recommended").value_or(true);
+    expect_default_ = settings.FindBoolKey("expect_default").value_or(false);
+
+    pref_ = name;
+    if (value)
+      value_ = value->CreateDeepCopy();
+    if (indicator_test) {
+      pref_indicator_test_ =
+          std::make_unique<PrefIndicatorTest>(*indicator_test);
+    }
+  }
+
+  ~PrefTestCase() {}
 
   const std::string& pref() const { return pref_; }
+  const base::Value* value() const { return value_.get(); }
 
   bool is_local_state() const { return is_local_state_; }
 
@@ -126,47 +151,88 @@ class PrefMapping {
 
   bool check_for_recommended() const { return check_for_recommended_; }
 
-  const std::string& indicator_test_url() const { return indicator_test_url_; }
+  bool expect_default() const { return expect_default_; }
 
-  const std::string& indicator_test_setup_js() const {
-    return indicator_test_setup_js_;
+  const PrefIndicatorTest* indicator_test_case() const {
+    return pref_indicator_test_.get();
   }
 
-  const std::string& indicator_selector() const { return indicator_selector_; }
+ private:
+  std::string pref_;
+  std::unique_ptr<base::Value> value_;
+  bool is_local_state_;
+  bool check_for_mandatory_;
+  bool check_for_recommended_;
+  bool expect_default_;
+  std::unique_ptr<PrefIndicatorTest> pref_indicator_test_;
+  DISALLOW_COPY_AND_ASSIGN(PrefTestCase);
+};
 
-  const std::vector<std::unique_ptr<IndicatorTestCase>>& indicator_test_cases()
-      const {
-    return indicator_test_cases_;
+// Contains the testing details for a single pref affected by a policy. This is
+// part of the data loaded from chrome/test/data/policy/policy_test_cases.json.
+class PolicyPrefMappingTest {
+ public:
+  explicit PolicyPrefMappingTest(const base::Value& mapping) {
+    const base::Value* policies = mapping.FindDictKey("policies");
+    const base::Value* prefs = mapping.FindDictKey("prefs");
+    if (policies)
+      policies_ = policies->Clone();
+    if (prefs) {
+      for (const auto& pref_setting : prefs->DictItems())
+        prefs_.push_back(std::make_unique<PrefTestCase>(pref_setting.first,
+                                                        pref_setting.second));
+    }
   }
-  void AddIndicatorTestCase(std::unique_ptr<IndicatorTestCase> test_case) {
-    indicator_test_cases_.push_back(std::move(test_case));
+  ~PolicyPrefMappingTest() {}
+
+  const base::Value& policies() const { return policies_; }
+
+  const std::vector<std::unique_ptr<PrefTestCase>>& prefs() const {
+    return prefs_;
   }
 
  private:
   const std::string pref_;
-  const bool is_local_state_;
-  const bool check_for_mandatory_;
-  const bool check_for_recommended_;
-  const std::string indicator_test_url_;
-  const std::string indicator_test_setup_js_;
-  const std::string indicator_selector_;
-  std::vector<std::unique_ptr<IndicatorTestCase>> indicator_test_cases_;
+  base::Value policies_;
+  std::vector<std::unique_ptr<PrefTestCase>> prefs_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrefMapping);
+  DISALLOW_COPY_AND_ASSIGN(PolicyPrefMappingTest);
 };
 
 // Contains the testing details for a single policy. This is part of the data
 // loaded from chrome/test/data/policy/policy_test_cases.json.
 class PolicyTestCase {
  public:
-  PolicyTestCase(const std::string& name,
-                 bool is_official_only,
-                 bool can_be_recommended,
-                 const std::string& indicator_selector)
-      : name_(name),
-        is_official_only_(is_official_only),
-        can_be_recommended_(can_be_recommended),
-        indicator_selector_(indicator_selector) {}
+  PolicyTestCase(const std::string& name, const base::Value& test_case)
+      : name_(name) {
+    is_official_only_ = test_case.FindBoolKey("official_only").value_or(false);
+    can_be_recommended_ =
+        test_case.FindBoolKey("can_be_recommended").value_or(false);
+
+    const base::Value* os_list = test_case.FindListKey("os");
+    if (os_list) {
+      for (const auto& os : os_list->GetList()) {
+        if (os.is_string())
+          supported_os_.push_back(os.GetString());
+      }
+    }
+
+    const base::Value* test_policy = test_case.FindDictKey("test_policy");
+    if (test_policy)
+      test_policy_ = test_policy->CreateDeepCopy();
+
+    const base::Value* policy_pref_mapping_tests =
+        test_case.FindListKey("policy_pref_mapping_test");
+    if (policy_pref_mapping_tests) {
+      for (const auto& mapping : policy_pref_mapping_tests->GetList()) {
+        if (mapping.is_dict()) {
+          policy_pref_mapping_test_.push_back(
+              std::make_unique<PolicyPrefMappingTest>(mapping));
+        }
+      }
+    }
+  }
+
   ~PolicyTestCase() {}
 
   const std::string& name() const { return name_; }
@@ -199,29 +265,20 @@ class PolicyTestCase {
     return IsOsSupported();
   }
 
-  const base::DictionaryValue& test_policy() const { return test_policy_; }
-  void SetTestPolicy(const base::DictionaryValue& policy) {
-    test_policy_.Clear();
-    test_policy_.MergeDictionary(&policy);
-  }
+  const base::Value* test_policy() const { return test_policy_.get(); }
 
-  const std::vector<std::unique_ptr<PrefMapping>>& pref_mappings() const {
-    return pref_mappings_;
+  const std::vector<std::unique_ptr<PolicyPrefMappingTest>>&
+  policy_pref_mapping_test() const {
+    return policy_pref_mapping_test_;
   }
-  void AddPrefMapping(std::unique_ptr<PrefMapping> pref_mapping) {
-    pref_mappings_.push_back(std::move(pref_mapping));
-  }
-
-  const std::string& indicator_selector() const { return indicator_selector_; }
 
  private:
   std::string name_;
   bool is_official_only_;
   bool can_be_recommended_;
   std::vector<std::string> supported_os_;
-  base::DictionaryValue test_policy_;
-  std::vector<std::unique_ptr<PrefMapping>> pref_mappings_;
-  std::string indicator_selector_;
+  std::unique_ptr<base::Value> test_policy_;
+  std::vector<std::unique_ptr<PolicyPrefMappingTest>> policy_pref_mapping_test_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyTestCase);
 };
@@ -229,7 +286,7 @@ class PolicyTestCase {
 // Parses all policy test cases and makes them available in a map.
 class PolicyTestCases {
  public:
-  typedef std::vector<PolicyTestCase*> PolicyTestCaseVector;
+  typedef std::vector<std::unique_ptr<PolicyTestCase>> PolicyTestCaseVector;
   typedef std::map<std::string, PolicyTestCaseVector> PolicyTestCaseMap;
   typedef PolicyTestCaseMap::const_iterator iterator;
 
@@ -257,18 +314,13 @@ class PolicyTestCases {
       const std::string policy_name = GetPolicyName(it.first);
       if (policy_name == kTemplateSampleTest)
         continue;
-      PolicyTestCase* policy_test_case = GetPolicyTestCase(dict, it.first);
-      if (policy_test_case)
-        policy_test_cases_[policy_name].push_back(policy_test_case);
+      auto policy_test_case =
+          std::make_unique<PolicyTestCase>(it.first, it.second);
+      policy_test_cases_[policy_name].push_back(std::move(policy_test_case));
     }
   }
 
-  ~PolicyTestCases() {
-    for (const auto& policy : policy_test_cases_) {
-      for (PolicyTestCase* test_case : policy.second)
-        delete test_case;
-    }
-  }
+  ~PolicyTestCases() {}
 
   const PolicyTestCaseVector* Get(const std::string& name) const {
     const iterator it = policy_test_cases_.find(name);
@@ -280,86 +332,6 @@ class PolicyTestCases {
   iterator end() const { return policy_test_cases_.end(); }
 
  private:
-  PolicyTestCase* GetPolicyTestCase(const base::DictionaryValue* tests,
-                                    const std::string& name) {
-    const base::DictionaryValue* policy_test_dict = nullptr;
-    if (!tests->GetDictionaryWithoutPathExpansion(name, &policy_test_dict))
-      return nullptr;
-    bool is_official_only = false;
-    policy_test_dict->GetBoolean("official_only", &is_official_only);
-    bool can_be_recommended = false;
-    policy_test_dict->GetBoolean("can_be_recommended", &can_be_recommended);
-    std::string indicator_selector;
-    policy_test_dict->GetString("indicator_selector", &indicator_selector);
-
-    PolicyTestCase* policy_test_case = new PolicyTestCase(
-        name, is_official_only, can_be_recommended, indicator_selector);
-    const base::ListValue* os_list = nullptr;
-    if (policy_test_dict->GetList("os", &os_list)) {
-      for (size_t i = 0; i < os_list->GetSize(); ++i) {
-        std::string os;
-        if (os_list->GetString(i, &os))
-          policy_test_case->AddSupportedOs(os);
-      }
-    }
-
-    const base::DictionaryValue* policy = nullptr;
-    if (policy_test_dict->GetDictionary("test_policy", &policy))
-      policy_test_case->SetTestPolicy(*policy);
-    const base::ListValue* pref_mappings = nullptr;
-    if (policy_test_dict->GetList("pref_mappings", &pref_mappings)) {
-      for (size_t i = 0; i < pref_mappings->GetSize(); ++i) {
-        const base::DictionaryValue* pref_mapping_dict = nullptr;
-        std::string pref;
-        if (!pref_mappings->GetDictionary(i, &pref_mapping_dict) ||
-            !pref_mapping_dict->GetString("pref", &pref)) {
-          ADD_FAILURE() << "Malformed pref_mappings entry for " << name
-                        << " in policy_test_cases.json.";
-          continue;
-        }
-        bool is_local_state = false;
-        pref_mapping_dict->GetBoolean("local_state", &is_local_state);
-        bool check_for_mandatory = true;
-        pref_mapping_dict->GetBoolean("check_for_mandatory",
-                                      &check_for_mandatory);
-        bool check_for_recommended = true;
-        pref_mapping_dict->GetBoolean("check_for_recommended",
-                                      &check_for_recommended);
-        std::string indicator_test_url;
-        pref_mapping_dict->GetString("indicator_test_url", &indicator_test_url);
-        std::string indicator_test_setup_js;
-        pref_mapping_dict->GetString("indicator_test_setup_js",
-                                     &indicator_test_setup_js);
-        std::string indicator_selector;
-        pref_mapping_dict->GetString("indicator_selector", &indicator_selector);
-        auto pref_mapping = std::make_unique<PrefMapping>(
-            pref, is_local_state, check_for_mandatory, check_for_recommended,
-            indicator_test_url, indicator_test_setup_js, indicator_selector);
-        const base::ListValue* indicator_tests = nullptr;
-        if (pref_mapping_dict->GetList("indicator_tests", &indicator_tests)) {
-          for (size_t i = 0; i < indicator_tests->GetSize(); ++i) {
-            const base::DictionaryValue* indicator_test_dict = nullptr;
-            const base::DictionaryValue* policy = nullptr;
-            if (!indicator_tests->GetDictionary(i, &indicator_test_dict) ||
-                !indicator_test_dict->GetDictionary("policy", &policy)) {
-              ADD_FAILURE() << "Malformed indicator_tests entry for " << name
-                            << " in policy_test_cases.json.";
-              continue;
-            }
-            std::string value;
-            indicator_test_dict->GetString("value", &value);
-            bool readonly = false;
-            indicator_test_dict->GetBoolean("readonly", &readonly);
-            pref_mapping->AddIndicatorTestCase(
-                std::make_unique<IndicatorTestCase>(*policy, value, readonly));
-          }
-        }
-        policy_test_case->AddPrefMapping(std::move(pref_mapping));
-      }
-    }
-    return policy_test_case;
-  }
-
   PolicyTestCaseMap policy_test_cases_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyTestCases);
@@ -387,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
     }
 
     bool has_test_case_for_this_os = false;
-    for (const PolicyTestCase* test_case : policy->second) {
+    for (const auto& test_case : policy->second) {
       has_test_case_for_this_os |= test_case->IsSupported();
       if (has_test_case_for_this_os)
         break;
@@ -425,8 +397,7 @@ class PolicyPrefsTest : public InProcessBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetProviderPolicy(const base::DictionaryValue& policies,
-                         PolicyLevel level) {
+  void SetProviderPolicy(const base::Value& policies, PolicyLevel level) {
     PolicyMap policy_map;
     for (const auto& it : policies.DictItems()) {
       const PolicyDetails* policy_details = GetChromePolicyDetails(it.first);
@@ -455,8 +426,8 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
 
   const PolicyTestCases test_cases;
   for (const auto& policy : test_cases) {
-    for (const PolicyTestCase* test_case : policy.second) {
-      const auto& pref_mappings = test_case->pref_mappings();
+    for (const auto& test_case : policy.second) {
+      const auto& pref_mappings = test_case->policy_pref_mapping_test();
       if (!chrome_schema.GetKnownProperty(policy.first).valid()) {
         // If the policy is supported on this platform according to the test it
         // should be known otherwise we signal this as a failure.
@@ -481,39 +452,50 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
       LOG(INFO) << "Testing policy: " << policy.first;
 
       for (const auto& pref_mapping : pref_mappings) {
-        // Skip Chrome OS preferences that use a different backend and cannot be
-        // retrieved through the prefs mechanism.
-        if (base::StartsWith(pref_mapping->pref(), kCrosSettingsPrefix,
-                             base::CompareCase::SENSITIVE))
-          continue;
+        for (const auto& pref_case : pref_mapping->prefs()) {
+          // Skip Chrome OS preferences that use a different backend and cannot
+          // be retrieved through the prefs mechanism.
+          if (base::StartsWith(pref_case->pref(), kCrosSettingsPrefix,
+                               base::CompareCase::SENSITIVE))
+            continue;
 
-        // Skip preferences that should not be checked when the policy is set to
-        // a mandatory value.
-        if (!pref_mapping->check_for_mandatory())
-          continue;
+          // Skip preferences that should not be checked when the policy is set
+          // to a mandatory value.
+          if (!pref_case->check_for_mandatory())
+            continue;
 
-        PrefService* prefs =
-            pref_mapping->is_local_state() ? local_state : user_prefs;
-        // The preference must have been registered.
-        const PrefService::Preference* pref =
-            prefs->FindPreference(pref_mapping->pref().c_str());
-        ASSERT_TRUE(pref) << "Pref " << pref_mapping->pref().c_str()
-                          << " not registered";
+          PrefService* prefs =
+              pref_case->is_local_state() ? local_state : user_prefs;
+          // The preference must have been registered.
+          const PrefService::Preference* pref =
+              prefs->FindPreference(pref_case->pref().c_str());
+          ASSERT_TRUE(pref)
+              << "Pref " << pref_case->pref().c_str() << " not registered";
 
-        // Verify that setting the policy overrides the pref.
-        ClearProviderPolicy();
-        prefs->ClearPref(pref_mapping->pref().c_str());
-        EXPECT_TRUE(pref->IsDefaultValue());
-        EXPECT_TRUE(pref->IsUserModifiable());
-        EXPECT_FALSE(pref->IsUserControlled());
-        EXPECT_FALSE(pref->IsManaged());
+          // Verify that setting the policy overrides the pref.
+          ClearProviderPolicy();
+          prefs->ClearPref(pref_case->pref().c_str());
+          EXPECT_TRUE(pref->IsDefaultValue());
+          EXPECT_TRUE(pref->IsUserModifiable());
+          EXPECT_FALSE(pref->IsUserControlled());
+          EXPECT_FALSE(pref->IsManaged());
 
-        ASSERT_NO_FATAL_FAILURE(SetProviderPolicy(test_case->test_policy(),
-                                                  POLICY_LEVEL_MANDATORY));
-        EXPECT_FALSE(pref->IsDefaultValue());
-        EXPECT_FALSE(pref->IsUserModifiable());
-        EXPECT_FALSE(pref->IsUserControlled());
-        EXPECT_TRUE(pref->IsManaged());
+          ASSERT_NO_FATAL_FAILURE(SetProviderPolicy(pref_mapping->policies(),
+                                                    POLICY_LEVEL_MANDATORY));
+          if (pref_case->expect_default()) {
+            EXPECT_TRUE(pref->IsDefaultValue());
+            EXPECT_TRUE(pref->IsUserModifiable());
+            EXPECT_FALSE(pref->IsUserControlled());
+            EXPECT_FALSE(pref->IsManaged());
+          } else {
+            EXPECT_FALSE(pref->IsDefaultValue());
+            EXPECT_FALSE(pref->IsUserModifiable());
+            EXPECT_FALSE(pref->IsUserControlled());
+            EXPECT_TRUE(pref->IsManaged());
+          }
+          if (pref_case->value())
+            EXPECT_TRUE(pref->GetValue()->Equals(pref_case->value()));
+        }
       }
     }
   }

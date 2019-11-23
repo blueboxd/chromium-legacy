@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7781829728241885113">Jana</translation>
 <translation id="7814458197256864873">&amp;Nakili</translation>
+<translation id="7848989271541991537">Imehamishiwa kwenye Ukurasa wa <ph name="PAGE_NUMBER" />, safu mlalo ya <ph name="ROW_NUMBER" />, safu wima ya <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Usizuie</translation>
 <translation id="7907591526440419938">Fungua Faili</translation>
 <translation id="7969046989155602842">Amri</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Rafu inafichwa kila wakati</translation>
 <translation id="8996630695507351249">Hakikisha kwamba <ph name="TARGET_DEVICE_NAME" /> imeunganishwa kwenye intaneti.</translation>
 <translation id="9002566407876343676">fungua</translation>
-<translation id="9039076430527029379">Nenda kwenye Ukurasa wa <ph name="PAGE_NUMBER" />, safu mlalo ya <ph name="ROW_NUMBER" />, safu wima ya <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{Sekunde 1}other{Sekunde #}}</translation>
 <translation id="9059834730836941392">Kunja arifa</translation>
 <translation id="9150735707954472829">Kichupo</translation>

@@ -5,7 +5,7 @@
 module service_manager.mojom;
 
 interface ShutdownTestService {
-  SetClient(ShutdownTestClient client);
+  SetClient(pending_remote<ShutdownTestClient> client);
   ShutDown();
 };
 

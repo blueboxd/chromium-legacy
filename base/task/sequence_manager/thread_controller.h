@@ -96,6 +96,12 @@ class ThreadController {
   virtual void AttachToMessagePump() = 0;
 #endif
 
+#if defined(OS_IOS)
+  // Detaches this ThreadController from the message pump, allowing the
+  // controller to be shut down cleanly.
+  virtual void DetachFromMessagePump() = 0;
+#endif
+
   // TODO(altimin): Get rid of the methods below.
   // These methods exist due to current integration of SequenceManager
   // with MessageLoop.

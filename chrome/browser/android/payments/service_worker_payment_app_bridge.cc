@@ -20,7 +20,7 @@
 #include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_handler_host.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
-#include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/content/service_worker_payment_app_finder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/payment_app_provider.h"
@@ -64,7 +64,7 @@ void OnGotAllPaymentApps(
     const JavaRef<jobject>& jweb_contents,
     const JavaRef<jobject>& jcallback,
     content::PaymentAppProvider::PaymentApps apps,
-    payments::ServiceWorkerPaymentAppFactory::InstallablePaymentApps
+    payments::ServiceWorkerPaymentAppFinder::InstallablePaymentApps
         installable_apps,
     const std::string& error_message) {
   JNIEnv* env = AttachCurrentThread();
@@ -433,7 +433,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_GetAllPaymentApps(
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
-  payments::ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
+  payments::ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
       web_contents,
       WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()),

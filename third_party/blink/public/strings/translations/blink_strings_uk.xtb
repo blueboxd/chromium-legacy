@@ -114,6 +114,7 @@
 <translation id="479989351350248267">пошук</translation>
 <translation id="4812940957355064477">Введіть число.</translation>
 <translation id="4912536737030637138">бібліографічний запис</translation>
+<translation id="492244087561876220">коментар</translation>
 <translation id="4975562563186953947">Вибрано <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Увімкнути звук</translation>
 <translation id="49969490063480558">Введіть частину електронної адреси після знака "<ph name="ATSIGN" />". Електронна адреса "<ph name="INVALIDADDRESS" />" неповна.</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="901493112792887934">поточний час у секундах</translation>
 <translation id="901834265349196618">електронна адреса</translation>
+<translation id="9023835124071926463">розділ із коментарями</translation>
 <translation id="9048119486235211610">навігація</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9093215626363556771">вийти з режиму "Картинка в картинці"</translation>

@@ -31,6 +31,8 @@ struct BeginFrameArgs;
 namespace cc {
 class FrameSequenceTracker;
 class CompositorFrameReportingController;
+class ThroughputUkmReporter;
+class UkmManager;
 
 enum FrameSequenceTrackerType {
   kCompositorAnimation = 0,
@@ -93,6 +95,8 @@ class CC_EXPORT FrameSequenceTrackerCollection {
 
   FrameSequenceTracker* GetTrackerForTesting(FrameSequenceTrackerType type);
 
+  void SetUkmManager(UkmManager* manager);
+
  private:
   friend class FrameSequenceTrackerTest;
 
@@ -106,6 +110,16 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   std::vector<std::unique_ptr<FrameSequenceTracker>> removal_trackers_;
   CompositorFrameReportingController* const
       compositor_frame_reporting_controller_;
+
+  // The reporter takes throughput data and connect to UkmManager to report it.
+  std::unique_ptr<ThroughputUkmReporter> throughput_ukm_reporter_;
+
+  // This is pointing to the LayerTreeHostImpl::ukm_manager_, which is
+  // initialized right after the LayerTreeHostImpl is created. So when this
+  // pointer is initialized, there should be no trackers yet. Moreover, the
+  // LayerTreeHostImpl::ukm_manager_ lives as long as the LayerTreeHostImpl, so
+  // this pointer should never be null as long as LayerTreeHostImpl is alive.
+  UkmManager* ukm_manager_ = nullptr;
 };
 
 // Tracks a sequence of frames to determine the throughput. It tracks this by
@@ -121,6 +135,12 @@ class CC_EXPORT FrameSequenceTracker {
     kActive,
     kScheduledForTermination,
     kReadyForTermination,
+  };
+
+  enum class ThreadType {
+    kMain,
+    kCompositor,
+    kSlower,
   };
 
   static const char* GetFrameSequenceTrackerTypeName(int type_index);
@@ -176,7 +196,9 @@ class CC_EXPORT FrameSequenceTracker {
   friend class FrameSequenceTrackerCollection;
   friend class FrameSequenceTrackerTest;
 
-  explicit FrameSequenceTracker(FrameSequenceTrackerType type);
+  FrameSequenceTracker(FrameSequenceTrackerType type,
+                       UkmManager* manager,
+                       ThroughputUkmReporter* throughput_ukm_reporter);
 
   void ScheduleTerminate() {
     termination_status_ = TerminationStatus::kScheduledForTermination;
@@ -284,6 +306,13 @@ class CC_EXPORT FrameSequenceTracker {
 
   // Report the throughput metrics every 5 seconds.
   const base::TimeDelta time_delta_to_report_ = base::TimeDelta::FromSeconds(5);
+
+  // Please refer to the comments in FrameSequenceTrackerCollection's
+  // ukm_manager_.
+  UkmManager* const ukm_manager_;
+
+  // Pointer to the reporter owned by the FrameSequenceTrackerCollection.
+  ThroughputUkmReporter* throughput_ukm_reporter_;
 
 #if DCHECK_IS_ON()
   // This stringstream represents a sequence of frame reporting activities on

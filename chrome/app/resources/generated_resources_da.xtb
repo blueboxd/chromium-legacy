@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Lyseblå</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> kan muligvis ikke holdes opdateret af sig selv</translation>
 <translation id="1736419249208073774">Mere</translation>
-<translation id="1736420071277903564">Computer</translation>
 <translation id="1737968601308870607">Indgiv fejl</translation>
 <translation id="1741314857973421784">Fortsæt</translation>
 <translation id="1743570585616704562">Ikke genkendt</translation>
@@ -1129,6 +1128,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2619761439309613843">Nyt hver dag</translation>
 <translation id="2620436844016719705">System</translation>
+<translation id="2621713457727696555">Beskyttet</translation>
 <translation id="26224892172169984">Tillad ingen websites at håndtere protokoller</translation>
 <translation id="2624142942574147739">Denne side har adgang til dit kamera og din mikrofon.</translation>
 <translation id="2626799779920242286">Prøv igen senere.</translation>
@@ -1580,6 +1580,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="328571385944182268">Vil du gemme dine adgangskoder?</translation>
 <translation id="3288047731229977326">Udvidelser, der kører i udviklertilstand, kan skade din computer. Hvis du ikke er udvikler, skal du deaktivere udvidelserne, der kører i udviklertilstand, af hensyn til sikkerheden.</translation>
 <translation id="3289856944988573801">Du kan søge efter opdateringer via Ethernet eller Wi-Fi.</translation>
+<translation id="3290356915286466215">Ikke beskyttet</translation>
 <translation id="3293644607209440645">Send denne side</translation>
 <translation id="32939749466444286">Linux-containeren startede ikke. Prøv igen.</translation>
 <translation id="3294437725009624529">Gæst</translation>
@@ -2021,7 +2022,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3900966090527141178">Eksportér adgangskoder</translation>
 <translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Reparer appen</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> er forældet</translation>
 <translation id="3908501907586732282">Aktivér udvidelse</translation>
 <translation id="3909477809443608991"><ph name="URL" /> vil afspille beskyttet indhold. Din enheds identitet bekræftes af Google, og dette website får muligvis adgang til enheden.</translation>
@@ -2321,7 +2321,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> deler et vindue.</translation>
 <translation id="4364830672918311045">Vis notifikationer</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> med <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Den mail og adgangskode, du indtastede, stemmer ikke overens</translation>
 <translation id="437184764829821926">Avancerede indstillinger for skrifttype</translation>
 <translation id="4374831787438678295">Linux-installationsprogram</translation>
@@ -2963,7 +2962,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5363109466694494651">Powerwash, og vend tilbage</translation>
 <translation id="5365881113273618889">Den valgte mappe indeholder følsomme filer. Er du sikker på, at du vil give "<ph name="APP_NAME" />" permanent skriveadgang til denne mappe?</translation>
 <translation id="5367091008316207019">Læser fil...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Din telefon er låst. Lås den op for at få adgang.</translation>
 <translation id="5368779022775404937">Log ind på <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Aktivér acceleration af mus</translation>
@@ -4721,6 +4719,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7912080627461681647">Din adgangskode er blevet ændret på serveren. Log ud, og log derefter ind igen.</translation>
 <translation id="7915457674565721553">Opret forbindelse til internettet for at konfigurere børnesikring</translation>
 <translation id="7915471803647590281">Fortæl os, hvad der sker, inden du sender feedback.</translation>
+<translation id="7918257978052780342">Tilmeld dig</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> sek.</translation>
 <translation id="792514962475806987">Zoomniveau i fastgjort lupvindue</translation>
 <translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>

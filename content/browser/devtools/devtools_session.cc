@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_protocol_encoding.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/protocol.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "third_party/inspector_protocol/crdtp/cbor.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace content {
 namespace {
@@ -188,7 +188,8 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
     if (client_->UsesBinaryProtocol()) {
       DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
       std::string json;
-      crdtp::Status status = ConvertCBORToJSON(crdtp::SpanFrom(message), &json);
+      crdtp::Status status =
+          crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(message), &json);
       LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
       proxy_delegate_->SendMessageToBackend(this, json);
       return true;
@@ -203,8 +204,8 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
     // CBOR (it comes from the client).
     DCHECK(crdtp::cbor::IsCBORMessage(crdtp::SpanFrom(message)));
   } else {
-    crdtp::Status status =
-        ConvertJSONToCBOR(crdtp::SpanFrom(message), &converted_cbor_message);
+    crdtp::Status status = crdtp::json::ConvertJSONToCBOR(
+        crdtp::SpanFrom(message), &converted_cbor_message);
     LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
     message_to_send = &converted_cbor_message;
   }
@@ -327,7 +328,8 @@ static void SendProtocolResponseOrNotification(
     return;
   }
   std::string json;
-  crdtp::Status status = ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
+  crdtp::Status status =
+      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client->DispatchProtocolMessage(agent_host, json);
 }
@@ -397,9 +399,10 @@ void DevToolsSession::DispatchOnClientHost(const std::string& message) {
     return;
   }
   std::string converted;
-  crdtp::Status status = client_->UsesBinaryProtocol()
-                             ? ConvertJSONToCBOR(bytes, &converted)
-                             : ConvertCBORToJSON(bytes, &converted);
+  crdtp::Status status =
+      client_->UsesBinaryProtocol()
+          ? crdtp::json::ConvertJSONToCBOR(bytes, &converted)
+          : crdtp::json::ConvertCBORToJSON(bytes, &converted);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client_->DispatchProtocolMessage(agent_host_, converted);
   // |this| may be deleted at this point.
@@ -463,7 +466,7 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
     return;
   }
   std::string json;
-  status = ConvertCBORToJSON(crdtp::SpanFrom(patched), &json);
+  status = crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(patched), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client_->DispatchProtocolMessage(agent_host_, json);
   // |this| may be deleted at this point.

@@ -95,7 +95,7 @@ class CORE_EXPORT MixedContentChecker final {
                                     SecurityViolationReportingPolicy::kReport);
 
   static bool ShouldAutoupgrade(HttpsState context_https_state,
-                                WebMixedContentContextType type);
+                                mojom::RequestContextType type);
 
   static void CheckMixedPrivatePublic(LocalFrame*,
                                       const AtomicString& resource_ip_address);
@@ -118,10 +118,6 @@ class CORE_EXPORT MixedContentChecker final {
                                 std::unique_ptr<SourceLocation>);
 
   static ConsoleMessage* CreateConsoleMessageAboutFetchAutoupgrade(
-      const KURL& main_resource_url,
-      const KURL& mixed_content_url);
-
-  static ConsoleMessage* CreateConsoleMessageAboutWebSocketAutoupgrade(
       const KURL& main_resource_url,
       const KURL& mixed_content_url);
 

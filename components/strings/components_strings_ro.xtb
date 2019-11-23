@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Acest tip de card nu este acceptat</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Încearcă să contactezi administratorul sistemului.</translation>
+<translation id="1736420071277903564">Computer</translation>
 <translation id="1739107442478692187">A avut loc o încălcare a securității datelor pe site-ul sau în aplicația folosită. Chrome recomandă să verifici parolele salvate și să-ți schimbi acum parola în <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Introdu o lună de expirare validă</translation>
 <translation id="1741613555002899862">Trebuie specificată și trebuie să fie un șir valid când DnsOverHttpsMode este <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -608,6 +609,7 @@
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3901925938762663762">Cardul este expirat</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tabletă</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Folosești WebAuthn în loc de CVC?</translation>
 <translation id="3946209740501886391">Întreabă întotdeauna pe acest site</translation>
@@ -1533,7 +1535,6 @@ Detalii suplimentare:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 card de credit}few{# carduri de credit}other{# de carduri de credit}}</translation>
 <translation id="8473863474539038330">Adrese și altele</translation>
 <translation id="8479754468255770962">Capsare în stânga jos</translation>
-<translation id="8481133456511676116">Ai vrut să scrii <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Pentru a folosi cardurile din Contul Google, conectează-te la Chrome</translation>
 <translation id="8488350697529856933">Se aplică pentru</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a răspuns prea târziu.</translation>

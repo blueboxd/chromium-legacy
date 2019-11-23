@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_task_queue.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
@@ -20,16 +21,16 @@ class MainThreadTaskQueue;
 class PLATFORM_EXPORT WebSchedulingTaskQueueImpl
     : public WebSchedulingTaskQueue {
  public:
-  WebSchedulingTaskQueueImpl(WebSchedulingPriority, MainThreadTaskQueue*);
+  WebSchedulingTaskQueueImpl(base::WeakPtr<MainThreadTaskQueue>);
   ~WebSchedulingTaskQueueImpl() override = default;
 
-  WebSchedulingPriority Priority() override { return priority_; }
+  void SetPriority(WebSchedulingPriority) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
  private:
-  const WebSchedulingPriority priority_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtr<MainThreadTaskQueue> task_queue_;
 };
 
 }  // namespace scheduler

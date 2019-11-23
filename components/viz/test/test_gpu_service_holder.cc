@@ -15,6 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/service/service_utils.h"
@@ -48,16 +49,43 @@ TestGpuServiceHolder* g_holder = nullptr;
 bool g_should_register_listener = true;
 bool g_registered_listener = false;
 
-class InstanceResetter : public testing::EmptyTestEventListener {
+class InstanceResetter
+    : public testing::EmptyTestEventListener,
+      public base::test::TaskEnvironment::DestructionObserver {
  public:
-  InstanceResetter() = default;
-  ~InstanceResetter() override = default;
+  InstanceResetter() {
+    base::test::TaskEnvironment::AddDestructionObserver(this);
+  }
 
+  ~InstanceResetter() override {
+    base::test::TaskEnvironment::RemoveDestructionObserver(this);
+  }
+
+  // testing::EmptyTestEventListener:
   void OnTestEnd(const testing::TestInfo& test_info) override {
+    {
+      base::AutoLock locked(GetLock());
+      // Make sure the TestGpuServiceHolder instance is not re-created after
+      // WillDestroyCurrentTaskEnvironment().
+      // Otherwise we'll end up with GPU tasks weirdly running in a different
+      // context after the test.
+      DCHECK(!(reset_by_task_env && g_holder))
+          << "TestGpuServiceHolder was re-created after "
+             "base::test::TaskEnvironment was destroyed.";
+    }
+    reset_by_task_env = false;
+    TestGpuServiceHolder::ResetInstance();
+  }
+
+  // base::test::TaskEnvironment::DestructionObserver:
+  void WillDestroyCurrentTaskEnvironment() override {
+    reset_by_task_env = true;
     TestGpuServiceHolder::ResetInstance();
   }
 
  private:
+  bool reset_by_task_env = false;
+
   DISALLOW_COPY_AND_ASSIGN(InstanceResetter);
 };
 
@@ -74,6 +102,7 @@ TestGpuServiceHolder* TestGpuServiceHolder::GetInstance() {
     g_registered_listener = true;
     testing::TestEventListeners& listeners =
         testing::UnitTest::GetInstance()->listeners();
+    // |listeners| assumes ownership of InstanceResetter.
     listeners.Append(new InstanceResetter);
   }
 

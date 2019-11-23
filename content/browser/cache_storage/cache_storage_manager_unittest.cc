@@ -361,8 +361,12 @@ class CacheStorageManagerTest : public testing::Test {
     // Wait for ChromeBlobStorageContext to finish initializing.
     base::RunLoop().RunUntilIdle();
 
-    blob_storage_context_ = base::MakeRefCounted<BlobStorageContextWrapper>(
-        blob_storage_context->MojoContext());
+    mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
+    blob_storage_context->BindMojoContext(
+        remote.InitWithNewPipeAndPassReceiver());
+    blob_storage_context_ =
+        base::MakeRefCounted<BlobStorageContextWrapper>(std::move(remote));
+
     base::FilePath temp_dir_path;
     if (!MemoryOnly())
       temp_dir_path = temp_dir_.GetPath();

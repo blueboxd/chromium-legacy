@@ -45,7 +45,7 @@ class CORE_EXPORT InertEffect final : public AnimationEffect {
   InertEffect(KeyframeEffectModelBase*,
               const Timing&,
               bool paused,
-              double inherited_time);
+              base::Optional<double> inherited_time);
 
   void Sample(HeapVector<Member<Interpolation>>&) const;
   KeyframeEffectModelBase* Model() const { return model_.Get(); }

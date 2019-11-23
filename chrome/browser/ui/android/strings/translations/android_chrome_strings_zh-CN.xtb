@@ -635,7 +635,7 @@
 <translation id="5686790454216892815">文件名过长</translation>
 <translation id="5689516760719285838">位置信息</translation>
 <translation id="569536719314091526">通过“更多选项”按钮将此页面翻译成任何语言</translation>
-<translation id="5710871682236653961">（推荐）网站需先询问并获得您的许可才能在您触碰 NFC 设备时发送和接收信息</translation>
+<translation id="5710871682236653961">（推荐）网站需先询问并获得您的许可，才能在您触碰 NFC 设备时发送和接收信息</translation>
 <translation id="572328651809341494">最近打开的标签页</translation>
 <translation id="5726692708398506830">放大网页上的所有内容</translation>
 <translation id="5748802427693696783">已切换到标准标签页</translation>
@@ -774,7 +774,6 @@
 <translation id="6697947395630195233">Chrome 需要获得位置权限，才能将您的位置信息共享给此网站。</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6699370405921460408">Google 服务器会优化您访问的网页。</translation>
-<translation id="6706288973712894588">您目前处于离线状态。\n<ph name="BEGIN_LINK" />浏览您的离线版 Feed。<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">资讯</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="671481426037969117">您的 <ph name="FQDN" /> 计时器已结束计时。它将于明天重新开始。</translation>

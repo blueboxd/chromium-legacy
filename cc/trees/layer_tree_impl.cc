@@ -263,16 +263,17 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
       gfx::SizeF viewport_bounds(bounds_size);
       if (scroll_node->scrolls_inner_viewport) {
         DCHECK_EQ(scroll_node, InnerViewportScrollNode());
-        if (auto* outer_scroll_node = OuterViewportScrollNode()) {
-          // Add offset and bounds contribution of outer viewport.
-          current_offset +=
-              scroll_tree.current_scroll_offset(outer_scroll_node->element_id);
-          gfx::SizeF outer_viewport_bounds(
-              scroll_tree.container_bounds(outer_scroll_node->id));
-          viewport_bounds.SetToMin(outer_viewport_bounds);
-          // The scrolling size is only determined by the outer viewport.
-          scrolling_size = gfx::SizeF(outer_scroll_node->bounds);
-        }
+        auto* outer_scroll_node = OuterViewportScrollNode();
+        DCHECK(outer_scroll_node);
+
+        // Add offset and bounds contribution of outer viewport.
+        current_offset +=
+            scroll_tree.current_scroll_offset(outer_scroll_node->element_id);
+        gfx::SizeF outer_viewport_bounds(
+            scroll_tree.container_bounds(outer_scroll_node->id));
+        viewport_bounds.SetToMin(outer_viewport_bounds);
+        // The scrolling size is only determined by the outer viewport.
+        scrolling_size = gfx::SizeF(outer_scroll_node->bounds);
       } else {
         DCHECK_EQ(scroll_node, OuterViewportScrollNode());
         auto* inner_scroll_node = InnerViewportScrollNode();
@@ -367,6 +368,7 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
   if (!InnerViewportScrollNode())
     return;
 
+  DCHECK(OuterViewportScrollNode());
   ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollNode(),
                         this);
 
@@ -404,24 +406,23 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
   // Adjust the outer viewport container as well, since adjusting only the
   // inner may cause its bounds to exceed those of the outer, causing scroll
   // clamping.
-  if (auto* outer_scroll = OuterViewportScrollNode()) {
-    gfx::Vector2dF scaled_bounds_delta =
-        gfx::ScaleVector2d(bounds_delta, 1.f / min_page_scale_factor());
+  gfx::Vector2dF scaled_bounds_delta =
+      gfx::ScaleVector2d(bounds_delta, 1.f / min_page_scale_factor());
 
-    property_trees->SetOuterViewportContainerBoundsDelta(scaled_bounds_delta);
-    // outer_viewport_container_bounds_delta and
-    // inner_viewport_scroll_bounds_delta are the same thing.
-    DCHECK_EQ(scaled_bounds_delta,
-              property_trees->inner_viewport_scroll_bounds_delta());
+  property_trees->SetOuterViewportContainerBoundsDelta(scaled_bounds_delta);
+  // outer_viewport_container_bounds_delta and
+  // inner_viewport_scroll_bounds_delta are the same thing.
+  DCHECK_EQ(scaled_bounds_delta,
+            property_trees->inner_viewport_scroll_bounds_delta());
 
-    if (auto* outer_clip_node = OuterViewportClipNode()) {
-      float adjusted_container_height =
-          outer_scroll->container_bounds.height() + scaled_bounds_delta.y();
-      outer_clip_node->clip.set_height(adjusted_container_height);
-    }
-
-    anchor.ResetViewportToAnchoredPosition();
+  if (auto* outer_clip_node = OuterViewportClipNode()) {
+    float adjusted_container_height =
+        OuterViewportScrollNode()->container_bounds.height() +
+        scaled_bounds_delta.y();
+    outer_clip_node->clip.set_height(adjusted_container_height);
   }
+
+  anchor.ResetViewportToAnchoredPosition();
 
   property_trees->clip_tree.set_needs_update(true);
   property_trees->full_tree_damaged = true;
@@ -441,11 +442,12 @@ gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
   gfx::ScrollOffset offset;
   const auto& scroll_tree = property_trees()->scroll_tree;
 
-  if (auto* inner_scroll = InnerViewportScrollNode())
+  if (auto* inner_scroll = InnerViewportScrollNode()) {
     offset += scroll_tree.current_scroll_offset(inner_scroll->element_id);
-
-  if (auto* outer_scroll = OuterViewportScrollNode())
-    offset += scroll_tree.current_scroll_offset(outer_scroll->element_id);
+    DCHECK(OuterViewportScrollNode());
+    offset += scroll_tree.current_scroll_offset(
+        OuterViewportScrollNode()->element_id);
+  }
 
   return offset;
 }
@@ -619,12 +621,12 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 }
 
 void LayerTreeImpl::HandleTickmarksVisibilityChange() {
-  if (!host_impl_->ViewportMainScrollNode())
+  if (!host_impl_->OuterViewportScrollNode())
     return;
 
   ScrollbarAnimationController* controller =
       host_impl_->ScrollbarAnimationControllerForElementId(
-          host_impl_->ViewportMainScrollNode()->element_id);
+          host_impl_->OuterViewportScrollNode()->element_id);
 
   if (!controller)
     return;
@@ -1123,7 +1125,7 @@ void LayerTreeImpl::DidUpdatePageScale() {
       host_impl_->FlashAllScrollbars(true);
       return;
     }
-    if (auto* scroll_node = host_impl_->ViewportMainScrollNode()) {
+    if (auto* scroll_node = host_impl_->OuterViewportScrollNode()) {
       if (ScrollbarAnimationController* controller =
               host_impl_->ScrollbarAnimationControllerForElementId(
                   scroll_node->element_id))
@@ -1221,10 +1223,10 @@ gfx::SizeF LayerTreeImpl::ScrollableViewportSize() const {
 
 gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
   const ScrollNode* root_scroll_node = OuterViewportScrollNode();
-  if (!root_scroll_node)
-    root_scroll_node = InnerViewportScrollNode();
-  if (!root_scroll_node)
+  if (!root_scroll_node) {
+    DCHECK(!InnerViewportScrollNode());
     return gfx::Rect();
+  }
   return MathUtil::MapEnclosingClippedRect(
       property_trees()->transform_tree.ToScreen(root_scroll_node->transform_id),
       gfx::Rect(root_scroll_node->bounds));
@@ -1454,10 +1456,10 @@ const Region& LayerTreeImpl::UnoccludedScreenSpaceRegion() const {
 
 gfx::SizeF LayerTreeImpl::ScrollableSize() const {
   auto* scroll_node = OuterViewportScrollNode();
-  if (!scroll_node)
-    scroll_node = InnerViewportScrollNode();
-  if (!scroll_node)
+  if (!scroll_node) {
+    DCHECK(!InnerViewportScrollNode());
     return gfx::SizeF();
+  }
   const auto& scroll_tree = property_trees()->scroll_tree;
   auto size = scroll_tree.scroll_bounds(scroll_node->id);
   size.SetToMax(gfx::SizeF(scroll_tree.container_bounds(scroll_node->id)));

@@ -61,7 +61,7 @@ adb shell settings put global package_verifier_enable 0
 
 ### Using Emulators
 
-Running tests on emulators is the same as on device. Refer to
+Running tests on emulators is the same as [on device](#Running-Tests). Refer to
 [android_emulator.md](../android_emulator.md) for setting up emulators.
 
 ## Building Tests

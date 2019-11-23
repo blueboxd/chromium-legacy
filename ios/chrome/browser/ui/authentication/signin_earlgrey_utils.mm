@@ -33,13 +33,13 @@
                                           name:@"Fake Managed"];
 }
 
-- (void)addIdentity:(FakeChromeIdentity*)identity {
-  [SigninEarlGreyUtilsAppInterface addIdentity:identity];
+- (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  [SigninEarlGreyUtilsAppInterface addFakeIdentity:fakeIdentity];
 }
 
-- (void)checkSignedInWithIdentity:(FakeChromeIdentity*)identity {
-  BOOL identityIsNonNil = identity != nil;
-  EG_TEST_HELPER_ASSERT_TRUE(identityIsNonNil, @"Need to give an identity");
+- (void)checkSignedInWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  BOOL fakeIdentityIsNonNil = fakeIdentity != nil;
+  EG_TEST_HELPER_ASSERT_TRUE(fakeIdentityIsNonNil, @"Need to give an identity");
 
   // Required to avoid any problem since the following test is not dependant
   // to UI, and the previous action has to be totally finished before going
@@ -60,9 +60,9 @@
   NSString* errorStr = [NSString
       stringWithFormat:@"Unexpected Gaia ID of the signed in user [expected = "
                        @"\"%@\", actual = \"%@\"]",
-                       identity.gaiaID, primaryAccountGaiaID];
+                       fakeIdentity.gaiaID, primaryAccountGaiaID];
   EG_TEST_HELPER_ASSERT_TRUE(
-      [identity.gaiaID isEqualToString:primaryAccountGaiaID], errorStr);
+      [fakeIdentity.gaiaID isEqualToString:primaryAccountGaiaID], errorStr);
 }
 
 - (void)checkSignedOut {

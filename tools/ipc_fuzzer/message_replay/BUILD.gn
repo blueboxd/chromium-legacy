@@ -6,11 +6,13 @@ executable("ipc_fuzzer_replay") {
   testonly = true
   configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_tool_config" ]
   deps = [
+    "//content/common",
     "//mojo/core/embedder",
     "//tools/ipc_fuzzer/message_lib:ipc_message_lib",
   ]
   public_deps = [
     "//ipc",
+    "//mojo/public/cpp/bindings",
   ]
   sources = [
     "replay.cc",

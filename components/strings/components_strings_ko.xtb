@@ -175,6 +175,7 @@
 <translation id="173080396488393970">이 유형의 카드는 지원되지 않습니다.</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">시스템 관리자에게 문의하세요.</translation>
+<translation id="1736420071277903564">컴퓨터</translation>
 <translation id="1739107442478692187">사용 중인 사이트 또는 앱에서 정보 유출이 발생했습니다. 저장된 비밀번호를 확인하고 지금 바로 <ph name="ORIGIN" />의 비밀번호를 변경하는 것이 좋습니다.</translation>
 <translation id="1740951997222943430">올바른 만료 월을 입력하세요.</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode가 <ph name="SECURE_DNS_MODE_SECURE" />일 때 반드시 지정되어야 하며 유효한 문자열이어야 합니다.</translation>
@@ -608,6 +609,7 @@
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3901925938762663762">만료된 카드입니다.</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">태블릿</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">CVC 대신 WebAuthn을 사용하시겠습니까?</translation>
 <translation id="3946209740501886391">이 사이트에서 항상 물어보기</translation>
@@ -1532,7 +1534,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{신용카드 1개}other{신용카드 #개}}</translation>
 <translation id="8473863474539038330">주소 및 기타</translation>
 <translation id="8479754468255770962">왼쪽 하단 스테이플</translation>
-<translation id="8481133456511676116"><ph name="DOMAIN" />을(를) 찾으셨나요?</translation>
 <translation id="8483780878231876732">Google 계정에서 카드를 사용하려면 Chrome에 로그인하세요.</translation>
 <translation id="8488350697529856933">적용 대상</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" />에서 응답하는 데 시간이 너무 오래 걸립니다.</translation>

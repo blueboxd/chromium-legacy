@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Jenis kartu tidak didukung</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Coba hubungi admin sistem.</translation>
+<translation id="1736420071277903564">Komputer</translation>
 <translation id="1739107442478692187">Pelanggaran data terjadi di situs atau aplikasi yang Anda gunakan. Chrome merekomendasikan untuk memeriksa sandi yang tersimpan dan mengubah sandi Anda di <ph name="ORIGIN" /> saat ini.</translation>
 <translation id="1740951997222943430">Masukkan bulan habis masa berlaku yang valid</translation>
 <translation id="1741613555002899862">Harus ditentukan dan menjadi string yang valid saat DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -609,6 +610,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Kartu telah habis masa berlakunya</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Gunakan WebAuthn dan bukan CVC?</translation>
 <translation id="3946209740501886391">Selalu tanyakan pada situs ini</translation>
@@ -1530,7 +1532,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kartu kredit}other{# kartu kredit}}</translation>
 <translation id="8473863474539038330">Alamat dan lain-lain</translation>
 <translation id="8479754468255770962">Jepretan di kiri bawah</translation>
-<translation id="8481133456511676116">Mungkin maksud Anda <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Untuk menggunakan kartu dari Akun Google Anda, masuk ke Chrome</translation>
 <translation id="8488350697529856933">Berlaku untuk</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> membutuhkan terlalu banyak waktu untuk merespons.</translation>

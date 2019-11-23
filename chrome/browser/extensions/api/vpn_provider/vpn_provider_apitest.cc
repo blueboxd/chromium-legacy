@@ -74,37 +74,37 @@ void DoNothingSuccessCallback(const std::string& service_path,
 class TestShillThirdPartyVpnDriverClient
     : public FakeShillThirdPartyVpnDriverClient {
  public:
-  void SetParameters(
-      const std::string& object_path_value,
-      const base::DictionaryValue& parameters,
-      const ShillClientHelper::StringCallback& callback,
-      const ShillClientHelper::ErrorCallback& error_callback) override {
+  void SetParameters(const std::string& object_path_value,
+                     const base::DictionaryValue& parameters,
+                     StringCallback callback,
+                     ErrorCallback error_callback) override {
     set_parameters_counter_++;
     parameters_ = parameters.DeepCopy();
     FakeShillThirdPartyVpnDriverClient::SetParameters(
-        object_path_value, parameters, callback, error_callback);
+        object_path_value, parameters, std::move(callback),
+        std::move(error_callback));
   }
 
-  void UpdateConnectionState(
-      const std::string& object_path_value,
-      const uint32_t connection_state,
-      const base::Closure& callback,
-      const ShillClientHelper::ErrorCallback& error_callback) override {
+  void UpdateConnectionState(const std::string& object_path_value,
+                             const uint32_t connection_state,
+                             base::OnceClosure callback,
+                             ErrorCallback error_callback) override {
     update_connection_state_counter_++;
     connection_state_ = connection_state;
     FakeShillThirdPartyVpnDriverClient::UpdateConnectionState(
-        object_path_value, connection_state, callback, error_callback);
+        object_path_value, connection_state, std::move(callback),
+        std::move(error_callback));
   }
 
-  void SendPacket(
-      const std::string& object_path_value,
-      const std::vector<char>& ip_packet,
-      const base::Closure& callback,
-      const ShillClientHelper::ErrorCallback& error_callback) override {
+  void SendPacket(const std::string& object_path_value,
+                  const std::vector<char>& ip_packet,
+                  base::OnceClosure callback,
+                  ErrorCallback error_callback) override {
     send_packet_counter_++;
     ip_packet_ = ip_packet;
     FakeShillThirdPartyVpnDriverClient::SendPacket(object_path_value, ip_packet,
-                                                   callback, error_callback);
+                                                   std::move(callback),
+                                                   std::move(error_callback));
   }
 
   int set_parameters_counter_ = 0;

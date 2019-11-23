@@ -33,7 +33,7 @@ class PredictionManagerBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
         {optimization_guide::features::kOptimizationHints,
-         optimization_guide::features::kOptimizationHintsFetching,
+         optimization_guide::features::kRemoteOptimizationGuideFetching,
          optimization_guide::features::kOptimizationTargetPrediction},
         {});
     InProcessBrowserTest::SetUp();

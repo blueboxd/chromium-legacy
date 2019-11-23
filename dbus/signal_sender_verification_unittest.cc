@@ -56,20 +56,18 @@ class SignalSenderVerificationTest : public testing::Test {
         ObjectPath("/org/chromium/TestObject"));
     ASSERT_TRUE(bus_->HasDBusThread());
 
-    object_proxy_->SetNameOwnerChangedCallback(
-        base::Bind(&SignalSenderVerificationTest::OnNameOwnerChanged,
-                   base::Unretained(this),
-                   &on_name_owner_changed_called_));
+    object_proxy_->SetNameOwnerChangedCallback(base::BindRepeating(
+        &SignalSenderVerificationTest::OnNameOwnerChanged,
+        base::Unretained(this), &on_name_owner_changed_called_));
 
     // Connect to the "Test" signal of "org.chromium.TestInterface" from
     // the remote object.
     object_proxy_->ConnectToSignal(
-        "org.chromium.TestInterface",
-        "Test",
-        base::Bind(&SignalSenderVerificationTest::OnTestSignal,
-                   base::Unretained(this)),
-        base::Bind(&SignalSenderVerificationTest::OnConnected,
-                   base::Unretained(this)));
+        "org.chromium.TestInterface", "Test",
+        base::BindRepeating(&SignalSenderVerificationTest::OnTestSignal,
+                            base::Unretained(this)),
+        base::BindOnce(&SignalSenderVerificationTest::OnConnected,
+                       base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
     run_loop_.reset(new base::RunLoop);
     run_loop_->Run();
@@ -231,8 +229,8 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestOwnerChanged) {
   on_name_owner_changed_called_ = false;
   on_ownership_called_ = false;
   test_service2_->RequestOwnership(
-      base::Bind(&SignalSenderVerificationTest::OnOwnership,
-                 base::Unretained(this), true));
+      base::BindOnce(&SignalSenderVerificationTest::OnOwnership,
+                     base::Unretained(this), true));
   // Both of OnNameOwnerChanged() and OnOwnership() should quit the MessageLoop,
   // but there's no expected order of those 2 event.
   run_loop_.reset(new base::RunLoop);
@@ -297,8 +295,8 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestOwnerStealing) {
   // Reset the flag as NameOwnerChanged was called above.
   on_name_owner_changed_called_ = false;
   test_service2_->RequestOwnership(
-      base::Bind(&SignalSenderVerificationTest::OnOwnership,
-                 base::Unretained(this), true));
+      base::BindOnce(&SignalSenderVerificationTest::OnOwnership,
+                     base::Unretained(this), true));
   // Both of OnNameOwnerChanged() and OnOwnership() should quit the MessageLoop,
   // but there's no expected order of those 2 event.
   run_loop_.reset(new base::RunLoop);
@@ -329,20 +327,18 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
       ObjectPath("/org/chromium/DifferentObject"));
 
   bool second_name_owner_changed_called = false;
-  object_proxy2->SetNameOwnerChangedCallback(
-      base::Bind(&SignalSenderVerificationTest::OnNameOwnerChanged,
-                 base::Unretained(this),
-                 &second_name_owner_changed_called));
+  object_proxy2->SetNameOwnerChangedCallback(base::BindRepeating(
+      &SignalSenderVerificationTest::OnNameOwnerChanged, base::Unretained(this),
+      &second_name_owner_changed_called));
 
   // Connect to a signal on the additional remote object to trigger the
   // name owner matching.
   object_proxy2->ConnectToSignal(
-      "org.chromium.DifferentTestInterface",
-      "Test",
-      base::Bind(&SignalSenderVerificationTest::OnTestSignal,
-                 base::Unretained(this)),
-      base::Bind(&SignalSenderVerificationTest::OnConnected,
-                 base::Unretained(this)));
+      "org.chromium.DifferentTestInterface", "Test",
+      base::BindRepeating(&SignalSenderVerificationTest::OnTestSignal,
+                          base::Unretained(this)),
+      base::BindOnce(&SignalSenderVerificationTest::OnConnected,
+                     base::Unretained(this)));
   // Wait until the object proxy is connected to the signal.
   run_loop_.reset(new base::RunLoop);
   run_loop_->Run();
@@ -368,8 +364,8 @@ TEST_F(SignalSenderVerificationTest, DISABLED_TestMultipleObjects) {
   on_name_owner_changed_called_ = false;
   second_name_owner_changed_called = false;
   test_service2_->RequestOwnership(
-      base::Bind(&SignalSenderVerificationTest::OnOwnership,
-                 base::Unretained(this), true));
+      base::BindOnce(&SignalSenderVerificationTest::OnOwnership,
+                     base::Unretained(this), true));
   // Both of OnNameOwnerChanged() and OnOwnership() should quit the MessageLoop,
   // but there's no expected order of those 2 event.
   while (!on_name_owner_changed_called_ || !second_name_owner_changed_called ||

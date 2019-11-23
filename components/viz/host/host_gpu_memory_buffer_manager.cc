@@ -279,7 +279,9 @@ uint64_t HostGpuMemoryBufferManager::ClientIdToTracingId(int client_id) const {
   // TODO(sad|ssid): Find a better way once https://crbug.com/661257 is
   // resolved.  The hash value is incremented so that the tracing id is never
   // equal to MemoryDumpManager::kInvalidTracingProcessId.
-  return static_cast<uint64_t>(base::Hash(&client_id, sizeof(client_id))) + 1;
+  return static_cast<uint64_t>(base::PersistentHash(
+             base::as_bytes(base::make_span(&client_id, 1)))) +
+         1;
 }
 
 void HostGpuMemoryBufferManager::OnGpuMemoryBufferAllocated(

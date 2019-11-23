@@ -527,6 +527,15 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="1852294065645015766">Permitir reproducción automática de contenido multimedia</translation>
+<translation id="1853782273088286010">Permite controlar si se debe usar el cliente DNS integrado en <ph name="PRODUCT_NAME" />.
+
+      Esto no afecta a los servidores DNS que se vayan a usar, sino solo a la pila de software que se utilice para comunicarse con ellos. Por ejemplo, si el sistema operativo está configurado para utilizar un servidor DNS de empresa, el cliente DNS integrado usaría ese mismo servidor. Sin embargo, es posible que el cliente DNS integrado direccione los servidores de formas diferentes por medio de protocolos DNS más modernos, como DNS mediante TLS.
+
+      Si se le asigna el valor "true" a esta política, se utilizará el cliente DNS integrado si está disponible.
+
+      Si se le asigna el valor "false", no se utilizará el cliente DNS integrado.
+
+      Si no se asigna ningún valor a esta política, el cliente DNS integrado estará habilitado de forma predeterminada en MacOS, Android (si no se ha habilitado un DNS privado ni una VPN) y Chrome OS, y los usuarios podrán especificar si se debe utilizar el cliente DNS integrado editando chrome://flags o especificando un indicador de línea de comandos.</translation>
 <translation id="1857152770025485173">Esta política evita que el usuario cargue páginas web de las URL incluidas en la lista negra. La lista negra contiene una lista de patrones de URL que especifican las URL que se incluirán en la lista negra.
 
       Los patrones de URL deben seguir el formato que se indica en la página https://www.chromium.org/administrators/url-blacklist-filter-format.
@@ -1410,6 +1419,13 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Esta política es opcional. Si no se establece, no se realizará ninguna sustitución de los términos de búsqueda.
 
           Solo se respetará esta política si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
+<translation id="3049248142961638857">Determina el nombre de host del dispositivo utilizado en las solicitudes DHCP.
+
+      Si a esta política se le asigna una cadena que no está vacía, la cadena se utilizará como nombre de host del dispositivo en la solicitud DHCP.
+
+      La cadena puede incluir las variables <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" /> y <ph name="LOCATION_PLACEHOLDER" />, las cuales se sustituirían por valores del dispositivo antes de que se utilice como nombre de host. El valor que se obtenga de la sustitución debe ser un nombre de host válido (según la sección 3.1 de la RFC 1035).
+
+      Si no se asigna ningún valor a esta política o el valor que se obtenga de la sustitución no es un nombre de host válido, no se establecerá ningún nombre de host en la solicitud DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740">Permite desactivar la optimización de WPAD (detección automática de proxy web) en <ph name="PRODUCT_NAME" />.
 
@@ -2709,6 +2725,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5208240613060747912">Permite establecer una lista de patrones de URL para especificar los sitios que no pueden mostrar notificaciones.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultNotificationsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
+<translation id="5212118847531454979">Permite establecer el periodo de tiempo (en milisegundos) durante el que los usuarios recibirán una notificación informándoles de que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
+
+      Durante este periodo de tiempo, se informará de forma reiterada al usuario de que la actualización es necesaria. En el caso de los dispositivos <ph name="PRODUCT_OS_NAME" />, se mostrará una notificación de reinicio en la bandeja del sistema de acuerdo con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En el caso de los navegadores <ph name="PRODUCT_NAME" />, el menú de aplicaciones cambiará para indicar que es necesario reiniciar cuando haya transcurrido un tercio del periodo de notificación. Esta notificación cambiará de color cuando hayan transcurrido dos tercios del periodo de notificación y, de nuevo, cuando este periodo haya finalizado. Las notificaciones adicionales habilitadas por la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen esta misma programación.
+
+      Si no se asigna ningún valor, se usará el periodo predeterminado de 604.800.000 milisegundos (una semana).</translation>
 <translation id="5212810195096589189">Especificar el permiso de la interfaz de línea de comandos para máquinas virtuales</translation>
 <translation id="5213038356678567351">Sitios web que nunca deben activar un cambio de navegador.</translation>
 <translation id="5219844027738217407">En el caso de las aplicaciones para Android, esta política afecta solo al micrófono. Si se asigna el valor true a esta política, el micrófono se silenciará en todas las aplicaciones para Android, sin excepciones.</translation>
@@ -2974,6 +2995,9 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si no se especifica, no se modificará la URL de la base de las variaciones.</translation>
 <translation id="5561811616825571914">Seleccionar automáticamente certificados de cliente de estos sitios web en la pantalla de inicio de sesión</translation>
+<translation id="5564865786900450806">Suprime la advertencia que aparece cuando <ph name="PRODUCT_NAME" /> se ejecuta en un ordenador o en un sistema operativo que ya no es compatible.
+
+      Si no se asigna ningún valor esta política o se le asigna el valor "false", las advertencias aparecerán en los ordenadores o sistemas operativos no compatibles.</translation>
 <translation id="5565178130821694365">Es necesario introducir la contraseña cada dos días (48 horas)</translation>
 <translation id="5566210228171064229">Permitir imprimir con y sin PIN</translation>
 <translation id="556865034069957245">Esta política permite controlar la disponibilidad del modo de pantalla completa en el que toda la UI de <ph name="PRODUCT_NAME" /> está oculta y solo se muestra el contenido web.
@@ -4551,6 +4575,9 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
           Si inhabilitas esta opción, las páginas se escanearán para buscar metaetiquetas.
 
           Si no se establece esta política, las páginas se escanearán para buscar metaetiquetas.</translation>
+<translation id="829641334878002866">Permite definir el periodo (en milisegundos) que transcurre entre la primera notificación que avisa de que un dispositivo <ph name="PRODUCT_OS_NAME" /> debe reiniciarse para aplicar una actualización pendiente y la finalización del periodo especificado en la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Si no se asigna ningún valor a esta política, se usará el periodo predeterminado de 259.200.000 milisegundos (tres días) para los dispositivos <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8300455783946254851">Si se utiliza el valor true para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /> cuando se utiliza una conexión móvil, en cuyo caso los datos solo se sincronizan con Google Drive cuando se establece una conexión Wi-Fi o Ethernet.
 
           Si se utiliza el valor false o no se establece la política, los usuarios podrán transferir archivos a Google Drive a través de conexiones móviles.</translation>

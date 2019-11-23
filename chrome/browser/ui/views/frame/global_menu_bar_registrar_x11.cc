@@ -62,7 +62,7 @@ GlobalMenuBarRegistrarX11::GlobalMenuBarRegistrarX11() {
   registrar_proxy_ = bus_->GetObjectProxy(
       kAppMenuRegistrarName, dbus::ObjectPath(kAppMenuRegistrarPath));
 
-  dbus::Bus::GetServiceOwnerCallback callback =
+  dbus::Bus::ServiceOwnerChangeCallback callback =
       base::BindRepeating(&GlobalMenuBarRegistrarX11::OnNameOwnerChanged,
                           weak_ptr_factory_.GetWeakPtr());
   bus_->ListenForServiceOwnerChange(kAppMenuRegistrarName, callback);

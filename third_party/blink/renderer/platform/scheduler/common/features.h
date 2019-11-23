@@ -103,6 +103,16 @@ constexpr base::FeatureParam<double> kCompositorBudgetRecoveryRate{
     &kVeryHighPriorityForCompositingBudget, "CompositorBudgetRecoveryRate",
     0.25};
 
+// This feature functions as an experiment parameter for the
+// VeryHighPriorityForCompositing alternating, delay, and budget experiments.
+// When enabled, it does nothing unless one of these experiments is also
+// enabled. If one of these experiments is enabled it will change the behavior
+// of that experiment such that the stop signal for prioritzation of the
+// compositor is a BeginMainFrame task instead of any compositor task.
+const base::Feature kPrioritizeCompositingUntilBeginMainFrame{
+    "BlinkSchedulerPrioritizeCompositingUntilBeginMainFrame",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // LOAD PRIORITY EXPERIMENT CONTROLS
 
 // Enables setting the priority of background (with no audio) pages'

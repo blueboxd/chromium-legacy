@@ -910,10 +910,10 @@ TEST_F(AppListPresenterDelegateTest, ShelfBackgroundWithHomeLauncher) {
   EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
             shelf_layout_manager->GetShelfBackgroundType());
 
-  // Add a window. It should be maximized because it is in tablet mode.
+  // Add a window. It should be in-app because it is in tablet mode.
   auto window = CreateTestWindow();
   wm::ActivateWindow(window.get());
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_IN_APP,
             shelf_layout_manager->GetShelfBackgroundType());
 }
 

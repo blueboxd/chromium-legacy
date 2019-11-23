@@ -6,7 +6,6 @@
 
 #include "base/guid.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "content/browser/background_fetch/storage/cache_entry_handler_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
@@ -170,16 +169,6 @@ class EntryReaderImpl : public storage::mojom::BlobDataItemReader {
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(EntryReaderImpl);
 };
-
-void FinalizeBlobOnIOThread(
-    scoped_refptr<BlobStorageContextWrapper> blob_storage_context,
-    storage::mojom::BlobDataItemPtr element,
-    const std::string& uuid,
-    mojo::PendingReceiver<blink::mojom::Blob> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  blob_storage_context->context()->RegisterFromDataItem(
-      std::move(receiver), uuid, std::move(element));
-}
 
 }  // namespace
 
@@ -403,29 +392,14 @@ CacheStorageCacheEntryHandler::CreateBlobWithSideData(
           : blob_entry->GetSize(side_data_disk_cache_index);
   element->type = storage::mojom::BlobDataItemType::kCacheStorage;
 
-  // Bind the blob data item on the current sequence.  This ensures
-  // that the mojo messages are delivered directly to the correct
-  // cache_storage sequence.  This works even if the cache_storage is
-  // running off the IO thread.
   auto handle = std::make_unique<EntryReaderImpl>(
       std::move(blob_entry), disk_cache_index, side_data_disk_cache_index);
   mojo::MakeSelfOwnedReceiver(std::move(handle),
                               element->reader.InitWithNewPipeAndPassReceiver());
 
-  // We can only register the blob in the storage context on the IO thread.
-  // TODO(crbug/1022104): Once the blob context is not locked to the IO thread
-  //                      we can finalize the blob directly on the sequence.
-  if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    FinalizeBlobOnIOThread(blob_storage_context_, std::move(element),
-                           blob->uuid,
-                           blob->blob.InitWithNewPipeAndPassReceiver());
-  } else {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&FinalizeBlobOnIOThread, blob_storage_context_,
-                       std::move(element), blob->uuid,
-                       blob->blob.InitWithNewPipeAndPassReceiver()));
-  }
+  blob_storage_context_->context()->RegisterFromDataItem(
+      blob->blob.InitWithNewPipeAndPassReceiver(), blob->uuid,
+      std::move(element));
 
   return blob;
 }

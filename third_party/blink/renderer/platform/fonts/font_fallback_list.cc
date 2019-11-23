@@ -165,8 +165,16 @@ scoped_refptr<FontData> FontFallbackList::GetFontData(
       if (!result)
         result = FontCache::GetFontCache()->GetFontData(font_description,
                                                         curr_family->Family());
-      if (result)
+      if (result) {
+        if (font_selector_) {
+          font_selector_->ReportSuccessfulFontFamilyMatch(
+              curr_family->Family());
+        }
         return result;
+      }
+
+      if (font_selector_)
+        font_selector_->ReportFailedFontFamilyMatch(curr_family->Family());
     }
   }
   family_index = kCAllFamiliesScanned;
@@ -229,9 +237,9 @@ const FontData* FontFallbackList::FontDataAt(
 
   // Ask the font cache for the font data.
   // We are obtaining this font for the first time.  We keep track of the
-  // families we've looked at before in |m_familyIndex|, so that we never scan
-  // the same spot in the list twice.  getFontData will adjust our
-  // |m_familyIndex| as it scans for the right font to make.
+  // families we've looked at before in |family_index_|, so that we never scan
+  // the same spot in the list twice.  GetFontData will adjust our
+  // |family_index_| as it scans for the right font to make.
   DCHECK_EQ(FontCache::GetFontCache()->Generation(), generation_);
   scoped_refptr<FontData> result = GetFontData(font_description, family_index_);
   if (result) {

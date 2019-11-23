@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">Adresse</translation>
 <translation id="290376772003165898">Bladsy is nie in <ph name="LANGUAGE" /> nie?</translation>
 <translation id="2904414404539560095">Lys toestelle om 'n oortjie mee te deel, is teen volle hoogte oopgemaak.</translation>
+<translation id="2905036901251765993">Om met mense naby te deel, moet hulle hierdie QR-kode skandeer</translation>
 <translation id="2909615210195135082">Google-kennisgewingsplatform</translation>
 <translation id="2910701580606108292">Vra voordat werwe toegelaat word om beskermde inhoud te speel</translation>
 <translation id="2913331724188855103">Laat werwe toe om webkoekiedata te stoor en te lees (aanbeveel)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">Ontmasker wagwoord</translation>
 <translation id="363596933471559332">Meld outomaties met gebergde eiebewyse by webwerwe aan. As die kenmerk af is, sal jy elke keer om verifikasie gevra word voordat jy by 'n webwerf aanmeld.</translation>
 <translation id="3658159451045945436">As jy terugstel, sal jou geskiedenis van databesparings uitgevee word, insluitend die lys werwe wat jy besoek het.</translation>
+<translation id="3682730288090679318">Aktiveer dit om werwe outomaties te keer om jou te vra om jou kennisgewings te wys. As 'n werf kennisgewings versoek, sal 'n inligtingbalk aan die onderkant van die bladsy verskyn.</translation>
 <translation id="3692944402865947621"><ph name="FILE_NAME" /> aflaai het misluk omdat die bergingligging nie bereik kan word nie.</translation>
 <translation id="3714981814255182093">Maak die Vindbalk oop</translation>
 <translation id="3716182511346448902">Hierdie bladsy gebruik te veel berging en daarom het Chrome dit laat wag.</translation>
@@ -542,6 +544,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5048398596102334565">Laat werwe toegang tot bewegingsensors toe (aanbeveel)</translation>
 <translation id="5063480226653192405">Gebruik</translation>
 <translation id="5087580092889165836">Voeg kaart by</translation>
+<translation id="5096950519211870196">Werwe sal gekeer word om jou te vra om jou kennisgewings te wys. As 'n werf kennisgewings versoek, sal 'n inligtingbalk aan die onderkant van die bladsy verskyn.</translation>
 <translation id="5100237604440890931">Ingevou – klik om uit te vou.</translation>
 <translation id="510275257476243843">1 uur oor</translation>
 <translation id="5123685120097942451">Incognito-oortjie</translation>
@@ -589,6 +592,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5414836363063783498">Verifieer tans …</translation>
 <translation id="5423934151118863508">Jou mees besoekte bladsye sal hier verskyn</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> GB is beskikbaar</translation>
+<translation id="5427766642345310212">Het dit. Nuwe kennisgewingversoeke sal by verstek hier verskyn.</translation>
 <translation id="543338862236136125">Wysig wagwoord</translation>
 <translation id="5433691172869980887">Gebruikernaam is gekopieer</translation>
 <translation id="543509235395288790">Laai tans <ph name="COUNT" /> lêers af (<ph name="MEGABYTES" />).</translation>
@@ -687,6 +691,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="6108923351542677676">Opstelling is besig …</translation>
 <translation id="6111020039983847643">data gebruik</translation>
 <translation id="6112702117600201073">Herlaai tans bladsy</translation>
+<translation id="6113400363611269907">Wys porboodskappe stilweg</translation>
 <translation id="6127379762771434464">Item is verwyder</translation>
 <translation id="6140912465461743537">Land/streek</translation>
 <translation id="614940544461990577">Probeer:</translation>
@@ -774,7 +779,6 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6697947395630195233">Chrome het toegang tot jou ligging nodig om jou ligging met hierdie werf te deel.</translation>
 <translation id="6698801883190606802">Bestuur gesinkroniseerde data</translation>
 <translation id="6699370405921460408">Google-bedieners sal die bladsye wat jy besoek, optimeer.</translation>
-<translation id="6706288973712894588">Jy is tans vanlyn.\n<ph name="BEGIN_LINK" />Verken jou vanlyn stroom.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Nuus</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="671481426037969117">Jou <ph name="FQDN" />-tydteller het uitgetel. Dit sal môre weer begin.</translation>
@@ -1020,6 +1024,7 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8503813439785031346">Gebruikernaam</translation>
 <translation id="8514477925623180633">Voer wagwoorde wat met Chrome gestoor word, uit</translation>
 <translation id="8514577642972634246">Gebruik incognitomodus</translation>
+<translation id="8516012719330875537">Prentredigeerder</translation>
 <translation id="851751545965956758">Keer dat werwe aan toestelle koppel</translation>
 <translation id="8523928698583292556">Vee gestoorde wagwoord uit</translation>
 <translation id="854522910157234410">Maak hierdie bladsy oop</translation>

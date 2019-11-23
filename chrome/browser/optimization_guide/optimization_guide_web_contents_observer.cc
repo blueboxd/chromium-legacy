@@ -33,7 +33,7 @@ bool WasHostCoveredByFetch(content::NavigationHandle* navigation_handle) {
 bool RecordHintsFetcherCoverage(content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->GetURL().SchemeIs(url::kHttpsScheme))
     return false;
-  if (!optimization_guide::features::IsHintsFetchingEnabled())
+  if (!optimization_guide::features::IsRemoteFetchingEnabled())
     return false;
 
   bool was_host_covered_by_fetch = WasHostCoveredByFetch(navigation_handle);

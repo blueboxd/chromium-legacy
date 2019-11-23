@@ -191,7 +191,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2416512023405990736">Una casella de selecció desmarcada</translation>
 <translation id="2417569100218200841">Informació sobre el contingut</translation>
 <translation id="2417948780551741035">Notes finals</translation>
-<translation id="2419852971200420169">Llista de descripció</translation>
+<translation id="2419852971200420169">Llista de descripcions</translation>
 <translation id="2421113964388408478">Supressió</translation>
 <translation id="2422937916923936891">Casella de selecció de l'element de menú</translation>
 <translation id="2428534162001909979">Menús d'ordres</translation>
@@ -1099,6 +1099,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="812886159861361726">S'ha aturat la baixada del fitxer <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Tàctil</translation>
 <translation id="8153880621934657047">No sou dins la taula.</translation>
+<translation id="8161114871611868169">Secció de comentaris</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8184828902145951186">fila</translation>

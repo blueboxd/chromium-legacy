@@ -96,7 +96,7 @@ TEST_F(SessionStateAnimatiorImplContainersTest,
       SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
       SessionStateAnimator::ANIMATION_LIFT,
       SessionStateAnimator::ANIMATION_SPEED_IMMEDIATE,
-      base::Bind([](int* count) { ++(*count); }, &callback_count));
+      base::BindOnce([](int* count) { ++(*count); }, &callback_count));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, callback_count);
 }

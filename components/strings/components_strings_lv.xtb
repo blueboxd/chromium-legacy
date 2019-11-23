@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Šis kartes veids netiek atbalstīts</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Sazinieties ar sistēmas administratoru.</translation>
+<translation id="1736420071277903564">Dators</translation>
 <translation id="1739107442478692187">Jūsu izmantotajā vietnē vai lietotnē ir notikusi datu noplūde. Pārlūkā Chrome tiek ieteikts pārbaudīt saglabātās paroles un tūlīt nomainīt vietnē <ph name="ORIGIN" /> izmantoto paroli.</translation>
 <translation id="1740951997222943430">Ievadiet derīgu mēnesi</translation>
 <translation id="1741613555002899862">Ir jābūt norādītai politikas vērtībai un derīgai virknei, ja DnsOverHttpsMode vērtība ir <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> varētu instalēt bīstamas lietotnes, kas bojā jūsu ierīci, rada slēptas izmaksas mobilā tālruņa rēķinā vai zog jūsu personas informāciju. <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="2224337661447660594">Nav interneta savienojuma</translation>
 <translation id="2230458221926704099">Labojiet savienojumu, izmantojot <ph name="BEGIN_LINK" />diagnostikas lietotni<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Jums</translation>
 <translation id="2239100178324503013">Sūtīt tūlīt</translation>
 <translation id="2248949050832152960">Izmantot WebAuthn</translation>
 <translation id="2250931979407627383">Malu sašuvums kreisajā pusē</translation>
@@ -373,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Iziet</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Drošības brīdinājums</translation>
 <translation id="2699302886720511147">Atbalstītās kartes</translation>
 <translation id="2702801445560668637">Atvērt sarakstu</translation>
 <translation id="2704283930420550640">Vērtība neatbilst formātam.</translation>
@@ -473,6 +476,7 @@
 <translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
 <translation id="3209034400446768650">Lapā var tikt iekasēta nauda</translation>
 <translation id="3209080785413271048">Izmantot Windows Hello, lai pārbaudītu saglabātos maksājuma veidus.</translation>
+<translation id="3212581601480735796">Jūsu veiktās darbības pakalpojumā <ph name="HOSTNAME" /> tiek uzraudzītas</translation>
 <translation id="3215092763954878852">Neizdevās izmantot WebAuthn</translation>
 <translation id="3225919329040284222">Serveris uzrādīja sertifikātu, kas neatbilst iebūvētajām cerībām. Šīs cerības ir ietvertas konkrētām, augstas drošības vietnēm, lai aizsargātu jūs.</translation>
 <translation id="3226128629678568754">Nospiediet atkārtotas ielādes pogu, lai atkārtoti iesniegtu datus, kas nepieciešami lapas ielādei.</translation>
@@ -531,6 +535,7 @@
 <translation id="3528485271872257980">Tumši brūna</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Vismaz 1 vienums sinhronizētās ierīcēs}=1{1 vienums (un vēl citi sinhronizētās ierīcēs)}zero{# vienumi (un vēl citi sinhronizētās ierīcēs)}one{# vienums (un vēl citi sinhronizētās ierīcēs)}other{# vienumi (un vēl citi sinhronizētās ierīcēs)}}</translation>
 <translation id="3539171420378717834">Saglabāt šīs kartes kopiju šajā ierīcē</translation>
+<translation id="3553513561058684206">Jums</translation>
 <translation id="3566021033012934673">Jūsu savienojums nav privāts</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Vietnē <ph name="SITE" /> iegultā lapā ir rakstīts</translation>
@@ -607,6 +612,7 @@
 <translation id="3897092660631435901">Izvēlne</translation>
 <translation id="3901925938762663762">Kartes derīguma termiņš ir beidzies.</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Planšetdators</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Vai vēlaties izmantot WebAuthn, nevis CVC?</translation>
 <translation id="3946209740501886391">Vienmēr jautāt šajā vietnē</translation>
@@ -759,6 +765,7 @@
 <translation id="4594403342090139922">&amp;Dzēšanas atsaukšana</translation>
 <translation id="4597348597567598915">8. izmērs</translation>
 <translation id="4600854749408232102">C6/C5 (aploksne)</translation>
+<translation id="4613966523036881546">Google Chrome neuzticas šī savienojuma sertifikātam, jo ir zināms, ka tas tiek izmantots tīkla pārtveršanai un uzraudzībai.</translation>
 <translation id="4635654612248442824">Vietne <ph name="ORIGIN" /> ir pieprasījusi, lai izcelsmes politika attiektos uz visu
     tās pieprasījumu, taču šobrīd šo politiku nevar piemērot.</translation>
 <translation id="464342062220857295">Meklēšanas funkcijas</translation>
@@ -1464,6 +1471,7 @@ Papildu informācija:
 <translation id="8103161714697287722">Maksājuma veids</translation>
 <translation id="8105368624971345109">Izslēgt</translation>
 <translation id="8118489163946903409">Maksājuma veids</translation>
+<translation id="8124023448510659215">Chromium neuzticas šī savienojuma sertifikātam, jo ir zināms, ka tas tiek izmantots tīkla pārtveršanai un uzraudzībai.</translation>
 <translation id="8127301229239896662">Programmatūra <ph name="SOFTWARE_NAME" /> netika pareizi instalēta datorā vai tīklā. Lūdziet IT administratoram atrisināt šo problēmu.</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8149426793427495338">Dators tika pārslēgts miega režīmā.</translation>
@@ -1532,7 +1540,6 @@ Papildu informācija:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredītkarte}zero{# kredītkartes}one{# kredītkarte}other{# kredītkartes}}</translation>
 <translation id="8473863474539038330">Adreses un citus datus</translation>
 <translation id="8479754468255770962">Skavojums apakšējā kreisajā malā</translation>
-<translation id="8481133456511676116">Vai domājāt <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Lai izmantotu kartes no sava Google konta, pierakstieties pārlūkā Chrome!</translation>
 <translation id="8488350697529856933">Attiecas uz</translation>
 <translation id="8498891568109133222">Vietne <ph name="HOST_NAME" /> pārāk ilgi nereaģēja.</translation>
@@ -1608,6 +1615,8 @@ Papildu informācija:
 <translation id="8957210676456822347">Caurlaides lapas autorizācija</translation>
 <translation id="8962950042226115166">Aizdomīga vietne</translation>
 <translation id="8968766641738584599">Saglabāt karti</translation>
+<translation id="8969267497192857913">Tiek skatīts viss, ko jūs rakstāt, visas lapas, kuras skatāt, vai jebkura cita darbība tīmeklī, un vietņu saturu var tikt mainīts, jūs neinformējot.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Uzzināt vairāk<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Servera sertifikātam ir beidzies derīguma termiņš.</translation>
 <translation id="8975012916872825179">Iekļauta tāda informācija kā tālruņa numuri, e-pasta un piegādes adreses</translation>
 <translation id="8975263830901772334">Drukāto failu nosaukumi</translation>

@@ -635,7 +635,7 @@
 <translation id="5686790454216892815">Имя файла слишком длинное.</translation>
 <translation id="5689516760719285838">Геоданные</translation>
 <translation id="569536719314091526">Чтобы перевести эту страницу на какой-либо язык, нажмите кнопку "Ещё"</translation>
-<translation id="5710871682236653961">Запрашивать для сайтов разрешение на обмен информацией, когда вы нажимаете на устройства с функцией NFC (рекомендуется).</translation>
+<translation id="5710871682236653961">Запрашивать для сайтов разрешение на обмен информацией через NFC (рекомендуется).</translation>
 <translation id="572328651809341494">Недавние вкладки</translation>
 <translation id="5726692708398506830">Увеличить масштаб страницы</translation>
 <translation id="5748802427693696783">Переключено на обычные вкладки</translation>
@@ -774,7 +774,6 @@
 <translation id="6697947395630195233">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
 <translation id="6699370405921460408">Серверы Google будут оптимизировать загружаемые страницы.</translation>
-<translation id="6706288973712894588">Вы не в Сети.\n<ph name="BEGIN_LINK" />Показать офлайн-ленту<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">Новости</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="671481426037969117">Время на таймере <ph name="FQDN" /> истекло. Завтра сайт снова станет доступен.</translation>
@@ -886,7 +885,7 @@
 <translation id="7559975015014302720">Упрощенный режим отключен</translation>
 <translation id="7562080006725997899">Очистить историю</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
-<translation id="7572498721684305250">Запретить сайтам обмен информацией, когда вы нажимаете на устройства с функцией NFC.</translation>
+<translation id="7572498721684305250">Запретить сайтам обмен информацией через NFC.</translation>
 <translation id="757524316907819857">Запретить сайтам воспроизводить защищенный контент</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Скачан <ph name="FILES_DOWNLOADED_ONE" /> файл}one{Скачан <ph name="FILES_DOWNLOADED_MANY" /> файл}few{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файла}many{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файлов}other{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файла}}</translation>
 <translation id="7588219262685291874">Использовать тёмную тему, когда включен режим энергосбережения</translation>

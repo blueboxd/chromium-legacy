@@ -32,37 +32,36 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
       ShillPropertyChangedObserver* observer) override;
   void RemovePropertyChangedObserver(
       ShillPropertyChangedObserver* observer) override;
-  void GetProperties(const DictionaryValueCallback& callback) override;
-  void GetNetworksForGeolocation(
-      const DictionaryValueCallback& callback) override;
+  void GetProperties(DictionaryValueCallback callback) override;
+  void GetNetworksForGeolocation(DictionaryValueCallback callback) override;
   void SetProperty(const std::string& name,
                    const base::Value& value,
-                   const base::Closure& callback,
-                   const ErrorCallback& error_callback) override;
+                   base::OnceClosure callback,
+                   ErrorCallback error_callback) override;
   void RequestScan(const std::string& type,
-                   const base::Closure& callback,
-                   const ErrorCallback& error_callback) override;
+                   base::OnceClosure callback,
+                   ErrorCallback error_callback) override;
   void EnableTechnology(const std::string& type,
-                        const base::Closure& callback,
-                        const ErrorCallback& error_callback) override;
+                        base::OnceClosure callback,
+                        ErrorCallback error_callback) override;
   void DisableTechnology(const std::string& type,
-                         const base::Closure& callback,
-                         const ErrorCallback& error_callback) override;
+                         base::OnceClosure callback,
+                         ErrorCallback error_callback) override;
   void ConfigureService(const base::DictionaryValue& properties,
                         ObjectPathCallback callback,
-                        const ErrorCallback& error_callback) override;
+                        ErrorCallback error_callback) override;
   void ConfigureServiceForProfile(const dbus::ObjectPath& profile_path,
                                   const base::DictionaryValue& properties,
                                   ObjectPathCallback callback,
-                                  const ErrorCallback& error_callback) override;
+                                  ErrorCallback error_callback) override;
   void GetService(const base::DictionaryValue& properties,
                   ObjectPathCallback callback,
-                  const ErrorCallback& error_callback) override;
-  void ConnectToBestServices(const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
+                  ErrorCallback error_callback) override;
+  void ConnectToBestServices(base::OnceClosure callback,
+                             ErrorCallback error_callback) override;
   void SetNetworkThrottlingStatus(const NetworkThrottlingStatus& status,
-                                  const base::Closure& callback,
-                                  const ErrorCallback& error_callback) override;
+                                  base::OnceClosure callback,
+                                  ErrorCallback error_callback) override;
 
   ShillManagerClient::TestInterface* GetTestInterface() override;
 
@@ -101,14 +100,14 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
 
  private:
   void SetDefaultProperties();
-  void PassStubProperties(const DictionaryValueCallback& callback) const;
-  void PassStubGeoNetworks(const DictionaryValueCallback& callback) const;
+  void PassStubProperties(DictionaryValueCallback callback) const;
+  void PassStubGeoNetworks(DictionaryValueCallback callback) const;
   void CallNotifyObserversPropertyChanged(const std::string& property);
   void NotifyObserversPropertyChanged(const std::string& property);
   base::ListValue* GetListProperty(const std::string& property);
   bool TechnologyEnabled(const std::string& type) const;
   void SetTechnologyEnabled(const std::string& type,
-                            const base::Closure& callback,
+                            base::OnceClosure callback,
                             bool enabled);
   std::unique_ptr<base::ListValue> GetEnabledServiceList(
       const std::string& property) const;

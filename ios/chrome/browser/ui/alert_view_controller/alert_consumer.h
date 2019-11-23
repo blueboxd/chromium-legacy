@@ -27,6 +27,9 @@
 // Sets the actions for this alert.
 - (void)setActions:(NSArray<AlertAction*>*)actions;
 
+// Sets the accessibility identifier for the alert view.
+- (void)setAlertAccessibilityIdentifier:(NSString*)identifier;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_ALERT_VIEW_CONTROLLER_ALERT_CONSUMER_H_

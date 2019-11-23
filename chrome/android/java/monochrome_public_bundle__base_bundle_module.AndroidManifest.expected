@@ -1486,6 +1486,11 @@
         android:name="org.chromium.chrome.browser.photo_picker.DecoderService"
         android:process=":decoder_service"/>
     <service
+        android:enabled="false"
+        android:exported="true"
+        android:name="org.chromium.android_webview.services.DeveloperUiService"
+        android:process=":webview_service"/>
+    <service
         android:exported="false"
         android:isolatedProcess="false"
         android:name="org.chromium.content.app.PrivilegedProcessService0"

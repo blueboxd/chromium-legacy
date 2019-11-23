@@ -516,7 +516,6 @@
 <translation id="1734212868489994726">फिकट निळा</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> कदाचित अपडेट होत राहणार नाही</translation>
 <translation id="1736419249208073774">एक्सप्लोर करा</translation>
-<translation id="1736420071277903564">काँप्युटर</translation>
 <translation id="1737968601308870607">बग नोंदवा</translation>
 <translation id="1741314857973421784">सुरू ठेवा</translation>
 <translation id="1743570585616704562">ओळखले नाही</translation>
@@ -1128,6 +1127,7 @@
 <translation id="2617342710774726426">सिम कार्ड लॉक केले आहे</translation>
 <translation id="2619761439309613843">दैनिक रिफ्रेश</translation>
 <translation id="2620436844016719705">सिस्टम</translation>
+<translation id="2621713457727696555">सुरक्षित</translation>
 <translation id="26224892172169984">कोणत्याही साइटला प्रोटोकॉल हाताळण्याची परवानगी देऊ नका</translation>
 <translation id="2624142942574147739">हे पृष्‍ठ आपल्या कॅमेरा आणि मायक्रोफोनवर प्रवेश करत आहे.</translation>
 <translation id="2626799779920242286">कृपया नंतर पुन्हा प्रयत्न करा.</translation>
@@ -1579,6 +1579,7 @@
 <translation id="328571385944182268">तुमचे पासवर्ड सेव्ह करायचे आहेत का?</translation>
 <translation id="3288047731229977326">डेव्हलपर मोडमध्‍ये चालणारे विस्‍तार तुमच्या कॉंप्युटरास हानी पोहचवू शकतात. तुम्ही डेव्हलपर नसल्‍यास, सुरक्षित राहाण्‍यासाठी डेव्हलपर मोडमध्‍ये चालणारे हे विस्‍तार तुम्ही अक्षम करावे.</translation>
 <translation id="3289856944988573801">अपडेट तपासण्यासाठी, कृपया इथरनेट किंवा वाय-फाय वापरा.</translation>
+<translation id="3290356915286466215">असुरक्षित</translation>
 <translation id="3293644607209440645">हे पेज पाठवा</translation>
 <translation id="32939749466444286">Linux कंटेनर सुरू झाले नाही. कृपया पुन्हा प्रयत्न करा.</translation>
 <translation id="3294437725009624529">अतिथी</translation>
@@ -2020,7 +2021,6 @@
 <translation id="3900966090527141178">पासवर्ड एक्सपोर्ट करा</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> वर कनेक्ट करीत आहे</translation>
 <translation id="3905761538810670789">अ‍ॅप दुरुस्त करा</translation>
-<translation id="3906954721959377182">टॅबलेट</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> कालबाह्य आहे</translation>
 <translation id="3908501907586732282">एक्स्टेंशन सुरू करा</translation>
 <translation id="3909477809443608991"><ph name="URL" /> ला संरक्षित आशय प्ले करायचा आहे. तुमच्या डिव्हाइसच्या ओळखीची Google कडून पडताळणी केली जाईल आणि कदाचित या साइटकडून अ‍ॅक्सेस केली जाईल.</translation>
@@ -2319,7 +2319,6 @@
 <translation id="4364327530094270451">खरबूज</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> विंडो शेअर करीत आहे.</translation>
 <translation id="4364830672918311045">सूचना डिस्प्ले करा</translation>
-<translation id="4366956553771076218"><ph name="APP_NAME" /> सह <ph name="ACTION_NAME" />.</translation>
 <translation id="4370975561335139969">तुम्ही एंटर केलेला ईमेल आणि पासवर्ड जुळत नाही</translation>
 <translation id="437184764829821926">प्रगत फॉन्ट सेटिंग्ज</translation>
 <translation id="4374831787438678295">Linux इंस्टॉलर</translation>
@@ -2961,7 +2960,6 @@
 <translation id="5363109466694494651">Powerwash करा आणि परत करा</translation>
 <translation id="5365881113273618889">तुम्ही निवडलेल्या फोल्डरमध्ये संवेदनशील फायली आहेत. तुम्हाला नक्की "<ph name="APP_NAME" />" ला या फोल्डरचा कायमचा राइट अ‍ॅक्सेस द्यायचा आहे का?</translation>
 <translation id="5367091008316207019">फाईल वाचत आहे..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">तुमचा फोन लॉक केला आहे. प्रविष्‍ट करण्‍यासाठी तो अनलॉक करा.</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> मध्ये साइन इन करा</translation>
 <translation id="5369491905435686894">माउस अ‍ॅक्सिलरेशन सुरू करा</translation>
@@ -4718,6 +4716,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="7912080627461681647">तुमचा पासवर्ड सर्व्हरवर बदलला आहे. कृपया साइन आऊट करा आणि पुन्हा साइन इन करा.</translation>
 <translation id="7915457674565721553">पालक नियंत्रणे सेट करण्यासाठी इंटरनेटशी कनेक्ट करा</translation>
 <translation id="7915471803647590281">कृपया अभिप्राय पाठविण्यापूर्वी काय होत आहे ते आम्हाला सांगा.</translation>
+<translation id="7918257978052780342">नोंदणी</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> से</translation>
 <translation id="792514962475806987">डॉक केलेली झूम पातळी:</translation>
 <translation id="7925247922861151263">AAA तपास अयशस्वी</translation>

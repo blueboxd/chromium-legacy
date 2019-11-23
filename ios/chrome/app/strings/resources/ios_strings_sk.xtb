@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">Ak chcete zhromažďovať budúce denníky a chyby konzoly JavaScript zo všetkých kariet, klepnite na tlačidlo Spustiť zapisovanie do denníka. Denníky sa budú zhromažďovať (a ukladať iba v  pamäti), dokým túto stránku nezatvoríte alebo neklepnete na tlačidlo Zastaviť zapisovanie do denníka.</translation>
 <translation id="1657011748321897393">Zdieľanie zlyhalo, pretože nemáte pripojenie k sieti.</translation>
 <translation id="165877110639533037">Žiadne otvorené karty</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Ak chcete získať záložky vo všetkých zariadeniach, zapnite synchronizáciu.</translation>
 <translation id="1687475363370981210">Označiť všetko ako prečítané</translation>
 <translation id="1690731385917361335">Žiadne položky</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2690858294534178585">Kamera sa používa</translation>
 <translation id="2691653761409724435">Nie je k dispozícii offline</translation>
+<translation id="2695507686909505111">Preložená stránka</translation>
 <translation id="2702801445560668637">Čitateľský zoznam</translation>
 <translation id="2704606927547763573">Skopírované</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">Internetové pripojenie nie je k dispozícii.</translation>
 <translation id="3783017676699494206">Uložiť obrázok</translation>
 <translation id="3789841737615482174">Inštalovať</translation>
+<translation id="3803696231112616155">Ponúkať preklad tohto webu</translation>
 <translation id="385051799172605136">Naspäť</translation>
 <translation id="3897092660631435901">Ponuka</translation>
 <translation id="3915450441834151894">Informácie o webe</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">Táto stránka sa otvorí v ďalšej aplikácii.</translation>
 <translation id="4375040482473363939">Vyhľadávanie QR kódov</translation>
 <translation id="4378154925671717803">Telefón</translation>
+<translation id="4389019817280890563">Klepnutím zmeníte jazyk.</translation>
 <translation id="441868831736628555">Oznámenie o ochrane súkromia</translation>
 <translation id="4454246407045105932">Pridanie jazyka</translation>
 <translation id="4476574785019001431">Nastavenia</translation>
@@ -344,6 +348,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="5871497086027727873">1 položka bola presunutá</translation>
 <translation id="5897956970858271241">Navštíviť skopírovaný odkaz</translation>
 <translation id="5911030830365207728">Prekladač Google</translation>
+<translation id="5913600720976431809">Možnosti prekladu stránky</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
 <translation id="5938160824633642847">Vaše zariadenie je takmer plné. Uvoľnite miesto a skúste to znova.</translation>
 <translation id="5948291296578561264">Umožňuje ukladať fotky do knižnice fotiek.</translation>
@@ -375,6 +380,7 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6219688215832490856">Nikdy neprekladať</translation>
 <translation id="6254066287920239840">Otvárať odkazy v aplikácii namiesto prehliadača.</translation>
 <translation id="6255097610484507482">Upraviť platobnú kartu</translation>
+<translation id="6284652193729350524">Ponúkať preklad jazyka <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Odhlásiť sa a vypnúť synchronizáciu</translation>
 <translation id="6308436439357671616">Umožňuje fotiť a nahrať fotky.</translation>
 <translation id="6324528485781869530">Prepnutie účtu na synchronizáciu</translation>
@@ -429,6 +435,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6903907808598579934">Zapnúť synchronizáciu</translation>
 <translation id="6914583639806229067">Vyhľadať skopírovaný obrázok</translation>
 <translation id="6914783257214138813">Vaše heslá uvidí každý, kto si môže zobraziť exportovaný súbor.</translation>
+<translation id="6930799952781667037">Klepnutím prepnete na tento jazyk.</translation>
 <translation id="6944369514868857500">Vybrať iný účet</translation>
 <translation id="6945221475159498467">Vybrať</translation>
 <translation id="6973630695168034713">Priečinky</translation>
@@ -458,6 +465,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7293171162284876153">Ak chcete spustiť synchronizáciu, zapnite možnosť „Synchronizovať údaje Chromu“.</translation>
 <translation id="7336264872878993241">Stiahnuté: <ph name="PERCENT" /> percent</translation>
 <translation id="7346909386216857016">Dobre</translation>
+<translation id="734758817008927353">Možnosti uloženia karty</translation>
 <translation id="7348502496356775519">Uložiť ako záložku</translation>
 <translation id="7383797227493018512">Čitateľský zoznam</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
@@ -482,6 +490,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="7671141431838911305">INŠTALOVAŤ</translation>
 <translation id="7765158879357617694">Presunúť</translation>
 <translation id="7772032839648071052">Potvrďte prístupovú frázu</translation>
+<translation id="7781011649027948662">Chcete preložiť stránku?</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="778855399387580014">Začnite vyhľadávanie na novej karte Chrome.</translation>
 <translation id="7791543448312431591">Pridať</translation>

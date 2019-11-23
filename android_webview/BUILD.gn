@@ -765,6 +765,7 @@ android_aidl("common_aidl") {
   import_include = [ "java/src" ]
   sources = [
     "java/src/org/chromium/android_webview/common/services/ICrashReceiverService.aidl",
+    "java/src/org/chromium/android_webview/common/services/IDeveloperUiService.aidl",
     "java/src/org/chromium/android_webview/common/services/IVariationsSeedServer.aidl",
   ]
 }

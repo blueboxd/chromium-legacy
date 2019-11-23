@@ -26,14 +26,6 @@ int ClientView::NonClientHitTest(const gfx::Point& point) {
   return bounds().Contains(point) ? HTCLIENT : HTNOWHERE;
 }
 
-DialogClientView* ClientView::AsDialogClientView() {
-  return nullptr;
-}
-
-const DialogClientView* ClientView::AsDialogClientView() const {
-  return nullptr;
-}
-
 bool ClientView::CanClose() {
   return true;
 }

@@ -667,7 +667,10 @@ void ProfileMenuView::BuildSelectableProfiles() {
                             base::Unretained(this), profile_entry->GetPath()));
   }
 
-  if (!browser()->profile()->IsGuestSession()) {
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  if (!browser()->profile()->IsGuestSession() &&
+      service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
     AddSelectableProfile(
         profiles::GetGuestAvatar(),
         l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
@@ -683,11 +686,15 @@ void ProfileMenuView::BuildProfileManagementFeatureButtons() {
       base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
                           base::Unretained(this)));
 
-  AddProfileManagementFeatureButton(
-      ImageForMenu(kAddIcon, /*icon_to_image_ratio=*/0.75),
-      l10n_util::GetStringUTF16(IDS_ADD),
-      base::BindRepeating(&ProfileMenuView::OnAddNewProfileButtonClicked,
-                          base::Unretained(this)));
+  PrefService* service = g_browser_process->local_state();
+  DCHECK(service);
+  if (service->GetBoolean(prefs::kBrowserAddPersonEnabled)) {
+    AddProfileManagementFeatureButton(
+        ImageForMenu(kAddIcon, /*icon_to_image_ratio=*/0.75),
+        l10n_util::GetStringUTF16(IDS_ADD),
+        base::BindRepeating(&ProfileMenuView::OnAddNewProfileButtonClicked,
+                            base::Unretained(this)));
+  }
 }
 
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {

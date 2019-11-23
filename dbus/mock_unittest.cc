@@ -202,10 +202,9 @@ TEST_F(MockTest, CallMethod) {
 
   // Call the method.
   run_loop_.reset(new base::RunLoop);
-  proxy->CallMethod(&method_call,
-                    ObjectProxy::TIMEOUT_USE_DEFAULT,
-                    base::Bind(&MockTest::OnResponse,
-                               base::Unretained(this)));
+  proxy->CallMethod(
+      &method_call, ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindOnce(&MockTest::OnResponse, base::Unretained(this)));
   // Run the message loop to let OnResponse be called.
   run_loop_->Run();
 

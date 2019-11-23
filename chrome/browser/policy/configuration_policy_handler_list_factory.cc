@@ -1239,6 +1239,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kClickToCallEnabled,
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
+
+  { key::kPrinterTypeDenyList,
+    prefs::kPrinterTypeDenyList,
+    base::Value::Type::LIST },
 };
 // clang-format on
 

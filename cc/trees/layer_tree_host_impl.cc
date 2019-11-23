@@ -823,7 +823,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingViewport() const {
   auto* node = CurrentlyScrollingNode();
   if (!node)
     return false;
-  return node == viewport()->MainScrollNode();
+  return viewport().ShouldScroll(*node);
 }
 
 bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
@@ -849,12 +849,6 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
 
   if (scrolling_node == test_scroll_node)
     return true;
-
-  // For active scrolling state treat the inner/outer viewports interchangeably.
-  if (scrolling_node->scrolls_inner_viewport ||
-      scrolling_node->scrolls_outer_viewport) {
-    return test_scroll_node == OuterViewportScrollNode();
-  }
 
   return false;
 }
@@ -2200,14 +2194,11 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
   metadata.root_layer_size = active_tree_->ScrollableSize();
-  if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
+  if (InnerViewportScrollNode()) {
+    DCHECK(OuterViewportScrollNode());
     metadata.root_overflow_y_hidden =
-        !outer_viewport_scroll_node->user_scrollable_vertical;
-  }
-  const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
-  if (inner_viewport_scroll_node) {
-    metadata.root_overflow_y_hidden |=
-        !inner_viewport_scroll_node->user_scrollable_vertical;
+        !OuterViewportScrollNode()->user_scrollable_vertical ||
+        !InnerViewportScrollNode()->user_scrollable_vertical;
   }
   metadata.has_transparent_background =
       frame->render_passes.back()->has_transparent_background;
@@ -3056,8 +3047,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
   if (InnerViewportScrollNode()) {
     active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
         InnerViewportScrollNode(), active_tree_.get());
-  }
-  if (OuterViewportScrollNode()) {
+
+    DCHECK(OuterViewportScrollNode());
     active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
         OuterViewportScrollNode(), active_tree_.get());
   }
@@ -3331,10 +3322,6 @@ void LayerTreeHostImpl::SetLayerTreeMutator(
 void LayerTreeHostImpl::SetPaintWorkletLayerPainter(
     std::unique_ptr<PaintWorkletLayerPainter> painter) {
   paint_worklet_painter_ = std::move(painter);
-}
-
-ScrollNode* LayerTreeHostImpl::ViewportMainScrollNode() {
-  return viewport()->MainScrollNode();
 }
 
 void LayerTreeHostImpl::QueueImageDecode(int request_id,
@@ -3659,13 +3646,13 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     return scroll_status;
   }
 
-  // The outer viewport should be scrolled even if it has no scroll extent
+  // The a viewport node should be scrolled even if it has no scroll extent
   // since it'll scroll using the Viewport class which will generate browser
   // controls movement and overscroll delta.
   gfx::ScrollOffset max_scroll_offset =
       scroll_tree.MaxScrollOffset(scroll_node->id);
   if (max_scroll_offset.x() <= 0 && max_scroll_offset.y() <= 0 &&
-      !scroll_node->scrolls_outer_viewport) {
+      !viewport().ShouldScroll(*scroll_node)) {
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
@@ -3773,32 +3760,7 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
   if (!impl_scroll_node)
     return nullptr;
 
-  // Blink has a notion of a "root scroller", which is the scroller in a page
-  // that is considered to host the main content. Typically this will be the
-  // document/LayoutView contents; however, in some situations Blink may choose
-  // a sub-scroller (div, iframe) that should scroll with "viewport" behavior.
-  // The "root scroller" is the node designated as the outer viewport in CC.
-  // See third_party/blink/renderer/core/page/scrolling/README.md for details.
-  //
-  // "Viewport" scrolling ensures generation of overscroll events, top controls
-  // movement, as well as correct multi-viewport panning in pinch-zoom and
-  // other scenarios.  We use the viewport's outer scroll node to represent the
-  // viewport in the scroll chain and apply scroll delta using CC's Viewport
-  // class.
-  //
-  // Scrolling from position: fixed layers will chain directly up to the inner
-  // viewport. Whether that should use the outer viewport (and thus the
-  // Viewport class) to scroll or not depends on the root scroller scenario
-  // because we don't want setting a root scroller to change the scroll chain
-  // order. The |prevent_viewport_scrolling_from_inner| bit is used to
-  // communicate that context.
-  DCHECK(!impl_scroll_node->prevent_viewport_scrolling_from_inner ||
-         impl_scroll_node->scrolls_inner_viewport);
-  bool should_use_viewport =
-      OuterViewportScrollNode() && impl_scroll_node->scrolls_inner_viewport &&
-      !impl_scroll_node->prevent_viewport_scrolling_from_inner;
-  if (should_use_viewport)
-    impl_scroll_node = OuterViewportScrollNode();
+  impl_scroll_node = GetNodeToScroll(impl_scroll_node);
 
   // Ensure that final scroll node scrolls on impl thread (crbug.com/625100)
   ScrollStatus status =
@@ -3873,9 +3835,11 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   // If the viewport is scrolling and it cannot consume any delta hints, the
   // scroll event will need to get bubbled if the viewport is for a guest or
   // oopif.
-  if (active_tree_->CurrentlyScrollingNode() == ViewportMainScrollNode() &&
-      !viewport()->CanScroll(*scroll_state)) {
-    scroll_status.bubble = true;
+  if (ScrollNode* node = active_tree_->CurrentlyScrollingNode()) {
+    if (viewport().ShouldScroll(*node) &&
+        !viewport().CanScroll(*node, *scroll_state)) {
+      scroll_status.bubble = true;
+    }
   }
 
   frame_trackers_.StartSequence(wheel_scrolling_
@@ -4002,6 +3966,38 @@ bool LayerTreeHostImpl::IsTouchDraggingScrollbar(
          type == InputHandler::TOUCHSCREEN;
 }
 
+ScrollNode* LayerTreeHostImpl::GetNodeToScroll(ScrollNode* node) const {
+  // Blink has a notion of a "root scroller", which is the scroller in a page
+  // that is considered to host the main content. Typically this will be the
+  // document/LayoutView contents; however, in some situations Blink may choose
+  // a sub-scroller (div, iframe) that should scroll with "viewport" behavior.
+  // The "root scroller" is the node designated as the outer viewport in CC.
+  // See third_party/blink/renderer/core/page/scrolling/README.md for details.
+  //
+  // "Viewport" scrolling ensures generation of overscroll events, top controls
+  // movement, as well as correct multi-viewport panning in pinch-zoom and
+  // other scenarios.  We use the viewport's outer scroll node to represent the
+  // viewport in the scroll chain and apply scroll delta using CC's Viewport
+  // class.
+  //
+  // Scrolling from position: fixed layers will chain directly up to the inner
+  // viewport. Whether that should use the outer viewport (and thus the
+  // Viewport class) to scroll or not depends on the root scroller scenario
+  // because we don't want setting a root scroller to change the scroll chain
+  // order. The |prevent_viewport_scrolling_from_inner| bit is used to
+  // communicate that context.
+  DCHECK(!node->prevent_viewport_scrolling_from_inner ||
+         node->scrolls_inner_viewport);
+
+  if (node->scrolls_inner_viewport &&
+      !node->prevent_viewport_scrolling_from_inner) {
+    DCHECK(OuterViewportScrollNode());
+    return OuterViewportScrollNode();
+  }
+
+  return node;
+}
+
 // Initial scroll hit testing can be unreliable in the presence of squashed
 // layers. In this case, we fall back to main thread scrolling. This function
 // compares |layer_impl| returned from a regular hit test to the layer
@@ -4014,9 +4010,8 @@ bool LayerTreeHostImpl::IsTouchDraggingScrollbar(
 // (since they don't scroll with the outer viewport), however, scrolls from the
 // fixed layer still chain to the outer viewport. It's also possible for a node
 // to have the inner viewport as its ancestor without going through the outer
-// viewport; however, it will still scroll using the viewport(). Hence, this
-// method needs to use the same scroll chaining logic we use in ApplyScroll by
-// looking at Viewport::ShouldScroll.
+// viewport; however, it may still scroll using the viewport(). Hence, this
+// method must use the same scroll chaining logic we use in ApplyScroll.
 bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
     LayerImpl* layer_impl,
     LayerImpl* first_scrolling_layer_or_scrollbar) {
@@ -4035,13 +4030,7 @@ bool LayerTreeHostImpl::IsInitialScrollHitTestReliable(
   for (; scroll_tree.parent(scroll_node);
        scroll_node = scroll_tree.parent(scroll_node)) {
     if (scroll_node->scrollable) {
-      // Ensure we use scroll chaining behavior for the inner viewport node.
-      if (scroll_node->scrolls_inner_viewport &&
-          !scroll_node->prevent_viewport_scrolling_from_inner) {
-        closest_scroll_node = viewport()->MainScrollNode();
-      } else {
-        closest_scroll_node = scroll_node;
-      }
+      closest_scroll_node = GetNodeToScroll(scroll_node);
       break;
     }
   }
@@ -4267,9 +4256,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         continue;
       }
 
-      bool scrolls_main_viewport_scroll_layer =
-          scroll_node == viewport()->MainScrollNode();
-      if (scrolls_main_viewport_scroll_layer) {
+      if (viewport().ShouldScroll(*scroll_node)) {
         // Flash the overlay scrollbar even if the scroll dalta is 0.
         if (settings_.scrollbar_flash_after_any_scroll_update) {
           FlashAllScrollbars(false);
@@ -4279,9 +4266,11 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
           if (animation_controller)
             animation_controller->WillUpdateScroll();
         }
+      }
 
+      if (scroll_node->scrolls_outer_viewport) {
         gfx::Vector2dF scrolled =
-            viewport()->ScrollAnimated(pending_delta, delayed_by);
+            viewport().ScrollAnimated(pending_delta, delayed_by);
         // Viewport::ScrollAnimated returns pending_delta as long as it starts
         // an animation.
         did_scroll_x_for_scroll_gesture_ |= scrolled.x() != 0;
@@ -4512,18 +4501,17 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // details.
   const float kEpsilon = 0.1f;
 
-  if (viewport()->ShouldScroll(*scroll_node)) {
-    // |scroll_outer_vieiwport| will only ever be false if the scroll chains up
-    // to the viewport without going through the outer viewport scroll node.
+  if (viewport().ShouldScroll(*scroll_node)) {
+    // |scrolls_outer_vieiwport| will only ever be false if the scroll chains
+    // up to the viewport without going through the outer viewport scroll node.
     // This is because we normally terminate the scroll chain at the outer
     // viewport node.  For example, if we start scrolling from an element
     // that's not a descendant of the root scroller. In these cases we want to
     // scroll *only* the inner viewport -- to allow panning while zoomed -- but
     // still use Viewport::ScrollBy to also move browser controls if needed.
-    bool scroll_outer_viewport = scroll_node->scrolls_outer_viewport;
-    Viewport::ScrollResult result = viewport()->ScrollBy(
+    Viewport::ScrollResult result = viewport().ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
-        !wheel_scrolling_, scroll_outer_viewport);
+        !wheel_scrolling_, scroll_node->scrolls_outer_viewport);
 
     applied_delta = result.consumed_delta;
     delta_applied_to_content = result.content_scrolled_delta;
@@ -4546,7 +4534,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
     return;
   }
 
-  if (!viewport()->ShouldScroll(*scroll_node)) {
+  if (!viewport().ShouldScroll(*scroll_node)) {
     // If the applied delta is within 45 degrees of the input
     // delta, bail out to make it easier to scroll just one layer
     // in one direction without affecting any of its parents.
@@ -4578,23 +4566,18 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   std::list<ScrollNode*> current_scroll_chain;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-  ScrollNode* viewport_scroll_node = ViewportMainScrollNode();
   if (did_lock_scrolling_layer_) {
     DCHECK(scroll_node);
 
     // Needed for non-animated scrolls.
     current_scroll_chain.push_front(scroll_node);
   } else if (scroll_node) {
-    // TODO(bokan): The loop checks for a null parent but don't we still want to
-    // distribute to the root scroll node?
-    for (; scroll_tree.parent(scroll_node);
-         scroll_node = scroll_tree.parent(scroll_node)) {
-      if (scroll_node == viewport_scroll_node) {
-        // Don't chain scrolls past the outer viewport scroll layer. Once we
-        // reach that, we should scroll the viewport which is represented by the
-        // main viewport scroll layer.
-        DCHECK(viewport_scroll_node);
-        current_scroll_chain.push_front(viewport_scroll_node);
+    for (; scroll_node; scroll_node = scroll_tree.parent(scroll_node)) {
+      if (viewport().ShouldScroll(*scroll_node)) {
+        // Don't chain scrolls past a viewport node. Once we reach that, we
+        // should scroll using the appropriate viewport node which may not be
+        // |scroll_node|.
+        current_scroll_chain.push_front(GetNodeToScroll(scroll_node));
         break;
       }
 
@@ -4772,7 +4755,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   gfx::Vector2dF unused_root_delta;
   if (current_scrolling_node &&
-      current_scrolling_node == ViewportMainScrollNode()) {
+      viewport().ShouldScroll(*current_scrolling_node)) {
     unused_root_delta =
         gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y());
   }
@@ -4839,15 +4822,15 @@ void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
       "offset_x", root_content_offset.x(), "offset_y", root_content_offset.y());
 
   gfx::Vector2dF physical_delta = ContentToPhysical(
-      root_content_offset.DeltaFrom(viewport()->TotalScrollOffset()),
+      root_content_offset.DeltaFrom(viewport().TotalScrollOffset()),
       active_tree()->page_scale_factor_for_scroll());
 
   bool changed = !viewport()
-                      ->ScrollBy(physical_delta,
-                                 /*viewport_point=*/gfx::Point(),
-                                 /*is_direct_manipulation=*/false,
-                                 /*affect_browser_controls=*/false,
-                                 /*scroll_outer_viewport=*/true)
+                      .ScrollBy(physical_delta,
+                                /*viewport_point=*/gfx::Point(),
+                                /*is_direct_manipulation=*/false,
+                                /*affect_browser_controls=*/false,
+                                /*scroll_outer_viewport=*/true)
                       .consumed_delta.IsZero();
   if (!changed)
     return;
@@ -4876,13 +4859,7 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   if (!FindSnapPositionAndSetTarget(scroll_node, *strategy, &snap_position))
     return false;
 
-  gfx::Vector2dF delta =
-      ScrollOffsetToVector2dF(snap_position - current_position);
-  bool scrolls_main_viewport_scroll_layer =
-      scroll_node == ViewportMainScrollNode();
-
-  bool did_animate = false;
-  if (scrolls_main_viewport_scroll_layer) {
+  if (viewport().ShouldScroll(*scroll_node)) {
     // Flash the overlay scrollbar even if the scroll dalta is 0.
     if (settings_.scrollbar_flash_after_any_scroll_update) {
       FlashAllScrollbars(false);
@@ -4892,10 +4869,16 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
       if (animation_controller)
         animation_controller->WillUpdateScroll();
     }
+  }
+
+  gfx::Vector2dF delta =
+      ScrollOffsetToVector2dF(snap_position - current_position);
+  bool did_animate = false;
+  if (scroll_node->scrolls_outer_viewport) {
     gfx::Vector2dF scaled_delta(delta);
     scaled_delta.Scale(active_tree()->page_scale_factor_for_scroll());
     gfx::Vector2dF consumed_delta =
-        viewport()->ScrollAnimated(scaled_delta, base::TimeDelta());
+        viewport().ScrollAnimated(scaled_delta, base::TimeDelta());
     did_animate = !consumed_delta.IsZero();
   } else {
     did_animate = ScrollAnimationCreate(scroll_node, delta, base::TimeDelta());
@@ -4925,8 +4908,8 @@ bool LayerTreeHostImpl::FindSnapPositionAndSetTarget(
 
 gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
     const ScrollNode& scroll_node) const {
-  if (&scroll_node == viewport()->MainScrollNode())
-    return viewport()->TotalScrollOffset();
+  if (scroll_node.scrolls_outer_viewport)
+    return viewport().TotalScrollOffset();
   return active_tree()->property_trees()->scroll_tree.current_scroll_offset(
       scroll_node.element_id);
 }
@@ -5079,9 +5062,11 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
       scroll_element_id = scroll_node->element_id;
 
     // Scrollbars for the viewport are registered with the outer viewport layer.
-    if (InnerViewportScrollNode() && OuterViewportScrollNode() &&
-        scroll_element_id == InnerViewportScrollNode()->element_id)
+    if (InnerViewportScrollNode() &&
+        scroll_element_id == InnerViewportScrollNode()->element_id) {
+      DCHECK(OuterViewportScrollNode());
       scroll_element_id = OuterViewportScrollNode()->element_id;
+    }
   }
 
   ScrollbarAnimationController* new_animation_controller =
@@ -5134,7 +5119,7 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
   if (!InnerViewportScrollNode())
     return;
   has_pinch_zoomed_ = true;
-  viewport()->PinchUpdate(magnify_delta, anchor);
+  viewport().PinchUpdate(magnify_delta, anchor);
   client_->SetNeedsCommitOnImplThread();
   SetNeedsRedraw();
   client_->RenewTreePriority();
@@ -5150,7 +5135,7 @@ void LayerTreeHostImpl::PinchGestureEnd(const gfx::Point& anchor,
     pinch_gesture_end_should_clear_scrolling_node_ = false;
     ClearCurrentlyScrollingNode();
   }
-  viewport()->PinchEnd(anchor, snap_to_min);
+  viewport().PinchEnd(anchor, snap_to_min);
   browser_controls_offset_manager_->PinchEnd();
   client_->SetNeedsCommitOnImplThread();
   // When a pinch ends, we may be displaying content cached at incorrect scales,
@@ -5285,8 +5270,7 @@ bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   gfx::ScrollOffset next_scroll = gfx::ScrollOffset(
       page_scale_animation_->ScrollOffsetAtTime(monotonic_time));
 
-  DCHECK(viewport());
-  viewport()->ScrollByInnerFirst(next_scroll.DeltaFrom(scroll_total));
+  viewport().ScrollByInnerFirst(next_scroll.DeltaFrom(scroll_total));
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
     page_scale_animation_ = nullptr;
@@ -5314,12 +5298,11 @@ bool LayerTreeHostImpl::AnimateBrowserControls(base::TimeTicks time) {
   if (scroll_delta.IsZero())
     return false;
 
-  DCHECK(viewport());
-  viewport()->ScrollBy(scroll_delta,
-                       /*viewport_point=*/gfx::Point(),
-                       /*is_wheel_scroll=*/false,
-                       /*affect_browser_controls=*/false,
-                       /*scroll_outer_viewport=*/true);
+  viewport().ScrollBy(scroll_delta,
+                      /*viewport_point=*/gfx::Point(),
+                      /*is_wheel_scroll=*/false,
+                      /*affect_browser_controls=*/false,
+                      /*scroll_outer_viewport=*/true);
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
   return true;
@@ -5410,7 +5393,8 @@ LayerTreeHostImpl::ScrollbarAnimationControllerForElementId(
   // The viewport layers have only one set of scrollbars. On Android, these are
   // registered with the inner viewport, otherwise they're registered with the
   // outer viewport. If a controller for one exists, the other shouldn't.
-  if (InnerViewportScrollNode() && OuterViewportScrollNode()) {
+  if (InnerViewportScrollNode()) {
+    DCHECK(OuterViewportScrollNode());
     if (scroll_element_id == InnerViewportScrollNode()->element_id ||
         scroll_element_id == OuterViewportScrollNode()->element_id) {
       auto itr = scrollbar_animation_controllers_.find(
@@ -6209,6 +6193,7 @@ void LayerTreeHostImpl::InitializeUkm(
     std::unique_ptr<ukm::UkmRecorder> recorder) {
   DCHECK(!ukm_manager_);
   ukm_manager_ = std::make_unique<UkmManager>(std::move(recorder));
+  frame_trackers_.SetUkmManager(ukm_manager_.get());
 }
 
 void LayerTreeHostImpl::SetActiveURL(const GURL& url, ukm::SourceId source_id) {

@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Jasnoniebieski</translation>
 <translation id="1734824808160898225">Program <ph name="PRODUCT_NAME" /> może nie móc sam się aktualizować</translation>
 <translation id="1736419249208073774">Odkrywaj</translation>
-<translation id="1736420071277903564">Komputer</translation>
 <translation id="1737968601308870607">Zgłoś błąd</translation>
 <translation id="1741314857973421784">Dalej</translation>
 <translation id="1743570585616704562">Nie rozpoznano</translation>
@@ -1129,6 +1128,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2617342710774726426">Karta SIM jest zablokowana</translation>
 <translation id="2619761439309613843">Codziennie nowa</translation>
 <translation id="2620436844016719705">System</translation>
+<translation id="2621713457727696555">Zabezpieczona</translation>
 <translation id="26224892172169984">Nie zezwalaj żadnej witrynie na obsługę protokołów</translation>
 <translation id="2624142942574147739">Ta strona ma dostęp do kamery i mikrofonu.</translation>
 <translation id="2626799779920242286">Spróbuj ponownie później.</translation>
@@ -1580,6 +1580,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="328571385944182268">Zapisywać Twoje hasła?</translation>
 <translation id="3288047731229977326">Rozszerzenia działające w trybie dewelopera mogą uszkodzić Twój komputer. Jeśli nie jesteś deweloperem, wyłącz je dla bezpieczeństwa.</translation>
 <translation id="3289856944988573801">Jeśli chcesz sprawdzić aktualizacje, użyj Ethernetu lub Wi-Fi.</translation>
+<translation id="3290356915286466215">Niezabezpieczona</translation>
 <translation id="3293644607209440645">Wyślij tę stronę</translation>
 <translation id="32939749466444286">Kontener Linuksa nie uruchomił się. Spróbuj ponownie.</translation>
 <translation id="3294437725009624529">Gość</translation>
@@ -2021,7 +2022,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3900966090527141178">Eksportuj hasła</translation>
 <translation id="3901991538546252627">Łączę z: <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Napraw aplikację</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098">Wtyczka <ph name="PLUGIN_NAME" /> jest nieaktualna</translation>
 <translation id="3908501907586732282">Włącz rozszerzenie</translation>
 <translation id="3909477809443608991"><ph name="URL" /> chce odtworzyć treść chronioną. Tożsamość Twojego urządzenia zostanie sprawdzona przez Google i może być dostępna dla tej strony.</translation>
@@ -2321,7 +2321,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> udostępnia okno.</translation>
 <translation id="4364830672918311045">Wyświetlanie powiadomień</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> w aplikacji <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Podany adres e-mail i hasło nie pasują do siebie</translation>
 <translation id="437184764829821926">Zaawansowane ustawienia czcionek</translation>
 <translation id="4374831787438678295">Instalator Linuksa</translation>
@@ -2963,7 +2962,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5363109466694494651">Wykonaj Powerwash i przywróć</translation>
 <translation id="5365881113273618889">Wybrany folder zawiera poufne pliki. Czy na pewno chcesz, by aplikacja „<ph name="APP_NAME" />” miała do niego stały dostęp z uprawnieniami do zapisu?</translation>
 <translation id="5367091008316207019">Odczytuję plik..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Twój telefon jest zablokowany. Aby uzyskać do niego dostęp, odblokuj go.</translation>
 <translation id="5368779022775404937">Zaloguj się na <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Włącz przyspieszenie myszy</translation>
@@ -4721,6 +4719,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="7912080627461681647">Twoje hasło zostało zmienione na serwerze. Wyloguj się i zaloguj się ponownie.</translation>
 <translation id="7915457674565721553">Połącz się z internetem, by skonfigurować kontrolę rodzicielską</translation>
 <translation id="7915471803647590281">Zanim wyślesz opinię, powiedz nam, co się dzieje.</translation>
+<translation id="7918257978052780342">Zarejestruj</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Poziom powiększenia lupy zadokowanej:</translation>
 <translation id="7925247922861151263">Sprawdzenie AAA nie powiodło się</translation>

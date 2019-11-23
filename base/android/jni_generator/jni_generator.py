@@ -1503,13 +1503,22 @@ def GetScriptName():
   return os.sep.join(script_components[base_index:])
 
 
+def _RemoveExistingHeaders(path):
+  if os.path.exists(path) and os.path.isdir(path):
+    for root, _, files in os.walk(path):
+      for f in files:
+        file_path = os.path.join(root, f)
+        if os.path.isfile(file_path) and os.path.splitext(file_path)[1] == '.h':
+          os.remove(file_path)
+
+
 def main():
-  usage = """usage: %prog [OPTIONS]
+  description = """
 This script will parse the given java source code extracting the native
 declarations and print the header file to stdout (or a file).
 See SampleForTests.java for more details.
   """
-  parser = argparse.ArgumentParser(usage=usage)
+  parser = argparse.ArgumentParser(description=description)
 
   parser.add_argument(
       '-j',
@@ -1576,9 +1585,19 @@ See SampleForTests.java for more details.
   args = parser.parse_args()
   input_files = args.input_files
   output_files = args.output_files
-  if not output_files:
+  if output_files:
+    output_dirs = set(os.path.dirname(f) for f in output_files)
+    if len(output_dirs) != 1:
+      parser.error(
+          'jni_generator only supports a single output directory per target '
+          '(got {})'.format(output_dirs))
+    output_dir = output_dirs.pop()
+    # Remove existing headers so that moving .java source files but not updating
+    # the corresponding C++ include will be a compile failure (otherwise
+    # incremental builds will usually not catch this).
+    _RemoveExistingHeaders(output_dir)
+  else:
     output_files = [None] * len(input_files)
-
   temp_dir = tempfile.mkdtemp()
   try:
     if args.jar_file:

@@ -50,7 +50,7 @@ HintsFetcher::HintsFetcher(
       time_clock_(base::DefaultClock::GetInstance()) {
   url_loader_factory_ = std::move(url_loader_factory);
   CHECK(optimization_guide_service_url_.SchemeIs(url::kHttpsScheme));
-  CHECK(features::IsHintsFetchingEnabled());
+  DCHECK(features::IsRemoteFetchingEnabled());
 }
 
 HintsFetcher::~HintsFetcher() {}

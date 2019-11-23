@@ -75,7 +75,7 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     0.1,
 
     // Maximum amount of time we are willing to delay our request in ms.
-    -1,
+    600000,  // Ten minutes.
 
     // Time to keep an entry from being discarded even when it
     // has no significant state, -1 to never discard.

@@ -83,35 +83,6 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
       << "'bar' should have been inserted";
 }
 
-// This is a regression test for https://crbug.com/121163
-TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
-  GetDocument().setDesignMode("on");
-  UpdateAllLifecyclePhasesForTest();
-  GetDummyPageHolder().GetFrame().Selection().SetSelection(
-      SelectionInDOMTree::Builder()
-          .Collapse(Position(GetDocument().body(), 0))
-          .Build(),
-      SetSelectionOptions());
-
-  DocumentFragment* fragment = GetDocument().createDocumentFragment();
-  fragment->ParseHTML(
-      "<head><style>foo { bar: baz; }</style></head>"
-      "<body><p>Text</p></body>",
-      GetDocument().documentElement(), kDisallowScriptingAndPluginContent);
-
-  ReplaceSelectionCommand::CommandOptions options = 0;
-  auto* command = MakeGarbageCollected<ReplaceSelectionCommand>(
-      GetDocument(), fragment, options);
-  EXPECT_TRUE(command->Apply()) << "the replace command should have succeeded";
-
-  EXPECT_EQ(
-      "<head><style>foo { bar: baz; }</style></head>"
-      "<body><p>Text</p></body>",
-      GetDocument().body()->InnerHTMLAsString())
-      << "the STYLE and P elements should have been pasted into the body "
-      << "of the document";
-}
-
 // Helper function to set autosizing multipliers on a document.
 bool SetTextAutosizingMultiplier(Document* document, float multiplier) {
   bool multiplier_set = false;

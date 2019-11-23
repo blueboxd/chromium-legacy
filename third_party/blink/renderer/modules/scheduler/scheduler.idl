@@ -3,12 +3,10 @@
 // found in the LICENSE file.
 
 // Experimental Scheduling API Proposal:
-// https://docs.google.com/document/d/1xU7HyNsEsbXhTgt0ZnXDbeSXm5-m5FzkLJAT6LTizEI/edit#
+// https://docs.google.com/document/d/1Apz-SD-pOagGeyWxIpgOi0ARNkrCrELhPdm18eeu9tw
 [
     ImplementedAs=DOMScheduler,
     RuntimeEnabled=WebScheduler
 ] interface Scheduler {
-    readonly attribute TaskQueue currentTaskQueue;
-    TaskQueue getTaskQueue(TaskQueuePriority priority);
-    Task postTask(Function callback, optional SchedulerPostTaskOptions options, any... arguments);
+    [CallWith=ScriptState] Promise<any> postTask(Function callback, optional SchedulerPostTaskOptions options, any... arguments);
 };

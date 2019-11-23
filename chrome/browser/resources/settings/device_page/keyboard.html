@@ -104,26 +104,30 @@
     <iron-collapse
         opened="[[prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]">
       <div class="settings-box continuation embedded">
-        <div class="start" id="repeatDelayLabel">$i18n{keyRepeatDelay}</div>
+        <div class="start" id="repeatDelayLabel" aria-hidden="true">
+          $i18n{keyRepeatDelay}
+        </div>
         <settings-slider id="delaySlider"
             pref="{{prefs.settings.language.xkb_auto_repeat_delay_r2}}"
             ticks="[[autoRepeatDelays_]]"
             disabled="[[
                 !prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]"
-            aria-labelledby="repeatDelayLabel"
+            label-aria="$i18n{keyRepeatDelay}"
             label-min="$i18n{keyRepeatDelayLong}"
             label-max="$i18n{keyRepeatDelayShort}">
         </settings-slider>
       </div>
       <div class="settings-box continuation embedded">
-        <div class="start" id="repeatRateLabel">$i18n{keyRepeatRate}</div>
+        <div class="start" id="repeatRateLabel" aria-hidden="true">
+          $i18n{keyRepeatRate}
+        </div>
         <settings-slider id="repeatRateSlider"
             pref="{{
                 prefs.settings.language.xkb_auto_repeat_interval_r2}}"
             ticks="[[autoRepeatIntervals_]]"
             disabled="[[
                 !prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]"
-            aria-labelledby="repeatRateLabel"
+            label-aria="$i18n{keyRepeatRate}"
             label-min="$i18n{keyRepeatRateSlow}"
             label-max="$i18n{keyRepeatRateFast}">
         </settings-slider>

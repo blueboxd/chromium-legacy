@@ -1544,10 +1544,10 @@ auto GetPoolValues() {
   );
 }
 
-INSTANTIATE_TEST_SUITE_P(, ThreadPoolImplTest, GetPoolValues());
+INSTANTIATE_TEST_SUITE_P(All, ThreadPoolImplTest, GetPoolValues());
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ThreadPoolImplTest_CoverAllSchedulingOptions,
     ::testing::Combine(
         GetPoolValues(),

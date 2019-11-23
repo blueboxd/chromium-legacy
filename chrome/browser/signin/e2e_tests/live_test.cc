@@ -31,6 +31,8 @@ void LiveTest::SetUp() {
   // Only run live tests when specified.
   auto* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch(kRunLiveTestFlag)) {
+    LOG(INFO) << "This test should get skipped.";
+    skip_test_ = true;
     GTEST_SKIP();
   }
   base::FilePath root_path;
@@ -39,6 +41,13 @@ void LiveTest::SetUp() {
       base::MakeAbsoluteFilePath(root_path.Append(kTestAccountFilePath));
   test_accounts_.Init(config_path);
   InProcessBrowserTest::SetUp();
+}
+
+void LiveTest::TearDown() {
+  // This test was skipped, no need to tear down.
+  if (skip_test_)
+    return;
+  InProcessBrowserTest::TearDown();
 }
 
 }  // namespace test

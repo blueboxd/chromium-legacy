@@ -16,7 +16,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/containers/flat_map.h"
 #include "base/feature_list.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
@@ -251,9 +250,8 @@ const char kIsHeaderFooterManaged[] = "isHeaderFooterManaged";
 // Name of a dictionary field indicating whether the 'Save to PDF' destination
 // is disabled.
 const char kPdfPrinterDisabled[] = "pdfPrinterDisabled";
-// TODO(dhoss): Change this comment when the policy name is changed.
 // Name of a dictionary field indicating whether the destinations are managed by
-// the PrinterTypeBlacklist enterprise policy.
+// the PrinterTypeDenyList enterprise policy.
 const char kDestinationsManaged[] = "destinationsManaged";
 // Name of a dictionary field holding the cloud print URL.
 const char kCloudPrintURL[] = "cloudPrintURL";
@@ -564,7 +562,7 @@ void PrintPreviewHandler::OnJavascriptAllowed() {
   print_preview_ui()->SetPreviewUIId();
   // Now that the UI is initialized, any future account changes will require
   // a printer list refresh.
-  ReadPrinterTypeBlacklistFromPrefs();
+  ReadPrinterTypeDenyListFromPrefs();
   RegisterForGaiaCookieChanges();
 }
 
@@ -575,7 +573,7 @@ void PrintPreviewHandler::OnJavascriptDisallowed() {
   print_preview_ui()->ClearPreviewUIId();
   preview_callbacks_.clear();
   preview_failures_.clear();
-  printer_type_blacklist_.clear();
+  printer_type_deny_list_.clear();
   UnregisterForGaiaCookieChanges();
 }
 
@@ -589,30 +587,32 @@ PrefService* PrintPreviewHandler::GetPrefs() const {
   return prefs;
 }
 
-void PrintPreviewHandler::ReadPrinterTypeBlacklistFromPrefs() {
+void PrintPreviewHandler::ReadPrinterTypeDenyListFromPrefs() {
   PrefService* prefs = GetPrefs();
-  if (!prefs->HasPrefPath(prefs::kPrinterTypeBlacklist))
+  if (!prefs->HasPrefPath(prefs::kPrinterTypeDenyList))
     return;
 
-  const base::Value* blacklist_types = prefs->Get(prefs::kPrinterTypeBlacklist);
-  if (!blacklist_types || !blacklist_types->is_list())
+  const base::Value* deny_list_types = prefs->Get(prefs::kPrinterTypeDenyList);
+  if (!deny_list_types || !deny_list_types->is_list())
     return;
 
-  for (const base::Value& blacklist_type : blacklist_types->GetList()) {
-    if (!blacklist_type.is_string())
+  for (const base::Value& deny_list_type : deny_list_types->GetList()) {
+    if (!deny_list_type.is_string())
       continue;
 
-    const std::string& blacklist_str = blacklist_type.GetString();
-    if (blacklist_str == "privet")
-      printer_type_blacklist_.insert(kPrivetPrinter);
-    else if (blacklist_str == "extension")
-      printer_type_blacklist_.insert(kExtensionPrinter);
-    else if (blacklist_str == "pdf")
-      printer_type_blacklist_.insert(kPdfPrinter);
-    else if (blacklist_str == "local")
-      printer_type_blacklist_.insert(kLocalPrinter);
-    else if (blacklist_str == "cloud")
-      printer_type_blacklist_.insert(kCloudPrinter);
+    // The expected printer type strings are enumerated in
+    // components/policy/resources/policy_templates.json
+    const std::string& deny_list_str = deny_list_type.GetString();
+    if (deny_list_str == "privet")
+      printer_type_deny_list_.insert(kPrivetPrinter);
+    else if (deny_list_str == "extension")
+      printer_type_deny_list_.insert(kExtensionPrinter);
+    else if (deny_list_str == "pdf")
+      printer_type_deny_list_.insert(kPdfPrinter);
+    else if (deny_list_str == "local")
+      printer_type_deny_list_.insert(kLocalPrinter);
+    else if (deny_list_str == "cloud")
+      printer_type_deny_list_.insert(kCloudPrinter);
   }
 }
 
@@ -660,8 +660,8 @@ void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
   PrinterType printer_type = static_cast<PrinterType>(type);
 
   // Immediately resolve the callback without fetching printers if the printer
-  // type is blacklisted
-  if (base::Contains(printer_type_blacklist_, printer_type)) {
+  // type is on the deny list.
+  if (base::Contains(printer_type_deny_list_, printer_type)) {
     ResolveJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
@@ -709,8 +709,8 @@ void PrintPreviewHandler::HandleGetPrinterCapabilities(
   }
   PrinterType printer_type = static_cast<PrinterType>(type);
 
-  // Reject the callback if the printer type is blacklisted
-  if (base::Contains(printer_type_blacklist_, printer_type)) {
+  // Reject the callback if the printer type is on the deny list.
+  if (base::Contains(printer_type_deny_list_, printer_type)) {
     RejectJavascriptCallback(base::Value(callback_id), base::Value());
     return;
   }
@@ -1085,12 +1085,12 @@ void PrintPreviewHandler::SendInitialSettings(
 
   initial_settings.SetBoolKey(
       kPdfPrinterDisabled,
-      base::Contains(printer_type_blacklist_, kPdfPrinter));
+      base::Contains(printer_type_deny_list_, kPdfPrinter));
 
-  const bool destinationsManaged =
-      !printer_type_blacklist_.empty() &&
-      prefs->IsManagedPreference(prefs::kPrinterTypeBlacklist);
-  initial_settings.SetBoolKey(kDestinationsManaged, destinationsManaged);
+  const bool destinations_managed =
+      !printer_type_deny_list_.empty() &&
+      prefs->IsManagedPreference(prefs::kPrinterTypeDenyList);
+  initial_settings.SetBoolKey(kDestinationsManaged, destinations_managed);
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   initial_settings.SetBoolKey(kIsInKioskAutoPrintMode,
@@ -1421,7 +1421,7 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
   DCHECK(!identity_manager_);
   cloud_print_enabled_ =
-      !base::Contains(printer_type_blacklist_, kCloudPrinter) &&
+      !base::Contains(printer_type_deny_list_, kCloudPrinter) &&
       GetPrefs()->GetBoolean(prefs::kCloudPrintSubmitEnabled);
 
   if (!cloud_print_enabled_)

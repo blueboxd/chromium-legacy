@@ -435,14 +435,10 @@ class OfflinePageRequestHandlerTest : public testing::Test {
 
 #if defined(OS_ANDROID)
   // OfflinePageTabHelper instantiates PrefetchService which in turn requests a
-  // fresh GCM token automatically. These two lines mock out InstanceID (the
-  // component which actually requests the token from play services). Without
-  // this, each test takes an extra 30s waiting on the token (because
-  // content::BrowserTaskEnvironment tries to finish all pending tasks before
-  // ending the test).
+  // fresh GCM token automatically. This causes the request to be done
+  // synchronously instead of with a posted task.
   instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
       block_async_;
-  instance_id::ScopedUseFakeInstanceIDAndroid use_fake_;
 #endif  // OS_ANDROID
 
   // These are not thread-safe. But they can be used in the pattern that

@@ -237,6 +237,7 @@ jumbo_component("network_service") {
     "//net",
     "//net:extras",
     "//services/network/public/cpp",
+    "//services/network/public/cpp/cert_verifier",
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",

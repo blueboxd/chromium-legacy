@@ -11,7 +11,10 @@
 #include "content/common/content_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/scroll_offset.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 
 #ifndef INTERNAL_CONTENT_COMMON_SYNC_COMPOSITOR_MESSAGES_H_

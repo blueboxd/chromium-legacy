@@ -55,12 +55,11 @@ void PropertySet::RegisterProperty(const std::string& name,
 void PropertySet::ConnectSignals() {
   DCHECK(object_proxy_);
   object_proxy_->ConnectToSignal(
-      kPropertiesInterface,
-      kPropertiesChanged,
-      base::Bind(&PropertySet::ChangedReceived,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&PropertySet::ChangedConnected,
-                 weak_ptr_factory_.GetWeakPtr()));
+      kPropertiesInterface, kPropertiesChanged,
+      base::BindRepeating(&PropertySet::ChangedReceived,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PropertySet::ChangedConnected,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 
@@ -165,10 +164,9 @@ void PropertySet::GetAll() {
   writer.AppendString(interface());
 
   DCHECK(object_proxy_);
-  object_proxy_->CallMethod(&method_call,
-                            ObjectProxy::TIMEOUT_USE_DEFAULT,
-                            base::Bind(&PropertySet::OnGetAll,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  object_proxy_->CallMethod(
+      &method_call, ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::BindOnce(&PropertySet::OnGetAll, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PropertySet::OnGetAll(Response* response) {

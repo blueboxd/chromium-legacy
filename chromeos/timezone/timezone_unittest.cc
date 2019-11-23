@@ -178,8 +178,8 @@ TEST_F(TimeZoneTest, ResponseOK) {
 
   provider.RequestTimezone(simple_request.position,
                            base::TimeDelta::FromSeconds(1),
-                           base::Bind(&TimeZoneReceiver::OnRequestDone,
-                                      base::Unretained(&receiver)));
+                           base::BindOnce(&TimeZoneReceiver::OnRequestDone,
+                                          base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
 
   EXPECT_EQ(simple_request.timezone.ToStringForDebug(),
@@ -203,8 +203,8 @@ TEST_F(TimeZoneTest, ResponseOKWithRetries) {
 
   provider.RequestTimezone(simple_request.position,
                            base::TimeDelta::FromSeconds(1),
-                           base::Bind(&TimeZoneReceiver::OnRequestDone,
-                                      base::Unretained(&receiver)));
+                           base::BindOnce(&TimeZoneReceiver::OnRequestDone,
+                                          base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
   EXPECT_EQ(simple_request.timezone.ToStringForDebug(),
             receiver.timezone()->ToStringForDebug());
@@ -232,8 +232,8 @@ TEST_F(TimeZoneTest, InvalidResponse) {
 
   provider.RequestTimezone(simple_request.position,
                            base::TimeDelta::FromSeconds(timeout_seconds),
-                           base::Bind(&TimeZoneReceiver::OnRequestDone,
-                                      base::Unretained(&receiver)));
+                           base::BindOnce(&TimeZoneReceiver::OnRequestDone,
+                                          base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
   EXPECT_EQ(
       "dstOffset=0.000000, rawOffset=0.000000, timeZoneId='', timeZoneName='', "

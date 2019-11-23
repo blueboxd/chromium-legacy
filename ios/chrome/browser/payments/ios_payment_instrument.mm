@@ -43,7 +43,10 @@ IOSPaymentInstrument::IOSPaymentInstrument(
       universal_link_(universal_link),
       app_name_(app_name),
       icon_image_(icon_image),
-      payment_request_ui_delegate_(payment_request_ui_delegate) {}
+      payment_request_ui_delegate_(payment_request_ui_delegate) {
+  app_method_names_.insert(method_name_);
+}
+
 IOSPaymentInstrument::~IOSPaymentInstrument() {}
 
 void IOSPaymentInstrument::InvokePaymentApp(PaymentApp::Delegate* delegate) {
@@ -109,12 +112,6 @@ bool IOSPaymentInstrument::IsValidForModifier(
     bool supported_types_specified,
     const std::set<autofill::CreditCard::CardType>& supported_types) const {
   return method_name_ == method;
-}
-
-void IOSPaymentInstrument::IsValidForPaymentMethodIdentifier(
-    const std::string& payment_method_identifier,
-    bool* is_valid) const {
-  *is_valid = method_name_ == payment_method_identifier;
 }
 
 bool IOSPaymentInstrument::HandlesShippingAddress() const {

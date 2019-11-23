@@ -19,32 +19,38 @@ using base::win::ScopedCoMem;
 namespace media {
 
 static std::string FlowToString(EDataFlow flow) {
-  return (flow == eRender) ? "eRender" : "eConsole";
+  return flow == eRender ? "eRender" : "eConsole";
 }
 
 static std::string RoleToString(ERole role) {
   switch (role) {
-    case eConsole: return "eConsole";
-    case eMultimedia: return "eMultimedia";
-    case eCommunications: return "eCommunications";
-    default: return "undefined";
+    case eConsole:
+      return "eConsole";
+    case eMultimedia:
+      return "eMultimedia";
+    case eCommunications:
+      return "eCommunications";
+    default:
+      return "undefined";
   }
 }
 
-AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
-    : listener_cb_(listener_cb),
+AudioDeviceListenerWin::AudioDeviceListenerWin(
+    base::RepeatingClosure listener_cb)
+    : listener_cb_(std::move(listener_cb)),
       tick_clock_(base::DefaultTickClock::GetInstance()) {
   // CreateDeviceEnumerator can fail on some installations of Windows such
   // as "Windows Server 2008 R2" where the desktop experience isn't available.
-  Microsoft::WRL::ComPtr<IMMDeviceEnumerator> device_enumerator(
-      CoreAudioUtil::CreateDeviceEnumerator());
-  if (!device_enumerator.Get())
+  auto device_enumerator = CoreAudioUtil::CreateDeviceEnumerator();
+  if (!device_enumerator) {
+    DLOG(ERROR) << "Failed to create device enumeration.";
     return;
+  }
 
   HRESULT hr = device_enumerator->RegisterEndpointNotificationCallback(this);
   if (FAILED(hr)) {
-    LOG(ERROR)  << "RegisterEndpointNotificationCallback failed: "
-                << std::hex << hr;
+    DLOG(ERROR) << "RegisterEndpointNotificationCallback failed: " << std::hex
+                << hr;
     return;
   }
 
@@ -52,13 +58,13 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
 }
 
 AudioDeviceListenerWin::~AudioDeviceListenerWin() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (device_enumerator_.Get()) {
-    HRESULT hr =
-        device_enumerator_->UnregisterEndpointNotificationCallback(this);
-    LOG_IF(ERROR, FAILED(hr)) << "UnregisterEndpointNotificationCallback() "
-                              << "failed: " << std::hex << hr;
-  }
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!device_enumerator_)
+    return;
+
+  HRESULT hr = device_enumerator_->UnregisterEndpointNotificationCallback(this);
+  DLOG_IF(ERROR, FAILED(hr)) << "UnregisterEndpointNotificationCallback() "
+                             << "failed: " << std::hex << hr;
 }
 
 STDMETHODIMP_(ULONG) AudioDeviceListenerWin::AddRef() {
@@ -75,15 +81,16 @@ STDMETHODIMP AudioDeviceListenerWin::QueryInterface(REFIID iid, void** object) {
     return S_OK;
   }
 
-  *object = NULL;
+  *object = nullptr;
   return E_NOINTERFACE;
 }
 
 STDMETHODIMP AudioDeviceListenerWin::OnPropertyValueChanged(
-    LPCWSTR device_id, const PROPERTYKEY key) {
-  // TODO(dalecurtis): We need to handle changes for the current default device
-  // here.  It's tricky because this method may be called many (20+) times for
-  // a single change like sample rate.  http://crbug.com/153056
+    LPCWSTR device_id,
+    const PROPERTYKEY key) {
+  // Property changes are handled by IAudioSessionControl listeners hung off of
+  // each WASAPIAudioOutputStream() since not all property changes make it to
+  // this method and those that do are spammed 10s of times.
   return S_OK;
 }
 
@@ -99,15 +106,15 @@ STDMETHODIMP AudioDeviceListenerWin::OnDeviceRemoved(LPCWSTR device_id) {
 
 STDMETHODIMP AudioDeviceListenerWin::OnDeviceStateChanged(LPCWSTR device_id,
                                                           DWORD new_state) {
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor)
+  if (auto* monitor = base::SystemMonitor::Get())
     monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
-
   return S_OK;
 }
 
 STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
-    EDataFlow flow, ERole role, LPCWSTR new_default_device_id) {
+    EDataFlow flow,
+    ERole role,
+    LPCWSTR new_default_device_id) {
   // Only listen for console and communication device changes.
   if ((role != eConsole && role != eCommunications) ||
       (flow != eRender && flow != eCapture)) {
@@ -128,16 +135,13 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
   // it provides a substantially faster resumption of playback.
   bool did_run_listener_cb = false;
   const base::TimeTicks now = tick_clock_->NowTicks();
-  if (flow == eRender &&
-      now - last_device_change_time_ >
-          base::TimeDelta::FromMilliseconds(kDeviceChangeLimitMs)) {
+  if (flow == eRender && now - last_device_change_time_ > kDeviceChangeLimit) {
     last_device_change_time_ = now;
     listener_cb_.Run();
     did_run_listener_cb = true;
   }
 
-  base::SystemMonitor* monitor = base::SystemMonitor::Get();
-  if (monitor)
+  if (auto* monitor = base::SystemMonitor::Get())
     monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
 
   DVLOG(1) << "OnDefaultDeviceChanged() "

@@ -65,6 +65,10 @@ if (is_win || is_mac) {
       "//third_party/zlib/google:zip",
       "//url",
     ]
+
+    if (is_win) {
+      deps += [ "//chrome/updater/win:updater_idl_idl" ]
+    }
   }
 
   process_version("version_header") {
@@ -93,7 +97,10 @@ if (is_win || is_mac) {
     ]
 
     if (is_win) {
-      deps += [ "//chrome/updater/win:updater_tests" ]
+      deps += [
+        "//chrome/updater/win:updater_tests",
+        "//chrome/updater/win:com",
+      ]
 
       data_deps = [
         "//chrome/updater/win:updater",

@@ -192,7 +192,7 @@ class OptimizationGuideTopHostProviderTest
 TEST_F(OptimizationGuideTopHostProviderTest, CreateIfAllowedNonDataSaverUser) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      {optimization_guide::features::kOptimizationHintsFetching});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching});
   SetDataSaverEnabled(false);
   ASSERT_FALSE(OptimizationGuideTopHostProvider::CreateIfAllowed(profile()));
 }
@@ -201,7 +201,7 @@ TEST_F(OptimizationGuideTopHostProviderTest,
        CreateIfAllowedDataSaverUserInfobarNotSeen) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      {optimization_guide::features::kOptimizationHintsFetching});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching});
 
   SetDataSaverEnabled(true);
 
@@ -222,7 +222,7 @@ TEST_F(OptimizationGuideTopHostProviderTest,
        CreateIfAllowedDataSaverUserInfobarSeen) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      {optimization_guide::features::kOptimizationHintsFetching});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching});
 
   SetDataSaverEnabled(true);
 
@@ -243,7 +243,7 @@ TEST_F(OptimizationGuideTopHostProviderTest,
        CreateIfAllowedDataSaverUserInfobarSeenButHintsFetchingNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {}, {optimization_guide::features::kOptimizationHintsFetching});
+      {}, {optimization_guide::features::kRemoteOptimizationGuideFetching});
 
   SetDataSaverEnabled(true);
 

@@ -17,6 +17,7 @@
 #include "third_party/re2/src/re2/re2.h"
 #include "tools/binary_size/libsupersize/caspian/diff.h"
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
+#include "tools/binary_size/libsupersize/caspian/lens.h"
 #include "tools/binary_size/libsupersize/caspian/model.h"
 #include "tools/binary_size/libsupersize/caspian/tree_builder.h"
 
@@ -143,6 +144,8 @@ void BuildTree(bool method_count_mode,
     filters.push_back([](const BaseSymbol& sym) -> bool {
       return sym.IsTemplate() && sym.IsNative();
     });
+  } else if (!strcmp(group_by, "generated_type")) {
+    lens = std::make_unique<GeneratedLens>();
   } else {
     // TODO(jaspercb): Support group by generated path type.
     std::cerr << "Unsupported group_by=" << group_by << std::endl;

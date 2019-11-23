@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">లేత నీలి రంగు</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> తనకు తాను అప్‌డేట్ అవుతూ ఉండటం సాధ్యం కాకపోవచ్చు</translation>
 <translation id="1736419249208073774">అన్వేషించండి</translation>
-<translation id="1736420071277903564">కంప్యూటర్</translation>
 <translation id="1737968601308870607">బగ్‌ను ఫైల్ చేయండి</translation>
 <translation id="1741314857973421784">కొనసాగించు</translation>
 <translation id="1743570585616704562">గుర్తించలేదు</translation>
@@ -1129,6 +1128,7 @@
 <translation id="2617342710774726426">SIM కార్డ్ లాక్ అయింది</translation>
 <translation id="2619761439309613843">రోజూ రిఫ్రెష్ అవుతుంది</translation>
 <translation id="2620436844016719705">సిస్టమ్</translation>
+<translation id="2621713457727696555">సురక్షితం చేయబడింది</translation>
 <translation id="26224892172169984">ప్రోటోకాల్స్ నిర్వహించడానికి ఏ సైట్‌నూ అనుమతించవద్దు</translation>
 <translation id="2624142942574147739">ఈ పేజీ మీ కెమెరా మరియు మైక్రోఫోన్‌ను ప్రాప్యత చేస్తోంది.</translation>
 <translation id="2626799779920242286">దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
@@ -1580,6 +1580,7 @@
 <translation id="328571385944182268">మీ పాస్‌వర్డ్‌లను సేవ్ చేయాలా?</translation>
 <translation id="3288047731229977326">డెవలపర్ మోడ్‌లో అమలవుతున్న ఎక్స్‌టెన్ష‌న్‌లు మీ కంప్యూటర్‌కు హాని కలిగించవచ్చు. మీరు డెవలపర్ కాకపోతే, సురక్షితంగా ఉంచడానికి డెవలపర్ మోడ్‌లో అమలవుతున్న ఈ ఎక్స్‌టెన్ష‌న్‌లను నిలిపివేయాలి.</translation>
 <translation id="3289856944988573801">అప్‌డేట్‌ల కోసం తనిఖీ చేయడానికి, దయచేసి ఈథర్‌నెట్ లేదా Wi-Fiని ఉపయోగించండి.</translation>
+<translation id="3290356915286466215">అసురక్షితమైనది</translation>
 <translation id="3293644607209440645">ఈ పేజీని పంపండి</translation>
 <translation id="32939749466444286">Linux కంటైనర్ ప్రారంభించబడలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="3294437725009624529">అతిథి</translation>
@@ -2021,7 +2022,6 @@
 <translation id="3900966090527141178">పాస్‌వర్డ్‌లను ఎగుమతి చేయండి</translation>
 <translation id="3901991538546252627"><ph name="NAME" />కి కనెక్ట్ చేస్తోంది</translation>
 <translation id="3905761538810670789">యాప్‌ను సరి చేయి</translation>
-<translation id="3906954721959377182">టాబ్లెట్</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> కాలం చెల్లినది</translation>
 <translation id="3908501907586732282">ఎక్స్‌టెన్ష‌న్‌ను ప్రారంభించు</translation>
 <translation id="3909477809443608991">రక్షిత కంటెంట్‌ను ప్లే చేయడానికి <ph name="URL" /> అనుమతి కోరుతుంది. మీ పరికరం గుర్తింపు Google ద్వారా ధృవీకరించబడుతుంది, దీనిని ఈ సైట్ ద్వారా యాక్సెస్ చేయవచ్చు</translation>
@@ -2321,7 +2321,6 @@
 <translation id="4364327530094270451">ఖర్బూజాపండు</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> ఒక విండోను షేర్ చేస్తోంది.</translation>
 <translation id="4364830672918311045">నోటిఫికేషన్‌లను ప్రదర్శించడం</translation>
-<translation id="4366956553771076218"><ph name="APP_NAME" />తో <ph name="ACTION_NAME" />.</translation>
 <translation id="4370975561335139969">మీరు నమోదు చేసిన ఇమెయిల్, పాస్‌వర్డ్ సరిపోలలేదు</translation>
 <translation id="437184764829821926">అధునాతన ఫాంట్ సెట్టింగ్‌లు</translation>
 <translation id="4374831787438678295">Linux ఇన్‌స్టాలర్</translation>
@@ -2963,7 +2962,6 @@
 <translation id="5363109466694494651">పవర్‌వాష్ చేసి, తిరిగి మార్చు</translation>
 <translation id="5365881113273618889">మీరు ఎంచుకున్న ఫోల్డర్ చాలా ఎక్కువ గోప్యమైన ఫైల్‌లను కలిగి ఉంది. మీరు ఖచ్చితంగా ఈ ఫోల్డర్ కోసం "<ph name="APP_NAME" />"కి శాశ్వతంగా రాయగల యాక్సెస్‌ను మంజూరు చేయాలనుకుంటున్నారా?</translation>
 <translation id="5367091008316207019">ఫైల్‌ను చదువుతోంది..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">మీ ఫోన్ లాక్ చేయబడింది. దానిని తెరవడానికి, అన్‌లాక్ చేయండి.</translation>
 <translation id="5368779022775404937"><ph name="REALM" />కు సైన్ ఇన్ చేయండి</translation>
 <translation id="5369491905435686894">మౌస్ యాక్సిలరేషన్‌ను ప్రారంభించండి</translation>
@@ -4720,6 +4718,7 @@
 <translation id="7912080627461681647">సర్వర్‌లో మీ పాస్‌వర్డ్ మార్చబడింది. దచయేసి సైన్ అవుట్ చేసి, సైన్ ఇన్ చేయండి.</translation>
 <translation id="7915457674565721553">తల్లిదండ్రుల నియంత్రణలను సెటప్ చేయడానికి ఇంటర్నెట్‌కు కనెక్ట్ చేయండి</translation>
 <translation id="7915471803647590281">దయచేసి అభిప్రాయాన్ని పంపడానికి ముందు ఏమి జరిగిందో మాకు చెప్పండి.</translation>
+<translation id="7918257978052780342">నమోదు చేయి</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />సె</translation>
 <translation id="792514962475806987">డాక్ చేయబడిన జూమ్ స్థాయి:</translation>
 <translation id="7925247922861151263">AAA తనిఖీ విఫలమైంది</translation>

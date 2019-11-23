@@ -2741,6 +2741,12 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="Web app"/>
 </enum>
 
+<enum name="ArcMojoConnectionType">
+  <summary>Types of mojo connections to the ARC container.</summary>
+  <int value="0" label="AppLauncher"/>
+  <int value="1" label="IntentHelper"/>
+</enum>
+
 <enum name="ArcNativeBridgeType">
   <int value="0" label="Unknown"/>
   <int value="1" label="None"/>
@@ -18809,6 +18815,7 @@ Called by update_net_error_codes.py.-->
   <int value="645" label="ClickToCallEnabled"/>
   <int value="646"
       label="DeviceLoginScreenShowAccessibilityOptionsInSystemTrayMenu"/>
+  <int value="647" label="PrinterTypeDenyList"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -25551,6 +25558,13 @@ Called by update_net_error_codes.py.-->
   <int value="3093" label="RegisterProtocolHandlerCrossOriginSubframe"/>
   <int value="3094" label="WebNfcNdefReaderScan"/>
   <int value="3095" label="WebNfcNdefWriterPush"/>
+  <int value="3096" label="HTMLPortalElement"/>
+  <int value="3097" label="V8HTMLPortalElement_Activate_Method"/>
+  <int value="3098" label="V8HTMLPortalElement_PostMessage_Method"/>
+  <int value="3099" label="V8Window_PortalHost_AttributeGetter"/>
+  <int value="3100" label="V8PortalHost_PostMessage_Method"/>
+  <int value="3101" label="V8PortalActivateEvent_Data_AttributeGetter"/>
+  <int value="3102" label="V8PortalActivateEvent_AdoptPredecessor_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -27058,6 +27072,11 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="swap"/>
   <int value="3" label="fallback"/>
   <int value="4" label="optional"/>
+</enum>
+
+<enum name="FontLoadContext">
+  <int value="0" label="Top-level"/>
+  <int value="1" label="Sub-frame"/>
 </enum>
 
 <enum name="FontScanningResult">
@@ -30590,6 +30609,15 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Watchdog Start"/>
   <int value="1" label="Watchdog Kill"/>
   <int value="2" label="Watchdog End"/>
+</enum>
+
+<enum name="GpuWatchdogTimeoutEvent">
+  <int value="0" label="Timeout"/>
+  <int value="1" label="Kill"/>
+  <int value="2" label="MoreThreadTime"/>
+  <int value="3" label="ProgressAfterMoreThreadTime"/>
+  <int value="4" label="TimeoutWait"/>
+  <int value="5" label="ProgressAfterWait"/>
 </enum>
 
 <enum name="GPUWebGraphicsContext3D_Init_CanLoseContext">
@@ -51015,6 +51043,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Printer was setup from Settings"/>
   <int value="2" label="Printer was setup by automatic USB configurer"/>
   <int value="3" label="Printer was setup by arc print service"/>
+  <int value="4" label="Printer was setup via Extensions API"/>
 </enum>
 
 <enum name="PrintJobResult">

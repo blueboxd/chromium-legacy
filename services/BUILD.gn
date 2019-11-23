@@ -26,6 +26,7 @@ test("services_unittests") {
     "//services/metrics/public/cpp:tests",
     "//services/network:tests",
     "//services/network/public/cpp:tests",
+    "//services/network/public/cpp/cert_verifier:tests",
     "//services/test:run_all_unittests",
   ]
 

@@ -32,8 +32,8 @@ class AudioPullFifoTest
   AudioPullFifoTest()
       : pull_fifo_(kChannels,
                    kMaxFramesInFifo,
-                   base::Bind(&AudioPullFifoTest::ProvideInput,
-                              base::Unretained(this))),
+                   base::BindRepeating(&AudioPullFifoTest::ProvideInput,
+                                       base::Unretained(this))),
         audio_bus_(AudioBus::Create(kChannels, kMaxFramesInFifo)),
         fill_value_(0),
         last_frame_delay_(-1) {

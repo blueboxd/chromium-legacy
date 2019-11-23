@@ -525,6 +525,15 @@
 
           Bu politika sadece is "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="1852294065645015766">Medyayı otomatik oynatmaya izin ver</translation>
+<translation id="1853782273088286010"><ph name="PRODUCT_NAME" /> ürününde yerleşik DNS istemcisinin kullanılıp kullanılmayacağını kontrol eder.
+
+      Bu, hangi DNS sunucularının kullanıldığını değil sadece sunucularla iletişim kurmak için kullanılan yazılım yığınını etkiler. Örneğin, işletim sistemi kurumsal DNS sunucusu kullanacak şekilde yapılandırılmışsa aynı sunucu yerleşik DNS istemcisi tarafından da kullanılır. Bununla birlikte, yerleşik DNS istemcisinin, "DNS-over-TLS" gibi DNS ile ilgili daha modern protokolleri kullanarak sunucularla farklı şekillerde iletişim kurması mümkündür.
+
+      Bu politika True (Doğru) değerine ayarlanırsa yerleşik DNS istemcisi (mevcutsa) kullanılır.
+
+      Bu politika false (yanlış) değerine ayarlanırsa dahili DNS istemcisi hiçbir zaman kullanılmaz.
+
+      Bu politika ayarlanmadan bırakılırsa dahili DNS istemcisi; MacOS, Android (Gizli DNS veya VPN etkinleştirilmediğinde) ve ChromeOS'ta varsayılan olarak etkinleştirilir ve kullanıcılar, dahili DNS istemcisini chrome://flags sayfasını düzenleyerek mi yoksa bir komut satırı işareti belirterek mi kullanacaklarını değiştirebilirler.</translation>
 <translation id="1857152770025485173">Bu politika, kullanıcının kara listeye alınmış URL'lerden web sayfalarını yüklemesini engeller. Kara liste, hangi URL'lerin kara listeye alınacağını belirten URL kalıplarının bir listesini sağlar.
 
       URL kalıplarının, https://www.chromium.org/administrators/url-blacklist-filter-format adresinde belirtilen biçime uygun olması gerekir.
@@ -1404,6 +1413,13 @@
           Bu politika isteğe bağlıdır. Ayarlanmadan bırakılırsa, hiçbir arama terimi değişikliği yapılmaz.
 
           Bu politika ancak 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
+<translation id="3049248142961638857">DHCP isteklerinde kullanılan cihazın ana makine adını belirler.
+
+      Bu politika boş olmayan bir dizeye ayarlanırsa o dize, DHCP isteği sırasında cihazın ana makine adı olarak kullanılır.
+
+      Dize; <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />, <ph name="LOCATION_PLACEHOLDER" /> değişkenlerini içerebilir. Ana makine adı olarak kullanılmadan önce cihazda bu değişkenlerin yerine değerler getirilir. Bu işlemin sonucunda ortaya çıkan değişikliğin geçerli bir ana makine adı olması gerekir (RFC 1035, bölüm 3.1 uyarınca).
+
+      Bu politika ayarlanmazsa veya değişiklikten sonraki değer, geçerli bir ana makine adı değilse DHCP isteğinde ana makine adı ayarlanmaz. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" /> ürününde WPAD (Otomatik Web Proxy Keşfi) optimizasyonunu kapatmanıza olanak verir.
 
@@ -2691,6 +2707,11 @@ politikayı geçersiz kılamaz.
 <translation id="5208240613060747912">Bildirim görüntülemelerine izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultNotificationsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
+<translation id="5212118847531454979">Beklemedeki bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> ürününün veya bir <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiği konusunda kullanıcıların bilgilendirileceği dönemi milisaniye cinsinden ayarlamanıza olanak tanır.
+
+      Bu zaman diliminde kullanıcı, güncelleme yapılması gerektiğine dair tekrar tekrar bilgilendirilir. <ph name="PRODUCT_OS_NAME" /> cihazları için yeniden başlatma bildirimi, <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> politikası gereği sistem tepsisinde görünür. <ph name="PRODUCT_NAME" /> tarayıcıları için uygulama menüsü, bildirim süresinin üçte biri geçtikten sonra yeniden başlatmanın gerekli olduğunu gösterecek şekilde değişir. Bu bildirim, bildirim süresinin üçte ikisi geçtikten sonra renk değiştirir ve bildirim süresinin tamamı geçtikten sonra tekrar renk değiştirir. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikası tarafından etkinleştirilen ek bildirimler, aynı programı takip eder.
+
+      Bu politika ayarlanmazsa varsayılan süre olan 604800000 milisaniye (bir hafta) kullanılır.</translation>
 <translation id="5212810195096589189">Sanal makine KSA izinlerini belirleme</translation>
 <translation id="5213038356678567351">Hiçbir zaman başka bir tarayıcıya geçişi tetiklememesi gereken web siteleri.</translation>
 <translation id="5219844027738217407">Bu politika Android uygulamalarında sadece mikrofonu etkiler. Bu politika doğru olarak ayarlandığında, istisnasız tüm Android uygulamaları için mikrofon kapatılır.</translation>
@@ -2956,6 +2977,9 @@ politikayı geçersiz kılamaz.
 
       Belirtilmezse, Varyasyon temeli URL'sinde değişiklik yapılmaz.</translation>
 <translation id="5561811616825571914">Oturum açma ekranında bu siteler için istemci sertifikalarını otomatik olarak seç</translation>
+<translation id="5564865786900450806"><ph name="PRODUCT_NAME" />, artık desteklenmeyen bir bilgisayarda veya işletim sisteminde çalışırken görüntülenen uyarıyı gizler.
+
+      Bu politika False (Yanlış) değerine ayarlanır veya hiç ayarlanmazsa bu tür desteklenmeyen bilgisayarlarda veya işletim sistemlerinde uyarı görünür.</translation>
 <translation id="5565178130821694365">Her iki günde bir (48 saat) şifre girişi gerekir</translation>
 <translation id="5566210228171064229">PIN ile ve PIN olmadan yazdırmaya izin ver</translation>
 <translation id="556865034069957245">Bu politika tam ekran modunun kullanımını kontrol eder. Burada, tüm <ph name="PRODUCT_NAME" /> kullanıcı arayüzü gizlenir ve sadece web içeriği görünür.
@@ -4524,6 +4548,9 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
           Bu ayarı devre dışı bırakırsanız sayfalardaki meta etiketler taranır.
 
           Bu politika ayarlanmazsa sayfalarda meta etiketler taranır.</translation>
+<translation id="829641334878002866">Beklemedeki bir güncellemenin uygulanması için bir <ph name="PRODUCT_OS_NAME" /> cihazın yeniden başlatılması gerektiğini belirten ilk bildirim ile <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> politikası tarafından belirtilen süre sonu arasındaki zamanı milisaniye cinsinden ayarlamanıza olanak tanır.
+
+      Bu politika ayarlanmazsa <ph name="PRODUCT_OS_NAME" /> cihazlarda varsayılan süre olan 259200000 milisaniye (üç gün) kullanılır.</translation>
 <translation id="8300455783946254851">Doğru değerine ayarlandığında, hücresel bağlantı kullanılırken <ph name="PRODUCT_OS_NAME" />, Files uygulamasında Google Drive senkronizasyonunu devre dışı bırakır. Bu durumda, veriler yalnızca Kablosuz veya Ethernet üzerinden bağlanıldığında Google Drive ile senkronize edilir.
 
          Hiç ayarlanmazsa veya Yanlış değerine ayarlanırsa kullanıcılar dosyaları hücresel bağlantılar üzerinden Google Drive'a aktarabilirler.</translation>

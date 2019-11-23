@@ -10,11 +10,10 @@
 
 async_test(t => {
   (function() {
-    let task = scheduler.postTask(t.step_func(() => {
+    let task_promise = scheduler.postTask(t.step_func(() => {
       // This task will run after |task| finishes.
       scheduler.postTask(t.step_func(() => {
-        assert_equals(task.status,  'completed');
-        task.result.then(t.step_func_done((res) => {
+        task_promise.then(t.step_func_done((res) => {
           assert_equals(res, 1234);
         }));
       }));
@@ -22,6 +21,6 @@ async_test(t => {
     }));
   })();
 
-}, 'Test task.result is resolved properly when accessed after the task runs');
+}, 'Test task result is resolved properly when accessed after the task runs');
 
 </script>

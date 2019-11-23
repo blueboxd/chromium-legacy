@@ -55,6 +55,7 @@
 #include "services/network/test/test_network_quality_tracker.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 #include "third_party/zlib/google/compression_utils.h"
+#include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/scoped_account_consistency.h"
@@ -1021,20 +1022,37 @@ INSTANTIATE_TEST_SUITE_P(UkmConsentParamBrowserTests,
 // Verify that sources kept alive in-memory will be discarded by UKM service in
 // one reporting cycle after the web contents are destroyed when the tab is
 // closed or when the user navigated away in the same tab.
-// Disabled as per crbug.com/1004296.
-IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DISABLED_EvictObsoleteSources) {
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, EvictObsoleteSources) {
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSyncForProfile(profile);
   Browser* sync_browser = CreateBrowser(profile);
+  ASSERT_TRUE(embedded_test_server()->Start());
 
-  // Navigate to a URL in a new tab.
-  AddTabAtIndexToBrowser(sync_browser, 1, GURL("https://www.chromium.org"),
-                         ui::PAGE_TRANSITION_TYPED, true);
-  ukm::SourceId source_id1 = ukm::GetSourceIdForWebContentsDocument(
-      sync_browser->tab_strip_model()->GetWebContentsAt(1));
+  ukm::SourceId source_id1 = ukm::kInvalidSourceId;
   ukm::SourceId source_id2 = ukm::kInvalidSourceId;
+
+  const std::vector<GURL> test_urls = {
+      embedded_test_server()->GetURL("/title1.html"),
+      embedded_test_server()->GetURL("/title2.html"),
+      embedded_test_server()->GetURL("/title3.html")};
+
+  // Open a blank new tab.
+  AddTabAtIndexToBrowser(sync_browser, 1, GURL(url::kAboutBlankURL),
+                         ui::PAGE_TRANSITION_TYPED, true);
+  // Gather source id from the NavigationHandle assigned to navigations that
+  // start with the expected URL.
+  content::NavigationHandleObserver tab_1_observer(
+      sync_browser->tab_strip_model()->GetActiveWebContents(), test_urls[0]);
+  // Navigate to a test URL in this new tab.
+  ui_test_utils::NavigateToURL(sync_browser, test_urls[0]);
+  // Get the source id associated to the last committed navigation, which could
+  // differ from the id from WebContents for example if the site executes a
+  // same-document navigation (e.g. history.pushState/replaceState). This
+  // navigation source id is the one marked as obsolete by UKM recorder.
+  source_id1 = ukm::ConvertToSourceId(tab_1_observer.navigation_id(),
+                                      ukm::SourceIdType::NAVIGATION_ID);
 
   // The UKM report contains this newly-created source.
   BuildAndStoreUkmLog();
@@ -1048,11 +1066,14 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DISABLED_EvictObsoleteSources) {
   EXPECT_TRUE(has_source_id1);
   EXPECT_FALSE(has_source_id2);
 
-  // Navigate to a URL in another new tab.
-  AddTabAtIndexToBrowser(sync_browser, 2, GURL("https://www.google.com"),
+  // Navigate to another URL in a new tab.
+  AddTabAtIndexToBrowser(sync_browser, 2, GURL(url::kAboutBlankURL),
                          ui::PAGE_TRANSITION_TYPED, true);
-  source_id2 = ukm::GetSourceIdForWebContentsDocument(
-      sync_browser->tab_strip_model()->GetWebContentsAt(2));
+  content::NavigationHandleObserver tab_2_observer(
+      sync_browser->tab_strip_model()->GetActiveWebContents(), test_urls[1]);
+  ui_test_utils::NavigateToURL(sync_browser, test_urls[1]);
+  source_id2 = ukm::ConvertToSourceId(tab_2_observer.navigation_id(),
+                                      ukm::SourceIdType::NAVIGATION_ID);
 
   // The next report should again contain source 1 because the tab is still
   // alive, and also source 2 associated to the new tab that has just been
@@ -1087,7 +1108,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, DISABLED_EvictObsoleteSources) {
 
   // Navigate to a new URL in the current tab, this will mark source 2 that was
   // in the current tab as obsolete.
-  ui_test_utils::NavigateToURL(sync_browser, GURL("https://www.wikipedia.org"));
+  ui_test_utils::NavigateToURL(sync_browser, test_urls[2]);
 
   // The previous report was the last one that could potentially contain entries
   // for source 1. Source 1 is thus no longer included in future reports. This

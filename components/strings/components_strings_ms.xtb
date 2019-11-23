@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Jenis kad ini tidak disokong</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Cuba hubungi pentadbir sistem.</translation>
+<translation id="1736420071277903564">Komputer</translation>
 <translation id="1739107442478692187">Pelanggaran data berlaku pada tapak atau apl yang anda gunakan. Chrome mengesyorkan anda menyemak kata laluan yang disimpan dan menukar kata laluan anda di <ph name="ORIGIN" /> sekarang.</translation>
 <translation id="1740951997222943430">Masukkan bulan tamat tempoh yang sah</translation>
 <translation id="1741613555002899862">Mesti dinyatakan dan merupakan rentetan yang sah apabila DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">Penyerang yang berada di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> boleh memasang apl berbahaya yang boleh merosakkan peranti anda, menambahkan caj yang tersembunyi pada bil mudah alih anda atau mencuri maklumat peribadi anda. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Tiada Internet</translation>
 <translation id="2230458221926704099">Betulkan sambungan anda menggunakan <ph name="BEGIN_LINK" />apl diagnostik<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Untuk anda</translation>
 <translation id="2239100178324503013">Hantar sekarang</translation>
 <translation id="2248949050832152960">Gunakan WebAuthn</translation>
 <translation id="2250931979407627383">Jahitan tepi kiri</translation>
@@ -373,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Tinggalkan</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Amaran keselamatan</translation>
 <translation id="2699302886720511147">Kad yang Diterima</translation>
 <translation id="2702801445560668637">Senarai Bacaan</translation>
 <translation id="2704283930420550640">Nilai tidak sepadan dengan format.</translation>
@@ -475,6 +478,7 @@
 <translation id="3207960819495026254">Ditandai halaman</translation>
 <translation id="3209034400446768650">Halaman mungkin mengenakan bayaran berbentuk wang</translation>
 <translation id="3209080785413271048">Gunakan Windows Hello untuk mengesahkan kaedah pembayaran anda yang disimpan.</translation>
+<translation id="3212581601480735796">Aktiviti anda pada <ph name="HOSTNAME" /> sedang dipantau</translation>
 <translation id="3215092763954878852">Tidak dapat menggunakan WebAuthn</translation>
 <translation id="3225919329040284222">Pelayan memberikan sijil yang tidak sepadan dengan jangkaan terbina dalam. Jangkaan ini disertakan untuk tapak web dengan keselamatan tinggi tertentu untuk melindungi anda.</translation>
 <translation id="3226128629678568754">Tekan butang muat semula untuk menyerahkan kembali data yang diperlukan untuk memuatkan halaman.</translation>
@@ -533,6 +537,7 @@
 <translation id="3528485271872257980">Coklat Gelap</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Sekurang-kurangnya 1 item pada peranti yang disegerakkan}=1{1 item (dan beberapa lagi pada peranti yang disegerakkan)}other{# item (dan beberapa lagi pada peranti yang disegerakkan)}}</translation>
 <translation id="3539171420378717834">Simpan salinan kad ini pada peranti ini</translation>
+<translation id="3553513561058684206">Untuk Anda</translation>
 <translation id="3566021033012934673">Sambungan anda tidak diperibadikan</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Halaman terbenam di <ph name="SITE" /> menyatakan</translation>
@@ -611,6 +616,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Kad telah tamat tempoh</translation>
 <translation id="3906600011954732550">B5-Ekstra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Gunakan WebAuthn dan bukan CVC?</translation>
 <translation id="3946209740501886391">Sentiasa tanya pada tapak ini</translation>
@@ -763,6 +769,7 @@
 <translation id="4594403342090139922">&amp;Buat asal Pemadaman</translation>
 <translation id="4597348597567598915">Saiz 8</translation>
 <translation id="4600854749408232102">C6/C5 (Sampul Surat)</translation>
+<translation id="4613966523036881546">Sijil untuk sambungan ini tidak dipercayai oleh Google Chrome kerana sijil ini diketahui telah digunakan untuk pemintasan dan pemantauan rangkaian.</translation>
 <translation id="4635654612248442824"><ph name="ORIGIN" /> tapak ini telah meminta agar dasar asal
     dikenakan pada semua permintaannya, tetapi dasar ini tidak dapat dikenakan pada masa ini.</translation>
 <translation id="464342062220857295">Ciri carian</translation>
@@ -1468,6 +1475,7 @@ Butiran tambahan:
 <translation id="8103161714697287722">Kaedah Pembayaran</translation>
 <translation id="8105368624971345109">Matikan</translation>
 <translation id="8118489163946903409">Kaedah pembayaran</translation>
+<translation id="8124023448510659215">Sijil untuk sambungan ini tidak dipercayai oleh Chromium kerana sijil ini diketahui telah digunakan untuk pemintasan dan pemantauan rangkaian.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" tidak dipasang dengan betul pada komputer atau rangkaian anda. Minta pentadbir IT anda menyelesaikan isu ini.</translation>
 <translation id="8131740175452115882">Sahkan</translation>
 <translation id="8149426793427495338">Komputer anda dalam mod tidur.</translation>
@@ -1536,7 +1544,6 @@ Butiran tambahan:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kad kredit}other{# kad kredit}}</translation>
 <translation id="8473863474539038330">Alamat dan pelbagai lagi</translation>
 <translation id="8479754468255770962">Kokot bawah sebelah kiri</translation>
-<translation id="8481133456511676116">Adakah anda maksudkan <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Log masuk ke Chrome untuk menggunakan kad daripada Akaun Google anda</translation>
 <translation id="8488350697529856933">Diguna pakai untuk</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mengambil masa terlalu lama untuk bertindak balas.</translation>
@@ -1612,6 +1619,8 @@ Butiran tambahan:
 <translation id="8957210676456822347">Keizinan Portal Tawanan</translation>
 <translation id="8962950042226115166">Tapak mencurigakan</translation>
 <translation id="8968766641738584599">Simpan kad</translation>
+<translation id="8969267497192857913">Apa sahaja yang anda taip, sebarang halaman yang anda lihat atau sebarang aktiviti lain di web sedang diperhatikan dan kandungan pada tapak boleh diubah tanpa pengetahuan anda.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Sijil pelayan telah tamat tempoh.</translation>
 <translation id="8975012916872825179">Merangkumi maklumat seperti nombor telefon, alamat e-mel dan alamat penghantaran</translation>
 <translation id="8975263830901772334">Nama fail yang anda cetak</translation>

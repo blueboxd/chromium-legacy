@@ -210,10 +210,13 @@ WebViewImpl* WebViewImpl::CreateChild(const std::string& session_id,
   WebViewImpl* child = new WebViewImpl(
       target_id, w3c_compliant_, this, browser_info_, std::move(child_client),
       nullptr,
-      navigation_tracker_->IsNonBlocking() ? PageLoadStrategy::kNone
-                                           : PageLoadStrategy::kNormal);
-  if (!navigation_tracker_->IsNonBlocking()) {
-    PageLoadStrategy* pls = navigation_tracker_.get();
+      IsNonBlocking() ? PageLoadStrategy::kNone : PageLoadStrategy::kNormal);
+  if (!IsNonBlocking()) {
+    // Find Navigation Tracker for the top of the WebViewImpl hierarchy
+    const WebViewImpl* currentView = this;
+    while (currentView->parent_)
+      currentView = currentView->parent_;
+    PageLoadStrategy* pls = currentView->navigation_tracker_.get();
     NavigationTracker* nt = static_cast<NavigationTracker*>(pls);
     child->client_->AddListener(static_cast<DevToolsEventListener*>(nt));
   }

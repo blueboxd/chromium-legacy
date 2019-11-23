@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">シェルフは常に非表示です</translation>
 <translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> がインターネットに接続されているかご確認ください。</translation>
 <translation id="9002566407876343676">開く</translation>
-<translation id="9039076430527029379"><ph name="PAGE_NUMBER" />ページの<ph name="ROW_NUMBER" />行、<ph name="COLUMN_NUMBER" />列に移動します。</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="9059834730836941392">通知を折りたたむ</translation>
 <translation id="9150735707954472829">タブ</translation>

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/common/http/structured_header.h"
 
+#include <cmath>
 #include <string>
 #include <utility>
 
@@ -33,9 +34,14 @@ constexpr char kKeyChars13[] = DIGIT LCALPHA "_-*";
 #undef UCALPHA
 
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13#section-3.4
-// TODO(1011101): Add support for negative integers.
 constexpr int64_t kMaxInteger = 999999999999999L;
-constexpr int64_t kMinInteger = 0L;
+constexpr int64_t kMinInteger = -999999999999999L;
+
+// Smallest value which is too large for an sh-float. This is the smallest
+// double which will round up to 1e14 when serialized, which exceeds the range
+// for sh-float. Any float less than this should round down. This behaviour is
+// verified by unit tests.
+constexpr double kTooLargeFloat = 1e14 - 0.05;
 
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-09#section-3.8
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13#section-3.6
@@ -119,9 +125,6 @@ class StructuredHeaderParser {
   }
 
   // Parses an Item ([SH09] 4.2.7, [SH13] 4.2.3).
-  // Currently only limited types (non-negative integers, strings, tokens and
-  // byte sequences) are supported.
-  // TODO(1011101): Add support for other types.
   base::Optional<Item> ReadItem() {
     if (input_.empty()) {
       DVLOG(1) << "ReadItem: unexpected EOF";
@@ -132,8 +135,10 @@ class StructuredHeaderParser {
         return ReadString();
       case '*':
         return ReadByteSequence();
+      case '?':
+        return ReadBoolean();
       default:
-        if (base::IsAsciiDigit(input_.front()))
+        if (input_.front() == '-' || base::IsAsciiDigit(input_.front()))
           return ReadNumber();
         else
           return ReadToken();
@@ -293,10 +298,17 @@ class StructuredHeaderParser {
   }
 
   // Parses a Number ([SH09] 4.2.8, [SH13] 4.2.4).
-  // Currently only supports non-negative integers.
   base::Optional<Item> ReadNumber() {
+    bool is_negative = ConsumeChar('-');
+    bool is_float = false;
+    size_t decimal_position = 0;
     size_t i = 0;
     for (; i < input_.size(); ++i) {
+      if (i > 0 && input_[i] == '.' && !is_float) {
+        is_float = true;
+        decimal_position = i;
+        continue;
+      }
       if (!base::IsAsciiDigit(input_[i]))
         break;
     }
@@ -304,18 +316,45 @@ class StructuredHeaderParser {
       LogParseError("ReadNumber", "DIGIT");
       return base::nullopt;
     }
+    if (!is_float) {
+      // [SH13] restricts the range of integers further.
+      if (version_ == kDraft13 && i > 15) {
+        LogParseError("ReadNumber", "integer too long");
+        return base::nullopt;
+      }
+    } else {
+      if (i > 16) {
+        LogParseError("ReadNumber", "float too long");
+        return base::nullopt;
+      }
+      if (i - decimal_position > 7) {
+        LogParseError("ReadNumber", "too many digits after decimal");
+        return base::nullopt;
+      }
+      if (i == decimal_position) {
+        LogParseError("ReadNumber", "no digits after decimal");
+        return base::nullopt;
+      }
+    }
     std::string output_number_string(input_.substr(0, i));
     input_.remove_prefix(i);
 
-    // Convert to a 64-bit signed integer, and return if the conversion is
-    // successful.
-    int64_t n;
-    if (!base::StringToInt64(output_number_string, &n))
-      return base::nullopt;
-    // [SH13] restricts the range of integers further.
-    if (version_ == kDraft13 && n > kMaxInteger)
-      return base::nullopt;
-    return Item(n);
+    if (is_float) {
+      // Convert to a 64-bit double, and return if the conversion is
+      // successful.
+      double f;
+      if (!base::StringToDouble(output_number_string, &f))
+        return base::nullopt;
+      return Item(is_negative ? -f : f);
+    } else {
+      // Convert to a 64-bit signed integer, and return if the conversion is
+      // successful.
+      int64_t n;
+      if (!base::StringToInt64(output_number_string, &n))
+        return base::nullopt;
+      DCHECK(version_ != kDraft13 || (n <= kMaxInteger && n >= kMinInteger));
+      return Item(is_negative ? -n : n);
+    }
   }
 
   // Parses a String ([SH09] 4.2.9, [SH13] 4.2.5).
@@ -382,6 +421,23 @@ class StructuredHeaderParser {
     return Item(std::move(binary), Item::kByteSequenceType);
   }
 
+  // Parses a Boolean ([SH13] 4.2.8).
+  // Note that this only parses ?0 and ?1 forms from SH version 10+, not the
+  // previous ?F and ?T, which were not needed by any consumers of SH version 9.
+  base::Optional<Item> ReadBoolean() {
+    if (!ConsumeChar('?')) {
+      LogParseError("ReadBoolean", "'?'");
+      return base::nullopt;
+    }
+    if (ConsumeChar('1')) {
+      return Item(true);
+    }
+    if (ConsumeChar('0')) {
+      return Item(false);
+    }
+    return base::nullopt;
+  }
+
   void SkipWhitespaces() {
     input_ = base::TrimWhitespaceASCII(input_, base::TRIM_LEADING);
   }
@@ -435,7 +491,7 @@ class StructuredHeaderSerializer {
     // Serializes an Item ([SH13] 4.1.6).
     if (value.is_string()) {
       output_ << "\"";
-      for (const char& c : value.string()) {
+      for (const char& c : value.GetString()) {
         if (!IsPrintableASCII(c))
           return false;
         if (c == '\\' || c == '\"')
@@ -446,24 +502,76 @@ class StructuredHeaderSerializer {
       return true;
     }
     if (value.is_token()) {
-      if (!value.string().size() || !base::IsAsciiAlpha(value.string().front()))
+      if (!value.GetString().size() ||
+          !base::IsAsciiAlpha(value.GetString().front()))
         return false;
-      if (value.string().find_first_not_of(kTokenChars) != std::string::npos)
+      if (value.GetString().find_first_not_of(kTokenChars) != std::string::npos)
         return false;
-      output_ << value.string();
+      output_ << value.GetString();
       return true;
     }
     if (value.is_byte_sequence()) {
       output_ << "*";
       output_ << base::Base64Encode(
-          base::as_bytes(base::make_span(value.string())));
+          base::as_bytes(base::make_span(value.GetString())));
       output_ << "*";
       return true;
     }
     if (value.is_integer()) {
-      if (value.integer() > kMaxInteger || value.integer() < kMinInteger)
+      if (value.GetInteger() > kMaxInteger || value.GetInteger() < kMinInteger)
         return false;
-      output_ << value.integer();
+      output_ << value.GetInteger();
+      return true;
+    }
+    if (value.is_float()) {
+      double float_value = value.GetFloat();
+      if (!std::isfinite(float_value) || fabs(float_value) >= kTooLargeFloat)
+        return false;
+
+      // Handle sign separately to simplify the rest of the formatting.
+      if (float_value < 0)
+        output_ << "-";
+      // Unconditionally take absolute value to ensure that -0 is serialized as
+      // "0.0", with no negative sign, as required by spec. (4.1.5, step 2).
+      float_value = fabs(float_value);
+
+      // Use standard library functions to write the float, and then truncate
+      // if necessary to conform to spec.
+
+      // To handle rounding correctly, use the number of integer digits before
+      // rounding to determine how many fractional digits to round to and print.
+      // 18 bytes is sufficient in all cases (maximum of 15 significant digits,
+      // plus the decimal point, and a null terminator. In any cases where
+      // rounding the value increases the number of characters output, the bytes
+      // truncated by snprintf would all be '0' characters, which would have
+      // been trimmed in the next step anyway.
+      char buffer[17];
+
+      if (float_value < 1e9) {
+        base::snprintf(buffer, base::size(buffer), "%#.6f", float_value);
+      } else if (float_value < 1e10) {
+        base::snprintf(buffer, base::size(buffer), "%#.5f", float_value);
+      } else if (float_value < 1e11) {
+        base::snprintf(buffer, base::size(buffer), "%#.4f", float_value);
+      } else if (float_value < 1e12) {
+        base::snprintf(buffer, base::size(buffer), "%#.3f", float_value);
+      } else if (float_value < 1e13) {
+        base::snprintf(buffer, base::size(buffer), "%#.2f", float_value);
+      } else {
+        base::snprintf(buffer, base::size(buffer), "%#.1f", float_value);
+      }
+      // Strip any trailing 0s after the decimal point, but leave at least one
+      // digit after it in all cases. (So 1.230000 becomes 1.23, but 1.000000
+      // becomes 1.0.)
+      base::StringPiece formatted_number(buffer);
+      auto truncate_index = formatted_number.find_last_not_of('0');
+      if (formatted_number[truncate_index] == '.')
+        truncate_index++;
+      output_ << formatted_number.substr(0, truncate_index + 1);
+      return true;
+    }
+    if (value.is_boolean()) {
+      output_ << (value.GetBoolean() ? "?1" : "?0");
       return true;
     }
     return false;
@@ -538,7 +646,11 @@ Item::Item(std::string&& value, Item::ItemType type)
   DCHECK(type_ == kStringType || type_ == kTokenType ||
          type_ == kByteSequenceType);
 }
+Item::Item(const char* value, Item::ItemType type)
+    : Item(std::string(value), type) {}
 Item::Item(int64_t value) : type_(kIntegerType), integer_value_(value) {}
+Item::Item(double value) : type_(kFloatType), float_value_(value) {}
+Item::Item(bool value) : type_(kBooleanType), boolean_value_(value) {}
 
 bool operator==(const Item& lhs, const Item& rhs) {
   if (lhs.type_ != rhs.type_)
@@ -552,10 +664,13 @@ bool operator==(const Item& lhs, const Item& rhs) {
       return lhs.string_value_ == rhs.string_value_;
     case Item::kIntegerType:
       return lhs.integer_value_ == rhs.integer_value_;
-    default:
-      NOTREACHED();
-      return false;
+    case Item::kFloatType:
+      return lhs.float_value_ == rhs.float_value_;
+    case Item::kBooleanType:
+      return lhs.boolean_value_ == rhs.boolean_value_;
   }
+  NOTREACHED();
+  return false;
 }
 
 ParameterizedMember::ParameterizedMember(const ParameterizedMember&) = default;

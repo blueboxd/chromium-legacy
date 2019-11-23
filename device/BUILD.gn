@@ -329,6 +329,7 @@ test("device_unittests") {
       "vr/orientation/orientation_device_unittest.cc",
       "vr/util/fps_meter_unittest.cc",
       "vr/util/sliding_average_unittest.cc",
+      "vr/util/stage_utils_unittest.cc",
       "vr/vr_device_base_unittest.cc",
     ]
 

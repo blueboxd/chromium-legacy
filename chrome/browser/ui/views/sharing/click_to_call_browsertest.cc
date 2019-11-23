@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -22,7 +23,10 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/browser/ui/views/hover_button.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/sharing/sharing_browsertest.h"
+#include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -31,6 +35,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/events/base_event_utils.h"
 #include "url/gurl.h"
 
 namespace {
@@ -392,6 +397,53 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, CloseTabWithBubble) {
   // Regression test for http://crbug.com/1000934.
   sessions_helper::CloseTab(/*browser_index=*/0, /*tab_index=*/0);
 }
+
+// TODO(himanshujaju) - Add chromeos test for same flow.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest, LeftClick_ChooseDevice) {
+  Init(sync_pb::SharingSpecificFields::CLICK_TO_CALL,
+       sync_pb::SharingSpecificFields::UNKNOWN);
+  auto devices = sharing_service()->GetDeviceCandidates(
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
+  ASSERT_EQ(1u, devices.size());
+
+  base::RunLoop run_loop;
+  PageActionIconView* click_to_call_icon =
+      GetPageActionIconView(PageActionIconType::kClickToCall);
+  ASSERT_FALSE(click_to_call_icon->GetVisible());
+
+  ClickToCallUiController* controller =
+      ClickToCallUiController::GetOrCreateFromWebContents(web_contents());
+  controller->set_on_dialog_shown_closure_for_testing(run_loop.QuitClosure());
+
+  // Click on the tel link to trigger the bubble view.
+  web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::ASCIIToUTF16("document.querySelector('a').click();"),
+      base::NullCallback());
+  // Wait until the bubble is visible.
+  run_loop.Run();
+
+  ASSERT_TRUE(click_to_call_icon->GetVisible());
+
+  SharingDialogView* dialog =
+      static_cast<SharingDialogView*>(controller->dialog());
+  EXPECT_EQ(SharingDialogType::kDialogWithDevicesMaybeApps,
+            dialog->GetDialogType());
+  EXPECT_EQ(1u, dialog->data_.devices.size());
+  EXPECT_EQ(dialog->data_.devices.size() + dialog->data_.apps.size(),
+            dialog->dialog_buttons_.size());
+
+  const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                             ui::EventTimeForNow(), 0, 0);
+
+  // Choose first device.
+  dialog->ButtonPressed(dialog->dialog_buttons_[0], event);
+
+  CheckLastReceiver(devices[0]->guid());
+  // Defined in tel.html
+  CheckLastSharingMessageSent("0123456789");
+}
+#endif
 
 class ClickToCallPolicyTest
     : public policy::PolicyTest,

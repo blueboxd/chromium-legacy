@@ -12,5 +12,5 @@ interface IProfile {
   void clearBrowsingData(in int[] dataTypes, long fromMillis, long toMillis,
           in IObjectWrapper completionCallback) = 1;
 
-  String getPath() = 2;
+  String getName() = 2;
 }

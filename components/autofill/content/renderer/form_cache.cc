@@ -120,9 +120,9 @@ const char* MapTypePredictionToAutocomplete(base::StringPiece type) {
     return kSupportedAutocompleteTypes[14];
   if (type == "ADDRESS_HOME_LINE3")
     return kSupportedAutocompleteTypes[15];
-  if (type == "ADDRESS_HOME_CITY")
-    return kSupportedAutocompleteTypes[16];
   if (type == "ADDRESS_HOME_STATE")
+    return kSupportedAutocompleteTypes[16];
+  if (type == "ADDRESS_HOME_CITY")
     return kSupportedAutocompleteTypes[17];
   if (type == "ADDRESS_HOME_DEPENDENT_LOCALITY")
     return kSupportedAutocompleteTypes[18];

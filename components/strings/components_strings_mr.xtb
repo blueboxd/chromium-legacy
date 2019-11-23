@@ -175,6 +175,7 @@
 <translation id="173080396488393970">या प्रकारच्या कार्डला सहाय्य नाही</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">सिस्टम प्रशासकाशी संपर्क साधण्याचा प्रयत्न करा.</translation>
+<translation id="1736420071277903564">काँप्युटर</translation>
 <translation id="1739107442478692187">तुम्ही वापरत असलेल्या साइट किंवा अ‍ॅपवर डेटा भंग झाला आहे. तुमचे सेव्ह केलेले पासवर्ड तपासण्याची आणि तुमचा <ph name="ORIGIN" /> वरील पासवर्ड आता बदलण्याची Chrome शिफारस करते.</translation>
 <translation id="1740951997222943430">वैध समाप्ती महिना एंटर करा</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode हे <ph name="SECURE_DNS_MODE_SECURE" /> असेल तेव्हा धोरण नमूद केलेले असणे आणि एक योग्य स्ट्रिंग असणे आवश्यक आहे.</translation>
@@ -609,6 +610,7 @@
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3901925938762663762">कार्ड कालबाह्य झाले आहे</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">टॅबलेट</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">CVC ऐवजी WebAuthn वापरायचे का?</translation>
 <translation id="3946209740501886391">नेहमी या साइटवर विचारा</translation>
@@ -1535,7 +1537,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8473863474539038330">पत्ते आणि बरेच काही</translation>
 <translation id="8479754468255770962">स्टेपल बॉटम लेफ्ट</translation>
-<translation id="8481133456511676116">तुम्हाला <ph name="DOMAIN" /> असे म्हणायचे आहे का?</translation>
 <translation id="8483780878231876732">आपल्या Google खात्यावरून कार्ड वापरण्यासाठी Chrome मध्ये साइन इन करा</translation>
 <translation id="8488350697529856933">यावर लागू होते</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> नी प्रतिसाद देण्यात बराच वेळ घेतला.</translation>

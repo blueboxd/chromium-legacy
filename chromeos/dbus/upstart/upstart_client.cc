@@ -42,10 +42,10 @@ class UpstartClientImpl : public UpstartClient {
         arc::kArcServiceName, dbus::ObjectPath(arc::kArcServicePath));
     arc_proxy->ConnectToSignal(
         arc::kArcInterfaceName, arc::kArcStopped,
-        base::Bind(&UpstartClientImpl::ArcStoppedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&UpstartClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&UpstartClientImpl::ArcStoppedReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&UpstartClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~UpstartClientImpl() override = default;

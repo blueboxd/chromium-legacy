@@ -61,9 +61,9 @@
 if (window.internals)
     internals.settings.setScrollAnimatorEnabled(false);
 
-// TODO(crbug.com/953847): Support other platforms or use calculated expectations.
 let platform = navigator.userAgent.includes("Linux") ? "linux" :
                navigator.userAgent.includes("Windows") ? "win" :
+               navigator.userAgent.includes("Mac OS X") ? "mac" :
                (() => { throw "Platform unsupported. See crbug.com/953847"; })();
 
 window.onload = () => {
@@ -76,6 +76,10 @@ window.onload = () => {
   const SCROLL_DELTA = 50;
 
   promise_test (async () => {
+    // Scrollbars on Mac don't have arrows. This test is irrelevant.
+    if(platform == "mac")
+      return;
+
     await waitForCompositorCommit();
     resetScrollOffset(standardDivFast);
 
@@ -88,19 +92,19 @@ window.onload = () => {
     // Click on the Up arrow for standardRectFast.
     x = standardRectFast.right - BUTTON_WIDTH / 2;
     y = standardRectFast.top + BUTTON_WIDTH / 2;
-	await mouseClickOn(x, y);
+    await mouseClickOn(x, y);
     assert_equals(standardDivFast.scrollTop, 0, "Pressing the up arrow didn't scroll.");
 
     // Click on the Right arrow for standardRectFast.
     x = standardRectFast.right - SCROLL_CORNER - BUTTON_WIDTH / 2;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
-	await mouseClickOn(x, y);
+    await mouseClickOn(x, y);
     assert_equals(standardDivFast.scrollLeft, 40, "Pressing the right arrow didn't scroll.");
 
     // Click on the Left arrow for standardRectFast.
     x = standardRectFast.left + BUTTON_WIDTH / 2;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
-	await mouseClickOn(x, y);
+    await mouseClickOn(x, y);
     assert_equals(standardDivFast.scrollLeft, 0, "Pressing the left arrow didn't scroll.");
   }, "Test mouse click on non-custom composited div scrollbar arrows.");
 
@@ -109,6 +113,7 @@ window.onload = () => {
     resetScrollOffset(standardDivFast);
 
     // Click on the track part just above the down arrow.
+    assert_equals(standardDivFast.scrollTop, 0, "Div is not at 0 offset.");
     let x = standardRectFast.right - BUTTON_WIDTH / 2;
     let y = standardRectFast.bottom - SCROLL_CORNER - BUTTON_WIDTH - 2;
     await mouseClickOn(x, y);
@@ -116,20 +121,20 @@ window.onload = () => {
 
     // Click on the track part just below the up arrow.
     x = standardRectFast.right - BUTTON_WIDTH / 2;
-    y = standardRectFast.top + BUTTON_WIDTH + 2;
-	await mouseClickOn(x, y);
+    y = standardRectFast.top + (platform == "mac" ? 0 : BUTTON_WIDTH) + 2;
+    await mouseClickOn(x, y);
     assert_equals(standardDivFast.scrollTop, 0, "Pressing the up trackpart didn't scroll.");
 
     // Click on the track part just to the left of the right arrow.
     x = standardRectFast.right - SCROLL_CORNER - BUTTON_WIDTH - 2;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
-	await mouseClickOn(x, y);
+    await mouseClickOn(x, y);
     assert_equals(standardDivFast.scrollLeft, 74, "Pressing the right trackpart didn't scroll.");
 
     // Click on the track part just to the right of the left arrow.
-    x = standardRectFast.left + BUTTON_WIDTH + 2;
+    x = standardRectFast.left + (platform == "mac" ? 0 : BUTTON_WIDTH) + 2;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
-	await mouseClickOn(x, y);
+    await mouseClickOn(x, y);
     assert_equals(standardDivFast.scrollLeft, 0, "Pressing the left trackpart didn't scroll.");
   }, "Test mouse click on non-custom composited div scrollbar empty trackparts.");
 
@@ -137,40 +142,9 @@ window.onload = () => {
     await waitForCompositorCommit();
     resetScrollOffset(standardDivFast);
 
-    // Testing forward scroll on vertical scrollbar.
-    let x = standardRectFast.right - BUTTON_WIDTH / 2;
-    let y = standardRectFast.bottom - SCROLL_CORNER - BUTTON_WIDTH - 15;
-    await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
-    let forward_offset = {linux: 915, win: 794}[platform];
-    assert_equals(standardDivFast.scrollTop, forward_offset, "Shift + click forward didn't scroll.");
-
-    // Testing backward scroll on vertical scrollbar.
-    x = standardRectFast.right - BUTTON_WIDTH / 2;
-    y = standardRectFast.top + BUTTON_WIDTH + 15;
-    let backward_offset = {linux: 0, win: 144}[platform];
-    await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
-    assert_equals(standardDivFast.scrollTop, backward_offset, "Shift + click backward didn't scroll.");
-
-    // Testing forward scroll on horizontal scrollbar.
-    x = standardRectFast.right - SCROLL_CORNER - BUTTON_WIDTH - 15;
-    y = standardRectFast.bottom - BUTTON_WIDTH / 2;
-    await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
-    assert_equals(standardDivFast.scrollLeft, forward_offset, "Shift + click forward didn't scroll.");
-
-    // Testing backward scroll on horizontal scrollbar.
-    x = standardRectFast.left + BUTTON_WIDTH + 15;
-    y = standardRectFast.bottom - BUTTON_WIDTH / 2;
-    await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
-    assert_equals(standardDivFast.scrollLeft, backward_offset, "Shift + click backward didn't scroll.");
-  }, "Test shift + click on non-custom composited scrollbars.");
-
-  promise_test (async () => {
-    await waitForCompositorCommit();
-    resetScrollOffset(standardDivFast);
-
     // Testing the vertical scrollbar thumb.
     let x = standardRectFast.right - TRACK_WIDTH / 2;
-    let y = standardRectFast.top + BUTTON_WIDTH + 5;
+    let y = standardRectFast.top + (platform == "mac" ? 0 : BUTTON_WIDTH) + 2;
 
     await mouseMoveTo(x, y);
     await mouseDownAt(x, y);
@@ -181,43 +155,7 @@ window.onload = () => {
 
     await mouseMoveTo(x, y);
     assert_equals(standardDivFast.scrollTop, 0, "Vertical thumb drag beyond the track and back should not cause a scroll.");
-
-    y += SCROLL_DELTA;
-    await mouseMoveTo(x, y);
-    assert_equals(standardDivFast.scrollTop, 915, "Vertical thumb drag downwards did not scroll as expected.");
-
-    y -= SCROLL_DELTA;
-    await mouseMoveTo(x, y);
-    assert_equals(standardDivFast.scrollTop, 0, "Vertical thumb drag upwards did not scroll as expected.");
-
-    await mouseUpAt(x, y);
-    assert_equals(standardDivFast.scrollTop, 0, "Mouseup on vertical scrollbar thumb is not expected to scroll.");
-
-    // Testing the horizontal scrollbar thumb.
-    x = standardRectFast.left + BUTTON_WIDTH + 5;
-    y = standardRectFast.bottom - TRACK_WIDTH / 2;
-
-    await mouseMoveTo(x, y);
-    await mouseDownAt(x, y);
-    assert_equals(standardDivFast.scrollLeft, 0, "Mousedown on horizontal scrollbar thumb is not expected to scroll.");
-
-    await mouseMoveTo(x-10, y);
-    assert_equals(standardDivFast.scrollLeft, 0, "Horizontal thumb drag beyond the track should not cause a scroll.");
-
-    await mouseMoveTo(x, y);
-    assert_equals(standardDivFast.scrollLeft, 0, "Horizontal thumb drag beyond the track and back should not cause a scroll.");
-
-    x += SCROLL_DELTA;
-    await mouseMoveTo(x, y);
-    assert_equals(standardDivFast.scrollLeft, 915, "Horizontal thumb drag towards the right did not scroll as expected.");
-
-    x -= SCROLL_DELTA;
-    await mouseMoveTo(x, y);
-    assert_equals(standardDivFast.scrollLeft, 0, "Horizontal thumb drag towards the left did not scroll as expected.");
-
-    await mouseUpAt(x, y);
-    assert_equals(standardDivFast.scrollLeft, 0, "Mouseup on horizontal scrollbar thumb is not expected to scroll.");
-  }, "Test mouse drags on non-custom composited div scrollbar thumb.");
+  }, "Test thumb drags beyond scrollbar track.");
 
   promise_test (async () => {
     await waitForCompositorCommit();
@@ -225,11 +163,11 @@ window.onload = () => {
 
     // Testing the vertical scrollbar thumb.
     let x = standardRectFast.right - TRACK_WIDTH / 2;
-    let y = standardRectFast.top + BUTTON_WIDTH + 5;
+    let y = standardRectFast.top + (platform == "mac" ? 0 : BUTTON_WIDTH) + 2;
     let asc_increments = [15, 10, 7, 6, 2];
-    let asc_offsets = {linux: [549, 915, 915, 915, 915], win: [361, 601, 770, 915, 915]}[platform];
+    let asc_offsets = {linux: [549, 915, 915, 915, 915], win: [361, 601, 770, 915, 915], mac: [211, 351, 450, 534, 563]}[platform];
     let desc_increments = [3, 2, 5, 9, 21];
-    let desc_offsets = {linux: [915, 915, 915, 768, 0], win: [890, 842, 722, 505, 0]}[platform];
+    let desc_offsets = {linux: [915, 915, 915, 768, 0], win: [890, 842, 722, 505, 0], mac: [520, 492, 422, 295, 0]}[platform];
 
     await mouseMoveTo(x, y);
     await mouseDownAt(x, y);

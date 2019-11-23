@@ -1255,7 +1255,7 @@ TEST_P(CookieStoreManagerTest, GetSubscriptionsFromWrongOrigin) {
   EXPECT_FALSE(wrong_subscriptions_opt.has_value());
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CookieStoreManagerTest,
                          testing::Bool() /* reset_storage_during_test */);
 

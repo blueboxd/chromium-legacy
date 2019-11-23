@@ -15,7 +15,7 @@ cr.exportPath('settings');
 Polymer({
   is: 'settings-multidevice-feature-item',
 
-  behaviors: [MultiDeviceFeatureBehavior],
+  behaviors: [MultiDeviceFeatureBehavior, settings.RouteOriginBehavior],
 
   properties: {
     /** @type {!settings.MultiDeviceFeature} */
@@ -25,7 +25,7 @@ Polymer({
      * If it is truthy, the item should be actionable and clicking on it should
      * navigate to the provided route. Otherwise, the item is simply not
      * actionable.
-     * @type {settings.Route|undefined}
+     * @type {!settings.Route|undefined}
      */
     subpageRoute: Object,
 
@@ -35,6 +35,13 @@ Polymer({
      * @type {URLSearchParams|undefined}
      */
     subpageRouteUrlSearchParams: Object,
+  },
+
+  /** settings.RouteOriginBehavior override */
+  route_: settings.routes.MULTIDEVICE_FEATURES,
+
+  ready: function() {
+    this.addFocusConfig_(this.subpageRoute, '#subpageButton');
   },
 
   /**

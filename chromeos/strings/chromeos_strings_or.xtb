@@ -1,4 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="or">
+<translation id="1482734542997480527">ଏହି ଡିଭାଇସ୍‌କୁ <ph name="ENROLLMENT_DOMAIN" /> ପରିଚାଳନା କରିଥାଏ ଏବଂ ଆପଣଙ୍କର କାର୍ଯ୍ୟକଳାପ ନିରୀକ୍ଷଣ କରିବାକୁ ସକ୍ଷମ ହୋଇପାରନ୍ତି।</translation>
+<translation id="1510238584712386396">ଲଞ୍ଚର୍</translation>
+<translation id="1734367976349034509">ଏହି ଡିଭାଇସ୍ ଏଣ୍ଟରପ୍ରାଇଜ୍ ପରିଚାଳିତ ଅଟେ</translation>
+<translation id="1930797645656624981">Chrome OS ଇନ୍‍ପୁଟ୍ ପଦ୍ଧତି ସେବା</translation>
+<translation id="1979103255016296513">ପାସ୍‌ୱାର୍ଡ ପରିବର୍ତ୍ତନର ସମୟ ବିଳମ୍ବ ହୋଇଯାଇଛି</translation>
+<translation id="2049639323467105390">ଏହି ଡିଭାଇସ୍‌ <ph name="DOMAIN" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି।</translation>
+<translation id="2083960536266308407">ସ୍କ୍ରିନ୍‍‍ରେ କିଛି ମିଳିଲା ନାହିଁ</translation>
+<translation id="2338501278241028356">ଆଖପାଖରେ ଥିବା ଡିଭାଇସ୍‌ଗୁଡ଼ିକୁ ଖୋଜିବାକୁ ବ୍ଲୁଟୁଥ୍‌ ଚାଲୁ କରନ୍ତୁ</translation>
+<translation id="2805756323405976993">ଆପ୍ସ</translation>
+<translation id="2872961005593481000">ବନ୍ଦ କରନ୍ତୁ</translation>
+<translation id="3008341117444806826">ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
+<translation id="3838338534323494292">ନୂଆ ପାସ୍‌ୱାର୍ଡ</translation>
+<translation id="4003259559679196451">ଏହି ଡିଭାଇସ୍‍କୁ <ph name="ENROLLMENT_DOMAIN" /> ପରିଚାଳନା କରିଥାଏ ଏବଂ ଏହା ପାଖରେ ଯାଇଥିବା ୱେବ୍‍ପୃଷ୍ଠାଗୁଡ଼ିକ, ପାସ୍‌ୱାର୍ଡଗୁଡ଼ିକ ଏବଂ ଇମେଲ୍ ସହ ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତା କାର୍ଯ୍ୟକଳାପକୁ ଆକ୍ସେସ୍ ଅଛି।</translation>
+<translation id="4227825898293920515"><ph name="TIME" />ରେ ପାସ୍‌ୱାର୍ଡର ମିଆଦ ଶେଷ ହେଉଛି</translation>
+<translation id="4429881212383817840">Kerberos ଟିକେଟ୍‍ର ମିଆଦ ଶୀଘ୍ର ଶେଷ ହୋଇଯିବ</translation>
+<translation id="445059817448385655">ପୁରୁଣା ପାସ୍‌ୱାର୍ଡ</translation>
+<translation id="467510802200863975">ପାସ୍‌ୱାର୍ଡ ମେଳ ହେଉ ନାହିଁ</translation>
+<translation id="4731797938093519117">ମାତା-ପିତାଙ୍କର ଆକ୍ସେସ୍</translation>
+<translation id="4890353053343094602">ତୁରନ୍ତ ଏକ ନୂଆ ବାଛନ୍ତୁ</translation>
+<translation id="5212543919916444558">ଆପଣଙ୍କର ସ୍କ୍ରିନ୍‌ରେ ମୁଁ କିଛି ଖୋଜିପାଇଲି ନାହିଁ ଯାହାଦ୍ୱାରା ମୁଁ ଆପଣଙ୍କୁ ସାହାଯ୍ୟ କରିପାରିବି।
+ମୋତେ ଯାହା କିଛି ପଚାରିବା ପାଇଁ ମାଇକ୍‌ ଟାପ୍‌ କରି ଦେଖନ୍ତୁ।</translation>
+<translation id="5222676887888702881">ସାଇନ୍ ଆଉଟ୍ କରନ୍ତୁ</translation>
+<translation id="5317780077021120954">ସଞ୍ଚୟ</translation>
+<translation id="5332948983412042822">ବର୍ତ୍ତମାନ ଏକ ନୂଆ ବାଛନ୍ତୁ</translation>
+<translation id="5457599981699367932">ଅତିଥି ହିସାବରେ ବ୍ରାଉଜ୍ କରନ୍ତୁ</translation>
+<translation id="54609108002486618">ପରିଚାଳିତ ହେଉଛି</translation>
+<translation id="5832805196449965646">ଲୋକଙ୍କୁ ଯୋଗ କରନ୍ତୁ</translation>
+<translation id="5895138241574237353">ପୁନଃଆରମ୍ଭ</translation>
+<translation id="6058625436358447366">ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ, ଆପଣଙ୍କର ପୁରୁଣା ଏବଂ ନୂଆ ପାସ୍‍ୱାର୍ଡଗୁଡ଼ିକ ଲେଖନ୍ତୁ</translation>
+<translation id="6106186594183574873">ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ, ଆପଣଙ୍କର ପୁରୁଣା ପାସ୍‍ୱାର୍ଡ ଲେଖନ୍ତୁ</translation>
+<translation id="6146993107019042706">ସମ୍ପୂର୍ଣ୍ଣ କରିବା ପାଇଁ, ଆପଣଙ୍କର ନୂଆ ପାସ୍‍ୱାର୍ଡ ଲେଖନ୍ତୁ</translation>
+<translation id="7658239707568436148">ବାତିଲ୍</translation>
+<translation id="7690294790491645610">ନୂଆ ପାସ୍‌ୱାର୍ଡ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
+<translation id="808894953321890993">ପାସ୍‌ୱାର୍ଡ ବଦଳାନ୍ତୁ</translation>
+<translation id="8747900814994928677">ପରିବର୍ତ୍ତନକୁ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
+<translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> ପାଇଁ ଟିକେଟ୍ ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
+<translation id="9111102763498581341">ଅନ୍‌ଲକ୍ କରନ୍ତୁ</translation>
 </translationbundle>

@@ -61,7 +61,8 @@ enum class PrinterSetupSource {
   kSettings = 1,           // Printer was setup from Settings.
   kAutoUsbConfigurer = 2,  // Printer was setup by automatic USB configurer.
   kArcPrintService = 3,    // Printer was setup by arc print service.
-  kMaxValue = kArcPrintService,
+  kExtensionApi = 4,       // Printer was setup via Extensions API.
+  kMaxValue = kExtensionApi,
 };
 
 using PrinterSetupCallback = base::OnceCallback<void(PrinterSetupResult)>;

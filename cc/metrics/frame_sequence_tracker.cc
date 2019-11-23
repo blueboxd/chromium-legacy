@@ -11,6 +11,8 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "cc/metrics/throughput_ukm_reporter.h"
+#include "cc/trees/ukm_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -59,19 +61,14 @@ namespace {
 // of frames.
 constexpr int kMinFramesForThroughputMetric = 4;
 
-enum class ThreadType {
-  kMain,
-  kCompositor,
-  kSlower,
-};
-
 constexpr int kBuiltinSequenceNum = FrameSequenceTrackerType::kMaxType + 1;
 constexpr int kMaximumHistogramIndex = 3 * kBuiltinSequenceNum;
 
-int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
-  if (thread_type == ThreadType::kMain)
+int GetIndexForMetric(FrameSequenceTracker::ThreadType thread_type,
+                      FrameSequenceTrackerType type) {
+  if (thread_type == FrameSequenceTracker::ThreadType::kMain)
     return static_cast<int>(type);
-  if (thread_type == ThreadType::kCompositor)
+  if (thread_type == FrameSequenceTracker::ThreadType::kCompositor)
     return static_cast<int>(type + kBuiltinSequenceNum);
   return static_cast<int>(type + 2 * kBuiltinSequenceNum);
 }
@@ -105,7 +102,8 @@ FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
     CompositorFrameReportingController* compositor_frame_reporting_controller)
     : is_single_threaded_(is_single_threaded),
       compositor_frame_reporting_controller_(
-          compositor_frame_reporting_controller) {}
+          compositor_frame_reporting_controller),
+      throughput_ukm_reporter_(std::make_unique<ThroughputUkmReporter>()) {}
 
 FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
   frame_trackers_.clear();
@@ -118,7 +116,8 @@ void FrameSequenceTrackerCollection::StartSequence(
     return;
   if (frame_trackers_.contains(type))
     return;
-  auto tracker = base::WrapUnique(new FrameSequenceTracker(type));
+  auto tracker = base::WrapUnique(new FrameSequenceTracker(
+      type, ukm_manager_, throughput_ukm_reporter_.get()));
   frame_trackers_[type] = std::move(tracker);
 
   if (compositor_frame_reporting_controller_)
@@ -232,11 +231,21 @@ FrameSequenceTracker* FrameSequenceTrackerCollection::GetTrackerForTesting(
   return frame_trackers_[type].get();
 }
 
+void FrameSequenceTrackerCollection::SetUkmManager(UkmManager* manager) {
+  DCHECK(frame_trackers_.empty());
+  ukm_manager_ = manager;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // FrameSequenceTracker
 
-FrameSequenceTracker::FrameSequenceTracker(FrameSequenceTrackerType type)
-    : type_(type) {
+FrameSequenceTracker::FrameSequenceTracker(
+    FrameSequenceTrackerType type,
+    UkmManager* manager,
+    ThroughputUkmReporter* throughput_ukm_reporter)
+    : type_(type),
+      ukm_manager_(manager),
+      throughput_ukm_reporter_(throughput_ukm_reporter) {
   DCHECK_LT(type_, FrameSequenceTrackerType::kMaxType);
   TRACE_EVENT_ASYNC_BEGIN1(
       "cc,benchmark", "FrameSequenceTracker", this, "name",
@@ -261,12 +270,15 @@ void FrameSequenceTracker::ReportMetrics() {
   // Report the throughput metrics.
   base::Optional<int> impl_throughput_percent = ThroughputData::ReportHistogram(
       type_, "CompositorThread",
-      GetIndexForMetric(ThreadType::kCompositor, type_), impl_throughput_);
+      GetIndexForMetric(FrameSequenceTracker::ThreadType::kCompositor, type_),
+      impl_throughput_);
   base::Optional<int> main_throughput_percent = ThroughputData::ReportHistogram(
-      type_, "MainThread", GetIndexForMetric(ThreadType::kMain, type_),
+      type_, "MainThread",
+      GetIndexForMetric(FrameSequenceTracker::ThreadType::kMain, type_),
       main_throughput_);
 
   base::Optional<ThroughputData> slower_throughput;
+  base::Optional<int> slower_throughput_percent;
   if (impl_throughput_percent &&
       (!main_throughput_percent ||
        impl_throughput_percent.value() <= main_throughput_percent.value())) {
@@ -278,9 +290,19 @@ void FrameSequenceTracker::ReportMetrics() {
     slower_throughput = main_throughput_;
   }
   if (slower_throughput.has_value()) {
-    ThroughputData::ReportHistogram(
-        type_, "SlowerThread", GetIndexForMetric(ThreadType::kSlower, type_),
+    slower_throughput_percent = ThroughputData::ReportHistogram(
+        type_, "SlowerThread",
+        GetIndexForMetric(FrameSequenceTracker::ThreadType::kSlower, type_),
         slower_throughput.value());
+    DCHECK(slower_throughput_percent.has_value());
+  }
+
+  // slower_throughput has value indicates that we have reported UMA.
+  if (slower_throughput.has_value() && ukm_manager_ &&
+      throughput_ukm_reporter_) {
+    throughput_ukm_reporter_->ReportThroughputUkm(
+        ukm_manager_, slower_throughput_percent, impl_throughput_percent,
+        main_throughput_percent, type_);
   }
 
   // Report the checkerboarding metrics.

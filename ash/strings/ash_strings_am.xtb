@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">አቁም</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" />ን በማጎላበት ላይ</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />፣ <ph name="SECURITY_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ በአስተዳዳሪዎ የሚቀናበር</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> <ph name="COME_BACK_TIME" /> ላይ ተመልሰው ይምጡ።</translation>
 <translation id="1290331692326790741">ደካማ ሲግናል</translation>
 <translation id="1293264513303784526">USB-C መሣሪያ (የግራ ወደብ)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">ጂኤስኤም</translation>
 <translation id="1302880136325416935">የብሉቱዝ ቅንብሮችን አሳይ። <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">ሁሉጊዜ መደርደሪያን አሳይ</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ የስልክ ባትሪ <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">ትርፍ ፍሰት</translation>
 <translation id="1346748346194534595">ቀኝ</translation>
 <translation id="1351937230027495976">ምናሌ ሰብስብ</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">ይህን ተጠቃሚ አስወግድ</translation>
 <translation id="1654477262762802994">የድምጽ መጠይቅ ይጀምሩ</translation>
 <translation id="1658406695958299976">ይቅርታ፣ የይለፍ ቃልዎ አሁንም ሊረጋገጥ አልቻለም። ማሳሰቢያ፦ የይለፍ ቃልዎን በቅርብ ጊዜ ቀይረው ከሆነ አዲስ የይለፍ ቃልዎ የሚተገበረው ሲወጡ ነው፣ እባክዎ የድሮውን ይለፍ ቃል እዚህ ይጠቀሙ።</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />፣ <ph name="CONNECTION_STATUS" />፣ በእርስዎ አስተዳዳሪ የሚቀናበር</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ቀርቷል</translation>
 <translation id="1698760176351776263">የIPv6 አድራሻ፦ <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">አልታወቀም</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">መልዕክት ይተይቡ</translation>
 <translation id="2050339315714019657">በቁመት</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />፣ <ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">የቁልፍ ሰሌዳ ብሩህነት</translation>
 <translation id="209965399369889474">ከአውታረ መረብ ጋር አልተገናኘም</translation>
 <translation id="2126242104232412123">አዲስ ዴስክ</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">ምንም የተንቀሳቃሽ ስልክ አውታረ መረብ የለም</translation>
 <translation id="3249513730522716925">መስኮት <ph name="WINDOW_TITLE" /> ከዴስክ <ph name="ACTIVE_DESK" /> ወደ ዴስክ <ph name="TARGET_DESK" /> ይወሰዳል</translation>
 <translation id="3255483164551725916">ምን ማድረግ ይችላሉ?</translation>
-<translation id="3277674767125718685">የድምፅ መጠን በርቷል።</translation>
 <translation id="3290356915286466215">ደህንነቱ ያልተጠበቀ</translation>
 <translation id="3294437725009624529">እንግዳ</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> አሁንም በኋላ በመለያ መግባት ይችላሉ።</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">መለያው በ<ph name="MANAGER_EMAIL" /> ነው የሚቀናበረው</translation>
 <translation id="3573179567135747900">ወደ «<ph name="FROM_LOCALE" />» መልሰህ ቀይር (ዳግም ማስጀመር ይፈልጋል)</translation>
 <translation id="3576141592585647168">የጊዜ ሰቅ ይለውጡ</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />፣ በእርስዎ አስተዳዳሪ የሚቀናበር</translation>
 <translation id="3595596368722241419">ባትሪ ሙሉ ነው</translation>
 <translation id="3604801046548457007">ዴስክ <ph name="DESK_TITILE" /> ተፈጥሯል</translation>
 <translation id="3606978283550408104">የብሬይል ማሳያ ተገናኝቷል።</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">ጠንካራ</translation>
 <translation id="4918086044614829423">ይቀበሉ</translation>
 <translation id="4924411785043111640">ዳግም ይጀምሩ እና ዳግም ያቀናብሩ</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />፣ <ph name="SECURITY_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">ወደ ላይ ይሸብልሉ</translation>
 <translation id="4961318399572185831">የCast ማያ ገጽ</translation>
 <translation id="5030687792513154421">ሰዓት አልቋል</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ከአዲስ ስልክ ጋር ተገናኝቷል</translation>
 <translation id="5083553833479578423">ተጨማሪ የረዳት ባህሪያትን ያስከፍቱ።</translation>
 <translation id="5136175204352732067">የተለየ የቁልፍ ሰሌዳ ተገናኝቷል</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />፣ <ph name="SECURITY_STATUS" />፣ <ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">የCast መሣሪያዎች ይገኛሉ</translation>
 <translation id="5207949376430453814">የጽሑፍ ድፋቱን አድምቅ</translation>
 <translation id="5222676887888702881">ዘግተህ ውጣ</translation>
 <translation id="523505283826916779">የተደራሽነት ቅንብሮች</translation>
 <translation id="5260676007519551770">ዴስክ 4</translation>
 <translation id="5283198616748585639">1 ደቂቃ ያክሉ</translation>
+<translation id="5286194356314741248">በመቃኘት ላይ</translation>
 <translation id="5302048478445481009">ቋንቋ</translation>
 <translation id="5313326810920013265">የብሉቱዝ ቅንብሮች</translation>
 <translation id="5331975486040154427">USB-C መሣሪያ (የግራ ጎን ኋላ ወደብ)</translation>
 <translation id="5379115545237091094">በጣም ብዙ ሙከራዎች</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />፣ <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">የዚህ ተጠቃሚ አጠቃቀም እና ታሪክ በchrome.com ላይ በአስተዳዳሪ (<ph name="MANAGER_EMAIL" />) ሊገመገም ይችላል።</translation>
 <translation id="5430931332414098647">ቅጽበታዊ እንደ ሞደም መሰካት</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">በ<ph name="LOGOUT_TIME_LEFT" /> ውስጥ በራስ-ሰር ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="6064337552080329342">ይቅርታ፣ የይለፍ ቃልዎ ሊረጋገጥ አልቻለም። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="607652042414456612">ኮምፒውተርዎ አቅራቢያ ባሉ የብሉቱዝ መሣሪያዎች ሊገኝ የሚችል ነው፣ እና በ<ph name="ADDRESS" /> አድራሻ እንደ «<ph name="NAME" />» ሆኖ ይታያል</translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />፣ <ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ በአስተዳዳሪዎ የሚቀናበር</translation>
 <translation id="612734058257491180">የGoogle ረዳቱ በእንግዳ ክፍለ-ጊዜ ውስጥ አይገኝም።</translation>
 <translation id="615957422585914272">የማያ ገጽ ላይ ቁልፍ ሰሌዳ አሳይ</translation>
 <translation id="6164005077879661055">ይህ ክትትል የሚደረግበት ተጠቃሚ አንዴ ከተወገደ በኋላ ሁሉም ከዚህ ክትትል የሚደረግበት ተጠቃሚ ጋር የተጎዳኙ ፋይሎች እና አካባቢያዊ ውሂብ እስከመጨረሻው ይሰረዛሉ። አስተዳዳሪው የዚህ ክትትል የሚደረግበት ተጠቃሚ የጎበኛቸው ድር ጣቢያዎች እና ቅንብሮች <ph name="MANAGEMENT_URL" /> ላይ ሊያዩት ይችላሉ።</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">የይለፍ ቃል፦</translation>
 <translation id="6665545700722362599">ድር ጣቢያዎች፣ መተግበሪያዎች እና ቅጥያዎች የአካባቢ አገልግሎቶችን፣ የመሣሪያውን ማይክሮፎን፣ ካሜራ እና ሌሎች ባህሪያትን የመጠቀም ፈቃድ ይስጧቸው</translation>
 <translation id="6670153871843998651">ዴስክ 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ በአስተዳዳሪዎ የሚቀናበር</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">የእርስዎ ተነቃይ የቁልፍ ሰሌዳ ወሳኝ የሆነ ዝማኔ ያስፈልገዋል</translation>
 <translation id="6700713906295497288">የIME ምናሌ አዝራር</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">የአፈጻጸም ክትትል በርቷል</translation>
 <translation id="6752912906630585008">ዴስክ <ph name="REMOVED_DESK" /> ተወግዶ ከዴስክ <ph name="RECEIVE_DESK" /> ጋር ተዋህዷል</translation>
 <translation id="6777216307882431711">የተገናኙ የUSB-C መሣሪያዎችን ኃይል በመሙላት ላይ</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">አጫውት</translation>
 <translation id="6803622936009808957">ምንም የሚደገፉ ጥራቶች ስላልተገኙ ማሳያዎችን ማሳየት አልተቻለም። ይልቁንስ ወደ የተስፋፋ ዴስክቶፕ ሁነታ ተገብቷል።</translation>
 <translation id="6820676911989879663">እረፍት ይውሰዱ!</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">አውታረ መረብ ክትትል የሚደረግበት ሊሆን ይችላል</translation>
 <translation id="7536035074519304529">የአይፒ አድራሻ፦ <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">የመኝታ ጊዜ</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />፣ <ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ የስልክ ባትሪ <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />ን አይደግፍም። ጥራቱ ወደ <ph name="FALLBACK_RESOLUTION" /> ተቀይሯል</translation>
 <translation id="7562368315689366235">ስሜት ገላጭ ሥዕል ቤተ-ሥዕል</translation>
 <translation id="7564874036684306347">መስኮትን ወደ ሌላ ዴስክቶፕ መውሰድ ያልተጠበቀ ባህሪን ሊያስከትል ይችላል። ተከትለው የሚመጡ ማሳወቂያዎችን፣ መስኮቶች እና መገናኛዎች በዴስክቶፖች መካከል ሊከፈሉ ይችላሉ።</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">የምናሌን ቦታ ቀይር</translation>
 <translation id="9089416786594320554">የግቤት ስልቶች</translation>
 <translation id="9091626656156419976">ማሳያ <ph name="DISPLAY_NAME" /> ተወግዷል</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />፣ <ph name="SECURITY_STATUS" />፣ <ph name="CONNECTION_STATUS" />፣ የሲግናል ጥንካሬ <ph name="SIGNAL_STRENGTH" />፣ በአስተዳዳሪዎ የሚቀናበር</translation>
 <translation id="9151726767154816831">እንደገና ያስጀምሩ እና ለማዘመን powerwash ያድርጉ</translation>
 <translation id="9179259655489829027">ይህ ባህሪ የይለፍ ቃል ሳያስፈልገዎት ማንኛውም ወደ መለያ የገባ ተጠቃሚን በፍጥነት እንዲደርሱ ያስችልዎታል። ይህን ባህሪ በሚያምኗቸው መለያዎች ላይ ብቻ ይጠቀሙበት።</translation>
 <translation id="9183456764293710005">የሙሉ ማያ ገጽ ማጉያ</translation>

@@ -18,6 +18,7 @@ Polymer({
     NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
     settings.RouteObserverBehavior,
+    settings.RouteOriginBehavior,
     I18nBehavior,
   ],
 
@@ -112,6 +113,9 @@ Polymer({
     },
   },
 
+  /** settings.RouteOriginBehavior override */
+  route_: settings.routes.INTERNET_NETWORKS,
+
   observers: ['deviceStateChanged_(deviceState)'],
 
   /** @private {number|null} */
@@ -135,6 +139,9 @@ Polymer({
     this.browserProxy_.setGmsCoreNotificationsDisabledDeviceNamesCallback(
         this.onNotificationsDisabledDeviceNamesReceived_.bind(this));
     this.browserProxy_.requestGmsCoreNotificationsDisabledDeviceNames();
+
+    this.addFocusConfig_(
+        settings.routes.KNOWN_NETWORKS, '#knownNetworksSubpageButton');
   },
 
   /** override */
@@ -144,15 +151,18 @@ Polymer({
 
   /**
    * settings.RouteObserverBehavior
-   * @param {!settings.Route} route
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
    * @protected
    */
-  currentRouteChanged: function(route) {
-    if (route != settings.routes.INTERNET_NETWORKS) {
+  currentRouteChanged: function(newRoute, oldRoute) {
+    if (newRoute != settings.routes.INTERNET_NETWORKS) {
       this.stopScanning_();
       return;
     }
     this.init();
+    settings.RouteOriginBehaviorImpl.currentRouteChanged.call(
+        this, newRoute, oldRoute);
   },
 
   init: function() {

@@ -22,18 +22,20 @@ interface WaylandBufferManagerHost {
   // The following two methods are used either for hardware accelerated
   // rendering or for the software rendering.
   //
-  // If hardware accelerated rendering path is taken, this methnod can be used
-  // to ask Wayland to create a wl_buffer based on the |dmabuf_fd| descriptor
-  // for the WaylandWindow, which has the following |widget|. The |size|
-  // is the size of the buffer, the |strides|, |offsets| and |modifiers|
-  // are the descriptions of the drm buffer object. The |format| describes
-  // the buffer format (check gfx::BufferFormat) in fourcc form. The
-  // |planes_count| says how many planes the buffer, backed by the |file|
-  // descriptor has. And the |buffer_id| is a unique id for the buffer, which
-  // is used to identify imported wl_buffers on the browser process side and
-  // map them with the buffer objects on the gpu process side.
-  CreateDmabufBasedBuffer(gfx.mojom.AcceleratedWidget widget,
-                          handle dmabuf_fd,
+  // If the hardware accelerated rendering path is taken, this method can be
+  // used to ask Wayland to create a wl_buffer based on the |dmabuf_fd|
+  // descriptor. The |size| is the size of the buffer, the |strides|,
+  // |offsets| and |modifiers| are the descriptions of the drm buffer object.
+  // The |format| describes the buffer format (check gfx::BufferFormat) in
+  // fourcc form. The |planes_count| says how many planes the buffer, backed
+  // by the |file| descriptor has. And the |buffer_id| is a unique id for the
+  // buffer, which is used to identify imported wl_buffers on the browser
+  // process side and map them with the buffer objects on the gpu process side.
+  // The buffer will be associated with an AcceleratedWidget as soon as the
+  // very first CommitBuffer request comes from viz to browser process.
+  // If the buffer has been committed at least once, it is not possible to
+  // reassign it to another AcceleratedWidget.
+  CreateDmabufBasedBuffer(handle dmabuf_fd,
                           gfx.mojom.Size size,
                           array<uint32> strides,
                           array<uint32> offsets,
@@ -46,8 +48,11 @@ interface WaylandBufferManagerHost {
   // Wayland to create a wl_buffer based on the |shm_fd| descriptor.
   // The |length| is the length of the shared memory, |size|
   // is the size of buffer and |buffer_id| is the id of the buffer.
-  CreateShmBasedBuffer(gfx.mojom.AcceleratedWidget widget,
-                       handle shm_fd,
+  // The buffer will be associated with an AcceleratedWidget as soon as the
+  // very first CommitBuffer request comes from viz to browser process. If
+  // the buffer has been committed at least once, it is not possible to
+  // reassign it to another AcceleratedWidget.
+  CreateShmBasedBuffer(handle shm_fd,
                        uint64 length,
                        gfx.mojom.Size size,
                        uint32 buffer_id);
@@ -57,11 +62,14 @@ interface WaylandBufferManagerHost {
   // Destroys a wl_buffer created by WaylandConnection based on the |buffer_id|
   // for the WaylandWindow, which has the following |widget|. The |buffer_id|
   // is the unique id of the buffer objects being destroyed on the browser
-  // process side.
+  // process side. If the buffer with |buffer_id| has never been assigned to an
+  // AcceleratedWidget, it can be destroyed by passing a null widget
+  // with a correct buffer id. Providing wrong pair of the |widget| and the
+  // |buffer_id| will result in the termination of the GPU process.
   DestroyBuffer(gfx.mojom.AcceleratedWidget widget, uint32 buffer_id);
 
   // Attaches a wl_buffer to a WaylandWindow's surface with the following
-  // |widget|. The |damage_region| describes changed the region of the buffer.
+  // |widget|. The |damage_region| describes the changed region of the buffer.
   // The |buffer_id| is a unique id for the buffer, which is used to
   // identify imported wl_buffers on the browser process side mapped with
   // the ones on the gpu process.

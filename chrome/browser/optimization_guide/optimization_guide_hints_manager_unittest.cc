@@ -1010,7 +1010,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
        HintsFetchNotAllowedIfFeatureIsEnabledButTopHostProviderIsNotProvided) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching}, {});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
 
   SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
@@ -1028,7 +1028,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
        HintsFetchNotAllowedIfFeatureIsEnabledButDataSaverIsNotEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching}, {});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
 
   SetUserPermissions(/*data_saver_enabled=*/false, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
@@ -1051,7 +1051,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
        HintsFetchNotAllowedIfFeatureIsNotEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      {}, {optimization_guide::features::kOptimizationHintsFetching});
+      {}, {optimization_guide::features::kRemoteOptimizationGuideFetching});
 
   SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
@@ -1071,7 +1071,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
        HintsFetchAllowedIfFeatureIsEnabledAndDataSaverUserHasNotSeenInfobar) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching}, {});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
 
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
@@ -1095,7 +1095,7 @@ TEST_F(
     HintsFetchAllowedIfFeatureIsEnabledAndUserMeetsAllDataSaverUserCriteria) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching}, {});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
 
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
       std::make_unique<FakeTopHostProvider>(
@@ -1117,7 +1117,7 @@ TEST_F(
 TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherEnabledNoHostsToFetch) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
 
   SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
@@ -1138,7 +1138,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
        HintsFetcherEnabledWithHostsNoHintsInResponse) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
 
   SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
@@ -1166,7 +1166,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
 
   SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
@@ -1196,7 +1196,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerRetryDelay) {
 TEST_F(OptimizationGuideHintsManagerTest, HintsFetcherTimerFetchSucceeds) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
 
   SetUserPermissions(/*data_saver_enabled=*/true, /*has_seen_infobar=*/true);
   std::unique_ptr<FakeTopHostProvider> top_host_provider =
@@ -1797,7 +1797,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtSRP_ECT_SLOW_2G) {
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -1823,7 +1823,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -1855,7 +1855,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -1884,7 +1884,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtSRP_ECT_4G) {
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -1909,7 +1909,7 @@ TEST_F(OptimizationGuideHintsManagerTest, HintsFetched_AtNonSRP_ECT_SLOW_2G) {
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -1935,7 +1935,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -1959,7 +1959,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -1983,7 +1983,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint is activated.
@@ -2006,7 +2006,7 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationCalledMidFetch) {
       {optimization_guide::proto::DEFER_ALL_SCRIPT});
   base::test::ScopedFeatureList scoped_list;
   scoped_list.InitAndEnableFeature(
-      optimization_guide::features::kOptimizationHintsFetching);
+      optimization_guide::features::kRemoteOptimizationGuideFetching);
   InitializeWithDefaultConfig("1.0.0.0");
 
   // Set ECT estimate so hint will attempt to be fetched.

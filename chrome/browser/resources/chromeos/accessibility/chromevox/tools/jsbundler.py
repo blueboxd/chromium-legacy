@@ -72,6 +72,8 @@ class SourceWithPaths(source.Source):
   def GetOutPath(self):
     return self._out_path
 
+  def __str__(self):
+    return self.GetOutPath()
 
 class Bundle():
   '''An ordered list of sources without duplicates.'''

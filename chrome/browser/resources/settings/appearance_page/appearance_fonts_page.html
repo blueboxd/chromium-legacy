@@ -23,19 +23,24 @@
       }
     </style>
     <div class="settings-box first">
-      <div class="start settings-box-text">$i18n{fontSize}</div>
+      <div class="start settings-box-text" aria-hidden="true">
+        $i18n{fontSize}
+      </div>
       <settings-slider id="sizeSlider"
           pref="{{prefs.webkit.webprefs.default_font_size}}"
-          ticks="[[fontSizeRange_]]"
+          ticks="[[fontSizeRange_]]" label-aria="$i18n{fontSize}"
           label-min="$i18n{tiny}" label-max="$i18n{huge}">
       </settings-slider>
     </div>
     <div class="settings-box">
-      <div class="start settings-box-text">$i18n{minimumFont}</div>
+      <div class="start settings-box-text" aria-hidden="true">
+        $i18n{minimumFont}
+      </div>
       <div id="minimumSize">
         <settings-slider  pref="{{prefs.webkit.webprefs.minimum_font_size}}"
-            ticks="[[minimumFontSizeRange_]]" label-min="$i18n{tiny}"
-            label-max="$i18n{huge}"></settings-slider>
+            ticks="[[minimumFontSizeRange_]]" label-aria="$i18n{minimumFont}"
+            label-min="$i18n{tiny}" label-max="$i18n{huge}">
+        </settings-slider>
         <div id="minimumSizeSample"
             style="
                 font-size:[[computeMinimumFontSize_(

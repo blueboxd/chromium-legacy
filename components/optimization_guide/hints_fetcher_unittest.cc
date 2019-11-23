@@ -44,7 +44,7 @@ class HintsFetcherTest : public testing::Test {
                 &test_url_loader_factory_)) {
     base::test::ScopedFeatureList scoped_list;
     scoped_list.InitAndEnableFeatureWithParameters(
-        features::kOptimizationHintsFetching, {});
+        features::kRemoteOptimizationGuideFetching, {});
 
     pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     prefs::RegisterProfilePrefs(pref_service_->registry());

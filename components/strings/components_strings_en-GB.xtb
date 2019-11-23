@@ -175,6 +175,7 @@
 <translation id="173080396488393970">This type of card isn’t supported</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Try contacting the system admin.</translation>
+<translation id="1736420071277903564">Computer</translation>
 <translation id="1739107442478692187">A data breach occurred on a site or app that you use. Chrome recommends checking your saved passwords and changing your password on <ph name="ORIGIN" /> now.</translation>
 <translation id="1740951997222943430">Enter a valid expiry month</translation>
 <translation id="1741613555002899862">Must be specified and a valid string when DnsOverHttpsMode is <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">Attackers currently on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> could install dangerous apps that damage your device, add hidden charges to your mobile bill or steal your personal information. <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">No Internet</translation>
 <translation id="2230458221926704099">Fix your connection using the <ph name="BEGIN_LINK" />diagnostics app<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">For you</translation>
 <translation id="2239100178324503013">Send now</translation>
 <translation id="2248949050832152960">Use WebAuthn</translation>
 <translation id="2250931979407627383">Edge stitch left</translation>
@@ -365,6 +367,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Safety warning</translation>
 <translation id="2699302886720511147">Accepted Cards</translation>
 <translation id="2702801445560668637">Reading List</translation>
 <translation id="2704283930420550640">Value doesn't match format.</translation>
@@ -467,6 +470,7 @@
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3209034400446768650">Page may charge money</translation>
 <translation id="3209080785413271048">Use Windows Hello to verify your saved payment methods.</translation>
+<translation id="3212581601480735796">Your activity on <ph name="HOSTNAME" /> is being monitored</translation>
 <translation id="3215092763954878852">Couldn't use WebAuthn</translation>
 <translation id="3225919329040284222">The server presented a certificate that doesn't match built-in expectations. These expectations are included for certain, high-security websites in order to protect you.</translation>
 <translation id="3226128629678568754">Press the reload button to resubmit the data needed to load the page.</translation>
@@ -525,6 +529,7 @@
 <translation id="3528485271872257980">Dark brown</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{At least 1 item on synced devices}=1{1 item (and more on synced devices)}other{# items (and more on synced devices)}}</translation>
 <translation id="3539171420378717834">Keep a copy of this card on this device</translation>
+<translation id="3553513561058684206">For you</translation>
 <translation id="3566021033012934673">Your connection is not private</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">An embedded page at <ph name="SITE" /> says</translation>
@@ -597,6 +602,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">The card is expired</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Use WebAuthn instead of CVC?</translation>
 <translation id="3946209740501886391">Always ask on this site</translation>
@@ -749,6 +755,7 @@
 <translation id="4594403342090139922">&amp;Undo Delete</translation>
 <translation id="4597348597567598915">Size 8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
+<translation id="4613966523036881546">The certificate for this connection is not trusted by Google Chrome because it is known to be used for network interception and monitoring.</translation>
 <translation id="4635654612248442824">The site <ph name="ORIGIN" /> has requested that an origin policy will apply to all its request, but this policy cannot presently be applied.</translation>
 <translation id="464342062220857295">Search features</translation>
 <translation id="4646534391647090355">Take me there now</translation>
@@ -1453,6 +1460,7 @@ Additional details:
 <translation id="8103161714697287722">Payment Method</translation>
 <translation id="8105368624971345109">Turn Off</translation>
 <translation id="8118489163946903409">Payment method</translation>
+<translation id="8124023448510659215">The certificate for this connection is not trusted by Chromium, because it is known to be used for network interception and monitoring.</translation>
 <translation id="8127301229239896662">'<ph name="SOFTWARE_NAME" />' wasn’t installed properly on your computer or network. Ask your IT administrator to resolve this issue.</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8149426793427495338">Your computer went to sleep.</translation>
@@ -1521,7 +1529,6 @@ Additional details:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}other{# credit cards}}</translation>
 <translation id="8473863474539038330">Addresses and more</translation>
 <translation id="8479754468255770962">Staple bottom left</translation>
-<translation id="8481133456511676116">Did you mean <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">To use cards from your Google Account, sign in to Chrome</translation>
 <translation id="8488350697529856933">Applies to</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> took too long to respond.</translation>
@@ -1596,6 +1603,8 @@ Additional details:
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
 <translation id="8962950042226115166">Suspicious site</translation>
 <translation id="8968766641738584599">Save card</translation>
+<translation id="8969267497192857913">Anything that you type, any pages that you view and any other activity on the web is being watched, and content on sites may be changed without your knowledge.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8975012916872825179">Includes information such as phone numbers, email addresses and delivery addresses</translation>
 <translation id="8975263830901772334">Names of files that you print</translation>

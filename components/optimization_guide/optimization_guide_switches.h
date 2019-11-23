@@ -21,6 +21,7 @@ namespace switches {
 extern const char kHintsProtoOverride[];
 extern const char kFetchHintsOverride[];
 extern const char kFetchHintsOverrideTimer[];
+extern const char kFetchModelsAndHostModelFeaturesOverrideTimer[];
 extern const char kOptimizationGuideServiceGetHintsURL[];
 extern const char kOptimizationGuideServiceGetModelsURL[];
 extern const char kOptimizationGuideServiceAPIKey[];
@@ -51,6 +52,10 @@ ParseHintsFetchOverrideFromCommandLine();
 
 // Whether the hints fetcher timer should be overridden.
 bool ShouldOverrideFetchHintsTimer();
+
+// Whether the prediction model and host model features fetcher timer should be
+// overridden.
+bool ShouldOverrideFetchModelsAndFeaturesTimer();
 
 // Attempts to parse a base64 encoded Optimization Guide Configuration proto
 // from the command line. If no proto is given or if it is encoded incorrectly,

@@ -188,9 +188,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public IProfile getProfile(String profilePath) {
+    public IProfile getProfile(String profileName) {
         StrictModeWorkaround.apply();
-        return mProfileManager.getProfile(profilePath);
+        return mProfileManager.getProfile(profileName);
     }
 
     @Override

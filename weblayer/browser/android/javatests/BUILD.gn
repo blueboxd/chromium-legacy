@@ -12,6 +12,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   min_sdk_version = 21
   deps = [
     "//base:base_java_test_support",
+    "//components/safe_browsing/android:safe_browsing_java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_support_test_runner:runner_java",

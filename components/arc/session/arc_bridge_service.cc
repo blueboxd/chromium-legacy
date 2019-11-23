@@ -62,4 +62,22 @@ ArcBridgeService::ArcBridgeService() = default;
 
 ArcBridgeService::~ArcBridgeService() = default;
 
+void ArcBridgeService::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ArcBridgeService::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void ArcBridgeService::ObserveBeforeArcBridgeClosed() {
+  for (auto& observer : observer_list_)
+    observer.BeforeArcBridgeClosed();
+}
+
+void ArcBridgeService::ObserveAfterArcBridgeClosed() {
+  for (auto& observer : observer_list_)
+    observer.AfterArcBridgeClosed();
+}
+
 }  // namespace arc

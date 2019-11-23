@@ -19,17 +19,6 @@ MockRuntime.prototype.requestHitTest = function(ray) {
   return Promise.resolve(hit_results);
 };
 
-MockRuntime.prototype.setStageSize = function(x, z) {
-  if (!this.displayInfo_.stageParameters) {
-    this.displayInfo_.stageParameters = default_stage_parameters;
-  }
-
-  this.displayInfo_.stageParameters.sizeX = x;
-  this.displayInfo_.stageParameters.sizeZ = z;
-
-  this.sessionClient_.onChanged(this.displayInfo_);
-};
-
 MockRuntime.prototype.getSubmitFrameCount = function() {
   return this.presentation_provider_.submit_frame_count_;
 };

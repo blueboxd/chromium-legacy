@@ -1278,7 +1278,7 @@ const char kProfileAvatarTutorialShown[] =
 const char kInvertNotificationShown[] = "invert_notification_version_2_shown";
 
 // A pref holding the list of printer types to be disabled.
-const char kPrinterTypeBlacklist[] = "printing.printer_type_blacklist";
+const char kPrinterTypeDenyList[] = "printing.printer_type_deny_list";
 
 // The default value for the 'Headers and footers' checkbox, in Print Preview.
 // Takes priority over kPrintPreviewStickySettings if set.

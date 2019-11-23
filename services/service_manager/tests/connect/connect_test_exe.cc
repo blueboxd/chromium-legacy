@@ -7,7 +7,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/task/single_thread_task_executor.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -16,7 +18,6 @@
 #include "services/service_manager/tests/connect/connect.test-mojom.h"
 
 using service_manager::test::mojom::ConnectTestService;
-using service_manager::test::mojom::ConnectTestServiceRequest;
 
 namespace {
 
@@ -39,8 +40,8 @@ class Target : public service_manager::Service,
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  void Create(ConnectTestServiceRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Create(mojo::PendingReceiver<ConnectTestService> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // ConnectTestService:
@@ -54,7 +55,7 @@ class Target : public service_manager::Service,
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
-  mojo::BindingSet<ConnectTestService> bindings_;
+  mojo::ReceiverSet<ConnectTestService> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };

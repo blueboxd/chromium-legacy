@@ -598,6 +598,8 @@ jumbo_component("platform") {
     "fonts/font_family.h",
     "fonts/font_global_context.cc",
     "fonts/font_global_context.h",
+    "fonts/font_matching_metrics.cc",
+    "fonts/font_matching_metrics.h",
     "fonts/font_metrics.cc",
     "fonts/font_metrics.h",
     "fonts/font_optical_sizing.cc",

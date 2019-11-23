@@ -31,7 +31,6 @@ namespace chromeos {
 // DBusThreadManager instance.
 class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
  public:
-  typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef ShillClientHelper::ListValueCallback ListValueCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
@@ -101,7 +100,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     virtual void ClearServices() = 0;
 
     virtual void SetConnectBehavior(const std::string& service_path,
-                                    const base::Closure& behavior) = 0;
+                                    const base::RepeatingClosure& behavior) = 0;
 
     // If |hold_back| is set to true, stops sending service property updates to
     // observers and records them instead. Then if this is called again with
@@ -137,74 +136,72 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
   virtual void GetProperties(const dbus::ObjectPath& service_path,
-                             const DictionaryValueCallback& callback) = 0;
+                             DictionaryValueCallback callback) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call succeeds.
   virtual void SetProperty(const dbus::ObjectPath& service_path,
                            const std::string& name,
                            const base::Value& value,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) = 0;
+                           base::OnceClosure callback,
+                           ErrorCallback error_callback) = 0;
 
   // Calls SetProperties method.
   // |callback| is called after the method call succeeds.
   virtual void SetProperties(const dbus::ObjectPath& service_path,
                              const base::DictionaryValue& properties,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) = 0;
+                             base::OnceClosure callback,
+                             ErrorCallback error_callback) = 0;
 
   // Calls ClearProperty method.
   // |callback| is called after the method call succeeds.
   virtual void ClearProperty(const dbus::ObjectPath& service_path,
                              const std::string& name,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) = 0;
+                             base::OnceClosure callback,
+                             ErrorCallback error_callback) = 0;
 
   // Calls ClearProperties method.
   // |callback| is called after the method call succeeds.
   virtual void ClearProperties(const dbus::ObjectPath& service_path,
                                const std::vector<std::string>& names,
-                               const ListValueCallback& callback,
-                               const ErrorCallback& error_callback) = 0;
+                               ListValueCallback callback,
+                               ErrorCallback error_callback) = 0;
 
   // Calls Connect method.
   // |callback| is called after the method call succeeds.
   virtual void Connect(const dbus::ObjectPath& service_path,
-                       const base::Closure& callback,
-                       const ErrorCallback& error_callback) = 0;
+                       base::OnceClosure callback,
+                       ErrorCallback error_callback) = 0;
 
   // Calls Disconnect method.
   // |callback| is called after the method call succeeds.
   virtual void Disconnect(const dbus::ObjectPath& service_path,
-                          const base::Closure& callback,
-                          const ErrorCallback& error_callback) = 0;
+                          base::OnceClosure callback,
+                          ErrorCallback error_callback) = 0;
 
   // Calls Remove method.
   // |callback| is called after the method call succeeds.
   virtual void Remove(const dbus::ObjectPath& service_path,
-                      const base::Closure& callback,
-                      const ErrorCallback& error_callback) = 0;
+                      base::OnceClosure callback,
+                      ErrorCallback error_callback) = 0;
 
   // Calls ActivateCellularModem method.
   // |callback| is called after the method call succeeds.
   virtual void ActivateCellularModem(const dbus::ObjectPath& service_path,
                                      const std::string& carrier,
-                                     const base::Closure& callback,
-                                     const ErrorCallback& error_callback) = 0;
+                                     base::OnceClosure callback,
+                                     ErrorCallback error_callback) = 0;
 
   // Calls the CompleteCellularActivation method.
   // |callback| is called after the method call succeeds.
-  virtual void CompleteCellularActivation(
-      const dbus::ObjectPath& service_path,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void CompleteCellularActivation(const dbus::ObjectPath& service_path,
+                                          base::OnceClosure callback,
+                                          ErrorCallback error_callback) = 0;
 
   // Calls the GetLoadableProfileEntries method.
   // |callback| is called after the method call succeeds.
-  virtual void GetLoadableProfileEntries(
-      const dbus::ObjectPath& service_path,
-      const DictionaryValueCallback& callback) = 0;
+  virtual void GetLoadableProfileEntries(const dbus::ObjectPath& service_path,
+                                         DictionaryValueCallback callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;

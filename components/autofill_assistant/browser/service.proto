@@ -1695,7 +1695,10 @@ message CounterInputProto {
     optional string label = 1;
 
     // Text shown below the label. Optional.
-    optional string subtext = 5;
+    optional string description_line_1 = 5;
+
+    // Text shown below |description_line_2|. Optional.
+    optional string description_line_2 = 8;
 
     // The possible values this counter can have. If empty, the possible values
     // will be all integer values between |min_value| and |max_value|.
@@ -1826,6 +1829,12 @@ message SelectionInputProto {
   message Choice {
     // The label of this choice.
     optional string label = 1;
+
+    // Text shown below the label. Optional.
+    optional string description_line_1 = 3;
+
+    // Text shown below |description_line_2|. Optional.
+    optional string description_line_2 = 4;
 
     // Whether this choice is selected by default. If |allow_multiple| is false,
     // then maximum 1 Choice can have this set to true, otherwise the associated

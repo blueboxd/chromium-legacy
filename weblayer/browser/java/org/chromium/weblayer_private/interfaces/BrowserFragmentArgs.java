@@ -5,4 +5,4 @@
 package org.chromium.weblayer_private.interfaces;
 
 /** Keys for the Bundle of arguments with which BrowserFragments are created. */
-public interface BrowserFragmentArgs { String PROFILE_PATH = "profile_path"; }
+public interface BrowserFragmentArgs { String PROFILE_NAME = "profile_name"; }

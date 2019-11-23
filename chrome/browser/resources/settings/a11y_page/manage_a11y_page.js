@@ -134,13 +134,7 @@ Polymer({
     hasKeyboard_: Boolean,
   },
 
-  /** @private {!Map<string, string>} */
-  focusConfig_: new Map(),
-
-  /**
-   * The route corresponding to this page.
-   * @private {!settings.Route|undefined}
-   */
+  /** settings.RouteOriginBehavior override */
   route_: settings.routes.MANAGE_ACCESSIBILITY,
 
   /** @override */

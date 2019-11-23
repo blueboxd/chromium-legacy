@@ -81,7 +81,7 @@ WGPUTexture ExternalVkImageDawnRepresentation::BeginAccess(
     descriptor.waitFDs.push_back(handle.TakeHandle().release());
   }
 
-  texture_ = dawn_native::vulkan::WrapVulkanImageOpaqueFD(device_, &descriptor);
+  texture_ = dawn_native::vulkan::WrapVulkanImage(device_, &descriptor);
 
   if (texture_) {
     // Keep a reference to the texture so that it stays valid (its content

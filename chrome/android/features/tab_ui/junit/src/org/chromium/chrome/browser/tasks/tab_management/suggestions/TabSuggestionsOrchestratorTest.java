@@ -13,6 +13,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,6 +25,8 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -80,6 +83,14 @@ public class TabSuggestionsOrchestratorTest {
                 .addTabModelFilterObserver(any(TabModelObserver.class));
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
         doReturn(null).when(mTabModelFilter).getRelatedTabList(anyInt());
+        RecordUserAction.setDisabledForTests(true);
+        RecordHistogram.setDisabledForTests(true);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        RecordUserAction.setDisabledForTests(false);
+        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test
@@ -150,7 +161,9 @@ public class TabSuggestionsOrchestratorTest {
             @Override
             public void onNewSuggestion(List<TabSuggestion> tabSuggestions,
                     Callback<TabSuggestionFeedback> tabSuggestionFeedback) {
-                tabSuggestionFeedback.onResult(new TabSuggestionFeedback(null,
+                TabSuggestion tabSuggestion = new TabSuggestion(
+                        Arrays.asList(TabContext.TabInfo.createFromTab(sTabs[0])), 0, "");
+                tabSuggestionFeedback.onResult(new TabSuggestionFeedback(tabSuggestion,
                         TabSuggestionFeedback.TabSuggestionResponse.ACCEPTED, Arrays.asList(1), 1));
             }
 

@@ -112,13 +112,13 @@ DbusMenu::MenuItem::~MenuItem() = default;
 
 DbusMenu::ScopedMethodResponse::ScopedMethodResponse(
     dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender* response_sender)
+    dbus::ExportedObject::ResponseSender response_sender)
     : method_call_(method_call),
-      response_sender_(response_sender),
+      response_sender_(std::move(response_sender)),
       reader_(method_call_) {}
 
 DbusMenu::ScopedMethodResponse::~ScopedMethodResponse() {
-  response_sender_->Run(std::move(response_));
+  std::move(response_sender_).Run(std::move(response_));
 }
 
 dbus::MessageWriter& DbusMenu::ScopedMethodResponse::Writer() {
@@ -249,7 +249,7 @@ dbus::ExportedObject::MethodCallCallback DbusMenu::WrapMethodCallback(
       [](base::RepeatingCallback<void(ScopedMethodResponse*)> bound_callback,
          dbus::MethodCall* method_call,
          dbus::ExportedObject::ResponseSender response_sender) {
-        ScopedMethodResponse response(method_call, &response_sender);
+        ScopedMethodResponse response(method_call, std::move(response_sender));
         bound_callback.Run(&response);
       },
       callback);

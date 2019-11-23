@@ -63,12 +63,14 @@ CreditCardFIDOAuthenticator::~CreditCardFIDOAuthenticator() {}
 
 void CreditCardFIDOAuthenticator::ShowWebauthnOfferDialog(
     std::string card_authorization_token) {
+#if !defined(OS_ANDROID)
   card_authorization_token_ = card_authorization_token;
   autofill_client_->ShowWebauthnOfferDialog(base::BindRepeating(
       &CreditCardFIDOAuthenticator::OnWebauthnOfferDialogUserResponse,
       weak_ptr_factory_.GetWeakPtr()));
   AutofillMetrics::LogWebauthnOptInPromoShown(
       /*is_checkout_flow=*/!card_authorization_token_.empty());
+#endif
 }
 
 void CreditCardFIDOAuthenticator::Authenticate(
@@ -387,8 +389,10 @@ void CreditCardFIDOAuthenticator::OnDidGetOptChangeResult(
 
   // End the flow if the server responded with an error.
   if (result != AutofillClient::PaymentsRpcResult::SUCCESS) {
+#if !defined(OS_ANDROID)
     if (current_flow_ == OPT_IN_FETCH_CHALLENGE_FLOW)
       autofill_client_->UpdateWebauthnOfferDialogWithError();
+#endif
     current_flow_ = NONE_FLOW;
     return;
   }

@@ -145,6 +145,24 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
     Connect(ServiceFilter::ByName(service_name), std::move(receiver));
   }
 
+  // A variant of the above which take a callback, |callback| conveys
+  // information about the result of the request. See documentation on the mojom
+  // ConnectResult definition for the meaning of |result|. If |result| is
+  // |SUCCEEDED|, then |identity| will contain the full identity of the matching
+  // service instance to which the pending receiver was routed. This service
+  // instance was either already running, or was started as a result of this
+  // request.
+  using BindInterfaceCallback =
+      base::OnceCallback<void(mojom::ConnectResult result,
+                              const base::Optional<Identity>& identity)>;
+  template <typename Interface>
+  void Connect(const ServiceFilter& filter,
+               mojo::PendingReceiver<Interface> receiver,
+               BindInterfaceCallback callback) {
+    BindInterface(filter,
+                  mojo::InterfaceRequest<Interface>(std::move(receiver)),
+                  std::move(callback));
+  }
   // DEPRECATED: Prefer |Connect()| above. |BindInterface()| uses deprecated
   // InterfaceRequest and InterfacePtr types.
   //
@@ -168,9 +186,6 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   // ServiceFilter and InterfaceRequest rather than having a bunch of template
   // helpers to do the same in various combinations. The first and last variants
   // of |BindInterface()| here are sufficient for all use cases.
-  using BindInterfaceCallback =
-      base::OnceCallback<void(mojom::ConnectResult result,
-                              const base::Optional<Identity>& identity)>;
   template <typename Interface>
   void BindInterface(const ServiceFilter& filter,
                      mojo::InterfaceRequest<Interface> request,

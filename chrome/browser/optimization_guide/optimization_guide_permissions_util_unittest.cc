@@ -82,35 +82,35 @@ TEST_F(OptimizationGuidePermissionsUtilTest,
        IsUserPermittedToFetchHintsNonDataSaverUser) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      {optimization_guide::features::kOptimizationHintsFetching});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching});
   SetDataSaverEnabled(false);
   SetInfobarSeen(true);
 
   EXPECT_FALSE(profile()->IsOffTheRecord());
-  EXPECT_FALSE(IsUserPermittedToFetchHints(profile()));
+  EXPECT_FALSE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
 }
 
 TEST_F(OptimizationGuidePermissionsUtilTest,
        IsUserPermittedToFetchHintsDataSaverUserInfobarNotSeen) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      {optimization_guide::features::kOptimizationHintsFetching});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching});
   SetDataSaverEnabled(true);
   SetInfobarSeen(false);
 
-  EXPECT_FALSE(IsUserPermittedToFetchHints(profile()));
+  EXPECT_FALSE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
 }
 
 TEST_F(OptimizationGuidePermissionsUtilTest,
        IsUserPermittedToFetchHintsDataSaverUserInfobarSeen) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
-      {optimization_guide::features::kOptimizationHintsFetching});
+      {optimization_guide::features::kRemoteOptimizationGuideFetching});
   SetDataSaverEnabled(true);
   SetInfobarSeen(true);
 
   EXPECT_FALSE(profile()->IsOffTheRecord());
-  EXPECT_TRUE(IsUserPermittedToFetchHints(profile()));
+  EXPECT_TRUE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
 }
 
 TEST_F(
@@ -118,31 +118,31 @@ TEST_F(
     IsUserPermittedToFetchHintsNonDataSaverUserAnonymousDataCollectionEnabledFeatureEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching,
+      {optimization_guide::features::kRemoteOptimizationGuideFetching,
        optimization_guide::features::
-           kOptimizationHintsFetchingAnonymousDataConsent},
+           kRemoteOptimizationGuideFetchingAnonymousDataConsent},
       {});
   SetDataSaverEnabled(false);
   SetSyncServiceEnabled(true);
   SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 
   EXPECT_FALSE(profile()->IsOffTheRecord());
-  EXPECT_TRUE(IsUserPermittedToFetchHints(profile()));
+  EXPECT_TRUE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
 }
 
 TEST_F(OptimizationGuidePermissionsUtilTest,
        IsUserPermittedToFetchHintsNonDataSaverUserSyncDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching,
+      {optimization_guide::features::kRemoteOptimizationGuideFetching,
        optimization_guide::features::
-           kOptimizationHintsFetchingAnonymousDataConsent},
+           kRemoteOptimizationGuideFetchingAnonymousDataConsent},
       {});
   SetDataSaverEnabled(false);
   SetSyncServiceEnabled(false);
 
   EXPECT_FALSE(profile()->IsOffTheRecord());
-  EXPECT_FALSE(IsUserPermittedToFetchHints(profile()));
+  EXPECT_FALSE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
 }
 
 TEST_F(
@@ -150,16 +150,16 @@ TEST_F(
     IsUserPermittedToFetchHintsNonDataSaverUserAnonymousDataCollectionDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching,
+      {optimization_guide::features::kRemoteOptimizationGuideFetching,
        optimization_guide::features::
-           kOptimizationHintsFetchingAnonymousDataConsent},
+           kRemoteOptimizationGuideFetchingAnonymousDataConsent},
       {});
   SetDataSaverEnabled(false);
   SetSyncServiceEnabled(true);
   SetUrlKeyedAnonymizedDataCollectionEnabled(false);
 
   EXPECT_FALSE(profile()->IsOffTheRecord());
-  EXPECT_FALSE(IsUserPermittedToFetchHints(profile()));
+  EXPECT_FALSE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
 }
 
 TEST_F(
@@ -167,37 +167,37 @@ TEST_F(
     IsUserPermittedToFetchHintsNonDataSaverUserAnonymousDataCollectionEnabledFeatureNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching},
+      {optimization_guide::features::kRemoteOptimizationGuideFetching},
       {optimization_guide::features::
-           kOptimizationHintsFetchingAnonymousDataConsent});
+           kRemoteOptimizationGuideFetchingAnonymousDataConsent});
   SetDataSaverEnabled(false);
   SetSyncServiceEnabled(true);
   SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 
-  EXPECT_FALSE(IsUserPermittedToFetchHints(profile()));
+  EXPECT_FALSE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
 }
 
 TEST_F(OptimizationGuidePermissionsUtilTest,
        IsUserPermittedToFetchHintsAllConsentsEnabledButHintsFetchingDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {}, {optimization_guide::features::kOptimizationHintsFetching});
+      {}, {optimization_guide::features::kRemoteOptimizationGuideFetching});
   SetDataSaverEnabled(true);
   SetInfobarSeen(true);
   SetSyncServiceEnabled(true);
   SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 
   EXPECT_FALSE(profile()->IsOffTheRecord());
-  EXPECT_FALSE(IsUserPermittedToFetchHints(profile()));
+  EXPECT_FALSE(IsUserPermittedToFetchFromRemoteOptimizationGuide(profile()));
 }
 
 TEST_F(OptimizationGuidePermissionsUtilTest,
        IsUserPermittedToFetchHintsAllConsentsEnabledIncognitoProfile) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {optimization_guide::features::kOptimizationHintsFetching,
+      {optimization_guide::features::kRemoteOptimizationGuideFetching,
        optimization_guide::features::
-           kOptimizationHintsFetchingAnonymousDataConsent},
+           kRemoteOptimizationGuideFetchingAnonymousDataConsent},
       {});
   SetDataSaverEnabled(true);
   SetInfobarSeen(true);
@@ -206,5 +206,6 @@ TEST_F(OptimizationGuidePermissionsUtilTest,
 
   Profile* off_the_record_profile = profile()->GetOffTheRecordProfile();
   EXPECT_TRUE(off_the_record_profile->IsOffTheRecord());
-  EXPECT_FALSE(IsUserPermittedToFetchHints(off_the_record_profile));
+  EXPECT_FALSE(IsUserPermittedToFetchFromRemoteOptimizationGuide(
+      off_the_record_profile));
 }

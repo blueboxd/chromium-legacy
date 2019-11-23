@@ -19,12 +19,6 @@
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/shell/common/shell_switches.h"
 
-#if defined(OS_WIN)
-#include "base/base_paths_win.h"
-#elif defined(OS_LINUX)
-#include "base/nix/xdg_util.h"
-#endif
-
 namespace weblayer {
 
 namespace {
@@ -68,40 +62,7 @@ class MainDelegateImpl : public MainDelegate {
 
  private:
   void InitializeProfiles() {
-    base::FilePath path;
-
-    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    if (cmd_line->HasSwitch(switches::kWebLayerShellDataPath)) {
-      path = cmd_line->GetSwitchValuePath(switches::kWebLayerShellDataPath);
-      if (base::DirectoryExists(path) || base::CreateDirectory(path)) {
-        // Profile needs an absolute path, which we would normally get via
-        // PathService. In this case, manually ensure the path is absolute.
-        if (!path.IsAbsolute())
-          path = base::MakeAbsoluteFilePath(path);
-      } else {
-        LOG(ERROR) << "Unable to create data-path directory: " << path.value();
-      }
-    } else {
-#if defined(OS_WIN)
-      CHECK(base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path));
-      path = path.AppendASCII("web_shell");
-#elif defined(OS_LINUX)
-      std::unique_ptr<base::Environment> env(base::Environment::Create());
-      base::FilePath config_dir(
-          base::nix::GetXDGDirectory(env.get(), base::nix::kXdgConfigHomeEnvVar,
-                                     base::nix::kDotConfigDir));
-      path = config_dir.AppendASCII("web_shell");
-#elif defined(OS_ANDROID)
-      CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &path));
-      path = path.AppendASCII("web_shell");
-#else
-      NOTIMPLEMENTED();
-#endif
-      if (!base::PathExists(path))
-        base::CreateDirectory(path);
-    }
-
-    profile_ = Profile::Create(path);
+    profile_ = Profile::Create("web_shell");
 
     // TODO: create an incognito profile as well.
   }

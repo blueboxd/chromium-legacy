@@ -42,20 +42,31 @@ int GetCanvasDimensions(const PathElement* path) {
 }
 
 // Retrieves the appropriate icon representation to draw when the pixel size
-// requested is |icon_size_px|. VectorIconReps may only be downscaled, not
-// upscaled (with the exception of the largest VectorIconRep), so the return
-// result will be the smallest VectorIconRep greater or equal to |icon_size_px|.
+// requested is |icon_size_px|.
 const VectorIconRep* GetRepForPxSize(const VectorIcon& icon, int icon_size_px) {
   if (icon.is_empty())
     return nullptr;
 
-  // Since |VectorIcon::reps| is sorted in descending order by size, search in
-  // reverse order for an icon that is equal to or greater than |icon_size_px|.
+  const VectorIconRep* best_rep = nullptr;
+
+  // Prefer an exact match. If none exists, prefer the largest rep that is an
+  // exact divisor of the icon size (e.g. 20 for a 40px icon). If none exists,
+  // return the smallest rep that is larger than the target. If none exists,
+  // use the largest rep. The rep array is sorted by size in descending order,
+  // so start at the back and work towards the front.
   for (int i = static_cast<int>(icon.reps_size - 1); i >= 0; --i) {
-    if (GetCanvasDimensions(icon.reps[i].path) >= icon_size_px)
-      return &icon.reps[i];
+    const VectorIconRep* rep = &icon.reps[i];
+    int rep_size = GetCanvasDimensions(rep->path);
+    if (rep_size == icon_size_px)
+      return rep;
+
+    if (icon_size_px % rep_size == 0)
+      best_rep = rep;
+
+    if (rep_size > icon_size_px)
+      return best_rep ? best_rep : &icon.reps[i];
   }
-  return &icon.reps[0];
+  return best_rep ? best_rep : &icon.reps[0];
 }
 
 struct CompareIconDescription {

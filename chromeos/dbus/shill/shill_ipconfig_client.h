@@ -31,7 +31,6 @@ class ShillPropertyChangedObserver;
 // initializes the DBusThreadManager instance.
 class COMPONENT_EXPORT(SHILL_CLIENT) ShillIPConfigClient {
  public:
-  typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
 
   class TestInterface {
@@ -73,7 +72,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillIPConfigClient {
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
   virtual void GetProperties(const dbus::ObjectPath& ipconfig_path,
-                             const DictionaryValueCallback& callback) = 0;
+                             DictionaryValueCallback callback) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call succeeds.

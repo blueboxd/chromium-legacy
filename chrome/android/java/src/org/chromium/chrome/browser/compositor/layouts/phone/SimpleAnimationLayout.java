@@ -457,6 +457,6 @@ public class SimpleAnimationLayout extends Layout {
         // The content viewport is intentionally sent as both params below.
         mSceneLayer.pushLayers(getContext(), contentViewport, contentViewport, this,
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
-                SceneLayer.INVALID_RESOURCE_ID, 0);
+                SceneLayer.INVALID_RESOURCE_ID, 0, 0);
     }
 }

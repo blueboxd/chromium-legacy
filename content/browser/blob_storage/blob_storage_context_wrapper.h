@@ -16,35 +16,24 @@
 
 namespace content {
 
-// An IO-thread bound wrapper for the BlobStorageContext remote.
+// A refcounted wrapper for the BlobStorageContext remote.
+// Everything in this wrapper must be called from the same sequence.
 // This gets passed through many layers of classes on different sequences
 // and so it's easier to have the remote bound on the correct sequence
 // and share that remote than it is to bind and clone repeatedly.
-// This is also more efficient than SharedRemote as we know that everything
-// will use this remote from the IO thread.
-//
-// TODO(enne): once cache storage and idb have been converted to talk to the
-// blob system over mojo, there should be no more need for the IO thread hops
-// and everything could be run on the same sequence, eliminating the need
-// for this class.
 class CONTENT_EXPORT BlobStorageContextWrapper
-    : public base::RefCountedThreadSafe<BlobStorageContextWrapper,
-                                        BrowserThread::DeleteOnIOThread> {
+    : public base::RefCounted<BlobStorageContextWrapper> {
  public:
-  // Must be called from the IO thread.
   BlobStorageContextWrapper(
       mojo::PendingRemote<storage::mojom::BlobStorageContext> context);
 
-  // Must be called from the IO thread.
   mojo::Remote<storage::mojom::BlobStorageContext>& context();
 
  private:
-  friend class base::RefCountedThreadSafe<BlobStorageContextWrapper>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
-  friend class base::DeleteHelper<BlobStorageContextWrapper>;
+  friend class base::RefCounted<BlobStorageContextWrapper>;
 
-  // Must be destroyed on the IO thread, but RefCountedThreadSafe takes
-  // care of that automatically.
+  SEQUENCE_CHECKER(sequence_checker_);
+
   ~BlobStorageContextWrapper();
 
   mojo::Remote<storage::mojom::BlobStorageContext> context_;

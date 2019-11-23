@@ -7718,9 +7718,7 @@ interface SVGViewElement : SVGElement
     setter zoomAndPan
 interface Scheduler
     attribute @@toStringTag
-    getter currentTaskQueue
     method constructor
-    method getTaskQueue
     method postTask
 interface Scheduling
     attribute @@toStringTag
@@ -8097,13 +8095,6 @@ interface SyncManager
     method constructor
     method getTags
     method register
-interface Task
-    attribute @@toStringTag
-    getter priority
-    getter result
-    getter status
-    method cancel
-    method constructor
 interface TaskAttributionTiming : PerformanceEntry
     attribute @@toStringTag
     getter containerId
@@ -8112,12 +8103,14 @@ interface TaskAttributionTiming : PerformanceEntry
     getter containerType
     method constructor
     method toJSON
-interface TaskQueue
+interface TaskController : AbortController
+    attribute @@toStringTag
+    method constructor
+    method setPriority
+interface TaskSignal : AbortSignal
     attribute @@toStringTag
     getter priority
     method constructor
-    method postTask
-    method take
 interface Text : CharacterData
     attribute @@toStringTag
     getter assignedSlot

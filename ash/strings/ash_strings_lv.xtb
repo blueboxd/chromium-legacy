@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">Apturēt</translation>
 <translation id="1275285675049378717">Savienojums, izmantojot <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signāla stiprums <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="1289185460362160437">Atgriezieties šajā dienā: <ph name="COME_BACK_DAY_OF_WEEK" />, plkst. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Vājš signāls</translation>
 <translation id="1293264513303784526">USB-C ierīce (pieslēgvieta pa kreisi)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Rādīt Bluetooth iestatījumus. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Vienmēr rādīt plauktu</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, signāla stiprums <ph name="SIGNAL_STRENGTH" />, tālruņa akumulatora statuss <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Pārpilde</translation>
 <translation id="1346748346194534595">Pa labi</translation>
 <translation id="1351937230027495976">Sakļaut izvēlni</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">Noņemt šo lietotāju</translation>
 <translation id="1654477262762802994">Sākt balss vaicājumu</translation>
 <translation id="1658406695958299976">Diemžēl jūsu paroli joprojām nevarēja verificēt. Ņemiet vērā: ja nesen mainījāt paroli, jaunā parole tiks lietota pēc izrakstīšanās. Lūdzu, šeit izmantojiet iepriekšējo paroli.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, pārvalda jūsu administrators</translation>
 <translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adrese: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Nav atpazīts</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Ierakstiet ziņojumu</translation>
 <translation id="2050339315714019657">Portrets</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signāla stiprums <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Tastatūras spilgtums</translation>
 <translation id="209965399369889474">Nav savienojuma ar tīklu</translation>
 <translation id="2126242104232412123">Jauna darbvieta</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">Mobilais tīkls nav pieejams</translation>
 <translation id="3249513730522716925">Logs <ph name="WINDOW_TITLE" /> pārvietots no darbvirsmas <ph name="ACTIVE_DESK" /> uz darbvirsmu <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Iespējamās darbības</translation>
-<translation id="3277674767125718685">Skaņa ir ieslēgta.</translation>
 <translation id="3290356915286466215">Nav aizsargāts</translation>
 <translation id="3294437725009624529">Viesis</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> joprojām varēs pierakstīties vēlāk.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">Kontu pārvalda <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Mainīt atpakaļ uz <ph name="FROM_LOCALE" /> (nepieciešama restartēšana)</translation>
 <translation id="3576141592585647168">Mainīt laika joslu</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, pārvalda jūsu administrators</translation>
 <translation id="3595596368722241419">Akumulators pilns</translation>
 <translation id="3604801046548457007">Darbvirsma <ph name="DESK_TITILE" /> ir izveidota</translation>
 <translation id="3606978283550408104">Savienojums ar Braila displeju ir izveidots.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">Spēcīgs</translation>
 <translation id="4918086044614829423">Pieņemt</translation>
 <translation id="4924411785043111640">Restartēt un atiestatīt</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signāla stiprums <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Ritināt uz augšu</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
 <translation id="5030687792513154421">Izmantošanas laiks beidzies</translation>
 <translation id="5035236842988137213">Ierīce <ph name="DEVICE_NAME" /> ir savienota ar jaunu tālruni</translation>
 <translation id="5083553833479578423">Piekļūstiet citām Asistenta funkcijām</translation>
 <translation id="5136175204352732067">Ir pievienota cita tastatūra</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signāla stiprums <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
 <translation id="5207949376430453814">Izcelt teksta ievietošanas punktu</translation>
 <translation id="5222676887888702881">Izrakstīties</translation>
 <translation id="523505283826916779">Pieejamības iestatījumi</translation>
 <translation id="5260676007519551770">4. galds</translation>
 <translation id="5283198616748585639">Pievienot 1 min</translation>
+<translation id="5286194356314741248">Notiek skenēšana</translation>
 <translation id="5302048478445481009">Valoda</translation>
 <translation id="5313326810920013265">Bluetooth iestatījumi</translation>
 <translation id="5331975486040154427">USB-C ierīce (pieslēgvieta kreisajā pusē aizmugurē)</translation>
 <translation id="5379115545237091094">Pārāk daudz mēģinājumu</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">Šī lietotāja datu lietojumu un vēsturi var pārvaldīt pārzinis (<ph name="MANAGER_EMAIL" />) vietnē chrome.com.</translation>
 <translation id="5430931332414098647">Tūlītēja piesaiste</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">Jūs tiksiet automātiski izrakstīts pēc šāda laika: <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Diemžēl jūsu paroli nevarēja verificēt. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="607652042414456612">Tuvumā esošas Bluetooth ierīces var uztvert jūsu datoru; tā nosaukums ir “<ph name="NAME" />”, adrese — <ph name="ADDRESS" />.</translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signāla stiprums <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="612734058257491180">Google asistents nav pieejams viesa sesijā.</translation>
 <translation id="615957422585914272">Rādīt ekrāna tastatūru</translation>
 <translation id="6164005077879661055">Visi faili un lokālie dati, kas ir saistīti ar uzraudzīto lietotāju, tiks neatgriezeniski dzēsti, tiklīdz uzraudzītais lietotājs tiks noņemts. Iespējams, pārzinis joprojām varēs skatīt šī uzraudzītā lietotāja apmeklētās vietnes un iestatījumus (vietnē <ph name="MANAGEMENT_URL" />).</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">Parole</translation>
 <translation id="6665545700722362599">Piešķirt tīmekļa vietnēm, lietotnēm un paplašinājumiem atļauju izmantot atrašanās vietu pakalpojumus, ierīces mikrofonu, kameru un citas funkcijas</translation>
 <translation id="6670153871843998651">3. galds</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, signāla stiprums <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Noņemamajai tastatūrai nepieciešams svarīgs atjauninājums</translation>
 <translation id="6700713906295497288">IME izvēlnes poga</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">Veiktspējas izsekošana ir ieslēgta.</translation>
 <translation id="6752912906630585008">Darbvirsma <ph name="REMOVED_DESK" /> ir noņemta un apvienota ar darbvirsmu <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Ar USB-C savienojumu notiek vairāku ierīču darbināšana</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, signāla stiprums <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6803622936009808957">Nevarēja spoguļot displejus, jo netika atrasta atbalstīta izšķirtspēja. Tā vietā tika aktivizēts paplašinātās darbvirsmas režīms.</translation>
 <translation id="6820676911989879663">Laiks pārtraukumam</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">Var tikt pārraudzītas tīklā veiktās darbības</translation>
 <translation id="7536035074519304529">IP adrese: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Laiks naktsmieram</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, signāla stiprums <ph name="SIGNAL_STRENGTH" />, tālruņa akumulatora statuss <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> neatbalsta šādu izšķirtspēju: <ph name="SPECIFIED_RESOLUTION" />. Izšķirtspēja tika mainīta uz <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Emocijzīmju palete</translation>
 <translation id="7564874036684306347">Logu pārvietošana uz citu darbvirsmu var izraisīt neparedzētu darbību. Turpmākie paziņojumi, logi un dialoglodziņi var tikt sadalīti pa darbvirsmām.</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">Pārslēgt izvēlnes pozīciju</translation>
 <translation id="9089416786594320554">Ievades metodes</translation>
 <translation id="9091626656156419976">Displejs <ph name="DISPLAY_NAME" /> tika noņemts.</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signāla stiprums <ph name="SIGNAL_STRENGTH" />, pārvalda jūsu administrators</translation>
 <translation id="9151726767154816831">Lai atjauninātu, restartējiet ierīci un izmantojiet funkciju Powerwash.</translation>
 <translation id="9179259655489829027">Šī funkcija ļauj ātri piekļūt jebkuram lietotājam, kurš ir pierakstījies, nepieprasot paroli. Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="9183456764293710005">Pilnekrāna lupa</translation>

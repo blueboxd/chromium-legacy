@@ -501,6 +501,10 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DCHECK(IsMainThread());
+
+  if (!recording_)
+    return;
+
   const base::TimeTicks now = base::TimeTicks::Now();
   // Non-buffered mode does not need to check timestamps.
   if (timeslice_.is_zero()) {

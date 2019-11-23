@@ -1,4 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ne">
+<translation id="1625889395409731085">बाह्य लिंक खोल्ने हो?</translation>
+<translation id="1699570257714336246">जानकारी छुटेको छ</translation>
+<translation id="2203046366315513658">मान घटाउनुहोस्</translation>
+<translation id="3604604794717279723">म स्वीकार गर्छु</translation>
+<translation id="4437727785356380473">Chrome को Google सहायक बन्द भयो।</translation>
+<translation id="4517854969512651305">मान बढाउनुहोस्</translation>
+<translation id="4850886885716139402">हेर्नुहोस्</translation>
+<translation id="5188078772080029703">Chrome ले Google लाई यस साइटको URL र सामग्रीका साथै Chrome मा सुरक्षित गरिएका तपाईंको इमेल र क्रेडिट कार्डको प्रकार पठाउने छ। तपाईं Chrome का सेटिङहरूमा गई यसलाई सक्रिय गर्न वा निष्क्रिय पार्न सक्नुहुन्छ। <ph name="BEGIN_LINK" />थप जान्नुहोस्<ph name="END_LINK" /></translation>
+<translation id="5267269112080050255">Chrome मा पूर्ण उचाइमा खोलिएको Google सहायक।</translation>
+<translation id="6555233628095991027">Chrome मा आधा उचाइमा खोलिएको Google सहायक।</translation>
+<translation id="6973932557599545801">माफ गर्नुहोस्, म मद्दत गर्न सक्दिन, कृपया अब आफैँ अघि बढ्नुहोस्।</translation>
+<translation id="7658239707568436148">रद्द गर्नुहोस्</translation>
+<translation id="8253702004019660079">Chrome को Google सहायक।</translation>
+<translation id="9138504265731110181">Google सहायकले वेबमा चेक आउट गर्न सहयोग गरेर तपाईंको समय बचाउँछ</translation>
+<translation id="945522503751344254">पृष्ठपोषण पठाउनुहोस्</translation>
 </translationbundle>

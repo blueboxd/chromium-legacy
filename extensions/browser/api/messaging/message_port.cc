@@ -25,7 +25,8 @@ void MessagePort::DispatchOnConnect(
     int guest_render_frame_routing_id,
     const MessagingEndpoint& source_endpoint,
     const std::string& target_extension_id,
-    const GURL& source_url) {}
+    const GURL& source_url,
+    base::Optional<url::Origin> source_origin) {}
 
 void MessagePort::DispatchOnDisconnect(const std::string& error_message) {}
 

@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="7814458197256864873">Co&amp;piar</translation>
+<translation id="7848989271541991537">Movido para página <ph name="PAGE_NUMBER" />, linha <ph name="ROW_NUMBER" />, coluna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Não bloquear</translation>
 <translation id="7907591526440419938">Abrir arquivo</translation>
 <translation id="7969046989155602842">Command</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Estante sempre oculta</translation>
 <translation id="8996630695507351249">Verifique se o <ph name="TARGET_DEVICE_NAME" /> está conectado à Internet.</translation>
 <translation id="9002566407876343676">abrir</translation>
-<translation id="9039076430527029379">Mover para a página <ph name="PAGE_NUMBER" />, linha <ph name="ROW_NUMBER" />, coluna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Recolher notificação</translation>
 <translation id="9150735707954472829">Guia</translation>

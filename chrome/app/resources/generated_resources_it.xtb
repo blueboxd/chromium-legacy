@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Azzurro</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> potrebbe non essere in grado di aggiornarsi automaticamente</translation>
 <translation id="1736419249208073774">Esplora</translation>
-<translation id="1736420071277903564">Computer</translation>
 <translation id="1737968601308870607">Segnala bug</translation>
 <translation id="1741314857973421784">Continua</translation>
 <translation id="1743570585616704562">Non riconosciuta</translation>
@@ -1128,6 +1127,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
 <translation id="2619761439309613843">Aggiornamento giornaliero</translation>
 <translation id="2620436844016719705">Sistema</translation>
+<translation id="2621713457727696555">Protetta</translation>
 <translation id="26224892172169984">Non consentire ad alcun sito di gestire i protocolli</translation>
 <translation id="2624142942574147739">Questa pagina sta accedendo alla webcam e al microfono.</translation>
 <translation id="2626799779920242286">Riprova più tardi.</translation>
@@ -1579,6 +1579,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="328571385944182268">Vuoi salvare le password?</translation>
 <translation id="3288047731229977326">Le estensioni in esecuzione in modalità sviluppatore potrebbero danneggiare il computer. Se non sei uno sviluppatore, dovresti disattivare queste estensioni per la tua sicurezza.</translation>
 <translation id="3289856944988573801">Per verificare la disponibilità di aggiornamenti, utilizza una rete Ethernet o Wi-Fi.</translation>
+<translation id="3290356915286466215">Non protetta</translation>
 <translation id="3293644607209440645">Invia questa pagina</translation>
 <translation id="32939749466444286">Il container Linux non è stato avviato. Riprova.</translation>
 <translation id="3294437725009624529">Ospite</translation>
@@ -2020,7 +2021,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3900966090527141178">Esportazione delle password</translation>
 <translation id="3901991538546252627">Connessione a: <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Ripara app</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> è obsoleto</translation>
 <translation id="3908501907586732282">Attiva estensione</translation>
 <translation id="3909477809443608991"><ph name="URL" /> chiede di riprodurre contenuti protetti. Google verificherà l'identità del tuo dispositivo e questo sito potrebbe avervi accesso.</translation>
@@ -2320,7 +2320,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4364327530094270451">Melone</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> condivide una finestra.</translation>
 <translation id="4364830672918311045">Mostra notifiche</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> con <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">L'indirizzo email e la password non corrispondono</translation>
 <translation id="437184764829821926">Impostazioni avanzate carattere</translation>
 <translation id="4374831787438678295">Programma di installazione di Linux</translation>
@@ -2962,7 +2961,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5363109466694494651">Esegui Powerwash e ripristina</translation>
 <translation id="5365881113273618889">La cartella che hai selezionato contiene file sensibili. Vuoi concedere a "<ph name="APP_NAME" />" accesso di scrittura permanente a questa cartella?</translation>
 <translation id="5367091008316207019">Lettura del file in corso...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" />: <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Il telefono è stato bloccato. Sbloccalo per accedere.</translation>
 <translation id="5368779022775404937">Accedi a <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Attiva l'accelerazione del mouse</translation>
@@ -4720,6 +4718,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7912080627461681647">La password è stata modificata sul server. Esci e accedi nuovamente.</translation>
 <translation id="7915457674565721553">Connettiti a Internet per configurare il Controllo genitori</translation>
 <translation id="7915471803647590281">Comunicaci cosa sta accadendo prima di inviare il feedback.</translation>
+<translation id="7918257978052780342">Registrati</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Livello di zoom ancorato:</translation>
 <translation id="7925247922861151263">Controllo AAA non riuscito</translation>
@@ -5505,7 +5504,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9023015617655685412">Aggiungi questa scheda ai preferiti…</translation>
 <translation id="9024127637873500333">&amp;Apri in un'altra scheda</translation>
 <translation id="9024158959543687197">Errore durante il montaggio della condivisione. Verifica l'URL condivisione file e riprova.</translation>
-<translation id="9024885274934357065">Il tuo dispositivo è bloccato con Smart Lock. Premi INVIO per sbloccarlo.</translation>
+<translation id="9024885274934357065">Il tuo dispositivo può essere sbloccato con Smart Lock. Premi INVIO per sbloccarlo.</translation>
 <translation id="9026731007018893674">download</translation>
 <translation id="9026852570893462412">Questa procedura potrebbe richiedere alcuni minuti. Download della macchina virtuale in corso.</translation>
 <translation id="9027459031423301635">Apri link in un'altra &amp;scheda</translation>

@@ -6,28 +6,47 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See docs/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("native_theme") {
   sources = [
     "caption_style.cc",
     "caption_style.h",
-    "caption_style_mac.mm",
-    "caption_style_win.cc",
     "common_theme.cc",
     "common_theme.h",
     "native_theme.cc",
     "native_theme.h",
-    "native_theme_android.cc",
-    "native_theme_android.h",
     "native_theme_base.cc",
     "native_theme_base.h",
     "native_theme_export.h",
     "native_theme_features.cc",
     "native_theme_features.h",
-    "native_theme_mac.h",
-    "native_theme_mac.mm",
     "native_theme_observer.cc",
     "native_theme_observer.h",
   ]
+
+  if (is_android) {
+    sources += [
+      "native_theme_android.cc",
+      "native_theme_android.h",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "caption_style_mac.mm",
+      "native_theme_mac.h",
+      "native_theme_mac.mm",
+    ]
+  }
+
+  if (is_win) {
+    sources += [ "caption_style_win.cc" ]
+  }
 
   if (use_aura || toolkit_views) {
     sources += [

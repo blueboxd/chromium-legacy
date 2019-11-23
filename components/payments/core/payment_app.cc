@@ -20,6 +20,16 @@ gfx::ImageSkia PaymentApp::icon_image_skia() const {
   return gfx::ImageSkia();
 }
 
+void PaymentApp::IsValidForPaymentMethodIdentifier(
+    const std::string& payment_method_identifier,
+    bool* is_valid) const {
+  *is_valid = base::Contains(app_method_names_, payment_method_identifier);
+}
+
+const std::set<std::string>& PaymentApp::GetAppMethodNames() const {
+  return app_method_names_;
+}
+
 // static
 void PaymentApp::SortApps(std::vector<std::unique_ptr<PaymentApp>>* apps) {
   DCHECK(apps);

@@ -114,6 +114,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Please enter a number.</translation>
 <translation id="4912536737030637138">bibliography entry</translation>
+<translation id="492244087561876220">comment</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> selected</translation>
 <translation id="4992066212339426712">Unmute</translation>
 <translation id="49969490063480558">Please enter a part following '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' is incomplete.</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">Month</translation>
 <translation id="901493112792887934">current time in seconds</translation>
 <translation id="901834265349196618">email</translation>
+<translation id="9023835124071926463">comment section</translation>
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">exit picture-in-picture</translation>

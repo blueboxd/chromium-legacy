@@ -355,6 +355,27 @@ void SupervisedUserService::UpdateApprovedExtensions(
     ChangeExtensionStateIfNecessary(extension_id);
   }
 }
+
+bool SupervisedUserService::
+    GetSupervisedUserExtensionsMayRequestPermissionsPref() const {
+  return profile_->GetPrefs()->GetBoolean(
+      prefs::kSupervisedUserExtensionsMayRequestPermissions);
+}
+
+void SupervisedUserService::
+    SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
+        bool enabled) {
+  // TODO(crbug/1024646): kSupervisedUserExtensionsMayRequestPermissions is
+  // currently set indirectly by setting geolocation requests. Update Kids
+  // Management server to set a new bit for extension permissions and update
+  // this setter function.
+  GetSettingsService()->SetLocalSetting(
+      supervised_users::kGeolocationDisabled,
+      std::make_unique<base::Value>(!enabled));
+  profile_->GetPrefs()->SetBoolean(
+      prefs::kSupervisedUserExtensionsMayRequestPermissions, enabled);
+}
+
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 void SupervisedUserService::SetActive(bool active) {
@@ -713,9 +734,19 @@ SupervisedUserService::ExtensionState SupervisedUserService::GetExtensionState(
     return ExtensionState::ALLOWED;
   }
 
+  // Feature flag for gating new behavior.
   if (!base::FeatureList::IsEnabled(
           supervised_users::kSupervisedUserInitiatedExtensionInstall)) {
     return ExtensionState::BLOCKED;
+  }
+
+  if (!GetSupervisedUserExtensionsMayRequestPermissionsPref()) {
+    if (!ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+            extension.id())) {
+      // Block child users from installing new extensions. Already installed
+      // extensions should not be affected.
+      return ExtensionState::BLOCKED;
+    }
   }
 
   auto extension_it = approved_extensions_map_.find(extension.id());
@@ -812,14 +843,22 @@ void SupervisedUserService::OnExtensionInstalled(
 
     UpdateApprovedExtensions(id, version.GetString(),
                              syncer::SyncChange::ACTION_ADD);
+  } else {
+    // Upon extension update, the approved version may (or may not) match the
+    // installed one. Therefore, a change in extension state might be required.
+    ChangeExtensionStateIfNecessary(id);
   }
-  // Upon extension update, the approved version may (or may not) match the
-  // installed one. Therefore, a change in extension state might be required.
-  ChangeExtensionStateIfNecessary(id);
 }
 
 void SupervisedUserService::ChangeExtensionStateIfNecessary(
     const std::string& extension_id) {
+  // If the profile is not supervised, do nothing.
+  // TODO(crbug/1026900): SupervisedUserService should not be active if the
+  // profile is not even supervised during browser tests, i.e. this check
+  // shouldn't be needed.
+  if (!active_)
+    return;
+  DCHECK(ProfileIsSupervised());
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   const Extension* extension = registry->GetInstalledExtension(extension_id);
   // If the extension is not installed (yet), do nothing.

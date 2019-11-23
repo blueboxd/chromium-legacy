@@ -660,11 +660,14 @@ bool MixedContentChecker::IsMixedFormAction(
 }
 
 bool MixedContentChecker::ShouldAutoupgrade(HttpsState context_https_state,
-                                            WebMixedContentContextType type) {
+                                            mojom::RequestContextType type) {
+  // We are currently not autoupgrading plugin loaded content, which is why
+  // strict_mixed_content_for_plugin is hardcoded to true.
   if (!base::FeatureList::IsEnabled(
           blink::features::kMixedContentAutoupgrade) ||
       context_https_state == HttpsState::kNone ||
-      type == WebMixedContentContextType::kNotMixedContent) {
+      WebMixedContent::ContextTypeFromRequestContext(type, true) !=
+          WebMixedContentContextType::kOptionallyBlockable) {
     return false;
   }
 
@@ -673,13 +676,8 @@ bool MixedContentChecker::ShouldAutoupgrade(HttpsState context_https_state,
       blink::features::kMixedContentAutoupgradeModeParamName);
 
   if (autoupgrade_mode ==
-      blink::features::kMixedContentAutoupgradeModeBlockable) {
-    return type == WebMixedContentContextType::kBlockable ||
-           type == WebMixedContentContextType::kShouldBeBlockable;
-  }
-  if (autoupgrade_mode ==
-      blink::features::kMixedContentAutoupgradeModeOptionallyBlockable) {
-    return type == WebMixedContentContextType::kOptionallyBlockable;
+      blink::features::kMixedContentAutoupgradeModeNoImages) {
+    return type != mojom::RequestContextType::IMAGE;
   }
 
   // Otherwise we default to autoupgrading all mixed content.
@@ -774,24 +772,6 @@ ConsoleMessage* MixedContentChecker::CreateConsoleMessageAboutFetchAutoupgrade(
                                 mojom::ConsoleMessageLevel::kWarning, message);
 }
 
-// static
-ConsoleMessage*
-MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
-    const KURL& main_resource_url,
-    const KURL& mixed_content_url) {
-  String message = String::Format(
-      "Mixed Content: The page at '%s' was loaded over HTTPS, but attempted "
-      "to connect to the insecure WebSocket endpoint '%s'. "
-      "This request was automatically upgraded to HTTPS, For more "
-      "information see "
-      "https://chromium.googlesource.com/chromium/src/+/master/docs/security/"
-      "autoupgrade-mixed.md",
-      main_resource_url.ElidedString().Utf8().c_str(),
-      mixed_content_url.ElidedString().Utf8().c_str());
-  return ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
-                                mojom::ConsoleMessageLevel::kWarning, message);
-}
-
 WebMixedContentContextType MixedContentChecker::ContextTypeForInspector(
     LocalFrame* frame,
     const ResourceRequest& request) {
@@ -831,14 +811,11 @@ void MixedContentChecker::UpgradeInsecureRequest(
   if (!(fetch_client_settings_object->GetInsecureRequestsPolicy() &
         kUpgradeInsecureRequests)) {
     mojom::RequestContextType context = resource_request.GetRequestContext();
-    // TODO(carlosil): Handle strict_mixed_content_checking_for_plugin
-    // correctly.
     if (context != mojom::RequestContextType::UNSPECIFIED &&
         resource_request.Url().ProtocolIs("http") &&
         !fetch_client_settings_object->GetMixedAutoUpgradeOptOut() &&
         MixedContentChecker::ShouldAutoupgrade(
-            fetch_client_settings_object->GetHttpsState(),
-            WebMixedContent::ContextTypeFromRequestContext(context, false))) {
+            fetch_client_settings_object->GetHttpsState(), context)) {
       if (execution_context_for_logging->IsDocument()) {
         Document* document =
             static_cast<Document*>(execution_context_for_logging);

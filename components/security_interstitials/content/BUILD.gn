@@ -11,6 +11,8 @@ static_library("security_interstitial_page") {
     "certificate_error_report.h",
     "connection_help_ui.cc",
     "connection_help_ui.h",
+    "known_interception_disclosure_ui.cc",
+    "known_interception_disclosure_ui.h",
     "origin_policy_interstitial_page.cc",
     "origin_policy_interstitial_page.h",
     "origin_policy_ui.cc",

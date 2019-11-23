@@ -21,8 +21,6 @@ constexpr float kFov = 45.0f;
 constexpr unsigned int kRenderWidth = 1024;
 constexpr unsigned int kRenderHeight = 1024;
 
-constexpr float kStageSizeX = 0.0f;
-constexpr float kStageSizeZ = 0.0f;
 // OpenXR doesn't give out display info until you start a session.
 // However our mojo interface expects display info right away to support WebVR.
 // We create a fake display info to use, then notify the client that the display
@@ -49,11 +47,6 @@ mojom::VRDisplayInfoPtr CreateFakeVRDisplayInfo(device::mojom::XRDeviceId id) {
   display_info->left_eye->render_height = kRenderHeight;
   display_info->right_eye->render_width = kRenderWidth;
   display_info->right_eye->render_height = kRenderHeight;
-
-  display_info->stage_parameters = mojom::VRStageParameters::New();
-  display_info->stage_parameters->standing_transform = gfx::Transform();
-  display_info->stage_parameters->size_x = kStageSizeX;
-  display_info->stage_parameters->size_z = kStageSizeZ;
 
   return display_info;
 }

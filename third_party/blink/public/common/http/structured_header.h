@@ -46,24 +46,26 @@ namespace http_structured_header {
 // values should be ASCII byte strings (non-ASCII characters should not be
 // present in Structured Header values, and will cause the entire header to fail
 // to parse.)
-//
-// Currently only limited types (non-negative integers, strings, tokens and
-// byte sequences) are supported.
-// TODO(1011101): Add support for other types.
 
 class BLINK_COMMON_EXPORT Item {
  public:
   enum ItemType {
     kNullType,
     kIntegerType,
+    kFloatType,
     kStringType,
     kTokenType,
-    kByteSequenceType
+    kByteSequenceType,
+    kBooleanType
   };
   Item();
-  Item(int64_t value);
+  explicit Item(int64_t value);
+  explicit Item(double value);
+  explicit Item(bool value);
 
   // Constructors for string-like items: Strings, Tokens and Byte Sequences.
+  Item(const char* value, Item::ItemType type = kStringType);
+  //  Item(StringPiece value, Item::ItemType type = kStringType);
   Item(const std::string& value, Item::ItemType type = kStringType);
   Item(std::string&& value, Item::ItemType type = kStringType);
 
@@ -74,16 +76,26 @@ class BLINK_COMMON_EXPORT Item {
 
   bool is_null() const { return type_ == kNullType; }
   bool is_integer() const { return type_ == kIntegerType; }
+  bool is_float() const { return type_ == kFloatType; }
   bool is_string() const { return type_ == kStringType; }
   bool is_token() const { return type_ == kTokenType; }
   bool is_byte_sequence() const { return type_ == kByteSequenceType; }
+  bool is_boolean() const { return type_ == kBooleanType; }
 
-  int64_t integer() const {
+  int64_t GetInteger() const {
     DCHECK_EQ(type_, kIntegerType);
     return integer_value_;
   }
+  double GetFloat() const {
+    DCHECK_EQ(type_, kFloatType);
+    return float_value_;
+  }
+  bool GetBoolean() const {
+    DCHECK_EQ(type_, kBooleanType);
+    return boolean_value_;
+  }
   // TODO(iclelland): Split up accessors for String, Token and Byte Sequence.
-  const std::string& string() const {
+  const std::string& GetString() const {
     DCHECK(type_ == kStringType || type_ == kTokenType ||
            type_ == kByteSequenceType);
     return string_value_;
@@ -95,6 +107,8 @@ class BLINK_COMMON_EXPORT Item {
   // values here with a union or std::variant (when available).
   int64_t integer_value_ = 0;
   std::string string_value_;
+  double float_value_;
+  bool boolean_value_;
 };
 
 // Holds a ParameterizedIdentifier (draft 9 only). The contained Item must be a

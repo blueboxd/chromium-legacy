@@ -76,11 +76,6 @@ the installed versions of Chrome to use as the WebView.
 
 ## Trichrome (Android Q+)
 
-*** promo
-The channels described in the following section are not yet available via the
-Play Store, but will be by the date of release of Android Q.
-***
-
 For Android Q+, WebView and Chrome are again separately installed APKs. However,
 Google began building a separate package of WebView for each of the four Chrome
 channels: Stable, Beta, Dev, and Canary. Like with Monochrome, users can find

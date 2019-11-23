@@ -13,16 +13,16 @@ import java.util.Map;
 public class ProfileManager {
     private final Map<String, ProfileImpl> mProfiles = new HashMap<>();
 
-    /** Returns existing or new Profile associated with the given path */
-    public ProfileImpl getProfile(String path) {
-        if (path == null) throw new IllegalArgumentException("Path shouldn't be null");
-        ProfileImpl existingProfile = mProfiles.get(path);
+    /** Returns existing or new Profile associated with the given name. */
+    public ProfileImpl getProfile(String name) {
+        if (name == null) throw new IllegalArgumentException("Name shouldn't be null");
+        ProfileImpl existingProfile = mProfiles.get(name);
         if (existingProfile != null) {
             return existingProfile;
         }
 
-        ProfileImpl profile = new ProfileImpl(path, () -> mProfiles.remove(path));
-        mProfiles.put(path, profile);
+        ProfileImpl profile = new ProfileImpl(name, () -> mProfiles.remove(name));
+        mProfiles.put(name, profile);
         return profile;
     }
 }

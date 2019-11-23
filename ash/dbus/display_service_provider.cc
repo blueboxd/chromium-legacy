@@ -20,12 +20,12 @@ namespace ash {
 namespace {
 
 void OnDisplayOwnershipChanged(
-    const dbus::ExportedObject::ResponseSender& response_sender,
+    dbus::ExportedObject::ResponseSender response_sender,
     std::unique_ptr<dbus::Response> response,
     bool status) {
   dbus::MessageWriter writer(response.get());
   writer.AppendBool(status);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 }  // namespace
@@ -121,7 +121,7 @@ void DisplayServiceProvider::SetDisplayPower(
   if (!reader.PopInt32(&int_state)) {
     LOG(ERROR) << "Unable to parse request: "
                << chromeos::kDisplayServiceSetPowerMethod;
-    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+    std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
     return;
   }
 
@@ -134,13 +134,14 @@ void DisplayServiceProvider::SetDisplayPower(
   Shell::Get()->display_configurator()->SetDisplayPower(
       static_cast<chromeos::DisplayPowerState>(int_state),
       display::DisplayConfigurator::kSetDisplayPowerNoFlags,
-      base::BindRepeating(
+      base::BindOnce(
           [](dbus::MethodCall* method_call,
              dbus::ExportedObject::ResponseSender response_sender,
              bool /*status*/) {
-            response_sender.Run(dbus::Response::FromMethodCall(method_call));
+            std::move(response_sender)
+                .Run(dbus::Response::FromMethodCall(method_call));
           },
-          method_call, response_sender));
+          method_call, std::move(response_sender)));
 }
 
 void DisplayServiceProvider::SetDisplaySoftwareDimming(
@@ -154,23 +155,23 @@ void DisplayServiceProvider::SetDisplaySoftwareDimming(
     LOG(ERROR) << "Unable to parse request: "
                << chromeos::kDisplayServiceSetSoftwareDimmingMethod;
   }
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void DisplayServiceProvider::TakeDisplayOwnership(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  impl_->TakeDisplayOwnership(base::BindOnce(
-      &OnDisplayOwnershipChanged, response_sender,
-      base::Passed(dbus::Response::FromMethodCall(method_call))));
+  impl_->TakeDisplayOwnership(
+      base::BindOnce(&OnDisplayOwnershipChanged, std::move(response_sender),
+                     dbus::Response::FromMethodCall(method_call)));
 }
 
 void DisplayServiceProvider::ReleaseDisplayOwnership(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  impl_->ReleaseDisplayOwnership(base::BindOnce(
-      &OnDisplayOwnershipChanged, response_sender,
-      base::Passed(dbus::Response::FromMethodCall(method_call))));
+  impl_->ReleaseDisplayOwnership(
+      base::BindOnce(&OnDisplayOwnershipChanged, std::move(response_sender),
+                     dbus::Response::FromMethodCall(method_call)));
 }
 
 void DisplayServiceProvider::OnExported(const std::string& interface_name,

@@ -16,6 +16,13 @@ namespace prefs {
 const char kHintsFetcherLastFetchAttempt[] =
     "optimization_guide.hintsfetcher.last_fetch_attempt";
 
+// A pref that stores the last time a prediction model and host model features
+// fetch was attempted. This limits the frequency of fetching for updates and
+// prevents a crash loop that continually fetches prediction models and host
+// model features on startup.
+const char kModelAndFeaturesLastFetchAttempt[] =
+    "optimization_guide.predictionmodelfetcher.last_fetch_attempt";
+
 // A dictionary pref that stores the set of hosts that cannot have hints fetched
 // for until visited again after fetching from the remote Optimization Guide
 // Service was first allowed. If The hash of the host is in the dictionary, then
@@ -58,6 +65,10 @@ const char kPendingHintsProcessingVersion[] =
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(
       kHintsFetcherLastFetchAttempt,
+      base::Time().ToDeltaSinceWindowsEpoch().InMicroseconds(),
+      PrefRegistry::LOSSY_PREF);
+  registry->RegisterInt64Pref(
+      kModelAndFeaturesLastFetchAttempt,
       base::Time().ToDeltaSinceWindowsEpoch().InMicroseconds(),
       PrefRegistry::LOSSY_PREF);
   registry->RegisterDictionaryPref(kHintsFetcherTopHostBlacklist,

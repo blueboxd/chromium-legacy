@@ -1,0 +1,9 @@
+group
+++document Name='PDF document containing 1 page'
+++++region Name='Page 1'
+++++++group
+++++++++link Name='start first link start second link end second link end first link<newline>'
+++++++group
+++++++++link Name=' start second link end second link'
+++++++++link Name='START FIRST LINK START SECOND LINK END FIRST LINK'
+++++++++link Name='START SECOND LINK END FIRST LINK END SECOND LINK'

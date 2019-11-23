@@ -3,13 +3,12 @@
     --tabstrip-tab-height: calc(var(--tabstrip-tab-title-height) +
                                 var(--tabstrip-tab-thumbnail-height));
     --tabstrip-tab-width: var(--tabstrip-tab-thumbnail-width);
-    --tabstrip-tab-margin-inline-end: 16px;
+    --tabstrip-tab-spacing: 16px;
 
     background: var(--tabstrip-background-color);
     box-sizing: border-box;
     display: flex;
     min-width: fit-content;
-    padding: 16px;
     width: 100%;
   }
 
@@ -24,7 +23,8 @@
     grid-auto-flow: column;
     grid-gap: 10px;
     grid-template-rows: repeat(4, var(--tabstrip-pinned-tab-size));
-    margin-inline-end: var(--tabstrip-tab-margin-inline-end);
+    padding: var(--tabstrip-tab-spacing);
+    padding-inline-end: 0;
   }
 
   #pinnedTabsContainer:empty {
@@ -33,14 +33,9 @@
 
   #tabsContainer {
     display: flex;
-  }
-
-  #tabsContainer tabstrip-tab {
-    margin-inline-end: var(--tabstrip-tab-margin-inline-end);
-  }
-
-  #tabsContainer tabstrip-tab:last-child {
-    --tabstrip-tab-margin-inline-end: 0;
+    overflow: hidden;
+    padding: var(--tabstrip-tab-spacing);
+    padding-inline-end: 0;
   }
 
   #demoOptions {

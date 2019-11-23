@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> of <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Oorsigmodus</translation>
 <translation id="4382340674111381977">Gaan terug na vorige bladsy</translation>
+<translation id="4458670250301149821">Beweeg 'n programikoon in of uit 'n vouer in die programrooster</translation>
 <translation id="4472417192667361414">Stelsel- en skerminstellings</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, dan <ph name="LEFT" /> of <ph name="RIGHT" /> of <ph name="UP" /> of <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Sien Kortpadsleutels-helper</translation>
 <translation id="4628718545549558538">Maak die statusarea oop (waar jou rekeningprent verskyn)</translation>
 <translation id="4642092649622328492">Neem gedeeltelike skermkiekie</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Vee die volgende letter uit (vorentoe-uitvee)</translation>
 <translation id="7500368597227394048">koppelteken</translation>
 <translation id="7611271430932669992">Skuif fokus na opspringers en dialoë</translation>
+<translation id="7635348532214572995">Beweeg 'n programikoon in die programrooster rond</translation>
 <translation id="766326951329901120">Plak inhoud van die knipbord af as skoonteks</translation>
 <translation id="7703010453515335249">beginhakie</translation>
 <translation id="7724603315864178912">Knip</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Plak inhoud van die knipbord af</translation>
 <translation id="9052808072970550123">Wissel na die volgende gebruiker</translation>
 <translation id="906458777597946297">Maak venster groot</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, dan <ph name="LEFT" /> of <ph name="RIGHT" /> of <ph name="UP" /> of <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Gaan na begin van reël</translation>
 <translation id="9106898733795143799">Bladsy- en webblaaier</translation>
 <translation id="9162942292291287644">Geen soekresultaat vir <ph name="QUERY" /> nie</translation>

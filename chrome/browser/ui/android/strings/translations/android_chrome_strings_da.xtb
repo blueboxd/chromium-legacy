@@ -635,7 +635,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5689516760719285838">Placering</translation>
 <translation id="569536719314091526">Oversæt denne side til et hvilket som helst sprog via knappen Flere valgmuligheder</translation>
-<translation id="5710871682236653961">Spørg om tilladelse, før websites gives mulighed for at sende og modtage oplysninger, når du trykker på NFC-enheder (anbefalet)</translation>
+<translation id="5710871682236653961">Spørg om tilladelse, før websites får mulighed for at sende og modtage oplysninger, når du parrer NFC-enheder (anbefalet)</translation>
 <translation id="572328651809341494">Seneste faner</translation>
 <translation id="5726692708398506830">Gør alting på siden større</translation>
 <translation id="5748802427693696783">Skiftet til standardfaner</translation>
@@ -774,7 +774,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6697947395630195233">Chrome skal have adgang til din placering for at dele din placering med dette website.</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
 <translation id="6699370405921460408">Google-serverne optimerer de sider, du besøger.</translation>
-<translation id="6706288973712894588">Du er i øjeblikket offline.\n<ph name="BEGIN_LINK" />Gå på opdagelse i dit offlinefeed<ph name="END_LINK" />.</translation>
 <translation id="6709133671862442373">Nyheder</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="671481426037969117">Din timer for <ph name="FQDN" /> udløb. Den starter igen i morgen.</translation>
@@ -886,7 +885,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="7559975015014302720">Lite-tilstand er deaktiveret</translation>
 <translation id="7562080006725997899">Browserdata ryddes</translation>
 <translation id="756809126120519699">Chrome-dataene blev ryddet</translation>
-<translation id="7572498721684305250">Bloker websites, så de ikke kan sende og modtage oplysninger, når du trykker på NFC-enheder</translation>
+<translation id="7572498721684305250">Bloker websites, så de ikke kan sende og modtage oplysninger, når du parrer NFC-enheder</translation>
 <translation id="757524316907819857">Bloker afspilning af beskyttet indhold på websites</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fil blev downloadet}one{<ph name="FILES_DOWNLOADED_MANY" /> fil blev downloadet}other{<ph name="FILES_DOWNLOADED_MANY" /> filer blev downloadet}}</translation>
 <translation id="7588219262685291874">Aktivér mørkt tema, når enhedens batterisparefunktion er aktiveret</translation>

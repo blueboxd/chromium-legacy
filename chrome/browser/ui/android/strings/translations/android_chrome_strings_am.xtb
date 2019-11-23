@@ -264,6 +264,7 @@
 <translation id="2903493209154104877">አድራሻዎች</translation>
 <translation id="290376772003165898">ገጽ በ<ph name="LANGUAGE" /> አይደለም?</translation>
 <translation id="2904414404539560095">በሙሉ ቁመቱ ላይ የተከፈተ ትር የሚጋሩ የመሣሪያዎች ዝርዝር።</translation>
+<translation id="2905036901251765993">በአቅራቢያ ካሉ ሰዎች ጋር ለማጋራት፣ ይህን QR ኮድ እንዲቃኙ ይፍቀዱላቸው</translation>
 <translation id="2909615210195135082">የGoogle ማሳወቂያዎች መሣሪያ ስርዓት</translation>
 <translation id="2910701580606108292">ጣቢያዎች ጥበቃ የሚደረግለትን ይዘትን እንዲያጫውቱ ከመፍቀድ በፊት ጠይቅ</translation>
 <translation id="2913331724188855103">ጣቢያዎች የኩኪ ውሂብ እንዲያስቀምጡ እና እንዲያነቡ ይፍቀዱ (የሚመከር)</translation>
@@ -358,6 +359,7 @@
 <translation id="3632295766818638029">የይለፍ ቃልን ግለጥ</translation>
 <translation id="363596933471559332">የተከማቹ ምስክርነቶችን በመጠቀም በራስ-ሰር ወደ የድር ጣቢያዎች መለያ ይግቡ። ባህሪው ሲጠፋ ወደ አንድ ድር ጣቢያ ከመግባትዎ በፊት ማረጋገጫ ይጠየቃሉ።</translation>
 <translation id="3658159451045945436">ዳግም ማስጀመር የተጎበኙ ጣቢያዎች ዝርዝር ጨምሮ የውሂብ ቁጠባዎን ታሪክ ይደመስሳል።</translation>
+<translation id="3682730288090679318">ጣቢያዎች ለእርስዎ ማሳወቂያዎች ከማሳየት ከመጠየቅ እንዲታገዱ በራስ ሰር ማገድን አንቃ። አንድ ጣቢያ ማሳወቂያዎችን ከጠየቀ፣ በገጹ ግርጌ ላይ የመረጃ አሞሌ ብቅ ይላል።</translation>
 <translation id="3692944402865947621">የማከማቻ ቦታው የማይገኝ ስለሆነ <ph name="FILE_NAME" />ን ማውረድ አልተሳካም።</translation>
 <translation id="3714981814255182093">የአግኝ አሞሌን ክፈት</translation>
 <translation id="3716182511346448902">ይህ ገጽ በጣም ብዙ ማህደረ ትውስታን ይጠቀማል፣ ስለዚህ Chrome ባለበት አቁሞታል።</translation>
@@ -542,6 +544,7 @@
 <translation id="5048398596102334565">ጣቢያዎች የእንቅስቃሴ ዳሳሾችን እንዲደርሱባቸው ይፍቀዱ (የሚመከር)</translation>
 <translation id="5063480226653192405">አጠቃቀም</translation>
 <translation id="5087580092889165836">ካርድ አክል</translation>
+<translation id="5096950519211870196">ጣቢያዎች ለእርስዎ ማሳወቂያዎችን ለማሳየት እንዳይጠይቅዎት ይታገዳሉ። አንድ ጣቢያ ማሳወቂያዎችን ከጠየቀ፣ በገጹ ግርጌ ላይ የመረጃ አሞሌ ብቅ ይላል።</translation>
 <translation id="5100237604440890931">ተሰብስቧል - ለመዘርጋት ጠቅ ያድርጉ</translation>
 <translation id="510275257476243843">1 ሰዓት ይቀራል</translation>
 <translation id="5123685120097942451">ማንነት የማያሳውቅ ትር</translation>
@@ -589,6 +592,7 @@
 <translation id="5414836363063783498">በማረጋገጥ ላይ…</translation>
 <translation id="5423934151118863508">በጣም በብዛት የተጎበኙ ገጾችዎ እዚህ ይመጣሉ</translation>
 <translation id="5424588387303617268"><ph name="GIGABYTES" /> ጊባ ይገኛል</translation>
+<translation id="5427766642345310212">ገባኝ። በነባሪ፣ አዲስ ማሳወቂያ ጥያቂዎች እዚህ ላይ ብቅ ይላሉ።</translation>
 <translation id="543338862236136125">የይለፍ ቃል አርትዕ</translation>
 <translation id="5433691172869980887">የተጠቃሚ ስም ተቀድቷል</translation>
 <translation id="543509235395288790"><ph name="COUNT" /> ፋይሎችን በማውረድ ላይ (<ph name="MEGABYTES" />)።</translation>
@@ -687,6 +691,7 @@
 <translation id="6108923351542677676">ማዋቀር በሂደት ላይ…</translation>
 <translation id="6111020039983847643">ጥቅም ላይ የዋለው ውሂብ</translation>
 <translation id="6112702117600201073">ገጽ በማደስ ላይ</translation>
+<translation id="6113400363611269907">ጥያቄዎችን በጸጥታ አሳይ</translation>
 <translation id="6127379762771434464">ንጥል ተወግዷል</translation>
 <translation id="6140912465461743537">አገር/ክልል</translation>
 <translation id="614940544461990577">ይሞክሩ፦</translation>
@@ -774,7 +779,6 @@
 <translation id="6697947395630195233">Chrome አካባቢዎን ለዚህ ጣቢያ ለማጋራት የአካባቢዎ መዳረሻ ይፈልጋል።</translation>
 <translation id="6698801883190606802">የተመሳሰለ ውሂብ ያስተዳድሩ</translation>
 <translation id="6699370405921460408">የGoogle አገልጋዮች እርስዎ የሚጎበኟቸውን ገጾች ያተባሉ።</translation>
-<translation id="6706288973712894588">በአሁኑ ጊዜ ከመስመር ውጪ ነዎት።\n<ph name="BEGIN_LINK" />የመስመር ውጭ ምግብዎን ያስሱ።<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">ዜና</translation>
 <translation id="6710213216561001401">ቀዳሚ</translation>
 <translation id="671481426037969117">የእርስዎ <ph name="FQDN" /> ሰዓት ቆጣሪ ጊዜ አልቋል። ነገ እንደገና ይጀመራል።</translation>
@@ -1020,6 +1024,7 @@
 <translation id="8503813439785031346">የተጣቃሚ ስም</translation>
 <translation id="8514477925623180633">ከChrome ጋር የተከማቹ የይለፍ ቃሎችን ወደ ውጭ ላክ</translation>
 <translation id="8514577642972634246">ማንነት ወደ ማያሳውቅ ሁነታ ይግቡ</translation>
+<translation id="8516012719330875537">የምስል አርታዒ</translation>
 <translation id="851751545965956758">ጣቢያዎች ከመሣሪያዎች ጋር እንዳይገናኙ አግድ</translation>
 <translation id="8523928698583292556">የተከማቸ የይለፍ ቃል ሰርዝ</translation>
 <translation id="854522910157234410">ይህን ገጽ ክፈት</translation>

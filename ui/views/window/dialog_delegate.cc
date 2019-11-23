@@ -226,13 +226,19 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
 const DialogClientView* DialogDelegate::GetDialogClientView() const {
   if (!GetWidget())
     return nullptr;
-  return GetWidget()->client_view()->AsDialogClientView();
+  const views::View* client_view = GetWidget()->client_view();
+  return client_view->GetClassName() == DialogClientView::kViewClassName
+             ? static_cast<const DialogClientView*>(client_view)
+             : nullptr;
 }
 
 DialogClientView* DialogDelegate::GetDialogClientView() {
   if (!GetWidget())
     return nullptr;
-  return GetWidget()->client_view()->AsDialogClientView();
+  views::View* client_view = GetWidget()->client_view();
+  return client_view->GetClassName() == DialogClientView::kViewClassName
+             ? static_cast<DialogClientView*>(client_view)
+             : nullptr;
 }
 
 BubbleFrameView* DialogDelegate::GetBubbleFrameView() const {

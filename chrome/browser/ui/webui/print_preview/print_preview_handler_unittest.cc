@@ -590,15 +590,15 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
   }
 }
 
-// Validates the 'printing.printer_type_blacklist' pref by blacklisting the
-// extension and privet printer types. A 'getPrinters' Web UI message is then
-// called for all three fetchable printer types; only local printers should be
-// successfully fetched.
-TEST_F(PrintPreviewHandlerTest, GetNoBlacklistedPrinters) {
-  base::Value::ListStorage blacklist;
-  blacklist.push_back(base::Value("extension"));
-  blacklist.push_back(base::Value("privet"));
-  prefs()->Set(prefs::kPrinterTypeBlacklist, base::Value(std::move(blacklist)));
+// Validates the 'printing.printer_type_deny_list' pref by placing the extension
+// and privet printer types on a deny list. A 'getPrinters' Web UI message is
+// then called for all three fetchable printer types; only local printers should
+// be successfully fetched.
+TEST_F(PrintPreviewHandlerTest, GetNoDenyListPrinters) {
+  base::Value::ListStorage deny_list;
+  deny_list.push_back(base::Value("extension"));
+  deny_list.push_back(base::Value("privet"));
+  prefs()->Set(prefs::kPrinterTypeDenyList, base::Value(std::move(deny_list)));
   Initialize();
 
   size_t expected_callbacks = 1;
@@ -610,8 +610,9 @@ TEST_F(PrintPreviewHandlerTest, GetNoBlacklistedPrinters) {
     SendGetPrinters(type, callback_id_in);
 
     // Start with 1 call from initial settings, then add 2 more for each printer
-    // type that isn't blacklisted (one for printers-added, and one for the
-    // response), and only 1 more for each blacklisted type (just for response).
+    // type that isn't on the deny list (one for printers-added, and one for the
+    // response), and only 1 more for each type on the deny list (just for
+    // response).
     const bool is_allowed_type = type == kLocalPrinter;
     EXPECT_EQ(is_allowed_type, handler()->CalledOnlyForType(type));
     expected_callbacks += is_allowed_type ? 2 : 1;
@@ -673,15 +674,15 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
   }
 }
 
-// Validates the 'printing.printer_type_blacklist' pref by blacklisting the
-// local and PDF printer types. A 'getPrinterCapabilities' Web UI message is
-// then called for all supported printer types; only privet and extension
+// Validates the 'printing.printer_type_deny_list' pref by placing the local and
+// PDF printer types on the deny list. A 'getPrinterCapabilities' Web UI message
+// is then called for all supported printer types; only privet and extension
 // printer capabilties should be successfully fetched.
-TEST_F(PrintPreviewHandlerTest, GetNoBlacklistedPrinterCapabilities) {
-  base::Value::ListStorage blacklist;
-  blacklist.push_back(base::Value("local"));
-  blacklist.push_back(base::Value("pdf"));
-  prefs()->Set(prefs::kPrinterTypeBlacklist, base::Value(std::move(blacklist)));
+TEST_F(PrintPreviewHandlerTest, GetNoDenyListPrinterCapabilities) {
+  base::Value::ListStorage deny_list;
+  deny_list.push_back(base::Value("local"));
+  deny_list.push_back(base::Value("pdf"));
+  prefs()->Set(prefs::kPrinterTypeDenyList, base::Value(std::move(deny_list)));
   Initialize();
 
   // Check all four printer types that implement

@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1275285675049378717">Cargando <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" />, administrada por tu administrador</translation>
 <translation id="1289185460362160437">Regresa el <ph name="COME_BACK_DAY_OF_WEEK" /> a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Señal débil</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (puerto izquierdo)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Mostrar la configuración de Bluetooth: <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Mostrar siempre la biblioteca</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" />, nivel de batería del teléfono al <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Ampliado</translation>
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="1351937230027495976">Contraer menú</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">Eliminar este usuario</translation>
 <translation id="1654477262762802994">Iniciar una búsqueda por voz</translation>
 <translation id="1658406695958299976">Todavía no se pudo verificar tu contraseña. Ten en cuenta que, si cambiaste tu contraseña recientemente, podrás usar la nueva cuando salgas. Aquí deberás usar la contraseña anterior.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, administrada por tu administrador</translation>
 <translation id="1677472565718498478">Tiempo restante <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Dirección IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">No se reconoció</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+Buscar+H</translation>
 <translation id="2016340657076538683">Escribe un mensaje</translation>
 <translation id="2050339315714019657">Vertical</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Brillo del teclado</translation>
 <translation id="209965399369889474">Sin conexión a la red</translation>
 <translation id="2126242104232412123">Nuevo escritorio</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">No hay redes móviles disponibles</translation>
 <translation id="3249513730522716925">La ventana <ph name="WINDOW_TITLE" /> se movió del escritorio <ph name="ACTIVE_DESK" /> al <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">¿Qué puedes hacer?</translation>
-<translation id="3277674767125718685">El volumen está encendido.</translation>
 <translation id="3290356915286466215">No segura</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> podrá acceder más tarde.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">Cuenta administrada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Volver a "<ph name="FROM_LOCALE" />" (debes reiniciar).</translation>
 <translation id="3576141592585647168">Cambiar zona horaria</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, administrada por tu administrador</translation>
 <translation id="3595596368722241419">Batería completa</translation>
 <translation id="3604801046548457007">Se creó el escritorio <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Dispositivo braille conectado</translation>
@@ -294,25 +288,23 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4917385247580444890">Fuerte</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4924411785043111640">Reiniciar y restablecer</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Desplazar hacia arriba</translation>
 <translation id="4961318399572185831">Transmitir pantalla</translation>
 <translation id="5030687792513154421">Se acabó el tiempo</translation>
 <translation id="5035236842988137213">Se conectó el dispositivo <ph name="DEVICE_NAME" /> a un teléfono nuevo</translation>
 <translation id="5083553833479578423">Desbloquea más funciones del Asistente.</translation>
 <translation id="5136175204352732067">Se conectó otro teclado</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
 <translation id="5207949376430453814">Destacar el cursor de texto</translation>
 <translation id="5222676887888702881">Salir</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
 <translation id="5260676007519551770">Escritorio 4</translation>
 <translation id="5283198616748585639">Agregar 1 min</translation>
+<translation id="5286194356314741248">Examinando</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuración de Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (puerto lateral izquierdo trasero)</translation>
 <translation id="5379115545237091094">Realizaste demasiados intentos</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">El administrador (<ph name="MANAGER_EMAIL" />) puede revisar el uso y el historial de este usuario en la página chrome.com.</translation>
 <translation id="5430931332414098647">Conexión instantánea mediante dispositivo móvil</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -366,7 +358,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6062360702481658777">Saldrás de la sesión automáticamente en <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">No es posible verificar tu contraseña. Vuelve a intentarlo.</translation>
 <translation id="607652042414456612">La computadora es visible para dispositivos Bluetooth cercanos y aparecerá como "<ph name="NAME" />" con la dirección <ph name="ADDRESS" />.</translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" />, administrada por tu administrador</translation>
 <translation id="612734058257491180">El Asistente de Google no está disponible en las sesiones de invitado.</translation>
 <translation id="615957422585914272">Mostrar el teclado en pantalla</translation>
 <translation id="6164005077879661055">Todos los archivos y los datos locales asociados al usuario supervisado se eliminarán de forma permanente una vez que se elimine este usuario supervisado. Es posible que el administrador pueda seguir viendo la configuración y los sitios web visitados de este usuario supervisado en <ph name="MANAGEMENT_URL" />.</translation>
@@ -404,7 +395,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6665545700722362599">Otorga permiso a sitios web, apps y extensiones para usar los servicios de ubicación, el micrófono y la cámara del dispositivo, y otras funciones</translation>
 <translation id="6670153871843998651">Escritorio 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" />, administrada por tu administrador</translation>
 <translation id="6691659475504239918">Buscar+mayúscula+H</translation>
 <translation id="6696025732084565524">Tu teclado desmontable necesita una actualización muy importante</translation>
 <translation id="6700713906295497288">Botón de menú IME</translation>
@@ -415,7 +405,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6751826523481687655">Se activó el registro del rendimiento</translation>
 <translation id="6752912906630585008">Se quitó el escritorio <ph name="REMOVED_DESK" /> y se combinó con el <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Se están cargando los dispositivos USB-C conectados</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6803622936009808957">No se pudieron reflejar las pantallas porque no se encontraron resoluciones compatibles. En su lugar, se activó el escritorio extendido.</translation>
 <translation id="6820676911989879663">Toma un descanso</translation>
@@ -461,7 +450,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7526573455193969409">Es posible que la red esté supervisada</translation>
 <translation id="7536035074519304529">Dirección IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Es hora de ir a la cama</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" />, nivel de batería del teléfono al <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admite una resolución de <ph name="SPECIFIED_RESOLUTION" />. La resolución se cambió a <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7564874036684306347">Si mueves las ventanas a otro escritorio, puede producirse un comportamiento inesperado. Es posible que las próximas notificaciones, ventanas y cuadros de diálogo se dividan entre los escritorios.</translation>
@@ -580,7 +568,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="9084606467167974638">Cambiar la posición del menú</translation>
 <translation id="9089416786594320554">Métodos de entrada</translation>
 <translation id="9091626656156419976">Se quitó la pantalla <ph name="DISPLAY_NAME" /></translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidad de señal del <ph name="SIGNAL_STRENGTH" />, administrada por tu administrador</translation>
 <translation id="9151726767154816831">Reiniciar y aplicar Powerwash para actualizar</translation>
 <translation id="9179259655489829027">Esta función te permite alternar de forma rápida entre los usuarios que hayan accedido a su cuenta, sin necesidad de escribir la contraseña. Usa esta función solo con cuentas de confianza.</translation>
 <translation id="9183456764293710005">Lupa de pantalla completa</translation>

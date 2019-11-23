@@ -119,7 +119,7 @@ void DbusProperties::OnGetAllProperties(
   dbus::MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(nullptr);
+    std::move(response_sender).Run(nullptr);
     return;
   }
 
@@ -146,7 +146,7 @@ void DbusProperties::OnGetAllProperties(
     response = nullptr;
   }
 
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void DbusProperties::OnGetProperty(
@@ -161,7 +161,7 @@ void DbusProperties::OnGetProperty(
   if (!reader.PopString(&interface) || !reader.PopString(&property_name) ||
       !base::Contains(properties_, interface) ||
       !base::Contains(properties_[interface], property_name)) {
-    response_sender.Run(nullptr);
+    std::move(response_sender).Run(nullptr);
     return;
   }
 
@@ -169,7 +169,7 @@ void DbusProperties::OnGetProperty(
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
   properties_[interface][property_name].Write(&writer);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void DbusProperties::OnSetProperty(
@@ -177,5 +177,5 @@ void DbusProperties::OnSetProperty(
     dbus::ExportedObject::ResponseSender response_sender) {
   // Not needed for now.
   NOTIMPLEMENTED();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }

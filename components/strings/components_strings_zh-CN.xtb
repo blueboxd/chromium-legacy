@@ -175,6 +175,7 @@
 <translation id="173080396488393970">此信用卡类型不受支持</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
 <translation id="1734878702283171397">请尝试联系系统管理员。</translation>
+<translation id="1736420071277903564">计算机</translation>
 <translation id="1739107442478692187">您使用的某个网站或应用发生了数据泄露。Chrome 建议您立即检查并更改您在<ph name="ORIGIN" />上保存的密码。</translation>
 <translation id="1740951997222943430">请输入有效的失效月份</translation>
 <translation id="1741613555002899862">当 DnsOverHttpsMode 是“<ph name="SECURE_DNS_MODE_SECURE" />”时，必须将此政策指定为有效字符串。</translation>
@@ -591,6 +592,7 @@
 <translation id="3897092660631435901">菜单</translation>
 <translation id="3901925938762663762">此信用卡已过期</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">平板电脑</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">要改用 WebAuthn 来取代银行卡验证码 (CVC) 吗？</translation>
 <translation id="3946209740501886391">在该网站上一律询问</translation>
@@ -1514,7 +1516,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 张信用卡}other{# 张信用卡}}</translation>
 <translation id="8473863474539038330">地址和其他信息</translation>
 <translation id="8479754468255770962">钉装（左下角）</translation>
-<translation id="8481133456511676116">您是想访问 <ph name="DOMAIN" /> 吧？</translation>
 <translation id="8483780878231876732">要使用您 Google 帐号中的信用卡，请登录 Chrome</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>

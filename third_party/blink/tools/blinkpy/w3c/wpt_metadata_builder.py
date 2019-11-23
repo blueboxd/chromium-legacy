@@ -19,6 +19,12 @@ from blinkpy.web_tests.models import test_expectations
 
 _log = logging.getLogger(__name__)
 
+# Define some status bitmasks for combinations of statuses a test could exhibit.
+# The test has a harness error in its baseline file.
+HARNESS_ERROR = 1
+# The test has at least one failing subtest in its baseline file.
+SUBTEST_FAIL = 1 << 1
+# Next status: 1 << 2
 
 class WPTMetadataBuilder(object):
     def __init__(self, expectations, port):
@@ -56,10 +62,10 @@ class WPTMetadataBuilder(object):
             import shutil
             shutil.rmtree(self.metadata_output_dir)
 
-        failing_baseline_tests = self.get_test_names_to_fail()
+        failing_baseline_tests = self.get_tests_with_baselines()
         _log.info("Found %d tests with failing baselines", len(failing_baseline_tests))
-        for test_name in failing_baseline_tests:
-            filename, file_contents = self.get_metadata_filename_and_contents(test_name, 'FAIL')
+        for test_name, test_status_bitmap in failing_baseline_tests:
+            filename, file_contents = self.get_metadata_filename_and_contents(test_name, 'FAIL', test_status_bitmap)
             if not filename or not file_contents:
                 continue
             self._write_to_file(filename, file_contents)
@@ -98,14 +104,17 @@ class WPTMetadataBuilder(object):
         return self.expectations.get_tests_with_result_type(
             test_expectations.SKIP)
 
-    def get_test_names_to_fail(self):
-        """Determines which tests should be expected to fail.
+    def get_tests_with_baselines(self):
+        """Determines which tests have baselines that need metadata.
 
-        This is currently tests with baseline files containing failing subtests.
+        This is currently tests with baseline files containing failing subtests,
+        or tests with harness errors.
         Failing subtests are those with statuses in (FAIL, NOTRUN, TIMEOUT).
 
         Returns:
-            A list of test names that need metadata.
+            A list of pairs, the first being the test name, and the second being
+            a an integer indicating the status. The status is a bitmap of
+            constants |HARNESS_ERROR| and/or |SUBTEST_FAILURE|.
         """
         all_tests = self.port.tests(paths=['external/wpt'])
         failing_baseline_tests = []
@@ -113,8 +122,13 @@ class WPTMetadataBuilder(object):
             test_baseline = self.port.expected_text(test)
             if not test_baseline:
                 continue
+            status_bitmap = 0
             if re.search("^(FAIL|NOTRUN|TIMEOUT)", test_baseline, re.MULTILINE):
-                failing_baseline_tests.append(test)
+                status_bitmap |= SUBTEST_FAIL
+            if re.search("^Harness Error\.", test_baseline, re.MULTILINE):
+                status_bitmap |= HARNESS_ERROR
+            if status_bitmap > 0:
+                failing_baseline_tests.append([test, status_bitmap])
             else:
                 # Treat this as an error because we don't want it to happen.
                 # Either the non-FAIL statuses need to be handled here, or the
@@ -122,7 +136,7 @@ class WPTMetadataBuilder(object):
                 _log.error("Test %s has a non-FAIL baseline" % test)
         return failing_baseline_tests
 
-    def get_metadata_filename_and_contents(self, chromium_test_name, test_status):
+    def get_metadata_filename_and_contents(self, chromium_test_name, test_status, test_status_bitmap=0):
         """Determines the metadata filename and contents for the specified test.
 
         The metadata filename is derived from the test name but will differ if
@@ -135,6 +149,9 @@ class WPTMetadataBuilder(object):
             test_status: The expected status of this test. Possible values:
                 'SKIP' - skip this test (or directory).
                 'FAIL' - the test is expected to fail, not applicable to dirs.
+            test_status_bitmap: An integer containing additional data about the
+                status, such as enumerating flaky statuses, or whether a test has
+                a combination of harness error and subtest failure.
 
         Returns:
             A pair of strings, the first is the path to the metadata file and
@@ -194,7 +211,7 @@ class WPTMetadataBuilder(object):
             if test_status == 'SKIP':
                 metadata_file_contents = self._get_test_disabled_string(wpt_test_file_name_part)
             elif test_status == 'FAIL':
-                metadata_file_contents = self._get_test_failed_string(wpt_test_file_name_part)
+                metadata_file_contents = self._get_test_failed_string(wpt_test_file_name_part, test_status_bitmap)
 
         return metadata_filename, metadata_file_contents
 
@@ -204,5 +221,10 @@ class WPTMetadataBuilder(object):
     def _get_test_disabled_string(self, test_name):
         return "[%s]\n  disabled: wpt_metadata_builder.py\n" % test_name
 
-    def _get_test_failed_string(self, test_name):
-        return "[%s]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n" % test_name
+    def _get_test_failed_string(self, test_name, test_status_bitmap):
+        result = "[%s]\n" % test_name
+        if test_status_bitmap & HARNESS_ERROR:
+            result += "  expected: ERROR\n"
+        if test_status_bitmap & SUBTEST_FAIL:
+            result += "  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n"
+        return result

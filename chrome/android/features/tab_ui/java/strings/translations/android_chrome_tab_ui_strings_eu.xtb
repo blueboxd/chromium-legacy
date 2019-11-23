@@ -1,4 +1,29 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
+<translation id="1075622780330595106">Fitxetako <ph name="NUMBER_OF_TABS" /> ez dira erabili azkenaldian. Itxi nahi dituzu?</translation>
+<translation id="1181037720776840403">Kendu</translation>
+<translation id="125153950246128346">Sakatu hau beste fitxa bat ikusteko</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> fitxa}other{<ph name="TABS_COUNT_MANY" /> fitxa}}</translation>
+<translation id="257674075312929031">Taldea</translation>
+<translation id="2613747923081026172">Sortu taldea</translation>
+<translation id="2671423594960767771">Partekatu taldea</translation>
+<translation id="2977480621796371840">Kendu taldetik</translation>
+<translation id="4212246570487010370">Jarraitu arakatzen</translation>
+<translation id="4648718555153979859">Fitxak taldekatuta daude hemen</translation>
+<translation id="5007392906805964215">Berrikusi</translation>
+<translation id="5073204694187207510">Ezkutatu pantaila osoko sareta</translation>
+<translation id="5082793167783849073">Egin talde bat orriak azkar alderatzeko. Hasteko, eduki sakatuta esteka bat.</translation>
+<translation id="5580090775658607195">Taldekatu dira <ph name="TAB_COUNT" /> fitxa</translation>
+<translation id="5792534911093536736">Fitxa gehiago</translation>
+<translation id="58326064309361797">Fitxak taldekatzeko, arrasta itzazu</translation>
+<translation id="6040143037577758943">Itxi</translation>
+<translation id="6193448654517602979">Hautatu fitxak</translation>
+<translation id="6615455863669487791">Erakuts iezadazu</translation>
+<translation id="6840760312327750441">Fitxak taldekatzeko, eduki fitxa bat sakatuta eta, ondoren, arrasta ezazu beste batera.</translation>
+<translation id="7151209024774799310">Kendu fitxak taldetik</translation>
+<translation id="7559245342362162951">Erakutsi taldearen fitxak pantaila osoko saretan</translation>
+<translation id="9150694013019234766">Fitxa batetik bestera joateko, erabili pantailaren behealdean dagoen fitxa taldea</translation>
+<translation id="9169594135889675189">Gehitu beste fitxa bat taldean</translation>
+<translation id="959682366969460160">Antola zaitez</translation>
 </translationbundle>

@@ -5,7 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NDEF_READER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NFC_NDEF_READER_H_
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/nfc.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -60,6 +62,13 @@ class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
   void Abort(ScriptPromiseResolver*);
 
   NFCProxy* GetNfcProxy() const;
+
+  // Permission handling
+  void OnRequestPermission(ScriptPromiseResolver* resolver,
+                           const NDEFScanOptions* options,
+                           mojom::blink::PermissionStatus status);
+  mojom::blink::PermissionService* GetPermissionService();
+  mojo::Remote<mojom::blink::PermissionService> permission_service_;
 
   // |resolver_| is kept here to handle Mojo connection failures because in that
   // case the callback passed to Watch() won't be called and

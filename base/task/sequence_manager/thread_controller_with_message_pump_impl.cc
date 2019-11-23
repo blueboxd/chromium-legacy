@@ -527,7 +527,11 @@ MessagePump* ThreadControllerWithMessagePumpImpl::GetBoundMessagePump() const {
 
 #if defined(OS_IOS)
 void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {
-  static_cast<MessagePumpUIApplication*>(pump_.get())->Attach(this);
+  static_cast<MessagePumpCFRunLoopBase*>(pump_.get())->Attach(this);
+}
+
+void ThreadControllerWithMessagePumpImpl::DetachFromMessagePump() {
+  static_cast<MessagePumpCFRunLoopBase*>(pump_.get())->Detach();
 }
 #elif defined(OS_ANDROID)
 void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {

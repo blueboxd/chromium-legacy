@@ -52,6 +52,7 @@ if (is_chromeos) {
       ":multidevice_constants",
       ":multidevice_feature_behavior",
       "..:route",
+      "..:route_origin_behavior",
       "//ui/webui/resources/js:cr",
     ]
   }

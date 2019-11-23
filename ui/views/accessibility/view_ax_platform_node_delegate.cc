@@ -364,15 +364,10 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
   if (!view()->HitTestPoint(point))
     return nullptr;
 
-  // GetEventHandlerForPoint correctly handles overlapping views but it
-  // only returns views that handle events. For accessibility, we want to
-  // return the deepest child view. This is why we need to continue
-  // searching from here.
-  View* v = view()->GetEventHandlerForPoint(point);
-
   // Check if the point is within any of the immediate children of this
   // view. We don't have to search further because AXPlatformNode will
   // do a recursive hit test if we return anything other than |this| or NULL.
+  View* v = view();
   const auto is_point_in_child = [point, v](View* child) {
     if (!child->GetVisible())
       return false;
@@ -383,7 +378,7 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
   const auto i = std::find_if(v->children().rbegin(), v->children().rend(),
                               is_point_in_child);
   // If it's not inside any of our children, it's inside this view.
-  return (i == v->children().rend()) ? v->GetNativeViewAccessible()
+  return (i == v->children().rend()) ? GetNativeObject()
                                      : (*i)->GetNativeViewAccessible();
 }
 

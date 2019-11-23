@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -177,7 +178,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::Get(
     std::unique_ptr<dbus::ErrorResponse> error_response =
         dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                             "Expected 'ss'.");
-    response_sender.Run(std::move(error_response));
+    std::move(response_sender).Run(std::move(error_response));
     return;
   }
 
@@ -188,7 +189,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::Get(
         dbus::ErrorResponse::FromMethodCall(
             method_call, kErrorInvalidArgs,
             "No such interface: '" + interface_name + "'.");
-    response_sender.Run(std::move(error_response));
+    std::move(response_sender).Run(std::move(error_response));
     return;
   }
 
@@ -215,7 +216,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::Get(
         "No such property: '" + property_name + "'.");
   }
 
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::Set(
@@ -229,7 +230,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::Set(
   std::unique_ptr<dbus::ErrorResponse> error_response =
       dbus::ErrorResponse::FromMethodCall(method_call, kErrorPropertyReadOnly,
                                           "All properties are read-only.");
-  response_sender.Run(std::move(error_response));
+  std::move(response_sender).Run(std::move(error_response));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::GetAll(
@@ -246,7 +247,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::GetAll(
     std::unique_ptr<dbus::ErrorResponse> error_response =
         dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                             "Expected 's'.");
-    response_sender.Run(std::move(error_response));
+    std::move(response_sender).Run(std::move(error_response));
     return;
   }
 
@@ -257,7 +258,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::GetAll(
         dbus::ErrorResponse::FromMethodCall(
             method_call, kErrorInvalidArgs,
             "No such interface: '" + interface_name + "'.");
-    response_sender.Run(std::move(error_response));
+    std::move(response_sender).Run(std::move(error_response));
     return;
   }
 
@@ -265,7 +266,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::GetAll(
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
   WriteProperties(&writer);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::ReadValue(
@@ -290,15 +291,19 @@ void BluetoothGattCharacteristicServiceProviderImpl::ReadValue(
     // the delegate, which should know how to handle it.
   }
 
+  // GetValue() promises to only call either the success or error callback.
+  auto response_sender_adapted =
+      base::AdaptCallbackForRepeating(std::move(response_sender));
+
   DCHECK(delegate_);
   delegate_->GetValue(
       device_path,
       base::BindOnce(
           &BluetoothGattCharacteristicServiceProviderImpl::OnReadValue,
-          weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
+          weak_ptr_factory_.GetWeakPtr(), method_call, response_sender_adapted),
       base::BindOnce(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
                      weak_ptr_factory_.GetWeakPtr(), method_call,
-                     response_sender));
+                     response_sender_adapted));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::WriteValue(
@@ -335,15 +340,19 @@ void BluetoothGattCharacteristicServiceProviderImpl::WriteValue(
     // the delegate, which should know how to handle it.
   }
 
+  // SetValue() promises to only call either the success or error callback.
+  auto response_sender_adapted =
+      base::AdaptCallbackForRepeating(std::move(response_sender));
+
   DCHECK(delegate_);
   delegate_->SetValue(
       device_path, value,
       base::BindOnce(
           &BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue,
-          weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
+          weak_ptr_factory_.GetWeakPtr(), method_call, response_sender_adapted),
       base::BindOnce(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
                      weak_ptr_factory_.GetWeakPtr(), method_call,
-                     response_sender));
+                     response_sender_adapted));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::PrepareWriteValue(
@@ -387,13 +396,20 @@ void BluetoothGattCharacteristicServiceProviderImpl::PrepareWriteValue(
     // the delegate, which should know how to handle it.
   }
 
+  // PrepareSetValue() promises to only call either the success or error
+  // callback.
+  auto response_sender_adapted =
+      base::AdaptCallbackForRepeating(std::move(response_sender));
+
   DCHECK(delegate_);
   delegate_->PrepareSetValue(
       device_path, value, offset, has_subsequent_write,
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue,
-                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
+                 weak_ptr_factory_.GetWeakPtr(), method_call,
+                 response_sender_adapted),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
-                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender));
+                 weak_ptr_factory_.GetWeakPtr(), method_call,
+                 response_sender_adapted));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::StartNotify(
@@ -465,7 +481,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::OnReadValue(
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
   writer.AppendArrayOfBytes(value.data(), value.size());
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue(
@@ -475,7 +491,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue(
 
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::WriteProperties(
@@ -517,7 +533,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::OnFailure(
   std::unique_ptr<dbus::ErrorResponse> error_response =
       dbus::ErrorResponse::FromMethodCall(
           method_call, kErrorFailed, "Failed to get/set characteristic value.");
-  response_sender.Run(std::move(error_response));
+  std::move(response_sender).Run(std::move(error_response));
 }
 
 const dbus::ObjectPath&

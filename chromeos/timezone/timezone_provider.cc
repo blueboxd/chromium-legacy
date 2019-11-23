@@ -35,12 +35,10 @@ void TimeZoneProvider::RequestTimezone(
 
   // TimeZoneProvider owns all requests. It is safe to pass unretained "this"
   // because destruction of TimeZoneProvider cancels all requests.
-  TimeZoneRequest::TimeZoneResponseCallback callback_tmp(
-      base::Bind(&TimeZoneProvider::OnTimezoneResponse,
-                 base::Unretained(this),
-                 request,
-                 callback));
-  request->MakeRequest(callback_tmp);
+  TimeZoneRequest::TimeZoneResponseCallback callback_tmp =
+      base::BindOnce(&TimeZoneProvider::OnTimezoneResponse,
+                     base::Unretained(this), request, std::move(callback));
+  request->MakeRequest(std::move(callback_tmp));
 }
 
 void TimeZoneProvider::OnTimezoneResponse(
@@ -59,7 +57,7 @@ void TimeZoneProvider::OnTimezoneResponse(
     requests_.resize(requests_.size() - 1);
   }
 
-  callback.Run(std::move(timezone), server_error);
+  std::move(callback).Run(std::move(timezone), server_error);
 }
 
 }  // namespace chromeos

@@ -45,7 +45,7 @@ void KioskInfoService::GetKioskAppRequiredPlatformVersion(
   dbus::MessageWriter writer(response.get());
   writer.AppendString(
       KioskAppManager::Get()->GetAutoLaunchAppRequiredPlatformVersion());
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 }  // namespace chromeos

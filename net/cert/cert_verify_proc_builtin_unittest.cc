@@ -12,7 +12,7 @@
 #include "net/cert/crl_set.h"
 #include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/system_trust_store.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
+#include "net/cert_net/cert_net_fetcher_url_request.h"
 #include "net/der/encode_values.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/cert_builder.h"
@@ -84,7 +84,7 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
   // CertVerifyProcBuiltinTest() {}
 
   void SetUp() override {
-    cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherImpl>();
+    cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherURLRequest>();
     verify_proc_ = CreateCertVerifyProcBuiltin(
         cert_net_fetcher_, std::make_unique<DummySystemTrustStoreProvider>());
 
@@ -137,7 +137,7 @@ class CertVerifyProcBuiltinTest : public ::testing::Test {
   CertVerifier::Config config_;
   std::unique_ptr<net::TestURLRequestContext> context_;
   scoped_refptr<CertVerifyProc> verify_proc_;
-  scoped_refptr<CertNetFetcherImpl> cert_net_fetcher_;
+  scoped_refptr<CertNetFetcherURLRequest> cert_net_fetcher_;
 };
 
 TEST_F(CertVerifyProcBuiltinTest, SimpleSuccess) {
@@ -166,7 +166,7 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineCRL) {
   ASSERT_TRUE(leaf && intermediate && root);
 
   const base::TimeDelta timeout_increment =
-      CertNetFetcherImpl::GetDefaultTimeoutForTesting() +
+      CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
       GetCertVerifyProcBuiltinTimeLimitForTesting() / timeout_increment + 1;
@@ -236,7 +236,7 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
   ASSERT_TRUE(leaf && intermediate && root);
 
   const base::TimeDelta timeout_increment =
-      CertNetFetcherImpl::GetDefaultTimeoutForTesting() +
+      CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
       GetCertVerifyProcBuiltinTimeLimitForTesting() / timeout_increment + 1;
@@ -312,7 +312,7 @@ TEST_F(CertVerifyProcBuiltinTest, EVRevocationCheckDeadline) {
   intermediate->SetCertificatePolicies({kEVTestCertPolicy});
 
   const base::TimeDelta timeout_increment =
-      CertNetFetcherImpl::GetDefaultTimeoutForTesting() +
+      CertNetFetcherURLRequest::GetDefaultTimeoutForTesting() +
       base::TimeDelta::FromMilliseconds(1);
   const int expected_request_count =
       GetCertVerifyProcBuiltinTimeLimitForTesting() / timeout_increment + 1;

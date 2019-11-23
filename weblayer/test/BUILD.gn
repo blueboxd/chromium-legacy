@@ -31,6 +31,7 @@ if (is_android) {
       ":weblayer_browsertests_manifest",
       "//base:base_java",
       "//base:base_java_test_support",
+      "//components/safe_browsing/android:safe_browsing_java",
       "//content/public/android:content_java",
       "//content/public/test/android:content_java_test_support",
       "//testing/android/native_test:native_test_java",

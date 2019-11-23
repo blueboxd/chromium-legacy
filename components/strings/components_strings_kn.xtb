@@ -174,6 +174,7 @@
 <translation id="173080396488393970">ಈ ರೀತಿಯ ಕಾರ್ಡ್‌ಗೆ ಬೆಂಬಲವಿಲ್ಲ</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="1736420071277903564">ಕಂಪ್ಯೂಟರ್</translation>
 <translation id="1739107442478692187">ನೀವು ಬಳಸುವ ಸೈಟ್ ಅಥವಾ ಆ್ಯಪ್‌ನಲ್ಲಿ ಡೇಟಾ ಉಲ್ಲಂಘನೆಯಾಗಿದೆ. ನೀವು <ph name="ORIGIN" /> ನಲ್ಲಿ ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ತಕ್ಷಣ ಪರಿಶೀಲಿಸಲು ಮತ್ತು ಬದಲಾಯಿಸಲು Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="1740951997222943430">ಮಾನ್ಯವಾದ ಅವಧಿ-ಮುಕ್ತಾಯ ತಿಂಗಳನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode ಕಾರ್ಯನೀತಿಯು <ph name="SECURE_DNS_MODE_SECURE" /> ಆಗಿದ್ದಾಗ, ಮಾನ್ಯವಾದ ಸ್ಟ್ರಿಂಗ್ ಅನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಬೇಕು.</translation>
@@ -591,6 +592,7 @@
 <translation id="3897092660631435901">ಮೆನು</translation>
 <translation id="3901925938762663762">ಕಾರ್ಡ್ ಅವಧಿಯು ಮುಗಿದಿದೆ</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">ಟ್ಯಾಬ್ಲೆಟ್</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">CVC ಬದಲಿಗೆ WebAuthn ಬಳಸುವಿರಾ?</translation>
 <translation id="3946209740501886391">ಯಾವಾಗಲೂ ಈ ಸೈಟ್‌ನಲ್ಲಿ ಕೇಳಿ</translation>
@@ -1513,7 +1515,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್}one{# ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು}other{# ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು}}</translation>
 <translation id="8473863474539038330">ವಿಳಾಸಗಳು ಮತ್ತು ಇನ್ನಷ್ಟು</translation>
 <translation id="8479754468255770962">ಕೆಳಗಿನ ಎಡಭಾಗದಲ್ಲಿ ಸ್ಟೇಪಲ್ ಹಾಕಿ</translation>
-<translation id="8481133456511676116">ನೀವು ಹುಡುಕುತ್ತಿರುವುದು <ph name="DOMAIN" /> ತಾನೇ?</translation>
 <translation id="8483780878231876732">ನಿಮ್ಮ Google ಖಾತೆಯಿಂದ ಕಾರ್ಡ್‌ಗಳನ್ನು ಬಳಸಲು, Chrome ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="8488350697529856933">ಇದಕ್ಕೆ ಅನ್ವಯಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="8498891568109133222">ಪ್ರತಿಕ್ರಿಯಿಸಲು <ph name="HOST_NAME" /> ಹೆಚ್ಚು ಸಮಯ ತೆಗೆದುಕೊಂಡಿದೆ.</translation>

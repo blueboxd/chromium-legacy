@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">ನಿಲ್ಲಿಸಿ</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> ಅನ್ನು ಚಾರ್ಜ್ ಮಾಡುತ್ತಿದೆ</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> ರಂದು <ph name="COME_BACK_TIME" /> ಸಮಯಕ್ಕೆ ಹಿಂತಿರುಗಿ.</translation>
 <translation id="1290331692326790741">ದುರ್ಬಲ ಸಿಗ್ನಲ್</translation>
 <translation id="1293264513303784526">USB-C ಸಾಧನ (ಎಡ ಪೋರ್ಟ್)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">ಬ್ಲೂಟೂತ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">ಯಾವಾಗಲೂ ಶೆಲ್ಫ್ ತೋರಿಸಿ</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />, ಫೋನ್ ಬ್ಯಾಟರಿ <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">ಓವರ್‌ಫ್ಲೋ</translation>
 <translation id="1346748346194534595">ಬಲಕ್ಕೆ</translation>
 <translation id="1351937230027495976">ಮೆನುವನ್ನು ಕುಗ್ಗಿಸಿ</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">ಈ ಬಳಕೆದಾರರನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1654477262762802994">ಧ್ವನಿ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಲು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="1658406695958299976">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಇನ್ನೂ ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಗಮನಿಸಿ: ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನೀವು ಇತ್ತೀಚೆಗೆ ಬದಲಾಯಿಸಿದ್ದರೆ, ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡಿದ ನಂತರ ನಿಮ್ಮ ಹೊಸ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಜಾರಿಗೆ ತರಲಾಗುತ್ತದೆ, ಇಲ್ಲಿ ಹಳೆಯ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬಳಸಿ.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="1698760176351776263">IPv6 ವಿಳಾಸ: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">ಗುರುತಿಸಲಾಗಿಲ್ಲ</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+ಹುಡುಕಾಟ+H</translation>
 <translation id="2016340657076538683">ಸಂದೇಶವನ್ನು ಟೈಪ್‌ ಮಾಡಿ</translation>
 <translation id="2050339315714019657">ಪೋರ್ಟ್ರೇಟ್</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">ಕೀಬೋರ್ಡ್ ಪ್ರಖರತೆ</translation>
 <translation id="209965399369889474">ನೆಟ್‌ವರ್ಕ್‌‍ಗೆ ಸಂಪರ್ಕಗೊಂಡಿಲ್ಲ</translation>
 <translation id="2126242104232412123">ಹೊಸ ಡೆಸ್ಕ್</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">ಮೊಬೈಲ್ ನೆಟ್‌ವರ್ಕ್ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> ವಿಂಡೋವನ್ನು <ph name="ACTIVE_DESK" /> ಡೆಸ್ಕ್‌ನಿಂದ<ph name="TARGET_DESK" /> ಡೆಸ್ಕ್‌ಗೆ ಸರಿಸಲಾಗಿದೆ</translation>
 <translation id="3255483164551725916">ನೀವೇನು ಮಾಡಬಲ್ಲಿರಿ?</translation>
-<translation id="3277674767125718685">ವಾಲ್ಯೂಮ್ ಆನ್ ಆಗಿದೆ.</translation>
 <translation id="3290356915286466215">ಸುರಕ್ಷಿತವಾಗಿಲ್ಲ</translation>
 <translation id="3294437725009624529">ಅತಿಥಿ</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" />, ಆನಂತರ ಕೂಡಾ ಸೈನ್ ಇನ್ ಮಾಡಬಹುದು.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> ಮೂಲಕ ಖಾತೆಯನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ಗೆ ಮರುಬದಲಾಯಿಸಿ (ಮರುಪ್ರಾರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="3576141592585647168">ಸಮಯವಲಯವನ್ನು ಬದಲಾಯಿಸಿ</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ</translation>
 <translation id="3595596368722241419">ಬ್ಯಾಟರಿ ಭರ್ತಿಯಾಗಿದೆ</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ಡೆಸ್ಕ್ ಅನ್ನು ರಚಿಸಲಾಗಿದೆ</translation>
 <translation id="3606978283550408104">ಬ್ರೈಲ್‌ ಡಿಸ್‌ಪ್ಲೇ ಸಂಪರ್ಕಗೊಳಿಸಲಾಗಿದೆ.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">ಪ್ರಬಲ</translation>
 <translation id="4918086044614829423">ಸಮ್ಮತಿಸು</translation>
 <translation id="4924411785043111640">ಮರುಪ್ರಾರಂಭಿಸಿ ಮತ್ತು ಮರುಹೊಂದಿಸಿ</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">ಮೇಲಕ್ಕೆ ಸ್ಕ್ರಾಲ್ ಮಾಡಿ</translation>
 <translation id="4961318399572185831">ಪರದೆಯನ್ನು ಬಿತ್ತರಿಸಿ</translation>
 <translation id="5030687792513154421">ಸಮಯ ಮುಗಿದಿದೆ</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ಸಾಧನವು ಹೊಸ ಫೋನ್ ಒಂದಕ್ಕೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="5083553833479578423">ಇನ್ನಷ್ಟು ಅಸಿಸ್ಟೆಂಟ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಅನ್‌ಲಾಕ್‌ ಮಾಡಿ.</translation>
 <translation id="5136175204352732067">ವಿವಿಧ ಕೀಬೋರ್ಡ್ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">ಬಿತ್ತರಿಸುವಿಕೆಯ ಸಾಧನಗಳು ಲಭ್ಯವಿದೆ</translation>
 <translation id="5207949376430453814">ಪಠ್ಯದಲ್ಲಿ ಕೆರೆಟ್ ಅನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
 <translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
 <translation id="523505283826916779">ಪ್ರವೇಶಿಸುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="5260676007519551770">ಡೆಸ್ಕ್ 4</translation>
 <translation id="5283198616748585639">1 ನಿಮಿಷ ಸೇರಿಸಿ</translation>
+<translation id="5286194356314741248">ಸ್ಕ್ಯಾನಿಂಗ್</translation>
 <translation id="5302048478445481009">ಭಾಷೆ</translation>
 <translation id="5313326810920013265">ಬ್ಲೂಟೂತ್‌‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="5331975486040154427">USB-C ಸಾಧನ (ಎಡ ಭಾಗದ ಹಿಂದಿನ ಪೋರ್ಟ್‌)</translation>
 <translation id="5379115545237091094">ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">ಈ ಬಳಕೆದಾರರ ಬಳಕೆ ಮತ್ತು ಇತಿಹಾಸವನ್ನು chrome.com ನಲ್ಲಿ ನಿರ್ವಾಹಕರು (<ph name="MANAGER_EMAIL" />) ಪರಿಶೀಲಿಸಬಹುದು.</translation>
 <translation id="5430931332414098647">ತತ್‌ಕ್ಷಣದ ಟೆಥರಿಂಗ್‌</translation>
 <translation id="5431825016875453137">VPN / L2TP ತೆರೆಯಿರಿ</translation>
@@ -366,7 +358,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> ನಲ್ಲಿ ನಿಮ್ಮನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್‌ಔಟ್‌ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="6064337552080329342">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="607652042414456612">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ಸಮೀಪದಲ್ಲಿರುವ ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನಗಳು ಅನ್ವೇಷಿಸಬಹುದಾಗಿದೆ ಮತ್ತು <ph name="ADDRESS" /> ವಿಳಾಸದೊಂದಿಗೆ "<ph name="NAME" />" ರೂಪದಲ್ಲಿ ಗೋಚರಿಸುತ್ತದೆ</translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ</translation>
 <translation id="612734058257491180">Google ಅಸಿಸ್ಟೆಂಟ್‌ ಅತಿಥಿ ಸೆಶನ್‌ನಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ.</translation>
 <translation id="615957422585914272">ಆನ್-ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ತೋರಿಸು</translation>
 <translation id="6164005077879661055">ಈ ಮೇಲ್ವಿಚಾರಣೆ ಬಳಕೆದಾರರನ್ನು ಒಮ್ಮೆ ತೆಗೆದುಹಾಕಿದರೆ, ಮೇಲ್ವಿಚಾರಣೆ ಬಳಕೆದಾರರೊಂದಿಗೆ ಸಂಯೋಜಿತವಾಗಿರುವ ಎಲ್ಲ ಫೈಲ್‌ಗಳು ಮತ್ತು ಸ್ಥಳೀಯ ಡೇಟಾವನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲಾಗುತ್ತದೆ. ಈ ಮೇಲ್ವಿಚಾರಣೆ ಬಳಕೆದಾರಿಗಾಗಿ ಭೇಟಿ ನೀಡಲಾದ ವೆಬ್‌ಸೈಟ್‌ಗಳು ಮತ್ತು ಸೆಟ್ಟಿಂಗ್‌ಗಳು <ph name="MANAGEMENT_URL" /> ನಲ್ಲಿ ನಿರ್ವಾಹಕರಿಗೆ ಈಗಲೂ ಗೋಚರಿಸಬಹುದು.</translation>
@@ -404,7 +395,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6657585470893396449">ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="6665545700722362599">ಸ್ಥಳ ಸೇವೆಗಳು, ಸಾಧನದ ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮೆರಾ, ಅಥವಾ ಇತರ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಬಳಸಲು ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳಿಗೆ ಅನುಮತಿಯನ್ನು ನೀಡುವುದು</translation>
 <translation id="6670153871843998651">ಡೆಸ್ಕ್ 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ</translation>
 <translation id="6691659475504239918">ಹುಡುಕಾಟ+Shift+H</translation>
 <translation id="6696025732084565524">ನಿಮ್ಮ ಪ್ರತ್ಯೇಕಿಸಬಹುದಾದ ಕೀಬೋರ್ಡ್‌ಗೆ ವಿಷಮಸ್ಥಿತಿ ಅಪ್‌ಡೇಟ್‌ನ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="6700713906295497288">IME ಮೆನು ಬಟನ್</translation>
@@ -415,7 +405,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6751826523481687655">ಕಾರ್ಯಕ್ಷಮತೆಯ ಟ್ರೇಸಿಂಗ್ ಅನ್ನು ಆನ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="6752912906630585008"><ph name="REMOVED_DESK" /> ಡೆಸ್ಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ ಮತ್ತು <ph name="RECEIVE_DESK" /> ಡೆಸ್ಕ್‌ನೊಂದಿಗೆ ವಿಲೀನಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="6777216307882431711">ಸಂಪರ್ಕಿತ USB-C ಸಾಧನಗಳನ್ನು ಚಾರ್ಜ್ ಮಾಡುತ್ತಿದೆ</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">ಪ್ಲೇ ಮಾಡು</translation>
 <translation id="6803622936009808957">ಯಾವುದೇ ಬೆಂಬಲಿತ ಪರಿಹಾರಗಳು ಕಂಡುಬರದ ಕಾರಣ ಪ್ರದರ್ಶನಗಳನ್ನು ಪ್ರತಿಬಿಂಬಿಸಲಾಗಲಿಲ್ಲ. ಬದಲಿಗೆ ವಿಸ್ತರಿತ ಡೆಸ್ಕ್‌ಟಾಪ್ ಅನ್ನು ನಮೂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="6820676911989879663">ವಿರಾಮ ತೆಗೆದುಕೊಳ್ಳಿ!</translation>
@@ -461,7 +450,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7526573455193969409">ನೆಟ್‌ವರ್ಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದಾಗಿದೆ</translation>
 <translation id="7536035074519304529">ಐಪಿ ವಿಳಾಸ: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ಮಲಗುವ ಸಮಯ</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />, ಫೋನ್ ಬ್ಯಾಟರಿ <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> ಅನ್ನು <ph name="DISPLAY_NAME" /> ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ರೆಸಲ್ಯೂಶನ್‌ ಅನ್ನು <ph name="FALLBACK_RESOLUTION" /> ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="7562368315689366235">ಎಮೋಜಿ ಪ್ಯಾಲೆಟ್</translation>
 <translation id="7564874036684306347">ವಿಂಡೋಗಳನ್ನು ಬೇರೊಂದು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸರಿಸಿದರೆ, ಅದು ಅನಿರೀಕ್ಷಿತ ವರ್ತನೆಗೆ ಕಾರಣವಾಗಬಹುದು. ಆನಂತರ ಬರುವ ಅಧಿಸೂಚನೆಗಳು, ವಿಂಡೋಗಳು ಮತ್ತು ಡೈಲಾಗ್‌ಗಳು ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗಳ ನಡುವೆ ವಿಭಜನೆಯಾಗಬಹುದು.</translation>
@@ -580,7 +568,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="9084606467167974638">ಮೆನುವಿನ ಸ್ಥಾನವನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="9089416786594320554">ಇನ್‌ಪುಟ್ ವಿಧಾನಗಳು</translation>
 <translation id="9091626656156419976">ಡಿಸ್‌ಪ್ಲೇ <ph name="DISPLAY_NAME" /> ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗಿದೆ</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />, ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="9151726767154816831">ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು ಮರುಪ್ರಾರಂಭಿಸಿ ಮತ್ತು ಪವರ್‌ವಾಶ್ ಮಾಡಿ</translation>
 <translation id="9179259655489829027">ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಯಾವುದೇ ಬಳಕೆದಾರರನ್ನು, ಪಾಸ್‌ವರ್ಡ್ ಇಲ್ಲದೆಯೇ ಪ್ರವೇಶಿಸಲು ಈ ವೈಶಿಷ್ಟ್ಯವು ಅವಕಾಶ ನೀಡುತ್ತದೆ. ನಿಮಗೆ ವಿಶ್ವಾಸವಿರುವ ಖಾತೆಗಳೊಂದಿಗೆ ಮಾತ್ರ ಈ ವೈಶಿಷ್ಟ್ಯವನ್ನು ಬಳಸಿ.</translation>
 <translation id="9183456764293710005">ಫುಲ್‌ಸ್ಕ್ರೀನ್ ವರ್ಧಕ</translation>

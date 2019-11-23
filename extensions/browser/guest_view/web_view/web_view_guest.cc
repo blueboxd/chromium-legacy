@@ -215,6 +215,15 @@ static base::LazyInstance<WebViewKeyToIDMap>::DestructorAtExit
 
 }  // namespace
 
+WebViewGuest::NewWindowInfo::NewWindowInfo(const GURL& url,
+                                           const std::string& name)
+    : name(name), url(url) {}
+
+WebViewGuest::NewWindowInfo::NewWindowInfo(const WebViewGuest::NewWindowInfo&) =
+    default;
+
+WebViewGuest::NewWindowInfo::~NewWindowInfo() = default;
+
 // static
 void WebViewGuest::CleanUp(content::BrowserContext* browser_context,
                            int embedder_process_id,

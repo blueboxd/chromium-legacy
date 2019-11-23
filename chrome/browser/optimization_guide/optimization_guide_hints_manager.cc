@@ -417,7 +417,8 @@ void OptimizationGuideHintsManager::SetHintsFetcherForTesting(
 }
 
 void OptimizationGuideHintsManager::MaybeScheduleTopHostsHintsFetch() {
-  if (!top_host_provider_ || !IsUserPermittedToFetchHints(profile_))
+  if (!top_host_provider_ ||
+      !IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_))
     return;
 
   if (optimization_guide::switches::ShouldOverrideFetchHintsTimer()) {
@@ -897,7 +898,7 @@ bool OptimizationGuideHintsManager::IsAllowedToFetchNavigationHints(
     const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!IsUserPermittedToFetchHints(profile_))
+  if (!IsUserPermittedToFetchFromRemoteOptimizationGuide(profile_))
     return false;
 
   if (!url.is_valid() || !url.SchemeIs(url::kHttpsScheme))

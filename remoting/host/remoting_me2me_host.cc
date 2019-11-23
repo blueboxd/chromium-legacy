@@ -507,6 +507,14 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
     return false;
   }
   if (cmd_line->HasSwitch(kCheckScreenRecordingPermissionSwitchName)) {
+    // Trigger screen-capture, even if CanRecordScreen() returns true. It uses a
+    // heuristic that might not be 100% reliable, but it is critically
+    // important to add the host bundle to the list of apps under
+    // Security & Privacy -> Screen Recording.
+    if (base::mac::IsAtLeastOS10_15()) {
+      capture_checker_ = std::make_unique<DesktopCapturerChecker>();
+      capture_checker_->TriggerSingleCapture();
+    }
     checking_permission_state_ = true;
     permission_granted_ = mac::CanRecordScreen();
     return false;

@@ -855,7 +855,8 @@ static void RemoveHeadContents(ReplacementFragment& fragment) {
   Node* next = nullptr;
   for (Node* node = fragment.FirstChild(); node; node = next) {
     if (IsA<HTMLBaseElement>(*node) || IsHTMLLinkElement(*node) ||
-        IsA<HTMLMetaElement>(*node) || IsA<HTMLTitleElement>(*node)) {
+        IsA<HTMLMetaElement>(*node) || IsA<HTMLStyleElement>(*node) ||
+        IsA<HTMLTitleElement>(*node)) {
       next = NodeTraversal::NextSkippingChildren(*node);
       fragment.RemoveNode(node);
     } else {

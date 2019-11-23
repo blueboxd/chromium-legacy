@@ -997,6 +997,7 @@
         'UserNativePrintersAllowed',
         'ExternalPrintServers',
         'ExternalPrintServersWhitelist',
+        'PrinterTypeDenyList',
       ]
     },
     {
@@ -7023,7 +7024,9 @@
 
       If this setting is enabled or not configured, users can print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog.
 
-      If this setting is disabled, users cannot print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog''',
+      If this setting is disabled, users cannot print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog.
+
+      In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, this policy must be set to true and 'cloud' must not be included in the 'PrinterTypeDenyList' policy.''',
     },
     {
       'name': 'EnterpriseWebStoreURL',
@@ -19047,7 +19050,72 @@
       If you set this policy, users cannot change or override it.
 
       If this policy is left unset, the Click to Call feature is enabled by default.''',
-    }
+    },
+    {
+      'name': 'PrinterTypeDenyList',
+      'owners': ['file://printing/OWNERS'],
+      'type': 'string-enum-list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [
+            'privet',
+            'extension',
+            'pdf',
+            'local',
+            'cloud',
+          ],
+        },
+      },
+      'items': [
+        {
+          'name': 'privet',
+          'value': 'privet',
+          'caption': '''Zeroconf-based (mDNS + DNS-SD) protocol destinations''',
+        },
+        {
+          'name': 'extension',
+          'value': 'extension',
+          'caption': '''Extension-based destinations''',
+        },
+        {
+          'name': 'pdf',
+          'value': 'pdf',
+          'caption': '''The 'Save as PDF' destination''',
+        },
+        {
+          'name': 'local',
+          'value': 'local',
+          'caption': '''Local printer destinations''',
+        },
+        {
+          'name': 'cloud',
+          'value': 'cloud',
+          'caption': '''<ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> and 'Save to Google Drive' destinations''',
+        },
+      ],
+      'supported_on': ['chrome_os:80-', 'chrome.*:80-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['cloud', 'privet'],
+      'id': 647,
+      'caption': '''Disable printer types on the deny list''',
+      'tags': [],
+      'desc': '''The printers of types placed on the deny list will be disabled from being discovered or having their capabilities fetched.
+
+      Placing all printer types on the deny list effectively disables printing, as there would be no available destinations to send a document for printing.
+
+      Including 'cloud' on the deny list has the same effect as setting the 'CloudPrintSubmitEnabled' policy to false. In order to keep <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> destinations discoverable, the 'CloudPrintSubmitEnabled' policy must be set to true and 'cloud' must not be on the deny list.
+
+      If the policy is not set, or is set to an empty list, all printer types will be available for discovery.
+
+      Extension printers are also known as print provider destinations, and include any destination that belongs to a <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension.
+
+      Local printers are also known as native printing destinations, and include destinations available to the local machine and shared network printers.'''
+    },
   ],
 
   'messages': {
@@ -19872,6 +19940,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 646,
+  'highest_id_currently_used': 647,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -60,7 +60,7 @@ TEST_F(ObjectProxyTest, WaitForServiceToBeAvailableRunOnce) {
   int num_calls = 0;
   bool service_is_available = false;
   object_proxy->WaitForServiceToBeAvailable(
-      base::Bind(&OnServiceIsAvailable, &service_is_available, &num_calls));
+      base::BindOnce(&OnServiceIsAvailable, &service_is_available, &num_calls));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_calls);
 
@@ -75,13 +75,13 @@ TEST_F(ObjectProxyTest, WaitForServiceToBeAvailableRunOnce) {
 
   // Release the service's ownership of its name. The callback should not be
   // invoked again.
-  test_service.ReleaseOwnership(base::Bind(&OnOwnershipReleased));
+  test_service.ReleaseOwnership(base::BindOnce(&OnOwnershipReleased));
   num_calls = 0;
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_calls);
 
   // Take ownership of the name and check that the callback is not called.
-  test_service.RequestOwnership(base::Bind(&OnOwnershipRequestDone));
+  test_service.RequestOwnership(base::BindOnce(&OnOwnershipRequestDone));
   num_calls = 0;
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_calls);
@@ -103,7 +103,7 @@ TEST_F(ObjectProxyTest, WaitForServiceToBeAvailableAlreadyRunning) {
   int num_calls = 0;
   bool service_is_available = false;
   object_proxy->WaitForServiceToBeAvailable(
-      base::Bind(&OnServiceIsAvailable, &service_is_available, &num_calls));
+      base::BindOnce(&OnServiceIsAvailable, &service_is_available, &num_calls));
   EXPECT_EQ(0, num_calls);
 
   base::RunLoop().RunUntilIdle();
@@ -120,10 +120,10 @@ TEST_F(ObjectProxyTest, WaitForServiceToBeAvailableMultipleCallbacks) {
   // Register two callbacks.
   int num_calls_1 = 0, num_calls_2 = 0;
   bool service_is_available_1 = false, service_is_available_2 = false;
-  object_proxy->WaitForServiceToBeAvailable(
-      base::Bind(&OnServiceIsAvailable, &service_is_available_1, &num_calls_1));
-  object_proxy->WaitForServiceToBeAvailable(
-      base::Bind(&OnServiceIsAvailable, &service_is_available_2, &num_calls_2));
+  object_proxy->WaitForServiceToBeAvailable(base::BindOnce(
+      &OnServiceIsAvailable, &service_is_available_1, &num_calls_1));
+  object_proxy->WaitForServiceToBeAvailable(base::BindOnce(
+      &OnServiceIsAvailable, &service_is_available_2, &num_calls_2));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_calls_1);
   EXPECT_EQ(0, num_calls_2);

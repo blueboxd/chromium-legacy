@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1275285675049378717">Membekalkan kuasa kepada <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Diuruskan oleh Pentadbir anda</translation>
 <translation id="1289185460362160437">Kembali pada <ph name="COME_BACK_DAY_OF_WEEK" /> jam <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Isyarat lemah</translation>
 <translation id="1293264513303784526">Peranti USB-C (port kiri)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Tunjukkan tetapan Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Sentiasa tunjukkan rak</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Bateri Telefon <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Limpahan</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">Runtuhkan menu</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">Alih keluar pengguna ini</translation>
 <translation id="1654477262762802994">Mulakan pertanyaan suara</translation>
 <translation id="1658406695958299976">Maaf, kata laluan anda masih tidak dapat disahkan. Perhatian: jika anda menukar kata laluan anda baru-baru ini, kata laluan baharu anda akan digunakan apabila anda log keluar, sila gunakan kata laluan yang lama di sini.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Diuruskan oleh Pentadbir anda</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Alamat IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Tidak dikenali</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+Cari+H</translation>
 <translation id="2016340657076538683">Taip mesej</translation>
 <translation id="2050339315714019657">Potret</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Kecerahan papan kekunci</translation>
 <translation id="209965399369889474">Tidak bersambung ke rangkaian</translation>
 <translation id="2126242104232412123">Meja baharu</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
 <translation id="3249513730522716925">Tetingkap <ph name="WINDOW_TITLE" /> dialihkan daripada Meja <ph name="ACTIVE_DESK" /> ke Meja <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Apakah yang boleh anda lakukan?</translation>
-<translation id="3277674767125718685">Kelantangan dihidupkan.</translation>
 <translation id="3290356915286466215">Tidak selamat</translation>
 <translation id="3294437725009624529">Tetamu</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> masih dapat log masuk nanti.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">Akaun diurus oleh <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Tukar kembali kepada "<ph name="FROM_LOCALE" />" (perlu dimulakan semula)</translation>
 <translation id="3576141592585647168">Tukar zon waktu</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, Diuruskan oleh Pentadbir anda</translation>
 <translation id="3595596368722241419">Bateri penuh</translation>
 <translation id="3604801046548457007">Meja <ph name="DESK_TITILE" /> dihasilkan</translation>
 <translation id="3606978283550408104">Paparan Braille disambungkan.</translation>
@@ -258,7 +252,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
 <translation id="4450893287417543264">Jangan tunjukkan lagi</translation>
 <translation id="4477350412780666475">Lagu Seterusnya</translation>
-<translation id="4477892968187500306">Peranti ini boleh mengandungi apl yang belum disahkan oleh Google.</translation>
+<translation id="4477892968187500306">Peranti ini mungkin mengandungi apl yang belum disahkan oleh Google.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Peranti dinyahganding</translation>
 <translation id="4505050298327493054">Meja aktif.</translation>
@@ -294,25 +288,23 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4917385247580444890">Kuat</translation>
 <translation id="4918086044614829423">Terima</translation>
 <translation id="4924411785043111640">Mulakan semula dan tetapkan semula</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Tatal ke atas</translation>
 <translation id="4961318399572185831">Hantar skrin</translation>
 <translation id="5030687792513154421">Masa sudah tamat</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> disambungkan ke telefon baharu</translation>
 <translation id="5083553833479578423">Buka kunci pelbagai lagi ciri Assistant.</translation>
 <translation id="5136175204352732067">Papan kekunci lain disambungkan</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="5207949376430453814">Serlahkan karet teks</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>
 <translation id="5260676007519551770">Meja 4</translation>
 <translation id="5283198616748585639">Tambah 1 min</translation>
+<translation id="5286194356314741248">Mengimbas</translation>
 <translation id="5302048478445481009">Bahasa</translation>
 <translation id="5313326810920013265">Tetapan Bluetooth</translation>
 <translation id="5331975486040154427">Peranti USB-C (port belakang sebelah kiri)</translation>
 <translation id="5379115545237091094">Terlalu banyak percubaan</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">Penggunaan dan sejarah pengguna ini boleh disemak oleh pengurus (<ph name="MANAGER_EMAIL" />) di chrome.com.</translation>
 <translation id="5430931332414098647">Penambatan Segera</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -366,7 +358,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6062360702481658777">Anda akan dilog keluar secara automatik dalam masa <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Maaf, kata laluan anda tidak dapat disahkan. Sila cuba semula.</translation>
 <translation id="607652042414456612">Komputer anda boleh ditemui oleh peranti Bluetooth yang berdekatan sebagai "<ph name="NAME" />" dengan alamat <ph name="ADDRESS" /></translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Diuruskan oleh Pentadbir anda</translation>
 <translation id="612734058257491180">Google Assistant tidak tersedia dalam sesi tetamu.</translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
 <translation id="6164005077879661055">Semua fail dan data setempat yang dikaitkan dengan pengguna diselia akan dipadamkan secara kekal apabila pengguna diselia ini dialih keluar. Tapak web yang dilawati dan tetapan untuk pengguna diselia ini masih boleh dilihat oleh pengurus di <ph name="MANAGEMENT_URL" />.</translation>
@@ -404,7 +395,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6657585470893396449">Kata laluan</translation>
 <translation id="6665545700722362599">Berikan kebenaran kepada tapak web, apl dan sambungan untuk menggunakan perkhidmatan lokasi, mikrofon dan kamera peranti atau ciri lain</translation>
 <translation id="6670153871843998651">Meja 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Diuruskan oleh Pentadbir anda</translation>
 <translation id="6691659475504239918">Cari+Shift+H</translation>
 <translation id="6696025732084565524">Papan kekunci anda yang boleh dicabut memerlukan kemas kini kritikal</translation>
 <translation id="6700713906295497288">Butang menu IME</translation>
@@ -415,7 +405,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6751826523481687655">Pengesanan prestasi dihidupkan</translation>
 <translation id="6752912906630585008">Meja <ph name="REMOVED_DESK" /> dialih keluar dan digabungkan dengan Meja <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Membekalkan kuasa kepada peranti USB-C yang disambungkan</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Mainkan</translation>
 <translation id="6803622936009808957">Tidak dapat membalikkan paparan memandangkan tiada peleraian disokong ditemui. Sebaliknya, memasuki mod desktop yang dilanjutkan.</translation>
 <translation id="6820676911989879663">Berehatlah!</translation>
@@ -461,7 +450,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7526573455193969409">Rangkaian mungkin dipantau</translation>
 <translation id="7536035074519304529">Alamat IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Masa untuk tidur</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Bateri Telefon <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" />. Resolusi telah ditukar kepada <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Palet emoji</translation>
 <translation id="7564874036684306347">Tindakan memindahkan tetingkap ke desktop lain boleh menyebabkan gelagat yang tidak dijangka. Pemberitahuan, tetingkap dan dialog yang seterusnya mungkin dipisahkan antara desktop.</translation>
@@ -580,7 +568,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="9084606467167974638">Togol kedudukan menu</translation>
 <translation id="9089416786594320554">Kaedah input</translation>
 <translation id="9091626656156419976">Paparan <ph name="DISPLAY_NAME" /> dialih keluar</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Diuruskan oleh Pentadbir anda</translation>
 <translation id="9151726767154816831">Mulakan semula dan powerwash untuk mengemas kini</translation>
 <translation id="9179259655489829027">Ciri ini membolehkan anda mengakses dengan cepat mana-mana pengguna yang telah log masuk tanpa memerlukan kata laluan. Gunakan ciri ini dengan akaun yang dipercayai sahaja.</translation>
 <translation id="9183456764293710005">Penggadang skrin penuh</translation>

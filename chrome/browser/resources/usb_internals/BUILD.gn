@@ -41,9 +41,6 @@ js_library("descriptor_panel") {
 
 grit("resources") {
   source = "resources.grd"
-
-  # The .grd contains references to generated files.
-  source_is_generated = true
   outputs = [
     "grit/usb_internals_resources.h",
     "usb_internals_resources.pak",

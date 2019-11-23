@@ -42,7 +42,7 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   void EndPaint(const GrBackendSemaphore& semaphore) override;
 
  private:
-  void CreateVulkanSurface();
+  bool CreateVulkanSurface();
   void CreateSkSurface();
 
   VulkanContextProvider* const context_provider_;

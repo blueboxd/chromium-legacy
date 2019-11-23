@@ -19,7 +19,7 @@
 #include "media/mojo/mojom/interface_factory.mojom.h"
 #include "media/mojo/mojom/renderer.mojom.h"
 #include "media/mojo/mojom/video_decoder.mojom.h"
-#include "media/mojo/services/deferred_destroy_strong_binding_set.h"
+#include "media/mojo/services/deferred_destroy_unique_receiver_set.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -88,17 +88,17 @@ class InterfaceFactoryImpl : public DeferredDestroy<mojom::InterfaceFactory> {
 
  private:
   // Returns true when there is no media component (audio/video decoder,
-  // renderer, cdm and cdm proxy) bindings exist.
+  // renderer, cdm and cdm proxy) receivers exist.
   bool IsEmpty();
 
-  void SetBindingConnectionErrorHandler();
-  void OnBindingConnectionError();
+  void SetReceiverDisconnectHandler();
+  void OnReceiverDisconnect();
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
   CdmFactory* GetCdmFactory();
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
-  // Must be declared before the bindings below because the bound objects might
+  // Must be declared before the receivers below because the bound objects might
   // take a raw pointer of |cdm_service_context_| and assume it's always
   // available.
   MojoCdmServiceContext cdm_service_context_;

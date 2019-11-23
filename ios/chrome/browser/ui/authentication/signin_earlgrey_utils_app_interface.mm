@@ -21,9 +21,9 @@
 
 @implementation SigninEarlGreyUtilsAppInterface
 
-+ (void)addIdentity:(FakeChromeIdentity*)identity {
++ (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
+      fakeIdentity);
 }
 
 + (NSString*)primaryAccountGaiaID {

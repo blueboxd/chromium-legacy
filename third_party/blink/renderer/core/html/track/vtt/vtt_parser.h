@@ -152,6 +152,9 @@ class VTTParser final : public GarbageCollected<VTTParser> {
   HeapVector<Member<CSSStyleSheet>> style_sheets_;
   HeapVector<Member<TextTrackCue>> cue_list_;
 
+  // Used for histogram metric logging only.
+  bool contains_style_block_;
+
   VTTRegionMap region_map_;
 };
 

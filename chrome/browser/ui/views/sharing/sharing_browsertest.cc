@@ -19,6 +19,9 @@
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync_device_info/device_info.h"
@@ -172,4 +175,11 @@ SharingService* SharingBrowserTest::sharing_service() const {
 
 content::WebContents* SharingBrowserTest::web_contents() const {
   return web_contents_;
+}
+
+PageActionIconView* SharingBrowserTest::GetPageActionIconView(
+    PageActionIconType type) {
+  return BrowserView::GetBrowserViewForBrowser(GetBrowser(0))
+      ->toolbar_button_provider()
+      ->GetPageActionIconView(type);
 }

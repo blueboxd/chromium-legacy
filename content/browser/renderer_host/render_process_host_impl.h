@@ -47,7 +47,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/media_buildflags.h"
@@ -67,7 +66,6 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/tracing/public/mojom/traced_process.mojom.h"
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
@@ -104,7 +102,6 @@ class GpuClient;
 namespace content {
 class AgentMetricsCollectorHost;
 class BrowserPluginMessageFilter;
-class ChildConnection;
 class CodeCacheHostImpl;
 class FileSystemManagerImpl;
 class IndexedDBDispatcherHost;
@@ -230,10 +227,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const WebRtcRtpPacketCallback& packet_callback) override;
   void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
   void DisableWebRtcEventLogOutput(int lid) override;
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe) override;
   void BindReceiver(mojo::GenericPendingReceiver receiver) override;
-  const service_manager::Identity& GetChildIdentity() override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() override;
@@ -889,8 +883,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void OnBindHostReceiver(mojo::GenericPendingReceiver receiver);
 
   mojo::OutgoingInvitation mojo_invitation_;
-
-  std::unique_ptr<ChildConnection> child_connection_;
 
   size_t keep_alive_ref_count_;
 

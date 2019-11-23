@@ -6,7 +6,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -26,15 +27,15 @@ class ConnectTestClassApp : public Service,
   explicit ConnectTestClassApp(mojom::ServiceRequest request)
       : service_binding_(this, std::move(request)),
         service_keepalive_(&service_binding_, base::TimeDelta()) {
-    bindings_.set_connection_error_handler(base::BindRepeating(
+    receivers_.set_disconnect_handler(base::BindRepeating(
         &ConnectTestClassApp::HandleInterfaceClose, base::Unretained(this)));
-    class_interface_bindings_.set_connection_error_handler(base::BindRepeating(
+    class_interface_receivers_.set_disconnect_handler(base::BindRepeating(
         &ConnectTestClassApp::HandleInterfaceClose, base::Unretained(this)));
-    registry_.AddInterface<test::mojom::ConnectTestService>(
-        base::BindRepeating(&ConnectTestClassApp::BindConnectTestServiceRequest,
-                            base::Unretained(this)));
+    registry_.AddInterface<test::mojom::ConnectTestService>(base::BindRepeating(
+        &ConnectTestClassApp::BindConnectTestServiceReceiver,
+        base::Unretained(this)));
     registry_.AddInterface<test::mojom::ClassInterface>(
-        base::BindRepeating(&ConnectTestClassApp::BindClassInterfaceRequest,
+        base::BindRepeating(&ConnectTestClassApp::BindClassInterfaceReceiver,
                             base::Unretained(this)));
   }
 
@@ -48,15 +49,16 @@ class ConnectTestClassApp : public Service,
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  void BindConnectTestServiceRequest(
-      test::mojom::ConnectTestServiceRequest request) {
+  void BindConnectTestServiceReceiver(
+      mojo::PendingReceiver<test::mojom::ConnectTestService> receiver) {
     refs_.push_back(service_keepalive_.CreateRef());
-    bindings_.AddBinding(this, std::move(request));
+    receivers_.Add(this, std::move(receiver));
   }
 
-  void BindClassInterfaceRequest(test::mojom::ClassInterfaceRequest request) {
+  void BindClassInterfaceReceiver(
+      mojo::PendingReceiver<test::mojom::ClassInterface> receiver) {
     refs_.push_back(service_keepalive_.CreateRef());
-    class_interface_bindings_.AddBinding(this, std::move(request));
+    class_interface_receivers_.Add(this, std::move(receiver));
   }
 
   // test::mojom::ConnectTestService:
@@ -78,8 +80,8 @@ class ConnectTestClassApp : public Service,
   std::vector<std::unique_ptr<ServiceKeepaliveRef>> refs_;
 
   BinderRegistry registry_;
-  mojo::BindingSet<test::mojom::ConnectTestService> bindings_;
-  mojo::BindingSet<test::mojom::ClassInterface> class_interface_bindings_;
+  mojo::ReceiverSet<test::mojom::ConnectTestService> receivers_;
+  mojo::ReceiverSet<test::mojom::ClassInterface> class_interface_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTestClassApp);
 };

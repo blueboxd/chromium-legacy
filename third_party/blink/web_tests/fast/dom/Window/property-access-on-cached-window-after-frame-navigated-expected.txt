@@ -217,7 +217,6 @@ PASS oldChildWindow.performance.timing.unloadEventEnd is newChildWindow.performa
 PASS oldChildWindow.performance.timing.unloadEventStart is newChildWindow.performance.timing.unloadEventStart
 PASS oldChildWindow.personalbar.visible is newChildWindow.personalbar.visible
 PASS oldChildWindow.portalHost is newChildWindow.portalHost
-PASS oldChildWindow.scheduler.currentTaskQueue.priority is newChildWindow.scheduler.currentTaskQueue.priority
 PASS oldChildWindow.screen.availHeight is newChildWindow.screen.availHeight
 PASS oldChildWindow.screen.availLeft is newChildWindow.screen.availLeft
 PASS oldChildWindow.screen.availTop is newChildWindow.screen.availTop

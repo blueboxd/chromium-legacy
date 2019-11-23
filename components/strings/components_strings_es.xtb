@@ -175,6 +175,7 @@
 <translation id="173080396488393970">No se admite este tipo de tarjeta</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Intenta ponerte en contacto con el administrador del sistema.</translation>
+<translation id="1736420071277903564">Ordenador</translation>
 <translation id="1739107442478692187">Se ha producido una quiebra de seguridad de datos en un sitio web o una aplicación que utilizas. Chrome te recomienda que revises las contraseñas guardadas y que cambies ahora la de <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Introduce un mes de vencimiento válido</translation>
 <translation id="1741613555002899862">Se debe especificar y debe ser una cadena válida cuando DnsOverHttpsMode sea <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -610,6 +611,7 @@
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3901925938762663762">La tarjeta ha caducado</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">¿Usar WebAuthn en lugar de CVC?</translation>
 <translation id="3946209740501886391">Preguntar siempre en este sitio web</translation>
@@ -1535,7 +1537,6 @@ Más información:
 <translation id="8466379296835108687">{COUNT,plural, =1{Una tarjeta de crédito}other{# tarjetas de crédito}}</translation>
 <translation id="8473863474539038330">Direcciones y más</translation>
 <translation id="8479754468255770962">Grapado en la parte inferior izquierda</translation>
-<translation id="8481133456511676116">¿Querías decir <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Inicia sesión en Chrome para utilizar tarjetas de tu cuenta de Google</translation>
 <translation id="8488350697529856933">Aplicable a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha tardado demasiado tiempo en responder.</translation>

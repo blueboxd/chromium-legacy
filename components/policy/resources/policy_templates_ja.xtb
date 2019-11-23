@@ -525,6 +525,15 @@
 
           このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
 <translation id="1852294065645015766">メディアの自動再生を許可する</translation>
+<translation id="1853782273088286010">組み込みの DNS クライアントを <ph name="PRODUCT_NAME" /> で使用するかどうかを管理します。
+
+      このポリシーは、使用する DNS サーバーではなく、DNS サーバーとの通信に使用するソフトウェア スタックに影響します。たとえば、オペレーティング システムで企業の DNS サーバーを使用するよう設定されている場合、組み込みの DNS クライアントではそのサーバーが使用されます。ただし、組み込みの DNS クライアントでは、DNS-over-TLS などの新しい DNS 関連プロトコルを使用して、サーバーの名前解決を別の方法で行う場合もあります。
+
+      このポリシーを true に設定した場合は、組み込みの DNS クライアントが使用されます（可能な場合）。
+
+      このポリシーを false に設定した場合、組み込みの DNS クライアントは使用されません。
+
+      このポリシーを未設定のままにした場合、MacOS、Android（プライベート DNS も VPN も有効にしていない場合）、Chrome OS では組み込みの DNS クライアントがデフォルトで有効になります。ただし、ユーザーは chrome://flags を編集するかコマンドライン フラグを指定することで、組み込みの DNS クライアントを使用するかどうかを変更できます。</translation>
 <translation id="1857152770025485173">このポリシーを有効にすると、ユーザーはブラックリストの URL からウェブページを読み込むことができなくなります。ブラックリストには、ブロックする URL のパターンを指定します。
 
       URL のパターンは、https://www.chromium.org/administrators/url-blacklist-filter-format で示されている形式にする必要があります。
@@ -1367,6 +1376,13 @@
           このポリシーは省略可能です。未設定の場合、検索キーワードに置き換えられることはありません。
 
           このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
+<translation id="3049248142961638857">DHCP リクエストで使用するデバイスのホスト名を指定します。
+
+      このポリシーを空白以外の文字列に設定した場合は、その文字列が DHCP リクエストの際にデバイスのホスト名として使用されます。
+
+      この文字列には変数 <ph name="ASSET_ID_PLACEHOLDER" />、<ph name="SERIAL_NUM_PLACEHOLDER" />、<ph name="MAC_ADDR_PLACEHOLDER" />、<ph name="MACHINE_NAME_PLACEHOLDER" />、<ph name="LOCATION_PLACEHOLDER" /> を含めることができます。文字列がホスト名として使用される前に、これらの変数はデバイスの値に置き換えられます。変数の解決後の名前は、RFC 1035 の 3.1 項に準拠した有効なホスト名となる必要があります。
+
+      このポリシーを設定しない場合、または変数の解決後の名前が有効なホスト名ではない場合、DHCP リクエストにホスト名は設定されません。 </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740"><ph name="PRODUCT_NAME" /> で WPAD（ウェブプロキシ自動検出）の最適化を無効にできます。
 
@@ -2613,6 +2629,11 @@
 
           このポリシーは、<ph name="MS_AD_NAME" /> ドメインに追加した Windows インスタンス、またはデバイスの管理対象として登録した Windows 10 Pro あるいは Enterprise インスタンスでのみ使用できます。</translation>
 <translation id="5208240613060747912">通知表示を許可しないサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultNotificationsSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
+<translation id="5212118847531454979">保留中のアップデートを適用するために <ph name="PRODUCT_NAME" /> または <ph name="PRODUCT_OS_NAME" /> デバイスの再起動が必要であることをユーザーに通知する期間をミリ秒単位で設定します。
+
+      指定した期間中は、アップデートが必要であることがユーザーに繰り返し通知されます。<ph name="PRODUCT_OS_NAME" /> デバイスの場合は、<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> ポリシーに従ってシステムトレイに再起動を促す通知が表示されます。<ph name="PRODUCT_NAME" /> ブラウザの場合は、通知期間の 3 分の 1 が経過した時点で、再起動が必要であること表すためにアプリメニューの色が変わります。この通知の色は、通知期間の 3 分の 2 が経過した時点と、通知期間が最後まで経過した時点でさらに変わります。<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> ポリシーによって追加の通知を有効にしている場合は、同じスケジュールで通知が表示されます。
+
+      このポリシーを設定しない場合は、デフォルトの 604800000 ミリ秒（1 週間）が使用されます。</translation>
 <translation id="5212810195096589189">VM CLI に対する権限を指定する</translation>
 <translation id="5213038356678567351">ブラウザの切り替えを行わないウェブサイト。</translation>
 <translation id="5219844027738217407">Android アプリに対しては、このポリシーはマイクにのみ適用されます。このポリシーを true に設定した場合、すべての Android アプリでは例外なくマイクがミュートされます。</translation>
@@ -2868,6 +2889,9 @@
 
       このポリシーが指定されていない場合、バリエーション シード URL は変更されません。</translation>
 <translation id="5561811616825571914">指定サイトに対し、ログイン画面でクライアント証明書を自動的に選択する</translation>
+<translation id="5564865786900450806">サポートされなくなったパソコンまたはオペレーティング システムで <ph name="PRODUCT_NAME" /> を実行する際、警告が表示されないようにします。
+
+      このポリシーを false に設定するか、未設定のままにした場合は、サポートされなくなったパソコンまたはオペレーティング システムで警告が表示されます。</translation>
 <translation id="5565178130821694365">2 日（48 時間）ごとにパスワードの入力を求める</translation>
 <translation id="5566210228171064229">PIN ありと PIN なしの印刷を両方許可します</translation>
 <translation id="556865034069957245">このポリシーでは、<ph name="PRODUCT_NAME" /> の UI をすべて非表示にし、ウェブ コンテンツのみを表示する全画面モードの使用を管理します。
@@ -4405,6 +4429,9 @@
           この設定を無効にすると、ページのメタ タグはスキャンされます。
 
           このポリシーが設定されていないと、ページのメタ タグはスキャンされます。</translation>
+<translation id="829641334878002866">保留中のアップデートを適用するため <ph name="PRODUCT_OS_NAME" /> デバイスの再起動が必要であることを最初に通知してから、<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> ポリシーで指定された期間の終了時点までの期間をミリ秒単位で設定します。
+
+      このポリシーを設定しない場合、<ph name="PRODUCT_OS_NAME" /> デバイスではデフォルトの 259200000 ミリ秒（3 日）が使用されます。</translation>
 <translation id="8300455783946254851">True に設定すると、携帯回線接続の使用時に <ph name="PRODUCT_OS_NAME" /> ファイル アプリで Google ドライブの同期が無効になります。この場合、データが Google ドライブに同期されるのは、Wi-Fi またはイーサネット接続時のみとなります。
 
           未設定の場合、または False に設定した場合、ユーザーは携帯回線接続を使用して Google ドライブにファイルを転送できるようになります。</translation>

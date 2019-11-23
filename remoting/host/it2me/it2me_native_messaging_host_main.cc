@@ -37,7 +37,9 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "remoting/host/desktop_capturer_checker.h"
 #include "remoting/host/mac/permission_utils.h"
 #endif  // defined(OS_MACOSX)
 
@@ -212,9 +214,16 @@ int It2MeNativeMessagingHostMain(int argc, char** argv) {
     return mac::CanInjectInput() ? EXIT_SUCCESS : EXIT_FAILURE;
   }
   if (cmd_line->HasSwitch(kCheckScreenRecordingPermissionSwitchName)) {
+    // Trigger screen-capture, even if CanRecordScreen() returns true. It uses a
+    // heuristic that might not be 100% reliable, but it is critically
+    // important to add the host bundle to the list of apps under
+    // Security & Privacy -> Screen Recording.
+    if (base::mac::IsAtLeastOS10_15()) {
+      DesktopCapturerChecker().TriggerSingleCapture();
+    }
     return mac::CanRecordScreen() ? EXIT_SUCCESS : EXIT_FAILURE;
   }
-#endif
+#endif  // defined(OS_MACOSX)
 
   // NetworkChangeNotifier must be initialized after SingleThreadTaskExecutor.
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier(

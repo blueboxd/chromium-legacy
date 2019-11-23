@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
+#include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector_client.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -95,8 +96,12 @@ scoped_refptr<FontData> CSSFontSelector::GetFontData(
     const FontDescription& font_description,
     const AtomicString& family_name) {
   if (CSSSegmentedFontFace* face =
-          font_face_cache_.Get(font_description, family_name))
+          font_face_cache_.Get(font_description, family_name)) {
+    document_->GetFontMatchingMetrics()->ReportWebFontFamily(family_name);
     return face->GetFontData(font_description);
+  }
+
+  document_->GetFontMatchingMetrics()->ReportSystemFontFamily(family_name);
 
   // Try to return the correct font based off our settings, in case we were
   // handed the generic font family name.
@@ -147,6 +152,20 @@ void CSSFontSelector::UpdateGenericFontFamilySettings(Document& document) {
 void CSSFontSelector::ReportNotDefGlyph() const {
   DCHECK(document_);
   UseCounter::Count(document_, WebFeature::kFontShapingNotDefGlyphObserved);
+}
+
+void CSSFontSelector::ReportSuccessfulFontFamilyMatch(
+    const AtomicString& font_family_name) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportSuccessfulFontFamilyMatch(
+      font_family_name);
+}
+
+void CSSFontSelector::ReportFailedFontFamilyMatch(
+    const AtomicString& font_family_name) {
+  DCHECK(document_);
+  document_->GetFontMatchingMetrics()->ReportFailedFontFamilyMatch(
+      font_family_name);
 }
 
 void CSSFontSelector::Trace(blink::Visitor* visitor) {

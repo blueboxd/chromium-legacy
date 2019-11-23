@@ -19,6 +19,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -39,6 +40,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/size.h"
@@ -91,8 +93,11 @@ constexpr int kAccessCodeBetweenInputFieldsGapDp = 4;
 constexpr int kArrowButtonSizeDp = 40;
 constexpr int kArrowSizeDp = 20;
 
+constexpr int kAlpha70Percent = 178;
+constexpr int kAlpha74Percent = 189;
+
 constexpr SkColor kTextColor = SK_ColorWHITE;
-constexpr SkColor kErrorColor = SkColorSetARGB(0xFF, 0xF2, 0x8B, 0x82);
+constexpr SkColor kErrorColor = gfx::kGoogleRed300;
 constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 
 bool IsTabletMode() {
@@ -108,6 +113,28 @@ gfx::Size GetParentAccessViewSize() {
   return gfx::Size(kParentAccessViewWidthDp,
                    IsTabletMode() ? kParentAccessViewTabletModeHeightDp
                                   : kParentAccessViewHeightDp);
+}
+
+// Returns background color for parent access dialog. |using_blur| should be
+// true if the dialog is using background blur (color transparency depends on
+// it).
+SkColor GetBackgroundColor(bool using_blur) {
+  SkColor color = AshColorProvider::Get()->GetBaseLayerColor(
+      AshColorProvider::BaseLayerType::kOpaque,
+      AshColorProvider::AshColorMode::kDark);
+
+  SkColor extracted_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile(color_utils::LumaRange::DARK,
+                                    color_utils::SaturationRange::MUTED));
+
+  if (extracted_color != kInvalidWallpaperColor &&
+      extracted_color != SK_ColorTRANSPARENT) {
+    color = color_utils::GetResultingPaintColor(
+        SkColorSetA(SK_ColorBLACK, kAlpha70Percent), extracted_color);
+  }
+
+  return using_blur ? SkColorSetA(color, kAlpha74Percent) : color;
 }
 
 base::string16 GetTitle(ParentAccessRequestReason reason) {
@@ -555,7 +582,9 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
     : callbacks_(callbacks),
       account_id_(account_id),
       request_reason_(reason),
-      validation_time_(validation_time) {
+      validation_time_(validation_time),
+      blur_background_(Shell::Get()->session_controller()->GetSessionState() ==
+                       session_manager::SessionState::ACTIVE) {
   DCHECK(callbacks.on_finished);
   // Main view contains all other views aligned vertically and centered.
   auto layout = std::make_unique<views::BoxLayout>(
@@ -571,6 +600,10 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   SetPreferredSize(GetParentAccessViewSize());
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+  layer()->SetRoundedCornerRadius(
+      gfx::RoundedCornersF(kParentAccessViewRoundedCornerRadiusDp));
+  if (blur_background_)
+    layer()->SetBackgroundBlur(ShelfConfig::Get()->shelf_blur_radius());
 
   const int child_view_width =
       kParentAccessViewWidthDp - 2 * kParentAccessViewHorizontalInsetDp;
@@ -727,22 +760,9 @@ ParentAccessView::~ParentAccessView() = default;
 void ParentAccessView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  SkColor color = gfx::kGoogleGrey900;
-  if (Shell::Get()->session_controller()->GetSessionState() !=
-      session_manager::SessionState::ACTIVE) {
-    SkColor extracted_color =
-        Shell::Get()->wallpaper_controller()->GetProminentColor(
-            color_utils::ColorProfile(color_utils::LumaRange::NORMAL,
-                                      color_utils::SaturationRange::MUTED));
-    if (extracted_color != kInvalidWallpaperColor &&
-        extracted_color != SK_ColorTRANSPARENT) {
-      color = extracted_color;
-    }
-  }
-
   cc::PaintFlags flags;
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(color);
+  flags.setColor(GetBackgroundColor(blur_background_));
   canvas->DrawRoundRect(GetContentsBounds(),
                         kParentAccessViewRoundedCornerRadiusDp, flags);
 }

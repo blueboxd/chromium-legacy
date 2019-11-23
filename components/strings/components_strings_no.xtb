@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Denne korttypen støttes ikke</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Prøv å kontakte systemadministratoren.</translation>
+<translation id="1736420071277903564">Datamaskin</translation>
 <translation id="1739107442478692187">Det har skjedd et databrudd på et nettsted eller i en app du bruker. Chrome anbefaler at du sjekker de lagrede passordene dine og endrer passordet på <ph name="ORIGIN" /> nå.</translation>
 <translation id="1740951997222943430">Angi en gyldig utløpsmåned</translation>
 <translation id="1741613555002899862">Må være angitt som en gyldig streng når DnsOverHttpsMode er <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">Angripere som er på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, kan installere farlige apper som skader enheten din, legge til skjulte belastninger på mobilregningen din eller stjele personopplysningene dine. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Ingen nettilkobling</translation>
 <translation id="2230458221926704099">Løs tilkoblingsproblemene med <ph name="BEGIN_LINK" />diagnostikkappen<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">For deg</translation>
 <translation id="2239100178324503013">Send nå</translation>
 <translation id="2248949050832152960">Bruk WebAuthn</translation>
 <translation id="2250931979407627383">Kantstifting venstre</translation>
@@ -373,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Gå ut</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Sikkerhetsadvarsel</translation>
 <translation id="2699302886720511147">Godkjente kort</translation>
 <translation id="2702801445560668637">Leseliste</translation>
 <translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
@@ -475,6 +478,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3209034400446768650">Siden kan belaste deg for penger</translation>
 <translation id="3209080785413271048">Bruk Windows Hello til å bekrefte de lagrede betalingsmåtene dine.</translation>
+<translation id="3212581601480735796">Aktiviteten din på <ph name="HOSTNAME" /> overvåkes</translation>
 <translation id="3215092763954878852">Kunne ikke bruke WebAuthn</translation>
 <translation id="3225919329040284222">Tjeneren oppga et sertifikat som ikke samsvarte med innebygde forventninger. Disse forventningene benyttes for visse nettsteder med høy sikkerhet, og brukes for å beskytte deg.</translation>
 <translation id="3226128629678568754">Trykk på knappen for å laste inn på nytt, for å sende inn dataene som trengs for å laste inn siden på nytt.</translation>
@@ -533,6 +537,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3528485271872257980">Mørk brun</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Minst 1 element på synkroniserte enheter}=1{1 element (og flere på synkroniserte enheter)}other{# elementer (og flere på synkroniserte enheter)}}</translation>
 <translation id="3539171420378717834">Lagre en kopi av dette kortet på denne enheten</translation>
+<translation id="3553513561058684206">For deg</translation>
 <translation id="3566021033012934673">Tilkoblingen din er ikke privat</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" />, <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">På en innebygd side på <ph name="SITE" /> står det</translation>
@@ -610,6 +615,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3901925938762663762">Kortet er utløpt</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Nettbrett</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Vil du bruke WebAuthn i stedet for CVC?</translation>
 <translation id="3946209740501886391">Spør alltid på dette nettstedet</translation>
@@ -762,6 +768,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4594403342090139922">&amp;Angre slettingen</translation>
 <translation id="4597348597567598915">Størrelse 8</translation>
 <translation id="4600854749408232102">C6/C5 (konvolutt)</translation>
+<translation id="4613966523036881546">Sertifikatet for denne forbindelsen er ikke klarert av Google Chrome, da det er kjent at sertifikatet brukes til nettverksavlytting og -overvåking.</translation>
 <translation id="4635654612248442824">Nettstedet <ph name="ORIGIN" /> har bedt om at en opphavsregel
     skal gjelde hele forespørselen, men denne regelen kan ikke tas i bruk akkurat nå.</translation>
 <translation id="464342062220857295">Søkefunksjoner</translation>
@@ -1466,6 +1473,7 @@ brukere av denne nettleseren.</translation>
 <translation id="8103161714697287722">Betalingsmåte</translation>
 <translation id="8105368624971345109">Slå av</translation>
 <translation id="8118489163946903409">Betalingsmåte</translation>
+<translation id="8124023448510659215">Sertifikatet for denne forbindelsen er ikke klarert av Chromium, da det er kjent at sertifikatet brukes til nettverksavlytting og -overvåking.</translation>
 <translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» er ikke riktig installert på datamaskinen eller på nettverket. Be IT-administratoren din om å løse problemet.</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8149426793427495338">Datamaskinen din gikk inn i hvilemodus.</translation>
@@ -1534,7 +1542,6 @@ Mer informasjon:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredittkort}other{# kredittkort}}</translation>
 <translation id="8473863474539038330">Adresser med mer</translation>
 <translation id="8479754468255770962">Stift nede til venstre</translation>
-<translation id="8481133456511676116">Mente du <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">For å bruke kredittkort du har lagret i Google-kontoen din, logg på Chrome</translation>
 <translation id="8488350697529856933">Gjelder for</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> brukte for lang tid på å svare.</translation>
@@ -1609,6 +1616,8 @@ Mer informasjon:
 <translation id="8957210676456822347">Captive Portal-autorisasjon</translation>
 <translation id="8962950042226115166">Mistenkelig nettsted</translation>
 <translation id="8968766641738584599">Lagre kortet</translation>
+<translation id="8969267497192857913">Alt du skriver, alle sider du besøker, og all annen aktivitet på nettet blir overvåket, og innholdet på nettsteder kan bli endret uten at du vet om det.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
 <translation id="8975012916872825179">Inkluderer informasjon som telefonnumre, e-postadresser og leveringsadresser</translation>
 <translation id="8975263830901772334">Navnene på filer du skriver ut</translation>

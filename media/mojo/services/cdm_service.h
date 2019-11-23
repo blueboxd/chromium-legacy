@@ -12,7 +12,7 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
 #include "media/mojo/mojom/content_decryption_module.mojom.h"
-#include "media/mojo/services/deferred_destroy_strong_binding_set.h"
+#include "media/mojo/services/deferred_destroy_unique_receiver_set.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -64,11 +64,11 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   void SetServiceReleaseDelayForTesting(base::TimeDelta delay);
 
   size_t BoundCdmFactorySizeForTesting() const {
-    return cdm_factory_bindings_.size();
+    return cdm_factory_receivers_.size();
   }
 
   size_t UnboundCdmFactorySizeForTesting() const {
-    return cdm_factory_bindings_.unbound_size();
+    return cdm_factory_receivers_.unbound_size();
   }
 
  private:
@@ -98,7 +98,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   std::unique_ptr<service_manager::ServiceKeepalive> keepalive_;
   std::unique_ptr<Client> client_;
   std::unique_ptr<CdmFactory> cdm_factory_;
-  DeferredDestroyStrongBindingSet<mojom::CdmFactory> cdm_factory_bindings_;
+  DeferredDestroyUniqueReceiverSet<mojom::CdmFactory> cdm_factory_receivers_;
   service_manager::BinderRegistry registry_;
   mojo::ReceiverSet<mojom::CdmService> receivers_;
 

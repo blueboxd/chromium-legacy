@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Dieser Kartentyp wird nicht unterstützt</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Setzen Sie sich mit dem Systemadministrator in Verbindung.</translation>
+<translation id="1736420071277903564">Computer</translation>
 <translation id="1739107442478692187">Auf einer Website oder in einer App, die Sie nutzen, ist eine Datenpanne aufgetreten. Chrome empfiehlt, Ihre gespeicherten Passwörter zu überprüfen und Ihr Passwort auf <ph name="ORIGIN" /> jetzt zu ändern.</translation>
 <translation id="1740951997222943430">Geben Sie einen gültigen Ablaufmonat ein</translation>
 <translation id="1741613555002899862">Muss angegeben werden und ein gültiger String sein, wenn "DnsOverHttpsMode" auf <ph name="SECURE_DNS_MODE_SECURE" /> gesetzt ist.</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">Angreifer auf der Website <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> könnten gefährliche Apps installieren, die Ihr Gerät beschädigen, Ihrer Mobilfunkrechnung versteckte Kosten hinzufügen oder Ihre personenbezogenen Daten stehlen könnten. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Kein Internet</translation>
 <translation id="2230458221926704099">Beheben Sie den Verbindungsfehler mithilfe der <ph name="BEGIN_LINK" />Diagnose-App<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Für mich</translation>
 <translation id="2239100178324503013">Jetzt senden</translation>
 <translation id="2248949050832152960">WebAuthn verwenden</translation>
 <translation id="2250931979407627383">Mehrere Heftklammern links</translation>
@@ -369,6 +371,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Verlassen</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Sicherheitswarnung</translation>
 <translation id="2699302886720511147">Akzeptierte Karten</translation>
 <translation id="2702801445560668637">Leseliste</translation>
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
@@ -469,6 +472,7 @@
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
 <translation id="3209034400446768650">Auf der Seite wird möglicherweise Geld verlangt</translation>
 <translation id="3209080785413271048">Windows Hello verwenden, um Ihre gespeicherten Zahlungsmethoden zu bestätigen.</translation>
+<translation id="3212581601480735796">Ihre Aktivität auf <ph name="HOSTNAME" /> wird überwacht</translation>
 <translation id="3215092763954878852">WebAuthn konnte nicht verwendet werden</translation>
 <translation id="3225919329040284222">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten.</translation>
 <translation id="3226128629678568754">Klicken Sie auf die Schaltfläche zum erneuten Laden, um die für das Laden der Seite erforderlichen Daten noch einmal zu senden.</translation>
@@ -526,6 +530,7 @@
 <translation id="3528485271872257980">Dunkelbraun</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Mindestens 1 Eintrag auf synchronisierten Geräten}=1{1 Eintrag (und weitere auf synchronisierten Geräten)}other{# Einträge (und weitere auf synchronisierten Geräten)}}</translation>
 <translation id="3539171420378717834">Kopie dieser Karte auf diesem Gerät speichern</translation>
+<translation id="3553513561058684206">Für mich</translation>
 <translation id="3566021033012934673">Dies ist keine sichere Verbindung</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Auf einer in <ph name="SITE" /> eingebetteten Seite wird Folgendes angezeigt</translation>
@@ -599,6 +604,7 @@
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3901925938762663762">Die Karte ist abgelaufen.</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> – <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">WebAuthn anstelle des CVCs verwenden?</translation>
 <translation id="3946209740501886391">Auf dieser Website immer fragen</translation>
@@ -751,6 +757,7 @@
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
 <translation id="4597348597567598915">Größe 8</translation>
 <translation id="4600854749408232102">C6/C5 (Umschlag)</translation>
+<translation id="4613966523036881546">Google Chrome vertraut dem Zertifikat dieser Verbindung nicht, da diese Netzwerke unterbrechen und überwachen kann.</translation>
 <translation id="4635654612248442824">Die Website <ph name="ORIGIN" /> verlangt, dass für alle ihre Anfragen eine Ursprungsrichtlinie gilt.
     Diese Richtlinie kann jedoch momentan nicht angewandt werden.</translation>
 <translation id="464342062220857295">Suchfunktionen</translation>
@@ -1456,6 +1463,7 @@ Weitere Details:
 <translation id="8103161714697287722">Zahlungsmethode</translation>
 <translation id="8105368624971345109">Deaktivieren</translation>
 <translation id="8118489163946903409">Zahlungsmethode</translation>
+<translation id="8124023448510659215">Chromium vertraut dem Zertifikat dieser Verbindung nicht, da diese Netzwerke unterbrechen und überwachen kann.</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" war nicht ordnungsgemäß auf Ihrem Computer oder im Netzwerk installiert. Bitten Sie Ihren IT-Administrator, das Problem zu lösen.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8149426793427495338">Ihr Computer ist im Ruhemodus.</translation>
@@ -1524,7 +1532,6 @@ Weitere Details:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 Kreditkarte}other{# Kreditkarten}}</translation>
 <translation id="8473863474539038330">AutoFill-Einstellungen</translation>
 <translation id="8479754468255770962">Heftklammer unten links</translation>
-<translation id="8481133456511676116">Meinten Sie <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Melden Sie sich in Chrome an, um in Ihrem Google-Konto gespeicherte Kreditkarten zu verwenden</translation>
 <translation id="8488350697529856933">Gilt für</translation>
 <translation id="8498891568109133222">Die Antwort von <ph name="HOST_NAME" /> hat zu lange gedauert.</translation>
@@ -1600,6 +1607,8 @@ Weitere Details:
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8962950042226115166">Verdächtige Website</translation>
 <translation id="8968766641738584599">Karte speichern</translation>
+<translation id="8969267497192857913">Alles, was Sie eingeben, alle Seiten, die Sie besuchen, und alle sonstigen Aktivitäten im Internet werden beobachtet. Inhalte von Websites können ohne Ihr Wissen verändert werden.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
 <translation id="8975012916872825179">Enthält Informationen wie Telefonnummern, E-Mail-Adressen und Lieferadressen</translation>
 <translation id="8975263830901772334">Namen von Dateien, die Sie drucken</translation>

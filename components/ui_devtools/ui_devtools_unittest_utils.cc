@@ -5,7 +5,7 @@
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"
 
 #include "base/strings/string_util.h"
-#include "components/ui_devtools/devtools_protocol_encoding.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace ui_devtools {
 
@@ -34,7 +34,8 @@ namespace {
 std::string SerializeToJSON(std::unique_ptr<protocol::Serializable> message) {
   std::vector<uint8_t> cbor = std::move(*message).TakeSerialized();
   std::string json;
-  crdtp::Status status = ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
+  crdtp::Status status =
+      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   DCHECK(status.ok()) << status.ToASCIIString();
   return json;
 }

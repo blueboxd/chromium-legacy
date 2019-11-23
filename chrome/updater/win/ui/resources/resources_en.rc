@@ -153,3 +153,6 @@ BEGIN
     PUSHBUTTON      "",IDCANCEL,205,53,46,19,BS_FLAT
     CTEXT           "",IDC_YES_NO_TEXT,7,17,244,34
 END
+
+1 TYPELIB "chrome/updater/win/updater_idl.tlb"
+

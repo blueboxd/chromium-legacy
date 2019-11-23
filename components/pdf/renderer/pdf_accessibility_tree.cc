@@ -16,6 +16,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "pdf/pdf_features.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/null_ax_action_target.h"
@@ -183,7 +184,9 @@ ui::AXNode* GetStaticTextNodeFromNode(ui::AXNode* node) {
   // Returns nullptr if there is no appropriate static text node.
   ui::AXNode* static_node = node;
   // Get the static text from the link node.
-  if (node && node->data().role == ax::mojom::Role::kLink &&
+  if (node &&
+      (node->data().role == ax::mojom::Role::kLink ||
+       node->data().role == ax::mojom::Role::kButton) &&
       node->children().size() == 1) {
     static_node = node->children()[0];
   }
@@ -402,18 +405,29 @@ void PdfAccessibilityTree::AddPageContent(
   ComputeParagraphAndHeadingThresholds(text_runs, &heading_font_size_threshold,
                                        &paragraph_spacing_threshold);
 
+  std::vector<uint32_t> text_run_start_indices;
+  if (!text_runs.empty()) {
+    text_run_start_indices.reserve(text_runs.size());
+    text_run_start_indices.push_back(0);
+    for (size_t i = 0; i < text_runs.size() - 1; ++i) {
+      text_run_start_indices.push_back(text_run_start_indices[i] +
+                                       text_runs[i].len);
+    }
+  }
   ui::AXNodeData* para_node = nullptr;
   ui::AXNodeData* static_text_node = nullptr;
   ui::AXNodeData* previous_on_line_node = nullptr;
   std::string static_text;
-  uint32_t char_index = 0;
   uint32_t current_link_index = 0;
   uint32_t current_image_index = 0;
+  uint32_t current_highlight_index = 0;
   LineHelper line_helper(text_runs);
   const std::vector<ppapi::PdfAccessibilityLinkInfo>& links =
       page_objects.links;
   const std::vector<ppapi::PdfAccessibilityImageInfo>& images =
       page_objects.images;
+  const std::vector<ppapi::PdfAccessibilityHighlightInfo>& highlights =
+      page_objects.highlights;
 
   for (size_t text_run_index = 0; text_run_index < text_runs.size();
        ++text_run_index) {
@@ -438,18 +452,45 @@ void PdfAccessibilityTree::AddPageContent(
         --text_run_index;
         continue;
       }
+
+      // Annotations can overlap in PDF. There can be two overlapping scenarios:
+      // Partial overlap and Complete overlap.
+      // Partial overlap
+      //
+      // Link A starts      Link B starts     Link A ends            Link B ends
+      //      |a1                |b1               |a2                    |b2
+      // -----------------------------------------------------------------------
+      //                                    Text
+      //
+      // Complete overlap
+      // Link A starts      Link B starts     Link B ends            Link A ends
+      //      |a1                |b1               |b2                    |a2
+      // -----------------------------------------------------------------------
+      //                                    Text
+      //
+      // For overlapping annotations, both annotations would store the full
+      // text data and nothing will get truncated. For partial overlap, link `A`
+      // would contain text between a1 and a2 while link `B` would contain text
+      // between b1 and b2. For complete overlap as well, link `A` would contain
+      // text between a1 and a2 and link `B` would contain text between b1 and
+      // b2. The links would appear in the tree in the order of which they are
+      // present. In the tree for both overlapping scenarios, link `A` would
+      // appear first in the tree and link `B` after it.
+
       // If |link.text_run_count| > 0, then the link is part of the page text.
       // Make the text runs contained by the link children of the link node.
+      size_t end_text_run_index = link.text_run_index + link.text_run_count;
       uint32_t link_end_text_run_index =
-          std::min(text_run_index + link.text_run_count, text_runs.size()) - 1;
-      AddTextToAXNode(text_run_index, link_end_text_run_index, text_runs, chars,
-                      page_bounds, &char_index, link_node,
+          std::min(end_text_run_index, text_runs.size()) - 1;
+      AddTextToAXNode(link.text_run_index, link_end_text_run_index, text_runs,
+                      chars, page_bounds, text_run_start_indices, link_node,
                       &previous_on_line_node);
 
       para_node->relative_bounds.bounds.Union(
           link_node->relative_bounds.bounds);
 
-      text_run_index = link_end_text_run_index;
+      text_run_index =
+          std::max<size_t>(link_end_text_run_index, text_run_index);
     } else if (IsObjectInTextRun(images, current_image_index, text_run_index)) {
       FinishStaticNode(&static_text_node, &static_text);
       // If the |text_run_index| is less than or equal to the image's text run
@@ -459,24 +500,51 @@ void PdfAccessibilityTree::AddPageContent(
       ++current_image_index;
       --text_run_index;
       continue;
+    } else if (IsObjectInTextRun(highlights, current_highlight_index,
+                                 text_run_index) &&
+               base::FeatureList::IsEnabled(
+                   chrome_pdf::features::kAccessiblePDFHighlight)) {
+      FinishStaticNode(&static_text_node, &static_text);
+
+      const ppapi::PdfAccessibilityHighlightInfo& highlight =
+          highlights[current_highlight_index++];
+
+      ui::AXNodeData* highlight_node = CreateHighlightNode(highlight);
+      para_node->child_ids.push_back(highlight_node->id);
+
+      // Make the text runs contained by the highlight children of
+      // the highlight node.
+      size_t end_text_run_index =
+          highlight.text_run_index + highlight.text_run_count;
+      uint32_t highlight_end_text_run_index =
+          std::min(end_text_run_index, text_runs.size()) - 1;
+      AddTextToAXNode(highlight.text_run_index, highlight_end_text_run_index,
+                      text_runs, chars, page_bounds, text_run_start_indices,
+                      highlight_node, &previous_on_line_node);
+
+      para_node->relative_bounds.bounds.Union(
+          highlight_node->relative_bounds.bounds);
+
+      text_run_index =
+          std::max<size_t>(highlight_end_text_run_index, text_run_index);
     } else {
       // This node is for the text inside the paragraph, it includes
       // the text of all of the text runs.
       if (!static_text_node) {
-        static_text_node = CreateStaticTextNode(char_index);
+        static_text_node =
+            CreateStaticTextNode(text_run_start_indices[text_run_index]);
         para_node->child_ids.push_back(static_text_node->id);
       }
 
       const ppapi::PdfAccessibilityTextRunInfo& text_run =
           text_runs[text_run_index];
       // Add this text run to the current static text node.
-      ui::AXNodeData* inline_text_box_node =
-          CreateInlineTextBoxNode(text_run, chars, char_index, page_bounds);
+      ui::AXNodeData* inline_text_box_node = CreateInlineTextBoxNode(
+          text_run, chars, text_run_start_indices[text_run_index], page_bounds);
       static_text_node->child_ids.push_back(inline_text_box_node->id);
 
       static_text += inline_text_box_node->GetStringAttribute(
           ax::mojom::StringAttribute::kName);
-      char_index += text_run.len;
 
       para_node->relative_bounds.bounds.Union(
           inline_text_box_node->relative_bounds.bounds);
@@ -808,16 +876,31 @@ ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
   return image_node;
 }
 
+ui::AXNodeData* PdfAccessibilityTree::CreateHighlightNode(
+    const ppapi::PdfAccessibilityHighlightInfo& highlight) {
+  ui::AXNodeData* highlight_node = CreateNode(ax::mojom::Role::kButton);
+
+  // TODO(crbug.com/1008775): Determine string attributes.
+  highlight_node->AddStringAttribute(
+      ax::mojom::StringAttribute::kRoleDescription, std::string());
+  highlight_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                     std::string());
+  highlight_node->relative_bounds.bounds = ToGfxRectF(highlight.bounds);
+
+  return highlight_node;
+}
+
 void PdfAccessibilityTree::AddTextToAXNode(
     uint32_t start_text_run_index,
     uint32_t end_text_run_index,
     const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
     const gfx::RectF& page_bounds,
-    uint32_t* char_index,
+    const std::vector<uint32_t>& text_run_start_indices,
     ui::AXNodeData* ax_node,
     ui::AXNodeData** previous_on_line_node) {
-  ui::AXNodeData* ax_static_text_node = CreateStaticTextNode(*char_index);
+  ui::AXNodeData* ax_static_text_node =
+      CreateStaticTextNode(text_run_start_indices[start_text_run_index]);
   ax_node->child_ids.push_back(ax_static_text_node->id);
   // Accumulate the text of the node.
   std::string ax_name;
@@ -828,16 +911,14 @@ void PdfAccessibilityTree::AddTextToAXNode(
     const ppapi::PdfAccessibilityTextRunInfo& text_run =
         text_runs[text_run_index];
     // Add this text run to the current static text node.
-    ui::AXNodeData* inline_text_box_node =
-        CreateInlineTextBoxNode(text_run, chars, *char_index, page_bounds);
+    ui::AXNodeData* inline_text_box_node = CreateInlineTextBoxNode(
+        text_run, chars, text_run_start_indices[text_run_index], page_bounds);
     ax_static_text_node->child_ids.push_back(inline_text_box_node->id);
 
     ax_static_text_node->relative_bounds.bounds.Union(
         inline_text_box_node->relative_bounds.bounds);
     ax_name += inline_text_box_node->GetStringAttribute(
         ax::mojom::StringAttribute::kName);
-
-    *char_index += text_run.len;
 
     if (*previous_on_line_node) {
       ConnectPreviousAndNextOnLine(*previous_on_line_node,

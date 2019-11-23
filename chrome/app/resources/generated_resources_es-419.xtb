@@ -514,7 +514,6 @@
 <translation id="1734212868489994726">Celeste</translation>
 <translation id="1734824808160898225">Es posible que <ph name="PRODUCT_NAME" /> no se mantenga actualizado</translation>
 <translation id="1736419249208073774">Explorar</translation>
-<translation id="1736420071277903564">Computadora</translation>
 <translation id="1737968601308870607">Incluir error</translation>
 <translation id="1741314857973421784">Continuar</translation>
 <translation id="1743570585616704562">No se reconoció</translation>
@@ -1126,6 +1125,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
 <translation id="2619761439309613843">Actualización diaria</translation>
 <translation id="2620436844016719705">Sistema</translation>
+<translation id="2621713457727696555">Bloqueada</translation>
 <translation id="26224892172169984">No permitir que los sitios web procesen protocolos</translation>
 <translation id="2624142942574147739">Esta página está accediendo a la cámara y al micrófono.</translation>
 <translation id="2626799779920242286">Vuelve a intentarlo más tarde.</translation>
@@ -1577,6 +1577,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="328571385944182268">¿Quieres guardar tus contraseñas?</translation>
 <translation id="3288047731229977326">Las extensiones que se ejecutan en modo de programador pueden dañar tu computadora. Si no eres programador, debes inhabilitar las extensiones que se ejecutan en modo de programador para mantenerte protegido.</translation>
 <translation id="3289856944988573801">Para comprobar si hay actualizaciones, utiliza una conexión Ethernet o Wi-Fi.</translation>
+<translation id="3290356915286466215">No segura</translation>
 <translation id="3293644607209440645">Enviar esta página</translation>
 <translation id="32939749466444286">No se inició el contenedor de Linux. Vuelve a intentarlo.</translation>
 <translation id="3294437725009624529">Invitado</translation>
@@ -2018,7 +2019,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3900966090527141178">Exportar contraseñas</translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Reparar aplicación</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> no está actualizado</translation>
 <translation id="3908501907586732282">Habilitar extensión</translation>
 <translation id="3909477809443608991"><ph name="URL" /> quiere reproducir contenido protegido. Google verificará la identidad de tu dispositivo, y es posible que este sitio acceda a ella.</translation>
@@ -2318,7 +2318,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4364327530094270451">Melón</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> comparte una ventana.</translation>
 <translation id="4364830672918311045">Mostrar notificaciones</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> con <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">El correo electrónico y la contraseña que ingresaste no coinciden.</translation>
 <translation id="437184764829821926">Configuración de fuentes avanzadas</translation>
 <translation id="4374831787438678295">Instalador de Linux</translation>
@@ -2960,7 +2959,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5363109466694494651">Utilizar la función Powerwash y revertir</translation>
 <translation id="5365881113273618889">La carpeta seleccionada contiene archivos confidenciales. ¿Confirmas que deseas otorgar a "<ph name="APP_NAME" />" acceso de escritura permanente a esta carpeta?</translation>
 <translation id="5367091008316207019">Leyendo el archivo...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" />: <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">El teléfono está bloqueado. Desbloquéalo para ingresar.</translation>
 <translation id="5368779022775404937">Acceder a <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Habilitar la aceleración del mouse</translation>
@@ -4718,6 +4716,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7912080627461681647">Se cambió la contraseña en el servidor. Sal de la cuenta y vuelve a acceder.</translation>
 <translation id="7915457674565721553">Conéctate a Internet para configurar los controles parentales</translation>
 <translation id="7915471803647590281">Comunícanos lo que está pasando antes de enviarnos tus comentarios</translation>
+<translation id="7918257978052780342">Inscribir</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Nivel de zoom en vista acoplada:</translation>
 <translation id="7925247922861151263">Falló la verificación de AAA</translation>

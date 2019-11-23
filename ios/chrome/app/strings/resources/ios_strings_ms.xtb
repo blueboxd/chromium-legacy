@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">Ketik butang "Hentikan Pengelogan" untuk mengumpulkan log konsol JavaScript yang akan datang dan ralat daripada semua tab. Log akan dikumpulkan (dan disimpan dalam memori sahaja) hingga halaman ini ditutup atau "Hentikan Pengelogan" diketik.</translation>
 <translation id="1657011748321897393">Perkongsian gagal kerana anda tidak disambungkan ke rangkaian.</translation>
 <translation id="165877110639533037">Tiada Tab Terbuka</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> kepada <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Hidupkan penyegerakan untuk mendapatkan penanda halaman pada semua peranti anda.</translation>
 <translation id="1687475363370981210">Tandakan Semua Sebagai Dibaca</translation>
 <translation id="1690731385917361335">Tiada item</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">Serah</translation>
 <translation id="2690858294534178585">Kamera sedang digunakan</translation>
 <translation id="2691653761409724435">Tidak tersedia di luar talian</translation>
+<translation id="2695507686909505111">Halaman Diterjemahkan</translation>
 <translation id="2702801445560668637">Senarai Bacaan</translation>
 <translation id="2704606927547763573">Disalin</translation>
 <translation id="2709516037105925701">Autoisi</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">Tiada sambungan Internet.</translation>
 <translation id="3783017676699494206">Simpan Imej</translation>
 <translation id="3789841737615482174">Pasang</translation>
+<translation id="3803696231112616155">Tawarkan untuk menterjemahkan tapak ini</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Maklumat Tapak</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">Halaman ini akan dibuka dalam aplikasi lain.</translation>
 <translation id="4375040482473363939">Carian kod QR</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4389019817280890563">Ketik untuk menukar bahasa.</translation>
 <translation id="441868831736628555">Notis Privasi</translation>
 <translation id="4454246407045105932">Tambahkan Bahasa</translation>
 <translation id="4476574785019001431">Tetapan</translation>
@@ -344,6 +348,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5871497086027727873">1 item dialihkan</translation>
 <translation id="5897956970858271241">Lawati Pautan Disalin</translation>
 <translation id="5911030830365207728">Google Terjemah</translation>
+<translation id="5913600720976431809">Pilihan untuk Menterjemah halaman</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
 <translation id="5938160824633642847">Peranti anda hampir penuh. Kosongkan ruang dan cuba lagi.</translation>
 <translation id="5948291296578561264">Tindakan ini membolehkan anda menyimpan foto pada pustaka foto anda.</translation>
@@ -375,6 +380,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="6219688215832490856">Jangan Sekali-kali Terjemah</translation>
 <translation id="6254066287920239840">Buka pautan dalam Apl dan bukannya penyemak imbas.</translation>
 <translation id="6255097610484507482">Edit Kad Kredit</translation>
+<translation id="6284652193729350524">Tawarkan untuk menterjemah <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Log keluar dan matikan penyegerakan</translation>
 <translation id="6308436439357671616">Langkah ini membolehkan anda mengambil dan memuat naik foto.</translation>
 <translation id="6324528485781869530">Tukar Akaun Segerak</translation>
@@ -429,6 +435,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6903907808598579934">Hidupkan penyegerakan</translation>
 <translation id="6914583639806229067">Cari Imej yang Anda Salin</translation>
 <translation id="6914783257214138813">Kata laluan anda akan kelihatan kepada sesiapa yang dapat melihat fail yang dieksport.</translation>
+<translation id="6930799952781667037">Ketik untuk menukar kepada bahasa ini.</translation>
 <translation id="6944369514868857500">Pilih Akaun Lain</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6973630695168034713">Folder</translation>
@@ -458,6 +465,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7293171162284876153">Untuk memulakan penyegerakan, hidupkan "Segerakkan data Chrome anda".</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> peratus dimuat turun</translation>
 <translation id="7346909386216857016">Ok, faham</translation>
+<translation id="734758817008927353">Pilihan untuk Simpan Kad</translation>
 <translation id="7348502496356775519">Bookmark</translation>
 <translation id="7383797227493018512">Senarai Bacaan</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -482,6 +490,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="7671141431838911305">PASANG</translation>
 <translation id="7765158879357617694">Alih</translation>
 <translation id="7772032839648071052">Sahkan frasa laluan</translation>
+<translation id="7781011649027948662">Terjemah Halaman?</translation>
 <translation id="7781829728241885113">Semalam</translation>
 <translation id="778855399387580014">Mulakan carian dalam tab Chrome baharu.</translation>
 <translation id="7791543448312431591">Tambah</translation>

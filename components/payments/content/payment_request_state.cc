@@ -18,7 +18,10 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/payments/content/autofill_payment_app_factory.h"
 #include "components/payments/content/content_payment_request_delegate.h"
+#include "components/payments/content/payment_app_service.h"
+#include "components/payments/content/payment_app_service_factory.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app.h"
@@ -68,11 +71,11 @@ PaymentRequestState::PaymentRequestState(
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
     ContentPaymentRequestDelegate* payment_request_delegate,
-    base::WeakPtr<ServiceWorkerPaymentApp::IdentityObserver>
-        sw_identity_observer,
+    const ServiceWorkerPaymentApp::IdentityCallback& sw_identity_callback,
     JourneyLogger* journey_logger)
-    : is_ready_to_pay_(false),
-      is_waiting_for_merchant_validation_(false),
+    : web_contents_(web_contents),
+      top_origin_(top_level_origin),
+      frame_origin_(frame_origin),
       app_locale_(app_locale),
       spec_(spec),
       delegate_(delegate),
@@ -80,115 +83,88 @@ PaymentRequestState::PaymentRequestState(
       journey_logger_(journey_logger),
       are_requested_methods_supported_(
           !spec_->supported_card_networks().empty()),
-      selected_shipping_profile_(nullptr),
-      selected_shipping_option_error_profile_(nullptr),
-      selected_contact_profile_(nullptr),
-      invalid_shipping_profile_(nullptr),
-      invalid_contact_profile_(nullptr),
-      selected_app_(nullptr),
-      number_of_pending_sw_payment_apps_(0),
       payment_request_delegate_(payment_request_delegate),
-      sw_identity_observer_(sw_identity_observer),
+      sw_identity_callback_(sw_identity_callback),
       profile_comparator_(app_locale, *spec) {
-  DCHECK(sw_identity_observer_);
-  if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
-    DCHECK(web_contents);
-    bool may_crawl_for_installable_payment_apps =
-        PaymentsExperimentalFeatures::IsEnabled(
-            features::kAlwaysAllowJustInTimePaymentApp) ||
-        !spec_->supports_basic_card();
+  PopulateProfileCache();
 
-    ServiceWorkerPaymentAppFactory::GetInstance()->GetAllPaymentApps(
-        web_contents,
-        payment_request_delegate_->GetPaymentManifestWebDataService(),
-        spec_->method_data(), may_crawl_for_installable_payment_apps,
-        base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,
-                       weak_ptr_factory_.GetWeakPtr(), web_contents,
-                       top_level_origin, frame_origin),
-        base::BindOnce([]() {
-          /* Nothing needs to be done after writing cache. This callback is used
-           * only in tests. */
-        }));
-  } else {
-    PopulateProfileCache();
-    SetDefaultProfileSelections();
-    get_all_apps_finished_ = true;
-    has_enrolled_instrument_ = GetHasEnrolledInstrument(available_apps_);
-  }
+  // |web_contents_| is null in unit tests.
+  PaymentAppServiceFactory::GetForContext(
+      web_contents_ ? web_contents_->GetBrowserContext() : nullptr)
+      ->Create(weak_ptr_factory_.GetWeakPtr(),
+               &number_of_payment_app_factories_);
+
   spec_->AddObserver(this);
 }
 
 PaymentRequestState::~PaymentRequestState() {}
 
-void PaymentRequestState::GetAllPaymentAppsCallback(
-    content::WebContents* web_contents,
-    const GURL& top_level_origin,
-    const GURL& frame_origin,
-    content::PaymentAppProvider::PaymentApps apps,
-    ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps,
-    const std::string& error_message) {
-  number_of_pending_sw_payment_apps_ = apps.size() + installable_apps.size();
-  get_all_payment_apps_error_ = error_message;
-  if (number_of_pending_sw_payment_apps_ == 0U) {
-    FinishedGetAllSWPaymentApps();
-    return;
-  }
-
-  for (auto& installed_app : apps) {
-    auto app = std::make_unique<ServiceWorkerPaymentApp>(
-        web_contents->GetBrowserContext(), top_level_origin, frame_origin,
-        spec_, std::move(installed_app.second), payment_request_delegate_,
-        sw_identity_observer_);
-    app->ValidateCanMakePayment(
-        base::BindOnce(&PaymentRequestState::OnSWPaymentAppValidated,
-                       weak_ptr_factory_.GetWeakPtr()));
-    available_apps_.push_back(std::move(app));
-  }
-
-  for (auto& installable_app : installable_apps) {
-    auto app = std::make_unique<ServiceWorkerPaymentApp>(
-        web_contents, top_level_origin, frame_origin, spec_,
-        std::move(installable_app.second), installable_app.first.spec(),
-        payment_request_delegate_, sw_identity_observer_);
-    app->ValidateCanMakePayment(
-        base::BindOnce(&PaymentRequestState::OnSWPaymentAppValidated,
-                       weak_ptr_factory_.GetWeakPtr()));
-    available_apps_.push_back(std::move(app));
-  }
+content::WebContents* PaymentRequestState::GetWebContents() {
+  return web_contents_;
 }
 
-void PaymentRequestState::OnSWPaymentAppValidated(ServiceWorkerPaymentApp* app,
-                                                  bool result) {
-  has_non_autofill_app_ |= result;
+ContentPaymentRequestDelegate*
+PaymentRequestState::GetPaymentRequestDelegate() {
+  return payment_request_delegate_;
+}
 
-  // Remove service worker payment apps failed on validation.
-  if (!result) {
-    for (size_t i = 0; i < available_apps_.size(); i++) {
-      if (available_apps_[i].get() == app) {
-        available_apps_.erase(available_apps_.begin() + i);
-        break;
-      }
-    }
-  }
+PaymentRequestSpec* PaymentRequestState::GetSpec() {
+  return spec_;
+}
 
-  std::vector<std::string> app_method_names = app->GetAppMethodNames();
-  if (base::Contains(app_method_names, methods::kGooglePay) ||
-      base::Contains(app_method_names, methods::kAndroidPay)) {
+const GURL& PaymentRequestState::GetTopOrigin() {
+  return top_origin_;
+}
+
+const GURL& PaymentRequestState::GetFrameOrigin() {
+  return frame_origin_;
+}
+
+const std::vector<autofill::AutofillProfile*>&
+PaymentRequestState::GetBillingProfiles() {
+  return shipping_profiles_;
+}
+
+bool PaymentRequestState::IsRequestedAutofillDataAvailable() {
+  return is_requested_autofill_data_available_;
+}
+
+bool PaymentRequestState::MayCrawlForInstallablePaymentApps() {
+  return PaymentsExperimentalFeatures::IsEnabled(
+             features::kAlwaysAllowJustInTimePaymentApp) ||
+         !spec_->supports_basic_card();
+}
+
+void PaymentRequestState::OnPaymentAppInstalled(const url::Origin& origin,
+                                                int64_t registration_id) {
+  sw_identity_callback_.Run(origin, registration_id);
+}
+
+void PaymentRequestState::OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) {
+  if (app->type() == PaymentApp::Type::AUTOFILL) {
+    journey_logger_->SetEventOccurred(
+        JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD);
+  } else if (base::Contains(app->GetAppMethodNames(), methods::kGooglePay) ||
+             base::Contains(app->GetAppMethodNames(), methods::kAndroidPay)) {
     journey_logger_->SetEventOccurred(
         JourneyLogger::EVENT_AVAILABLE_METHOD_GOOGLE);
   } else {
     journey_logger_->SetEventOccurred(
         JourneyLogger::EVENT_AVAILABLE_METHOD_OTHER);
   }
-
-  if (--number_of_pending_sw_payment_apps_ > 0)
-    return;
-
-  FinishedGetAllSWPaymentApps();
+  available_apps_.emplace_back(std::move(app));
 }
 
-void PaymentRequestState::FinishedGetAllSWPaymentApps() {
-  PopulateProfileCache();
+void PaymentRequestState::OnPaymentAppCreationError(
+    const std::string& error_message) {
+  get_all_payment_apps_error_ = error_message;
+}
+
+void PaymentRequestState::OnDoneCreatingPaymentApps() {
+  DCHECK_NE(0U, number_of_payment_app_factories_);
+  if (--number_of_payment_app_factories_ > 0U)
+    return;
+
   SetDefaultProfileSelections();
 
   get_all_apps_finished_ = true;
@@ -358,31 +334,12 @@ void PaymentRequestState::RecordUseStats() {
 void PaymentRequestState::AddAutofillPaymentApp(
     bool selected,
     const autofill::CreditCard& card) {
-  std::string basic_card_network =
-      autofill::data_util::GetPaymentRequestData(card.network())
-          .basic_card_issuer_network;
-  if (!spec_->supported_card_networks_set().count(basic_card_network) ||
-      !spec_->supported_card_types_set().count(card.card_type())) {
+  auto app =
+      AutofillPaymentAppFactory::ConvertCardToPaymentAppIfSupportedNetwork(
+          card, weak_ptr_factory_.GetWeakPtr());
+  if (!app)
     return;
-  }
 
-  // The total number of card types: credit, debit, prepaid, unknown.
-  constexpr size_t kTotalNumberOfCardTypes = 4U;
-
-  // Whether the card type (credit, debit, prepaid) matches thetype that the
-  // merchant has requested exactly. This should be false for unknown card
-  // types, if the merchant cannot accept some card types.
-  bool matches_merchant_card_type_exactly =
-      card.card_type() != autofill::CreditCard::CARD_TYPE_UNKNOWN ||
-      spec_->supported_card_types_set().size() == kTotalNumberOfCardTypes;
-
-  // AutofillPaymentApp makes a copy of |card| so it is effectively owned by
-  // this object.
-  auto app = std::make_unique<AutofillPaymentApp>(
-      basic_card_network, card, matches_merchant_card_type_exactly,
-      shipping_profiles_, app_locale_, payment_request_delegate_);
-  app->set_is_requested_autofill_data_available(
-      is_requested_autofill_data_available_);
   available_apps_.push_back(std::move(app));
   journey_logger_->SetEventOccurred(
       JourneyLogger::EVENT_AVAILABLE_METHOD_BASIC_CARD);
@@ -612,15 +569,6 @@ void PaymentRequestState::PopulateProfileCache() {
         JourneyLogger::Section::SECTION_SHIPPING_ADDRESS,
         shipping_profiles_.size(), has_complete_shipping);
   }
-
-  // Create the list of available apps. A copy of each card will be made by
-  // their respective AutofillPaymentApps.
-  const std::vector<autofill::CreditCard*>& cards =
-      personal_data_manager_->GetCreditCardsToSuggest(
-          /*include_server_cards=*/base::FeatureList::IsEnabled(
-              payments::features::kReturnGooglePayInBasicCard));
-  for (autofill::CreditCard* card : cards)
-    AddAutofillPaymentApp(/*selected=*/false, *card);
 }
 
 void PaymentRequestState::SetDefaultProfileSelections() {

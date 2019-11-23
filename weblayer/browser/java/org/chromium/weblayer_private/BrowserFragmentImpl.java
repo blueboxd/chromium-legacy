@@ -30,7 +30,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
             ProfileManager profileManager, IRemoteFragmentClient client, Bundle fragmentArgs) {
         super(client);
         mProfile =
-                profileManager.getProfile(fragmentArgs.getString(BrowserFragmentArgs.PROFILE_PATH));
+                profileManager.getProfile(fragmentArgs.getString(BrowserFragmentArgs.PROFILE_NAME));
     }
 
     @Override

@@ -34,7 +34,7 @@ constexpr base::TimeDelta kKeepaliveIdleTimeout =
 // CdmService::Client.
 //
 // Lifetime Note:
-// 1. CdmFactoryImpl instances are owned by a DeferredDestroyStrongBindingSet
+// 1. CdmFactoryImpl instances are owned by a DeferredDestroyUniqueReceiverSet
 //    directly, which is owned by CdmService.
 // 2. Note that CdmFactoryImpl also holds a ServiceKeepaliveRef tied to the
 //    CdmService.
@@ -42,7 +42,7 @@ constexpr base::TimeDelta kKeepaliveIdleTimeout =
 //   - CdmService is destroyed. Because of (2) this should not happen except for
 //     during browser shutdown, when the Cdservice could be destroyed directly,
 //     ignoring any outstanding ServiceKeepaliveRefs.
-//   - mojo::CdmFactory connection error happens, AND CdmFactoryImpl doesn't own
+//   - mojo::CdmFactory disconnection happens, AND CdmFactoryImpl doesn't own
 //     any CDMs (|cdm_receivers_| is empty). This is to prevent destroying the
 //     CDMs too early (e.g. during page navigation) which could cause errors
 //     (session closed) on the client side. See https://crbug.com/821171 for
@@ -62,7 +62,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
     // |this| is destructed, |cdm_receivers_| will be destructed as well and the
     // error handler should never be called.
     cdm_receivers_.set_disconnect_handler(base::BindRepeating(
-        &CdmFactoryImpl::OnBindingConnectionError, base::Unretained(this)));
+        &CdmFactoryImpl::OnReceiverDisconnect, base::Unretained(this)));
   }
 
   ~CdmFactoryImpl() final { DVLOG(1) << __func__; }
@@ -99,7 +99,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
     return cdm_factory_.get();
   }
 
-  void OnBindingConnectionError() {
+  void OnReceiverDisconnect() {
     if (destroy_cb_ && cdm_receivers_.empty())
       std::move(destroy_cb_).Run();
   }
@@ -159,7 +159,7 @@ void CdmService::OnBindInterface(
 }
 
 void CdmService::OnDisconnected() {
-  cdm_factory_bindings_.CloseAllBindings();
+  cdm_factory_receivers_.CloseAllReceivers();
   client_.reset();
   Terminate();
 }
@@ -237,7 +237,7 @@ void CdmService::CreateCdmFactory(
   if (!client_)
     return;
 
-  cdm_factory_bindings_.AddBinding(
+  cdm_factory_receivers_.AddReceiver(
       std::make_unique<CdmFactoryImpl>(
           client_.get(), std::move(host_interfaces), keepalive_->CreateRef()),
       std::move(receiver));

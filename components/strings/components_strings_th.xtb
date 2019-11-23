@@ -175,6 +175,7 @@
 <translation id="173080396488393970">ไม่รองรับบัตรประเภทนี้</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">ลองติดต่อผู้ดูแลระบบ</translation>
+<translation id="1736420071277903564">คอมพิวเตอร์</translation>
 <translation id="1739107442478692187">มีการละเมิดข้อมูลในเว็บไซต์หรือแอปที่คุณใช้ Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้และเปลี่ยนรหัสผ่านที่ใช้ใน <ph name="ORIGIN" /> โดยทันที</translation>
 <translation id="1740951997222943430">ป้อนเดือนที่หมดอายุที่ถูกต้อง</translation>
 <translation id="1741613555002899862">ต้องระบุและสตริงที่ถูกต้องเมื่อนโยบาย DnsOverHttpsMode ตั้งค่าเป็น <ph name="SECURE_DNS_MODE_SECURE" /></translation>
@@ -594,6 +595,7 @@
 <translation id="3897092660631435901">เมนู</translation>
 <translation id="3901925938762663762">บัตรหมดอายุ</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">แท็บเล็ต</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">ใช้ WebAuthn แทน CVC ไหม</translation>
 <translation id="3946209740501886391">ถามทุกครั้งบนเว็บไซต์นี้</translation>
@@ -1518,7 +1520,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{บัตรเครดิต 1 ใบ}other{บัตรเครดิต # ใบ}}</translation>
 <translation id="8473863474539038330">ที่อยู่และอื่นๆ</translation>
 <translation id="8479754468255770962">เย็บด้วยลวดเย็บกระดาษด้านซ้ายล่าง</translation>
-<translation id="8481133456511676116">หรือคุณหมายถึง <ph name="DOMAIN" /></translation>
 <translation id="8483780878231876732">หากต้องการใช้การ์ดจากบัญชี Google ให้ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="8488350697529856933">ใช้กับ</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ใช้เวลาตอบกลับนานเกินไป</translation>

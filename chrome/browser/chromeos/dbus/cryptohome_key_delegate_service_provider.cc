@@ -84,8 +84,10 @@ void CompleteSignatureKeyChallenge(
     net::Error error,
     const std::vector<uint8_t>& signature) {
   if (error != net::OK || signature.empty()) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, "Failed to generate the signature"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_FAILED,
+            "Failed to generate the signature"));
     return;
   }
 
@@ -98,7 +100,7 @@ void CompleteSignatureKeyChallenge(
   dbus::MessageWriter writer(response.get());
   writer.AppendProtoAsArrayOfBytes(challenge_response);
 
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 // Handles the "ChallengeKey" D-Bus call for the request of the
@@ -109,26 +111,31 @@ void HandleSignatureKeyChallenge(
     const AccountId& account_id,
     dbus::ExportedObject::ResponseSender response_sender) {
   if (challenge_request_data.data_to_sign().empty()) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "Missing data to sign"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, "Missing data to sign"));
     return;
   }
   if (challenge_request_data.public_key_spki_der().empty()) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "Missing public key"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, "Missing public key"));
     return;
   }
   if (!challenge_request_data.has_signature_algorithm()) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "Missing signature algorithm"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS,
+            "Missing signature algorithm"));
     return;
   }
 
   uint16_t ssl_algorithm = 0;
   if (!ChallengeSignatureAlgorithmToSslAlgorithm(
           challenge_request_data.signature_algorithm(), &ssl_algorithm)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, "Unknown signature algorithm"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_FAILED, "Unknown signature algorithm"));
     return;
   }
 
@@ -141,9 +148,10 @@ void HandleSignatureKeyChallenge(
   CertificateProviderService* certificate_provider_service =
       CertificateProviderServiceFactory::GetForBrowserContext(signin_profile);
   if (!certificate_provider_service) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED,
-        "Missing certificate provider service"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_FAILED,
+            "Missing certificate provider service"));
     return;
   }
 
@@ -151,21 +159,24 @@ void HandleSignatureKeyChallenge(
   if (!certificate_provider_service->GetSupportedAlgorithmsBySpki(
           challenge_request_data.public_key_spki_der(),
           &supported_ssl_algorithms)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, "Key is unavailable"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                                 "Key is unavailable"));
     return;
   }
   if (!base::Contains(supported_ssl_algorithms, ssl_algorithm)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, "Unsupported algorithm"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                                 "Unsupported algorithm"));
     return;
   }
 
   std::vector<uint8_t> digest;
   if (!BuildDigestToSign(challenge_request_data.data_to_sign(), ssl_algorithm,
                          &digest)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, "Failed to build digest"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                                 "Failed to build digest"));
     return;
   }
 
@@ -173,7 +184,8 @@ void HandleSignatureKeyChallenge(
       challenge_request_data.public_key_spki_der(), ssl_algorithm, digest,
       account_id,
       base::BindOnce(&CompleteSignatureKeyChallenge,
-                     base::Unretained(method_call), response_sender));
+                     base::Unretained(method_call),
+                     std::move(response_sender)));
 }
 
 }  // namespace
@@ -206,49 +218,55 @@ void CryptohomeKeyDelegateServiceProvider::HandleChallengeKey(
 
   cryptohome::AccountIdentifier account_identifier;
   if (!reader.PopArrayOfBytesAsProto(&account_identifier)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS,
-        "Unable to parse AccountIdentifier from request"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS,
+            "Unable to parse AccountIdentifier from request"));
     return;
   }
   const AccountId account_id =
       cryptohome::GetAccountIdFromAccountIdentifier(account_identifier);
   if (!account_id.is_valid() ||
       account_id.GetAccountType() == AccountType::UNKNOWN) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, "Unknown account"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                                 "Unknown account"));
     return;
   }
 
   cryptohome::KeyChallengeRequest request;
   if (!reader.PopArrayOfBytesAsProto(&request)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS,
-        "Unable to parse KeyChallengeRequest from request"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS,
+            "Unable to parse KeyChallengeRequest from request"));
     return;
   }
 
   if (!request.has_challenge_type()) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "Missing challenge type"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, "Missing challenge type"));
     return;
   }
 
   if (request.challenge_type() ==
       cryptohome::KeyChallengeRequest::CHALLENGE_TYPE_SIGNATURE) {
     if (!request.has_signature_request_data()) {
-      response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-          method_call, DBUS_ERROR_INVALID_ARGS,
-          "Missing signature request data"));
+      std::move(response_sender)
+          .Run(dbus::ErrorResponse::FromMethodCall(
+              method_call, DBUS_ERROR_INVALID_ARGS,
+              "Missing signature request data"));
       return;
     }
     HandleSignatureKeyChallenge(method_call, request.signature_request_data(),
-                                account_id, response_sender);
+                                account_id, std::move(response_sender));
     return;
   }
 
-  response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-      method_call, DBUS_ERROR_FAILED, "Unknown challenge type"));
+  std::move(response_sender)
+      .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                               "Unknown challenge type"));
 }
 
 }  // namespace chromeos

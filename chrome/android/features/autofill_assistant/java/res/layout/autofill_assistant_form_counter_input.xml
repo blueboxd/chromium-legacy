@@ -36,11 +36,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.BlackCaption"/>
-        <ImageView
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/chevron"
             android:layout_width="16dp"
             android:layout_height="16dp"
-            android:tint="@color/default_text_color_secondary_list"
+            android:tint="@color/control_normal_color"
             app:srcCompat="@drawable/ic_expand_more_black_24dp"
             tools:ignore="ContentDescription"/>
     </LinearLayout>

@@ -118,9 +118,9 @@ TEST_F(ShillManagerClientTest, GetProperties) {
   value.SetKey(shill::kOfflineModeProperty, base::Value(true));
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,
-                       base::Bind(&ExpectNoArgument), response.get());
+                       base::BindRepeating(&ExpectNoArgument), response.get());
   // Call method.
-  client_->GetProperties(base::Bind(&ExpectDictionaryValueResult, &value));
+  client_->GetProperties(base::BindOnce(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }
@@ -163,10 +163,10 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
 
   // Set expectations.
   PrepareForMethodCall(shill::kGetNetworksForGeolocation,
-                       base::Bind(&ExpectNoArgument), response.get());
+                       base::BindRepeating(&ExpectNoArgument), response.get());
   // Call method.
   client_->GetNetworksForGeolocation(
-      base::Bind(&ExpectDictionaryValueResult, &type_dict_value));
+      base::BindOnce(&ExpectDictionaryValueResult, &type_dict_value));
 
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
@@ -177,12 +177,13 @@ TEST_F(ShillManagerClientTest, SetProperty) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
   base::Value value("portal list");
-  PrepareForMethodCall(shill::kSetPropertyFunction,
-                       base::Bind(ExpectStringAndValueArguments,
-                                  shill::kCheckPortalListProperty, &value),
-                       response.get());
+  PrepareForMethodCall(
+      shill::kSetPropertyFunction,
+      base::BindRepeating(ExpectStringAndValueArguments,
+                          shill::kCheckPortalListProperty, &value),
+      response.get());
   // Call method.
-  base::MockCallback<base::Closure> mock_closure;
+  base::MockCallback<base::OnceClosure> mock_closure;
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
   client_->SetProperty(shill::kCheckPortalListProperty, value,
                        mock_closure.Get(), mock_error_callback.Get());
@@ -197,11 +198,12 @@ TEST_F(ShillManagerClientTest, RequestScan) {
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
-  PrepareForMethodCall(shill::kRequestScanFunction,
-                       base::Bind(&ExpectStringArgument, shill::kTypeWifi),
-                       response.get());
+  PrepareForMethodCall(
+      shill::kRequestScanFunction,
+      base::BindRepeating(&ExpectStringArgument, shill::kTypeWifi),
+      response.get());
   // Call method.
-  base::MockCallback<base::Closure> mock_closure;
+  base::MockCallback<base::OnceClosure> mock_closure;
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
   client_->RequestScan(shill::kTypeWifi, mock_closure.Get(),
                        mock_error_callback.Get());
@@ -216,11 +218,12 @@ TEST_F(ShillManagerClientTest, EnableTechnology) {
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
-  PrepareForMethodCall(shill::kEnableTechnologyFunction,
-                       base::Bind(&ExpectStringArgument, shill::kTypeWifi),
-                       response.get());
+  PrepareForMethodCall(
+      shill::kEnableTechnologyFunction,
+      base::BindRepeating(&ExpectStringArgument, shill::kTypeWifi),
+      response.get());
   // Call method.
-  base::MockCallback<base::Closure> mock_closure;
+  base::MockCallback<base::OnceClosure> mock_closure;
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
   client_->EnableTechnology(shill::kTypeWifi, mock_closure.Get(),
                             mock_error_callback.Get());
@@ -239,11 +242,11 @@ TEST_F(ShillManagerClientTest, NetworkThrottling) {
   const uint32_t upload_rate = 1200;
   const uint32_t download_rate = 2000;
   PrepareForMethodCall(shill::kSetNetworkThrottlingFunction,
-                       base::Bind(&ExpectThrottlingArguments, enabled,
-                                  upload_rate, download_rate),
+                       base::BindRepeating(&ExpectThrottlingArguments, enabled,
+                                           upload_rate, download_rate),
                        response.get());
   // Call method.
-  base::MockCallback<base::Closure> mock_closure;
+  base::MockCallback<base::OnceClosure> mock_closure;
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
   EXPECT_CALL(mock_closure, Run()).Times(1);
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
@@ -259,11 +262,12 @@ TEST_F(ShillManagerClientTest, DisableTechnology) {
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   // Set expectations.
-  PrepareForMethodCall(shill::kDisableTechnologyFunction,
-                       base::Bind(&ExpectStringArgument, shill::kTypeWifi),
-                       response.get());
+  PrepareForMethodCall(
+      shill::kDisableTechnologyFunction,
+      base::BindRepeating(&ExpectStringArgument, shill::kTypeWifi),
+      response.get());
   // Call method.
-  base::MockCallback<base::Closure> mock_closure;
+  base::MockCallback<base::OnceClosure> mock_closure;
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
   client_->DisableTechnology(shill::kTypeWifi, mock_closure.Get(),
                              mock_error_callback.Get());
@@ -285,14 +289,14 @@ TEST_F(ShillManagerClientTest, ConfigureService) {
   // Use a variant valued dictionary rather than a string valued one.
   const bool string_valued = false;
   // Set expectations.
-  PrepareForMethodCall(
-      shill::kConfigureServiceFunction,
-      base::Bind(&ExpectDictionaryValueArgument, arg.get(), string_valued),
-      response.get());
+  PrepareForMethodCall(shill::kConfigureServiceFunction,
+                       base::BindRepeating(&ExpectDictionaryValueArgument,
+                                           arg.get(), string_valued),
+                       response.get());
   // Call method.
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
   client_->ConfigureService(
-      *arg, base::Bind(&ExpectObjectPathResultWithoutStatus, object_path),
+      *arg, base::BindOnce(&ExpectObjectPathResultWithoutStatus, object_path),
       mock_error_callback.Get());
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 
@@ -311,14 +315,14 @@ TEST_F(ShillManagerClientTest, GetService) {
   // Use a variant valued dictionary rather than a string valued one.
   const bool string_valued = false;
   // Set expectations.
-  PrepareForMethodCall(
-      shill::kGetServiceFunction,
-      base::Bind(&ExpectDictionaryValueArgument, arg.get(), string_valued),
-      response.get());
+  PrepareForMethodCall(shill::kGetServiceFunction,
+                       base::BindRepeating(&ExpectDictionaryValueArgument,
+                                           arg.get(), string_valued),
+                       response.get());
   // Call method.
   base::MockCallback<ShillManagerClient::ErrorCallback> mock_error_callback;
   client_->GetService(
-      *arg, base::Bind(&ExpectObjectPathResultWithoutStatus, object_path),
+      *arg, base::BindOnce(&ExpectObjectPathResultWithoutStatus, object_path),
       mock_error_callback.Get());
   EXPECT_CALL(mock_error_callback, Run(_, _)).Times(0);
 

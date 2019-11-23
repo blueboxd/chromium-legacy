@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="7814458197256864873">&amp;Копіювати</translation>
+<translation id="7848989271541991537">Переміщено на сторінку <ph name="PAGE_NUMBER" />, рядок <ph name="ROW_NUMBER" />, стовпець <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Не блокувати</translation>
 <translation id="7907591526440419938">Відкрити файл</translation>
 <translation id="7969046989155602842">Клавіша Command</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Полицю завжди сховано</translation>
 <translation id="8996630695507351249">Переконайтеся, що пристрій <ph name="TARGET_DEVICE_NAME" /> підключено до Інтернету.</translation>
 <translation id="9002566407876343676">відкрити</translation>
-<translation id="9039076430527029379">Перенести на сторінку <ph name="PAGE_NUMBER" />, <ph name="ROW_NUMBER" /> рядок, <ph name="COLUMN_NUMBER" /> стовпець.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 с}one{# с}few{# с}many{# с}other{# с}}</translation>
 <translation id="9059834730836941392">Згорнути сповіщення</translation>
 <translation id="9150735707954472829">Вкладка</translation>

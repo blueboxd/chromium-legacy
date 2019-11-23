@@ -355,7 +355,7 @@ void TimeZoneRequest::StartRequest() {
 }
 
 void TimeZoneRequest::MakeRequest(TimeZoneResponseCallback callback) {
-  callback_ = callback;
+  callback_ = std::move(callback);
   request_url_ =
       TimeZoneRequestURL(service_url_, geoposition_, false /* sensor */);
   StartRequest();
@@ -403,14 +403,14 @@ void TimeZoneRequest::OnSimpleLoaderComplete(
                                : TIMEZONE_REQUEST_RESULT_FAILURE));
   RecordUmaResult(result, retries_);
 
-  TimeZoneResponseCallback callback = callback_;
+  TimeZoneResponseCallback callback = std::move(callback_);
 
   // Empty callback is used to identify "completed or not yet started request".
   callback_.Reset();
 
   // callback.Run() usually destroys TimeZoneRequest, because this is the way
   // callback is implemented in TimeZoneProvider.
-  callback.Run(std::move(timezone), server_error);
+  std::move(callback).Run(std::move(timezone), server_error);
   // "this" is already destroyed here.
 }
 

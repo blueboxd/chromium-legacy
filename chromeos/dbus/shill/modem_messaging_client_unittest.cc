@@ -156,7 +156,8 @@ TEST_F(ModemMessagingClientTest, SmsReceived) {
   // Set handler.
   client_->SetSmsReceivedHandler(
       kServiceName, dbus::ObjectPath(kObjectPath),
-      base::Bind(&MockSmsReceivedHandler::Run, base::Unretained(&handler)));
+      base::BindRepeating(&MockSmsReceivedHandler::Run,
+                          base::Unretained(&handler)));
 
   // Run the message loop to run the signal connection result callback.
   base::RunLoop().RunUntilIdle();

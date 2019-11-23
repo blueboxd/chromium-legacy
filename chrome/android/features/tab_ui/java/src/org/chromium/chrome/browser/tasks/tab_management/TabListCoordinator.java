@@ -22,6 +22,8 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -71,6 +73,7 @@ public class TabListCoordinator implements Destroyable {
     private final SimpleRecyclerViewAdapter mAdapter;
     private final @TabListMode int mMode;
     private final Rect mThumbnailLocationOfCurrentTab = new Rect();
+    private final Context mContext;
 
     /**
      * Construct a coordinator for UI that shows a list of tabs.
@@ -109,6 +112,7 @@ public class TabListCoordinator implements Destroyable {
             @NonNull ViewGroup parentView, @Nullable DynamicResourceLoader dynamicResourceLoader,
             boolean attachToParent, String componentName) {
         mMode = mode;
+        mContext = context;
         TabListModel modelList = new TabListModel();
         mAdapter = new SimpleRecyclerViewAdapter(modelList);
         RecyclerView.RecyclerListener recyclerListener = null;
@@ -258,8 +262,26 @@ public class TabListCoordinator implements Destroyable {
         Rect rect = mRecyclerView.getRectOfCurrentThumbnail(
                 mMediator.indexOfTab(mMediator.selectedTabId()), mMediator.selectedTabId());
         if (rect == null) return false;
+        rect.offset(0, getTabListTopOffset());
         mThumbnailLocationOfCurrentTab.set(rect);
         return true;
+    }
+
+    /**
+     * @return The top offset from top toolbar to the tab list recycler view. Used to adjust the
+     *         animations for tab switcher.
+     */
+    int getTabListTopOffset() {
+        if (!FeatureUtilities.isStartSurfaceEnabled()) return 0;
+        Rect tabListRect = getRecyclerViewLocation();
+        Rect parentRect = new Rect();
+        ((ChromeActivity) mContext).getCompositorViewHolder().getGlobalVisibleRect(parentRect);
+        // Offset by CompositeViewHolder top offset and top toolbar height.
+        tabListRect.offset(0,
+                -parentRect.top
+                        - (int) mContext.getResources().getDimension(
+                                R.dimen.toolbar_height_no_shadow));
+        return tabListRect.top;
     }
 
     /**

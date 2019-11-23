@@ -32,7 +32,6 @@ _setup_sys_path()
 
 from . import clang_format
 from .dictionary import generate_dictionaries
-from .example import run_example
 from .interface import generate_interfaces
 from .path_manager import PathManager
 

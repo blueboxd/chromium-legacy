@@ -2604,7 +2604,7 @@ TEST_P(ShelfLayoutManagerTest, TabletModeTransitionWithAppListVisible) {
   // |window| should be maximized, and the shelf background should match the
   // maximized state.
   EXPECT_EQ(WorkspaceWindowState::kMaximized, GetWorkspaceWindowState());
-  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
+  EXPECT_EQ(SHELF_BACKGROUND_IN_APP, GetShelfWidget()->GetBackgroundType());
 }
 
 // Verify that the auto-hide shelf has default background by default and has

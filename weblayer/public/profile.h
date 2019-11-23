@@ -8,8 +8,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/files/file_path.h"
-
 namespace weblayer {
 
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.weblayer_private
@@ -21,8 +19,10 @@ enum class BrowsingDataType {
 
 class Profile {
  public:
-  // Pass an empty |path| for an in-memory profile.
-  static std::unique_ptr<Profile> Create(const base::FilePath& path);
+  // Pass an empty |name| for an in-memory profile.
+  // Otherwise, |name| should contain only alphanumeric characters and
+  // underscore.
+  static std::unique_ptr<Profile> Create(const std::string& name);
 
   virtual ~Profile() {}
 

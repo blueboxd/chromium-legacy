@@ -1,4 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hy">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> տիրույթը կառավարում է այս սարքը և կարող է տեսնել ձեր գործողությունները։</translation>
+<translation id="1510238584712386396">Գործարկիչ</translation>
+<translation id="1734367976349034509">Այս սարքը կառավարվում է կազմակերպության կողմից</translation>
+<translation id="1930797645656624981">Chrome OS-ում ներածման եղանակի ծառայություն</translation>
+<translation id="1979103255016296513">Գաղտնաբառի փոփոխման ժամկետն անցել է</translation>
+<translation id="2049639323467105390">Այս սարքը կառավարվում է <ph name="DOMAIN" />-ի կողմից:</translation>
+<translation id="2083960536266308407">Ոչինչ չի գտնվել</translation>
+<translation id="2338501278241028356">Մոտակա սարքերը գտնելու համար միացրեք Bluetooth-ը</translation>
+<translation id="2805756323405976993">Հավելվածներ</translation>
+<translation id="2872961005593481000">Անջատել</translation>
+<translation id="3008341117444806826">ԹԱՐՄԱՑՆԵԼ</translation>
+<translation id="3838338534323494292">Նոր գաղտնաբառը</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> տիրույթը կառավարում է այս սարքը, և դրան տեսանելի են օգտատիրոջ բոլոր գործողությունները, այդ թվում՝ այցելած կայքերը, գաղտնաբառերը և նամակները:</translation>
+<translation id="4227825898293920515">Գաղտնաբառի գործողության ժամկետը <ph name="TIME" />ից կսպառվի</translation>
+<translation id="4429881212383817840">Kerberos տոմսի գործողության ժամկետը շուտով կսպառվի</translation>
+<translation id="445059817448385655">Հին գաղտնաբառը</translation>
+<translation id="467510802200863975">Գաղտնաբառերը չեն համընկնում</translation>
+<translation id="4731797938093519117">Ծնողի մուտք</translation>
+<translation id="4890353053343094602">Հնարավորինս արագ փոխեք գաղտնաբառը</translation>
+<translation id="5212543919916444558">Չհաջողվեց գտնել քարտեր էկրանին:
+Փորձեք օգտագործել խոսափողը` առաջադրանքներ տալու համար:</translation>
+<translation id="5222676887888702881">Դուրս գրվել</translation>
+<translation id="5317780077021120954">Պահել</translation>
+<translation id="5332948983412042822">Հնարավորինս արագ փոխեք գաղտնաբառը</translation>
+<translation id="5457599981699367932">Մտնել հյուրի ռեժիմ</translation>
+<translation id="54609108002486618">Կառավարվող</translation>
+<translation id="5832805196449965646">Ավելացնել անձ</translation>
+<translation id="5895138241574237353">Վերագործարկել</translation>
+<translation id="6058625436358447366">Ավարտելու համար մուտքագրեք ձեր հին և նոր գաղտնաբառերը</translation>
+<translation id="6106186594183574873">Ավարտելու համար մուտքագրեք ձեր հին գաղտնաբառը</translation>
+<translation id="6146993107019042706">Ավարտելու համար մուտքագրեք ձեր նոր գաղտնաբառը</translation>
+<translation id="7658239707568436148">Չեղարկել</translation>
+<translation id="7690294790491645610">Հաստատեք նոր գաղտնաբառը</translation>
+<translation id="808894953321890993">Փոխել գաղտնաբառը</translation>
+<translation id="8747900814994928677">Հաստատեք փոփոխությունը</translation>
+<translation id="910415269708673980">Թարմացրեք <ph name="PRINCIPAL_NAME" /> հաշվի տոմսը</translation>
+<translation id="9111102763498581341">Ապակողպել</translation>
 </translationbundle>

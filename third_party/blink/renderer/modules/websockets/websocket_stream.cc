@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
@@ -463,8 +462,6 @@ void WebSocketStream::DidConnect(const String& subprotocol,
     return;
 
   ScriptState::Scope scope(script_state_);
-  common_.LogMixedAutoupgradeStatus(
-      MixedContentAutoupgradeStatus::kResponseReceived);
   if (common_.GetState() != WebSocketCommon::kConnecting)
     return;
   common_.SetState(WebSocketCommon::kOpen);
@@ -538,7 +535,6 @@ void WebSocketStream::DidClose(
   ScriptState::Scope scope(script_state_);
   if (!was_ever_connected_) {
     connection_resolver_->Reject(CreateNetworkErrorDOMException());
-    common_.LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kFailed);
   }
   bool all_data_was_consumed = sink_ ? sink_->AllDataHasBeenConsumed() : true;
   bool was_clean = common_.GetState() == WebSocketCommon::kClosing &&

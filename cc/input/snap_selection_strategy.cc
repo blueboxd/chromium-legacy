@@ -10,9 +10,10 @@ std::unique_ptr<SnapSelectionStrategy>
 SnapSelectionStrategy::CreateForEndPosition(
     const gfx::ScrollOffset& current_position,
     bool scrolled_x,
-    bool scrolled_y) {
+    bool scrolled_y,
+    SnapTargetsPrioritization prioritization) {
   return std::make_unique<EndPositionStrategy>(current_position, scrolled_x,
-                                               scrolled_y);
+                                               scrolled_y, prioritization);
 }
 
 std::unique_ptr<SnapSelectionStrategy>
@@ -30,6 +31,14 @@ SnapSelectionStrategy::CreateForEndAndDirection(
                                                    displacement);
 }
 
+std::unique_ptr<SnapSelectionStrategy>
+SnapSelectionStrategy::CreateForTargetElement(
+    gfx::ScrollOffset current_position) {
+  return std::make_unique<EndPositionStrategy>(
+      current_position, true /* scrolled_x */, true /* scrolled_y */,
+      SnapTargetsPrioritization::kRequire);
+}
+
 bool SnapSelectionStrategy::HasIntendedDirection() const {
   return true;
 }
@@ -43,6 +52,10 @@ bool SnapSelectionStrategy::IsValidSnapArea(SearchAxis axis,
   return axis == SearchAxis::kX
              ? area.scroll_snap_align.alignment_inline != SnapAlignment::kNone
              : area.scroll_snap_align.alignment_block != SnapAlignment::kNone;
+}
+
+bool SnapSelectionStrategy::ShouldPrioritizeSnapTargets() const {
+  return false;
 }
 
 bool EndPositionStrategy::ShouldSnapOnX() const {
@@ -70,6 +83,10 @@ bool EndPositionStrategy::IsValidSnapPosition(SearchAxis axis,
 
 bool EndPositionStrategy::HasIntendedDirection() const {
   return false;
+}
+
+bool EndPositionStrategy::ShouldPrioritizeSnapTargets() const {
+  return snap_targets_prioritization_ == SnapTargetsPrioritization::kRequire;
 }
 
 const base::Optional<SnapSearchResult>& EndPositionStrategy::PickBestResult(

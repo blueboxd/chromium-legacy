@@ -49,10 +49,6 @@ class MODULES_EXPORT WebSocketCommon {
                      WebSocketChannel*,
                      ExceptionState&);
 
-  // Logs "MixedAutoupgrade.Websocket.Status" histogram. Does nothing unless
-  // |was_autoupgraded_to_wss_| is true.
-  void LogMixedAutoupgradeStatus(blink::MixedContentAutoupgradeStatus) const;
-
   State GetState() const { return state_; }
   void SetState(State state) { state_ = state; }
   const KURL& Url() const { return url_; }
@@ -76,7 +72,6 @@ class MODULES_EXPORT WebSocketCommon {
   static bool IsValidSubprotocolCharacter(UChar character);
 
   KURL url_;
-  bool was_autoupgraded_to_wss_ = false;
   State state_ = kConnecting;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketCommon);

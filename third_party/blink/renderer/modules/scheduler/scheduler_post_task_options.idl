@@ -4,6 +4,16 @@
 
 // Experimental Scheduling API Proposal:
 // https://docs.google.com/document/d/1xU7HyNsEsbXhTgt0ZnXDbeSXm5-m5FzkLJAT6LTizEI/edit#
-dictionary SchedulerPostTaskOptions : TaskQueuePostTaskOptions {
-    TaskQueuePriority priority = "default";
+enum TaskPriority {
+    "immediate",
+    "high",
+    "default",
+    "low",
+    "idle"
+};
+
+dictionary SchedulerPostTaskOptions {
+    AbortSignal? signal;
+    TaskPriority? priority;
+    long delay = 0;
 };

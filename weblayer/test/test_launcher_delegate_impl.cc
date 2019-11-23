@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/test/test_suite.h"
 #include "weblayer/app/content_main_delegate_impl.h"
+#include "weblayer/public/common/switches.h"
 #include "weblayer/shell/app/shell_main_params.h"
-#include "weblayer/shell/common/shell_switches.h"
 
 namespace weblayer {
 
@@ -24,8 +24,7 @@ int TestLauncherDelegateImpl::RunTestSuite(int argc, char** argv) {
 bool TestLauncherDelegateImpl::AdjustChildProcessCommandLine(
     base::CommandLine* command_line,
     const base::FilePath& temp_data_dir) {
-  command_line->AppendSwitchPath(switches::kWebLayerShellDataPath,
-                                 temp_data_dir);
+  command_line->AppendSwitchPath(switches::kWebLayerUserDataDir, temp_data_dir);
   return true;
 }
 

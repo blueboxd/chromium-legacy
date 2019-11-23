@@ -23,6 +23,8 @@
 #include "ash/public/cpp/view_shadow.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -30,6 +32,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
@@ -65,6 +69,11 @@ constexpr SkColor kSeparatorColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
 
 // The shadow elevation value for the shadow of the expanded search box.
 constexpr int kSearchBoxSearchResultShadowElevation = 12;
+
+// The amount of time by which notifications to accessibility framework about
+// result page changes are delayed.
+constexpr base::TimeDelta kNotifyA11yDelay =
+    base::TimeDelta::FromMilliseconds(500);
 
 // A container view that ensures the card background and the shadow are painted
 // in the correct order.
@@ -152,8 +161,11 @@ class SearchResultPageView::HorizontalSeparator : public views::View {
   DISALLOW_COPY_AND_ASSIGN(HorizontalSeparator);
 };
 
-SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
-    : view_delegate_(view_delegate), contents_view_(new views::View) {
+SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate,
+                                           SearchModel* search_model)
+    : view_delegate_(view_delegate),
+      search_model_(search_model),
+      contents_view_(new views::View) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
   contents_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -196,12 +208,13 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
       &result_container_views_,
       base::BindRepeating(&SearchResultPageView::SelectedResultChanged,
                           base::Unretained(this)));
+
+  search_box_observer_.Add(search_model->search_box());
 }
 
 SearchResultPageView::~SearchResultPageView() = default;
 
 void SearchResultPageView::AddSearchResultContainerView(
-    SearchModel::SearchResults* results_model,
     SearchResultContainerView* result_container) {
   if (!result_container_views_.empty()) {
     HorizontalSeparator* separator = new HorizontalSeparator(bounds().width());
@@ -210,7 +223,7 @@ void SearchResultPageView::AddSearchResultContainerView(
   }
   contents_view_->AddChildView(new SearchCardView(result_container));
   result_container_views_.push_back(result_container);
-  result_container->SetResults(results_model);
+  result_container->SetResults(search_model_->results());
   result_container->set_delegate(this);
 }
 
@@ -278,6 +291,33 @@ void SearchResultPageView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     layer()->SetClipRect(gfx::Rect());
 }
 
+void SearchResultPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  if (!GetVisible())
+    return;
+
+  node_data->role = ax::mojom::Role::kListBox;
+
+  base::string16 value;
+  base::string16 query = search_model_->search_box()->text();
+  if (!query.empty()) {
+    if (last_search_result_count_ == 1) {
+      value = l10n_util::GetStringFUTF16(
+          IDS_APP_LIST_SEARCHBOX_RESULTS_ACCESSIBILITY_ANNOUNCEMENT_SINGLE_RESULT,
+          query);
+    } else {
+      value = l10n_util::GetStringFUTF16(
+          IDS_APP_LIST_SEARCHBOX_RESULTS_ACCESSIBILITY_ANNOUNCEMENT,
+          base::NumberToString16(last_search_result_count_), query);
+    }
+  } else {
+    value = l10n_util::GetStringFUTF16(
+        IDS_APP_LIST_SEARCHBOX_RESULTS_ACCESSIBILITY_ANNOUNCEMENT_ZERO_STATE,
+        base::NumberToString16(last_search_result_count_));
+  }
+
+  node_data->SetValue(value);
+}
+
 void SearchResultPageView::ReorderSearchResultContainers() {
   int view_offset = 0;
   if (assistant_privacy_info_view_) {
@@ -340,6 +380,47 @@ void SearchResultPageView::SelectedResultChanged() {
   }
 
   selected_row->ScrollViewToVisible();
+
+  NotifySelectedResultChanged();
+}
+
+void SearchResultPageView::SetIgnoreResultChangesForA11y(bool ignore) {
+  if (ignore_result_changes_for_a11y_ == ignore)
+    return;
+  ignore_result_changes_for_a11y_ = ignore;
+
+  GetViewAccessibility().OverrideIsLeaf(ignore);
+  NotifyAccessibilityEvent(ax::mojom::Event::kTreeChanged, true);
+}
+
+void SearchResultPageView::ScheduleResultsChangedA11yNotification() {
+  if (!ignore_result_changes_for_a11y_) {
+    NotifyA11yResultsChanged();
+    return;
+  }
+
+  notify_a11y_results_changed_timer_.Start(
+      FROM_HERE, kNotifyA11yDelay,
+      base::BindOnce(&SearchResultPageView::NotifyA11yResultsChanged,
+                     base::Unretained(this)));
+}
+
+void SearchResultPageView::NotifyA11yResultsChanged() {
+  SetIgnoreResultChangesForA11y(false);
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+  NotifySelectedResultChanged();
+}
+
+void SearchResultPageView::NotifySelectedResultChanged() {
+  if (ignore_result_changes_for_a11y_ ||
+      !result_selection_controller_->selected_location_details() ||
+      !result_selection_controller_->selected_result()) {
+    return;
+  }
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kSelectedChildrenChanged, true);
+  result_selection_controller_->selected_result()->NotifyA11yResultSelected();
 }
 
 void SearchResultPageView::OnSearchResultContainerResultsChanging() {
@@ -347,19 +428,28 @@ void SearchResultPageView::OnSearchResultContainerResultsChanging() {
   // The selection will be reset once the results are all updated.
   if (app_list_features::IsSearchBoxSelectionEnabled())
     result_selection_controller_->set_block_selection_changes(true);
+
+  notify_a11y_results_changed_timer_.Stop();
+  SetIgnoreResultChangesForA11y(true);
 }
 
 void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   DCHECK(!result_container_views_.empty());
   DCHECK(result_container_views_.size() == separators_.size() + 1);
 
+  int result_count = 0;
   // Only sort and layout the containers when they have all updated.
   for (SearchResultContainerView* view : result_container_views_) {
     if (view->UpdateScheduled())
       return;
+    result_count += view->num_results();
   }
 
+  last_search_result_count_ = result_count;
+
   ReorderSearchResultContainers();
+
+  ScheduleResultsChangedA11yNotification();
 
   if (!app_list_features::IsSearchBoxSelectionEnabled()) {
     views::View* focused_view = GetFocusManager()->GetFocusedView();
@@ -370,8 +460,6 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   }
 
   first_result_view_ = result_container_views_[0]->GetFirstResultView();
-  if (!first_result_view_)
-    return;
 
   if (!app_list_features::IsSearchBoxSelectionEnabled()) {
     views::View* focused_view = GetFocusManager()->GetFocusedView();
@@ -419,6 +507,16 @@ void SearchResultPageView::OnSearchResultContainerResultFocused(
   }
 }
 
+void SearchResultPageView::HintTextChanged() {}
+
+void SearchResultPageView::Update() {
+  notify_a11y_results_changed_timer_.Stop();
+}
+
+void SearchResultPageView::SearchEngineChanged() {}
+
+void SearchResultPageView::ShowAssistantChanged() {}
+
 void SearchResultPageView::OnAssistantPrivacyInfoViewCloseButtonPressed() {
   ReorderSearchResultContainers();
 }
@@ -427,6 +525,7 @@ void SearchResultPageView::OnHidden() {
   // Hide the search results page when it is behind search box to avoid focus
   // being moved onto suggested apps when zero state is enabled.
   AppListPage::OnHidden();
+  notify_a11y_results_changed_timer_.Stop();
   SetVisible(false);
   for (auto* container_view : result_container_views_) {
     container_view->SetShown(false);
@@ -438,6 +537,7 @@ void SearchResultPageView::OnShown() {
   for (auto* container_view : result_container_views_) {
     container_view->SetShown(true);
   }
+  ScheduleResultsChangedA11yNotification();
 }
 
 void SearchResultPageView::OnAnimationStarted(AppListState from_state,

@@ -70,14 +70,14 @@ class Watch {
     if (flags & DBUS_WATCH_READABLE) {
       read_watcher_ = base::FileDescriptorWatcher::WatchReadable(
           file_descriptor,
-          base::Bind(&Watch::OnFileReady, base::Unretained(this),
-                     DBUS_WATCH_READABLE));
+          base::BindRepeating(&Watch::OnFileReady, base::Unretained(this),
+                              DBUS_WATCH_READABLE));
     }
     if (flags & DBUS_WATCH_WRITABLE) {
       write_watcher_ = base::FileDescriptorWatcher::WatchWritable(
           file_descriptor,
-          base::Bind(&Watch::OnFileReady, base::Unretained(this),
-                     DBUS_WATCH_WRITABLE));
+          base::BindRepeating(&Watch::OnFileReady, base::Unretained(this),
+                              DBUS_WATCH_WRITABLE));
     }
   }
 
@@ -216,16 +216,16 @@ ObjectProxy* Bus::GetObjectProxyWithOptions(const std::string& service_name,
 
 bool Bus::RemoveObjectProxy(const std::string& service_name,
                             const ObjectPath& object_path,
-                            const base::Closure& callback) {
+                            base::OnceClosure callback) {
   return RemoveObjectProxyWithOptions(service_name, object_path,
                                       ObjectProxy::DEFAULT_OPTIONS,
-                                      callback);
+                                      std::move(callback));
 }
 
 bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
                                        const ObjectPath& object_path,
                                        int options,
-                                       const base::Closure& callback) {
+                                       base::OnceClosure callback) {
   AssertOnOriginThread();
 
   // Check if we have the requested object proxy.
@@ -238,19 +238,19 @@ bool Bus::RemoveObjectProxyWithOptions(const std::string& service_name,
     // Object is present. Remove it now and Detach on the DBus thread.
     GetDBusTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&Bus::RemoveObjectProxyInternal, this,
-                                  object_proxy, callback));
+                                  object_proxy, std::move(callback)));
     return true;
   }
   return false;
 }
 
 void Bus::RemoveObjectProxyInternal(scoped_refptr<ObjectProxy> object_proxy,
-                                    const base::Closure& callback) {
+                                    base::OnceClosure callback) {
   AssertOnDBusThread();
 
   object_proxy->Detach();
 
-  GetOriginTaskRunner()->PostTask(FROM_HERE, callback);
+  GetOriginTaskRunner()->PostTask(FROM_HERE, std::move(callback));
 }
 
 ExportedObject* Bus::GetExportedObject(const ObjectPath& object_path) {
@@ -318,7 +318,7 @@ ObjectManager* Bus::GetObjectManager(const std::string& service_name,
 
 bool Bus::RemoveObjectManager(const std::string& service_name,
                               const ObjectPath& object_path,
-                              const base::Closure& callback) {
+                              base::OnceClosure callback) {
   AssertOnOriginThread();
   DCHECK(!callback.is_null());
 
@@ -333,14 +333,14 @@ bool Bus::RemoveObjectManager(const std::string& service_name,
 
   GetDBusTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&Bus::RemoveObjectManagerInternal, this,
-                                object_manager, callback));
+                                object_manager, std::move(callback)));
 
   return true;
 }
 
 void Bus::RemoveObjectManagerInternal(
-      scoped_refptr<dbus::ObjectManager> object_manager,
-      const base::Closure& callback) {
+    scoped_refptr<dbus::ObjectManager> object_manager,
+    base::OnceClosure callback) {
   AssertOnDBusThread();
   DCHECK(object_manager.get());
 
@@ -350,18 +350,18 @@ void Bus::RemoveObjectManagerInternal(
   // created there.
   GetOriginTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&Bus::RemoveObjectManagerInternalHelper, this,
-                                object_manager, callback));
+                                object_manager, std::move(callback)));
 }
 
 void Bus::RemoveObjectManagerInternalHelper(
-      scoped_refptr<dbus::ObjectManager> object_manager,
-      const base::Closure& callback) {
+    scoped_refptr<dbus::ObjectManager> object_manager,
+    base::OnceClosure callback) {
   AssertOnOriginThread();
   DCHECK(object_manager);
 
   // Release the object manager and run the callback.
   object_manager = nullptr;
-  callback.Run();
+  std::move(callback).Run();
 }
 
 bool Bus::Connect() {
@@ -515,8 +515,9 @@ void Bus::RequestOwnership(const std::string& service_name,
   AssertOnOriginThread();
 
   GetDBusTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&Bus::RequestOwnershipInternal, this,
-                                service_name, options, on_ownership_callback));
+      FROM_HERE,
+      base::BindOnce(&Bus::RequestOwnershipInternal, this, service_name,
+                     options, std::move(on_ownership_callback)));
 }
 
 void Bus::RequestOwnershipInternal(const std::string& service_name,
@@ -529,7 +530,8 @@ void Bus::RequestOwnershipInternal(const std::string& service_name,
     success = RequestOwnershipAndBlock(service_name, options);
 
   GetOriginTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(on_ownership_callback, service_name, success));
+      FROM_HERE,
+      base::BindOnce(std::move(on_ownership_callback), service_name, success));
 }
 
 bool Bus::RequestOwnershipAndBlock(const std::string& service_name,
@@ -913,28 +915,28 @@ std::string Bus::GetServiceOwnerAndBlock(const std::string& service_name,
 }
 
 void Bus::GetServiceOwner(const std::string& service_name,
-                          const GetServiceOwnerCallback& callback) {
+                          GetServiceOwnerCallback callback) {
   AssertOnOriginThread();
 
   GetDBusTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&Bus::GetServiceOwnerInternal, this,
-                                service_name, callback));
+                                service_name, std::move(callback)));
 }
 
 void Bus::GetServiceOwnerInternal(const std::string& service_name,
-                                  const GetServiceOwnerCallback& callback) {
+                                  GetServiceOwnerCallback callback) {
   AssertOnDBusThread();
 
   std::string service_owner;
   if (Connect())
     service_owner = GetServiceOwnerAndBlock(service_name, SUPPRESS_ERRORS);
-  GetOriginTaskRunner()->PostTask(FROM_HERE,
-                                  base::BindOnce(callback, service_owner));
+  GetOriginTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), service_owner));
 }
 
 void Bus::ListenForServiceOwnerChange(
     const std::string& service_name,
-    const GetServiceOwnerCallback& callback) {
+    const ServiceOwnerChangeCallback& callback) {
   AssertOnOriginThread();
   DCHECK(!service_name.empty());
   DCHECK(!callback.is_null());
@@ -946,7 +948,7 @@ void Bus::ListenForServiceOwnerChange(
 
 void Bus::ListenForServiceOwnerChangeInternal(
     const std::string& service_name,
-    const GetServiceOwnerCallback& callback) {
+    const ServiceOwnerChangeCallback& callback) {
   AssertOnDBusThread();
   DCHECK(!service_name.empty());
   DCHECK(!callback.is_null());
@@ -977,7 +979,7 @@ void Bus::ListenForServiceOwnerChangeInternal(
   }
 
   // Check if the callback has already been added.
-  std::vector<GetServiceOwnerCallback>& callbacks = it->second;
+  std::vector<ServiceOwnerChangeCallback>& callbacks = it->second;
   for (size_t i = 0; i < callbacks.size(); ++i) {
     if (callbacks[i] == callback)
       return;
@@ -987,7 +989,7 @@ void Bus::ListenForServiceOwnerChangeInternal(
 
 void Bus::UnlistenForServiceOwnerChange(
     const std::string& service_name,
-    const GetServiceOwnerCallback& callback) {
+    const ServiceOwnerChangeCallback& callback) {
   AssertOnOriginThread();
   DCHECK(!service_name.empty());
   DCHECK(!callback.is_null());
@@ -999,7 +1001,7 @@ void Bus::UnlistenForServiceOwnerChange(
 
 void Bus::UnlistenForServiceOwnerChangeInternal(
     const std::string& service_name,
-    const GetServiceOwnerCallback& callback) {
+    const ServiceOwnerChangeCallback& callback) {
   AssertOnDBusThread();
   DCHECK(!service_name.empty());
   DCHECK(!callback.is_null());
@@ -1009,7 +1011,7 @@ void Bus::UnlistenForServiceOwnerChangeInternal(
   if (it == service_owner_changed_listener_map_.end())
     return;
 
-  std::vector<GetServiceOwnerCallback>& callbacks = it->second;
+  std::vector<ServiceOwnerChangeCallback>& callbacks = it->second;
   for (size_t i = 0; i < callbacks.size(); ++i) {
     if (callbacks[i] == callback) {
       callbacks.erase(callbacks.begin() + i);
@@ -1155,7 +1157,7 @@ void Bus::OnServiceOwnerChanged(DBusMessage* message) {
   if (it == service_owner_changed_listener_map_.end())
     return;
 
-  const std::vector<GetServiceOwnerCallback>& callbacks = it->second;
+  const std::vector<ServiceOwnerChangeCallback>& callbacks = it->second;
   for (size_t i = 0; i < callbacks.size(); ++i) {
     GetOriginTaskRunner()->PostTask(FROM_HERE,
                                     base::BindOnce(callbacks[i], new_owner));

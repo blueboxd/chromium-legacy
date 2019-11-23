@@ -75,8 +75,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
   //
   // Asks Wayland to create generic dmabuf-based wl_buffer.
-  void CreateDmabufBasedBuffer(gfx::AcceleratedWidget widget,
-                               base::ScopedFD dmabuf_fd,
+  void CreateDmabufBasedBuffer(base::ScopedFD dmabuf_fd,
                                gfx::Size size,
                                const std::vector<uint32_t>& strides,
                                const std::vector<uint32_t>& offsets,
@@ -86,8 +85,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                                uint32_t buffer_id);
 
   // Asks Wayland to create a shared memory based wl_buffer.
-  void CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
-                            base::ScopedFD shm_fd,
+  void CreateShmBasedBuffer(base::ScopedFD shm_fd,
                             size_t length,
                             gfx::Size size,
                             uint32_t buffer_id);
@@ -126,8 +124,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
       gfx::BufferFormat buffer_format) const;
 
  private:
-  void CreateDmabufBasedBufferInternal(gfx::AcceleratedWidget widget,
-                                       base::ScopedFD dmabuf_fd,
+  void CreateDmabufBasedBufferInternal(base::ScopedFD dmabuf_fd,
                                        gfx::Size size,
                                        const std::vector<uint32_t>& strides,
                                        const std::vector<uint32_t>& offsets,
@@ -135,8 +132,7 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
                                        uint32_t current_format,
                                        uint32_t planes_count,
                                        uint32_t buffer_id);
-  void CreateShmBasedBufferInternal(gfx::AcceleratedWidget widget,
-                                    base::ScopedFD shm_fd,
+  void CreateShmBasedBufferInternal(base::ScopedFD shm_fd,
                                     size_t length,
                                     gfx::Size size,
                                     uint32_t buffer_id);

@@ -6,9 +6,7 @@
 #define CRDTP_JSON_H_
 
 #include <memory>
-
 #include "export.h"
-#include "json_platform.h"
 #include "parser_handler.h"
 
 namespace crdtp {
@@ -24,44 +22,38 @@ namespace json {
 // code must call the Handle* methods in an order in which they'd occur
 // in valid JSON; otherwise we may crash (the code uses assert).
 CRDTP_EXPORT std::unique_ptr<ParserHandler> NewJSONEncoder(
-    const Platform* platform,
     std::vector<uint8_t>* out,
     Status* status);
-CRDTP_EXPORT std::unique_ptr<ParserHandler>
-NewJSONEncoder(const Platform* platform, std::string* out, Status* status);
+
+CRDTP_EXPORT std::unique_ptr<ParserHandler> NewJSONEncoder(std::string* out,
+                                                           Status* status);
 
 // =============================================================================
 // json::ParseJSON - for receiving streaming parser events for JSON
 // =============================================================================
 
-CRDTP_EXPORT void ParseJSON(const Platform& platform,
-                            span<uint8_t> chars,
-                            ParserHandler* handler);
-CRDTP_EXPORT void ParseJSON(const Platform& platform,
-                            span<uint16_t> chars,
-                            ParserHandler* handler);
+CRDTP_EXPORT void ParseJSON(span<uint8_t> chars, ParserHandler* handler);
+
+CRDTP_EXPORT void ParseJSON(span<uint16_t> chars, ParserHandler* handler);
 
 // =============================================================================
 // json::ConvertCBORToJSON, json::ConvertJSONToCBOR - for transcoding
 // =============================================================================
-CRDTP_EXPORT Status ConvertCBORToJSON(const Platform& platform,
-                                      span<uint8_t> cbor,
-                                      std::string* json);
-CRDTP_EXPORT Status ConvertCBORToJSON(const Platform& platform,
-                                      span<uint8_t> cbor,
+
+CRDTP_EXPORT Status ConvertCBORToJSON(span<uint8_t> cbor, std::string* json);
+
+CRDTP_EXPORT Status ConvertCBORToJSON(span<uint8_t> cbor,
                                       std::vector<uint8_t>* json);
-CRDTP_EXPORT Status ConvertJSONToCBOR(const Platform& platform,
-                                      span<uint8_t> json,
+
+CRDTP_EXPORT Status ConvertJSONToCBOR(span<uint8_t> json,
                                       std::vector<uint8_t>* cbor);
-CRDTP_EXPORT Status ConvertJSONToCBOR(const Platform& platform,
-                                      span<uint16_t> json,
+
+CRDTP_EXPORT Status ConvertJSONToCBOR(span<uint16_t> json,
                                       std::vector<uint8_t>* cbor);
-CRDTP_EXPORT Status ConvertJSONToCBOR(const Platform& platform,
-                                      span<uint8_t> json,
-                                      std::string* cbor);
-CRDTP_EXPORT Status ConvertJSONToCBOR(const Platform& platform,
-                                      span<uint16_t> json,
-                                      std::string* cbor);
+
+CRDTP_EXPORT Status ConvertJSONToCBOR(span<uint8_t> json, std::string* cbor);
+
+CRDTP_EXPORT Status ConvertJSONToCBOR(span<uint16_t> json, std::string* cbor);
 }  // namespace json
 }  // namespace crdtp
 

@@ -41,8 +41,7 @@ class PaymentRequestWebContentsManager;
 class PaymentRequest : public mojom::PaymentRequest,
                        public PaymentHandlerHost::Delegate,
                        public PaymentRequestSpec::Observer,
-                       public PaymentRequestState::Delegate,
-                       public ServiceWorkerPaymentApp::IdentityObserver {
+                       public PaymentRequestState::Delegate {
  public:
   class ObserverForTest {
    public:
@@ -99,9 +98,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
   void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override;
 
-  // ServiceWorkerPaymentApp::IdentityObserver:
   void SetInvokedServiceWorkerIdentity(const url::Origin& origin,
-                                       int64_t registration_id) override;
+                                       int64_t registration_id);
 
   // Called when the user explicitly cancelled the flow. Will send a message
   // to the renderer which will indirectly destroy this object (through

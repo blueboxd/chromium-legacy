@@ -273,6 +273,10 @@ class WebMainLoop;
 class WebSubThread;
 }
 
+namespace weblayer {
+class ProfileImpl;
+}
+
 namespace webrtc {
 class DesktopConfigurationMonitor;
 }
@@ -367,6 +371,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class ui::MaterialDesignController;
   friend class web::WebSubThread;
   friend class StackSamplingProfiler;
+  friend class weblayer::ProfileImpl;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;

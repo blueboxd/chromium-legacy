@@ -175,6 +175,7 @@
 <translation id="173080396488393970">এখানে এই ধরনের কার্ড কাজ করে না</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">সিস্টেম প্রশাসকের সাথে যোগাযোগ করে দেখুন।</translation>
+<translation id="1736420071277903564">কম্পিউটার</translation>
 <translation id="1739107442478692187">আপনার ব্যবহার করা সাইট বা অ্যাপে ডেটার নিরাপত্তা লঙ্ঘন হয়েছে। Chrome <ph name="ORIGIN" />-এ এখনই আপনার সেভ করা পাসওয়ার্ড পরীক্ষা করা এবং পরিবর্তন করার জন্য সাজেস্ট করছে।</translation>
 <translation id="1740951997222943430">মেয়াদ শেষ হওয়ার মাসের সঠিক মান লিখুন</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> হলে অবশ্যই নির্দিষ্ট করে দিতে হবে এবং একটি সঠিক স্ট্রিং হতে হবে।</translation>
@@ -611,6 +612,7 @@
 <translation id="3897092660631435901">মেনু</translation>
 <translation id="3901925938762663762">কার্ডটির মেয়াদ শেষ হয়েছে</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">ট্যাবলেট</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">সিভিসি কোডের পরিবর্তে WebAuthn ব্যবহার করবেন?</translation>
 <translation id="3946209740501886391">এই সাইটে সর্বদা জিজ্ঞাসা করুন</translation>
@@ -1535,7 +1537,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{১টি ক্রেডিট কার্ড}one{#টি ক্রেডিট কার্ড}other{#টি ক্রেডিট কার্ড}}</translation>
 <translation id="8473863474539038330">ঠিকানা ও আরও অনেককিছু</translation>
 <translation id="8479754468255770962">নিচে বাঁদিকে স্টেপল করুন</translation>
-<translation id="8481133456511676116">আপনি কি <ph name="DOMAIN" /> ডোমেনের কথা বলছেন?</translation>
 <translation id="8483780878231876732">আপনার Google অ্যাকাউন্ট থেকে কার্ড ব্যবহার করার জন্য Chrome-এ সাইন-ইন করুন</translation>
 <translation id="8488350697529856933">এতে প্রয়োগ হয়</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> সাড়া দিতে খুবে বেশি সময় নিয়েছে।</translation>

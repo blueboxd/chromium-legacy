@@ -295,7 +295,7 @@ ParseVariants(const base::StringPiece& str) {
     // [spec text]
     if (!it->is_string() && !it->is_token())
       return base::nullopt;
-    std::string field_name = it->string();
+    std::string field_name = it->GetString();
     std::vector<std::string> available_values;
     available_values.reserve(inner_list.size() - 1);
     for (++it; it != inner_list.end(); ++it) {
@@ -304,7 +304,7 @@ ParseVariants(const base::StringPiece& str) {
       // [spec text]
       if (!it->is_string() && !it->is_token())
         return base::nullopt;
-      available_values.push_back(it->string());
+      available_values.push_back(it->GetString());
     }
     variants.push_back(std::make_pair(field_name, available_values));
   }
@@ -346,7 +346,7 @@ base::Optional<std::vector<std::vector<std::string>>> ParseVariantKey(
     for (const http_structured_header::Item& item : inner_list) {
       if (!item.is_string() && !item.is_token())
         return base::nullopt;
-      list_members.push_back(item.string());
+      list_members.push_back(item.GetString());
     }
     variant_keys.push_back(list_members);
   }

@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, RedirectFails) {
                   .opaque());
 }
 
-INSTANTIATE_TEST_SUITE_P(, AncestorThrottleTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, AncestorThrottleTest, ::testing::Bool());
 
 }  // namespace
 

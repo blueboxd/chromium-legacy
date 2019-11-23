@@ -521,10 +521,10 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
   ~HintsFetcherBrowserTest() override = default;
 
   void SetUp() override {
-    // Enable OptimizationHintsFetching with |kOptimizationHintsFetching|.
+    // Enable OptimizationHintsFetching with |kRemoteOptimizationGuideFetching|.
     scoped_feature_list_.InitWithFeatures(
         {optimization_guide::features::kOptimizationHints,
-         optimization_guide::features::kOptimizationHintsFetching},
+         optimization_guide::features::kRemoteOptimizationGuideFetching},
         {});
     // Call to inherited class to match same set up with feature flags added.
     HintsFetcherDisabledBrowserTest::SetUp();
@@ -1266,7 +1266,7 @@ class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {
             /* vector of enabled features along with params */
-            {optimization_guide::features::kOptimizationHintsFetching,
+            {optimization_guide::features::kRemoteOptimizationGuideFetching,
              {optimization_hints_fetching_params}},
             {optimization_guide::features::kOptimizationHints, {}},
         },

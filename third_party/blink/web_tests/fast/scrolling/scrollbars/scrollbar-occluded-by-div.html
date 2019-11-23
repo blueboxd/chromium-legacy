@@ -52,6 +52,7 @@
   const BUTTON_WIDTH = TRACK_WIDTH;
   const SCROLL_CORNER = TRACK_WIDTH;
   const PRESS_DURATION = 500;
+  const onMacPlatform =  navigator.userAgent.search(/\bMac OS X\b/) != -1;
 
   // This tests that interacting with a composited scrollbar that is
   // occluded by another layer doesn't cause a scroll.
@@ -69,6 +70,8 @@
     // Remove the div and verify that scrolling takes place as expected.
     document.body.removeChild(occlusion_div);
     await mouseClickOn(down_arrow_x, down_arrow_y);
-    assert_equals(scroller.scrollTop, 40, "Pressing the down arrow didn't scroll.");
+    const expected = onMacPlatform ? 74 : 40;
+    const pressedPart = onMacPlatform ? "track" : "down arrow";
+    assert_equals(scroller.scrollTop, expected, "Pressing the " + pressedPart + " didn't scroll.");
   },"Test hit-testing when scrollbar is occluded.");
 </script>

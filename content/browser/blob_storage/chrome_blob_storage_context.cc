@@ -160,12 +160,10 @@ storage::BlobStorageContext* ChromeBlobStorageContext::context() const {
   return context_.get();
 }
 
-mojo::PendingRemote<storage::mojom::BlobStorageContext>
-ChromeBlobStorageContext::MojoContext() const {
+void ChromeBlobStorageContext::BindMojoContext(
+    mojo::PendingReceiver<storage::mojom::BlobStorageContext> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
-  context_->Bind(remote.InitWithNewPipeAndPassReceiver());
-  return remote;
+  context_->Bind(std::move(receiver));
 }
 
 std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(

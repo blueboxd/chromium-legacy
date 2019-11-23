@@ -6,6 +6,6 @@
 
 [Constructor(DOMString type, optional PortalActivateEventInit eventInitDict), Exposed=Window, RuntimeEnabled=Portals]
 interface PortalActivateEvent : Event {
-  [CallWith=ScriptState] readonly attribute any data;
-  [RaisesException] HTMLPortalElement adoptPredecessor();
+  [CallWith=ScriptState, Measure] readonly attribute any data;
+  [RaisesException, Measure] HTMLPortalElement adoptPredecessor();
 };

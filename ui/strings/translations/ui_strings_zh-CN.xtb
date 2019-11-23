@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">任务栏始终处于隐藏状态</translation>
 <translation id="8996630695507351249">请确保 <ph name="TARGET_DEVICE_NAME" /> 已连接到互联网。</translation>
 <translation id="9002566407876343676">打开</translation>
-<translation id="9039076430527029379">移至第 <ph name="PAGE_NUMBER" /> 页中第 <ph name="ROW_NUMBER" /> 行与第 <ph name="COLUMN_NUMBER" /> 列的相交处。</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="9059834730836941392">收起通知</translation>
 <translation id="9150735707954472829">标签</translation>

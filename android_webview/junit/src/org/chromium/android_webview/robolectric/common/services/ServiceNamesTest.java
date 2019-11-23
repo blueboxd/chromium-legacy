@@ -13,6 +13,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.services.CrashReceiverService;
+import org.chromium.android_webview.services.DeveloperUiService;
 import org.chromium.android_webview.services.VariationsSeedServer;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -25,6 +26,8 @@ public class ServiceNamesTest {
     public void testServiceNamesValid() {
         Assert.assertEquals("Incorrect class name constant", CrashReceiverService.class.getName(),
                 ServiceNames.CRASH_RECEIVER_SERVICE);
+        Assert.assertEquals("Incorrect class name constant", DeveloperUiService.class.getName(),
+                ServiceNames.DEVELOPER_UI_SERVICE);
         Assert.assertEquals("Incorrect class name constant", VariationsSeedServer.class.getName(),
                 ServiceNames.VARIATIONS_SEED_SERVER);
     }

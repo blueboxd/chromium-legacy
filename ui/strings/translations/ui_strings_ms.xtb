@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7781829728241885113">Semalam</translation>
 <translation id="7814458197256864873">&amp;Salin</translation>
+<translation id="7848989271541991537">Dialihkan kepada Halaman <ph name="PAGE_NUMBER" />, baris <ph name="ROW_NUMBER" />, lajur <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Jangan sekat</translation>
 <translation id="7907591526440419938">Buka Fail</translation>
 <translation id="7969046989155602842">Perintah</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Rak sentiasa disembunyikan</translation>
 <translation id="8996630695507351249">Pastikan <ph name="TARGET_DEVICE_NAME" /> disambungkan ke Internet.</translation>
 <translation id="9002566407876343676">buka</translation>
-<translation id="9039076430527029379">Beralih ke Halaman <ph name="PAGE_NUMBER" />, baris <ph name="ROW_NUMBER" />, lajur <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>
 <translation id="9059834730836941392">Runtuhkan pemberitahuan</translation>
 <translation id="9150735707954472829">Tab</translation>

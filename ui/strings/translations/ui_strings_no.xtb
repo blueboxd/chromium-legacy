@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7814458197256864873">&amp;Kopier</translation>
+<translation id="7848989271541991537">Flyttet til side <ph name="PAGE_NUMBER" />, rad <ph name="ROW_NUMBER" />, kolonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Ikke blokkér</translation>
 <translation id="7907591526440419938">Åpne filen</translation>
 <translation id="7969046989155602842">Kommando</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Hyllen skjules alltid</translation>
 <translation id="8996630695507351249">Kontrollér at <ph name="TARGET_DEVICE_NAME" /> er koblet til internett.</translation>
 <translation id="9002566407876343676">åpne</translation>
-<translation id="9039076430527029379">Gå til side <ph name="PAGE_NUMBER" />, rad <ph name="ROW_NUMBER" />, kolonne <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek}other{# sek}}</translation>
 <translation id="9059834730836941392">Skjul varselet</translation>
 <translation id="9150735707954472829">Fane</translation>

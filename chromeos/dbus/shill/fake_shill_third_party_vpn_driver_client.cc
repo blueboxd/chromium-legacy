@@ -43,26 +43,26 @@ void FakeShillThirdPartyVpnDriverClient::RemoveShillThirdPartyVpnObserver(
 void FakeShillThirdPartyVpnDriverClient::SetParameters(
     const std::string& object_path_value,
     const base::DictionaryValue& parameters,
-    const ShillClientHelper::StringCallback& callback,
-    const ShillClientHelper::ErrorCallback& error_callback) {
+    StringCallback callback,
+    ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, std::string()));
+      FROM_HERE, base::BindOnce(std::move(callback), std::string()));
 }
 
 void FakeShillThirdPartyVpnDriverClient::UpdateConnectionState(
     const std::string& object_path_value,
     const uint32_t connection_state,
-    const base::Closure& callback,
-    const ShillClientHelper::ErrorCallback& error_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void FakeShillThirdPartyVpnDriverClient::SendPacket(
     const std::string& object_path_value,
     const std::vector<char>& ip_packet,
-    const base::Closure& callback,
-    const ShillClientHelper::ErrorCallback& error_callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void FakeShillThirdPartyVpnDriverClient::OnPacketReceived(

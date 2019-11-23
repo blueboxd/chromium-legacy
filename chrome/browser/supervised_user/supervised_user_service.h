@@ -187,6 +187,11 @@ class SupervisedUserService : public KeyedService,
   void UpdateApprovedExtensions(const std::string& extension_id,
                                 const std::string& version,
                                 syncer::SyncChange::SyncChangeType type);
+
+  bool GetSupervisedUserExtensionsMayRequestPermissionsPref() const;
+
+  void SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
+      bool enabled);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
  private:
@@ -230,16 +235,17 @@ class SupervisedUserService : public KeyedService,
 
   // An extension can be in one of the following states:
   //
-  // REQUIRE_APPROVAL: if it is installed by the supervised user and
-  //    hasn't been approved by the custodian yet.
+  // BLOCKED: if kSupervisedUserExtensionsMayRequestPermissions is false and the
+  // child user is attempting to install a new extension or an existing
+  // extension is asking for additional permissions.
   // ALLOWED: Components, Themes, Default extensions ..etc
   //    are generally allowed.  Extensions that have been approved by the
   //    custodian are also allowed.
-  // BLOCKED: if it is not ALLOWED or FORCED
-  //    and supervised users initiated installs are disabled.
+  // REQUIRE_APPROVAL: if it is installed by the child user and
+  //    hasn't been approved by the custodian yet.
   enum class ExtensionState { BLOCKED, ALLOWED, REQUIRE_APPROVAL };
 
-  // Returns the state of an extension whether being FORCED, BLOCKED, ALLOWED or
+  // Returns the state of an extension whether being BLOCKED, ALLOWED or
   // REQUIRE_APPROVAL from the Supervised User service's point of view.
   ExtensionState GetExtensionState(
       const extensions::Extension& extension) const;
@@ -248,7 +254,7 @@ class SupervisedUserService : public KeyedService,
   void SetExtensionsActive();
 
   // Enables/Disables extensions upon change in approved version of the
-  // extension_id.
+  // extension_id. This function is idempotent.
   void ChangeExtensionStateIfNecessary(const std::string& extension_id);
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 

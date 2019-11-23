@@ -172,15 +172,6 @@ class TestOptimizationGuideDecider
       override {
     return optimization_guide::OptimizationGuideDecision::kFalse;
   }
-  optimization_guide::OptimizationGuideDecision
-  ShouldTargetNavigationAndCanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationTarget optimization_target,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationMetadata* optimization_metadata)
-      override {
-    return optimization_guide::OptimizationGuideDecision::kFalse;
-  }
 };
 
 // Stub class of PreviewsOptimizationGuide to control what is allowed when

@@ -41,7 +41,7 @@ SignedExchangeSignatureHeaderField::ParseSignature(
     }
     signatures.push_back(Signature());
     Signature& sig = signatures.back();
-    sig.label = value.identifier.string();
+    sig.label = value.identifier.GetString();
 
     const auto& sig_item = value.params[kSig];
     if (!sig_item.is_byte_sequence()) {
@@ -49,7 +49,7 @@ SignedExchangeSignatureHeaderField::ParseSignature(
           devtools_proxy, "Failed to parse 'sig' parameter.");
       return base::nullopt;
     }
-    sig.sig = sig_item.string();
+    sig.sig = sig_item.GetString();
     if (sig.sig.empty()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy, "'sig' parameter is not set,");
@@ -62,7 +62,7 @@ SignedExchangeSignatureHeaderField::ParseSignature(
           devtools_proxy, "Failed to parse 'integrity' parameter.");
       return base::nullopt;
     }
-    sig.integrity = integrity_item.string();
+    sig.integrity = integrity_item.GetString();
     if (sig.integrity.empty()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy, "'integrity' parameter is not set.");
@@ -75,7 +75,7 @@ SignedExchangeSignatureHeaderField::ParseSignature(
           devtools_proxy, "Failed to parse 'cert-url' parameter.");
       return base::nullopt;
     }
-    sig.cert_url = GURL(cert_url_item.string());
+    sig.cert_url = GURL(cert_url_item.GetString());
     if (!sig.cert_url.is_valid() || sig.cert_url.has_ref()) {
       // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
       // params may not have "cert-url".
@@ -95,7 +95,7 @@ SignedExchangeSignatureHeaderField::ParseSignature(
           devtools_proxy, "Failed to parse 'cert-sha256' parameter.");
       return base::nullopt;
     }
-    const std::string& cert_sha256_string = cert_sha256_item.string();
+    const std::string& cert_sha256_string = cert_sha256_item.GetString();
     if (cert_sha256_string.size() != crypto::kSHA256Length) {
       // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
       // params may not have "cert-sha256".
@@ -117,7 +117,7 @@ SignedExchangeSignatureHeaderField::ParseSignature(
       return base::nullopt;
     }
     sig.validity_url =
-        signed_exchange_utils::URLWithRawString(validity_url_item.string());
+        signed_exchange_utils::URLWithRawString(validity_url_item.GetString());
     if (!sig.validity_url.url.is_valid()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy, "'validity-url' parameter is not a valid URL.");
@@ -140,7 +140,7 @@ SignedExchangeSignatureHeaderField::ParseSignature(
           devtools_proxy, "'date' parameter is not a number.");
       return base::nullopt;
     }
-    sig.date = date_item.integer();
+    sig.date = date_item.GetInteger();
 
     const auto& expires_item = value.params[kExpiresKey];
     if (!expires_item.is_integer()) {
@@ -148,7 +148,7 @@ SignedExchangeSignatureHeaderField::ParseSignature(
           devtools_proxy, "'expires' parameter is not a number.");
       return base::nullopt;
     }
-    sig.expires = expires_item.integer();
+    sig.expires = expires_item.GetInteger();
   }
   return signatures;
 }

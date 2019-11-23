@@ -14,10 +14,13 @@
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "url/gurl.h"
+
+class PageActionIconView;
 
 // Base test class for testing sharing features.
 class SharingBrowserTest : public SyncTest {
@@ -46,6 +49,8 @@ class SharingBrowserTest : public SyncTest {
   SharingService* sharing_service() const;
 
   content::WebContents* web_contents() const;
+
+  PageActionIconView* GetPageActionIconView(PageActionIconType type);
 
  private:
   void SetUpDevices(

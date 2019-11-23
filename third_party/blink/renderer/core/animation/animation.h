@@ -126,7 +126,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void setCurrentTime(double new_current_time,
                       bool is_null,
                       ExceptionState& = ASSERT_NO_EXCEPTION);
-  double UnlimitedCurrentTimeInternal() const;
+  base::Optional<double> UnlimitedCurrentTimeInternal() const;
 
   static const char* PlayStateString(AnimationPlayState);
   String playState() const { return PlayStateString(animation_play_state_); }
@@ -265,7 +265,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void ForceServiceOnNextFrame();
 
   double EffectEnd() const;
-  bool Limited(double current_time) const;
+  bool Limited(base::Optional<double> current_time) const;
 
   // Playback rate that will take effect once any pending tasks are resolved.
   // If there are no pending tasks, then the effective playback rate equals the
@@ -287,7 +287,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   AnimationPlayState CalculateAnimationPlayState() const;
 
   base::Optional<double> CalculateStartTime(double current_time) const;
-  double CalculateCurrentTime() const;
+  base::Optional<double> CalculateCurrentTime() const;
 
   void UpdateCurrentTimingState(TimingUpdateReason);
 

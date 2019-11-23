@@ -45,6 +45,7 @@ class OpenXrRenderLoop : public XRCompositorCommon {
 
   std::unique_ptr<OpenXrApiWrapper> openxr_;
   std::unique_ptr<OpenXRInputHelper> input_helper_;
+  XrExtent2Df current_stage_bounds_;
 
   base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
       on_display_info_changed_;

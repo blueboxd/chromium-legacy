@@ -29,8 +29,7 @@ class PredictionModel {
   // should should be called in the background.
   static std::unique_ptr<PredictionModel> Create(
       std::unique_ptr<optimization_guide::proto::PredictionModel>
-          prediction_model,
-      const base::flat_set<std::string>& host_model_features);
+          prediction_model);
 
   // Returns the OptimizationTargetDecision by evaluating the |model_|
   // using the provided |model_features|. |prediction_score| will be populated
@@ -48,8 +47,7 @@ class PredictionModel {
 
  protected:
   PredictionModel(std::unique_ptr<optimization_guide::proto::PredictionModel>
-                      prediction_model,
-                  const base::flat_set<std::string>& host_model_features);
+                      prediction_model);
 
   // The in-memory model used for prediction.
   std::unique_ptr<optimization_guide::proto::Model> model_;

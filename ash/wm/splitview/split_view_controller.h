@@ -282,12 +282,12 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // While the divider is animating to somewhere, stop it and shove it there.
   void StopAndShoveAnimatedDivider();
 
-  // Returns true if we should end split view mode after resizing, i.e., the
-  // split view divider is near to the edge of the screen.
-  bool ShouldEndSplitViewAfterResizing();
+  // Returns true if we should end tablet split view after resizing, i.e. the
+  // split view divider is at an edge of the work area.
+  bool ShouldEndTabletSplitViewAfterResizing();
 
-  // Ends split view if ShouldEndSplitViewAfterResizing() returns true. Handles
-  // extra details associated with dragging the divider off the screen.
+  // Ends split view if |ShouldEndTabletSplitViewAfterResizing| returns true.
+  // Handles extra details associated with dragging the divider off the screen.
   void EndSplitViewAfterResizingIfAppropriate();
 
   // After resizing, if we should end split view mode, returns the window that

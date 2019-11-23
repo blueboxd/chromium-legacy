@@ -104,6 +104,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/win/scoped_co_mem.h"
@@ -116,6 +117,7 @@
 namespace media {
 
 class AudioManagerWin;
+class AudioSessionEventListener;
 
 // AudioOutputStream implementation using Windows Core Audio APIs.
 class MEDIA_EXPORT WASAPIAudioOutputStream :
@@ -173,6 +175,9 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // Reports audio stream glitch stats and resets them to their initial values.
   void ReportAndResetStats();
+
+  // Called by AudioSessionEventListener() when a device change occurs.
+  void OnDeviceChanged();
 
   // Contains the thread ID of the creating thread.
   const base::PlatformThreadId creating_thread_id_;
@@ -261,6 +266,14 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   std::unique_ptr<AudioBus> audio_bus_;
 
   Microsoft::WRL::ComPtr<IAudioClock> audio_clock_;
+
+  bool device_changed_ = false;
+  std::unique_ptr<AudioSessionEventListener> session_listener_;
+
+  // Since AudioSessionEventListener needs to posts tasks back to the audio
+  // thread, it's possible to end up in a state where that task would execute
+  // after destruction of this class -- so use a WeakPtr to cancel safely.
+  base::WeakPtrFactory<WASAPIAudioOutputStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioOutputStream);
 };

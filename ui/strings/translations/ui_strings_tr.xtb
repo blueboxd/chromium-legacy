@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">Raf her zaman gizleniyor</translation>
 <translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> cihazının internete bağlı olduğundan emin olun.</translation>
 <translation id="9002566407876343676">açma</translation>
-<translation id="9039076430527029379"><ph name="PAGE_NUMBER" />. sayfa, <ph name="ROW_NUMBER" />. satır, <ph name="COLUMN_NUMBER" />. sütuna taşınacak.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sn.}other{# sn.}}</translation>
 <translation id="9059834730836941392">Bildirimi daralt</translation>
 <translation id="9150735707954472829">Sekme</translation>

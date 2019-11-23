@@ -6,6 +6,7 @@
 
 #include "device/vr/openxr/openxr_api_wrapper.h"
 #include "device/vr/openxr/openxr_input_helper.h"
+#include "device/vr/util/stage_utils.h"
 #include "device/vr/util/transform_utils.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/transform.h"
@@ -234,11 +235,11 @@ bool OpenXrRenderLoop::UpdateStageParameters() {
       changed = true;
     }
 
-    if (current_display_info_->stage_parameters->size_x != stage_bounds.width ||
-        current_display_info_->stage_parameters->size_z !=
-            stage_bounds.height) {
-      current_display_info_->stage_parameters->size_x = stage_bounds.width;
-      current_display_info_->stage_parameters->size_z = stage_bounds.height;
+    if (current_stage_bounds_.width != stage_bounds.width ||
+        current_stage_bounds_.height != stage_bounds.height) {
+      current_display_info_->stage_parameters->bounds =
+          vr_utils::GetStageBoundsFromSize(stage_bounds.width,
+                                           stage_bounds.height);
       changed = true;
     }
 

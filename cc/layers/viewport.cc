@@ -69,18 +69,19 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& physical_delta,
   return result;
 }
 
-bool Viewport::CanScroll(const ScrollState& scroll_state) const {
-  auto* outer_node = OuterScrollNode();
+bool Viewport::CanScroll(const ScrollNode& node,
+                         const ScrollState& scroll_state) const {
+  DCHECK(ShouldScroll(node));
 
-  if (!outer_node)
-    return false;
+  bool result = host_impl_->CanConsumeDelta(*InnerScrollNode(), scroll_state);
 
-  bool result = false;
-  if (auto* inner_node = InnerScrollNode())
-    result |= host_impl_->CanConsumeDelta(*inner_node, scroll_state);
+  // If the passed in node is the inner viewport, we're not interested in the
+  // scrollability of the outer viewport. See LTHI::GetNodeToScroll for how the
+  // scroll chain is constructed.
+  if (node.scrolls_inner_viewport)
+    return result;
 
-  result |= host_impl_->CanConsumeDelta(*outer_node, scroll_state);
-
+  result |= host_impl_->CanConsumeDelta(*OuterScrollNode(), scroll_state);
   return result;
 }
 
@@ -229,13 +230,18 @@ void Viewport::PinchEnd(const gfx::Point& anchor, bool snap_to_min) {
   pinch_zoom_active_ = false;
 }
 
-bool Viewport::ShouldScroll(const ScrollNode& scroll_node) {
+bool Viewport::ShouldScroll(const ScrollNode& scroll_node) const {
+  // Non-main frame renderers and the UI compositor will not have viewport
+  // scrolling nodes and should thus never scroll with the Viewport object.
+  if (!InnerScrollNode() || !OuterScrollNode()) {
+    DCHECK(!InnerScrollNode());
+    DCHECK(!OuterScrollNode());
+    DCHECK(!scroll_node.scrolls_inner_viewport);
+    DCHECK(!scroll_node.scrolls_outer_viewport);
+    return false;
+  }
   return scroll_node.scrolls_inner_viewport ||
          scroll_node.scrolls_outer_viewport;
-}
-
-ScrollNode* Viewport::MainScrollNode() const {
-  return host_impl_->OuterViewportScrollNode();
 }
 
 gfx::Vector2dF Viewport::ScrollBrowserControls(const gfx::Vector2dF& delta) {

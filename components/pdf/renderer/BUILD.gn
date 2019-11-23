@@ -25,6 +25,7 @@ jumbo_static_library("renderer") {
     "//content/public/renderer",
     "//gin",
     "//ipc",
+    "//pdf:features",
     "//ppapi/host",
     "//ppapi/proxy",
     "//ppapi/proxy:ipc",

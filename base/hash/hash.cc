@@ -125,22 +125,26 @@ uint32_t Hash(const void* data, size_t length) {
 }
 
 uint32_t Hash(const std::string& str) {
-  return PersistentHash(str.data(), str.size());
+  return PersistentHash(as_bytes(make_span(str)));
 }
 
 uint32_t Hash(const string16& str) {
-  return PersistentHash(str.data(), str.size() * sizeof(char16));
+  return PersistentHash(as_bytes(make_span(str)));
 }
 
-uint32_t PersistentHash(const void* data, size_t length) {
+uint32_t PersistentHash(span<const uint8_t> data) {
   // This hash function must not change, since it is designed to be persistable
   // to disk.
-  if (length > static_cast<size_t>(std::numeric_limits<int>::max())) {
+  if (data.size() > static_cast<size_t>(std::numeric_limits<int>::max())) {
     NOTREACHED();
     return 0;
   }
-  return ::SuperFastHash(reinterpret_cast<const char*>(data),
-                         static_cast<int>(length));
+  return ::SuperFastHash(reinterpret_cast<const char*>(data.data()),
+                         static_cast<int>(data.size()));
+}
+
+uint32_t PersistentHash(const void* data, size_t length) {
+  return PersistentHash(make_span(static_cast<const uint8_t*>(data), length));
 }
 
 uint32_t PersistentHash(const std::string& str) {

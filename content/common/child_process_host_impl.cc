@@ -22,7 +22,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -150,12 +149,6 @@ void ChildProcessHostImpl::AddFilter(IPC::MessageFilter* filter) {
     filter->OnFilterAdded(channel_.get());
 }
 
-void ChildProcessHostImpl::BindInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  return delegate_->BindInterface(interface_name, std::move(interface_pipe));
-}
-
 void ChildProcessHostImpl::BindReceiver(mojo::GenericPendingReceiver receiver) {
   child_process_->BindReceiver(std::move(receiver));
 }
@@ -176,23 +169,16 @@ ChildProcessHostImpl::GetMojoInvitation() {
 }
 
 void ChildProcessHostImpl::CreateChannelMojo() {
-  // If in legacy mode, |channel_| is already initialized by the constructor,
-  // not bound through the Service Manager.
+  // If in legacy mode, |channel_| is already initialized by the constructor
+  // not bound through the ChildProcess API.
   if (ipc_mode_ != IpcMode::kLegacy) {
     DCHECK(!channel_);
+    DCHECK_EQ(ipc_mode_, IpcMode::kNormal);
+    DCHECK(child_process_);
 
     mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap;
     auto bootstrap_receiver = bootstrap.InitWithNewPipeAndPassReceiver();
-
-    if (ipc_mode_ == IpcMode::kServiceManager) {
-      BindInterface(IPC::mojom::ChannelBootstrap::Name_,
-                    bootstrap_receiver.PassPipe());
-    } else {
-      DCHECK_EQ(ipc_mode_, IpcMode::kNormal);
-      DCHECK(child_process_);
-      child_process_->BootstrapLegacyIpc(std::move(bootstrap_receiver));
-    }
-
+    child_process_->BootstrapLegacyIpc(std::move(bootstrap_receiver));
     channel_ = IPC::ChannelMojo::Create(
         bootstrap.PassPipe(), IPC::Channel::MODE_SERVER, this,
         base::ThreadTaskRunnerHandle::Get(),
@@ -213,21 +199,6 @@ bool ChildProcessHostImpl::InitChannel() {
     filters_[i]->OnFilterAdded(channel_.get());
 
   delegate_->OnChannelInitialized(channel_.get());
-
-  // In legacy mode, |child_process_| endpoint is already bound to a
-  // disconnected pipe and will remain dysfunctional. In normal mode, it's bound
-  // in the constructor.
-  if (!child_process_) {
-    DCHECK_EQ(ipc_mode_, IpcMode::kServiceManager);
-    // We want to bind this interface as early as possible, but the constructor
-    // is too early. |delegate_| may not be fully initialized at that point and
-    // thus may be unable to properly fulfill the BindInterface() call. Instead
-    // we bind here since the |delegate_| has already been initialized and this
-    // is the first potential use of the interface.
-    mojo::Remote<mojom::ChildProcess> bootstrap;
-    content::BindInterface(this, child_process_.BindNewPipeAndPassReceiver());
-    child_process_->Initialize(bootstrap_receiver_.BindNewPipeAndPassRemote());
-  }
 
   // Make sure these messages get sent first.
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -283,7 +254,7 @@ uint64_t ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
 
   // The hash value is incremented so that the tracing id is never equal to
   // MemoryDumpManager::kInvalidTracingProcessId.
-  return static_cast<uint64_t>(base::FastHash(
+  return static_cast<uint64_t>(base::PersistentHash(
              base::as_bytes(base::make_span(&child_process_id, 1)))) +
          1;
 }

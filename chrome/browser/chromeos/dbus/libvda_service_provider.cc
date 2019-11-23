@@ -44,8 +44,10 @@ void LibvdaServiceProvider::ProvideMojoConnection(
     dbus::ExportedObject::ResponseSender response_sender) {
   arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
   if (!arc_session_manager) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, "Could not find ARC session manager"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_FAILED,
+            "Could not find ARC session manager"));
     return;
   }
   // LibvdaService will return the GpuArcVideoServiceHost instance that
@@ -71,7 +73,7 @@ void LibvdaServiceProvider::OnBootstrapVideoAcceleratorFactoryCallback(
   dbus::MessageWriter writer(response.get());
   writer.AppendFileDescriptor(fd.get());
   writer.AppendString(pipe_name);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 }  // namespace chromeos

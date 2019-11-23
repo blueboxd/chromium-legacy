@@ -1,4 +1,40 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pa">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> ਵੱਲੋਂ ਇਸ ਡੀਵਾਈਸ ਦਾ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਅਤੇ ਤੁਹਾਡੀ ਸਰਗਰਮੀ ਦੀ ਨਿਗਰਾਨੀ ਕੀਤੀ ਜਾ ਸਕਦੀ ਹੈ।</translation>
+<translation id="1510238584712386396">ਲੌਂਚਰ</translation>
+<translation id="1734367976349034509">ਇਹ ਡੀਵਾਈਸ ਐਂਟਰਪ੍ਰਾਈਜ਼ ਦੁਆਰਾ ਪ੍ਰਬੰਧਿਤ ਹੈ</translation>
+<translation id="1930797645656624981">Chrome OS ਇਨਪੁੱਟ ਵਿਧੀ ਸੇਵਾ</translation>
+<translation id="1979103255016296513">ਪਾਸਵਰਡ ਬਦਲਣਾ ਬਾਕੀ ਹੈ</translation>
+<translation id="2049639323467105390">ਇਹ ਡੀਵਾਈਸ <ph name="DOMAIN" /> ਵੱਲੋਂ ਵਿਵਸਥਿਤ ਕੀਤੀ ਜਾਂਦੀ ਹੈ।</translation>
+<translation id="2083960536266308407">ਸਕ੍ਰੀਨ 'ਤੇ ਕੁਝ ਵੀ ਨਹੀਂ ਮਿਲਿਆ</translation>
+<translation id="2338501278241028356">ਨੇੜਲੇ ਡਿਵਾਈਸਾਂ ਨੂੰ ਲੱਭਣ ਲਈ ਬਲੂਟੁੱਥ ਚਾਲੂ ਕਰੋ</translation>
+<translation id="2805756323405976993">ਐਪਸ</translation>
+<translation id="2872961005593481000">ਸ਼ਟ ਡਾਊਨ</translation>
+<translation id="3008341117444806826">ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
+<translation id="3838338534323494292">ਨਵਾਂ ਪਾਸਵਰਡ</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> ਵੱਲੋਂ ਇਸ ਡੀਵਾਈਸ ਦਾ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਅਤੇ ਦੇਖੇ ਗਏ ਵੈੱਬਪੰਨਿਆਂ, ਪਾਸਵਰਡਾਂ ਅਤੇ ਈਮੇਲ ਸਮੇਤ ਵਰਤੋਂਕਾਰ ਦੀ ਸਾਰੀ ਸਰਗਰਮੀ ਤੱਕ ਇਸਨੂੰ ਪਹੁੰਚ ਹਾਸਲ ਹੈ।</translation>
+<translation id="4227825898293920515">ਪਾਸਵਰਡ ਦੀ ਮਿਆਦ <ph name="TIME" /> ਵਿੱਚ ਮੁੱਕ ਜਾਵੇਗੀ</translation>
+<translation id="4429881212383817840">Kerberos ਟਿਕਟ ਦੀ ਮਿਆਦ ਜਲਦ ਹੀ ਮੁੱਕ ਜਾਵੇਗੀ</translation>
+<translation id="445059817448385655">ਪੁਰਾਣਾ ਪਾਸਵਰਡ</translation>
+<translation id="467510802200863975">ਪਾਸਵਰਡ ਮੇਲ ਨਹੀਂ ਖਾਂਦੇ</translation>
+<translation id="4731797938093519117">ਮਾਂ-ਪਿਓ ਲਈ ਪਹੁੰਚ</translation>
+<translation id="4890353053343094602">ਛੇਤੀ ਇੱਕ ਨਵਾਂ ਪਾਸਵਰਡ ਚੁਣੋ</translation>
+<translation id="5212543919916444558">ਮੈਨੂੰ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ 'ਤੇ ਅਜਿਹਾ ਕੁਝ ਵੀ ਨਹੀਂ ਮਿਲਿਆ ਜਿਸ ਵਿੱਚ ਮੈਂ ਤੁਹਾਡੀ ਮਦਦ ਕਰ ਸਕਾਂ। ਮੇਰੇ ਤੋਂ ਕੁਝ ਵੀ ਪੁੱਛਣ ਲਈ ਮਾਈਕ 'ਤੇ ਟੈਪ ਕਰਕੇ ਦੇਖੋ।</translation>
+<translation id="5222676887888702881">ਸਾਈਨ-ਆਊਟ ਕਰੋ</translation>
+<translation id="5317780077021120954">ਰੱਖਿਅਤ ਕਰੋ</translation>
+<translation id="5332948983412042822">ਹੁਣੇ ਇੱਕ ਨਵਾਂ ਪਾਸਵਰਡ ਚੁਣੋ</translation>
+<translation id="5457599981699367932">ਮਹਿਮਾਨ ਵਜੋਂ ਬ੍ਰਾਊਜ਼ ਕਰੋ</translation>
+<translation id="54609108002486618">ਪ੍ਰਬੰਧਿਤ</translation>
+<translation id="5832805196449965646">ਵਿਅਕਤੀ ਜੋੜੋ</translation>
+<translation id="5895138241574237353">ਰੀਸਟਾਰਟ ਕਰੋ</translation>
+<translation id="6058625436358447366">ਪੂਰਾ ਕਰਨ ਲਈ, ਆਪਣਾ ਪੁਰਾਣਾ ਅਤੇ ਨਵਾਂ ਪਾਸਵਰਡ ਦਾਖਲ ਕਰੋ</translation>
+<translation id="6106186594183574873">ਪੂਰਾ ਕਰਨ ਲਈ, ਆਪਣਾ ਪੁਰਾਣਾ ਪਾਸਵਰਡ ਦਾਖਲ ਕਰੋ</translation>
+<translation id="6146993107019042706">ਪੂਰਾ ਕਰਨ ਲਈ, ਆਪਣਾ ਨਵਾਂ ਪਾਸਵਰਡ ਦਾਖਲ ਕਰੋ</translation>
+<translation id="7658239707568436148">ਰੱਦ ਕਰੋ</translation>
+<translation id="7690294790491645610">ਨਵੇਂ ਪਾਸਵਰਡ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
+<translation id="808894953321890993">ਪਾਸਵਰਡ ਬਦਲੋ</translation>
+<translation id="8747900814994928677">ਤਬਦੀਲੀ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ</translation>
+<translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> ਦੀ ਟਿਕਟ ਨੂੰ ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
+<translation id="9111102763498581341">ਅਣਲਾਕ ਕਰੋ</translation>
 </translationbundle>

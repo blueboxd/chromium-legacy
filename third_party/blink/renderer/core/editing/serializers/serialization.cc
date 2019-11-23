@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
@@ -62,6 +63,8 @@
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -752,6 +755,57 @@ void MergeWithNextTextNode(Text* text_node, ExceptionState& exception_state) {
   text_node->appendData(text_next->data());
   if (text_next->parentNode())  // Might have been removed by mutation event.
     text_next->remove(exception_state);
+}
+
+static Document* CreateStagingDocumentForMarkupSanitization() {
+  Page::PageClients page_clients;
+  FillWithEmptyClients(page_clients);
+  Page* page = Page::CreateNonOrdinary(page_clients);
+
+  page->GetSettings().SetScriptEnabled(false);
+  page->GetSettings().SetPluginsEnabled(false);
+  page->GetSettings().SetAcceleratedCompositingEnabled(false);
+
+  LocalFrame* frame = MakeGarbageCollected<LocalFrame>(
+      MakeGarbageCollected<EmptyLocalFrameClient>(), *page,
+      nullptr,  // FrameOwner*
+      nullptr,  // WindowAgentFactory*
+      nullptr   // InterfaceRegistry*
+  );
+  // Don't leak the actual viewport size to unsanitized markup
+  LocalFrameView* frame_view =
+      MakeGarbageCollected<LocalFrameView>(*frame, IntSize(800, 600));
+  frame->SetView(frame_view);
+  frame->Init();
+
+  Document* document = frame->GetDocument();
+  DCHECK(document);
+  DCHECK(document->IsHTMLDocument());
+  DCHECK(document->body());
+
+  return document;
+}
+
+String SanitizeMarkupWithContext(const String& raw_markup,
+                                 unsigned fragment_start,
+                                 unsigned fragment_end) {
+  Document* staging_document = CreateStagingDocumentForMarkupSanitization();
+  Element* body = staging_document->body();
+
+  DocumentFragment* fragment = CreateFragmentFromMarkupWithContext(
+      *staging_document, raw_markup, fragment_start, fragment_end, KURL(),
+      kDisallowScriptingAndPluginContent);
+
+  body->appendChild(fragment);
+  staging_document->UpdateStyleAndLayout();
+
+  // This sanitizes stylesheets in the markup into element inline styles
+  return CreateMarkup(Position::FirstPositionInNode(*body),
+                      Position::LastPositionInNode(*body),
+                      CreateMarkupOptions::Builder()
+                          .SetShouldAnnotateForInterchange(true)
+                          .SetIsForMarkupSanitization(true)
+                          .Build());
 }
 
 template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;

@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">Półka zawsze ukryta</translation>
 <translation id="8996630695507351249">Upewnij się, że <ph name="TARGET_DEVICE_NAME" /> jest połączony z internetem.</translation>
 <translation id="9002566407876343676">otwórz</translation>
-<translation id="9039076430527029379">Przenieś na stronę <ph name="PAGE_NUMBER" />, do wiersza <ph name="ROW_NUMBER" />, kolumny <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Zwiń powiadomienie</translation>
 <translation id="9150735707954472829">Karta</translation>

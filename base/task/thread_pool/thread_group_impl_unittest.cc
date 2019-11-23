@@ -1280,7 +1280,7 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedShouldYield) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     ThreadGroupImplBlockingTest,
     ::testing::Values(NestedBlockingType(BlockingType::MAY_BLOCK,
                                          OptionalBlockingType::NO_BLOCK,

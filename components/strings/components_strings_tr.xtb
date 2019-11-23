@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Bu kart türü desteklenmiyor</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Sistem yöneticisiyle iletişime geçmeyi deneyin.</translation>
+<translation id="1736420071277903564">Bilgisayar</translation>
 <translation id="1739107442478692187">Kullandığınız bir site veya uygulamada veri ihlali oluştu. Chrome, kayıtlı şifrelerinizi hemen kontrol etmenizi ve <ph name="ORIGIN" /> şifrenizi değiştirmenizi öneriyor.</translation>
 <translation id="1740951997222943430">Geçerli bir son kullanma ayı girin</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> olduğunda, DnsOverHttpsTemplate belirtilmeli ve geçerli bir dize olmalıdır.</translation>
@@ -605,6 +606,7 @@
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3901925938762663762">Kartın kullanım süresi doldu</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">CVC yerine WebAuthn kullanılsın mı?</translation>
 <translation id="3946209740501886391">Bu sitede her zaman sor</translation>
@@ -1530,7 +1532,6 @@ Ek ayrıntılar:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredi kartı}other{# kredi kartı}}</translation>
 <translation id="8473863474539038330">Adresler ve daha fazlası</translation>
 <translation id="8479754468255770962">Sol altta tel zımba</translation>
-<translation id="8481133456511676116">Şunu mu demek istediniz: <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Google Hesabınızda kayıtlı kartları kullanmak için Chrome'da oturum açın</translation>
 <translation id="8488350697529856933">Uygulandığı yer</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ana makinesinin yanıt vermesi çok uzun sürdü.</translation>

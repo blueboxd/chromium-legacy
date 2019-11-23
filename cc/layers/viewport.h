@@ -21,6 +21,15 @@ struct ScrollNode;
 // outer viewport (layout) scroll layers. These layers have different scroll
 // bubbling behavior from the rest of the layer tree which is encoded in this
 // class.
+//
+// When performing any kind of scroll operations on either the inner or outer
+// scroll node, they must be done using this class. Typically, the outer
+// viewport's scroll node will be used in the scroll chain to represent a full
+// viewport scroll (i.e. one that will use this class to scroll both inner and
+// outer viewports, as appropriate). However, in some situations (see comments
+// in LayerTreeHostImpl::GetNodeToScroll) we may wish to scroll only the inner
+// viewport. In that case, the inner viewport is used in the scroll chain, but
+// we should still scroll using this class.
 class CC_EXPORT Viewport {
  public:
   // If the pinch zoom anchor on the first PinchUpdate is within this length
@@ -55,8 +64,6 @@ class CC_EXPORT Viewport {
                         bool affect_browser_controls,
                         bool scroll_outer_viewport);
 
-  bool CanScroll(const ScrollState& scroll_state) const;
-
   // TODO(bokan): Callers can now be replaced by ScrollBy.
   void ScrollByInnerFirst(const gfx::Vector2dF& delta);
 
@@ -71,12 +78,18 @@ class CC_EXPORT Viewport {
   void PinchEnd(const gfx::Point& anchor, bool snap_to_min);
 
   // Returns true if the given scroll node should be scrolled via this class,
-  // false if it should be scrolled directly.
-  bool ShouldScroll(const ScrollNode& scroll_node);
+  // false if it should be scrolled directly. Scrolling either the inner or
+  // outer viewport nodes must be done using this class.
+  bool ShouldScroll(const ScrollNode& scroll_node) const;
 
-  // Returns the "representative" viewport scroll node. That is, the one that's
-  // set as the currently scrolling node when the viewport scrolls.
-  ScrollNode* MainScrollNode() const;
+  // Returns true if the viewport can consume any of the delta for the given
+  // the |scroll_state|. This method takes a ScrollNode because viewport
+  // scrolling can occur for either the inner or outer scroll nodes. If it
+  // outer is used, we do a combined scroll that distributes the scroll among
+  // the inner and outer viewports. If the inner is used, only the inner
+  // viewport is scrolled. It is an error to pass any other node to this
+  // method.
+  bool CanScroll(const ScrollNode& node, const ScrollState& scroll_state) const;
 
  private:
   explicit Viewport(LayerTreeHostImpl* host_impl);

@@ -92,6 +92,8 @@ const char kHitTestSubscriptionFailed[] = "Hit test subscription failed.";
 
 const double kDegToRad = M_PI / 180.0;
 
+constexpr wtf_size_t kMinNumberOfBounds = 2;
+
 // Indices into the views array.
 const unsigned int kMonoOrStereoLeftView = 0;
 const unsigned int kStereoRightView = 1;
@@ -402,15 +404,10 @@ ScriptPromise XRSession::requestReferenceSpace(
           MakeGarbageCollected<XRReferenceSpace>(this, requested_type);
       break;
     case XRReferenceSpace::Type::kTypeBoundedFloor: {
-      bool supports_bounded = false;
-      if (immersive() && display_info_->stage_parameters) {
-        if (display_info_->stage_parameters->bounds) {
-          supports_bounded = true;
-        } else if (display_info_->stage_parameters->size_x > 0 &&
-                   display_info_->stage_parameters->size_z > 0) {
-          supports_bounded = true;
-        }
-      }
+      bool supports_bounded =
+          immersive() && display_info_->stage_parameters &&
+          display_info_->stage_parameters->bounds &&
+          display_info_->stage_parameters->bounds->size() > kMinNumberOfBounds;
 
       if (supports_bounded) {
         reference_space = MakeGarbageCollected<XRBoundedReferenceSpace>(this);

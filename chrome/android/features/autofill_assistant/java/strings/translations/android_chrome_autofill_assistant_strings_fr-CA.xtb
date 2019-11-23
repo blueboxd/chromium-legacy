@@ -1,4 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr-CA">
+<translation id="1625889395409731085">Ouvrir le lien externe?</translation>
+<translation id="1699570257714336246">Renseignements manquants</translation>
+<translation id="2203046366315513658">Réduire la valeur</translation>
+<translation id="3604604794717279723">J'accepte</translation>
+<translation id="4437727785356380473">L'Assistant Google dans Chrome est fermé.</translation>
+<translation id="4517854969512651305">Augmenter la valeur</translation>
+<translation id="4850886885716139402">Affichage</translation>
+<translation id="5188078772080029703">Chrome enverra à Google l'URL et le contenu du site ainsi que votre adresse de courriel et le type de carte de crédit enregistré dans Chrome. Vous pouvez désactiver cette option dans les paramètres de Chrome. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
+<translation id="5267269112080050255">L'Assistant Google dans Chrome est ouvert à la hauteur maximale.</translation>
+<translation id="6555233628095991027">L'Assistant Google dans Chrome est ouvert à la mi-hauteur.</translation>
+<translation id="6973932557599545801">Désolée, je ne suis plus en mesure de vous aider, veuillez continuer par vous-même.</translation>
+<translation id="7658239707568436148">Annuler</translation>
+<translation id="8253702004019660079">Assistant Google dans Chrome.</translation>
+<translation id="9138504265731110181">L'Assistant Google vous fait gagner du temps en vous aidant à rechercher le Web</translation>
+<translation id="945522503751344254">Envoyer un commentaire à Google</translation>
 </translationbundle>

@@ -244,6 +244,13 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
     // TODO(bokan): Make work with OOPIF. crbug.com/642378.
     if (!frame_owner->OwnedEmbeddedContentView()->IsLocalFrameView())
       return false;
+
+    // It's possible for an iframe to have a LayoutView but not have performed
+    // the lifecycle yet. We shouldn't promote such an iframe until it has
+    // since we won't be able to use the scroller inside yet.
+    Document* doc = frame_owner->contentDocument();
+    if (!doc || !doc->View() || !doc->View()->DidFirstLayout())
+      return false;
   }
 
   if (!FillsViewport(element))

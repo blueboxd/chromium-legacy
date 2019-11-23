@@ -255,21 +255,26 @@ void CacheStorageContextImpl::GetBlobStorageMojoContextOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(blob_storage_context);
 
-  // TODO(enne): this receiver will need to be sent to the storage service when
+  mojo::PendingRemote<storage::mojom::BlobStorageContext> remote;
+  blob_storage_context->BindMojoContext(
+      remote.InitWithNewPipeAndPassReceiver());
+
+  // TODO(enne): this remote will need to be sent to the storage service when
   // cache storage is moved.
-  auto context = blob_storage_context->MojoContext();
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
           &CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner, this,
-          base::MakeRefCounted<BlobStorageContextWrapper>(std::move(context))));
+          std::move(remote)));
 }
 
 void CacheStorageContextImpl::SetBlobParametersForCacheOnTaskRunner(
-    scoped_refptr<BlobStorageContextWrapper> blob_storage_context) {
+    mojo::PendingRemote<storage::mojom::BlobStorageContext> remote) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (cache_manager_)
-    cache_manager_->SetBlobParametersForCache(std::move(blob_storage_context));
+  if (!cache_manager_)
+    return;
+  cache_manager_->SetBlobParametersForCache(
+      base::MakeRefCounted<BlobStorageContextWrapper>(std::move(remote)));
 }
 
 void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(

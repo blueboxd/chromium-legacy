@@ -1,0 +1,14 @@
+<html>
+  <body>
+    <video></video>
+    <script>
+      window.onload = () => {
+        var video = document.getElementsByTagName("video")[0]
+        video.onerror = function() { document.title = 'error'; }
+        video.onended = function() { document.title = 'ended'; }
+        video.src = './bear-opus.webm';
+        video.play();
+      }
+    </script>
+  </body>
+</html>

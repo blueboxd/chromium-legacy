@@ -46,7 +46,7 @@
 
 namespace network {
 
-const size_t SimpleURLLoader::kMaxBoundedStringDownloadSize = 1024 * 1024;
+const size_t SimpleURLLoader::kMaxBoundedStringDownloadSize = 5 * 1024 * 1024;
 const size_t SimpleURLLoader::kMaxUploadStringSizeToCopy = 256 * 1024;
 
 namespace {

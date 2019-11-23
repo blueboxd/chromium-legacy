@@ -117,8 +117,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
   // descriptor using zwp_linux_dmabuf protocol. Check comments in the
   // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
-  void CreateDmabufBasedBuffer(gfx::AcceleratedWidget widget,
-                               mojo::ScopedHandle dmabuf_fd,
+  void CreateDmabufBasedBuffer(mojo::ScopedHandle dmabuf_fd,
                                const gfx::Size& size,
                                const std::vector<uint32_t>& strides,
                                const std::vector<uint32_t>& offsets,
@@ -129,8 +128,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // Called by the GPU and asks to import a wl_buffer based on a shared memory
   // file descriptor using wl_shm protocol. Check comments in the
   // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
-  void CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
-                            mojo::ScopedHandle shm_fd,
+  void CreateShmBasedBuffer(mojo::ScopedHandle shm_fd,
                             uint64_t length,
                             const gfx::Size& size,
                             uint32_t buffer_id) override;
@@ -160,16 +158,13 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // presentation callbacks for that window's surface.
   class Surface;
 
-  bool CreateBuffer(gfx::AcceleratedWidget& widget,
-                    const gfx::Size& size,
-                    uint32_t buffer_id);
+  bool CreateBuffer(const gfx::Size& size, uint32_t buffer_id);
 
   Surface* GetSurface(gfx::AcceleratedWidget widget) const;
 
   // Validates data sent from GPU. If invalid, returns false and sets an error
   // message to |error_message_|.
-  bool ValidateDataFromGpu(const gfx::AcceleratedWidget& widget,
-                           const base::ScopedFD& file,
+  bool ValidateDataFromGpu(const base::ScopedFD& file,
                            const gfx::Size& size,
                            const std::vector<uint32_t>& strides,
                            const std::vector<uint32_t>& offsets,
@@ -177,18 +172,15 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
                            uint32_t format,
                            uint32_t planes_count,
                            uint32_t buffer_id);
-  bool ValidateDataFromGpu(const gfx::AcceleratedWidget& widget,
-                           uint32_t buffer_id);
-  bool ValidateDataFromGpu(const gfx::AcceleratedWidget& widget,
-                           const base::ScopedFD& file,
+  bool ValidateBufferIdFromGpu(uint32_t buffer_id);
+  bool ValidateDataFromGpu(const base::ScopedFD& file,
                            size_t length,
                            const gfx::Size& size,
                            uint32_t buffer_id);
 
   // Callback method. Receives a result for the request to create a wl_buffer
   // backend by dmabuf file descriptor from ::CreateBuffer call.
-  void OnCreateBufferComplete(gfx::AcceleratedWidget widget,
-                              uint32_t buffer_id,
+  void OnCreateBufferComplete(uint32_t buffer_id,
                               wl::Object<struct wl_buffer> new_buffer);
 
   // Tells the |buffer_manager_gpu_ptr_| the result of a swap call and provides
@@ -202,6 +194,8 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
 
   // Terminates the GPU process on invalid data received
   void TerminateGpuProcess();
+
+  bool DestroyAnonymousBuffer(uint32_t buffer_id);
 
   base::flat_map<gfx::AcceleratedWidget, std::unique_ptr<Surface>> surfaces_;
 

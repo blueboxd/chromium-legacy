@@ -585,7 +585,10 @@ if (!is_ios && !is_fuchsia) {
 
     if (enable_plugins) {
       sources += [ "pdf/renderer/pdf_accessibility_tree_browsertest.cc" ]
-      deps += [ "//components/pdf/renderer" ]
+      deps += [
+        "//components/pdf/renderer",
+        "//pdf:features",
+      ]
     }
 
     if (is_android) {

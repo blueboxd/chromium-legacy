@@ -13,7 +13,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.text.InputType;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -29,7 +28,6 @@ import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -175,12 +173,7 @@ public class InstrumentationActivity extends FragmentActivity {
         String profileName = getIntent().hasExtra(EXTRA_PROFILE_NAME)
                 ? getIntent().getStringExtra(EXTRA_PROFILE_NAME)
                 : "DefaultProfile";
-        String profilePath = null;
-        if (!TextUtils.isEmpty(profileName)) {
-            profilePath = new File(getFilesDir(), profileName).getPath();
-        } // else create an in-memory Profile.
-
-        Fragment fragment = WebLayer.createBrowserFragment(profilePath);
+        Fragment fragment = WebLayer.createBrowserFragment(profileName);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(viewId, fragment);
 

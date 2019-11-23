@@ -308,6 +308,31 @@ files.
 
 ### Configuring the Android framework
 
+#### Android 10.x (Q)
+
+Using Monochrome as a WebView provider on Android 10 is not supported;
+Chrome packages should not be included in the configuration as either the
+Trichrome WebView or standalone WebView should be used.
+
+The configuration mechanism for Android 10 is the same as the following section
+(for Android 7-9), with the exception that the `isFallback` attribute no longer
+causes the provider to be automatically disabled if another implementation is
+available. Android 10 never automatically enables/disables WebView
+implementations under normal usage.
+
+Instead, the `isFallback` attribute is used to allow clean migration from an
+older configuration. When a device is first booted with Android 10, any provider
+marked as `isFallback` will be re-enabled for all users, as a one-time change.
+This ensures that devices which previously used Chrome as their implementation
+on Android 9 and had a disabled WebView do not end up with no enabled WebView
+implementations.
+
+Thus, if upgrading from an Android 9 device, it's recommended that you leave
+`isFallback` set to true for any provider which had it set to true in the
+Android 9 configuration. If this configuration is for a device which has never
+used an older version of Android, `isFallback` is not necessary and can be
+ignored.
+
 #### Android 7.x (Nougat), 8.x (Oreo), and 9.x (Pie)
 
 The permitted WebView implementations are configured using an XML file in the

@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_parser.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -97,7 +98,8 @@ VTTParser::VTTParser(VTTParserClient* client, Document& document)
       current_start_time_(0),
       current_end_time_(0),
       current_region_(nullptr),
-      client_(client) {
+      client_(client),
+      contains_style_block_(false) {
   UseCounter::Count(document, WebFeature::kVTTCueParser);
 }
 
@@ -125,6 +127,9 @@ void VTTParser::Flush() {
   Parse();
   FlushPendingCue();
   region_map_.clear();
+
+  base::UmaHistogramBoolean("Accessibility.VTTContainsStyleBlock",
+                            contains_style_block_);
 }
 
 void VTTParser::Parse() {
@@ -277,12 +282,13 @@ VTTParser::ParseState VTTParser::CollectWebVTTBlock(const String& line) {
     // line starts with the substring "STYLE" and remaining characters
     // zero or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION
     // (tab) characters expected other than these characters it is invalid.
-    if (RuntimeEnabledFeatures::EmbeddedVTTStylesheetsEnabled() &&
-        line.StartsWith("STYLE") &&
-        StringView(line, kStyleIdentifierLength)
-            .IsAllSpecialCharacters<IsASpace>()) {
-      current_content_.Clear();
-      return kStyle;
+    if (line.StartsWith("STYLE") && StringView(line, kStyleIdentifierLength)
+                                        .IsAllSpecialCharacters<IsASpace>()) {
+      contains_style_block_ = true;
+      if (RuntimeEnabledFeatures::EmbeddedVTTStylesheetsEnabled()) {
+        current_content_.Clear();
+        return kStyle;
+      }
     }
   }
 

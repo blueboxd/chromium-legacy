@@ -19,7 +19,7 @@ class PLATFORM_EXPORT WebSchedulingTaskQueue {
  public:
   virtual ~WebSchedulingTaskQueue() = default;
 
-  virtual WebSchedulingPriority Priority() = 0;
+  virtual void SetPriority(WebSchedulingPriority) = 0;
 
   // Returns a task runner that is suitable with the web scheduling task type
   // associated with the priority of this task queue.

@@ -109,54 +109,51 @@ void TestService::SendTestSignalFromRootInternal(const std::string& message) {
   MessageWriter writer(&signal);
   writer.AppendString(message);
 
-  bus_->RequestOwnership(service_name_, request_ownership_options_,
-                         base::Bind(&TestService::OnOwnership,
-                                    base::Unretained(this), base::DoNothing()));
+  bus_->RequestOwnership(
+      service_name_, request_ownership_options_,
+      base::BindOnce(&TestService::OnOwnership, base::Unretained(this),
+                     base::DoNothing::Once<bool>()));
 
   // Use "/" just like dbus-send does.
   ExportedObject* root_object = bus_->GetExportedObject(ObjectPath("/"));
   root_object->SendSignal(&signal);
 }
 
-void TestService::RequestOwnership(base::Callback<void(bool)> callback) {
-  task_runner()->PostTask(FROM_HERE,
-                          base::BindOnce(&TestService::RequestOwnershipInternal,
-                                         base::Unretained(this), callback));
+void TestService::RequestOwnership(base::OnceCallback<void(bool)> callback) {
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&TestService::RequestOwnershipInternal,
+                                base::Unretained(this), std::move(callback)));
 }
 
 void TestService::RequestOwnershipInternal(
-    base::Callback<void(bool)> callback) {
-  bus_->RequestOwnership(service_name_,
-                         request_ownership_options_,
-                         base::Bind(&TestService::OnOwnership,
-                                    base::Unretained(this),
-                                    callback));
+    base::OnceCallback<void(bool)> callback) {
+  bus_->RequestOwnership(
+      service_name_, request_ownership_options_,
+      base::BindOnce(&TestService::OnOwnership, base::Unretained(this),
+                     std::move(callback)));
 }
 
-void TestService::OnOwnership(base::Callback<void(bool)> callback,
+void TestService::OnOwnership(base::OnceCallback<void(bool)> callback,
                               const std::string& service_name,
                               bool success) {
   has_ownership_ = success;
   LOG_IF(ERROR, !success) << "Failed to own: " << service_name;
-  callback.Run(success);
+  std::move(callback).Run(success);
 
   on_name_obtained_.Signal();
 }
 
-void TestService::ReleaseOwnership(base::Closure callback) {
+void TestService::ReleaseOwnership(base::OnceClosure callback) {
   bus_->GetDBusTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&TestService::ReleaseOwnershipInternal,
-                                base::Unretained(this), callback));
+                                base::Unretained(this), std::move(callback)));
 }
 
-void TestService::ReleaseOwnershipInternal(
-    base::Closure callback) {
+void TestService::ReleaseOwnershipInternal(base::OnceClosure callback) {
   bus_->ReleaseOwnership(service_name_);
   has_ownership_ = false;
 
-  bus_->GetOriginTaskRunner()->PostTask(
-      FROM_HERE,
-      callback);
+  bus_->GetOriginTaskRunner()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void TestService::SetSendImmediatePropertiesChanged() {
@@ -180,8 +177,8 @@ void TestService::OnExported(const std::string& interface_name,
     // requested after all methods are exposed.
     bus_->RequestOwnership(
         service_name_, request_ownership_options_,
-        base::Bind(&TestService::OnOwnership, base::Unretained(this),
-                   base::DoNothing()));
+        base::BindOnce(&TestService::OnOwnership, base::Unretained(this),
+                       base::DoNothing::Once<bool>()));
   }
 }
 
@@ -197,87 +194,62 @@ void TestService::Run(base::RunLoop* run_loop) {
 
   int num_methods = 0;
   exported_object_->ExportMethod(
-      "org.chromium.TestInterface",
-      "Echo",
-      base::Bind(&TestService::Echo,
-                 base::Unretained(this)),
-      base::Bind(&TestService::OnExported,
-                 base::Unretained(this)));
+      "org.chromium.TestInterface", "Echo",
+      base::BindRepeating(&TestService::Echo, base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   exported_object_->ExportMethod(
-      "org.chromium.TestInterface",
-      "SlowEcho",
-      base::Bind(&TestService::SlowEcho,
-                 base::Unretained(this)),
-      base::Bind(&TestService::OnExported,
-                 base::Unretained(this)));
+      "org.chromium.TestInterface", "SlowEcho",
+      base::BindRepeating(&TestService::SlowEcho, base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   exported_object_->ExportMethod(
-      "org.chromium.TestInterface",
-      "AsyncEcho",
-      base::Bind(&TestService::AsyncEcho,
-                 base::Unretained(this)),
-      base::Bind(&TestService::OnExported,
-                 base::Unretained(this)));
+      "org.chromium.TestInterface", "AsyncEcho",
+      base::BindRepeating(&TestService::AsyncEcho, base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   exported_object_->ExportMethod(
-      "org.chromium.TestInterface",
-      "BrokenMethod",
-      base::Bind(&TestService::BrokenMethod,
-                 base::Unretained(this)),
-      base::Bind(&TestService::OnExported,
-                 base::Unretained(this)));
+      "org.chromium.TestInterface", "BrokenMethod",
+      base::BindRepeating(&TestService::BrokenMethod, base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   exported_object_->ExportMethod(
-      "org.chromium.TestInterface",
-      "PerformAction",
-      base::Bind(&TestService::PerformAction,
-                 base::Unretained(this)),
-      base::Bind(&TestService::OnExported,
-                 base::Unretained(this)));
+      "org.chromium.TestInterface", "PerformAction",
+      base::BindRepeating(&TestService::PerformAction, base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   exported_object_->ExportMethod(
-       kPropertiesInterface,
-       kPropertiesGetAll,
-       base::Bind(&TestService::GetAllProperties,
-                  base::Unretained(this)),
-       base::Bind(&TestService::OnExported,
-                  base::Unretained(this)));
+      kPropertiesInterface, kPropertiesGetAll,
+      base::BindRepeating(&TestService::GetAllProperties,
+                          base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   exported_object_->ExportMethod(
-       kPropertiesInterface,
-       kPropertiesGet,
-       base::Bind(&TestService::GetProperty,
-                  base::Unretained(this)),
-       base::Bind(&TestService::OnExported,
-                  base::Unretained(this)));
+      kPropertiesInterface, kPropertiesGet,
+      base::BindRepeating(&TestService::GetProperty, base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   exported_object_->ExportMethod(
-       kPropertiesInterface,
-       kPropertiesSet,
-       base::Bind(&TestService::SetProperty,
-                  base::Unretained(this)),
-       base::Bind(&TestService::OnExported,
-                  base::Unretained(this)));
+      kPropertiesInterface, kPropertiesSet,
+      base::BindRepeating(&TestService::SetProperty, base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   exported_object_manager_ = bus_->GetExportedObject(
       ObjectPath("/org/chromium/TestService"));
 
   exported_object_manager_->ExportMethod(
-       kObjectManagerInterface,
-       kObjectManagerGetManagedObjects,
-       base::Bind(&TestService::GetManagedObjects,
-                  base::Unretained(this)),
-       base::Bind(&TestService::OnExported,
-                  base::Unretained(this)));
+      kObjectManagerInterface, kObjectManagerGetManagedObjects,
+      base::BindRepeating(&TestService::GetManagedObjects,
+                          base::Unretained(this)),
+      base::BindOnce(&TestService::OnExported, base::Unretained(this)));
   ++num_methods;
 
   // Just print an error message as we don't want to crash tests.
@@ -293,20 +265,20 @@ void TestService::Echo(MethodCall* method_call,
   MessageReader reader(method_call);
   std::string text_message;
   if (!reader.PopString(&text_message)) {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
   std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
   MessageWriter writer(response.get());
   writer.AppendString(text_message);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void TestService::SlowEcho(MethodCall* method_call,
                            ExportedObject::ResponseSender response_sender) {
   base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  Echo(method_call, response_sender);
+  Echo(method_call, std::move(response_sender));
 }
 
 void TestService::AsyncEcho(MethodCall* method_call,
@@ -315,13 +287,13 @@ void TestService::AsyncEcho(MethodCall* method_call,
   task_runner()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&TestService::Echo, base::Unretained(this), method_call,
-                     response_sender),
+                     std::move(response_sender)),
       TestTimeouts::tiny_timeout());
 }
 
 void TestService::BrokenMethod(MethodCall* method_call,
                                ExportedObject::ResponseSender response_sender) {
-  response_sender.Run(std::unique_ptr<Response>());
+  std::move(response_sender).Run(std::unique_ptr<Response>());
 }
 
 
@@ -331,7 +303,7 @@ void TestService::GetAllProperties(
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
@@ -340,7 +312,7 @@ void TestService::GetAllProperties(
 
   AddPropertiesToWriter(&writer);
 
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void TestService::GetProperty(MethodCall* method_call,
@@ -348,13 +320,13 @@ void TestService::GetProperty(MethodCall* method_call,
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
   std::string name;
   if (!reader.PopString(&name)) {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
@@ -366,7 +338,7 @@ void TestService::GetProperty(MethodCall* method_call,
 
     writer.AppendVariantOfString("TestService");
 
-    response_sender.Run(std::move(response));
+    std::move(response_sender).Run(std::move(response));
   } else if (name == "Version") {
     // Return a new value for the "Version" property:
     // Variant<20>
@@ -375,7 +347,7 @@ void TestService::GetProperty(MethodCall* method_call,
 
     writer.AppendVariantOfInt16(20);
 
-    response_sender.Run(std::move(response));
+    std::move(response_sender).Run(std::move(response));
   } else if (name == "Methods") {
     // Return the previous value for the "Methods" property:
     // Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>
@@ -393,7 +365,7 @@ void TestService::GetProperty(MethodCall* method_call,
     variant_writer.CloseContainer(&variant_array_writer);
     writer.CloseContainer(&variant_writer);
 
-    response_sender.Run(std::move(response));
+    std::move(response_sender).Run(std::move(response));
   } else if (name == "Objects") {
     // Return the previous value for the "Objects" property:
     // Variant<[objectpath:"/TestObjectPath"]>
@@ -408,7 +380,7 @@ void TestService::GetProperty(MethodCall* method_call,
     variant_writer.CloseContainer(&variant_array_writer);
     writer.CloseContainer(&variant_writer);
 
-    response_sender.Run(std::move(response));
+    std::move(response_sender).Run(std::move(response));
   } else if (name == "Bytes") {
     // Return the previous value for the "Bytes" property:
     // Variant<[0x54, 0x65, 0x73, 0x74]>
@@ -422,10 +394,10 @@ void TestService::GetProperty(MethodCall* method_call,
     variant_writer.AppendArrayOfBytes(bytes, sizeof(bytes));
     writer.CloseContainer(&variant_writer);
 
-    response_sender.Run(std::move(response));
+    std::move(response_sender).Run(std::move(response));
   } else {
     // Return error.
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 }
@@ -435,30 +407,30 @@ void TestService::SetProperty(MethodCall* method_call,
   MessageReader reader(method_call);
   std::string interface;
   if (!reader.PopString(&interface)) {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
   std::string name;
   if (!reader.PopString(&name)) {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
   if (name != "Name") {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
   std::string value;
   if (!reader.PopVariantOfString(&value)) {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
   SendPropertyChangedSignal(value);
 
-  response_sender.Run(Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(Response::FromMethodCall(method_call));
 }
 
 void TestService::PerformAction(
@@ -468,7 +440,7 @@ void TestService::PerformAction(
   std::string action;
   ObjectPath object_path;
   if (!reader.PopString(&action) || !reader.PopObjectPath(&object_path)) {
-    response_sender.Run(std::unique_ptr<Response>());
+    std::move(response_sender).Run(std::unique_ptr<Response>());
     return;
   }
 
@@ -479,36 +451,36 @@ void TestService::PerformAction(
   } else if (action == "SetSendImmediatePropertiesChanged") {
     SetSendImmediatePropertiesChanged();
   } else if (action == "ReleaseOwnership") {
-    ReleaseOwnership(base::Bind(&TestService::PerformActionResponse,
-                                base::Unretained(this),
-                                method_call, response_sender));
+    ReleaseOwnership(base::BindOnce(&TestService::PerformActionResponse,
+                                    base::Unretained(this), method_call,
+                                    std::move(response_sender)));
     return;
   } else if (action == "Ownership") {
-    ReleaseOwnership(base::Bind(&TestService::OwnershipReleased,
-                                base::Unretained(this),
-                                method_call, response_sender));
+    ReleaseOwnership(base::BindOnce(&TestService::OwnershipReleased,
+                                    base::Unretained(this), method_call,
+                                    std::move(response_sender)));
     return;
   } else if (action == "InvalidateProperty") {
     SendPropertyInvalidatedSignal();
   }
 
   std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void TestService::PerformActionResponse(
     MethodCall* method_call,
     ExportedObject::ResponseSender response_sender) {
   std::unique_ptr<Response> response = Response::FromMethodCall(method_call);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void TestService::OwnershipReleased(
     MethodCall* method_call,
     ExportedObject::ResponseSender response_sender) {
-  RequestOwnership(base::Bind(&TestService::OwnershipRegained,
-                              base::Unretained(this),
-                              method_call, response_sender));
+  RequestOwnership(base::BindOnce(&TestService::OwnershipRegained,
+                                  base::Unretained(this), method_call,
+                                  std::move(response_sender)));
 }
 
 
@@ -516,7 +488,7 @@ void TestService::OwnershipRegained(
     MethodCall* method_call,
     ExportedObject::ResponseSender response_sender,
     bool success) {
-  PerformActionResponse(method_call, response_sender);
+  PerformActionResponse(method_call, std::move(response_sender));
 }
 
 
@@ -560,7 +532,7 @@ void TestService::GetManagedObjects(
   array_writer.CloseContainer(&dict_entry_writer);
   writer.CloseContainer(&array_writer);
 
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 
   if (send_immediate_properties_changed_)
     SendPropertyChangedSignal("ChangedTestServiceName");

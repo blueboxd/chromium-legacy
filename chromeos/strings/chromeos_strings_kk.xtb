@@ -1,4 +1,40 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="kk">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> құрылғыңызды басқарады және әрекетіңізді де бақылауы мүмкін.</translation>
+<translation id="1510238584712386396">Іске қосу құрылғысы</translation>
+<translation id="1734367976349034509">Бұл құрылғыны ұйым басқарады</translation>
+<translation id="1930797645656624981">Chrome OS енгізу әдісі қызметі</translation>
+<translation id="1979103255016296513">Құпия сөзді өзгертуге берілген мерзім аяқталды</translation>
+<translation id="2049639323467105390">Бұл құрылғыны <ph name="DOMAIN" /> басқарады.</translation>
+<translation id="2083960536266308407">Экранға ештеңе шықпады</translation>
+<translation id="2338501278241028356">Маңайдағы құрылғыларды табу үшін Bluetooth функциясын қосыңыз</translation>
+<translation id="2805756323405976993">Қолданбалар</translation>
+<translation id="2872961005593481000">Өшіру</translation>
+<translation id="3008341117444806826">ЖАҢАРТУ</translation>
+<translation id="3838338534323494292">Жаңа құпия сөз</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> осы құрылғыны басқарады және пайдаланушының барлық әрекетін (мысалы, кірген веб-сайттары, құпия сөздері және электрондық поштасы) көре алады.</translation>
+<translation id="4227825898293920515">Құпия сөздің мерзімі <ph name="TIME" /> өткен соң аяқталады.</translation>
+<translation id="4429881212383817840">Kerberos билетінің жарамдылық мерзімі жақында аяқталады</translation>
+<translation id="445059817448385655">Ескі құпия сөз</translation>
+<translation id="467510802200863975">Құпия сөздер сәйкес келмейді.</translation>
+<translation id="4731797938093519117">Ата-ананың кіру рұқсаты</translation>
+<translation id="4890353053343094602">Дереу жаңа құпия сөз таңдаңыз.</translation>
+<translation id="5212543919916444558">Экранда мен көмектесе алатын ештеңе жоқ. Микрофон белгішесін түртіп, маған сұрақ қойыңыз.</translation>
+<translation id="5222676887888702881">Шығу</translation>
+<translation id="5317780077021120954">Сақтау</translation>
+<translation id="5332948983412042822">Жаңа құпия сөз енгізіңіз.</translation>
+<translation id="5457599981699367932">Қонақ ретінде шолу</translation>
+<translation id="54609108002486618">Басқарылады</translation>
+<translation id="5832805196449965646">Адам қосу</translation>
+<translation id="5895138241574237353">Қайта іске қосу</translation>
+<translation id="6058625436358447366">Аяқтау үшін ескі және жаңа құпия сөздерді енгізіңіз.</translation>
+<translation id="6106186594183574873">Аяқтау үшін ескі құпия сөзді енгізіңіз.</translation>
+<translation id="6146993107019042706">Аяқтау үшін жаңа құпия сөзді енгізіңіз.</translation>
+<translation id="7658239707568436148">Бас тарту</translation>
+<translation id="7690294790491645610">Жаңа құпия сөзді қайталаңыз</translation>
+<translation id="808894953321890993">Кұпия сөзді өзгерту</translation>
+<translation id="8747900814994928677">Өзгерісті растау</translation>
+<translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> үшін билетті жаңарту</translation>
+<translation id="9111102763498581341">Құлпын ашу</translation>
 </translationbundle>

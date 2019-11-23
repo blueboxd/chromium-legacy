@@ -7,6 +7,7 @@
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -92,12 +93,14 @@ TEST_F(ShutdownTest, ConnectRace) {
   // not
   // working as intended.
 
-  mojom::ShutdownTestClientControllerPtr control;
-  connector()->BindInterface(kShutdownClientName, &control);
+  mojo::Remote<mojom::ShutdownTestClientController> control;
+  connector()->Connect(kShutdownClientName,
+                       control.BindNewPipeAndPassReceiver());
 
   // Connect to shutdown_service and immediately request that it shut down.
-  mojom::ShutdownTestServicePtr service;
-  connector()->BindInterface(kShutdownServiceName, &service);
+  mojo::Remote<mojom::ShutdownTestService> service;
+  connector()->Connect(kShutdownServiceName,
+                       service.BindNewPipeAndPassReceiver());
   service->ShutDown();
 
   // Tell shutdown_client to connect to an interface on shutdown_service and

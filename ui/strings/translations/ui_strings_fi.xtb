@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7781829728241885113">Eilen</translation>
 <translation id="7814458197256864873">K&amp;opioi</translation>
+<translation id="7848989271541991537">Siirretty, nyt sivulla <ph name="PAGE_NUMBER" />, rivillä <ph name="ROW_NUMBER" />, sarakkeessa <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Älä estä</translation>
 <translation id="7907591526440419938">Avaa tiedosto</translation>
 <translation id="7969046989155602842">Komento</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Hylly piilotetaan aina</translation>
 <translation id="8996630695507351249">Varmista, että <ph name="TARGET_DEVICE_NAME" /> on yhteydessä internetiin.</translation>
 <translation id="9002566407876343676">avata</translation>
-<translation id="9039076430527029379">Avaa sivu <ph name="PAGE_NUMBER" />, rivi <ph name="ROW_NUMBER" />, sarake <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9059834730836941392">Tiivistä ilmoitus</translation>
 <translation id="9150735707954472829">Välilehti</translation>

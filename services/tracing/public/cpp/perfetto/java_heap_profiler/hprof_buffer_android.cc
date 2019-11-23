@@ -5,6 +5,7 @@
 #include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_buffer_android.h"
 
 #include "base/logging.h"
+#include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_data_type_android.h"
 
 namespace tracing {
 
@@ -28,7 +29,7 @@ uint64_t HprofBuffer::GetId() {
 }
 
 bool HprofBuffer::HasRemaining() {
-  return data_position_ < size_;
+  return offset_ < size_;
 }
 
 void HprofBuffer::set_id_size(unsigned id_size) {
@@ -38,18 +39,37 @@ void HprofBuffer::set_id_size(unsigned id_size) {
 
 void HprofBuffer::set_position(size_t new_position) {
   DCHECK(new_position <= size_ && new_position >= 0);
-  data_position_ = new_position;
+  offset_ = new_position;
 }
 
 // Skips |delta| bytes in the buffer.
 void HprofBuffer::Skip(uint32_t delta) {
-  set_position(data_position_ + delta);
+  set_position(offset_ + delta);
+}
+
+void HprofBuffer::SkipBytesByType(DataType type) {
+  Skip(SizeOfType(type));
+}
+
+void HprofBuffer::SkipId() {
+  Skip(object_id_size_in_bytes_);
+}
+
+const char* HprofBuffer::DataPosition() {
+  return reinterpret_cast<const char*>(data_ + offset_);
+}
+
+uint32_t HprofBuffer::SizeOfType(uint32_t index) {
+  uint32_t object_size = kTypeSizes[index];
+
+  // If type is object, return id_size.
+  return object_size == 0 ? object_id_size_in_bytes_ : object_size;
 }
 
 unsigned char HprofBuffer::GetByte() {
   DCHECK(HasRemaining());
-  unsigned char byte = data_[data_position_];
-  ++data_position_;
+  unsigned char byte = data_[offset_];
+  ++offset_;
   return byte;
 }
 
@@ -70,4 +90,5 @@ uint64_t HprofBuffer::GetUInt64FromBytes(size_t num_bytes) {
   }
   return val;
 }
+
 }  // namespace tracing

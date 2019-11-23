@@ -4,7 +4,10 @@
 
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 
+#include <map>
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -17,11 +20,15 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
+#include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_store.h"
+#include "components/optimization_guide/optimization_guide_switches.h"
 #include "components/optimization_guide/proto/hint_cache.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/proto_database_provider_test_base.h"
 #include "components/optimization_guide/top_host_provider.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_web_contents_factory.h"
@@ -33,6 +40,14 @@
 #include "ui/base/page_transition_types.h"
 
 using leveldb_proto::test::FakeDB;
+
+namespace {
+// Retry delay is 16 minutes to allow for kFetchRetryDelaySecs +
+// kFetchRandomMaxDelaySecs to pass.
+constexpr int kTestFetchRetryDelaySecs = 60 * 16;
+constexpr int kUpdateFetchModelAndFeaturesTimeSecs = 24 * 60 * 60;  // 24 hours.
+
+}  // namespace
 
 namespace optimization_guide {
 
@@ -82,9 +97,9 @@ std::unique_ptr<proto::GetModelsResponse> BuildGetModelsResponse(
 
 class TestPredictionModel : public PredictionModel {
  public:
-  TestPredictionModel(std::unique_ptr<proto::PredictionModel> prediction_model,
-                      const base::flat_set<std::string>& host_model_features)
-      : PredictionModel(std::move(prediction_model), host_model_features) {}
+  explicit TestPredictionModel(
+      std::unique_ptr<proto::PredictionModel> prediction_model)
+      : PredictionModel(std::move(prediction_model)) {}
   ~TestPredictionModel() override = default;
 
   optimization_guide::OptimizationTargetDecision Predict(
@@ -268,27 +283,28 @@ class TestPredictionManager : public PredictionManager {
       const base::FilePath& profile_path,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       TopHostProvider* top_host_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service,
+      Profile* profile)
       : PredictionManager(optimization_targets_at_initialization,
                           CreateModelAndHostModelFeaturesStore(),
                           top_host_provider,
-                          url_loader_factory) {}
+                          url_loader_factory,
+                          pref_service,
+                          profile) {}
 
   ~TestPredictionManager() override = default;
 
   std::unique_ptr<PredictionModel> CreatePredictionModel(
-      const proto::PredictionModel& model,
-      const base::flat_set<std::string>& host_model_features) const override {
+      const proto::PredictionModel& model) const override {
     std::unique_ptr<PredictionModel> prediction_model =
         std::make_unique<TestPredictionModel>(
-            std::make_unique<proto::PredictionModel>(model),
-            host_model_features);
+            std::make_unique<proto::PredictionModel>(model));
     return prediction_model;
   }
 
   using PredictionManager::GetHostModelFeaturesForTesting;
   using PredictionManager::GetPredictionModelForTesting;
-  using PredictionManager::GetSupportedHostModelFeaturesForTesting;
 
   std::unique_ptr<OptimizationGuideStore>
   CreateModelAndHostModelFeaturesStore() {
@@ -328,9 +344,16 @@ class PredictionManagerTest
     top_host_provider_ = std::make_unique<FakeTopHostProvider>(
         std::vector<std::string>({"example1.com", "example2.com"}));
 
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
+    optimization_guide::prefs::RegisterProfilePrefs(pref_service_->registry());
+
     url_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableCheckingUserPermissionsForTesting);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kFetchModelsAndHostModelFeaturesOverrideTimer);
   }
 
   void CreatePredictionManager(
@@ -342,7 +365,9 @@ class PredictionManagerTest
 
     prediction_manager_ = std::make_unique<TestPredictionManager>(
         optimization_targets_at_initialization, temp_dir(), db_provider_.get(),
-        top_host_provider_.get(), url_loader_factory_);
+        top_host_provider_.get(), url_loader_factory_, pref_service_.get(),
+        &testing_profile_);
+    prediction_manager_->SetClockForTesting(task_environment_.GetMockClock());
   }
 
   TestPredictionManager* prediction_manager() const {
@@ -388,6 +413,11 @@ class PredictionManagerTest
     RunUntilIdle();
   }
 
+  void MoveClockForwardBy(base::TimeDelta time_delta) {
+    task_environment_.FastForwardBy(time_delta);
+    RunUntilIdle();
+  }
+
   TestPredictionModelFetcher* prediction_model_fetcher() const {
     return static_cast<TestPredictionModelFetcher*>(
         prediction_manager()->prediction_model_fetcher());
@@ -414,6 +444,7 @@ class PredictionManagerTest
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<FakeTopHostProvider> top_host_provider_;
   TestingProfile testing_profile_;
+  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<content::TestWebContentsFactory> web_contents_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PredictionManagerTest);
@@ -1183,20 +1214,69 @@ TEST_F(PredictionManagerTest,
   EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
 }
 
-TEST_F(PredictionManagerTest, SupportedHostModelFeaturesUpdated) {
-  CreatePredictionManager(
-      {optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+TEST_F(PredictionManagerTest, ModelFetcherTimerRetryDelay) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
+
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      switches::kFetchModelsAndHostModelFeaturesOverrideTimer);
+
+  CreatePredictionManager({});
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
           PredictionModelFetcherEndState::kFetchFailed));
-  SetStoreInitialized();
 
-  EXPECT_TRUE(models_and_features_store()->WasHostModelFeaturesLoaded());
-  EXPECT_TRUE(prediction_manager()->GetHostModelFeaturesForTesting().contains(
-      "foo.com"));
-  EXPECT_TRUE(
-      prediction_manager()->GetSupportedHostModelFeaturesForTesting().contains(
-          "host_feat1"));
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+  EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
+
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
+
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+}
+
+TEST_F(PredictionManagerTest, ModelFetcherTimerFetchSucceeds) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {optimization_guide::features::kRemoteOptimizationGuideFetching}, {});
+
+  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+      switches::kFetchModelsAndHostModelFeaturesOverrideTimer);
+
+  CreatePredictionManager({});
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  SetStoreInitialized();
+  EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+
+  // Reset the prediction model fetcher to detect when the next fetch occurs.
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+  MoveClockForwardBy(base::TimeDelta::FromSeconds(kTestFetchRetryDelaySecs));
+  EXPECT_FALSE(prediction_model_fetcher()->models_fetched());
+  MoveClockForwardBy(
+      base::TimeDelta::FromSeconds(kUpdateFetchModelAndFeaturesTimeSecs));
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
 }
 
 }  // namespace optimization_guide

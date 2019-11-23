@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -249,6 +250,14 @@ void MainThreadTaskQueue::SetNetRequestPriority(
 base::Optional<net::RequestPriority> MainThreadTaskQueue::net_request_priority()
     const {
   return net_request_priority_;
+}
+
+void MainThreadTaskQueue::SetWebSchedulingPriority(
+    WebSchedulingPriority priority) {
+  if (web_scheduling_priority_ == priority)
+    return;
+  web_scheduling_priority_ = priority;
+  frame_scheduler_->OnWebSchedulingTaskQueuePriorityChanged(this);
 }
 
 base::Optional<WebSchedulingPriority>

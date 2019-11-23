@@ -71,9 +71,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kPrefetchPrivacyChanges;
 BLINK_COMMON_EXPORT extern const base::Feature kWebComponentsV0Enabled;
 
 BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeParamName[];
-BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeBlockable[];
-BLINK_COMMON_EXPORT extern const char
-    kMixedContentAutoupgradeModeOptionallyBlockable[];
+BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeNoImages[];
 
 BLINK_COMMON_EXPORT extern const base::Feature kDecodeJpeg420ImagesToYUV;
 BLINK_COMMON_EXPORT extern const base::Feature kDecodeLossyWebPImagesToYUV;

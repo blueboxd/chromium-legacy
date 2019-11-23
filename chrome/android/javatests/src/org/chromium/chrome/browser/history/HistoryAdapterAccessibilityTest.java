@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.history;
 
 import static org.chromium.chrome.browser.history.HistoryTestUtils.checkAdapterContents;
 
+import android.os.Build;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -31,7 +32,8 @@ import java.util.concurrent.TimeUnit;
  * turned on (HistoryManager::isScrollToLoadDisabled() == true).
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/1023426")
+@DisableIf.Build(supported_abis_includes = "arm64-v8a",
+        sdk_is_greater_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1023426")
 public class HistoryAdapterAccessibilityTest {
     public static final int PAGING = 2;
 

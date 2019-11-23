@@ -65,9 +65,6 @@ class IOSPaymentInstrument : public PaymentApp {
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
-  void IsValidForPaymentMethodIdentifier(
-      const std::string& payment_method_identifier,
-      bool* is_valid) const override;
   bool HandlesShippingAddress() const override;
   bool HandlesPayerName() const override;
   bool HandlesPayerEmail() const override;

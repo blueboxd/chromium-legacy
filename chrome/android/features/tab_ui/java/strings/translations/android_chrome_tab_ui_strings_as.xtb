@@ -1,4 +1,29 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="as">
+<translation id="1075622780330595106">শেহতীয়াকৈ আপোনাৰ <ph name="NUMBER_OF_TABS" />টা টেব ব্যৱহাৰ কৰা হোৱা নাই। সেইকেইটা বন্ধ কৰিবনে?</translation>
+<translation id="1181037720776840403">আঁতৰাওক</translation>
+<translation id="125153950246128346">অন্য এটা টেব চাবলৈ টিপক</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" />টা টেব}one{<ph name="TABS_COUNT_MANY" />টা টেব}other{<ph name="TABS_COUNT_MANY" />টা টেব}}</translation>
+<translation id="257674075312929031">গোট</translation>
+<translation id="2613747923081026172">গোট সৃষ্টি কৰক</translation>
+<translation id="2671423594960767771">গোট শ্বেয়াৰ কৰক</translation>
+<translation id="2977480621796371840">গোটৰ পৰা আঁতৰাওক</translation>
+<translation id="4212246570487010370">ব্ৰাউজ কৰা অব্যাহত ৰাখক</translation>
+<translation id="4648718555153979859">আপোনাৰ টেবসমূহ ইয়াত একগোট কৰা হৈছে</translation>
+<translation id="5007392906805964215">পৰ্যালোচনা কৰক</translation>
+<translation id="5073204694187207510">সম্পূৰ্ণ স্ক্রীণৰ গ্ৰিড লুকুৱাওক</translation>
+<translation id="5082793167783849073">এটা গোট বনাই পৃষ্ঠাসমূহ দ্ৰুতভাৱে তুলনা কৰক। আৰম্ভ কৰিবলৈ এটা লিংকত স্পৰ্শ কৰি ধৰি ৰাখক।</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" />টা টেব এক গোট কৰা হৈছে</translation>
+<translation id="5792534911093536736">অধিক টেব</translation>
+<translation id="58326064309361797">এক গোট কৰিবলৈ টেববোৰ টানি আনি এৰক</translation>
+<translation id="6040143037577758943">বন্ধ কৰক</translation>
+<translation id="6193448654517602979">টেবসমূহ বাছনি কৰক</translation>
+<translation id="6615455863669487791">মোক দেখুৱাওক</translation>
+<translation id="6840760312327750441">টেববোৰ একগোট কৰিবলৈ, এটা টেবত স্পৰ্শ কৰি ধৰি ৰাখক। তাৰপাছত, এইটো অন্য এটা টেবলৈ টানি আনি এৰক।</translation>
+<translation id="7151209024774799310">গোটটোৰ পৰা টেবসমূহ আঁতৰাওক</translation>
+<translation id="7559245342362162951">গোটৰ টেব সম্পূৰ্ণ স্ক্রীণৰ গ্রিডত দেখুৱাওক</translation>
+<translation id="9150694013019234766">স্ক্রীণৰ একেবাৰে তলৰ কাষত থকা টেবৰ গোটৰ টেবসমূহ সলনা সলনিকৈ ব্যৱহাৰ কৰক</translation>
+<translation id="9169594135889675189">গোটত নতুন টেব যোগ কৰক</translation>
+<translation id="959682366969460160">সংগঠিত হৈ থাকক</translation>
 </translationbundle>

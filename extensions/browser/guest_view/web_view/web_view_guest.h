@@ -358,18 +358,16 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
     // Whether OpenURL navigation from the newly created GuestView has changed
     // |url|. The pending OpenURL navigation needs to be applied after attaching
     // the GuestView.
-    bool url_changed_via_open_url;
+    bool url_changed_via_open_url = false;
 
     // Whether the newly created GuestView begun navigating away from the
     // initial URL.  Used to suppress the initial navigation when attaching the
     // GuestView and applying its attributes.
-    bool did_start_navigating_away_from_initial_url;
+    bool did_start_navigating_away_from_initial_url = false;
 
-    NewWindowInfo(const GURL& url, const std::string& name)
-        : name(name),
-          url(url),
-          url_changed_via_open_url(false),
-          did_start_navigating_away_from_initial_url(false) {}
+    NewWindowInfo(const GURL& url, const std::string& name);
+    NewWindowInfo(const NewWindowInfo&);
+    ~NewWindowInfo();
   };
 
   using PendingWindowMap = std::map<WebViewGuest*, NewWindowInfo>;

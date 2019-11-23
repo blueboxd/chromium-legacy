@@ -32,6 +32,10 @@ They still don’t share any data, however, and you can disable Google Chrome at
 any time without impairing your device. When Chrome is disabled, WebView will
 switch to a standalone version which isn't combined with Chrome.
 
+In Android 10 (Q), WebView and Chrome still share most of their code to save
+space and memory on your device, but now simply appear as two separate apps and
+there is no longer any special behaviour when disabling Chrome.
+
 ## Are Chrome features like Sync or Data Saver available in WebView?
 
 No. Although WebView and Chrome share a package in Android N, O, and P, they

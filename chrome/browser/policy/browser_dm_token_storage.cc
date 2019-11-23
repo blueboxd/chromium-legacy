@@ -126,7 +126,6 @@ void BrowserDMTokenStorage::ClearDMToken(StoreCallback callback) {
 
 DMToken BrowserDMTokenStorage::RetrieveDMToken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!store_callback_);
 
   InitIfNeeded();
   return dm_token_;

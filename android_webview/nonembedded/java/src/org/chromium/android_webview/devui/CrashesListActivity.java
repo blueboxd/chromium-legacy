@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.DataSetObserver;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
 
 import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.android_webview.common.PlatformServiceBridge;
@@ -33,7 +35,9 @@ import org.chromium.android_webview.devui.util.NavigationMenuHelper;
 import org.chromium.android_webview.devui.util.WebViewCrashInfoCollector;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
+import org.chromium.base.task.AsyncTask;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -47,12 +51,8 @@ public class CrashesListActivity extends Activity {
     // Max number of crashes to show in the crashes list.
     private static final int MAX_CRASHES_NUMBER = 20;
 
-    private TextView mCrashesSummaryView;
-    private BaseExpandableListAdapter mCrashListViewAdapter;
+    private CrashListExpandableAdapter mCrashListViewAdapter;
     private WebViewPackageError mDifferentPackageError;
-
-    private WebViewCrashInfoCollector mCrashCollector;
-    private List<CrashInfo> mCrashInfoList;
 
     private static final String CRASH_REPORT_TEMPLATE = ""
             + "IMPORTANT: Your crash has already been automatically reported to our crash system. "
@@ -91,13 +91,7 @@ public class CrashesListActivity extends Activity {
 
         setContentView(R.layout.activity_crashes_list);
 
-        mCrashesSummaryView = findViewById(R.id.crashes_summary_textview);
-        mCrashCollector = new WebViewCrashInfoCollector();
         mCrashListViewAdapter = new CrashListExpandableAdapter();
-
-        // initialize the crash list before setting the list adapter.
-        updateCrashesList();
-
         ExpandableListView crashListView = findViewById(R.id.crashes_list);
         crashListView.setAdapter(mCrashListViewAdapter);
 
@@ -125,12 +119,29 @@ public class CrashesListActivity extends Activity {
         // changes WebView implementation from system settings and then returns back to the
         // activity.
         mDifferentPackageError.showMessageIfDifferent();
+        mCrashListViewAdapter.updateCrashes();
     }
 
     /**
      * Adapter to create crashes list items from a list of CrashInfo.
      */
     private class CrashListExpandableAdapter extends BaseExpandableListAdapter {
+        private List<CrashInfo> mCrashInfoList;
+
+        CrashListExpandableAdapter() {
+            mCrashInfoList = new ArrayList<>();
+
+            TextView crashesSummaryView = findViewById(R.id.crashes_summary_textview);
+            // Update crash summary when the data changes.
+            registerDataSetObserver(new DataSetObserver() {
+                @Override
+                public void onChanged() {
+                    crashesSummaryView.setText(
+                            String.format(Locale.US, "Crashes (%d)", mCrashInfoList.size()));
+                }
+            });
+        }
+
         // Group View which is used as header for a crash in crashes list.
         // We show:
         //   - Icon of the app where the crash happened.
@@ -257,6 +268,28 @@ public class CrashesListActivity extends Activity {
         public int getGroupCount() {
             return mCrashInfoList.size();
         }
+
+        /**
+         * Asynchronously load crash info on a background thread and then update the UI when the
+         * data is loaded.
+         */
+        public void updateCrashes() {
+            AsyncTask<List<CrashInfo>> asyncTask = new AsyncTask<List<CrashInfo>>() {
+                @Override
+                @WorkerThread
+                protected List<CrashInfo> doInBackground() {
+                    WebViewCrashInfoCollector crashCollector = new WebViewCrashInfoCollector();
+                    return crashCollector.loadCrashesInfo(MAX_CRASHES_NUMBER);
+                }
+
+                @Override
+                protected void onPostExecute(List<CrashInfo> result) {
+                    mCrashInfoList = result;
+                    notifyDataSetChanged();
+                }
+            };
+            asyncTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     // Build a report uri to open an issue on https://bugs.chromium.org/p/chromium/issues/entry.
@@ -309,13 +342,6 @@ public class CrashesListActivity extends Activity {
         }
     }
 
-    private void updateCrashesList() {
-        mCrashInfoList = mCrashCollector.loadCrashesInfo(MAX_CRASHES_NUMBER);
-        mCrashListViewAdapter.notifyDataSetChanged();
-        mCrashesSummaryView.setText(
-                String.format(Locale.US, "Crashes (%d)", mCrashInfoList.size()));
-    }
-
     private void showCrashConsentError(boolean canUseGms) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         dialogBuilder.setTitle("Error Showing Crashes");
@@ -359,7 +385,7 @@ public class CrashesListActivity extends Activity {
             return true;
         }
         if (item.getItemId() == R.id.options_menu_refresh) {
-            updateCrashesList();
+            mCrashListViewAdapter.updateCrashes();
             return true;
         }
         return super.onOptionsItemSelected(item);

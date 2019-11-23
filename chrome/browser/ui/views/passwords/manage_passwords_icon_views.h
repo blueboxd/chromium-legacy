@@ -45,7 +45,7 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
   // Updates the UI to match |state_|.
   void UpdateUiForState();
 
-  password_manager::ui::State state_;
+  password_manager::ui::State state_ = password_manager::ui::INACTIVE_STATE;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsIconViews);
 };

@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1275285675049378717">Gee tans krag aan <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="1289185460362160437">Kom <ph name="COME_BACK_DAY_OF_WEEK" /> om <ph name="COME_BACK_TIME" /> terug.</translation>
 <translation id="1290331692326790741">Swak sein</translation>
 <translation id="1293264513303784526">USB C-toestel (poort aan linkerkant)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Wys Bluetooth-instellings. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Wys altyd rak</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, foonbattery <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Oorloop</translation>
 <translation id="1346748346194534595">Regs</translation>
 <translation id="1351937230027495976">Vou kieslys in</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">Verwyder hierdie gebruiker</translation>
 <translation id="1654477262762802994">Begin 'n stemnavraag</translation>
 <translation id="1658406695958299976">Jammer, jou wagwoord kon steeds nie geverifieer word nie. Let wel: as jy jou wagwoord onlangs verander het, sal jou nuwe wagwoord toegepas word sodra jy afmeld. Gebruik die ou wagwoord hier.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, deur jou administrateur bestuur</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> oor</translation>
 <translation id="1698760176351776263">IPv6-adres: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Nie herken nie</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Tik 'n boodskap</translation>
 <translation id="2050339315714019657">Portret</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Sleutelbordhelderheid</translation>
 <translation id="209965399369889474">Nie aan 'n netwerk gekoppel nie</translation>
 <translation id="2126242104232412123">Nuwe lessenaar</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">Geen selnetwerk beskikbaar nie</translation>
 <translation id="3249513730522716925">Venster <ph name="WINDOW_TITLE" /> is geskuif van lessenaar <ph name="ACTIVE_DESK" /> af na lessenaar <ph name="TARGET_DESK" /> toe</translation>
 <translation id="3255483164551725916">Wat kan jy doen?</translation>
-<translation id="3277674767125718685">Volume is aan.</translation>
 <translation id="3290356915286466215">Onbeveilig</translation>
 <translation id="3294437725009624529">Gas</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan steeds later aanmeld.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">Rekening word bestuur deur <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Verander terug na "<ph name="FROM_LOCALE" />" (vereis herbegin)</translation>
 <translation id="3576141592585647168">Verander tydsone</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, deur jou administrateur bestuur</translation>
 <translation id="3595596368722241419">Battery is vol</translation>
 <translation id="3604801046548457007">Lessenaar <ph name="DESK_TITILE" /> is geskep</translation>
 <translation id="3606978283550408104">Braille-skerm gekoppel.</translation>
@@ -294,25 +288,23 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918086044614829423">Aanvaar</translation>
 <translation id="4924411785043111640">Herbegin en stel terug</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Rollees op</translation>
 <translation id="4961318399572185831">Saai skerm uit</translation>
 <translation id="5030687792513154421">Die tyd is om</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> het aan 'n nuwe foon gekoppel</translation>
 <translation id="5083553833479578423">Ontsluit meer Assistent-kenmerke.</translation>
 <translation id="5136175204352732067">Ander sleutelbord is gekoppel</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Uitsaaitoestelle is beskikbaar</translation>
 <translation id="5207949376430453814">Lig tekskaret uit</translation>
 <translation id="5222676887888702881">Meld af</translation>
 <translation id="523505283826916779">Toeganklikheidsinstellings</translation>
 <translation id="5260676007519551770">Lessenaar 4</translation>
 <translation id="5283198616748585639">Voeg 1 min. by</translation>
+<translation id="5286194356314741248">Skandeer tans</translation>
 <translation id="5302048478445481009">Taal</translation>
 <translation id="5313326810920013265">Bluetooth-instellings</translation>
 <translation id="5331975486040154427">USB C-toestel (agterste poort aan linkerkant)</translation>
 <translation id="5379115545237091094">Te veel pogings</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">Gebruiker se gebruik en geskiedenis kan op chrome.com deur die bestuurder (<ph name="MANAGER_EMAIL" />) nagegaan word.</translation>
 <translation id="5430931332414098647">Kitsverbinding</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -366,7 +358,6 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6062360702481658777">Jy sal oor <ph name="LOGOUT_TIME_LEFT" /> outomaties afgemeld word.</translation>
 <translation id="6064337552080329342">Jammer, jou wagwoord kon nie geverifieer word nie. Probeer asseblief weer.</translation>
 <translation id="607652042414456612">Jou rekenaar is opspoorbaar vir Bluetooth-toestelle wat naby is en sal verskyn as "<ph name="NAME" />" met adres <ph name="ADDRESS" /></translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="612734058257491180">Die Google Assistent is nie in 'n gastesessie beskikbaar nie.</translation>
 <translation id="615957422585914272">Wys opskerm-sleutelbord</translation>
 <translation id="6164005077879661055">Alle lêers en plaaslike data wat met die gebruiker onder toesig geassosieer word, sal permanent uitgevee word sodra hierdie gebruiker onder toesig verwyder word. Besoekte webwerwe en instellings vir hierdie gebruiker sonder toesig kan dalk steeds by <ph name="MANAGEMENT_URL" /> vir die bestuurder sigbaar wees.</translation>
@@ -404,7 +395,6 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6657585470893396449">Wagwoord</translation>
 <translation id="6665545700722362599">Gee webwerwe, programme en uitbreidings toestemming om liggingdienste, die toestel se mikrofoon, kamera of ander kenmerke te gebruik</translation>
 <translation id="6670153871843998651">Lessenaar 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Jou ontkoppelbare sleutelbord moet dringend opgedateer word</translation>
 <translation id="6700713906295497288">IME-kieslysknoppie</translation>
@@ -415,7 +405,6 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6751826523481687655">Werkverrigtingnasporing is aangeskakel</translation>
 <translation id="6752912906630585008">Lessenaar <ph name="REMOVED_DESK" /> is verwyder en met lessenaar <ph name="RECEIVE_DESK" /> saamgevoeg</translation>
 <translation id="6777216307882431711">Gee tans krag aan gekoppelde USB-C-toestelle</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Speel</translation>
 <translation id="6803622936009808957">Kon nie skerms weerspieël nie, omdat daar geen gesteunde resolusies gevind kon word nie. Het eerder by uitgebreide skerm ingegaan.</translation>
 <translation id="6820676911989879663">Geniet 'n blaaskans!</translation>
@@ -461,7 +450,6 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7526573455193969409">Netwerk kan gemonitor word</translation>
 <translation id="7536035074519304529">IP-adres: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Slaaptyd</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, foonbattery <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> werk nie met <ph name="SPECIFIED_RESOLUTION" /> nie. Die resolusie is na <ph name="FALLBACK_RESOLUTION" /> verander</translation>
 <translation id="7562368315689366235">Emosiekoon-palet</translation>
 <translation id="7564874036684306347">Om vensters na 'n ander werkskerm te skuif, kan lei tot onverwagte gedrag. Opeenvolgende kennisgewings, vensters en dialoë kan tussen werkskerms verdeel word.</translation>
@@ -580,7 +568,6 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="9084606467167974638">Wissel kieslysposisie</translation>
 <translation id="9089416786594320554">Invoermetodes</translation>
 <translation id="9091626656156419976">Het skerm <ph name="DISPLAY_NAME" /> verwyder</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />, deur jou administrateur bestuur</translation>
 <translation id="9151726767154816831">Herbegin en powerwash om te opdateer</translation>
 <translation id="9179259655489829027">Met hierdie kenmerk kan jy vinnig toegang tot enige aangemelde gebruiker kry sonder dat 'n wagwoord nodig is. Gebruik hierdie kenmerk net met rekeninge wat jy vertrou.</translation>
 <translation id="9183456764293710005">Volskermvergrootglas</translation>

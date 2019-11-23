@@ -359,11 +359,15 @@ void ArcBridgeHostImpl::OnClosed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG(1) << "Mojo connection lost";
 
+  arc_bridge_service_->ObserveBeforeArcBridgeClosed();
+
   // Close all mojo channels.
   mojo_channels_.clear();
   instance_.reset();
   if (binding_.is_bound())
     binding_.Close();
+
+  arc_bridge_service_->ObserveAfterArcBridgeClosed();
 }
 
 template <typename InstanceType, typename HostType>

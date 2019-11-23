@@ -2721,6 +2721,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, WebLinks) {
   RunPDFTest(FILE_PATH_LITERAL("weblinks.pdf"));
 }
 
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
+                       OverlappingLinks) {
+  RunPDFTest(FILE_PATH_LITERAL("overlapping-links.pdf"));
+}
+
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, Images) {
   RunPDFTest(FILE_PATH_LITERAL("image_alt_text.pdf"));
 }

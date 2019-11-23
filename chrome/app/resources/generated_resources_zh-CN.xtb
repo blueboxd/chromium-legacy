@@ -514,7 +514,6 @@
 <translation id="1734212868489994726">浅蓝色</translation>
 <translation id="1734824808160898225">“<ph name="PRODUCT_NAME" />”可能无法自动更新</translation>
 <translation id="1736419249208073774">探索</translation>
-<translation id="1736420071277903564">计算机</translation>
 <translation id="1737968601308870607">提交错误</translation>
 <translation id="1741314857973421784">继续</translation>
 <translation id="1743570585616704562">无法识别</translation>
@@ -1125,6 +1124,7 @@
 <translation id="2617342710774726426">SIM 卡已被锁定</translation>
 <translation id="2619761439309613843">每日刷新</translation>
 <translation id="2620436844016719705">系统</translation>
+<translation id="2621713457727696555">已受到安全保护</translation>
 <translation id="26224892172169984">不允许任何网站处理协议</translation>
 <translation id="2624142942574147739">此网页正在使用您的摄像头和麦克风。</translation>
 <translation id="2626799779920242286">请稍后重试。</translation>
@@ -1576,6 +1576,7 @@
 <translation id="328571385944182268">保存您的密码？</translation>
 <translation id="3288047731229977326">以开发者模式运行的扩展程序可能会损害您的计算机。如果您不是开发者，那么，为安全起见，应停用以开发者模式运行的扩展程序。</translation>
 <translation id="3289856944988573801">要检查是否有更新，请使用以太网或 WLAN。</translation>
+<translation id="3290356915286466215">未受到安全保护</translation>
 <translation id="3293644607209440645">发送此页面</translation>
 <translation id="32939749466444286">无法启动 Linux 容器。请重试。</translation>
 <translation id="3294437725009624529">访客</translation>
@@ -2017,7 +2018,6 @@
 <translation id="3900966090527141178">导出密码</translation>
 <translation id="3901991538546252627">正在连接：<ph name="NAME" /></translation>
 <translation id="3905761538810670789">修复应用</translation>
-<translation id="3906954721959377182">平板电脑</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> 不是最新版本</translation>
 <translation id="3908501907586732282">启用扩展程序</translation>
 <translation id="3909477809443608991"><ph name="URL" /> 想播放受保护内容。Google 将会验证您的设备身份，而且此网站可能会查看您的设备身份。</translation>
@@ -2316,7 +2316,6 @@
 <translation id="4364327530094270451">甜瓜</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> 正在共享窗口。</translation>
 <translation id="4364830672918311045">显示通知</translation>
-<translation id="4366956553771076218">使用<ph name="APP_NAME" /><ph name="ACTION_NAME" />。</translation>
 <translation id="4370975561335139969">您输入的电子邮件地址和密码不匹配。</translation>
 <translation id="437184764829821926">高级字体设置</translation>
 <translation id="4374831787438678295">Linux 安装程序</translation>
@@ -2958,7 +2957,6 @@
 <translation id="5363109466694494651">执行 Powerwash 操作并还原</translation>
 <translation id="5365881113273618889">您所选的文件夹中包含敏感文件。确定要向“<ph name="APP_NAME" />”授予对此文件夹的永久写入权限吗？</translation>
 <translation id="5367091008316207019">正在读取文件...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">配对手机已锁定，需将其解锁才能进入。</translation>
 <translation id="5368779022775404937">登录 <ph name="REALM" /></translation>
 <translation id="5369491905435686894">启用鼠标加速</translation>
@@ -4716,6 +4714,7 @@
 <translation id="7912080627461681647">您已在服务器上更改密码。请先退出，然后重新登录。</translation>
 <translation id="7915457674565721553">请连接到互联网以设置家长控制</translation>
 <translation id="7915471803647590281">请先告诉我们所发生的情况，然后再发送反馈。</translation>
+<translation id="7918257978052780342">注册</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> 秒</translation>
 <translation id="792514962475806987">停靠的放大镜的缩放级别：</translation>
 <translation id="7925247922861151263">AAA 检查失败</translation>

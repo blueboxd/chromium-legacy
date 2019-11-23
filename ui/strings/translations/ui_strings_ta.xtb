@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7781829728241885113">நேற்று</translation>
 <translation id="7814458197256864873">&amp;நகலெடு</translation>
+<translation id="7848989271541991537">பக்கம் <ph name="PAGE_NUMBER" />, வரிசை <ph name="ROW_NUMBER" />, நெடுவரிசை <ph name="COLUMN_NUMBER" />க்கு நகர்த்தப்பட்டது.</translation>
 <translation id="7879499977785298635">தடுக்காதே</translation>
 <translation id="7907591526440419938">கோப்பைத் திற</translation>
 <translation id="7969046989155602842">கமாண்ட்</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">ஷெல்ஃப் எப்போதும் மறைக்கப்படும்</translation>
 <translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> சாதனம் இணையத்துடன் இணைக்கப்பட்டுள்ளதை உறுதி செய்யவும்.</translation>
 <translation id="9002566407876343676">திற</translation>
-<translation id="9039076430527029379">பக்கம் <ph name="PAGE_NUMBER" />, வரிசை <ph name="ROW_NUMBER" />, நெடுவரிசை <ph name="COLUMN_NUMBER" />க்கு நகரும்.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 நொடி}other{# நொடிகள்}}</translation>
 <translation id="9059834730836941392">அறிவிப்பைச் சுருக்கு</translation>
 <translation id="9150735707954472829">தாவல்</translation>

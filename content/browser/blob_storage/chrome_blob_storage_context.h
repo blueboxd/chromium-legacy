@@ -58,9 +58,10 @@ class CONTENT_EXPORT ChromeBlobStorageContext
 
   storage::BlobStorageContext* context() const;
 
-  // Return a BlobStorageContext mojo interface to be used by storage apis.
+  // Bind a BlobStorageContext mojo interface to be used by storage apis.
   // This interface should not be exposed to renderers.
-  mojo::PendingRemote<storage::mojom::BlobStorageContext> MojoContext() const;
+  void BindMojoContext(
+      mojo::PendingReceiver<storage::mojom::BlobStorageContext> receiver);
 
   // Returns a NULL scoped_ptr on failure.
   std::unique_ptr<BlobHandle> CreateMemoryBackedBlob(

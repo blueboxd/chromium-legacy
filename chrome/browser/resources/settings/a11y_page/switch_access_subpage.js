@@ -131,15 +131,6 @@ Polymer({
   },
 
   /**
-   * @return {string} label for the speed slider.
-   * @private
-   */
-  getLabelForSpeedSlider_: function() {
-    const speedString = this.currentSpeed_();
-    return this.i18n('switchAccessAutoScanSpeedLabel', speedString);
-  },
-
-  /**
    * @return {boolean} Whether to show settings for auto-scan within the
    *     keyboard.
    * @private

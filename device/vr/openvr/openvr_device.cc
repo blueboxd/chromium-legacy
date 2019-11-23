@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "device/vr/openvr/openvr_render_loop.h"
 #include "device/vr/openvr/openvr_type_converters.h"
+#include "device/vr/util/stage_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/openvr/src/headers/openvr.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -99,13 +100,12 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
 
   vr::IVRChaperone* chaperone = vr::VRChaperone();
   if (chaperone) {
-    chaperone->GetPlayAreaSize(&display_info->stage_parameters->size_x,
-                               &display_info->stage_parameters->size_z);
-  } else {
-    display_info->stage_parameters->size_x = 0.0f;
-    display_info->stage_parameters->size_z = 0.0f;
+    float size_x = 0;
+    float size_z = 0;
+    chaperone->GetPlayAreaSize(&size_x, &size_z);
+    display_info->stage_parameters->bounds =
+        vr_utils::GetStageBoundsFromSize(size_x, size_z);
   }
-
   return display_info;
 }
 

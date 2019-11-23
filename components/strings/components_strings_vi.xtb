@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Loại thẻ này không được hỗ trợ</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Thử liên hệ với quản trị viên hệ thống.</translation>
+<translation id="1736420071277903564">Máy tính</translation>
 <translation id="1739107442478692187">Một sự cố rò rỉ dữ liệu đã xảy ra trên trang web hoặc ứng dụng bạn dùng. Bạn nên kiểm tra mật khẩu đã lưu và đổi mật khẩu dùng trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
 <translation id="1740951997222943430">Nhập tháng hết hạn hợp lệ</translation>
 <translation id="1741613555002899862">Phải được chỉ định và là một chuỗi hợp lệ khi DnsOverHttpsMode là <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -610,6 +611,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Thẻ đã hết hạn</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Máy tính bảng</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Sử dụng WebAuthn thay cho CVC?</translation>
 <translation id="3946209740501886391">Luôn hỏi trên trang web này</translation>
@@ -1535,7 +1537,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 thẻ tín dụng}other{# thẻ tín dụng}}</translation>
 <translation id="8473863474539038330">Địa chỉ và các tùy chọn khác</translation>
 <translation id="8479754468255770962">Dập ghim dưới cùng bên trái</translation>
-<translation id="8481133456511676116">Ý của bạn là <ph name="DOMAIN" /> phải không?</translation>
 <translation id="8483780878231876732">Để sử dụng thẻ từ Tài khoản Google, hãy đăng nhập vào Chrome</translation>
 <translation id="8488350697529856933">Áp dụng cho</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> mất quá nhiều thời gian để phản hồi.</translation>

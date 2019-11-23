@@ -56,8 +56,11 @@ include_rules = [
     "+gpu/command_buffer/common/sync_token.h",
     "+mojo/public",
     "+mozilla",
+    "+services/metrics/public/cpp/metrics_utils.h",
+    "+services/metrics/public/cpp/ukm_builders.h",
     "+services/metrics/public/cpp/ukm_entry_builder.h",
     "+services/metrics/public/cpp/ukm_recorder.h",
+    "+services/metrics/public/cpp/ukm_source_id.h",
     "+services/viz/public/mojom/compositing/compositor_frame_sink.mojom-blink.h",
     "+skia/ext",
     #TODO(nverne): remove this

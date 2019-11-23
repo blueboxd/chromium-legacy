@@ -177,6 +177,7 @@
 <translation id="173080396488393970">ఈ రకమైన కార్డ్‌కి మద్దతు లేదు</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">సిస్టమ్ నిర్వాహకుడిని సంప్రదించి ప్రయత్నించండి.</translation>
+<translation id="1736420071277903564">కంప్యూటర్</translation>
 <translation id="1739107442478692187">మీరు ఉపయోగిస్తున్న సైట్ లేదా యాప్‌లో డేటా ఉల్లంఘన జరిగింది. సేవ్ చేసిన మీ పాస్‌వర్డ్‌లను తనిఖీ చేయాల్సిందిగా, ఇప్పుడే <ph name="ORIGIN" />లో మీ పాస్‌వర్డ్‌ను మార్చాల్సిందిగా Chrome సిఫార్సు చేస్తోంది.</translation>
 <translation id="1740951997222943430">చెల్లుబాటు అయ్యే గడువు ముగింపు నెలను నమోదు చేయండి</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode అనేది, <ph name="SECURE_DNS_MODE_SECURE" />గా సెట్ చేసి ఉన్నప్పుడు ఖచ్చితంగా పేర్కొనాలి, చెల్లుబాటు అయ్యే స్ట్రింగ్ అయి ఉండాలి.</translation>
@@ -610,6 +611,7 @@
 <translation id="3897092660631435901">మెను</translation>
 <translation id="3901925938762663762">కార్డ్ గడువు సమయం ముగిసింది</translation>
 <translation id="3906600011954732550">B5-అదనం</translation>
+<translation id="3906954721959377182">టాబ్లెట్</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">CVCకి బదులుగా WebAuthnను ఉపయోగించాలా?</translation>
 <translation id="3946209740501886391">ఈ సైట్‌లో ఎల్లప్పుడూ అడగాలి</translation>
@@ -1535,7 +1537,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 క్రెడిట్ కార్డ్}other{# క్రెడిట్ కార్డ్‌లు}}</translation>
 <translation id="8473863474539038330">చిరునామాలు మరియు మరిన్ని</translation>
 <translation id="8479754468255770962">ఎడమవైపు దిగువ భాగంలో స్టేపుల్</translation>
-<translation id="8481133456511676116">మీరు <ph name="DOMAIN" /> గురించి అడిగారా?</translation>
 <translation id="8483780878231876732">మీ Google ఖాతా నుండి కార్డ్‌లను ఉపయోగించేందుకు, Chromeకు సైన్ ఇన్ చేయండి</translation>
 <translation id="8488350697529856933">వీటికి వర్తిస్తుంది</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం పట్టింది.</translation>

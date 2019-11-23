@@ -785,6 +785,53 @@ test.realbox2.testPressEnterOnSelectedMatch = function() {
   assertEquals(1, test.realbox.opens.length);
 };
 
+test.realbox2.testPressEnterTooQuickly = function() {
+  test.realbox.realboxEl.dispatchEvent(new Event('focusin', {bubbles: true}));
+  test.realbox.realboxEl.value = 'hello';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch({supportsDeletion: true})]
+  });
+
+  const matchEls1 = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(1, matchEls1.length);
+
+  // First match is selected.
+  assertTrue(matchEls1[0].classList.contains(test.realbox.CLASSES.SELECTED));
+
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  const shiftEnter = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Enter',
+    target: test.realbox.realboxEl,
+    shiftKey: true,
+  });
+  test.realbox.realboxEl.dispatchEvent(shiftEnter);
+
+  // Did not navigate to the first match as it is stale.
+  assertEquals(0, test.realbox.opens.length);
+
+  const matches = [test.realbox.getUrlMatch({supportsDeletion: true})];
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged(
+      {input: test.realbox.realboxEl.value, matches});
+
+  const matchEls2 = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(1, matchEls2.length);
+
+  // First match is selected.
+  assertTrue(matchEls2[0].classList.contains(test.realbox.CLASSES.SELECTED));
+
+  // Navigated to the first new match.
+  assertEquals(1, test.realbox.opens.length);
+  assertEquals(0, test.realbox.opens[0].index);
+  assertEquals(matches[0].destinationUrl, test.realbox.opens[0].url);
+};
+
 test.realbox2.testPressEnterNoSelectedMatch = function() {
   test.realbox.realboxEl.value = 'hello world';
   test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));

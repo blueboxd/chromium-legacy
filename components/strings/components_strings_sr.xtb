@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Овај тип картице није подржан</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Покушајте да контактирате администратора система.</translation>
+<translation id="1736420071277903564">Рачунар</translation>
 <translation id="1739107442478692187">Дошло је до упада у податке на сајту или у апликацији коју користите. Chrome препоручује да проверите сачуване лозинке и да одмах промените лозинку на <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Унесите важећи месец истека</translation>
 <translation id="1741613555002899862">Мора да се наведе као важећи низ када је DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">Нападачи који су тренутно на <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могу да инсталирају опасне апликације које ће вам оштетити уређај, додати нежељене трошкове код мобилног оператера или украсти личне податке. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Нема интернета</translation>
 <translation id="2230458221926704099">Поправите везу помоћу <ph name="BEGIN_LINK" />апликације за дијагностику<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">За вас</translation>
 <translation id="2239100178324503013">Пошаљи одмах</translation>
 <translation id="2248949050832152960">Користи WebAuthn</translation>
 <translation id="2250931979407627383">Спајање ивица шавом на левој страни</translation>
@@ -373,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Затвори</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Безбедносно упозорење</translation>
 <translation id="2699302886720511147">Картице које се прихватају</translation>
 <translation id="2702801445560668637">Листа за читање</translation>
 <translation id="2704283930420550640">Вредност се не подудара са форматом.</translation>
@@ -475,6 +478,7 @@
 <translation id="3207960819495026254">Обележено</translation>
 <translation id="3209034400446768650">Страница може да наплаћује</translation>
 <translation id="3209080785413271048">Користите Windows Hello за верификовање сачуваних начина плаћања.</translation>
+<translation id="3212581601480735796">Ваше активности на <ph name="HOSTNAME" /> се прате</translation>
 <translation id="3215092763954878852">Коришћење веб-стандарда WebAuthn није успело</translation>
 <translation id="3225919329040284222">Сервер је приказао сертификат који се не подудара са уграђеним очекивањима. Та очекивања су обухваћена за одређене веб-сајтове са јаким безбедносним мерама како би вас заштитила.</translation>
 <translation id="3226128629678568754">Притисните дугме Поново учитај да бисте поново послали податке потребне за учитавање странице.</translation>
@@ -533,6 +537,7 @@
 <translation id="3528485271872257980">Тамнобраон</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Најмање 1 ставка на синхронизованим уређајима}=1{1 ставка (и још ставки на синхронизованим уређајима)}one{# ставка (и још ставки на синхронизованим уређајима)}few{# ставке (и још ставки на синхронизованим уређајима)}other{# ставки (и још ставки на синхронизованим уређајима)}}</translation>
 <translation id="3539171420378717834">Задржи копију ове картице на овом уређају</translation>
+<translation id="3553513561058684206">За вас</translation>
 <translation id="3566021033012934673">Веза није приватна</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Уграђена страница на <ph name="SITE" /> наводи:</translation>
@@ -610,6 +615,7 @@
 <translation id="3897092660631435901">Мени</translation>
 <translation id="3901925938762663762">Картица је истекла</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Таблет</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Желите ли да користите WebAuthn уместо CVC-а?</translation>
 <translation id="3946209740501886391">Увек питај на овом сајту</translation>
@@ -762,6 +768,7 @@
 <translation id="4594403342090139922">&amp;Опозови брисање</translation>
 <translation id="4597348597567598915">Величина 8</translation>
 <translation id="4600854749408232102">C6/C5 (коверат)</translation>
+<translation id="4613966523036881546">Google Chrome сматра да сертификат за ову везу није поуздан зато што је познато да је коришћен за пресретање и праћење на мрежи.</translation>
 <translation id="4635654612248442824">Сајт <ph name="ORIGIN" /> је затражио да се смернице за порекло
     примене на све захтеве, али ове смернице тренутно не могу да се примене.</translation>
 <translation id="464342062220857295">Функције претраге</translation>
@@ -1466,6 +1473,7 @@
 <translation id="8103161714697287722">Начин плаћања</translation>
 <translation id="8105368624971345109">Искључи</translation>
 <translation id="8118489163946903409">Начин плаћања</translation>
+<translation id="8124023448510659215">Chromium сматра да сертификат за ову везу није поуздан зато што је познато да је коришћен за пресретање и праћење на мрежи.</translation>
 <translation id="8127301229239896662">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно инсталиран на рачунару или мрежи. Затражите од ИТ администратора да реши овај проблем.</translation>
 <translation id="8131740175452115882">Потврди</translation>
 <translation id="8149426793427495338">Рачунар је прешао у режим спавања.</translation>
@@ -1534,7 +1542,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картица}one{# кредитна картица}few{# кредитне картице}other{# кредитних картица}}</translation>
 <translation id="8473863474539038330">Адресе и друго</translation>
 <translation id="8479754468255770962">Спајање у доњем левом углу</translation>
-<translation id="8481133456511676116">Да ли сте мислили <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Да бисте користили картице са Google налога, пријавите се у Chrome</translation>
 <translation id="8488350697529856933">Односе се на</translation>
 <translation id="8498891568109133222">Одговор хоста <ph name="HOST_NAME" /> је трајао предуго.</translation>
@@ -1610,6 +1617,8 @@
 <translation id="8957210676456822347">Овлашћење на улазном порталу</translation>
 <translation id="8962950042226115166">Сумњиви сајт</translation>
 <translation id="8968766641738584599">Сачувај картицу</translation>
+<translation id="8969267497192857913">Било шта што унесете, све странице које прегледате или било која друга активност на вебу се прати и садржај на сајтовима може да се мења без вашег знања.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Сертификат сервера је истекао.</translation>
 <translation id="8975012916872825179">Обухвата информације попут бројева телефона, имејл адреса и адреса за испоруку</translation>
 <translation id="8975263830901772334">Називи датотека које штампате</translation>

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.omnibox;
 import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -31,6 +32,7 @@ import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
 import org.chromium.base.test.params.SkipCommandLineParameterization;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
@@ -139,6 +141,7 @@ public class OmniboxTest {
      * Test for checking whether soft input model switches with focus.
      */
     @Test
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
@@ -212,6 +215,7 @@ public class OmniboxTest {
      * Tests that focusing a url bar starts a zero suggest request.
      */
     @Test
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
@@ -256,6 +260,7 @@ public class OmniboxTest {
     }
 
     @Test
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
@@ -317,6 +322,7 @@ public class OmniboxTest {
     }
 
     @Test
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox", "Main"})
     @RetryOnFailure
@@ -331,6 +337,7 @@ public class OmniboxTest {
     }
 
     @Test
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox", "Main"})
     @RetryOnFailure
@@ -384,6 +391,7 @@ public class OmniboxTest {
     }
 
     @Test
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure
@@ -414,6 +422,7 @@ public class OmniboxTest {
     }
 
     @Test
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1027549")
     @MediumTest
     @Feature({"Omnibox"})
     @RetryOnFailure

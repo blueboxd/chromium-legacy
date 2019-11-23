@@ -116,9 +116,14 @@ IN_PROC_BROWSER_TEST_P(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
   FlushCookies(cookie_manager);
 }
 
-// This flakes on all bots: http://crbug.com/1019655
+// This flakes on Mac10.12: http://crbug.com/1019655
+#if defined(OS_MACOSX)
+#define MAYBE_EncryptedCookies DISABLED_EncryptedCookies
+#else
+#define MAYBE_EncryptedCookies EncryptedCookies
+#endif
 IN_PROC_BROWSER_TEST_P(ChromeNetworkServiceBrowserTest,
-                       DISABLED_EncryptedCookies) {
+                       MAYBE_EncryptedCookies) {
   net::CookieCryptoDelegate* crypto_delegate =
       cookie_config::GetCookieCryptoDelegate();
   std::string ciphertext;

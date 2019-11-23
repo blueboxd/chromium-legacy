@@ -195,6 +195,8 @@ source_set("audio") {
       "win/audio_low_latency_output_win.h",
       "win/audio_manager_win.cc",
       "win/audio_manager_win.h",
+      "win/audio_session_event_listener_win.cc",
+      "win/audio_session_event_listener_win.h",
       "win/avrt_wrapper_win.cc",
       "win/avrt_wrapper_win.h",
       "win/core_audio_util_win.cc",
@@ -441,6 +443,7 @@ source_set("unit_tests") {
       "win/audio_low_latency_input_win_unittest.cc",
       "win/audio_low_latency_output_win_unittest.cc",
       "win/audio_output_win_unittest.cc",
+      "win/audio_session_event_listener_win_unittest.cc",
       "win/core_audio_util_win_unittest.cc",
       "win/device_enumeration_win_unittest.cc",
     ]

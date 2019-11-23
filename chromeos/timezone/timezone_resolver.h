@@ -31,7 +31,7 @@ class COMPONENT_EXPORT(CHROMEOS_TIMEZONE) TimeZoneResolver {
 
   // This callback will be called when new timezone arrives.
   using ApplyTimeZoneCallback =
-      base::Callback<void(const TimeZoneResponseData*)>;
+      base::RepeatingCallback<void(const TimeZoneResponseData*)>;
 
   // chromeos::DelayNetworkCall cannot be used directly due to link
   // restrictions.

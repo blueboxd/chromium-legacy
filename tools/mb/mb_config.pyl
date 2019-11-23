@@ -1635,6 +1635,7 @@
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
       'android', 'release_bot', 'minimal_symbols', 'arm64',
       'resource_whitelisting', 'static_angle', 'android_fastbuild', 'webview_google',
+      'android_no_proguard',
     ],
 
     'gpu_tests_android_release_trybot': [
@@ -1653,6 +1654,7 @@
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild': [
       'android', 'release_trybot', 'arm64', 'static_angle',
       'resource_whitelisting', 'android_fastbuild', 'webview_google',
+      'android_no_proguard',
     ],
 
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage': [
@@ -2079,6 +2081,15 @@
     'android_fastbuild': {
       'gn_args': ('use_errorprone_java_compiler=false '
                   'disable_android_lint=true'),
+    },
+
+    # TODO(https://crbug.com/1020714): This is temporary. We'd like to run a
+    # smoke test on android_binary_sizes to ensure coverage of proguard, at
+    # which point we can merge this into android_fastbuild. Until then, only
+    # disable proguard on a few bots to gather metrics on the effect on build
+    # times.
+    'android_no_proguard': {
+      'gn_args': 'is_java_debug=true',
     },
 
     'android_without_codecs': {

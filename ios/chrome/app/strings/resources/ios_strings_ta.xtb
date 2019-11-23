@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">எதிர்காலத்தில் அனைத்து தாவல்களிலிருந்தும் JavaScript கன்சோல் பதிவுகளையும் பிழைகளையும் சேகரிக்க, “பதிவுசெய்யத் தொடங்கு” பட்டனைத் தட்டவும். இந்தப் பக்கம் மூடப்படும் வரை அல்லது “பதிவுசெய்வதை நிறுத்து” பட்டனைத் தட்டும் வரை பதிவுகள் சேகரிக்கப்படும் (அவை நினைவகத்தில் மட்டுமே சேமிக்கப்படும்).</translation>
 <translation id="1657011748321897393">நெட்வொர்க்குடன் இணைக்கப்படாததால் பகிர்தல் தோல்வியடைந்தது.</translation>
 <translation id="165877110639533037">திறந்த தாவல்கள் இல்லை</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> இலிருந்து <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">உங்கள் எல்லா சாதனங்களிலும் புத்தகக்குறிகளைப் பெற, ஒத்திசைவை இயக்கவும்.</translation>
 <translation id="1687475363370981210">அனைத்தையும் படித்ததாகக் குறி</translation>
 <translation id="1690731385917361335">உருப்படிகள் இல்லை</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">சமர்ப்பி</translation>
 <translation id="2690858294534178585">கேமரா உபயோகத்தில் உள்ளது</translation>
 <translation id="2691653761409724435">ஆஃப்லைனில் கிடைக்காது</translation>
+<translation id="2695507686909505111">பக்கம் மொழிபெயர்க்கப்பட்டது</translation>
 <translation id="2702801445560668637">வாசிப்புப் பட்டியல்</translation>
 <translation id="2704606927547763573">நகலெடுக்கப்பட்டது</translation>
 <translation id="2709516037105925701">தானாகநிரப்பு</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">இணைய இணைப்பு இல்லை.</translation>
 <translation id="3783017676699494206">படத்தைச் சேமி</translation>
 <translation id="3789841737615482174">நிறுவுக</translation>
+<translation id="3803696231112616155">இந்தத் தளத்தை மொழிபெயர்</translation>
 <translation id="385051799172605136">முந்தைய பக்கம்</translation>
 <translation id="3897092660631435901">மெனு</translation>
 <translation id="3915450441834151894">தளம் குறித்த தகவல்</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">இந்தப் பக்கம் மற்றொரு பயன்பாட்டில் திறக்கப்படும்.</translation>
 <translation id="4375040482473363939">QR குறியீட்டுத் தேடல்</translation>
 <translation id="4378154925671717803">மொபைல்</translation>
+<translation id="4389019817280890563">மொழியை மாற்ற தட்டவும்.</translation>
 <translation id="441868831736628555">தனியுரிமை அறிக்கை</translation>
 <translation id="4454246407045105932">மொழியைச் சேர்த்தல்</translation>
 <translation id="4476574785019001431">அமைப்புகள்</translation>
@@ -344,6 +348,7 @@
 <translation id="5871497086027727873">1 உருப்படி நகர்த்தப்பட்டது</translation>
 <translation id="5897956970858271241">நகலெடுத்த இணைப்பிற்குச் செல்</translation>
 <translation id="5911030830365207728">Google மொழியாக்கம்</translation>
+<translation id="5913600720976431809">பக்கத்தை மொழிபெயர்ப்பதற்கான விருப்பத்தேர்வுகள்</translation>
 <translation id="5916664084637901428">இயக்கு</translation>
 <translation id="5938160824633642847">உங்கள் சாதனச் சேமிப்பகம் கிட்டத்தட்ட நிரம்பிவிட்டது. இடத்தைக் காலியாக்கி, மீண்டும் முயலவும்.</translation>
 <translation id="5948291296578561264">உங்கள் பட நூலகத்தில் படங்களைச் சேமிக்க இது அனுமதிக்கும்.</translation>
@@ -375,6 +380,7 @@
 <translation id="6219688215832490856">எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
 <translation id="6254066287920239840">உலாவியில் திறப்பதற்குப் பதிலாக இணைப்புகளைப் பயன்பாட்டில் திற.</translation>
 <translation id="6255097610484507482">கடன் அட்டையைத் திருத்துக</translation>
+<translation id="6284652193729350524"><ph name="LANGUAGE" />க்கு மொழிபெயர்</translation>
 <translation id="6303969859164067831">வெளியேறி ஒத்திசைவை முடக்கு</translation>
 <translation id="6308436439357671616">இதன் மூலம் படங்களை எடுத்துப் பதிவேற்றலாம்.</translation>
 <translation id="6324528485781869530">ஒத்திசைவுக் கணக்கை மாற்றவும்</translation>
@@ -429,6 +435,7 @@
 <translation id="6903907808598579934">ஒத்திசைவை இயக்கு</translation>
 <translation id="6914583639806229067">நீங்கள் நகலெடுத்த படத்தைத் தேடுக</translation>
 <translation id="6914783257214138813">ஏற்றிய கோப்பைப் பார்க்கக்கூடிய அனைவரும் உங்கள் கடவுச்சொற்களைப் பார்க்க முடியும்.</translation>
+<translation id="6930799952781667037">இந்த மொழியை மாற்ற தட்டவும்.</translation>
 <translation id="6944369514868857500">மற்றொரு கணக்கைத் தேர்வுசெய்க</translation>
 <translation id="6945221475159498467">தேர்ந்தெடு</translation>
 <translation id="6973630695168034713">கோப்புறைகள்</translation>
@@ -458,6 +465,7 @@
 <translation id="7293171162284876153">ஒத்திசைவைத் தொடங்க "Chrome தரவை ஒத்திசை" என்பதை இயக்கவும்.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> சதவீதம் பதிவிறக்கப்பட்டது</translation>
 <translation id="7346909386216857016">சரி, புரிந்தது</translation>
+<translation id="734758817008927353">கார்டை சேமிப்பதற்கான விருப்பத்தேர்வுகள்</translation>
 <translation id="7348502496356775519">புத்தகக்குறி</translation>
 <translation id="7383797227493018512">வாசிப்புப் பட்டியல்</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -482,6 +490,7 @@
 <translation id="7671141431838911305">நிறுவு</translation>
 <translation id="7765158879357617694">நகர்த்து</translation>
 <translation id="7772032839648071052">கடவுச்சொற்றொடரை உறுதி செய்க</translation>
+<translation id="7781011649027948662">பக்கத்தை மொழிபெயர்க்கவா?</translation>
 <translation id="7781829728241885113">நேற்று</translation>
 <translation id="778855399387580014">புதிய Chrome தாவலில் தேடலைத் தொடங்கும்.</translation>
 <translation id="7791543448312431591">சேர்</translation>

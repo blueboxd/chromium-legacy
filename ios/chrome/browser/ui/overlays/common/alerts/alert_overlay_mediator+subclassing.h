@@ -14,19 +14,23 @@
 // implement these functions using the data from their request configurations.
 @interface AlertOverlayMediator (Subclassing)
 
-// The title to supply to the AlertConsumer.  Default values is nil.
+// The title to supply to the AlertConsumer.  Default value is nil.
 @property(nonatomic, readonly) NSString* alertTitle;
 
-// The message to supply to the AlertConsumer.  Default values is nil.
+// The message to supply to the AlertConsumer.  Default value is nil.
 @property(nonatomic, readonly) NSString* alertMessage;
 
-// The text field configurations to supply to the AlertConsumer.  Default values
+// The text field configurations to supply to the AlertConsumer.  Default value
 // is nil.
 @property(nonatomic, readonly)
     NSArray<TextFieldConfiguration*>* alertTextFieldConfigurations;
 
-// The alert actions to supply to the AlertConsumer.  Default values is nil.
+// The alert actions to supply to the AlertConsumer.  Default value is nil.
 @property(nonatomic, readonly) NSArray<AlertAction*>* alertActions;
+
+// The accessibility identifier to use for the alert view.  Default value is
+// nil.
+@property(nonatomic, readonly) NSString* alertAccessibilityIdentifier;
 
 @end
 

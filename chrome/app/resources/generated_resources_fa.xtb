@@ -514,7 +514,6 @@
 <translation id="1734212868489994726">آبی روشن</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> ممکن است نتواند خود را به‌روز نگه دارد</translation>
 <translation id="1736419249208073774">کاوش</translation>
-<translation id="1736420071277903564">رایانه</translation>
 <translation id="1737968601308870607">اشکال پرونده</translation>
 <translation id="1741314857973421784">ادامه</translation>
 <translation id="1743570585616704562">شناسایی نشد</translation>
@@ -1126,6 +1125,7 @@
 <translation id="2617342710774726426">سیم‌کارت قفل است</translation>
 <translation id="2619761439309613843">بازخوانی روزانه</translation>
 <translation id="2620436844016719705">سیستم</translation>
+<translation id="2621713457727696555">ایمن شد</translation>
 <translation id="26224892172169984">به هیچ سایتی برای کنترل پروتکل ها اجازه داده نشود</translation>
 <translation id="2624142942574147739">این صفحه به دوربین و میکروفون شما دسترسی دارد.</translation>
 <translation id="2626799779920242286">لطفاً بعداً دوباره امتحان کنید.</translation>
@@ -1577,6 +1577,7 @@
 <translation id="328571385944182268">گذرواژه ذخیره شود؟</translation>
 <translation id="3288047731229977326">افزونه‌هایی که در حالت برنامه‌نوبس اجرا می‌شوند می‌توانند به رایانه شما آسیب برسانند. اگر برنامه‌نویس نیستید، باید این برنامه‌های افزودنی را که در حالت برنامه‌نویس اجرا می‌شوند غیرفعال کنید تا ایمن بمانید.</translation>
 <translation id="3289856944988573801">‏برای بررسی موارد به‌روز لطفاً از کابل شبکه یا Wi-Fi استفاده کنید.</translation>
+<translation id="3290356915286466215">ناامن</translation>
 <translation id="3293644607209440645">ارسال این صفحه</translation>
 <translation id="32939749466444286">‏محتوی Linux شروع نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3294437725009624529">مهمان</translation>
@@ -2018,7 +2019,6 @@
 <translation id="3900966090527141178">صادر کردن گذرواژه‌ها</translation>
 <translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
 <translation id="3905761538810670789">تعمیر برنامه</translation>
-<translation id="3906954721959377182">رایانه لوحی</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> قدیمی است</translation>
 <translation id="3908501907586732282">فعال کردن برنامه افزودنی</translation>
 <translation id="3909477809443608991">‏<ph name="URL" /> می‌خواهد محتوای محافظت‌شده پخش کند. هویت دستگاهتان توسط Google به‌تأیید می‌رسد و ممکن است این سایت به آن دسترسی داشته باشد.</translation>
@@ -2318,7 +2318,6 @@
 <translation id="4364327530094270451">خربزه</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> در حال اشتراک‌گذاری یک پنجره است.</translation>
 <translation id="4364830672918311045">نمایش اعلان‌ها</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> با <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">ایمیل و گذرواژه‌ای که وارد کرده‌اید، مطابقت ندارند</translation>
 <translation id="437184764829821926">تنظیمات پیشرفته قلم</translation>
 <translation id="4374831787438678295">‏نصب‌کننده Linux</translation>
@@ -2960,7 +2959,6 @@
 <translation id="5363109466694494651">‏Powerwash و برگرداندن</translation>
 <translation id="5365881113273618889">پوشه‌ای که انتخاب کرده‌اید حاوی فایل‌های حساسی است. آیا مطمئنید می‌خواهید به «<ph name="APP_NAME" />» دسترسی دائم نوشتن این پوشه را بدهید؟</translation>
 <translation id="5367091008316207019">درحال خواندن فایل ...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">تلفنتان قفل است. برای وارد شدن قفل آن را باز کنید.</translation>
 <translation id="5368779022775404937">به سیستم <ph name="REALM" /> وارد شوید</translation>
 <translation id="5369491905435686894">فعال کردن شتاب‌دهنده موشواره</translation>
@@ -4718,6 +4716,7 @@
 <translation id="7912080627461681647">گذرواژه‌تان در سرور تغییر کرده است. لطفاً از سیستم خارج شوید و سپس دوباره به سیستم وارد شوید.</translation>
 <translation id="7915457674565721553">برای راه‌اندازی کنترل‌های والدین، به اینترنت متصل شوید</translation>
 <translation id="7915471803647590281">لطفاً قبل از ارسال بازخورد، به ما بگویید چه اتفاقی در حال وقوع است.</translation>
+<translation id="7918257978052780342">ثبت‌نام</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /></translation>
 <translation id="792514962475806987">میزان بزرگ‌نمایی متصل:</translation>
 <translation id="7925247922861151263">‏بررسی AAA انجام نشد</translation>

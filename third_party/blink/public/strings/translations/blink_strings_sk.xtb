@@ -114,6 +114,7 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Zadajte číslo.</translation>
 <translation id="4912536737030637138">bibliografický záznam</translation>
+<translation id="492244087561876220">komentár</translation>
 <translation id="4975562563186953947">Počet vybraných položiek: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Zapnúť zvuk</translation>
 <translation id="49969490063480558">Zadajte časť za znakom <ph name="ATSIGN" />. Adresa <ph name="INVALIDADDRESS" /> je neúplná.</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">Mesiac</translation>
 <translation id="901493112792887934">aktuálny čas v sekundách</translation>
 <translation id="901834265349196618">e-mail</translation>
+<translation id="9023835124071926463">sekcia komentárov</translation>
 <translation id="9048119486235211610">navigácia</translation>
 <translation id="9062295712474918030">dokument</translation>
 <translation id="9093215626363556771">ukončiť obraz v obraze</translation>

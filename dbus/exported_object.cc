@@ -44,7 +44,7 @@ ExportedObject::~ExportedObject() {
 bool ExportedObject::ExportMethodAndBlock(
     const std::string& interface_name,
     const std::string& method_name,
-    MethodCallCallback method_call_callback) {
+    const MethodCallCallback& method_call_callback) {
   bus_->AssertOnDBusThread();
 
   // Check if the method is already exported.
@@ -85,19 +85,17 @@ bool ExportedObject::UnexportMethodAndBlock(const std::string& interface_name,
   return true;
 }
 
-void ExportedObject::ExportMethod(const std::string& interface_name,
-                                  const std::string& method_name,
-                                  MethodCallCallback method_call_callback,
-                                  OnExportedCallback on_exported_calback) {
+void ExportedObject::ExportMethod(
+    const std::string& interface_name,
+    const std::string& method_name,
+    const MethodCallCallback& method_call_callback,
+    OnExportedCallback on_exported_calback) {
   bus_->AssertOnOriginThread();
 
-  base::Closure task = base::Bind(&ExportedObject::ExportMethodInternal,
-                                  this,
-                                  interface_name,
-                                  method_name,
-                                  method_call_callback,
-                                  on_exported_calback);
-  bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, task);
+  base::OnceClosure task = base::BindOnce(
+      &ExportedObject::ExportMethodInternal, this, interface_name, method_name,
+      method_call_callback, std::move(on_exported_calback));
+  bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 
 void ExportedObject::UnexportMethod(
@@ -106,10 +104,10 @@ void ExportedObject::UnexportMethod(
     OnUnexportedCallback on_unexported_calback) {
   bus_->AssertOnOriginThread();
 
-  base::Closure task =
-      base::Bind(&ExportedObject::UnexportMethodInternal, this, interface_name,
-                 method_name, on_unexported_calback);
-  bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, task);
+  base::OnceClosure task = base::BindOnce(
+      &ExportedObject::UnexportMethodInternal, this, interface_name,
+      method_name, std::move(on_unexported_calback));
+  bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, std::move(task));
 }
 
 void ExportedObject::SendSignal(Signal* signal) {
@@ -151,30 +149,30 @@ void ExportedObject::Unregister() {
 void ExportedObject::ExportMethodInternal(
     const std::string& interface_name,
     const std::string& method_name,
-    MethodCallCallback method_call_callback,
-    OnExportedCallback on_exported_calback) {
+    const MethodCallCallback& method_call_callback,
+    OnExportedCallback on_exported_callback) {
   bus_->AssertOnDBusThread();
 
   const bool success = ExportMethodAndBlock(interface_name,
                                             method_name,
                                             method_call_callback);
   bus_->GetOriginTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ExportedObject::OnExported, this, on_exported_calback,
-                     interface_name, method_name, success));
+      FROM_HERE, base::BindOnce(&ExportedObject::OnExported, this,
+                                std::move(on_exported_callback), interface_name,
+                                method_name, success));
 }
 
 void ExportedObject::UnexportMethodInternal(
     const std::string& interface_name,
     const std::string& method_name,
-    OnUnexportedCallback on_unexported_calback) {
+    OnUnexportedCallback on_unexported_callback) {
   bus_->AssertOnDBusThread();
 
   const bool success = UnexportMethodAndBlock(interface_name, method_name);
   bus_->GetOriginTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ExportedObject::OnUnexported, this, on_unexported_calback,
-                     interface_name, method_name, success));
+      FROM_HERE, base::BindOnce(&ExportedObject::OnUnexported, this,
+                                std::move(on_unexported_callback),
+                                interface_name, method_name, success));
 }
 
 void ExportedObject::OnExported(OnExportedCallback on_exported_callback,
@@ -183,7 +181,7 @@ void ExportedObject::OnExported(OnExportedCallback on_exported_callback,
                                 bool success) {
   bus_->AssertOnOriginThread();
 
-  on_exported_callback.Run(interface_name, method_name, success);
+  std::move(on_exported_callback).Run(interface_name, method_name, success);
 }
 
 void ExportedObject::OnUnexported(OnExportedCallback on_unexported_callback,
@@ -192,7 +190,7 @@ void ExportedObject::OnUnexported(OnExportedCallback on_unexported_callback,
                                   bool success) {
   bus_->AssertOnOriginThread();
 
-  on_unexported_callback.Run(interface_name, method_name, success);
+  std::move(on_unexported_callback).Run(interface_name, method_name, success);
 }
 
 void ExportedObject::SendSignalInternal(base::TimeTicks start_time,
@@ -275,11 +273,9 @@ DBusHandlerResult ExportedObject::HandleMessage(
   } else {
     // If the D-Bus thread is not used, just call the method directly.
     MethodCall* method = method_call.get();
-    iter->second.Run(method,
-                     base::Bind(&ExportedObject::SendResponse,
-                                this,
-                                start_time,
-                                base::Passed(&method_call)));
+    iter->second.Run(
+        method, base::BindOnce(&ExportedObject::SendResponse, this, start_time,
+                               std::move(method_call)));
   }
 
   // It's valid to say HANDLED here, and send a method response at a later
@@ -287,16 +283,14 @@ DBusHandlerResult ExportedObject::HandleMessage(
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-void ExportedObject::RunMethod(MethodCallCallback method_call_callback,
+void ExportedObject::RunMethod(const MethodCallCallback& method_call_callback,
                                std::unique_ptr<MethodCall> method_call,
                                base::TimeTicks start_time) {
   bus_->AssertOnOriginThread();
   MethodCall* method = method_call.get();
-  method_call_callback.Run(method,
-                           base::Bind(&ExportedObject::SendResponse,
-                                      this,
-                                      start_time,
-                                      base::Passed(&method_call)));
+  method_call_callback.Run(
+      method, base::BindOnce(&ExportedObject::SendResponse, this, start_time,
+                             std::move(method_call)));
 }
 
 void ExportedObject::SendResponse(base::TimeTicks start_time,

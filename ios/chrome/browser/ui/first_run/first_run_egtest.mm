@@ -138,8 +138,8 @@ id<GREYMatcher> SkipSigninButton() {
 
 // Signs in to an account and then taps the Advanced link to go to settings.
 - (void)testSignInAndTapSettingsLink {
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
-  [SigninEarlGreyUtils addIdentity:identity];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
 
   // Launch First Run and accept tems of services.
   [FirstRunAppInterface showFirstRunUI];
@@ -157,7 +157,7 @@ id<GREYMatcher> SkipSigninButton() {
   [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
       performAction:grey_tap()];
 
-  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
 
   GREYAssertTrue([FirstRunAppInterface isSyncFirstSetupComplete],
                  @"Sync should have finished its original setup");

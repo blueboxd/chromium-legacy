@@ -281,6 +281,9 @@ class CC_EXPORT LayerTreeImpl {
     return !presentation_callbacks_.empty();
   }
 
+  // The following viewport related property nodes will only ever be set on the
+  // main-frame's renderer (i.e. OOPIF and UI compositors will not have these
+  // set.
   using ViewportPropertyIds = LayerTreeHost::ViewportPropertyIds;
   void SetViewportPropertyIds(const ViewportPropertyIds& ids);
 

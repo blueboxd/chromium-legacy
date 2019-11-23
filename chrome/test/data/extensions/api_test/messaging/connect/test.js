@@ -23,7 +23,21 @@ function compareSenders(expected, actual) {
 
   chrome.test.assertEq(expected.frameId, actual.frameId);
   chrome.test.assertEq(expected.url, actual.url);
+  chrome.test.assertEq(expected.origin, actual.origin);
   chrome.test.assertEq(expected.id, actual.id);
+}
+
+function createExpectedSenderWithOrigin(tab, frameId, url, origin, id) {
+  return {tab: tab, frameId: frameId, url: url, origin: origin, id: id};
+}
+
+function createExpectedSender(tab, frameId, url, id) {
+  var originUrl = null;
+  if (tab.url) {
+    var tabUrl = new URL(tab.url);
+    originUrl = tabUrl.origin;
+  }
+  return createExpectedSenderWithOrigin(tab, frameId, url, originUrl, id);
 }
 
 chrome.test.getConfig(function(config) {
@@ -71,12 +85,10 @@ chrome.test.getConfig(function(config) {
     // Tests that postMessage from the tab and its response works.
     function postMessageFromTab() {
       listenOnce(chrome.runtime.onConnect, function(port) {
-        let expectedSender = {
-          tab: testTab,
-          frameId: 0, // Main frame
-          url: testTab.url,
-          id: chrome.runtime.id,
-        };
+        expectedSender = createExpectedSender(
+            testTab,
+            0,  // Main frame
+            testTab.url, chrome.runtime.id);
         compareSenders(expectedSender, port.sender);
         listenOnce(port.onMessage, function(msg) {
           chrome.test.assertTrue(msg.testPostMessageFromTab);
@@ -96,18 +108,15 @@ chrome.test.getConfig(function(config) {
     // Tests receiving a request from a content script and responding.
     function sendMessageFromTab() {
       var doneListening = listenForever(
-        chrome.runtime.onMessage,
-        function(request, sender, sendResponse) {
-          let expectedSender = {
-            tab: testTab,
-            frameId: 0, // Main frame
-            url: testTab.url,
-            id: chrome.runtime.id
-          };
+        chrome.runtime.onMessage, function(request, sender, sendResponse) {
+          expectedSender = createExpectedSender(
+              testTab,
+              0,  // Main frame
+              testTab.url, chrome.runtime.id);
           compareSenders(expectedSender, sender);
           if (request.step == 1) {
             // Step 1: Page should send another request for step 2.
-            chrome.test.log("sendMessageFromTab: got step 1");
+            chrome.test.log('sendMessageFromTab: got step 1');
             sendResponse({nextStep: true});
           } else {
             // Step 2.
@@ -123,49 +132,24 @@ chrome.test.getConfig(function(config) {
       chrome.test.log("sendMessageFromTab: sent first message to tab");
     },
 
-    // Tests that a message from a child frame has a correct frameId.
+    // Tests that a message from a child frame is constructed properly.
     function sendMessageFromFrameInTab() {
-      var actualSenders = [];
-      var doneListening = listenForever(
-        chrome.runtime.onMessage,
-        function(request, sender, sendResponse) {
-          actualSenders.push(sender);
-
-          // testSendMessageFromFrame() in page.js adds 2 frames. Wait for
-          // messages from each.
-          if (actualSenders.length < 2)
-            return;
-
-          chrome.webNavigation.getAllFrames({
-            tabId: testTab.id
-          }, function(details) {
-            function sortByFrameId(a, b) {
-              return a.frameId < b.frameId ? 1 : -1;
-            }
-            var expectedSenders = details.filter(function(frame) {
-              return frame.frameId > 0; // Exclude main frame.
-            }).map(function(frame) {
-              return {
-                tab: testTab,
-                frameId: frame.frameId,
-                url: frame.url,
-                id: chrome.runtime.id
-              };
-            }).sort(sortByFrameId);
-
-            actualSenders.sort(sortByFrameId);
-
-            compareSenders(expectedSenders[0], actualSenders[0]);
-            compareSenders(expectedSenders[1], actualSenders[1]);
-            doneListening();
-          });
-        }
-      );
-
+      constructMessageSenderFromFrameInTab(false);
       var port = chrome.tabs.connect(testTab.id);
       port.postMessage({testSendMessageFromFrame: true});
       port.disconnect();
-      chrome.test.log("sendMessageFromFrameInTab: send 1st message to tab");
+      chrome.test.log('sendMessageFromFrameInTab: send 1st message to tab');
+    },
+
+    // Tests that a message sent from a sandboxed child frame in a tab is
+    // constructed properly.
+    function sendMessageFromSandboxFrameInTab() {
+      constructMessageSenderFromFrameInTab(true);
+      var port = chrome.tabs.connect(testTab.id);
+      port.postMessage({testSendMessageFromSandboxedFrame: true});
+      port.disconnect();
+      chrome.test.log(
+          'sendMessageFromSandboxFrameInTab: send 1st message to tab');
     },
 
     // connect to frameId 0 should trigger onConnect in the main frame only.
@@ -175,12 +159,14 @@ chrome.test.getConfig(function(config) {
 
     // connect without frameId should trigger onConnect in every frame.
     function sendMessageToAllFramesInTab() {
-      connectToTabWithFrameId(undefined, ['from_main', 'from_0', 'from_1']);
+      connectToTabWithFrameId(
+          undefined, ['from_main', 'from_0', 'from_1', 'from_2', 'from_3']);
     },
 
     // connect with frameId null should trigger onConnect in every frame.
     function sendMessageToAllFramesInTab() {
-      connectToTabWithFrameId(null, ['from_main', 'from_0', 'from_1']);
+      connectToTabWithFrameId(
+          null, ['from_main', 'from_0', 'from_1', 'from_2', 'from_3']);
     },
 
     // connect with a positive frameId should trigger onConnect in that specific
@@ -422,4 +408,53 @@ function failWhileListening(event, doneListening) {
     event.removeListener(failListener);
     release();
   };
+}
+
+// Tests that a message from a child frame has the correct frameId and that the
+// message is constructed with the expected properties.
+function constructMessageSenderFromFrameInTab(isSandbox) {
+  // In page.js testSendMessageFromFrame() adds 2 frames, after which
+  // testSendMessageFromSandboxedFrame() adds 2 sandboxed frames that are given
+  // frameIds in the order in which they were added. Make sure we are checking
+  // the correct frames and excluding the main frame.
+  var minFrameId = isSandbox ? 2 : 0;
+  var actualSenders = [];
+  var doneListening = listenForever(
+      chrome.runtime.onMessage, function(request, sender, sendResponse) {
+        actualSenders.push(sender);
+
+        // testSendMessageFromFrame() in page.js adds 2 frames. Wait for
+        // messages from each.
+        if (actualSenders.length < 2)
+          return;
+
+        chrome.webNavigation.getAllFrames(
+            {tabId: testTab.id}, function(details) {
+              function sortByFrameId(a, b) {
+                return a.frameId < b.frameId ? 1 : -1;
+              }
+              var expectedSenders =
+                  details
+                      .filter(function(frame) {
+                        return frame.frameId > minFrameId;
+                      })
+                      .map(function(frame) {
+                        if (isSandbox) {
+                          return createExpectedSenderWithOrigin(
+                              testTab, frame.frameId, frame.url, 'null',
+                              chrome.runtime.id);
+                        }
+                        return createExpectedSender(
+                            testTab, frame.frameId, frame.url,
+                            chrome.runtime.id);
+                      })
+                      .sort(sortByFrameId);
+
+              actualSenders.sort(sortByFrameId);
+
+              compareSenders(expectedSenders[0], actualSenders[0]);
+              compareSenders(expectedSenders[1], actualSenders[1]);
+              doneListening();
+            });
+      });
 }

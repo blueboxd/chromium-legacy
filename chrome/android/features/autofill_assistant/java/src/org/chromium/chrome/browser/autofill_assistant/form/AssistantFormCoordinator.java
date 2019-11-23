@@ -36,6 +36,7 @@ public class AssistantFormCoordinator {
         mModel.getInputsModel().addObserver(new AbstractListObserver<Void>() {
             @Override
             public void onDataSetChanged() {
+                // TODO(b/144690738) This creates a new instance of the UI on every notification...
                 for (int i = 0; i < mView.getChildCount(); i++) {
                     mView.getChildAt(i).setVisibility(View.GONE);
                 }

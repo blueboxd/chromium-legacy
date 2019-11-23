@@ -64,7 +64,7 @@ td
 </body>
 </html>
 </script>
-<p>This test ensures WebKit strips away base, link, meta and title elements before inserting HTML.</p>
+<p>This test ensures WebKit strips away base, link, meta, style and title elements before inserting HTML.</p>
 <div id="test" contenteditable></div>
 <pre><script type="text/javascript">
 
@@ -99,9 +99,8 @@ if (window.testRunner)
 expectNoInstanceOf('base');
 expectNoInstanceOf('meta');
 expectNoInstanceOf('link');
+expectNoInstanceOf('style');
 expectNoInstanceOf('title');
-
-expectInstancesOf('style');
 
 if (passed)
     document.writeln('PASS');

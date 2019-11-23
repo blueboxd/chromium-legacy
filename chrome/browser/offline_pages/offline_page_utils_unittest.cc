@@ -182,14 +182,10 @@ class OfflinePageUtilsTest
 #if defined(OS_ANDROID)
   chrome::android::MockDownloadController download_controller_;
   // OfflinePageTabHelper instantiates PrefetchService which in turn requests a
-  // fresh GCM token automatically. These two lines mock out InstanceID (the
-  // component which actually requests the token from play services). Without
-  // this, each test takes an extra 30s waiting on the token (because
-  // content::BrowserTaskEnvironment tries to finish all pending tasks before
-  // ending the test).
+  // fresh GCM token automatically. This causes the request to be done
+  // synchronously instead of with a posted task.
   instance_id::InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting
       block_async_;
-  instance_id::ScopedUseFakeInstanceIDAndroid use_fake_;
 #endif
 };
 

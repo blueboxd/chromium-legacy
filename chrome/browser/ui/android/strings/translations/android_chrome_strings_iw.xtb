@@ -635,7 +635,7 @@
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5689516760719285838">מיקום</translation>
 <translation id="569536719314091526">דרך לחצן האפשרויות הנוספות אפשר לתרגם את הדף הזה לשפה כלשהי</translation>
-<translation id="5710871682236653961">‏הצגת שאלה לפני מתן הרשאה לאתרים לשלוח ולקבל מידע בעת הקשה על מכשירי NFC (מומלץ)</translation>
+<translation id="5710871682236653961">‏הצגת שאלה לפני מתן הרשאה לאתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC (מומלץ)</translation>
 <translation id="572328651809341494">כרטיסיות אחרונות</translation>
 <translation id="5726692708398506830">הגדל את כל מה שמופיע בדף</translation>
 <translation id="5748802427693696783">הוחלף לכרטיסיות רגילות</translation>
@@ -774,7 +774,6 @@
 <translation id="6697947395630195233">‏Chrome זקוק לגישה אל המיקום שלך כדי לשתף אותו עם האתר הזה.</translation>
 <translation id="6698801883190606802">ניהול נתונים מסונכרנים</translation>
 <translation id="6699370405921460408">‏כשנכנסים לדפים בזמן הגלישה, הם עוברים אופטימיזציה על ידי השרתים של Google.</translation>
-<translation id="6706288973712894588">‏אין לך כרגע חיבור לאינטרנט.\n<ph name="BEGIN_LINK" />לעיון בפיד במצב לא מקוון.<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">חדשות</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="671481426037969117">זמן השימוש באפליקציה <ph name="FQDN" /> הסתיים. הטיימר יופעל מחדש מחר ואז אפשר יהיה להשתמש שוב באפליקציה.</translation>
@@ -886,7 +885,7 @@
 <translation id="7559975015014302720">מצב הטעינה המהירה מושבת</translation>
 <translation id="7562080006725997899">מנקה נתוני גלישה</translation>
 <translation id="756809126120519699">‏נתוני Chrome נוקו</translation>
-<translation id="7572498721684305250">‏חסימת האפשרות של אתרים לשלוח ולקבל מידע בעת הקשה על מכשירי NFC</translation>
+<translation id="7572498721684305250">‏חסימת האפשרות של אתרים לשלוח ולקבל מידע כשמקישים על מכשירי NFC</translation>
 <translation id="757524316907819857">חסימה של הפעלת תוכן מוגן על-ידי אתרים</translation>
 <translation id="757855969265046257">{FILES,plural, =1{הורדת קובץ אחד (<ph name="FILES_DOWNLOADED_ONE" />)}two{הורדת <ph name="FILES_DOWNLOADED_MANY" /> קבצים}many{הורדת <ph name="FILES_DOWNLOADED_MANY" /> קבצים}other{הורדת <ph name="FILES_DOWNLOADED_MANY" /> קבצים}}</translation>
 <translation id="7588219262685291874">עיצוב כהה מופעל כשהמכשיר עובר לחיסכון בסוללה</translation>

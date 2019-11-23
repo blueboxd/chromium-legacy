@@ -9,6 +9,6 @@ class Profile;
 
 // Returns true if the user, as represented by |profile| is permitted to make
 // calls to the remote Optimization Guide Service.
-bool IsUserPermittedToFetchHints(Profile* profile);
+bool IsUserPermittedToFetchFromRemoteOptimizationGuide(Profile* profile);
 
 #endif  // CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_PERMISSIONS_UTIL_H_

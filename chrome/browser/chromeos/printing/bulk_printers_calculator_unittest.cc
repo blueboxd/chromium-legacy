@@ -16,7 +16,7 @@
 namespace chromeos {
 namespace {
 
-// The number of printers in BulkPolicyContentsJson.
+// The number of correct printers in BulkPolicyContentsJson.
 constexpr size_t kNumPrinters = 3;
 
 // An example bulk printer configuration file.
@@ -31,6 +31,18 @@ constexpr char kBulkPolicyContentsJson[] = R"json(
     "uri": "ipp://192.168.1.5",
     "ppd_resource": {
       "effective_model": "MS610de"
+    }
+  }, {
+    "id": "Incorrect uri",
+    "display_name": "aaa",
+    "description": "bbbb",
+    "manufacturer": "cccc",
+    "model":"dddd",
+    "uri":"ipp://:",
+    "uuid":"1c555fdb-1193-2204-3346-44c046e79d12",
+    "ppd_resource":{
+      "effective_manufacturer": "eee",
+      "effective_model": "fff"
     }
   }, {
     "id": "Second",

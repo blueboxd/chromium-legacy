@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Tento typ karty není podporován</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Zkuste kontaktovat administrátora systému.</translation>
+<translation id="1736420071277903564">Počítač</translation>
 <translation id="1739107442478692187">Na webu nebo v aplikaci, které používáte, došlo k porušení zabezpečení údajů. Chrome doporučuje ihned zkontrolovat uložená hesla a změnit heslo na webu <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Zadejte platný měsíc vypršení platnosti</translation>
 <translation id="1741613555002899862">Když je zásada DnsOverHttpsMode nastavená na hodnotu <ph name="SECURE_DNS_MODE_SECURE" />, musí být tato zásada nastavená a musí být platná.</translation>
@@ -591,6 +592,7 @@
 <translation id="3897092660631435901">Nabídka</translation>
 <translation id="3901925938762663762">Karta vypršela</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Použít WebAuthn namísto CVC?</translation>
 <translation id="3946209740501886391">Na tomto webu se vždy zeptat</translation>
@@ -1513,7 +1515,6 @@ Další podrobnosti:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 platební karta}few{# platební karty}many{# platební karty}other{# platebních karet}}</translation>
 <translation id="8473863474539038330">Adresy a další</translation>
 <translation id="8479754468255770962">Sponka vlevo dole</translation>
-<translation id="8481133456511676116">Měli jste na mysli <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Chcete-li používat karty z účtu Google, přihlaste se do Chromu.</translation>
 <translation id="8488350697529856933">Platí pro</translation>
 <translation id="8498891568109133222">Odpověď webu <ph name="HOST_NAME" /> trvala příliš dlouho.</translation>

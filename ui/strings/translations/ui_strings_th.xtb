@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">ซ่อนชั้นวางเสมอ</translation>
 <translation id="8996630695507351249">ตรวจสอบว่า <ph name="TARGET_DEVICE_NAME" /> เชื่อมต่ออินเทอร์เน็ตอยู่</translation>
 <translation id="9002566407876343676">เปิด</translation>
-<translation id="9039076430527029379">ย้ายไปที่หน้า <ph name="PAGE_NUMBER" /> แถว <ph name="ROW_NUMBER" /> คอลัมน์ <ph name="COLUMN_NUMBER" /></translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 วินาที}other{# วินาที}}</translation>
 <translation id="9059834730836941392">ยุบการแจ้งเตือน</translation>
 <translation id="9150735707954472829">แท็บ</translation>

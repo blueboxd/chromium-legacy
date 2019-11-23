@@ -72,8 +72,9 @@ void VmApplicationsServiceProvider::UpdateApplicationList(
     constexpr char error_message[] =
         "Unable to parse ApplicationList from message";
     LOG(ERROR) << error_message;
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, error_message));
     return;
   }
 
@@ -84,7 +85,7 @@ void VmApplicationsServiceProvider::UpdateApplicationList(
     registry_service->UpdateApplicationList(request);
   }
 
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void VmApplicationsServiceProvider::LaunchTerminal(
@@ -98,8 +99,9 @@ void VmApplicationsServiceProvider::LaunchTerminal(
     constexpr char error_message[] =
         "Unable to parse TerminalParams from message";
     LOG(ERROR) << error_message;
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, error_message));
     return;
   }
 
@@ -112,7 +114,7 @@ void VmApplicationsServiceProvider::LaunchTerminal(
                                  request.params().end()));
   }
 
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void VmApplicationsServiceProvider::UpdateMimeTypes(
@@ -125,8 +127,9 @@ void VmApplicationsServiceProvider::UpdateMimeTypes(
   if (!reader.PopArrayOfBytesAsProto(&request)) {
     constexpr char error_message[] = "Unable to parse MimeTypes from message";
     LOG(ERROR) << error_message;
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, error_message));
     return;
   }
 
@@ -137,7 +140,7 @@ void VmApplicationsServiceProvider::UpdateMimeTypes(
     mime_types_service->UpdateMimeTypes(request);
   }
 
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 }  // namespace chromeos

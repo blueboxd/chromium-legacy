@@ -120,7 +120,12 @@ void StyledMarkupAccumulator::AppendTextWithInlineStyle(
     StringBuilder buffer;
     MarkupFormatter::AppendCharactersReplacingEntities(
         buffer, content, 0, content.length(), kEntityMaskInPCDATA);
-    result_.Append(ConvertHTMLTextToInterchangeFormat(buffer.ToString(), text));
+    // Keep collapsible white spaces as is during markup sanitization.
+    const String text_to_append =
+        IsForMarkupSanitization()
+            ? buffer.ToString()
+            : ConvertHTMLTextToInterchangeFormat(buffer.ToString(), text);
+    result_.Append(text_to_append);
   }
   if (inline_style)
     result_.Append("</span>");

@@ -31,12 +31,14 @@ class CORE_EXPORT CreateMarkupOptions final {
   bool ShouldConvertBlocksToInlines() const {
     return should_convert_blocks_to_inlines_;
   }
+  bool IsForMarkupSanitization() const { return is_for_markup_sanitization_; }
 
  private:
   Member<const Node> constraining_ancestor_;
   AbsoluteURLs should_resolve_urls_ = kDoNotResolveURLs;
   bool should_annotate_for_interchange_ = false;
   bool should_convert_blocks_to_inlines_ = false;
+  bool is_for_markup_sanitization_ = false;
 };
 
 class CORE_EXPORT CreateMarkupOptions::Builder final {
@@ -52,6 +54,7 @@ class CORE_EXPORT CreateMarkupOptions::Builder final {
   Builder& SetShouldResolveURLs(AbsoluteURLs absolute_urls);
   Builder& SetShouldAnnotateForInterchange(bool annotate_for_interchange);
   Builder& SetShouldConvertBlocksToInlines(bool convert_blocks_for_inlines);
+  Builder& SetIsForMarkupSanitization(bool is_for_sanitization);
 
  private:
   CreateMarkupOptions data_;

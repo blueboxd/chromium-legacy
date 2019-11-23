@@ -58,16 +58,6 @@ class OptimizationGuideDecider {
       proto::OptimizationType optimization_type,
       OptimizationMetadata* optimization_metadata) = 0;
 
-  // Returns whether the current conditions match |optimization_target| and
-  // |optimization_type| can be applied for the URL associated with
-  // |navigation_handle|.
-  virtual OptimizationGuideDecision
-  ShouldTargetNavigationAndCanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      proto::OptimizationTarget optimization_target,
-      proto::OptimizationType optimization_type,
-      OptimizationMetadata* optimization_metadata) = 0;
-
  protected:
   OptimizationGuideDecider() {}
   virtual ~OptimizationGuideDecider() {}

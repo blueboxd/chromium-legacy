@@ -50,7 +50,8 @@ bool SkiaOutputDeviceVulkan::Reshape(const gfx::Size& size,
 
   uint32_t generation = 0;
   if (!vulkan_surface_) {
-    CreateVulkanSurface();
+    if (!CreateVulkanSurface())
+      return false;
   } else {
     generation = vulkan_surface_->swap_chain_generation();
   }
@@ -147,7 +148,7 @@ void SkiaOutputDeviceVulkan::EndPaint(const GrBackendSemaphore& semaphore) {
   scoped_write_.reset();
 }
 
-void SkiaOutputDeviceVulkan::CreateVulkanSurface() {
+bool SkiaOutputDeviceVulkan::CreateVulkanSurface() {
   gfx::AcceleratedWidget accelerated_widget = gfx::kNullAcceleratedWidget;
 #if defined(OS_ANDROID)
   bool can_be_used_with_surface_control = false;
@@ -160,13 +161,17 @@ void SkiaOutputDeviceVulkan::CreateVulkanSurface() {
   auto vulkan_surface =
       context_provider_->GetVulkanImplementation()->CreateViewSurface(
           accelerated_widget);
-  if (!vulkan_surface)
-    LOG(FATAL) << "Failed to create vulkan surface.";
+  if (!vulkan_surface) {
+    LOG(ERROR) << "Failed to create vulkan surface.";
+    return false;
+  }
   if (!vulkan_surface->Initialize(context_provider_->GetDeviceQueue(),
                                   gpu::VulkanSurface::FORMAT_RGBA_32)) {
-    LOG(FATAL) << "Failed to initialize vulkan surface.";
+    LOG(ERROR) << "Failed to initialize vulkan surface.";
+    return false;
   }
   vulkan_surface_ = std::move(vulkan_surface);
+  return true;
 }
 
 }  // namespace viz

@@ -86,12 +86,12 @@ class CHROME_DBUS_EXPORT ObjectProxy
       base::OnceCallback<void(Response*, ErrorResponse*)>;
 
   // Called when a signal is received. Signal* is the incoming signal.
-  using SignalCallback = base::Callback<void(Signal*)>;
+  using SignalCallback = base::RepeatingCallback<void(Signal*)>;
 
   // Called when NameOwnerChanged signal is received.
   using NameOwnerChangedCallback =
-      base::Callback<void(const std::string& old_owner,
-                          const std::string& new_owner)>;
+      base::RepeatingCallback<void(const std::string& old_owner,
+                                   const std::string& new_owner)>;
 
   // Called when the service becomes available.
   using WaitForServiceToBeAvailableCallback =

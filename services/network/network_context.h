@@ -64,7 +64,6 @@ class UnguessableToken;
 
 namespace net {
 class CertNetFetcher;
-class CertNetFetcherImpl;
 class CertVerifier;
 class CertVerifyProc;
 class HostPortPair;
@@ -73,6 +72,10 @@ class ReportSender;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
 }  // namespace net
+
+namespace cert_verifier {
+class CertNetFetcherURLLoader;
+}
 
 namespace certificate_transparency {
 class ChromeRequireCTDelegate;
@@ -436,8 +439,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Creates a new url loader factory bound to this network context. For use
   // inside the network service.
-  mojo::PendingRemote<mojom::URLLoaderFactory>
-  CreateUrlLoaderFactoryForNetworkService();
+  void CreateUrlLoaderFactoryForNetworkService(
+      mojo::PendingReceiver<mojom::URLLoaderFactory>
+          url_loader_factory_pending_receiver);
 
   mojom::OriginPolicyManager* origin_policy_manager() const {
     return origin_policy_manager_.get();
@@ -458,7 +462,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   const net::HttpAuthPreferences* GetHttpAuthPreferences() const;
 
  private:
-  URLRequestContextOwner MakeURLRequestContext();
+  URLRequestContextOwner MakeURLRequestContext(
+      mojo::PendingReceiver<mojom::URLLoaderFactory>*
+          cert_net_url_loader_factory_pending_receiver);
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
@@ -606,7 +612,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // CertNetFetcher used by the context's CertVerifier. May be nullptr if
   // CertNetFetcher is not used by the current platform.
-  scoped_refptr<net::CertNetFetcherImpl> cert_net_fetcher_;
+  scoped_refptr<cert_verifier::CertNetFetcherURLLoader> cert_net_fetcher_;
 
   // Created on-demand. Null if unused.
   std::unique_ptr<HostResolver> internal_host_resolver_;

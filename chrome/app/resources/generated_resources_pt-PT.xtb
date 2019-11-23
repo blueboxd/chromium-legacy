@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Azul claro</translation>
 <translation id="1734824808160898225">O <ph name="PRODUCT_NAME" /> pode não conseguir manter-se atualizado.</translation>
 <translation id="1736419249208073774">Explorar</translation>
-<translation id="1736420071277903564">Computador</translation>
 <translation id="1737968601308870607">Erro de ficheiro</translation>
 <translation id="1741314857973421784">Continuar</translation>
 <translation id="1743570585616704562">Não reconhecida</translation>
@@ -1128,6 +1127,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
 <translation id="2619761439309613843">Atualização diária</translation>
 <translation id="2620436844016719705">Sistema</translation>
+<translation id="2621713457727696555">Protegida</translation>
 <translation id="26224892172169984">Não permitir que os Web sites processem protocolos</translation>
 <translation id="2624142942574147739">Esta página está a aceder à sua câmara e microfone.</translation>
 <translation id="2626799779920242286">Tente novamente mais tarde.</translation>
@@ -1580,6 +1580,7 @@ Pretende pará-lo?</translation>
 <translation id="328571385944182268">Pretende guardar as suas palavras-passe?</translation>
 <translation id="3288047731229977326">As extensões que funcionam no modo de programador podem danificar o seu computador. Se não é programador, deverá desativar as extensões que sejam executadas neste modo para se manter protegido.</translation>
 <translation id="3289856944988573801">Para verificar se existem atualizações, utilize Ethernet ou Wi-Fi.</translation>
+<translation id="3290356915286466215">Não protegida</translation>
 <translation id="3293644607209440645">Enviar esta página</translation>
 <translation id="32939749466444286">Não é possível iniciar o contentor do Linux. Tente novamente.</translation>
 <translation id="3294437725009624529">Convidado</translation>
@@ -2021,7 +2022,6 @@ Pretende pará-lo?</translation>
 <translation id="3900966090527141178">Exportar palavras-passe</translation>
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Reparar aplicação</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098">O <ph name="PLUGIN_NAME" /> está desatualizado</translation>
 <translation id="3908501907586732282">Ativar extensão</translation>
 <translation id="3909477809443608991"><ph name="URL" /> pretende reproduzir conteúdo protegido. A identidade do seu dispositivo será validada pela Google e este site poderá aceder à mesma.</translation>
@@ -2321,7 +2321,6 @@ Pretende pará-lo?</translation>
 <translation id="4364327530094270451">Melão</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está a partilhar uma janela.</translation>
 <translation id="4364830672918311045">Apresentar notificações</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> com <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">O email e a palavra-passe introduzidos não coincidem.</translation>
 <translation id="437184764829821926">Definições avançadas do tipo de letra</translation>
 <translation id="4374831787438678295">Instalador para o Linux</translation>
@@ -2963,7 +2962,6 @@ Pretende pará-lo?</translation>
 <translation id="5363109466694494651">Powerwash e reverter</translation>
 <translation id="5365881113273618889">A pasta que selecionou contém ficheiros confidenciais. Tem a certeza de que pretende conceder à aplicação "<ph name="APP_NAME" />" acesso de escrita permanente a esta pasta?</translation>
 <translation id="5367091008316207019">A ler ficheiro...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">O seu telemóvel está bloqueado. Desbloqueie-o para introduzir.</translation>
 <translation id="5368779022775404937">Iniciar sessão em <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Ativar aceleração do rato</translation>
@@ -4722,6 +4720,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7912080627461681647">A sua palavra-passe foi alterada no servidor. Termine e inicie sessão novamente.</translation>
 <translation id="7915457674565721553">Ligue-se à Internet para configurar o controlo parental.</translation>
 <translation id="7915471803647590281">Indique-nos o que está a acontecer antes de enviar os comentários.</translation>
+<translation id="7918257978052780342">Inscrever</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Nível de zoom da lupa ancorada:</translation>
 <translation id="7925247922861151263">A verificação AAA falhou</translation>

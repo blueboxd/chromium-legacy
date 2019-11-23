@@ -15,8 +15,8 @@
 // compiled into the app binary and can be called from either app or test code.
 @interface SigninEarlGreyUtilsAppInterface : NSObject
 
-// Adds |identity| to the fake identity service.
-+ (void)addIdentity:(FakeChromeIdentity*)identity;
+// Adds |fakeIdentity| to the fake identity service.
++ (void)addFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
 // Returns the gaia ID of the signed-in account.
 + (NSString*)primaryAccountGaiaID;

@@ -199,6 +199,11 @@ public class TabSwitcherCoordinator
     }
 
     @Override
+    public int getTabListTopOffset() {
+        return mTabListCoordinator.getTabListTopOffset();
+    }
+
+    @Override
     public boolean prepareOverview() {
         boolean quick = mMediator.prepareOverview();
         mTabListCoordinator.prepareOverview();

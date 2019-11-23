@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Azul claro</translation>
 <translation id="1734824808160898225">Es posible que <ph name="PRODUCT_NAME" /> no se pueda mantener actualizado</translation>
 <translation id="1736419249208073774">Más información</translation>
-<translation id="1736420071277903564">Ordenador</translation>
 <translation id="1737968601308870607">Incluir error</translation>
 <translation id="1741314857973421784">Continuar</translation>
 <translation id="1743570585616704562">No se ha reconocido</translation>
@@ -564,7 +563,7 @@
 <translation id="1794791083288629568">Envíanos un comentario para ayudarnos a solucionar el problema.</translation>
 <translation id="1795214765651529549">Utilizar tema clásico</translation>
 <translation id="1799071797295057738">La extensión <ph name="EXTENSION_NAME" /> se ha inhabilitado automáticamente.</translation>
-<translation id="1802624026913571222">Suspender cuando la tapa esté cerrada</translation>
+<translation id="1802624026913571222">Suspender cuando se cierre la tapa</translation>
 <translation id="1802687198411089702">La página no responde. Puedes esperar a que lo haga o cerrarla.</translation>
 <translation id="1802931390041703523">Se ha bloqueado Flash en esta página</translation>
 <translation id="1803531841600994172">Idioma al que quieres traducir</translation>
@@ -666,7 +665,7 @@
 <translation id="1937774647013465102">No se puede importar el tipo de arquitectura de contenedores <ph name="ARCHITECTURE_CONTAINER" /> con este dispositivo, que es <ph name="ARCHITECTURE_DEVICE" />. Intenta restaurar este contenedor en otro dispositivo o accede a los archivos de esta imagen de contenedor abriéndola en la aplicación Archivos.</translation>
 <translation id="1938351510777341717">Tecla Comando externa</translation>
 <translation id="1940546824932169984">Dispositivos conectados</translation>
-<translation id="1942600407708803723">Apagar cuando la tapa esté cerrada</translation>
+<translation id="1942600407708803723">Apagar cuando se cierre la tapa</translation>
 <translation id="1944921356641260203">Actualización encontrada</translation>
 <translation id="1946577776959096882">Ver cuentas</translation>
 <translation id="1951012854035635156">Asistente</translation>
@@ -1129,6 +1128,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
 <translation id="2619761439309613843">Actualización diaria</translation>
 <translation id="2620436844016719705">Sistema</translation>
+<translation id="2621713457727696555">Segura</translation>
 <translation id="26224892172169984">No permitir que los sitios web procesen protocolos</translation>
 <translation id="2624142942574147739">Esta página tiene acceso a la cámara y al micrófono.</translation>
 <translation id="2626799779920242286">Vuelve a intentarlo más tarde.</translation>
@@ -1580,6 +1580,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="328571385944182268">¿Quieres guardar tus contraseñas?</translation>
 <translation id="3288047731229977326">Las extensiones que se ejecutan en modo de desarrollador pueden causar daños en el ordenador. Si no eres desarrollador, debes inhabilitar esas extensiones para mantener protegido tu ordenador.</translation>
 <translation id="3289856944988573801">Para comprobar si hay actualizaciones, utiliza una conexión Ethernet o Wi-Fi.</translation>
+<translation id="3290356915286466215">No segura</translation>
 <translation id="3293644607209440645">Enviar esta página</translation>
 <translation id="32939749466444286">El contenedor de Linux no se ha iniciado. Inténtalo de nuevo.</translation>
 <translation id="3294437725009624529">Invitado</translation>
@@ -2021,7 +2022,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3900966090527141178">Exportar contraseñas</translation>
 <translation id="3901991538546252627">Conectando con: <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Reparar aplicación</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098">El complemento <ph name="PLUGIN_NAME" /> no está actualizado</translation>
 <translation id="3908501907586732282">Habilitar extensión</translation>
 <translation id="3909477809443608991"><ph name="URL" /> solicita reproducir contenido protegido. Google verificará la identidad de tu dispositivo y el sitio web podrá consultarla.</translation>
@@ -2320,7 +2320,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4364327530094270451">Melón</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> está compartiendo una ventana.</translation>
 <translation id="4364830672918311045">Mostrar notificaciones</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> con <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">La dirección de correo electrónico y la contraseña que has introducido no coinciden</translation>
 <translation id="437184764829821926">Configuración de fuentes avanzada</translation>
 <translation id="4374831787438678295">Instalador de Linux</translation>
@@ -2962,7 +2961,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5363109466694494651">Powerwash y cambio a versión anterior</translation>
 <translation id="5365881113273618889">La carpeta que has seleccionado contiene archivos confidenciales. ¿Seguro que quieres conceder a "<ph name="APP_NAME" />" acceso de escritura permanente a esta carpeta?</translation>
 <translation id="5367091008316207019">Leyendo archivo...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" />: <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Tu teléfono está bloqueado. Desbloquéalo para acceder.</translation>
 <translation id="5368779022775404937">Inicia sesión en <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Habilitar la aceleración del ratón</translation>
@@ -3453,7 +3451,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6055392876709372977">PKCS #1 SHA-256 con cifrado RSA</translation>
 <translation id="6056710589053485679">Volver a cargar normalmente</translation>
 <translation id="6057381398996433816">Este sitio web no tiene permiso para usar los sensores de luz y movimiento.</translation>
-<translation id="6058567592298841668">Máquina virtual de plugin: <ph name="PLUGIN_VM_NAME" /></translation>
+<translation id="6058567592298841668">Máquina virtual de complemento: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Jerarquía de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6061882183774845124">Enviar el enlace a tus dispositivos</translation>
@@ -4720,6 +4718,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7912080627461681647">Tu contraseña se ha cambiado en el servidor. Cierra la sesión y vuelve a iniciarla.</translation>
 <translation id="7915457674565721553">Conéctate a Internet para configurar el control parental</translation>
 <translation id="7915471803647590281">Debes describir el error.</translation>
+<translation id="7918257978052780342">Registrar</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Nivel de zoom fijado:</translation>
 <translation id="7925247922861151263">Error de comprobación de AAA</translation>
@@ -5378,7 +5377,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8845001906332463065">Obtener ayuda</translation>
 <translation id="8846132060409673887">Consultar el fabricante y el modelo de este ordenador</translation>
 <translation id="8846141544112579928">Buscando teclado...</translation>
-<translation id="8847523528195140327">Cerrar sesión cuando la tapa esté cerrada</translation>
+<translation id="8847523528195140327">Cerrar sesión cuando se cierre la tapa</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Ver más...</translation>
 <translation id="885246833287407341">Argumentos de función de API</translation>

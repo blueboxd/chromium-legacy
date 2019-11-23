@@ -40,22 +40,27 @@ void SmbFsServiceProvider::HandleOpenIpcChannel(
   base::ScopedFD fd;
   dbus::MessageReader reader(method_call);
   if (!reader.PopString(&id)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "First argument is not string."));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS,
+            "First argument is not string."));
     return;
   }
   if (!reader.PopFileDescriptor(&fd)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "Second argument is not FD."));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call,
+                                                 DBUS_ERROR_INVALID_ARGS,
+                                                 "Second argument is not FD."));
     return;
   }
   if (!mojo_bootstrap::PendingConnectionManager::Get().OpenIpcChannel(
           id, std::move(fd))) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED, "Failed to open IPC"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
+                                                 "Failed to open IPC"));
     return;
   }
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 }  // namespace chromeos

@@ -171,6 +171,8 @@ jumbo_static_library("weblayer_lib") {
     "common/features.h",
     "common/weblayer_paths.cc",
     "common/weblayer_paths.h",
+    "public/common/switches.cc",
+    "public/common/switches.h",
     "public/download_delegate.h",
     "public/error_page_delegate.h",
     "public/fullscreen_delegate.h",

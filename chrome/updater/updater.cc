@@ -19,6 +19,7 @@
 #include "components/crash/core/common/crash_key.h"
 
 #if defined(OS_WIN)
+#include "chrome/updater/win/com/com_server.h"
 #include "chrome/updater/win/install_app.h"
 #include "chrome/updater/win/setup/uninstall.h"
 #endif
@@ -108,6 +109,11 @@ int UpdaterUninstall() {
 
 int HandleUpdaterCommands(const base::CommandLine* command_line) {
   DCHECK(!command_line->HasSwitch(kCrashHandlerSwitch));
+
+#if defined(OS_WIN)
+  if (command_line->HasSwitch(kComServerSwitch))
+    return ComServer().RunComServer();
+#endif
 
   if (command_line->HasSwitch(kCrashMeSwitch)) {
     int* ptr = nullptr;

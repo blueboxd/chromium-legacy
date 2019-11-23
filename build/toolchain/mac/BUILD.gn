@@ -162,8 +162,9 @@ template("mac_toolchain") {
 
     # On iOS, the final applications are assembled using lipo (to support fat
     # builds). The correct flags are passed to the linker_driver.py script
-    # directly during the lipo call.
-    if (toolchain_args.current_os != "ios") {
+    # directly during the lipo call. The test is against the target_os because
+    # there is no need to create .dSYMs for targets compiled for the host.
+    if (target_os != "ios") {
       _enable_dsyms = enable_dsyms
       _save_unstripped_output = save_unstripped_output
     } else {
@@ -183,11 +184,9 @@ template("mac_toolchain") {
     # If dSYMs are enabled, this flag will be added to the link tools.
     if (_enable_dsyms) {
       dsym_switch = " -Wcrl,dsym,{{root_out_dir}} "
-      if (is_mac) {
-        dsym_switch += "-Wcrl,dsymutilpath," +
-                       rebase_path("//tools/clang/dsymutil/bin/dsymutil",
-                                   root_build_dir) + " "
-      }
+      dsym_switch += "-Wcrl,dsymutilpath," +
+                     rebase_path("//tools/clang/dsymutil/bin/dsymutil",
+                                 root_build_dir) + " "
 
       dsym_output_dir =
           "{{root_out_dir}}/{{target_output_name}}{{output_extension}}.dSYM"

@@ -12,11 +12,13 @@
 #include <deque>
 #include <functional>
 #include <map>
+#include <ostream>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include "third_party/jsoncpp/source/include/json/json.h"
+#include "tools/binary_size/libsupersize/caspian/grouped_path.h"
 
 // Copied from representation in tools/binary_size/libsupersize/models.py
 
@@ -50,6 +52,20 @@ enum class DiffStatus : uint8_t {
   kChanged = 1,
   kAdded = 2,
   kRemoved = 3,
+};
+
+class SymbolFlag {
+ public:
+  static const int32_t kAnonymous = 1;
+  static const int32_t kStartup = 2;
+  static const int32_t kUnlikely = 4;
+  static const int32_t kRel = 8;
+  static const int32_t kRelLocal = 16;
+  static const int32_t kGeneratedSource = 32;
+  static const int32_t kClone = 64;
+  static const int32_t kHot = 128;
+  static const int32_t kCovered = 256;
+  static const int32_t kUncompressed = 512;
 };
 
 class Symbol;
@@ -90,7 +106,11 @@ class BaseSymbol {
     return aliases ? aliases->size() : 1;
   }
 
-  bool IsTemplate() const { return Name().size() != TemplateName().size(); }
+  bool IsTemplate() const {
+    // Because of the way these are derived from |FullName|, they have the
+    // same contents if and only if they have the same length.
+    return Name().size() != TemplateName().size();
+  }
 
   bool IsOverhead() const { return FullName().substr(0, 10) == "Overhead: "; }
 
@@ -119,6 +139,10 @@ class BaseSymbol {
   bool IsStringLiteral() const {
     std::string_view full_name = FullName();
     return !full_name.empty() && full_name[0] == '"';
+  }
+
+  bool IsGeneratedSource() const {
+    return Flags() & SymbolFlag::kGeneratedSource;
   }
 
   bool IsNameUnique() const {
@@ -290,7 +314,7 @@ struct Stat {
 struct NodeStats {
   NodeStats();
   ~NodeStats();
-  NodeStats(const BaseSymbol& symbol);
+  explicit NodeStats(const BaseSymbol& symbol);
   void WriteIntoJson(Json::Value* out) const;
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;
@@ -305,10 +329,9 @@ struct TreeNode {
 
   using CompareFunc =
       std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>;
+  void WriteIntoJson(int depth, CompareFunc compare_func, Json::Value* out);
 
-  void WriteIntoJson(Json::Value* out, int depth, CompareFunc compare_func);
-
-  std::string_view id_path;
+  GroupedPath id_path;
   const char* src_path = nullptr;
   const char* component = nullptr;
   float size = 0.0f;

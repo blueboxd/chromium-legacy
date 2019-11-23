@@ -238,6 +238,11 @@ extern const char kOfflineVersionWithoutNativeContentDescription[];
 extern const char kOmniboxPopupShortcutIconsInZeroStateName[];
 extern const char kOmniboxPopupShortcutIconsInZeroStateDescription[];
 
+// Title and description for the flag to preserve the default match when an
+// async match updates.
+extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];
+extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[];
+
 // Title and description for the flag to change the max number of autocomplete
 // matches in the omnibox popup.
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];

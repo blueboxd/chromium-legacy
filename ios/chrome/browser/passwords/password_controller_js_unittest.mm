@@ -569,4 +569,37 @@ TEST_F(
               ExecuteJavaScriptWithFormat(
                   @"document.getElementById('user').value == '%@'", password));
 }
+
+// Check that a form with only password field (i.e. w/o username) is filled.
+TEST_F(PasswordControllerJsTest, FillOnlyPasswordField) {
+  LoadHtmlAndInject(
+      @"<html><body>"
+       "<form name='login_form' action='action1'>"
+       "  Password: <input type='password' name='password' id='password'>"
+       "</form>"
+       "</body></html>");
+
+  NSString* const password = @"super!secret";
+  std::string page_origin = BaseUrl() + "origin1";
+  std::string form_fill_data_origin = BaseUrl() + "origin2";
+
+  NSString* form_fill_data = [NSString
+      stringWithFormat:@"{"
+                        "  \"action\":\"%s\","
+                        "  \"origin\":\"%s\","
+                        "  \"fields\":["
+                        "    {\"name\":\"\", \"value\":\"\"},"
+                        "    {\"name\":\"password\",\"value\":\"password\"}"
+                        "  ]"
+                        "}",
+                       page_origin.c_str(), form_fill_data_origin.c_str()];
+  EXPECT_NSEQ(@YES,
+              ExecuteJavaScriptWithFormat(
+                  @"__gCrWeb.passwords.fillPasswordForm(%@, '', '%@', '%s')",
+                  form_fill_data, password, page_origin.c_str()));
+  // Verifies that the sign-in form has been filled with |password|.
+  ExecuteJavaScriptOnElementsAndCheck(@"document.getElementById('%@').value",
+                                      @[ @"password" ], @[ password ]);
+}
+
 }  // namespace

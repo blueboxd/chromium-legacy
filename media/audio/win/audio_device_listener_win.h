@@ -32,38 +32,38 @@ namespace media {
 class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
  public:
   // The listener callback will be called from a system level multimedia thread,
-  // thus the callee must be thread safe.  |listener| is a permanent callback
+  // thus the callee must be thread safe.  |listener_cb| is a permanent callback
   // and must outlive AudioDeviceListenerWin.
-  explicit AudioDeviceListenerWin(const base::Closure& listener_cb);
+  explicit AudioDeviceListenerWin(base::RepeatingClosure listener_cb);
   virtual ~AudioDeviceListenerWin();
 
  private:
   friend class AudioDeviceListenerWinTest;
 
   // Minimum allowed time between device change notifications.
-  static const int kDeviceChangeLimitMs = 250;
+  static constexpr base::TimeDelta kDeviceChangeLimit =
+      base::TimeDelta::FromMilliseconds(250);
 
   // IMMNotificationClient implementation.
   STDMETHOD_(ULONG, AddRef)() override;
   STDMETHOD_(ULONG, Release)() override;
   STDMETHOD(QueryInterface)(REFIID iid, void** object) override;
-  STDMETHOD(OnPropertyValueChanged)(LPCWSTR device_id,
-                                    const PROPERTYKEY key) override;
+  STDMETHOD(OnPropertyValueChanged)
+  (LPCWSTR device_id, const PROPERTYKEY key) override;
   STDMETHOD(OnDeviceAdded)(LPCWSTR device_id) override;
   STDMETHOD(OnDeviceRemoved)(LPCWSTR device_id) override;
   STDMETHOD(OnDeviceStateChanged)(LPCWSTR device_id, DWORD new_state) override;
-  STDMETHOD(OnDefaultDeviceChanged)(EDataFlow flow,
-                                    ERole role,
-                                    LPCWSTR new_default_device_id) override;
+  STDMETHOD(OnDefaultDeviceChanged)
+  (EDataFlow flow, ERole role, LPCWSTR new_default_device_id) override;
 
-  base::Closure listener_cb_;
+  const base::RepeatingClosure listener_cb_;
   Microsoft::WRL::ComPtr<IMMDeviceEnumerator> device_enumerator_;
 
   // Used to rate limit device change events.
   base::TimeTicks last_device_change_time_;
 
   // AudioDeviceListenerWin must be constructed and destructed on one thread.
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   const base::TickClock* tick_clock_;
 

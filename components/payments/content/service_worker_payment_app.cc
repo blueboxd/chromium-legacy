@@ -34,7 +34,7 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
     const PaymentRequestSpec* spec,
     std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
     PaymentRequestDelegate* payment_request_delegate,
-    base::WeakPtr<IdentityObserver> identity_observer)
+    const IdentityCallback& identity_callback)
     : PaymentApp(0, PaymentApp::Type::SERVICE_WORKER_APP),
       browser_context_(browser_context),
       top_origin_(top_origin),
@@ -43,7 +43,7 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
       stored_payment_app_info_(std::move(stored_payment_app_info)),
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate),
-      identity_observer_(identity_observer),
+      identity_callback_(identity_callback),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
       needs_installation_(false) {
@@ -51,7 +51,9 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
-  DCHECK(identity_observer_);
+
+  app_method_names_.insert(stored_payment_app_info_->enabled_methods.begin(),
+                           stored_payment_app_info_->enabled_methods.end());
 
   if (stored_payment_app_info_->icon) {
     icon_image_ =
@@ -73,14 +75,14 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
     std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
     const std::string& enabled_method,
     PaymentRequestDelegate* payment_request_delegate,
-    base::WeakPtr<IdentityObserver> identity_observer)
+    const IdentityCallback& identity_callback)
     : PaymentApp(0, PaymentApp::Type::SERVICE_WORKER_APP),
       top_origin_(top_origin),
       frame_origin_(frame_origin),
       spec_(spec),
       delegate_(nullptr),
       payment_request_delegate_(payment_request_delegate),
-      identity_observer_(identity_observer),
+      identity_callback_(identity_callback),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
       needs_installation_(true),
@@ -91,7 +93,8 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
-  DCHECK(identity_observer_);
+
+  app_method_names_.insert(installable_enabled_method_);
 
   if (installable_web_app_info_->icon) {
     icon_image_ =
@@ -164,12 +167,9 @@ ServiceWorkerPaymentApp::CreateCanMakePaymentEventData() {
       requested_url_methods.insert(method);
     }
   }
-  std::set<std::string> supported_methods;
-  supported_methods.insert(stored_payment_app_info_->enabled_methods.begin(),
-                           stored_payment_app_info_->enabled_methods.end());
   std::set<std::string> supported_url_methods =
       base::STLSetIntersection<std::set<std::string>>(requested_url_methods,
-                                                      supported_methods);
+                                                      GetAppMethodNames());
   // Only fire CanMakePaymentEvent if this app supports non-url based payment
   // methods of the payment request.
   if (supported_url_methods.empty())
@@ -234,16 +234,15 @@ void ServiceWorkerPaymentApp::InvokePaymentApp(Delegate* delegate) {
         installable_web_app_info_->sw_use_cache, installable_enabled_method_,
         installable_web_app_info_->supported_delegations,
         base::BindOnce(
-            &IdentityObserver::SetInvokedServiceWorkerIdentity,
-            identity_observer_,
+            &ServiceWorkerPaymentApp::OnPaymentAppIdentity,
+            weak_ptr_factory_.GetWeakPtr(),
             url::Origin::Create(GURL(installable_web_app_info_->sw_scope))),
         base::BindOnce(&ServiceWorkerPaymentApp::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     url::Origin sw_origin =
         url::Origin::Create(stored_payment_app_info_->scope);
-    identity_observer_->SetInvokedServiceWorkerIdentity(
-        sw_origin, stored_payment_app_info_->registration_id);
+    OnPaymentAppIdentity(sw_origin, stored_payment_app_info_->registration_id);
     content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
         browser_context_, stored_payment_app_info_->registration_id, sw_origin,
         CreatePaymentRequestEventData(),
@@ -274,23 +273,16 @@ ServiceWorkerPaymentApp::CreatePaymentRequestEventData() {
 
   event_data->total = spec_->details().total->amount.Clone();
 
-  std::unordered_set<std::string> supported_methods;
-  if (needs_installation_) {
-    supported_methods.insert(installable_enabled_method_);
-  } else {
-    supported_methods.insert(stored_payment_app_info_->enabled_methods.begin(),
-                             stored_payment_app_info_->enabled_methods.end());
-  }
   DCHECK(spec_->details().modifiers);
   for (const auto& modifier : *spec_->details().modifiers) {
-    if (base::Contains(supported_methods,
+    if (base::Contains(GetAppMethodNames(),
                        modifier->method_data->supported_method)) {
       event_data->modifiers.emplace_back(modifier.Clone());
     }
   }
 
   for (const auto& data : spec_->method_data()) {
-    if (base::Contains(supported_methods, data->supported_method)) {
+    if (base::Contains(GetAppMethodNames(), data->supported_method)) {
       event_data->method_data.push_back(data.Clone());
     }
   }
@@ -504,14 +496,6 @@ bool ServiceWorkerPaymentApp::IsValidForModifier(
   return i < stored_payment_app_info_->capabilities.size();
 }
 
-void ServiceWorkerPaymentApp::IsValidForPaymentMethodIdentifier(
-    const std::string& payment_method_identifier,
-    bool* is_valid) const {
-  DCHECK(!needs_installation_);
-  *is_valid = base::Contains(stored_payment_app_info_->enabled_methods,
-                             payment_method_identifier);
-}
-
 base::WeakPtr<PaymentApp> ServiceWorkerPaymentApp::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -556,13 +540,9 @@ bool ServiceWorkerPaymentApp::HandlesPayerPhone() const {
              : stored_payment_app_info_->supported_delegations.payer_phone;
 }
 
-std::vector<std::string> ServiceWorkerPaymentApp::GetAppMethodNames() const {
-  if (stored_payment_app_info_) {
-    return stored_payment_app_info_->enabled_methods;
-  }
-
-  std::vector<std::string> result = {installable_enabled_method_};
-  return result;
+void ServiceWorkerPaymentApp::OnPaymentAppIdentity(const url::Origin& origin,
+                                                   int64_t registration_id) {
+  identity_callback_.Run(origin, registration_id);
 }
 
 }  // namespace payments

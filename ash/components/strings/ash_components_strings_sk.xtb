@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> alebo <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Režim prehľadu</translation>
 <translation id="4382340674111381977">Prejsť na predchádzajúcu stranu</translation>
+<translation id="4458670250301149821">Presun ikony aplikácie do priečinka v mriežke aplikácií alebo z neho</translation>
 <translation id="4472417192667361414">Nastavenia systému a zobrazenia</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, potom <ph name="LEFT" /> alebo <ph name="RIGHT" /> alebo <ph name="UP" /> alebo <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Zobrazenie pomocníka pre klávesové skratky</translation>
 <translation id="4628718545549558538">Otvorenie stavovej oblasti (kde je obrázok vášho účtu)</translation>
 <translation id="4642092649622328492">Vytvorenie čiastočnej snímky obrazovky</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Odstránenie nasledujúceho písmena (odstránenie nasledujúceho znaku)</translation>
 <translation id="7500368597227394048">spojovník</translation>
 <translation id="7611271430932669992">Presunutie zamerania na kontextové a dialógové okná</translation>
+<translation id="7635348532214572995">Presun ikony aplikácie po mriežke aplikácií</translation>
 <translation id="766326951329901120">Prilepenie obsahu zo schránky ako obyčajného textu</translation>
 <translation id="7703010453515335249">ľavá hranatá zátvorka</translation>
 <translation id="7724603315864178912">Vystrihnúť</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Prilepenie obsahu zo schránky</translation>
 <translation id="9052808072970550123">Prepnutie na ďalšieho používateľa</translation>
 <translation id="906458777597946297">Maximalizovať okno</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, potom <ph name="LEFT" /> alebo <ph name="RIGHT" /> alebo <ph name="UP" /> alebo <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Prejsť na začiatok riadka</translation>
 <translation id="9106898733795143799">Stránka a webový prehliadač</translation>
 <translation id="9162942292291287644">Žiadne výsledky vyhľadávania na tému <ph name="QUERY" /></translation>

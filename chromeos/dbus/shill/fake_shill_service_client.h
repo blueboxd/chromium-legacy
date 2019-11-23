@@ -35,43 +35,42 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
       const dbus::ObjectPath& service_path,
       ShillPropertyChangedObserver* observer) override;
   void GetProperties(const dbus::ObjectPath& service_path,
-                     const DictionaryValueCallback& callback) override;
+                     DictionaryValueCallback callback) override;
   void SetProperty(const dbus::ObjectPath& service_path,
                    const std::string& name,
                    const base::Value& value,
-                   const base::Closure& callback,
-                   const ErrorCallback& error_callback) override;
+                   base::OnceClosure callback,
+                   ErrorCallback error_callback) override;
   void SetProperties(const dbus::ObjectPath& service_path,
                      const base::DictionaryValue& properties,
-                     const base::Closure& callback,
-                     const ErrorCallback& error_callback) override;
+                     base::OnceClosure callback,
+                     ErrorCallback error_callback) override;
   void ClearProperty(const dbus::ObjectPath& service_path,
                      const std::string& name,
-                     const base::Closure& callback,
-                     const ErrorCallback& error_callback) override;
+                     base::OnceClosure callback,
+                     ErrorCallback error_callback) override;
   void ClearProperties(const dbus::ObjectPath& service_path,
                        const std::vector<std::string>& names,
-                       const ListValueCallback& callback,
-                       const ErrorCallback& error_callback) override;
+                       ListValueCallback callback,
+                       ErrorCallback error_callback) override;
   void Connect(const dbus::ObjectPath& service_path,
-               const base::Closure& callback,
-               const ErrorCallback& error_callback) override;
+               base::OnceClosure callback,
+               ErrorCallback error_callback) override;
   void Disconnect(const dbus::ObjectPath& service_path,
-                  const base::Closure& callback,
-                  const ErrorCallback& error_callback) override;
+                  base::OnceClosure callback,
+                  ErrorCallback error_callback) override;
   void Remove(const dbus::ObjectPath& service_path,
-              const base::Closure& callback,
-              const ErrorCallback& error_callback) override;
+              base::OnceClosure callback,
+              ErrorCallback error_callback) override;
   void ActivateCellularModem(const dbus::ObjectPath& service_path,
                              const std::string& carrier,
-                             const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
+                             base::OnceClosure callback,
+                             ErrorCallback error_callback) override;
   void CompleteCellularActivation(const dbus::ObjectPath& service_path,
-                                  const base::Closure& callback,
-                                  const ErrorCallback& error_callback) override;
-  void GetLoadableProfileEntries(
-      const dbus::ObjectPath& service_path,
-      const DictionaryValueCallback& callback) override;
+                                  base::OnceClosure callback,
+                                  ErrorCallback error_callback) override;
+  void GetLoadableProfileEntries(const dbus::ObjectPath& service_path,
+                                 DictionaryValueCallback callback) override;
   ShillServiceClient::TestInterface* GetTestInterface() override;
 
   // ShillServiceClient::TestInterface overrides.
@@ -107,7 +106,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
       const base::Value& template_service_properties) override;
   void ClearServices() override;
   void SetConnectBehavior(const std::string& service_path,
-                          const base::Closure& behavior) override;
+                          const base::RepeatingClosure& behavior) override;
   void SetHoldBackServicePropertyUpdates(bool hold_back) override;
 
  private:
@@ -122,7 +121,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
   void SetOtherServicesOffline(const std::string& service_path);
   void SetCellularActivated(const dbus::ObjectPath& service_path,
-                            const ErrorCallback& error_callback);
+                            ErrorCallback error_callback);
   void ContinueConnect(const std::string& service_path);
 
   base::DictionaryValue stub_services_;
@@ -130,7 +129,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   // Per network service, stores a closure that is executed on each connection
   // attempt. The callback can for example modify the services properties in
   // order to simulate a connection failure.
-  std::map<std::string, base::Closure> connect_behavior_;
+  std::map<std::string, base::RepeatingClosure> connect_behavior_;
 
   // Observer list for each service.
   std::map<dbus::ObjectPath, std::unique_ptr<PropertyObserverList>>

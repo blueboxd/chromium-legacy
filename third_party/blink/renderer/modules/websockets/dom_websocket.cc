@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -528,8 +527,6 @@ void DOMWebSocket::ContextLifecycleStateChanged(
 void DOMWebSocket::DidConnect(const String& subprotocol,
                               const String& extensions) {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidConnect()";
-  common_.LogMixedAutoupgradeStatus(
-      MixedContentAutoupgradeStatus::kResponseReceived);
   if (common_.GetState() != kConnecting)
     return;
   common_.SetState(kOpen);
@@ -592,8 +589,6 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 
 void DOMWebSocket::DidError() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " DidError()";
-  if (common_.GetState() == kConnecting)
-    common_.LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kFailed);
   ReflectBufferedAmountConsumption();
   common_.SetState(kClosed);
   event_queue_->Dispatch(Event::Create(event_type_names::kError));

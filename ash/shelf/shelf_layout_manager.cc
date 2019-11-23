@@ -751,12 +751,26 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       Shell::Get()->app_list_controller() &&
       Shell::Get()->app_list_controller()->IsVisible();
   if (IsTabletModeEnabled()) {
-    // If the home launcher is shown, being animated, or dragged, show the
-    // home launcher background.
-    if (app_list_is_visible ||
-        Shell::Get()->app_list_controller()->home_launcher_transition_state() !=
-            AppListControllerImpl::HomeLauncherTransitionState::kFinished)
+    if (app_list_is_visible) {
+      // If the home launcher is shown or mostly shown, show the home launcher
+      // background. If it is mostly hidden, show the in-app background.
+      if (Shell::Get()
+              ->app_list_controller()
+              ->home_launcher_transition_state() ==
+          AppListControllerImpl::HomeLauncherTransitionState::kMostlyHidden) {
+        return SHELF_BACKGROUND_IN_APP;
+      }
       return SHELF_BACKGROUND_HOME_LAUNCHER;
+    } else if (Shell::Get()
+                   ->app_list_controller()
+                   ->home_launcher_transition_state() !=
+               AppListControllerImpl::HomeLauncherTransitionState::kFinished) {
+      return SHELF_BACKGROUND_HOME_LAUNCHER;
+    } else if (maximized) {
+      // If the home launcher is not shown but it is maximized, show the
+      // in-app shelf.
+      return SHELF_BACKGROUND_IN_APP;
+    }
   } else if (app_list_is_visible) {
     return maximized ? SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST
                      : SHELF_BACKGROUND_APP_LIST;

@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">明るい青</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> を最新の状態に維持できない場合があります</translation>
 <translation id="1736419249208073774">詳しく見る</translation>
-<translation id="1736420071277903564">パソコン</translation>
 <translation id="1737968601308870607">バグを報告</translation>
 <translation id="1741314857973421784">次へ</translation>
 <translation id="1743570585616704562">認識されませんでした</translation>
@@ -1129,6 +1128,7 @@
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
 <translation id="2619761439309613843">毎日更新する</translation>
 <translation id="2620436844016719705">システム</translation>
+<translation id="2621713457727696555">保護あり</translation>
 <translation id="26224892172169984">すべてのサイトに対してプロトコルの処理を許可しない</translation>
 <translation id="2624142942574147739">このページはカメラとマイクにアクセスしています。</translation>
 <translation id="2626799779920242286">しばらくしてからもう一度お試しください。</translation>
@@ -1580,6 +1580,7 @@
 <translation id="328571385944182268">パスワードを保存しますか？</translation>
 <translation id="3288047731229977326">デベロッパー モードで実行される拡張機能はパソコンにダメージを与える恐れがあります。デベロッパーでない場合は、安全のため、デベロッパー モードで実行されているこれらの拡張機能を無効にしてください。</translation>
 <translation id="3289856944988573801">アップデートの有無を確認するには、イーサネットまたは Wi-Fi を使用してください。</translation>
+<translation id="3290356915286466215">保護なし</translation>
 <translation id="3293644607209440645">このページを送信</translation>
 <translation id="32939749466444286">Linux コンテナを起動できませんでした。もう一度お試しください。</translation>
 <translation id="3294437725009624529">ゲスト</translation>
@@ -2021,7 +2022,6 @@
 <translation id="3900966090527141178">パスワードのエクスポート</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> に接続しています</translation>
 <translation id="3905761538810670789">アプリを修復</translation>
-<translation id="3906954721959377182">タブレット</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> は期限切れです</translation>
 <translation id="3908501907586732282">拡張機能を有効にする</translation>
 <translation id="3909477809443608991"><ph name="URL" /> が保護されたコンテンツの再生を要求しています。デバイスの認証情報が Google によって確認され、このサイトによる認証情報へのアクセスが許可されます。</translation>
@@ -2321,7 +2321,6 @@
 <translation id="4364327530094270451">メロン</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> がウィンドウを共有しています。</translation>
 <translation id="4364830672918311045">通知を表示</translation>
-<translation id="4366956553771076218"><ph name="APP_NAME" /> で<ph name="ACTION_NAME" />します。</translation>
 <translation id="4370975561335139969">入力したメールアドレスとパスワードが一致しません</translation>
 <translation id="437184764829821926">フォントの詳細設定</translation>
 <translation id="4374831787438678295">Linux インストーラ</translation>
@@ -2963,7 +2962,6 @@
 <translation id="5363109466694494651">Powerwash を実行して以前のバージョンに戻す</translation>
 <translation id="5365881113273618889">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な書き込みアクセス権を「<ph name="APP_NAME" />」に付与してもよろしいですか？</translation>
 <translation id="5367091008316207019">ファイルを読み取っています...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">スマートフォンがロックされています。ログインするにはロックを解除してしてください。</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> にログインしてください</translation>
 <translation id="5369491905435686894">マウス アクセラレーションを有効にする</translation>
@@ -4721,6 +4719,7 @@
 <translation id="7912080627461681647">サーバーでパスワードが変更されました。いったんログアウトして再度ログインしてください。</translation>
 <translation id="7915457674565721553">保護者による使用制限を設定するにはインターネットに接続してください</translation>
 <translation id="7915471803647590281">フィードバックを送信する前に、問題の詳細を入力してください。</translation>
+<translation id="7918257978052780342">登録</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />秒</translation>
 <translation id="792514962475806987">ドッキング画面のズームレベル:</translation>
 <translation id="7925247922861151263">AAA を確認できませんでした</translation>

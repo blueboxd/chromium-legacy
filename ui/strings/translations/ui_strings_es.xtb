@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">La estantería está siempre oculta</translation>
 <translation id="8996630695507351249">Comprueba que <ph name="TARGET_DEVICE_NAME" /> esté conectado a Internet.</translation>
 <translation id="9002566407876343676">abrir</translation>
-<translation id="9039076430527029379">Mover a la página <ph name="PAGE_NUMBER" />, fila <ph name="ROW_NUMBER" />, columna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9059834730836941392">Ocultar notificación</translation>
 <translation id="9150735707954472829">Pestaña </translation>

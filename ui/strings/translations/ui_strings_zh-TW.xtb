@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">一律隱藏檔案櫃</translation>
 <translation id="8996630695507351249">請確認「<ph name="TARGET_DEVICE_NAME" />」已連上網際網路。</translation>
 <translation id="9002566407876343676">開啟</translation>
-<translation id="9039076430527029379">移至第 <ph name="PAGE_NUMBER" /> 頁，第 <ph name="ROW_NUMBER" /> 列，第 <ph name="COLUMN_NUMBER" /> 欄。</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="9059834730836941392">收合通知</translation>
 <translation id="9150735707954472829">分頁</translation>

@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> ചാർജ് ചെയ്യുന്നു</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" />, <ph name="COME_BACK_TIME" />-ന്‌ തിരികെ വരിക.</translation>
 <translation id="1290331692326790741">ദുർബലമായ സിഗ്നൽ</translation>
 <translation id="1293264513303784526">USB-C ഉപകരണം (ഇടത് പോർട്ട്)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Bluetooth ക്രമീകരണം കാണിക്കുക. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">എല്ലായ്‌പ്പോഴും ഷെല്‍ഫ് കാണിക്കുക</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, ഫോണിലെ ബാറ്ററി ചാർജ് <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">ഓവര്‍ഫ്ലോ</translation>
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="1351937230027495976">മെനു ചുരുക്കുക</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">ഈ ഉപയോക്താവിനെ നീക്കംചെയ്യുക</translation>
 <translation id="1654477262762802994">ഒരു ശബ്‌ദ ചോദ്യം ആരംഭിക്കുക</translation>
 <translation id="1658406695958299976">ക്ഷമിക്കണം, ഇപ്പോഴും നിങ്ങളുടെ പാസ്‌വേഡ് പരിശോധിച്ചുറപ്പിക്കാൻ കഴിഞ്ഞില്ല. ശ്രദ്ധിക്കുക: സമീപകാലത്ത് നിങ്ങൾ പാസ്‌വേഡ് മാറ്റിയിട്ടുണ്ടെങ്കിൽ, സൈൻ ഔട്ട് ചെയ്‌തുകഴിഞ്ഞാൽ പുതിയ പാസ്‌വേഡ് ബാധകമാകും, ഇവിടെ പഴയ പാസ്‌വേഡ് ഉപയോഗിക്കുക.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ശേഷിക്കുന്നു</translation>
 <translation id="1698760176351776263">IPv6 വിലാസം: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">തിരിച്ചറിഞ്ഞില്ല</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+തിരയൽ+H</translation>
 <translation id="2016340657076538683">ഒരു സന്ദേശം ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="2050339315714019657">പോർട്രെയ്റ്റ്</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">കീബോർഡ് തെളിച്ചം</translation>
 <translation id="209965399369889474">നെറ്റ്‌വർക്കിൽ കണക്‌റ്റ് ചെയ്‌തിട്ടില്ല</translation>
 <translation id="2126242104232412123">പുതിയ ഡെസ്‌ക്</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">മൊബൈൽ നെറ്റ്‌വർക്ക് ലഭ്യമല്ല</translation>
 <translation id="3249513730522716925">വിൻഡോ <ph name="WINDOW_TITLE" /> ഡെസ്‌ക് <ph name="ACTIVE_DESK" />-ൽ നിന്ന് ഡെസ്‌ക് <ph name="TARGET_DESK" />-ലേക്ക് നീക്കി</translation>
 <translation id="3255483164551725916">നിങ്ങൾക്ക് എന്ത് ചെയ്യാനാവും?</translation>
-<translation id="3277674767125718685">വോളിയം ഓണാണ്.</translation>
 <translation id="3290356915286466215">സുരക്ഷിതമല്ലാത്തത്</translation>
 <translation id="3294437725009624529">അതിഥി</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിന് പിന്നീട്, തുടർന്നും സൈൻ ഇൻ ചെയ്യാനാവും.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">അക്കൗണ്ട് മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER_EMAIL" /> ആണ്</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" ഭാഷയിലേയ്‌ക്ക് തിരികെ മാറ്റുക (പുനരാരംഭിക്കേണ്ടതുണ്ട്)</translation>
 <translation id="3576141592585647168">സമയമേഖല മാറ്റുക</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="3604801046548457007">ഡെസ്‌ക് <ph name="DESK_TITILE" /> സൃഷ്‌ടിച്ചു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റ് ചെയ്‌തു.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">ശക്തം</translation>
 <translation id="4918086044614829423">സ്വീകരിക്കുക</translation>
 <translation id="4924411785043111640">പുനഃരാരംഭിച്ച് പുനഃസജ്ജീകരിക്കുക</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">മുകളിലേയ്ക്ക് സ്‌ക്രോൾ ചെയ്യുക</translation>
 <translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റ് ചെയ്യുക</translation>
 <translation id="5030687792513154421">സമയം കഴിഞ്ഞു</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> പുതിയ ഫോണിലേക്ക് കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="5083553833479578423">കൂടുതൽ അസിസ്റ്റന്റ് ഫീച്ചറുകൾ അൺലോക്ക് ചെയ്യുക.</translation>
 <translation id="5136175204352732067">വ്യത്യസ്ത കീബോർഡ് കണക്‌റ്റ് ചെയ്‌തു</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി<ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Cast ഉപകരണങ്ങൾ ലഭ്യമാണ്.</translation>
 <translation id="5207949376430453814">ടെക്‌സ്‌റ്റ് കാരറ്റ് ഹൈലൈറ്റുചെയ്യുക</translation>
 <translation id="5222676887888702881">പുറത്തുകടക്കുക</translation>
 <translation id="523505283826916779">ഉപയോഗസഹായി ക്രമീകരണങ്ങൾ</translation>
 <translation id="5260676007519551770">ഡെസ്‌ക് 4</translation>
 <translation id="5283198616748585639">ഒരു മിനിറ്റ് ചേർക്കുക</translation>
+<translation id="5286194356314741248">സ്‌കാൻ ചെയ്യുന്നു</translation>
 <translation id="5302048478445481009">ഭാഷ</translation>
 <translation id="5313326810920013265">Bluetooth ക്രമീകരണങ്ങൾ</translation>
 <translation id="5331975486040154427">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="5379115545237091094">നിരവധി ശ്രമങ്ങൾ</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">ഈ ഉപയോക്താവിന്റെ ഉപയോഗവും ചരിത്രവും chrome.com-ൽ മാനേജർക്ക് (<ph name="MANAGER_EMAIL" />) അവലോകനം ചെയ്യാനാകും.</translation>
 <translation id="5430931332414098647">തൽക്ഷണ ടെതറിംഗ്</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">നിങ്ങൾ <ph name="LOGOUT_TIME_LEFT" />-നുള്ളിൽ സ്വയമേവ സൈൻ ഔട്ട് ചെയ്യും.</translation>
 <translation id="6064337552080329342">ക്ഷമിക്കണം, നിങ്ങളുടെ പാസ്‌വേഡ് പരിശോധിച്ചുറപ്പിക്കാനായില്ല. വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="607652042414456612">നിങ്ങളുടെ കമ്പ്യൂട്ടർ സമീപത്തുള്ള Bluetooth ഉപകരണങ്ങൾക്ക് കണ്ടെത്താനാകുന്നതാണ് ഒപ്പം അത് <ph name="ADDRESS" /> എന്ന വിലാസത്തിൽ "<ph name="NAME" />" എന്നതായി ദൃശ്യമാകും.</translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="612734058257491180">അതിഥി സെഷനിൽ Google അസി‌സ്‌റ്റന്റ് ലഭ്യമല്ല.</translation>
 <translation id="615957422585914272">ഓൺ-സ്‌ക്രീൻ കീബോർഡ് ദൃശ്യമാക്കുക</translation>
 <translation id="6164005077879661055">മേൽനോട്ടത്തിലുള്ള ഉപയോക്താവിനെ നീക്കംചെയ്‌താൽ, മേൽനോട്ടത്തിലുള്ള ഉപയോക്താവുമായി ബന്ധപ്പെടുത്തിയിട്ടുള്ള എല്ലാ ഫയലുകളും പ്രാദേശിക ഡാറ്റയും ശാശ്വതമായി ഇല്ലാതാക്കപ്പെടും. മേൽനോട്ടത്തിലുള്ള ഈ ഉപയോക്താവിനായി സന്ദർശിച്ച വെബ്‌സൈറ്റുകളും ക്രമീകരണങ്ങളും <ph name="MANAGEMENT_URL" />-ൽ മാനേജർക്ക് തുടർന്നും കാണാനായേക്കും.</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
 <translation id="6665545700722362599">ലൊക്കേഷൻ സേവനങ്ങൾ, ഉപകരണത്തിന്‍റെ മൈക്രോഫോൺ, ക്യാമറ അല്ലെങ്കിൽ മറ്റ് ഫീച്ചറുകൾ  ഉപയോഗിക്കാൻ, വെബ്സൈറ്റുകൾക്കും ആപ്പുകൾക്കും വിപുലീകരണങ്ങൾക്കും അനുമതി നൽകുക</translation>
 <translation id="6670153871843998651">ഡെസ്‌ക് 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="6691659475504239918">തിരയൽ+Shift+H</translation>
 <translation id="6696025732084565524">നിങ്ങളുടെ വേർപെടുത്താനാകുന്ന കീബോഡിന് നിർണ്ണായക അപ്‌ഡേറ്റ് ആവശ്യമാണ്</translation>
 <translation id="6700713906295497288">IME മെനു ബട്ടൺ</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">പ്രകടനം പിന്തുടരൽ ഓണാണ്</translation>
 <translation id="6752912906630585008">ഡെസ്‌ക് <ph name="REMOVED_DESK" /> നീക്കം ചെയ്‌ത്, ഡെസ്‌ക് <ph name="RECEIVE_DESK" />-മായി ലയിപ്പിച്ചു</translation>
 <translation id="6777216307882431711">കണക്റ്റ് ചെയ്‍ത USB-C ഉപകരണങ്ങൾ ചാർജ് ചെയ്യുന്നു</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">പ്ലേചെയ്യുക</translation>
 <translation id="6803622936009808957">പിന്തുണയ്‌ക്കുന്ന മിഴിവുകൾ കണ്ടെത്താത്തതിനാൽ പ്രദർശനങ്ങൾ പ്രതിഫലിപ്പിക്കാനായില്ല. പകരം വിപുലീകൃത ഡെസ്‌ക്‌ടോപ്പ് നൽകി.</translation>
 <translation id="6820676911989879663">ഒരു ഇടവേള എടുക്കൂ!</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">നെറ്റ്‌വർക്ക് നിരീക്ഷിക്കപ്പെടാം</translation>
 <translation id="7536035074519304529">IP വിലാസം: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ഉറങ്ങാൻ സമയമായി</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, ഫോണിലെ ബാറ്ററി ചാർജ് <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> എന്നതിനെ പിന്തുണയ്‌ക്കുന്നില്ല. റസലൂഷൻ <ph name="FALLBACK_RESOLUTION" /> എന്നതിലേക്ക് മാറ്റി.</translation>
 <translation id="7562368315689366235">ഇമോജി പാലറ്റ്</translation>
 <translation id="7564874036684306347">മറ്റൊരു ഡെസ്‌ക്‌ടോപ്പിലേക്ക് വിൻഡോകൾ നീക്കുന്നത് അപ്രതീക്ഷിതമായ പ്രവർത്തനരീതിയ്‌ക്ക് ഇടയാക്കാം. തുടർന്നുള്ള അറിയിപ്പുകൾ, വിൻഡോകൾ, ഡയലോഗുകൾ എന്നിവ ഡെസ്‌ക്‌‌ടോപ്പുകൾക്കിടയിൽ വിഭജിക്കപ്പെടാം.</translation>
@@ -513,7 +501,7 @@
 <translation id="8192202700944119416">അറിയിപ്പുകൾ അദൃശ്യമാക്കിയിരിക്കുന്നു.</translation>
 <translation id="8203795194971602413">വലത് ക്ലിക്ക്</translation>
 <translation id="8236042855478648955">ഇടവേളയ്ക്ക് സമയമായി</translation>
-<translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" /> അൺലോക്ക് ചെയ്യാൻ 'Enter' കീ അമർത്തുക</translation>
+<translation id="826107067893790409"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനായി അൺലോക്ക് ചെയ്യാൻ 'Enter' അമർത്തുക</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8297006494302853456">ദുര്‍ബലം</translation>
 <translation id="8308637677604853869">മുൻ മെനു</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">മെനുവിൻ്റെ സ്ഥാനം മാറ്റുക</translation>
 <translation id="9089416786594320554">ഇൻപുട്ട്  രീതികൾ</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> ഡിസ്‌പ്ലേ നീക്കംചെയ്‌തു</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി<ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
 <translation id="9151726767154816831">അപ്‌ഡേറ്റ് ചെയ്യാൻ, റീസ്റ്റാർട്ട് ചെയ്ത് powerwash ചെയ്യുക</translation>
 <translation id="9179259655489829027">സൈൻ ഇൻ ചെയ്‌ത ഏതൊരു ഉപയോക്താവിനെയും പാസ്‌വേഡ് ഇല്ലാതെ തന്നെ വേഗത്തിൽ ആക്‌സസ് ചെയ്യാൻ ഈ ഫീച്ചർ നിങ്ങളെ അനുവദിക്കുന്നു. നിങ്ങൾക്ക് വിശ്വാസമുള്ള അക്കൗണ്ടുകളിൽ മാത്രം ഈ ഫീച്ചർ ഉപയോഗിക്കുക.</translation>
 <translation id="9183456764293710005">പൂർണ്ണ സ്ക്രീൻ മാഗ്നിഫയർ</translation>

@@ -52,8 +52,8 @@ class UsbguardClientImpl : public UsbguardClient {
     usbguard_proxy_->ConnectToSignal(
         usbguard::kUsbguardDevicesInterface,
         usbguard::kDevicePolicyChangedSignalName,
-        base::Bind(&UsbguardClientImpl::DevicePolicyChanged,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&UsbguardClientImpl::DevicePolicyChanged,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&UsbguardClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }

@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "device/vr/oculus/oculus_render_loop.h"
 #include "device/vr/oculus/oculus_type_converters.h"
+#include "device/vr/util/stage_utils.h"
 #include "device/vr/util/transform_utils.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
@@ -78,8 +79,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId id,
 
   ovrVector3f boundary_size;
   ovr_GetBoundaryDimensions(session, ovrBoundary_PlayArea, &boundary_size);
-  display_info->stage_parameters->size_x = boundary_size.x;
-  display_info->stage_parameters->size_z = boundary_size.z;
+  display_info->stage_parameters->bounds =
+      vr_utils::GetStageBoundsFromSize(boundary_size.x, boundary_size.z);
 
   return display_info;
 }

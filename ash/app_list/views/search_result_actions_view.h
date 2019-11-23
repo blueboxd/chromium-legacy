@@ -60,6 +60,9 @@ class APP_LIST_EXPORT SearchResultActionsView : public views::View,
   // getting cleared).
   bool SelectNextAction(bool reverse_tab_order);
 
+  // Sends kSelection a11y notification for the selected action button.
+  void NotifyA11yResultSelected();
+
   // Clears selected action state.
   void ClearSelectedAction();
 

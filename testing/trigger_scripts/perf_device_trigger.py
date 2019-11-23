@@ -131,7 +131,7 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
       if verbose:
         self._print_device_affinity_info({}, {},
           self._eligible_bots_by_ids, trigger_count)
-      raise ValueError('Not enough available machines exist in in swarming'
+      raise ValueError('Not enough available machines exist in swarming '
                        'pool.  Shards requested (%d) exceeds available bots '
                        '(%d).' % (
                            trigger_count, len(self._eligible_bots_by_ids)))
@@ -227,6 +227,8 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
     query_result = self.query_swarming(
         'bots/list', values, True, server=self._swarming_server,
         service_account=self._service_account)
+    if 'items' not in query_result:
+      return {}
     perf_bots = {}
     for bot in query_result['items']:
       alive = (not bot['is_dead'] and not bot['quarantined'])

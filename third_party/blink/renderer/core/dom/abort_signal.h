@@ -17,7 +17,7 @@ namespace blink {
 class ExecutionContext;
 
 // Implementation of https://dom.spec.whatwg.org/#interface-AbortSignal
-class CORE_EXPORT AbortSignal final : public EventTargetWithInlineData {
+class CORE_EXPORT AbortSignal : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -58,6 +58,8 @@ class CORE_EXPORT AbortSignal final : public EventTargetWithInlineData {
   // https://dom.spec.whatwg.org/#abortsignal-follow
   // |this| is the followingSignal described in the standard.
   void Follow(AbortSignal* parentSignal);
+
+  virtual bool IsTaskSignal() const { return false; }
 
   void Trace(Visitor*) override;
 

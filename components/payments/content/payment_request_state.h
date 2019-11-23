@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/payments/content/initialization_task.h"
+#include "components/payments/content/payment_app_factory.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_app.h"
@@ -43,7 +44,8 @@ class PaymentApp;
 //
 // The initialization state is observed by PaymentRequestDialogView for showing
 // a "Loading..." spinner.
-class PaymentRequestState : public PaymentResponseHelper::Delegate,
+class PaymentRequestState : public PaymentAppFactory::Delegate,
+                            public PaymentResponseHelper::Delegate,
                             public PaymentRequestSpec::Observer,
                             public InitializationTask {
  public:
@@ -107,18 +109,33 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
       base::OnceCallback<void(bool methods_supported,
                               const std::string& error_message)>;
 
-  PaymentRequestState(content::WebContents* web_contents,
-                      const GURL& top_level_origin,
-                      const GURL& frame_origin,
-                      PaymentRequestSpec* spec,
-                      Delegate* delegate,
-                      const std::string& app_locale,
-                      autofill::PersonalDataManager* personal_data_manager,
-                      ContentPaymentRequestDelegate* payment_request_delegate,
-                      base::WeakPtr<ServiceWorkerPaymentApp::IdentityObserver>
-                          sw_identity_observer,
-                      JourneyLogger* journey_logger);
+  PaymentRequestState(
+      content::WebContents* web_contents,
+      const GURL& top_level_origin,
+      const GURL& frame_origin,
+      PaymentRequestSpec* spec,
+      Delegate* delegate,
+      const std::string& app_locale,
+      autofill::PersonalDataManager* personal_data_manager,
+      ContentPaymentRequestDelegate* payment_request_delegate,
+      const ServiceWorkerPaymentApp::IdentityCallback& sw_identity_callback,
+      JourneyLogger* journey_logger);
   ~PaymentRequestState() override;
+
+  // PaymentAppFactory::Delegate
+  content::WebContents* GetWebContents() override;
+  ContentPaymentRequestDelegate* GetPaymentRequestDelegate() override;
+  PaymentRequestSpec* GetSpec() override;
+  const GURL& GetTopOrigin() override;
+  const GURL& GetFrameOrigin() override;
+  const std::vector<autofill::AutofillProfile*>& GetBillingProfiles() override;
+  bool IsRequestedAutofillDataAvailable() override;
+  bool MayCrawlForInstallablePaymentApps() override;
+  void OnPaymentAppInstalled(const url::Origin& origin,
+                             int64_t registration_id) override;
+  void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) override;
+  void OnPaymentAppCreationError(const std::string& error_message) override;
+  void OnDoneCreatingPaymentApps() override;
 
   // PaymentResponseHelper::Delegate
   void OnPaymentResponseReady(
@@ -297,19 +314,6 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   // (contact info, shipping address).
   bool ArePaymentOptionsSatisfied();
 
-  // The PaymentAppProvider::GetAllPaymentAppsCallback.
-  void GetAllPaymentAppsCallback(
-      content::WebContents* web_contents,
-      const GURL& top_level_origin,
-      const GURL& frame_origin,
-      content::PaymentAppProvider::PaymentApps apps,
-      ServiceWorkerPaymentAppFactory::InstallablePaymentApps installable_apps,
-      const std::string& error_message);
-
-  // The ServiceWorkerPaymentApp::ValidateCanMakePaymentCallback.
-  void OnSWPaymentAppValidated(ServiceWorkerPaymentApp* app, bool result);
-  void FinishedGetAllSWPaymentApps();
-
   // Checks if the payment methods that the merchant website have
   // requested are supported and call the |callback| to return the result.
   void CheckRequestedMethodsSupported(MethodsSupportedCallback callback);
@@ -320,10 +324,15 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   void IncrementSelectionStatus(JourneyLogger::Section section,
                                 SectionSelectionStatus selection_status);
 
+  content::WebContents* web_contents_;
+  const GURL top_origin_;
+  const GURL frame_origin_;
+  size_t number_of_payment_app_factories_ = 0;
+
   // True when the requested autofill data (shipping address and/or contact
   // information) and payment data (either autofill or service worker) are
   // complete, valid, and selected.
-  bool is_ready_to_pay_;
+  bool is_ready_to_pay_ = false;
 
   // True when the requested autofill data (shipping address and/or contact
   // information) is complete and valid, even if not selected. This variable is
@@ -342,7 +351,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   bool has_non_autofill_app_ = false;
 
   // Whether the data is currently being validated by the merchant.
-  bool is_waiting_for_merchant_validation_;
+  bool is_waiting_for_merchant_validation_ = false;
 
   const std::string app_locale_;
 
@@ -355,18 +364,15 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   StatusCallback can_make_payment_callback_;
   StatusCallback has_enrolled_instrument_callback_;
   MethodsSupportedCallback are_requested_methods_supported_callback_;
-  bool are_requested_methods_supported_;
+  bool are_requested_methods_supported_ = false;
   std::string get_all_payment_apps_error_;
 
-  autofill::AutofillProfile* selected_shipping_profile_;
-  autofill::AutofillProfile* selected_shipping_option_error_profile_;
-  autofill::AutofillProfile* selected_contact_profile_;
-  autofill::AutofillProfile* invalid_shipping_profile_;
-  autofill::AutofillProfile* invalid_contact_profile_;
-  PaymentApp* selected_app_;
-
-  // Number of pending service worker payment apps waiting for validation.
-  int number_of_pending_sw_payment_apps_;
+  autofill::AutofillProfile* selected_shipping_profile_ = nullptr;
+  autofill::AutofillProfile* selected_shipping_option_error_profile_ = nullptr;
+  autofill::AutofillProfile* selected_contact_profile_ = nullptr;
+  autofill::AutofillProfile* invalid_shipping_profile_ = nullptr;
+  autofill::AutofillProfile* invalid_contact_profile_ = nullptr;
+  PaymentApp* selected_app_ = nullptr;
 
   // Profiles may change due to (e.g.) sync events, so profiles are cached after
   // loading and owned here. They are populated once only, and ordered by
@@ -379,8 +385,7 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   std::vector<std::unique_ptr<PaymentApp>> available_apps_;
 
   ContentPaymentRequestDelegate* payment_request_delegate_;
-  base::WeakPtr<ServiceWorkerPaymentApp::IdentityObserver>
-      sw_identity_observer_;
+  ServiceWorkerPaymentApp::IdentityCallback sw_identity_callback_;
 
   std::unique_ptr<PaymentResponseHelper> response_helper_;
 

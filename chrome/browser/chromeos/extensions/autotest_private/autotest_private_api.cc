@@ -147,7 +147,6 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/window_util.h"
@@ -367,6 +366,14 @@ std::unique_ptr<bool> ConvertMojomOptionalBool(
 std::string SetWhitelistedPref(Profile* profile,
                                const std::string& pref_name,
                                const base::Value& value) {
+  // Special case for the preference that is stored in the "Local State"
+  // profile.
+  if (pref_name == prefs::kEnableAdbSideloadingRequested) {
+    DCHECK(value.is_bool());
+    g_browser_process->local_state()->Set(pref_name, value);
+    return std::string();
+  }
+
   if (pref_name == chromeos::assistant::prefs::kAssistantEnabled ||
       pref_name == chromeos::assistant::prefs::kAssistantHotwordEnabled) {
     DCHECK(value.is_bool());
@@ -1761,9 +1768,7 @@ void AutotestPrivateInstallPluginVMFunction::OnInstallFinished(bool success) {
   }
 
   // Dismiss the dialog and start launching the VM.
-  PluginVmLauncherView::GetActiveViewForTesting()
-      ->GetDialogClientView()
-      ->AcceptWindow();
+  PluginVmLauncherView::GetActiveViewForTesting()->AcceptDialog();
 
   Respond(NoArguments());
 }

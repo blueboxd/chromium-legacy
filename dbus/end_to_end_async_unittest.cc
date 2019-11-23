@@ -72,12 +72,11 @@ class EndToEndAsyncTest : public testing::Test {
     // Connect to the "Test" signal of "org.chromium.TestInterface" from
     // the remote object.
     object_proxy_->ConnectToSignal(
-        "org.chromium.TestInterface",
-        "Test",
-        base::Bind(&EndToEndAsyncTest::OnTestSignal,
-                   base::Unretained(this)),
-        base::Bind(&EndToEndAsyncTest::OnConnected,
-                   base::Unretained(this)));
+        "org.chromium.TestInterface", "Test",
+        base::BindRepeating(&EndToEndAsyncTest::OnTestSignal,
+                            base::Unretained(this)),
+        base::BindOnce(&EndToEndAsyncTest::OnConnected,
+                       base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
@@ -88,12 +87,11 @@ class EndToEndAsyncTest : public testing::Test {
     // the shutdown of Bus when an object proxy is connected to more than
     // one signal of the same interface. See crosbug.com/23382 for details.
     object_proxy_->ConnectToSignal(
-        "org.chromium.TestInterface",
-        "Test2",
-        base::Bind(&EndToEndAsyncTest::OnTest2Signal,
-                   base::Unretained(this)),
-        base::Bind(&EndToEndAsyncTest::OnConnected,
-                   base::Unretained(this)));
+        "org.chromium.TestInterface", "Test2",
+        base::BindRepeating(&EndToEndAsyncTest::OnTest2Signal,
+                            base::Unretained(this)),
+        base::BindOnce(&EndToEndAsyncTest::OnConnected,
+                       base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
@@ -106,12 +104,11 @@ class EndToEndAsyncTest : public testing::Test {
     // Connect to the "Test" signal of "org.chromium.TestInterface" from
     // the root remote object too.
     root_object_proxy_->ConnectToSignal(
-        "org.chromium.TestInterface",
-        "Test",
-        base::Bind(&EndToEndAsyncTest::OnRootTestSignal,
-                   base::Unretained(this)),
-        base::Bind(&EndToEndAsyncTest::OnConnected,
-                   base::Unretained(this)));
+        "org.chromium.TestInterface", "Test",
+        base::BindRepeating(&EndToEndAsyncTest::OnRootTestSignal,
+                            base::Unretained(this)),
+        base::BindOnce(&EndToEndAsyncTest::OnConnected,
+                       base::Unretained(this)));
     // Wait until the root object proxy is connected to the signal.
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
@@ -157,10 +154,9 @@ class EndToEndAsyncTest : public testing::Test {
   // response is received.
   void CallMethod(MethodCall* method_call,
                   int timeout_ms) {
-    object_proxy_->CallMethod(method_call,
-                              timeout_ms,
-                              base::Bind(&EndToEndAsyncTest::OnResponse,
-                                         base::Unretained(this)));
+    object_proxy_->CallMethod(
+        method_call, timeout_ms,
+        base::BindOnce(&EndToEndAsyncTest::OnResponse, base::Unretained(this)));
   }
 
   // Calls the method asynchronously. OnResponse() will be called once the
@@ -168,10 +164,9 @@ class EndToEndAsyncTest : public testing::Test {
   void CallMethodWithErrorCallback(MethodCall* method_call,
                                    int timeout_ms) {
     object_proxy_->CallMethodWithErrorCallback(
-        method_call,
-        timeout_ms,
-        base::Bind(&EndToEndAsyncTest::OnResponse, base::Unretained(this)),
-        base::Bind(&EndToEndAsyncTest::OnError, base::Unretained(this)));
+        method_call, timeout_ms,
+        base::BindOnce(&EndToEndAsyncTest::OnResponse, base::Unretained(this)),
+        base::BindOnce(&EndToEndAsyncTest::OnError, base::Unretained(this)));
   }
 
   // Wait for the give number of responses.
@@ -598,12 +593,11 @@ class SignalMultipleHandlerTest : public EndToEndAsyncTest {
     // so that we can verify that a second call to ConnectSignal() delivers
     // to both our new handler and the old.
     object_proxy_->ConnectToSignal(
-        "org.chromium.TestInterface",
-        "Test",
-        base::Bind(&SignalMultipleHandlerTest::OnAdditionalTestSignal,
-                   base::Unretained(this)),
-        base::Bind(&SignalMultipleHandlerTest::OnAdditionalConnected,
-                   base::Unretained(this)));
+        "org.chromium.TestInterface", "Test",
+        base::BindRepeating(&SignalMultipleHandlerTest::OnAdditionalTestSignal,
+                            base::Unretained(this)),
+        base::BindOnce(&SignalMultipleHandlerTest::OnAdditionalConnected,
+                       base::Unretained(this)));
     // Wait until the object proxy is connected to the signal.
     run_loop_.reset(new base::RunLoop);
     run_loop_->Run();

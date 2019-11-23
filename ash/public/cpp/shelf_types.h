@@ -90,6 +90,9 @@ enum ShelfBackgroundType {
 
   // The background when overview is active.
   SHELF_BACKGROUND_OVERVIEW,
+
+  // The background for the in-app shelf in tablet mode.
+  SHELF_BACKGROUND_IN_APP,
 };
 
 // Source of the launch or activation request, for tracking.

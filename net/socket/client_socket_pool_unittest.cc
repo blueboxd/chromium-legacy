@@ -95,8 +95,9 @@ TEST(ClientSocketPool, GroupIdOperators) {
 
 TEST(ClientSocketPool, GroupIdToString) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kPartitionConnectionsByNetworkIsolationKey);
+  feature_list.InitWithFeatures(
+      {features::kPartitionConnectionsByNetworkIsolationKey},
+      {features::kAppendFrameOriginToNetworkIsolationKey});
 
   EXPECT_EQ("foo:80 <null>",
             ClientSocketPool::GroupId(

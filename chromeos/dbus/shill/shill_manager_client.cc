@@ -45,121 +45,118 @@ class ShillManagerClientImpl : public ShillManagerClient {
     helper_->RemovePropertyChangedObserver(observer);
   }
 
-  void GetProperties(const DictionaryValueCallback& callback) override {
+  void GetProperties(DictionaryValueCallback callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kGetPropertiesFunction);
-    helper_->CallDictionaryValueMethod(&method_call, callback);
+    helper_->CallDictionaryValueMethod(&method_call, std::move(callback));
   }
 
-  void GetNetworksForGeolocation(
-      const DictionaryValueCallback& callback) override {
+  void GetNetworksForGeolocation(DictionaryValueCallback callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kGetNetworksForGeolocation);
-    helper_->CallDictionaryValueMethod(&method_call, callback);
+    helper_->CallDictionaryValueMethod(&method_call, std::move(callback));
   }
 
   void SetProperty(const std::string& name,
                    const base::Value& value,
-                   const base::Closure& callback,
-                   const ErrorCallback& error_callback) override {
+                   base::OnceClosure callback,
+                   ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kSetPropertyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(name);
     ShillClientHelper::AppendValueDataAsVariant(&writer, value);
-    helper_->CallVoidMethodWithErrorCallback(&method_call, callback,
-                                             error_callback);
+    helper_->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
+                                             std::move(error_callback));
   }
 
   void RequestScan(const std::string& type,
-                   const base::Closure& callback,
-                   const ErrorCallback& error_callback) override {
+                   base::OnceClosure callback,
+                   ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kRequestScanFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_->CallVoidMethodWithErrorCallback(&method_call, callback,
-                                             error_callback);
+    helper_->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
+                                             std::move(error_callback));
   }
 
   void EnableTechnology(const std::string& type,
-                        const base::Closure& callback,
-                        const ErrorCallback& error_callback) override {
+                        base::OnceClosure callback,
+                        ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kEnableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_->CallVoidMethodWithErrorCallback(&method_call, callback,
-                                             error_callback);
+    helper_->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
+                                             std::move(error_callback));
   }
 
-  void SetNetworkThrottlingStatus(
-      const NetworkThrottlingStatus& status,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) override {
+  void SetNetworkThrottlingStatus(const NetworkThrottlingStatus& status,
+                                  base::OnceClosure callback,
+                                  ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kSetNetworkThrottlingFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(status.enabled);
     writer.AppendUint32(status.upload_rate_kbits);
     writer.AppendUint32(status.download_rate_kbits);
-    helper_->CallVoidMethodWithErrorCallback(&method_call, callback,
-                                             error_callback);
+    helper_->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
+                                             std::move(error_callback));
   }
 
   void DisableTechnology(const std::string& type,
-                         const base::Closure& callback,
-                         const ErrorCallback& error_callback) override {
+                         base::OnceClosure callback,
+                         ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kDisableTechnologyFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(type);
-    helper_->CallVoidMethodWithErrorCallback(&method_call, callback,
-                                             error_callback);
+    helper_->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
+                                             std::move(error_callback));
   }
 
   void ConfigureService(const base::DictionaryValue& properties,
                         ObjectPathCallback callback,
-                        const ErrorCallback& error_callback) override {
+                        ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kConfigureServiceFunction);
     dbus::MessageWriter writer(&method_call);
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
     helper_->CallObjectPathMethodWithErrorCallback(
-        &method_call, std::move(callback), error_callback);
+        &method_call, std::move(callback), std::move(error_callback));
   }
 
-  void ConfigureServiceForProfile(
-      const dbus::ObjectPath& profile_path,
-      const base::DictionaryValue& properties,
-      ObjectPathCallback callback,
-      const ErrorCallback& error_callback) override {
+  void ConfigureServiceForProfile(const dbus::ObjectPath& profile_path,
+                                  const base::DictionaryValue& properties,
+                                  ObjectPathCallback callback,
+                                  ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kConfigureServiceForProfileFunction);
     dbus::MessageWriter writer(&method_call);
     writer.AppendObjectPath(dbus::ObjectPath(profile_path));
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
     helper_->CallObjectPathMethodWithErrorCallback(
-        &method_call, std::move(callback), error_callback);
+        &method_call, std::move(callback), std::move(error_callback));
   }
 
   void GetService(const base::DictionaryValue& properties,
                   ObjectPathCallback callback,
-                  const ErrorCallback& error_callback) override {
+                  ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kGetServiceFunction);
     dbus::MessageWriter writer(&method_call);
     ShillClientHelper::AppendServicePropertiesDictionary(&writer, properties);
     helper_->CallObjectPathMethodWithErrorCallback(
-        &method_call, std::move(callback), error_callback);
+        &method_call, std::move(callback), std::move(error_callback));
   }
 
-  void ConnectToBestServices(const base::Closure& callback,
-                             const ErrorCallback& error_callback) override {
+  void ConnectToBestServices(base::OnceClosure callback,
+                             ErrorCallback error_callback) override {
     dbus::MethodCall method_call(shill::kFlimflamManagerInterface,
                                  shill::kConnectToBestServicesFunction);
-    helper_->CallVoidMethodWithErrorCallback(&method_call, callback,
-                                             error_callback);
+    helper_->CallVoidMethodWithErrorCallback(&method_call, std::move(callback),
+                                             std::move(error_callback));
   }
 
   TestInterface* GetTestInterface() override { return nullptr; }

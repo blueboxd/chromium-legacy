@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_context.h"
 
 using password_manager::FieldInfoManager;
+using password_manager::FieldInfoManagerImpl;
 
 // static
 FieldInfoManagerFactory* FieldInfoManagerFactory::GetInstance() {
@@ -23,7 +24,7 @@ FieldInfoManagerFactory* FieldInfoManagerFactory::GetInstance() {
 // static
 FieldInfoManager* FieldInfoManagerFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<FieldInfoManager*>(
+  return static_cast<FieldInfoManagerImpl*>(
       GetInstance()->GetServiceForBrowserContext(context, true /* create */));
 }
 
@@ -40,6 +41,6 @@ FieldInfoManagerFactory::~FieldInfoManagerFactory() = default;
 KeyedService* FieldInfoManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
-  return new FieldInfoManager(PasswordStoreFactory::GetForProfile(
+  return new FieldInfoManagerImpl(PasswordStoreFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS));
 }

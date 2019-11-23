@@ -112,10 +112,10 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
 
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,
-                       base::Bind(&ExpectNoArgument), response.get());
+                       base::BindRepeating(&ExpectNoArgument), response.get());
   // Call method.
   client_->GetProperties(dbus::ObjectPath(kExampleIPConfigPath),
-                         base::Bind(&ExpectDictionaryValueResult, &value));
+                         base::BindOnce(&ExpectDictionaryValueResult, &value));
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }
@@ -129,8 +129,8 @@ TEST_F(ShillIPConfigClientTest, SetProperty) {
   // Set expectations.
   base::Value value(kAddress);
   PrepareForMethodCall(shill::kSetPropertyFunction,
-                       base::Bind(&ExpectStringAndValueArguments,
-                                  shill::kAddressProperty, &value),
+                       base::BindRepeating(&ExpectStringAndValueArguments,
+                                           shill::kAddressProperty, &value),
                        response.get());
   // Call method.
   client_->SetProperty(dbus::ObjectPath(kExampleIPConfigPath),
@@ -147,7 +147,7 @@ TEST_F(ShillIPConfigClientTest, ClearProperty) {
   // Set expectations.
   PrepareForMethodCall(
       shill::kClearPropertyFunction,
-      base::Bind(&ExpectStringArgument, shill::kAddressProperty),
+      base::BindRepeating(&ExpectStringArgument, shill::kAddressProperty),
       response.get());
   // Call method.
   client_->ClearProperty(dbus::ObjectPath(kExampleIPConfigPath),
@@ -163,7 +163,7 @@ TEST_F(ShillIPConfigClientTest, Remove) {
 
   // Set expectations.
   PrepareForMethodCall(shill::kRemoveConfigFunction,
-                       base::Bind(&ExpectNoArgument), response.get());
+                       base::BindRepeating(&ExpectNoArgument), response.get());
   // Call method.
   client_->Remove(dbus::ObjectPath(kExampleIPConfigPath),
                   base::BindOnce(&ExpectNoResultValue));

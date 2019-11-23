@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Hindi sinusuportahan ang uri ng card na ito</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Subukang makipag-ugnayan sa admin ng system.</translation>
+<translation id="1736420071277903564">Computer</translation>
 <translation id="1739107442478692187">May nangyaring paglabag sa data sa isang site o app na ginagamit mo. Inirerekomenda ng Chrome na suriin ngayon ang iyong mga naka-save na password at palitan ang password mo sa <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Maglagay ng wastong buwan ng pag-expire</translation>
 <translation id="1741613555002899862">Dapat ay tukuyin at isang valid na string kapag ang DnsOverHttpsMode ay <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -597,6 +598,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Na-expire na ang card</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Gamitin ang WebAuthn sa halip na CVC?</translation>
 <translation id="3946209740501886391">Palaging hilingin sa site na ito</translation>
@@ -1521,7 +1523,6 @@ Mga karagdagang detalye:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}one{# credit card}other{# na credit card}}</translation>
 <translation id="8473863474539038330">Mga address at higit pa</translation>
 <translation id="8479754468255770962">Staple bottom left</translation>
-<translation id="8481133456511676116">Ang ibig mo bang sabihin ay <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Upang gumamit ng mga card mula sa iyong Google Account, mag-sign in sa Chrome</translation>
 <translation id="8488350697529856933">Nalalapat sa</translation>
 <translation id="8498891568109133222">Masyadong matagal bago nakatugon ang <ph name="HOST_NAME" />.</translation>

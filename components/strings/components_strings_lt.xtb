@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Šio tipo kortelė nepalaikoma</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Pabandykite susisiekti su sistemos administratoriumi.</translation>
+<translation id="1736420071277903564">Kompiuteris</translation>
 <translation id="1739107442478692187">Naudojamoje svetainėje arba programoje įvyko duomenų saugos pažeidimas. „Chrome“ rekomenduoja dabar patikrinti išsaugotus slaptažodžius ir pakeisti <ph name="ORIGIN" /> slaptažodį.</translation>
 <translation id="1740951997222943430">Įveskite tinkamą galiojimo laiko pabaigos mėnesį</translation>
 <translation id="1741613555002899862">Kai „DnsOverHttpsMode“ yra „<ph name="SECURE_DNS_MODE_SECURE" />“, turi būti nurodyta ir tinkama eilutė.</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">Šiuo metu užpuolikai svetainėje <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> gali įdiegti pavojingų programų, kurios gali būti žalingos įrenginiui, atlikti nepageidaujamų veiksmų, dėl kurių padidės mobiliojo telefono sąskaita, arba pavogti asmens informaciją. <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Nėra interneto ryšio</translation>
 <translation id="2230458221926704099">Išspręskite ryšio problemas naudodami <ph name="BEGIN_LINK" />diagnostikos programą<ph name="END_LINK" /></translation>
+<translation id="22320125457191592">Jums</translation>
 <translation id="2239100178324503013">Siųsti dabar</translation>
 <translation id="2248949050832152960">Naudoti „WebAuthn“</translation>
 <translation id="2250931979407627383">Kraštų sukabinimas kairėje</translation>
@@ -373,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Išeiti</translation>
 <translation id="2684561033061424857">11 x 12</translation>
+<translation id="2691924980723297736">Saugos įspėjimas</translation>
 <translation id="2699302886720511147">Tinkamos kortelės</translation>
 <translation id="2702801445560668637">Skait. sąraš.</translation>
 <translation id="2704283930420550640">Vertė neatitinka formato.</translation>
@@ -476,6 +479,7 @@
 <translation id="3207960819495026254">Pažymėta</translation>
 <translation id="3209034400446768650">Puslapyje galite būti apmokestinti</translation>
 <translation id="3209080785413271048">Patvirtinkite išsaugotus mokėjimo metodus naudodami „Windows Hello“.</translation>
+<translation id="3212581601480735796">Jūsų veikla <ph name="HOSTNAME" /> stebima</translation>
 <translation id="3215092763954878852">Nepavyko naudoti „WebAuthn“</translation>
 <translation id="3225919329040284222">Serveris pateikė sertifikatą, kuris neatitinka numatytų reikalavimų. Šie reikalavimai taikomi tam tikrose itin saugiose svetainėse, kad jūs būtumėte saugūs.</translation>
 <translation id="3226128629678568754">Spustelėkite įkėlimo iš naujo mygtuką, kad iš naujo pateiktumėte duomenis, reikalingus puslapiui įkelti.</translation>
@@ -534,6 +538,7 @@
 <translation id="3528485271872257980">Tamsiai ruda</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Mažiausiai 1 elementas sinchronizuotuose įrenginiuose}=1{1 elementas (ir daugiau sinchronizuotuose įrenginiuose)}one{# elementas (ir daugiau sinchronizuotuose įrenginiuose)}few{# elementai (ir daugiau sinchronizuotuose įrenginiuose)}many{# elemento (ir daugiau sinchronizuotuose įrenginiuose)}other{# elementų (ir daugiau sinchronizuotuose įrenginiuose)}}</translation>
 <translation id="3539171420378717834">Išsaugoti kortelės kopiją įrenginyje</translation>
+<translation id="3553513561058684206">Jums</translation>
 <translation id="3566021033012934673">Jūsų ryšys nėra privatus</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Svetainėje <ph name="SITE" /> įterptame puslapyje nurodyta:</translation>
@@ -611,6 +616,7 @@
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3901925938762663762">Kortelė nebegalioja</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Planšetinis kompiuteris</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Naudoti „WebAuthn“ vietoj CVC?</translation>
 <translation id="3946209740501886391">Visada klausti šioje svetainėje</translation>
@@ -763,6 +769,7 @@
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
 <translation id="4597348597567598915">Dydis: 8</translation>
 <translation id="4600854749408232102">C6 / C5 (vokas)</translation>
+<translation id="4613966523036881546">Šio ryšio sertifikatas nėra patikimas sistemoje „Google Chrome“, nes žinoma, jog jis naudojamas tinklui perimti ir stebėti.</translation>
 <translation id="4635654612248442824">Svetainė (<ph name="ORIGIN" />) pateikė užklausą taikyti pradinę politiką
     visoms jos užklausoms, bet šiuo metu šios politikos taikyti negalima.</translation>
 <translation id="464342062220857295">Paieškos funkcijos</translation>
@@ -1468,6 +1475,7 @@ Papildoma išsami informacija:
 <translation id="8103161714697287722">Mokėjimo metodas</translation>
 <translation id="8105368624971345109">Išjungti</translation>
 <translation id="8118489163946903409">Mokėjimo metodas</translation>
+<translation id="8124023448510659215">Šio ryšio sertifikatas nėra patikimas sistemoje „Chromium“, nes žinoma, jog jis naudojamas tinklui perimti ir stebėti.</translation>
 <translation id="8127301229239896662">„<ph name="SOFTWARE_NAME" />“ nebuvo tinkamai įdiegta kompiuteryje ar tinkle. Kreipkitės į IT administratorių, kad ši problema būtų išspręsta.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8149426793427495338">Įjungta kompiuterio miego būsena.</translation>
@@ -1536,7 +1544,6 @@ Papildoma išsami informacija:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredito kortelė}one{# kredito kortelė}few{# kredito kortelės}many{# kredito kortelės}other{# kredito kortelių}}</translation>
 <translation id="8473863474539038330">Adresai ir dar daugiau</translation>
 <translation id="8479754468255770962">Sankabėlė apačioje kairėje</translation>
-<translation id="8481133456511676116">Turėjote omenyje <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Jei norite naudoti korteles iš „Google“ paskyros, prisijunkite prie „Chrome“</translation>
 <translation id="8488350697529856933">Taikoma</translation>
 <translation id="8498891568109133222">Per ilgai laukta <ph name="HOST_NAME" /> atsako.</translation>
@@ -1612,6 +1619,8 @@ Papildoma išsami informacija:
 <translation id="8957210676456822347">Fiksuotojo portalo autorizavimas</translation>
 <translation id="8962950042226115166">Įtartina svetainė</translation>
 <translation id="8968766641738584599">Išsaugoti kortelę</translation>
+<translation id="8969267497192857913">Visas vedamas tekstas, visi peržiūrimi puslapiai ar bet kokia kita veikla žiniatinklyje stebima ir gali būti keičiamas svetainių turinys jums to nežinant.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Sužinokite daugiau<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Baigėsi serverio sertifikato galiojimo laikas.</translation>
 <translation id="8975012916872825179">Įtraukiama tokia informacija kaip telefono numeriai, el. pašto adresai ir pristatymo adresai</translation>
 <translation id="8975263830901772334">Jūsų spausdinamų failų pavadinimai</translation>

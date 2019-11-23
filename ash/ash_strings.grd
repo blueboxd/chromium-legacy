@@ -770,6 +770,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASSISTANT_DISABLED_BY_ACCOUNT_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but current logged in user account does not support voice interaction.">
         The Google Assistant is not available for current user account.
       </message>
+      <message name="IDS_ASH_ASSISTANT_QUERY_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement that notifies users that the UI is focusing on an assistant query">
+        <ph name="QUERY_NAME">$1<ex>Harry Potter</ex></ph>, Google Assistant
+      </message>
 
       <message name="IDS_ASH_TOAST_DISMISS_BUTTON" desc="The text button shown in toasts to close the toast immediately without waiting timeout.">
         DISMISS

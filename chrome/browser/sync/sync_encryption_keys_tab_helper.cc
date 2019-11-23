@@ -40,6 +40,22 @@ bool ShouldExposeMojoApi(content::NavigationHandle* navigation_handle) {
   return url::Origin::Create(navigation_handle->GetURL()) == GetAllowedOrigin();
 }
 
+// TODO(crbug.com/1027676): Migrate away from std::string and adopt some safer
+// type (std::vector<uint8_t> or newly-introduced class) to represent encryption
+// keys.
+std::string BytesAsString(const std::vector<uint8_t>& bytes) {
+  return std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+}
+
+std::vector<std::string> EncryptionKeysAsStrings(
+    const std::vector<std::vector<uint8_t>>& encryption_keys) {
+  std::vector<std::string> encryption_keys_as_strings;
+  for (const auto& encryption_key : encryption_keys) {
+    encryption_keys_as_strings.push_back(BytesAsString(encryption_key));
+  }
+  return encryption_keys_as_strings;
+}
+
 }  // namespace
 
 class SyncEncryptionKeysTabHelper::EncryptionKeyApi
@@ -53,14 +69,15 @@ class SyncEncryptionKeysTabHelper::EncryptionKeyApi
   }
 
   // chrome::mojom::SyncEncryptionKeysExtension:
-  void SetEncryptionKeys(const std::vector<std::string>& encryption_keys,
-                         const std::string& gaia_id,
-                         SetEncryptionKeysCallback callback) override {
+  void SetEncryptionKeys(
+      const std::vector<std::vector<uint8_t>>& encryption_keys,
+      const std::string& gaia_id,
+      SetEncryptionKeysCallback callback) override {
     CHECK_EQ(bindings_.GetCurrentTargetFrame()->GetLastCommittedOrigin(),
              GetAllowedOrigin());
 
     sync_service_->GetUserSettings()->AddTrustedVaultDecryptionKeys(
-        gaia_id, encryption_keys);
+        gaia_id, EncryptionKeysAsStrings(encryption_keys));
     std::move(callback).Run();
   }
 

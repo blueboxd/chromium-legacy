@@ -16,7 +16,11 @@ CompositorPriorityExperiments::CompositorPriorityExperiments(
     : scheduler_(scheduler),
       experiment_(GetExperimentFromFeatureList()),
       prioritize_compositing_after_delay_length_(
-          base::TimeDelta::FromMilliseconds(kCompositingDelayLength.Get())) {
+          base::TimeDelta::FromMilliseconds(kCompositingDelayLength.Get())),
+      stop_signal_(base::FeatureList::IsEnabled(
+                       kPrioritizeCompositingUntilBeginMainFrame)
+                       ? StopSignalType::kBeginMainFrameTask
+                       : StopSignalType::kAnyCompositorTask) {
   do_prioritize_compositing_after_delay_callback_.Reset(base::BindRepeating(
       &CompositorPriorityExperiments::DoPrioritizeCompositingAfterDelay,
       base::Unretained(this)));
@@ -94,6 +98,10 @@ void CompositorPriorityExperiments::OnMainThreadSchedulerShutdown() {
   budget_pool_controller_.reset();
 }
 
+void CompositorPriorityExperiments::OnWillBeginMainFrame() {
+  will_begin_main_frame_ = true;
+}
+
 void CompositorPriorityExperiments::PostPrioritizeCompositingAfterDelayTask() {
   DCHECK_EQ(experiment_, Experiment::kVeryHighPriorityForCompositingAfterDelay);
 
@@ -109,6 +117,16 @@ void CompositorPriorityExperiments::OnTaskCompleted(
   if (!queue)
     return;
 
+  bool have_seen_stop_signal = false;
+  if (queue->queue_type() == MainThreadTaskQueue::QueueType::kCompositor) {
+    if (stop_signal_ == StopSignalType::kAnyCompositorTask) {
+      have_seen_stop_signal = true;
+    } else if (will_begin_main_frame_) {
+      have_seen_stop_signal = true;
+      will_begin_main_frame_ = false;
+    }
+  }
+
   switch (experiment_) {
     case Experiment::kVeryHighPriorityForCompositingAlways:
       return;
@@ -119,9 +137,8 @@ void CompositorPriorityExperiments::OnTaskCompleted(
       // compositor if another task has run regardless of its priority. This
       // prevents starving the compositor while allowing other work to run
       // in-between.
-      if (queue->queue_type() == MainThreadTaskQueue::QueueType::kCompositor &&
-          alternating_compositor_priority_ ==
-              QueuePriority::kVeryHighPriority) {
+      if (have_seen_stop_signal && alternating_compositor_priority_ ==
+                                       QueuePriority::kVeryHighPriority) {
         alternating_compositor_priority_ = QueuePriority::kNormalPriority;
         scheduler_->OnCompositorPriorityExperimentUpdateCompositorPriority();
       } else if (alternating_compositor_priority_ ==
@@ -131,7 +148,7 @@ void CompositorPriorityExperiments::OnTaskCompleted(
       }
       return;
     case Experiment::kVeryHighPriorityForCompositingAfterDelay:
-      if (queue->queue_type() == MainThreadTaskQueue::QueueType::kCompositor) {
+      if (have_seen_stop_signal) {
         delay_compositor_priority_ = QueuePriority::kNormalPriority;
         do_prioritize_compositing_after_delay_callback_.Cancel();
         PostPrioritizeCompositingAfterDelayTask();
@@ -141,7 +158,8 @@ void CompositorPriorityExperiments::OnTaskCompleted(
       }
       return;
     case Experiment::kVeryHighPriorityForCompositingBudget:
-      budget_pool_controller_->OnTaskCompleted(queue, task_timing);
+      budget_pool_controller_->OnTaskCompleted(queue, task_timing,
+                                               have_seen_stop_signal);
       return;
     case Experiment::kNone:
       return;
@@ -207,8 +225,9 @@ void CompositorPriorityExperiments::CompositorBudgetPoolController::
 
 void CompositorPriorityExperiments::CompositorBudgetPoolController::
     OnTaskCompleted(MainThreadTaskQueue* queue,
-                    MainThreadTaskQueue::TaskTiming* task_timing) {
-  if (queue->queue_type() == MainThreadTaskQueue::QueueType::kCompositor) {
+                    MainThreadTaskQueue::TaskTiming* task_timing,
+                    bool have_seen_stop_signal) {
+  if (have_seen_stop_signal) {
     compositor_budget_pool_->RecordTaskRunTime(queue, task_timing->start_time(),
                                                task_timing->end_time());
   }

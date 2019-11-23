@@ -69,5 +69,5 @@ instrumentation_test_apk("webview_ui_test_app_test_apk") {
   data = [
     "test/data/",
   ]
-  additional_apks = [ system_webview_apk_target ]
+  use_webview_provider = system_webview_apk_target
 }

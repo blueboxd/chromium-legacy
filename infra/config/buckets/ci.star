@@ -447,6 +447,7 @@ def chromiumos_builder(*, name, **kwargs):
 
 chromiumos_builder(
     name = 'Linux ChromiumOS Full',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
@@ -889,6 +890,7 @@ fuzz_builder(
 
 fuzz_builder(
     name = 'ChromiumOS ASAN Release',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_builder(
@@ -963,6 +965,7 @@ def fuzz_libfuzzer_builder(*, name, **kwargs):
 
 fuzz_libfuzzer_builder(
     name = 'Libfuzzer Upload Chrome OS ASan',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fuzz_libfuzzer_builder(
@@ -1070,6 +1073,7 @@ fyi_builder(
 
 fyi_builder(
     name = 'Mojo ChromiumOS',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
@@ -2155,6 +2159,7 @@ memory_builder(
 
 memory_builder(
     name = 'Linux Chromium OS ASan LSan Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 memory_builder(
@@ -2163,6 +2168,7 @@ memory_builder(
 
 memory_builder(
     name = 'Linux ChromiumOS MSan Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 memory_builder(

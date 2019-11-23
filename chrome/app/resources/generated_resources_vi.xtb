@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Xanh lam nhạt</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> có thể không tự cập nhật được</translation>
 <translation id="1736419249208073774">Khám phá</translation>
-<translation id="1736420071277903564">Máy tính</translation>
 <translation id="1737968601308870607">Lỗi tệp</translation>
 <translation id="1741314857973421784">Tiếp tục</translation>
 <translation id="1743570585616704562">Không nhận dạng được</translation>
@@ -1129,6 +1128,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2617342710774726426">Thẻ SIM bị khóa</translation>
 <translation id="2619761439309613843">Làm mới hàng ngày</translation>
 <translation id="2620436844016719705">Hệ thống</translation>
+<translation id="2621713457727696555">Đã áp dụng biện pháp bảo mật</translation>
 <translation id="26224892172169984">Không cho phép bất kỳ trang web nào xử lý giao thức</translation>
 <translation id="2624142942574147739">Trang này đang truy cập máy ảnh và micrô của bạn.</translation>
 <translation id="2626799779920242286">Vui lòng thử lại sau.</translation>
@@ -1580,6 +1580,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="328571385944182268">Lưu mật khẩu của bạn?</translation>
 <translation id="3288047731229977326">Tiện ích chạy ở chế độ nhà phát triển có thể gây hại cho máy tính của bạn. Nếu bạn không phải là nhà phát triển, bạn nên vô hiệu hóa các tiện ích này chạy trong chế độ nhà phát triển để giữ an toàn.</translation>
 <translation id="3289856944988573801">Để kiểm tra các cập nhật, hãy sử dụng kết nối Ethernet hoặc Wi-Fi.</translation>
+<translation id="3290356915286466215">Không bảo mật</translation>
 <translation id="3293644607209440645">Gửi trang này</translation>
 <translation id="32939749466444286">Vùng chứa Linux không khởi động. Vui lòng thử lại.</translation>
 <translation id="3294437725009624529">Khách</translation>
@@ -2021,7 +2022,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3900966090527141178">Xuất mật khẩu</translation>
 <translation id="3901991538546252627">Đang kết nối với <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Sửa ứng dụng</translation>
-<translation id="3906954721959377182">Máy tính bảng</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> đã lỗi thời</translation>
 <translation id="3908501907586732282">Bật tiện ích</translation>
 <translation id="3909477809443608991"><ph name="URL" /> muốn phát nội dung được bảo vệ. Thông tin định danh của thiết bị sẽ được Google xác minh và trang web này có thể truy cập vào thông tin đó.</translation>
@@ -2321,7 +2321,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4364327530094270451">Quả dưa</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> đang chia sẻ một cửa sổ.</translation>
 <translation id="4364830672918311045">Hiển thị thông báo</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> qua <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Email và mật khẩu bạn nhập không khớp</translation>
 <translation id="437184764829821926">Cài đặt phông chữ nâng cao</translation>
 <translation id="4374831787438678295">Trình cài đặt Linux</translation>
@@ -2963,7 +2962,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5363109466694494651">Powerwash và hoàn nguyên</translation>
 <translation id="5365881113273618889">Thư mục bạn đã chọn chứa các tệp nhạy cảm. Bạn có chắc chắn muốn cấp cho "<ph name="APP_NAME" />" quyền ghi vào thư mục này vĩnh viễn không?</translation>
 <translation id="5367091008316207019">Đang đọc tệp..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Điện thoại của bạn bị khóa. Hãy mở khóa điện thoại để truy cập.</translation>
 <translation id="5368779022775404937">Đăng nhập vào <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Bật tính năng tăng tốc chuột</translation>
@@ -4721,6 +4719,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7912080627461681647">Đã thay đổi mật khẩu của bạn trên máy chủ. Vui lòng đăng xuất rồi đăng nhập lại.</translation>
 <translation id="7915457674565721553">Hãy kết nối Internet để thiết lập quyền kiểm soát của cha mẹ</translation>
 <translation id="7915471803647590281">Vui lòng cho chúng tôi biết điều đang xảy ra trước khi gửi phản hồi.</translation>
+<translation id="7918257978052780342">Đăng ký</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> giây</translation>
 <translation id="792514962475806987">Mức thu phóng ở vị trí cố định:</translation>
 <translation id="7925247922861151263">Không thể kiểm tra AAA</translation>

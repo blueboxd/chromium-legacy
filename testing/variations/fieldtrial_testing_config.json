@@ -1506,19 +1506,6 @@
     "CertVerifierBuiltin": [
         {
             "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CertVerifierBuiltin"
-                    ]
-                }
-            ]
-        },
-        {
-            "platforms": [
                 "linux"
             ],
             "experiments": [
@@ -1974,7 +1961,7 @@
             ],
             "experiments": [
                 {
-                    "name": "ForcedOff_FtpProtocol",
+                    "name": "WithoutFtpSupport",
                     "disable_features": [
                         "FtpProtcol"
                     ]

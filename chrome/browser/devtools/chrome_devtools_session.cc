@@ -20,35 +20,6 @@
 #include "chrome/browser/devtools/protocol/window_manager_handler.h"
 #endif
 
-namespace {
-// TODO(johannes): This is very similar to the code in
-// content/browser/devtools/devtools_protocol_encoding. Once we have
-// the error / status propagation story settled, move the common parts
-// into a content public API.
-
-// Platform allows us to inject the string<->double conversion
-// routines from base:: into the inspector_protocol JSON parser / serializer.
-class Platform : public crdtp::json::Platform {
- public:
-  bool StrToD(const char* str, double* result) const override {
-    return base::StringToDouble(str, result);
-  }
-
-  // Prints |value| in a format suitable for JSON.
-  std::unique_ptr<char[]> DToStr(double value) const override {
-    std::string str = base::NumberToString(value);
-    std::unique_ptr<char[]> result(new char[str.size() + 1]);
-    memcpy(result.get(), str.c_str(), str.size() + 1);
-    return result;
-  }
-};
-
-crdtp::Status ConvertCBORToJSON(crdtp::span<uint8_t> cbor, std::string* json) {
-  Platform platform;
-  return ConvertCBORToJSON(platform, cbor, json);
-}
-}  // namespace
-
 ChromeDevToolsSession::ChromeDevToolsSession(
     content::DevToolsAgentHost* agent_host,
     content::DevToolsAgentHostClient* client)
@@ -112,7 +83,8 @@ static void SendProtocolResponseOrNotification(
     return;
   }
   std::string json;
-  crdtp::Status status = ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
+  crdtp::Status status =
+      crdtp::json::ConvertCBORToJSON(crdtp::SpanFrom(cbor), &json);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   client->DispatchProtocolMessage(agent_host, json);
 }

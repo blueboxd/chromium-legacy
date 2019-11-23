@@ -213,12 +213,13 @@
     </settings-toggle-button>
     <div class="settings-box continuation"
         hidden$="[[!prefs.settings.a11y.large_cursor_enabled.value]]">
-      <div class="start sub-item settings-box-text">
+      <div class="start sub-item settings-box-text" aria-hidden="true">
         $i18n{largeMouseCursorSizeLabel}
       </div>
       <settings-slider
           pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
           min="25" max="64"
+          label-aria="$i18n{largeMouseCursorSizeLabel}"
           label-min="$i18n{largeMouseCursorSizeDefaultLabel}"
           label-max="$i18n{largeMouseCursorSizeLargeLabel}">
       </settings-slider>

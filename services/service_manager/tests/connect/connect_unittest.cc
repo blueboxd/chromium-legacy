@@ -22,7 +22,8 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/token.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -315,8 +316,9 @@ class ConnectTest : public testing::Test,
     service_binding_.Bind(
         test_service_manager_.RegisterTestInstance(kTestServiceName));
 
-    test::mojom::ConnectTestServicePtr root_service;
-    connector()->BindInterface(kTestPackageName, &root_service);
+    mojo::Remote<test::mojom::ConnectTestService> root_service;
+    connector()->Connect(kTestPackageName,
+                         root_service.BindNewPipeAndPassReceiver());
 
     base::RunLoop run_loop;
     std::string root_name;
@@ -330,8 +332,8 @@ class ConnectTest : public testing::Test,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     CHECK_EQ(test::mojom::ExposedInterface::Name_, interface_name);
-    bindings_.AddBinding(
-        this, test::mojom::ExposedInterfaceRequest(std::move(interface_pipe)));
+    receivers_.Add(this, mojo::PendingReceiver<test::mojom::ExposedInterface>(
+                             std::move(interface_pipe)));
   }
 
   // test::mojom::ExposedInterface:
@@ -342,7 +344,7 @@ class ConnectTest : public testing::Test,
   base::test::TaskEnvironment task_environment_;
   TestServiceManager test_service_manager_;
   ServiceBinding service_binding_{this};
-  mojo::BindingSet<test::mojom::ExposedInterface> bindings_;
+  mojo::ReceiverSet<test::mojom::ExposedInterface> receivers_;
   test::mojom::ConnectionStatePtr connection_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTest);
@@ -351,8 +353,8 @@ class ConnectTest : public testing::Test,
 // Ensure the connection was properly established and that a round trip
 // method call/response is completed.
 TEST_F(ConnectTest, BindInterface) {
-  test::mojom::ConnectTestServicePtr service;
-  connector()->BindInterface(kTestAppName, &service);
+  mojo::Remote<test::mojom::ConnectTestService> service;
+  connector()->Connect(kTestAppName, service.BindNewPipeAndPassReceiver());
   base::RunLoop run_loop;
   std::string title;
   service->GetTitle(base::BindOnce(&ReceiveOneString, &title, &run_loop));
@@ -365,9 +367,9 @@ TEST_F(ConnectTest, Instances) {
   const base::Token kInstanceIdB{3, 4};
   auto filter_a = ServiceFilter::ByNameWithId(kTestAppName, kInstanceIdA);
   base::Token instance_a1, instance_a2;
-  test::mojom::ConnectTestServicePtr service_a1;
+  mojo::Remote<test::mojom::ConnectTestService> service_a1;
   {
-    connector()->BindInterface(filter_a, &service_a1);
+    connector()->Connect(filter_a, service_a1.BindNewPipeAndPassReceiver());
     base::RunLoop loop;
     service_a1->GetInstanceId(
         base::BindLambdaForTesting([&](const base::Token& instance_id) {
@@ -376,9 +378,9 @@ TEST_F(ConnectTest, Instances) {
         }));
     loop.Run();
   }
-  test::mojom::ConnectTestServicePtr service_a2;
+  mojo::Remote<test::mojom::ConnectTestService> service_a2;
   {
-    connector()->BindInterface(filter_a, &service_a2);
+    connector()->Connect(filter_a, service_a2.BindNewPipeAndPassReceiver());
     base::RunLoop loop;
     service_a2->GetInstanceId(
         base::BindLambdaForTesting([&](const base::Token& instance_id) {
@@ -391,9 +393,9 @@ TEST_F(ConnectTest, Instances) {
 
   auto filter_b = ServiceFilter::ByNameWithId(kTestAppName, kInstanceIdB);
   base::Token instance_b;
-  test::mojom::ConnectTestServicePtr service_b;
+  mojo::Remote<test::mojom::ConnectTestService> service_b;
   {
-    connector()->BindInterface(filter_b, &service_b);
+    connector()->Connect(filter_b, service_b.BindNewPipeAndPassReceiver());
     base::RunLoop loop;
     service_b->GetInstanceId(
         base::BindLambdaForTesting([&](const base::Token& instance_id) {
@@ -415,12 +417,13 @@ TEST_F(ConnectTest, ConnectWithGloballyUniqueId) {
   EXPECT_TRUE(specific_identity.IsValid());
 
   // First connect with a basic identity.
-  test::mojom::ConnectTestServicePtr proxy;
-  connector()->BindInterface(kTestAppAName, &proxy);
+  mojo::Remote<test::mojom::ConnectTestService> proxy;
+  connector()->Connect(kTestAppAName, proxy.BindNewPipeAndPassReceiver());
   target->WaitForBindInterface();
 
   // Now connect with a very specific identity, including globally unique ID.
-  connector()->BindInterface(specific_identity, &proxy);
+  proxy.reset();
+  connector()->Connect(specific_identity, proxy.BindNewPipeAndPassReceiver());
   target->WaitForBindInterface();
 
   // Now quit the test service and start a new instance.
@@ -437,9 +440,12 @@ TEST_F(ConnectTest, ConnectWithGloballyUniqueId) {
 
   // Connect to the new instance with a basic identity, and with its specific
   // identity. Both should succeed.
-  connector()->BindInterface(kTestAppAName, &proxy);
+  proxy.reset();
+  connector()->Connect(kTestAppAName, proxy.BindNewPipeAndPassReceiver());
   target->WaitForBindInterface();
-  connector()->BindInterface(new_specific_identity, &proxy);
+  proxy.reset();
+  connector()->Connect(new_specific_identity,
+                       proxy.BindNewPipeAndPassReceiver());
   target->WaitForBindInterface();
 
   // Now attempt to connect using the specific identity of the previous
@@ -447,15 +453,16 @@ TEST_F(ConnectTest, ConnectWithGloballyUniqueId) {
   // should be disconnected when the Service Manager drops the request.
   base::RunLoop wait_for_error_loop;
   base::RunLoop wait_for_connect_loop;
+  proxy.reset();
   target->CallOnNextBindInterface(base::BindOnce([] { NOTREACHED(); }));
-  connector()->BindInterface(
-      specific_identity, mojo::MakeRequest(&proxy),
+  connector()->Connect(
+      specific_identity, proxy.BindNewPipeAndPassReceiver(),
       base::BindLambdaForTesting([&](mojom::ConnectResult result,
                                      const base::Optional<Identity>& identity) {
         EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
         wait_for_connect_loop.Quit();
       }));
-  proxy.set_connection_error_handler(wait_for_error_loop.QuitClosure());
+  proxy.set_disconnect_handler(wait_for_error_loop.QuitClosure());
   wait_for_connect_loop.Run();
   wait_for_error_loop.Run();
 }
@@ -492,9 +499,9 @@ TEST_F(ConnectTest, QueryNonexistentService) {
 // in our CapabilityFilter whitelist.
 TEST_F(ConnectTest, MAYBE_BlockedInterface) {
   base::RunLoop run_loop;
-  test::mojom::BlockedInterfacePtr blocked;
-  connector()->BindInterface(kTestAppName, &blocked);
-  blocked.set_connection_error_handler(base::BindOnce(&QuitLoop, &run_loop));
+  mojo::Remote<test::mojom::BlockedInterface> blocked;
+  connector()->Connect(kTestAppName, blocked.BindNewPipeAndPassReceiver());
+  blocked.set_disconnect_handler(base::BindOnce(&QuitLoop, &run_loop));
   std::string title = "unchanged";
   blocked->GetTitleBlocked(
       base::BindOnce(&ReceiveOneString, &title, &run_loop));
@@ -504,11 +511,10 @@ TEST_F(ConnectTest, MAYBE_BlockedInterface) {
 
 TEST_F(ConnectTest, AlwaysAllowedInterface) {
   base::RunLoop run_loop;
-  test::mojom::AlwaysAllowedInterfacePtr always_allowed;
-  connector()->BindInterface(ServiceFilter::ByName(kTestAppAName),
-                             &always_allowed);
-  always_allowed.set_connection_error_handler(
-      base::BindOnce(&QuitLoop, &run_loop));
+  mojo::Remote<test::mojom::AlwaysAllowedInterface> always_allowed;
+  connector()->Connect(ServiceFilter::ByName(kTestAppAName),
+                       always_allowed.BindNewPipeAndPassReceiver());
+  always_allowed.set_disconnect_handler(base::BindOnce(&QuitLoop, &run_loop));
   std::string title = "unchanged";
   always_allowed->GetTitleAlwaysAllowed(
       base::BindOnce(&ReceiveOneString, &title, &run_loop));
@@ -520,11 +526,11 @@ TEST_F(ConnectTest, AlwaysAllowedInterface) {
 TEST_F(ConnectTest, PackagedApp) {
   base::Optional<Identity> resolved_identity;
   base::RunLoop run_loop;
-  test::mojom::ConnectTestServicePtr service_a;
-  connector()->BindInterface(ServiceFilter::ByName(kTestAppAName),
-                             mojo::MakeRequest(&service_a),
-                             base::BindOnce(&StartServiceResponse, nullptr,
-                                            nullptr, &resolved_identity));
+  mojo::Remote<test::mojom::ConnectTestService> service_a;
+  connector()->Connect(ServiceFilter::ByName(kTestAppAName),
+                       service_a.BindNewPipeAndPassReceiver(),
+                       base::BindOnce(&StartServiceResponse, nullptr, nullptr,
+                                      &resolved_identity));
   std::string a_name;
   service_a->GetTitle(base::BindOnce(&ReceiveOneString, &a_name, &run_loop));
   run_loop.Run();
@@ -546,8 +552,9 @@ TEST_F(ConnectTest, PackagedApp) {
 // allowed regardless of the target's CapabilityFilter with respect to the
 // package.
 TEST_F(ConnectTest, MAYBE_BlockedPackage) {
-  test::mojom::StandaloneAppPtr standalone_app;
-  connector()->BindInterface(kTestAppName, &standalone_app);
+  mojo::Remote<test::mojom::StandaloneApp> standalone_app;
+  connector()->Connect(kTestAppName,
+                       standalone_app.BindNewPipeAndPassReceiver());
   base::RunLoop run_loop;
   std::string title;
   standalone_app->ConnectToAllowedAppInBlockedPackage(
@@ -567,9 +574,9 @@ TEST_F(ConnectTest, MAYBE_BlockedPackage) {
 // in our CapabilityFilter whitelist.
 TEST_F(ConnectTest, MAYBE_PackagedApp_BlockedInterface) {
   base::RunLoop run_loop;
-  test::mojom::BlockedInterfacePtr blocked;
-  connector()->BindInterface(kTestAppAName, &blocked);
-  blocked.set_connection_error_handler(base::BindOnce(&QuitLoop, &run_loop));
+  mojo::Remote<test::mojom::BlockedInterface> blocked;
+  connector()->Connect(kTestAppAName, blocked.BindNewPipeAndPassReceiver());
+  blocked.set_disconnect_handler(base::BindOnce(&QuitLoop, &run_loop));
   run_loop.Run();
 }
 
@@ -584,9 +591,10 @@ TEST_F(ConnectTest, MAYBE_PackagedApp_BlockedInterface) {
 // because it's not in the capability filter whitelist.
 TEST_F(ConnectTest, MAYBE_BlockedPackagedApplication) {
   base::RunLoop run_loop;
-  test::mojom::ConnectTestServicePtr service_b;
-  connector()->BindInterface(
-      ServiceFilter::ByName(kTestAppBName), mojo::MakeRequest(&service_b),
+  mojo::Remote<test::mojom::ConnectTestService> service_b;
+  connector()->Connect(
+      ServiceFilter::ByName(kTestAppBName),
+      service_b.BindNewPipeAndPassReceiver(),
       base::BindLambdaForTesting([&](mojom::ConnectResult result,
                                      const base::Optional<Identity>& identity) {
         EXPECT_EQ(mojom::ConnectResult::ACCESS_DENIED, result);
@@ -596,8 +604,9 @@ TEST_F(ConnectTest, MAYBE_BlockedPackagedApplication) {
 }
 
 TEST_F(ConnectTest, CapabilityClasses) {
-  test::mojom::StandaloneAppPtr standalone_app;
-  connector()->BindInterface(kTestAppName, &standalone_app);
+  mojo::Remote<test::mojom::StandaloneApp> standalone_app;
+  connector()->Connect(kTestAppName,
+                       standalone_app.BindNewPipeAndPassReceiver());
   std::string string1, string2;
   base::RunLoop loop;
   standalone_app->ConnectToClassInterface(
@@ -617,21 +626,21 @@ TEST_F(ConnectTest, CapabilityClasses) {
 #endif
 
 TEST_F(ConnectTest, MAYBE_ConnectWithoutExplicitClassBlocked) {
-  // We not be able to bind a ClassInterfacePtr since the connect_unittest app
-  // does not explicitly request the "class" capability from
+  // We not be able to bind a ClassInterface remote since the connect_unittest
+  // app does not explicitly request the "class" capability from
   // connect_test_class_app. This test will hang if it is bound.
-  test::mojom::ClassInterfacePtr class_interface;
-  connector()->BindInterface(kTestClassAppName, &class_interface);
+  mojo::Remote<test::mojom::ClassInterface> class_interface;
+  connector()->Connect(kTestClassAppName,
+                       class_interface.BindNewPipeAndPassReceiver());
   base::RunLoop loop;
-  class_interface.set_connection_error_handler(
-      base::BindOnce(&QuitLoop, &loop));
+  class_interface.set_disconnect_handler(base::BindOnce(&QuitLoop, &loop));
   loop.Run();
 }
 
 TEST_F(ConnectTest, ConnectToDifferentGroup_Allowed) {
-  test::mojom::IdentityTestPtr identity_test;
-  connector()->BindInterface(ServiceFilter::ByName(kTestAppName),
-                             &identity_test);
+  mojo::Remote<test::mojom::IdentityTest> identity_test;
+  connector()->Connect(ServiceFilter::ByName(kTestAppName),
+                       identity_test.BindNewPipeAndPassReceiver());
   mojom::ConnectResult result;
   auto filter = ServiceFilter::ByNameInGroup(kTestClassAppName,
                                              base::Token::CreateRandom());
@@ -652,9 +661,9 @@ TEST_F(ConnectTest, ConnectToDifferentGroup_Allowed) {
 }
 
 TEST_F(ConnectTest, ConnectToDifferentGroup_Blocked) {
-  test::mojom::IdentityTestPtr identity_test;
-  connector()->BindInterface(ServiceFilter::ByName(kTestAppAName),
-                             &identity_test);
+  mojo::Remote<test::mojom::IdentityTest> identity_test;
+  connector()->Connect(ServiceFilter::ByName(kTestAppAName),
+                       identity_test.BindNewPipeAndPassReceiver());
   mojom::ConnectResult result;
   auto filter = ServiceFilter::ByNameInGroup(kTestClassAppName,
                                              base::Token::CreateRandom());
@@ -671,9 +680,9 @@ TEST_F(ConnectTest, ConnectToDifferentGroup_Blocked) {
 }
 
 TEST_F(ConnectTest, ConnectWithDifferentInstanceId_Blocked) {
-  test::mojom::IdentityTestPtr identity_test;
-  connector()->BindInterface(ServiceFilter::ByName(kTestAppAName),
-                             &identity_test);
+  mojo::Remote<test::mojom::IdentityTest> identity_test;
+  connector()->Connect(ServiceFilter::ByName(kTestAppAName),
+                       identity_test.BindNewPipeAndPassReceiver());
 
   mojom::ConnectResult result;
   auto filter = ServiceFilter::ByNameWithId(kTestClassAppName,

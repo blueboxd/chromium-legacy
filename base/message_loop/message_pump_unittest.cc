@@ -46,9 +46,10 @@ bool PumpTypeUsesDoSomeWork(MessagePumpType type) {
 
     case MessagePumpType::UI:
 #if defined(OS_IOS)
-      // iOS uses a MessagePumpDefault for UI in unit tests, ref.
-      // test_support_ios.mm::CreateMessagePumpForUIForTests().
-      return true;
+      // iOS uses a MessagePumpCFRunLoop for UI in unit tests, ref.
+      // test_support_ios.mm::CreateMessagePumpForUIForTests(). TODO(gab):
+      // migrate MessagePumpCFRunLoop too.
+      return false;
 #elif defined(OS_WIN) || defined(OS_ANDROID) || defined(USE_GLIB)
       return true;
 #elif defined(OS_POSIX) && !defined(OS_NACL_SFI)

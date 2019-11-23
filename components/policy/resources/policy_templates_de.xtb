@@ -526,6 +526,15 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="1852294065645015766">Autoplay von Medien erlauben</translation>
+<translation id="1853782273088286010">Legt fest, ob der integrierte DNS-Client von <ph name="PRODUCT_NAME" /> verwendet werden soll.
+
+      Sie beeinflusst nicht, welche DNS-Server verwendet werden, sondern nur den Software-Stack, der zur Kommunikation mit den Servern verwendet wird. Wenn beispielsweise das Betriebssystem für die Verwendung eines Unternehmens-DNS-Servers konfiguriert ist, verwendet der integrierte DNS-Client genau diesen Server. Es ist jedoch möglich, dass der integrierte DNS-Client auf unterschiedliche Weise mit den Servern kommuniziert und dabei moderne DNS-relevante Protokolle wie DNS-over-TLS verwendet.
+
+      Wenn diese Richtlinie auf "True" gesetzt wurde, wird, falls verfügbar, der integrierte DNS-Client verwendet.
+
+      Wenn diese Richtlinie auf "False" gesetzt wurde, wird der integrierte DNS-Client nie verwendet.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, ist der integrierte DNS-Client unter MacOS, Android – sofern weder ein privates DNS noch ein VPN aktiviert ist – und Chrome OS standardmäßig aktiviert. Der Nutzer kann dann über die Bearbeitung von chrome://flags oder die Festlegung einer Befehlszeilenmarkierung entscheiden, ob der integrierte DNS-Client verwendet wird oder nicht.</translation>
 <translation id="1857152770025485173">Diese Richtlinie verhindert, dass Nutzer Webseiten laden, deren URLs auf der schwarzen Liste stehen. Die schwarze Liste enthält URL-Muster, anhand derer URLs auf die schwarze Liste gesetzt werden.
 
       Ein URL-Muster muss den unter https://www.chromium.org/administrators/url-blacklist-filter-format beschriebenen Formaten entsprechen.
@@ -1384,6 +1393,13 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           Diese Richtlinie ist optional. Wenn sie nicht konfiguriert wird, erfolgt keine Ersetzung der Suchbegriffe.
 
           Diese Richtlinie wird nur angewendet, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
+<translation id="3049248142961638857">Damit kann der Hostname des in DHCP-Anfragen verwendeten Geräts festgelegt werden.
+
+      Wird für diese Richtlinie ein String definiert, der nicht leer ist, dann wird er während der DHCP-Anfrage als Gerätehostname verwendet.
+
+      Der String kann die Variablen <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" /> und <ph name="MACHINE_NAME_PLACEHOLDER" />, <ph name="LOCATION_PLACEHOLDER" /> enthalten, die im Gerät durch Werte ersetzt werden, bevor sie als Hostname zum Einsatz kommen. Das Ergebnis muss ein gültiger Hostname gemäß RFC 1035, Abschnitt 3.1 sein.
+
+      Wenn diese Richtlinie nicht konfiguriert oder der Wert nach dem Ersetzen kein gültiger Hostname ist, wird in der DHCP-Anfrage kein Hostname festgelegt. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740">Erlaubt die Deaktivierung der WPAD-Optimierung (Web Proxy Auto-Discovery) in <ph name="PRODUCT_NAME" />.
 
@@ -2632,6 +2648,11 @@ neues Fenster geöffnet wird.
 
           Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="5208240613060747912">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen es nicht gestattet ist, Benachrichtigungen anzuzeigen. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultNotificationsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
+<translation id="5212118847531454979">Mit dieser Richtlinie kann der Zeitraum in Millisekunden festgelegt werden, in dem Nutzer eine Benachrichtigung erhalten, dass <ph name="PRODUCT_NAME" /> oder ein Gerät mit <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss.
+
+      In diesem Zeitraum werden Nutzer wiederholt darüber informiert, dass ein Update erforderlich ist. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint entsprechend der Richtlinie "<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />" eine Neustartbenachrichtigung in der Taskleiste. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums abgelaufen ist, um zu zeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Wenn der ganze Zeitraum abgelaufen ist, ändert sich die Farbe erneut. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" aktiviert werden, gilt derselbe Zeitplan.
+
+      Wenn die Richtlinie nicht konfiguriert ist, gilt der standardmäßige Zeitraum von 604.800.000 Millisekunden (eine Woche).</translation>
 <translation id="5212810195096589189">Berechtigung für VM-Befehlszeile festlegen</translation>
 <translation id="5213038356678567351">Websites, die unter keinen Umständen einen Browserwechsel auslösen sollten.</translation>
 <translation id="5219844027738217407">Bei Android-Apps betrifft diese Richtlinie nur das Mikrofon. Wenn diese Richtlinie auf "true" gesetzt ist, wird das Mikrofon ohne Ausnahme für alle Android-Apps stummgeschaltet.</translation>
@@ -2891,6 +2912,9 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Ist die Richtlinie nicht konfiguriert, bleibt die URL zum Abrufen des Varianten-Seeds unverändert.</translation>
 <translation id="5561811616825571914">Clientzertifikate für diese Websites automatisch auf dem Anmeldebildschirm auswählen</translation>
+<translation id="5564865786900450806">Unterdrückt die Anzeige einer Warnung, wenn <ph name="PRODUCT_NAME" /> auf einem nicht mehr unterstützten Computer oder unter einem nicht mehr unterstützten Betriebssystem ausgeführt wird.
+
+      Ist sie auf "False" gesetzt oder nicht konfiguriert, erscheinen die Warnungen auch auf nicht unterstützten Computern oder Betriebssystemen.</translation>
 <translation id="5565178130821694365">Passworteingabe alle zwei Tage (48 Stunden) erforderlich</translation>
 <translation id="5566210228171064229">Drucken mit und ohne PIN zulassen</translation>
 <translation id="556865034069957245">Anhand dieser Richtlinie wird die Verfügbarkeit des Vollbildmodus verwaltet, in dem die gesamte Benutzeroberfläche von <ph name="PRODUCT_NAME" /> ausgeblendet und nur der Webinhalt sichtbar ist.
@@ -4419,6 +4443,9 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
           Bei deaktivierter Einstellung werden die Seiten nach Metatags durchsucht.
 
           Ist die Richtlinie nicht festgelegt, werden die Seiten nach Metatags durchsucht.</translation>
+<translation id="829641334878002866">Diese Richtlinie ermöglicht, den Zeitraum zwischen der ersten Benachrichtigung zum Neustart eines <ph name="PRODUCT_OS_NAME" />-Geräts, um eine ausstehende Aktualisierung anzuwenden, und dem Ende des durch die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />" vorgegebenen Zeitraums in Millisekunden festzulegen.
+
+      Wenn die Richtlinie nicht konfiguriert ist, gilt für <ph name="PRODUCT_OS_NAME" />-Geräte der standardmäßige Zeitraum von 259.200.000 Millisekunden (drei Tage).</translation>
 <translation id="8300455783946254851">Bei Festlegung auf "true" wird die Synchronisierung zwischen Google Drive und der App "Dateien" von <ph name="PRODUCT_OS_NAME" /> per Mobilfunkverbindung deaktiviert. Eine Synchronisierung von Daten mit Google Drive erfolgt dann nur bei bestehender WLAN- oder Ethernet-Verbindung.
 
           Falls die Richtlinie auf "false" gesetzt oder nicht festgelegt wird, können die Nutzer Dateien per Mobilfunkverbindung an Google Drive übertragen.</translation>

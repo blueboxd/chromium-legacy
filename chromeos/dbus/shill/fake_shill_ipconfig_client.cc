@@ -37,15 +37,15 @@ void FakeShillIPConfigClient::RemovePropertyChangedObserver(
 
 void FakeShillIPConfigClient::GetProperties(
     const dbus::ObjectPath& ipconfig_path,
-    const DictionaryValueCallback& callback) {
+    DictionaryValueCallback callback) {
   const base::DictionaryValue* dict = nullptr;
   if (!ipconfigs_.GetDictionaryWithoutPathExpansion(ipconfig_path.value(),
                                                     &dict))
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FakeShillIPConfigClient::PassProperties,
-                     weak_ptr_factory_.GetWeakPtr(), dict, callback));
+      FROM_HERE, base::BindOnce(&FakeShillIPConfigClient::PassProperties,
+                                weak_ptr_factory_.GetWeakPtr(), dict,
+                                std::move(callback)));
 }
 
 void FakeShillIPConfigClient::SetProperty(const dbus::ObjectPath& ipconfig_path,
@@ -96,8 +96,8 @@ void FakeShillIPConfigClient::AddIPConfig(
 
 void FakeShillIPConfigClient::PassProperties(
     const base::DictionaryValue* values,
-    const DictionaryValueCallback& callback) const {
-  callback.Run(DBUS_METHOD_CALL_SUCCESS, *values);
+    DictionaryValueCallback callback) const {
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, *values);
 }
 
 }  // namespace chromeos

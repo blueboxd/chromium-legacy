@@ -175,6 +175,7 @@
 <translation id="173080396488393970">این نوع کارت پشتیبانی نمی‌شود</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">با سرپرست سیستم تماس بگیرید.</translation>
+<translation id="1736420071277903564">رایانه</translation>
 <translation id="1739107442478692187">‏در یکی از سایت‌ها یا برنامه‌هایی که استفاده می‌کنید، نقض داده‌ رخ داده است. Chrome توصیه می‌کند گذرواژه‌های ذخیره‌شده‌تان را بررسی کنید و اکنون گذرواژه‌تان را در <ph name="ORIGIN" /> تغییر دهید.</translation>
 <translation id="1740951997222943430">ماه انقضای معتبری وارد کنید</translation>
 <translation id="1741613555002899862">‏وقتی DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> است، باید مشخص شده باشد و رشته‌ای معتبر باشد</translation>
@@ -609,6 +610,7 @@
 <translation id="3897092660631435901">منو</translation>
 <translation id="3901925938762663762">کارت منقضی شده است</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">رایانه لوحی</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">‏به‌جای CVC از WebAuthn استفاده شود؟</translation>
 <translation id="3946209740501886391">در این سایت، همیشه سؤال شود</translation>
@@ -1534,7 +1536,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{۱ کارت اعتباری}one{# کارت اعتباری}other{# کارت اعتباری}}</translation>
 <translation id="8473863474539038330">نشانی‌ها و سایر موارد</translation>
 <translation id="8479754468255770962">منگنه در پایین سمت چپ</translation>
-<translation id="8481133456511676116">منظورتان <ph name="DOMAIN" /> بود؟</translation>
 <translation id="8483780878231876732">‏برای استفاده از کارت‌ها از حساب Google خود، به سیستم Chrome وارد شوید</translation>
 <translation id="8488350697529856933">اعمال برای</translation>
 <translation id="8498891568109133222">پاسخ <ph name="HOST_NAME" /> بیش از حد طول کشیده است.</translation>

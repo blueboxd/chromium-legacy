@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/content/service_worker_payment_app_finder.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/test_payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
@@ -63,7 +63,7 @@ class HybridRequestSkipUITest : public PlatformBrowserTest {
             ->GetURLLoaderFactoryForBrowserProcess());
     downloader->AddTestServerURL("https://google.com/",
                                  gpay_server_.GetURL("google.com", "/"));
-    ServiceWorkerPaymentAppFactory::GetInstance()
+    ServiceWorkerPaymentAppFinder::GetInstance()
         ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
             std::move(downloader));
 

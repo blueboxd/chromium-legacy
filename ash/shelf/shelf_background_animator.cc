@@ -184,6 +184,7 @@ void ShelfBackgroundAnimator::CreateAnimator(
     case SHELF_BACKGROUND_LOGIN:
     case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
     case SHELF_BACKGROUND_OVERVIEW:
+    case SHELF_BACKGROUND_IN_APP:
       duration = base::TimeDelta::FromMilliseconds(250);
       break;
   }
@@ -222,6 +223,7 @@ SkColor ShelfBackgroundAnimator::GetBackgroundColor(
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
     case SHELF_BACKGROUND_OVERVIEW:
+    case SHELF_BACKGROUND_IN_APP:
       shelf_target_color = ShelfConfig::Get()->GetMaximizedShelfColor();
       break;
     case SHELF_BACKGROUND_OOBE:

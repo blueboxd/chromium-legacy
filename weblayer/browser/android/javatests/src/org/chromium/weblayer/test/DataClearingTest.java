@@ -42,7 +42,7 @@ public class DataClearingTest {
     @Test
     @SmallTest
     public void clearDataWithInMemoryProfile_TriggersCallback() throws InterruptedException {
-        checkTriggersCallbackOnClearData(new int[] {COOKIES_AND_SITE_DATA}, "");
+        checkTriggersCallbackOnClearData(new int[] {COOKIES_AND_SITE_DATA}, null);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class DataClearingTest {
     @Test
     @SmallTest
     public void clearCacheWithInMemoryProfile_TriggersCallback() throws InterruptedException {
-        checkTriggersCallbackOnClearData(new int[] {CACHE}, "");
+        checkTriggersCallbackOnClearData(new int[] {CACHE}, null);
     }
 
     @Test

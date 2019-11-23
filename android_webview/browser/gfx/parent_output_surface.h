@@ -5,11 +5,15 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_GFX_PARENT_OUTPUT_SURFACE_H_
 #define ANDROID_WEBVIEW_BROWSER_GFX_PARENT_OUTPUT_SURFACE_H_
 
+#include <vector>
+
 #include "android_webview/browser/gfx/aw_gl_surface.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/viz/service/display/output_surface.h"
+#include "ui/latency/latency_info.h"
+#include "ui/latency/latency_tracker.h"
 
 namespace gfx {
 struct PresentationFeedback;
@@ -50,12 +54,15 @@ class ParentOutputSurface : public viz::OutputSurface {
   gfx::OverlayTransform GetDisplayTransform() override;
 
  private:
-  void OnPresentation(const gfx::PresentationFeedback& feedback);
+  void OnPresentation(base::TimeTicks swap_start,
+                      std::vector<ui::LatencyInfo> latency_info,
+                      const gfx::PresentationFeedback& feedback);
 
   viz::OutputSurfaceClient* client_ = nullptr;
   // This is really a layering violation but needed for hooking up presentation
   // feedbacks properly.
   scoped_refptr<AwGLSurface> gl_surface_;
+  ui::LatencyTracker latency_tracker_;
   base::WeakPtrFactory<ParentOutputSurface> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(ParentOutputSurface);
 };

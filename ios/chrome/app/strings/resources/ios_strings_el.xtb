@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">Πατήστε το κουμπί "Έναρξη καταγραφής" για να συλλέξετε τα μελλοντικά αρχεία καταγραφής της κονσόλας JavaScript και τα σφάλματα από όλες τις καρτέλες. Τα αρχεία καταγραφής θα συλλέγονται (και θα αποθηκεύονται μόνο στη μνήμη) έως ότου κλείσει αυτή η σελίδα ή πατηθεί η επιλογή "Διακοπή καταγραφής".</translation>
 <translation id="1657011748321897393">Η κοινοποίηση απέτυχε επειδή δεν έχετε συνδεθεί στο δίκτυο.</translation>
 <translation id="165877110639533037">Δεν υπάρχουν ανοικτές καρτέλες</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> προς <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Για να εμφανίζονται οι σελιδοδείκτες σας σε όλες τις συσκευές σας, ενεργοποιήστε τον συγχρονισμό.</translation>
 <translation id="1687475363370981210">Επισήμανση όλων ως αναγνωσμένων</translation>
 <translation id="1690731385917361335">Κανένα στοιχείο</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2690858294534178585">Η κάμερα χρησιμοποιείται</translation>
 <translation id="2691653761409724435">Μη διαθέσιμο εκτός σύνδεσης</translation>
+<translation id="2695507686909505111">Μεταφρασμένη σελίδα</translation>
 <translation id="2702801445560668637">Λίστα ανάγνωσης</translation>
 <translation id="2704606927547763573">Αντιγράφ.</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">Δεν υπάρχει σύνδεση στο διαδίκτυο.</translation>
 <translation id="3783017676699494206">Αποθήκευση εικόνας</translation>
 <translation id="3789841737615482174">Εγκατάσταση</translation>
+<translation id="3803696231112616155">Πρόταση για μετάφραση αυτού του ιστοτόπου</translation>
 <translation id="385051799172605136">Πίσω</translation>
 <translation id="3897092660631435901">Μενού</translation>
 <translation id="3915450441834151894">Πληροφορίες ιστοτόπου</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">Αυτή η σελίδα θα ανοίξει σε άλλη εφαρμογή.</translation>
 <translation id="4375040482473363939">Αναζήτηση κωδικού QR</translation>
 <translation id="4378154925671717803">Τηλέφωνο</translation>
+<translation id="4389019817280890563">Πατήστε για αλλαγή γλώσσας.</translation>
 <translation id="441868831736628555">Σημείωση απορρήτου</translation>
 <translation id="4454246407045105932">Προσθήκη γλώσσας</translation>
 <translation id="4476574785019001431">Ρυθμίσεις</translation>
@@ -344,6 +348,7 @@
 <translation id="5871497086027727873">Μετακινήθηκε 1 στοιχείο</translation>
 <translation id="5897956970858271241">Μετάβαση στον αντιγραμμένο σύνδεσμο</translation>
 <translation id="5911030830365207728">Μετάφραση Google</translation>
+<translation id="5913600720976431809">Επιλογές για τη Μετάφραση σελίδας</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
 <translation id="5938160824633642847">Ο αποθηκευτικός χώρος της συσκευής σας έχει σχεδόν γεμίσει. Ελευθερώστε χώρο και προσπαθήστε ξανά.</translation>
 <translation id="5948291296578561264">Σας επιτρέπει να αποθηκεύετε φωτογραφίες στη βιβλιοθήκη φωτογραφιών σας.</translation>
@@ -375,6 +380,7 @@
 <translation id="6219688215832490856">Να μην γίνεται ποτέ μετάφραση</translation>
 <translation id="6254066287920239840">Άνοιγμα συνδέσμων στην εφαρμογή αντί για το πρόγραμμα περιήγησης.</translation>
 <translation id="6255097610484507482">Επεξεργασία πιστωτικής κάρτας</translation>
+<translation id="6284652193729350524">Πρόταση για μετάφραση <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Αποσύνδεση και απενεργοποίηση συγχρονισμού</translation>
 <translation id="6308436439357671616">Σας επιτρέπει να κάνετε λήψη και μεταφόρτωση φωτογραφιών.</translation>
 <translation id="6324528485781869530">Εναλλαγή λογαριασμού συγχρονισμού</translation>
@@ -430,6 +436,7 @@
 <translation id="6903907808598579934">Ενεργοποίηση συγχρονισμού</translation>
 <translation id="6914583639806229067">Αναζήτηση της εικόνας που αντιγράψατε</translation>
 <translation id="6914783257214138813">Οι κωδικοί πρόσβασής σας θα είναι ορατοί σε οποιονδήποτε μπορεί να δει το αρχείο εξαγωγής.</translation>
+<translation id="6930799952781667037">Πατήστε για αλλαγή σε αυτήν τη γλώσσα.</translation>
 <translation id="6944369514868857500">Επιλογή άλλου λογαριασμού</translation>
 <translation id="6945221475159498467">Επιλογή</translation>
 <translation id="6973630695168034713">Φάκελοι</translation>
@@ -459,6 +466,7 @@
 <translation id="7293171162284876153">Για να ξεκινήσετε τον συγχρονισμό, ενεργοποιήστε την επιλογή "Συγχρονισμός των δεδομένων του Chrome".</translation>
 <translation id="7336264872878993241">Έγινε λήψη του <ph name="PERCENT" /> τοις εκατό</translation>
 <translation id="7346909386216857016">OK, το κατάλαβα</translation>
+<translation id="734758817008927353">Επιλογές για την Αποθήκευση κάρτας</translation>
 <translation id="7348502496356775519">Σελιδοδείκτης</translation>
 <translation id="7383797227493018512">Λίστα ανάγνωσης</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -483,6 +491,7 @@
 <translation id="7671141431838911305">ΕΓΚΑΤΑΣΤΑΣΗ</translation>
 <translation id="7765158879357617694">Μεταφορά</translation>
 <translation id="7772032839648071052">Επιβεβαίωση φράσης πρόσβασης</translation>
+<translation id="7781011649027948662">Μετάφραση σελίδας;</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="778855399387580014">Ξεκινήστε μια αναζήτηση σε μια νέα καρτέλα Chrome.</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>

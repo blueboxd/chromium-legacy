@@ -384,7 +384,12 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   void SetNetRequestPriority(net::RequestPriority net_request_priority);
   base::Optional<net::RequestPriority> net_request_priority() const;
 
+  void SetWebSchedulingPriority(WebSchedulingPriority priority);
   base::Optional<WebSchedulingPriority> web_scheduling_priority() const;
+
+  base::WeakPtr<MainThreadTaskQueue> AsWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
 
  protected:
   void SetFrameSchedulerForTest(FrameSchedulerImpl* frame_scheduler);
@@ -424,10 +429,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
   // |web_scheduling_priority_| is the priority of the task queue within the web
   // scheduling API. This priority is used in conjunction with the frame
   // scheduling policy to determine the task queue priority.
-  //
-  // For the initial prototype, we aren't allowing the priority to change since
-  // we're only implementing a set of global task queues.
-  const base::Optional<WebSchedulingPriority> web_scheduling_priority_;
+  base::Optional<WebSchedulingPriority> web_scheduling_priority_;
 
   // Needed to notify renderer scheduler about completed tasks.
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED

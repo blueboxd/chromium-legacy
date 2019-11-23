@@ -79,7 +79,7 @@ class COMPONENT_EXPORT(DBUS) DbusMenu {
   class ScopedMethodResponse {
    public:
     ScopedMethodResponse(dbus::MethodCall* method_call,
-                         dbus::ExportedObject::ResponseSender* response_sender);
+                         dbus::ExportedObject::ResponseSender response_sender);
 
     ~ScopedMethodResponse();
 
@@ -91,7 +91,7 @@ class COMPONENT_EXPORT(DBUS) DbusMenu {
 
    private:
     dbus::MethodCall* method_call_;
-    dbus::ExportedObject::ResponseSender* response_sender_;
+    dbus::ExportedObject::ResponseSender response_sender_;
 
     // |reader_| is always needed for all methods on this interface, so it's not
     // created lazily.

@@ -467,6 +467,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kOmniboxUseDefaultSearchEngineFavicon)},
+    {"omnibox-preserve-default-match-against-async-update",
+     flag_descriptions::kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName,
+     flag_descriptions::
+         kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         omnibox::kOmniboxPreserveDefaultMatchAgainstAsyncUpdate)},
     {"enable-send-tab-to-self-broadcast",
      flag_descriptions::kSendTabToSelfBroadcastName,
      flag_descriptions::kSendTabToSelfBroadcastDescription, flags_ui::kOsIos,

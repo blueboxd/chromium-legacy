@@ -67,6 +67,8 @@ class SharingDialogView : public SharingDialog,
   FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, AppPressed);
   FRIEND_TEST_ALL_PREFIXES(SharingDialogViewTest, ThemeChangedEmptyList);
 
+  FRIEND_TEST_ALL_PREFIXES(ClickToCallBrowserTest, LeftClick_ChooseDevice);
+
   SharingDialogType GetDialogType() const;
 
   // LocationBarBubbleDelegateView:

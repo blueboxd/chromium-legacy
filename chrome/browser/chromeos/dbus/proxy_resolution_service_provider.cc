@@ -132,8 +132,9 @@ void ProxyResolutionServiceProvider::DbusResolveProxy(
   std::string source_url;
   if (!reader.PopString(&source_url)) {
     LOG(ERROR) << "Method call lacks source URL: " << method_call->ToString();
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "No source URL string arg"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, "No source URL string arg"));
     return;
   }
 
@@ -179,7 +180,7 @@ void ProxyResolutionServiceProvider::NotifyProxyResolved(
   dbus::MessageWriter writer(response.get());
   writer.AppendString(pac_string);
   writer.AppendString(error);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 network::mojom::NetworkContext*

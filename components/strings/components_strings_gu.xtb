@@ -175,6 +175,7 @@
 <translation id="173080396488393970">આ પ્રકારનું કાર્ડ સમર્થિત નથી</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">સિસ્ટમ વ્યવસ્થાપકનો સંપર્ક કરવાનો પ્રયાસ કરો.</translation>
+<translation id="1736420071277903564">કમ્પ્યુટર</translation>
 <translation id="1739107442478692187">તમે જે સાઇટ અથવા ઍપનો ઉપયોગ કરો છો તેના પર ડેટાનું ઉલ્લંઘન થયું છે. Chrome તમને તરત જ તમારા સાચવેલા પાસવર્ડ ચેક કરવાનો અને <ph name="ORIGIN" /> પરનો તમારો પાસવર્ડ બદલવાનો સુઝાવ આપે છે.</translation>
 <translation id="1740951997222943430">એક માન્ય સમાપ્તિ મહિનો દાખલ કરો</translation>
 <translation id="1741613555002899862">જ્યારે DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> હોય, ત્યારે DnsOverHttpsTemplate નીતિ અને માન્ય સ્ટ્રિંગનો ઉલ્લેખ કરવો આવશ્યક છે.</translation>
@@ -607,6 +608,7 @@
 <translation id="3897092660631435901">મેનૂ</translation>
 <translation id="3901925938762663762">કાર્ડની સમયસીમા સમાપ્ત થઇ ગઈ છે</translation>
 <translation id="3906600011954732550">B5-અતિરિક્ત</translation>
+<translation id="3906954721959377182">ટૅબ્લેટ</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">CVCને બદલે WebAuthnનો ઉપયોગ કરીએ?</translation>
 <translation id="3946209740501886391">આ સાઇટ પર હંમેશાં પૂછો</translation>
@@ -1531,7 +1533,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 ક્રેડિટ કાર્ડ}one{# ક્રેડિટ કાર્ડ}other{# ક્રેડિટ કાર્ડ}}</translation>
 <translation id="8473863474539038330">સરનામા અને વધુ</translation>
 <translation id="8479754468255770962">નીચેની ડાબી બાજુએ સ્ટેપલ લગાવો</translation>
-<translation id="8481133456511676116">શું તમારો અર્થ <ph name="DOMAIN" /> હતો?</translation>
 <translation id="8483780878231876732">તમારા Google એકાઉન્ટમાંથી કાર્ડ્સનો ઉપયોગ કરવા માટે, Chromeમાં સાઇન ઇન કરો</translation>
 <translation id="8488350697529856933">આમને લાગુ</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> એ પ્રતિસાદ આપવા માટે ઘણો સમય લીધો.</translation>

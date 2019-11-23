@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+// Accessibility identifier for a JavaScript dialog.
+extern NSString* const kJavaScriptDialogAccessibilityIdentifier;
 // Accessibility identifier added to the text field of JavaScript prompts.
 extern NSString* const kJavaScriptDialogTextFieldAccessibilityIdentifier;
 

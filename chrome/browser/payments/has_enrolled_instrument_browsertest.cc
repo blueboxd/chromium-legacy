@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/payments/personal_data_manager_test_util.h"
@@ -12,6 +13,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/payments/core/features.h"
+#include "components/payments/core/journey_logger.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -268,6 +270,8 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentTest, InvalidCardNumber) {
 IN_PROC_BROWSER_TEST_F(
     HasEnrolledInstrumentTestWithStrictHasEnrolledAutofillInstrument,
     InvalidCardNumber) {
+  base::HistogramTester histogram_tester;
+
   autofill::AutofillProfile address = autofill::test::GetFullProfile();
   test::AddAutofillProfile(GetActiveWebContents()->GetBrowserContext(),
                            address);
@@ -287,6 +291,15 @@ IN_PROC_BROWSER_TEST_F(
 
   EXPECT_EQ(not_supported_message(),
             content::EvalJs(GetActiveWebContents(), "show()"));
+
+  // TODO(crbug.com/1027322): Fix NoShow logging on Android and add histogram
+  // checks to all other tests.
+#if !defined(OS_ANDROID)
+  histogram_tester.ExpectBucketCount(
+      "PaymentRequest.CheckoutFunnel.NoShow",
+      JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD, 1);
+#endif
+
   EXPECT_EQ(
       not_supported_message(),
       content::EvalJs(GetActiveWebContents(), "show({requestShipping:true})"));

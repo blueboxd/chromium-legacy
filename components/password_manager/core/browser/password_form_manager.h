@@ -266,6 +266,12 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   PasswordStore::FormDigest ConstructObservedFormDigest();
 
+  // Returns whether |possible_username| should be used for offering the
+  // username to save on username first flow. The decision is based on server
+  // predictions, data from FieldInfoManager and whether |possible_username|
+  // looks valid.
+  bool UsePossibleUsername(const PossibleUsernameData* possible_username);
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 

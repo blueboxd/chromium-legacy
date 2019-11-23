@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ή <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Λειτουργία επισκόπησης</translation>
 <translation id="4382340674111381977">Επιστροφή στην προηγούμενη σελίδα</translation>
+<translation id="4458670250301149821">Μετακινήστε το εικονίδιο μιας εφαρμογής μέσα ή έξω από το αρχείο του πλέγματος εφαρμογών.</translation>
 <translation id="4472417192667361414">Ρυθμίσεις συστήματος και οθόνης</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, μετά <ph name="LEFT" /> ή <ph name="RIGHT" /> ή <ph name="UP" /> ή <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Ανατρέξτε στον Βοηθό συντομεύσεων πληκτρολογίου</translation>
 <translation id="4628718545549558538">Άνοιγμα της περιοχής κατάστασης (εκεί που εμφανίζεται η εικόνα του λογαριασμού σας)</translation>
 <translation id="4642092649622328492">Λήψη μερικού στιγμιότυπου οθόνης</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Διαγραφή του επόμενου γράμματος (διαγραφή επόμενου)</translation>
 <translation id="7500368597227394048">ενωτικό</translation>
 <translation id="7611271430932669992">Μετατόπιση εστίασης σε αναδυόμενα παράθυρα και παράθυρα διαλόγου</translation>
+<translation id="7635348532214572995">Μετακινήστε το εικονίδιο μιας εφαρμογής στο πλέγμα εφαρμογών</translation>
 <translation id="766326951329901120">Επικόλληση περιεχομένου από το πρόχειρο ως απλό κείμενο</translation>
 <translation id="7703010453515335249">Αριστερή αγκύλη</translation>
 <translation id="7724603315864178912">Αποκοπή</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Επικόλληση περιεχομένου από το πρόχειρο</translation>
 <translation id="9052808072970550123">Εναλλαγή στον επόμενο χρήστη</translation>
 <translation id="906458777597946297">Μεγιστοποίηση παραθύρου</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, μετά <ph name="LEFT" /> ή <ph name="RIGHT" /> ή <ph name="UP" /> ή <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Μετάβαση στην αρχή της γραμμής</translation>
 <translation id="9106898733795143799">Πρόγραμμα περιήγησης στον ιστό και σε σελίδες</translation>
 <translation id="9162942292291287644">Κανένα αποτέλεσμα αναζήτησης για <ph name="QUERY" /></translation>

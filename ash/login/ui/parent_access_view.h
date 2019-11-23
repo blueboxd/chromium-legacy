@@ -187,6 +187,9 @@ class ASH_EXPORT ParentAccessView : public views::DialogDelegateView,
   // Auto submit code when the last input has been inserted.
   bool auto_submit_enabled_ = true;
 
+  // Whether view background should be blurred.
+  bool blur_background_ = false;
+
   views::Label* title_label_ = nullptr;
   views::Label* description_label_ = nullptr;
   AccessCodeInput* access_code_view_ = nullptr;

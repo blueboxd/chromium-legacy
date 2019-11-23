@@ -175,6 +175,7 @@
 <translation id="173080396488393970">لا يتم دعم هذا النوع من البطاقات</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">جرّب الاتصال بمشرف النظام.</translation>
+<translation id="1736420071277903564">جهاز الكمبيوتر</translation>
 <translation id="1739107442478692187">‏حدثت عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه. يقترح متصفّح Chrome التحقق من كلمات المرور المحفوظة وتغيير كلمات المرور على <ph name="ORIGIN" /> الآن.</translation>
 <translation id="1740951997222943430">أدخِل شهر انتهاء صلاحية صحيح</translation>
 <translation id="1741613555002899862">‏يجب أن تكون محدّدة وتُمثّل سلسلة صالحة عندما تكون DnsOverHttpsMode مضبوطة على <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -610,6 +611,7 @@
 <translation id="3897092660631435901">قائمة</translation>
 <translation id="3901925938762663762">انتهت صلاحية البطاقة</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">جهاز لوحي</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">‏هل تريد استخدم WebAuthn بدلاً من رمز التحقق من البطاقة (CVC)؟</translation>
 <translation id="3946209740501886391">السؤال دائمًا على موقع الويب هذا</translation>
@@ -1535,7 +1537,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{بطاقة ائتمان واحدة}zero{# بطاقة ائتمان}two{بطاقتا ائتمان (#)}few{# بطاقات ائتمان}many{# بطاقة ائتمان}other{# بطاقة ائتمان}}</translation>
 <translation id="8473863474539038330">العناوين والمزيد</translation>
 <translation id="8479754468255770962">وضع دبوس أسفل اليسار</translation>
-<translation id="8481133456511676116">هل كنت تقصد <ph name="DOMAIN" />؟</translation>
 <translation id="8483780878231876732">‏لاستخدام البطاقات من حسابك في Google، يُرجى تسجيل الدخول إلى Chrome</translation>
 <translation id="8488350697529856933">تنطبق على</translation>
 <translation id="8498891568109133222">استغرق <ph name="HOST_NAME" /> وقتًا أطول مما يجب للاستجابة.</translation>

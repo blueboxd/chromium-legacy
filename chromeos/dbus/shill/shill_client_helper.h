@@ -40,37 +40,33 @@ class ShillClientHelper {
  public:
   class RefHolder;
 
-  // A callback to handle PropertyChanged signals.
-  typedef base::Callback<void(const std::string& name,
-                              const base::Value& value)>
-      PropertyChangedHandler;
-
   // A callback to handle responses for methods with DictionaryValue results.
-  typedef base::Callback<void(DBusMethodCallStatus call_status,
-                              const base::DictionaryValue& result)>
-      DictionaryValueCallback;
+  using DictionaryValueCallback =
+      base::OnceCallback<void(DBusMethodCallStatus call_status,
+                              const base::DictionaryValue& result)>;
 
   // A callback to handle responses for methods with DictionaryValue results.
   // This is used by CallDictionaryValueMethodWithErrorCallback.
-  typedef base::Callback<void(const base::DictionaryValue& result)>
-      DictionaryValueCallbackWithoutStatus;
+  using DictionaryValueCallbackWithoutStatus =
+      base::OnceCallback<void(const base::DictionaryValue& result)>;
 
   // A callback to handle responses of methods returning a ListValue.
-  typedef base::Callback<void(const base::ListValue& result)> ListValueCallback;
+  using ListValueCallback =
+      base::OnceCallback<void(const base::ListValue& result)>;
 
   // A callback to handle errors for method call.
-  typedef base::Callback<void(const std::string& error_name,
-                              const std::string& error_message)>
-      ErrorCallback;
+  using ErrorCallback =
+      base::OnceCallback<void(const std::string& error_name,
+                              const std::string& error_message)>;
 
   // A callback that handles responses for methods with string results.
-  typedef base::Callback<void(const std::string& result)> StringCallback;
+  using StringCallback = base::OnceCallback<void(const std::string& result)>;
 
   // A callback that handles responses for methods with boolean results.
-  typedef base::Callback<void(bool result)> BooleanCallback;
+  using BooleanCallback = base::OnceCallback<void(bool result)>;
 
   // Callback used to notify owner when this can be safely released.
-  typedef base::Callback<void(ShillClientHelper* helper)> ReleasedCallback;
+  using ReleasedCallback = base::OnceCallback<void(ShillClientHelper* helper)>;
 
   explicit ShillClientHelper(dbus::ObjectProxy* proxy);
 
@@ -96,41 +92,39 @@ class ShillClientHelper {
                       VoidDBusMethodCallback callback);
 
   // Calls a method with an object path result where there is an error callback.
-  void CallObjectPathMethodWithErrorCallback(
-      dbus::MethodCall* method_call,
-      ObjectPathCallback callback,
-      const ErrorCallback& error_callback);
+  void CallObjectPathMethodWithErrorCallback(dbus::MethodCall* method_call,
+                                             ObjectPathCallback callback,
+                                             ErrorCallback error_callback);
 
   // Calls a method with a dictionary value result.
   void CallDictionaryValueMethod(dbus::MethodCall* method_call,
-                                 const DictionaryValueCallback& callback);
+                                 DictionaryValueCallback callback);
 
   // Calls a method without results with error callback.
   void CallVoidMethodWithErrorCallback(dbus::MethodCall* method_call,
-                                       const base::Closure& callback,
-                                       const ErrorCallback& error_callback);
+                                       base::OnceClosure callback,
+                                       ErrorCallback error_callback);
 
   // Calls a method with a boolean result with error callback.
   void CallBooleanMethodWithErrorCallback(dbus::MethodCall* method_call,
-                                          const BooleanCallback& callback,
-                                          const ErrorCallback& error_callback);
+                                          BooleanCallback callback,
+                                          ErrorCallback error_callback);
 
   // Calls a method with a string result with error callback.
   void CallStringMethodWithErrorCallback(dbus::MethodCall* method_call,
-                                         const StringCallback& callback,
-                                         const ErrorCallback& error_callback);
+                                         StringCallback callback,
+                                         ErrorCallback error_callback);
 
   // Calls a method with a dictionary value result with error callback.
   void CallDictionaryValueMethodWithErrorCallback(
       dbus::MethodCall* method_call,
-      const DictionaryValueCallbackWithoutStatus& callback,
-      const ErrorCallback& error_callback);
+      DictionaryValueCallbackWithoutStatus callback,
+      ErrorCallback error_callback);
 
   // Calls a method with a boolean array result with error callback.
-  void CallListValueMethodWithErrorCallback(
-      dbus::MethodCall* method_call,
-      const ListValueCallback& callback,
-      const ErrorCallback& error_callback);
+  void CallListValueMethodWithErrorCallback(dbus::MethodCall* method_call,
+                                            ListValueCallback callback,
+                                            ErrorCallback error_callback);
 
   const dbus::ObjectProxy* object_proxy() const { return proxy_; }
 
@@ -167,7 +161,6 @@ class ShillClientHelper {
   dbus::ObjectProxy* proxy_;
   ReleasedCallback released_callback_;
   int active_refs_;
-  PropertyChangedHandler property_changed_handler_;
   base::ObserverList<ShillPropertyChangedObserver,
                      true /* check_empty */>::Unchecked observer_list_;
   std::vector<std::string> interfaces_to_be_monitored_;

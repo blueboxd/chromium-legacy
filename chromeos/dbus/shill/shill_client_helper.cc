@@ -34,11 +34,12 @@ class ShillClientHelper::RefHolder {
   }
   ~RefHolder() {
     // Release the helper on the origin thread.
-    base::Closure closure = base::Bind(&ShillClientHelper::Release, helper_);
+    base::OnceClosure closure =
+        base::BindOnce(&ShillClientHelper::Release, helper_);
     if (origin_task_runner_->BelongsToCurrentThread()) {
-      closure.Run();
+      std::move(closure).Run();
     } else {
-      origin_task_runner_->PostTask(FROM_HERE, closure);
+      origin_task_runner_->PostTask(FROM_HERE, std::move(closure));
     }
   }
 
@@ -57,38 +58,42 @@ const char kInvalidResponseErrorMessage[] = "Invalid response.";
 // Callback object once completed.
 void OnBooleanMethodWithErrorCallback(
     ShillClientHelper::RefHolder* ref_holder,
-    const ShillClientHelper::BooleanCallback& callback,
-    const ShillClientHelper::ErrorCallback& error_callback,
+    ShillClientHelper::BooleanCallback callback,
+    ShillClientHelper::ErrorCallback error_callback,
     dbus::Response* response) {
   if (!response) {
-    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    std::move(error_callback)
+        .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
   dbus::MessageReader reader(response);
   bool result;
   if (!reader.PopBool(&result)) {
-    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    std::move(error_callback)
+        .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 void OnStringMethodWithErrorCallback(
     ShillClientHelper::RefHolder* ref_holder,
-    const ShillClientHelper::StringCallback& callback,
-    const ShillClientHelper::ErrorCallback& error_callback,
+    ShillClientHelper::StringCallback callback,
+    ShillClientHelper::ErrorCallback error_callback,
     dbus::Response* response) {
   if (!response) {
-    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    std::move(error_callback)
+        .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
   dbus::MessageReader reader(response);
   std::string result;
   if (!reader.PopString(&result)) {
-    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    std::move(error_callback)
+        .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 // Handles responses for methods without results.
@@ -102,16 +107,18 @@ void OnVoidMethod(ShillClientHelper::RefHolder* ref_holder,
 void OnObjectPathMethodWithoutStatus(
     ShillClientHelper::RefHolder* ref_holder,
     ObjectPathCallback callback,
-    const ShillClientHelper::ErrorCallback& error_callback,
+    ShillClientHelper::ErrorCallback error_callback,
     dbus::Response* response) {
   if (!response) {
-    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    std::move(error_callback)
+        .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
   dbus::MessageReader reader(response);
   dbus::ObjectPath result;
   if (!reader.PopObjectPath(&result)) {
-    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    std::move(error_callback)
+        .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
   std::move(callback).Run(result);
@@ -120,11 +127,11 @@ void OnObjectPathMethodWithoutStatus(
 // Handles responses for methods with DictionaryValue results.
 void OnDictionaryValueMethod(
     ShillClientHelper::RefHolder* ref_holder,
-    const ShillClientHelper::DictionaryValueCallback& callback,
+    ShillClientHelper::DictionaryValueCallback callback,
     dbus::Response* response) {
   if (!response) {
     base::DictionaryValue result;
-    callback.Run(DBUS_METHOD_CALL_FAILURE, result);
+    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, result);
     return;
   }
   dbus::MessageReader reader(response);
@@ -132,54 +139,56 @@ void OnDictionaryValueMethod(
   base::DictionaryValue* result = NULL;
   if (!value.get() || !value->GetAsDictionary(&result)) {
     base::DictionaryValue result;
-    callback.Run(DBUS_METHOD_CALL_FAILURE, result);
+    std::move(callback).Run(DBUS_METHOD_CALL_FAILURE, result);
     return;
   }
-  callback.Run(DBUS_METHOD_CALL_SUCCESS, *result);
+  std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS, *result);
 }
 
 // Handles responses for methods without results.
 void OnVoidMethodWithErrorCallback(ShillClientHelper::RefHolder* ref_holder,
-                                   const base::Closure& callback,
+                                   base::OnceClosure callback,
                                    dbus::Response* response) {
-  callback.Run();
+  std::move(callback).Run();
 }
 
 // Handles responses for methods with DictionaryValue results.
 // Used by CallDictionaryValueMethodWithErrorCallback().
 void OnDictionaryValueMethodWithErrorCallback(
     ShillClientHelper::RefHolder* ref_holder,
-    const ShillClientHelper::DictionaryValueCallbackWithoutStatus& callback,
-    const ShillClientHelper::ErrorCallback& error_callback,
+    ShillClientHelper::DictionaryValueCallbackWithoutStatus callback,
+    ShillClientHelper::ErrorCallback error_callback,
     dbus::Response* response) {
   dbus::MessageReader reader(response);
   std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   base::DictionaryValue* result = NULL;
   if (!value.get() || !value->GetAsDictionary(&result)) {
-    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    std::move(error_callback)
+        .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
-  callback.Run(*result);
+  std::move(callback).Run(*result);
 }
 
 // Handles responses for methods with ListValue results.
 void OnListValueMethodWithErrorCallback(
     ShillClientHelper::RefHolder* ref_holder,
-    const ShillClientHelper::ListValueCallback& callback,
-    const ShillClientHelper::ErrorCallback& error_callback,
+    ShillClientHelper::ListValueCallback callback,
+    ShillClientHelper::ErrorCallback error_callback,
     dbus::Response* response) {
   dbus::MessageReader reader(response);
   std::unique_ptr<base::Value> value(dbus::PopDataAsValue(&reader));
   base::ListValue* result = NULL;
   if (!value.get() || !value->GetAsList(&result)) {
-    error_callback.Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
+    std::move(error_callback)
+        .Run(kInvalidResponseErrorName, kInvalidResponseErrorMessage);
     return;
   }
-  callback.Run(*result);
+  std::move(callback).Run(*result);
 }
 
 // Handles running appropriate error callbacks.
-void OnError(const ShillClientHelper::ErrorCallback& error_callback,
+void OnError(ShillClientHelper::ErrorCallback error_callback,
              dbus::ErrorResponse* response) {
   std::string error_name;
   std::string error_message;
@@ -189,7 +198,7 @@ void OnError(const ShillClientHelper::ErrorCallback& error_callback,
     error_name = response->GetErrorName();
     reader.PopString(&error_message);
   }
-  error_callback.Run(error_name, error_message);
+  std::move(error_callback).Run(error_name, error_message);
 }
 
 }  // namespace
@@ -204,7 +213,7 @@ ShillClientHelper::~ShillClientHelper() {
 
 void ShillClientHelper::SetReleasedCallback(ReleasedCallback callback) {
   CHECK(released_callback_.is_null());
-  released_callback_ = callback;
+  released_callback_ = std::move(callback);
 }
 
 void ShillClientHelper::AddPropertyChangedObserver(
@@ -244,11 +253,12 @@ void ShillClientHelper::MonitorPropertyChangedInternal(
     const std::string& interface_name) {
   // We are not using dbus::PropertySet to monitor PropertyChanged signal
   // because the interface is not "org.freedesktop.DBus.Properties".
-  proxy_->ConnectToSignal(interface_name, shill::kMonitorPropertyChanged,
-                          base::Bind(&ShillClientHelper::OnPropertyChanged,
-                                     weak_ptr_factory_.GetWeakPtr()),
-                          base::BindOnce(&ShillClientHelper::OnSignalConnected,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  proxy_->ConnectToSignal(
+      interface_name, shill::kMonitorPropertyChanged,
+      base::BindRepeating(&ShillClientHelper::OnPropertyChanged,
+                          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ShillClientHelper::OnSignalConnected,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ShillClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
@@ -264,96 +274,106 @@ void ShillClientHelper::CallVoidMethod(dbus::MethodCall* method_call,
 void ShillClientHelper::CallObjectPathMethodWithErrorCallback(
     dbus::MethodCall* method_call,
     ObjectPathCallback callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
+  auto error_callback_adapted =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnObjectPathMethodWithoutStatus,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                     std::move(callback), error_callback),
-      base::BindOnce(&OnError, error_callback));
+                     std::move(callback), error_callback_adapted),
+      base::BindOnce(&OnError, error_callback_adapted));
 }
 
 void ShillClientHelper::CallDictionaryValueMethod(
     dbus::MethodCall* method_call,
-    const DictionaryValueCallback& callback) {
+    DictionaryValueCallback callback) {
   DCHECK(!callback.is_null());
   proxy_->CallMethod(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnDictionaryValueMethod,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                     callback));
+                     std::move(callback)));
 }
 
 void ShillClientHelper::CallVoidMethodWithErrorCallback(
     dbus::MethodCall* method_call,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    base::OnceClosure callback,
+    ErrorCallback error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnVoidMethodWithErrorCallback,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                     callback),
-      base::BindOnce(&OnError, error_callback));
+                     std::move(callback)),
+      base::BindOnce(&OnError, std::move(error_callback)));
 }
 
 void ShillClientHelper::CallBooleanMethodWithErrorCallback(
     dbus::MethodCall* method_call,
-    const BooleanCallback& callback,
-    const ErrorCallback& error_callback) {
+    BooleanCallback callback,
+    ErrorCallback error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
+  auto error_callback_adapted =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnBooleanMethodWithErrorCallback,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                     callback, error_callback),
-      base::BindOnce(&OnError, error_callback));
+                     std::move(callback), error_callback_adapted),
+      base::BindOnce(&OnError, error_callback_adapted));
 }
 
 void ShillClientHelper::CallStringMethodWithErrorCallback(
     dbus::MethodCall* method_call,
-    const StringCallback& callback,
-    const ErrorCallback& error_callback) {
+    StringCallback callback,
+    ErrorCallback error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
+  auto error_callback_adapted =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnStringMethodWithErrorCallback,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                     callback, error_callback),
-      base::BindOnce(&OnError, error_callback));
+                     std::move(callback), error_callback_adapted),
+      base::BindOnce(&OnError, error_callback_adapted));
 }
 
 void ShillClientHelper::CallDictionaryValueMethodWithErrorCallback(
     dbus::MethodCall* method_call,
-    const DictionaryValueCallbackWithoutStatus& callback,
-    const ErrorCallback& error_callback) {
+    DictionaryValueCallbackWithoutStatus callback,
+    ErrorCallback error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
+  auto error_callback_adapted =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnDictionaryValueMethodWithErrorCallback,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                     callback, error_callback),
-      base::BindOnce(&OnError, error_callback));
+                     std::move(callback), error_callback_adapted),
+      base::BindOnce(&OnError, error_callback_adapted));
 }
 
 void ShillClientHelper::CallListValueMethodWithErrorCallback(
     dbus::MethodCall* method_call,
-    const ListValueCallback& callback,
-    const ErrorCallback& error_callback) {
+    ListValueCallback callback,
+    ErrorCallback error_callback) {
   DCHECK(!callback.is_null());
   DCHECK(!error_callback.is_null());
+  auto error_callback_adapted =
+      base::AdaptCallbackForRepeating(std::move(error_callback));
   proxy_->CallMethodWithErrorCallback(
       method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
       base::BindOnce(&OnListValueMethodWithErrorCallback,
                      base::Owned(new RefHolder(weak_ptr_factory_.GetWeakPtr())),
-                     callback, error_callback),
-      base::BindOnce(&OnError, error_callback));
+                     std::move(callback), error_callback_adapted),
+      base::BindOnce(&OnError, error_callback_adapted));
 }
 
 namespace {

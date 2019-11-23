@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1275285675049378717">درحال تأمین برق <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، قدرت سیگنال<ph name="SIGNAL_STRENGTH" />، مدیریت‌شده توسط سرپرست</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> ساعت <ph name="COME_BACK_TIME" /> برگردید.</translation>
 <translation id="1290331692326790741">سیگنال ضعیف</translation>
 <translation id="1293264513303784526">‏دستگاه USB-C (درگاه سمت چپ)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">نشان دادن تنظیمات بلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">همیشه قفسه نشان داده شود</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، باتری تلفن<ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">سرریز</translation>
 <translation id="1346748346194534595">راست</translation>
 <translation id="1351937230027495976">کوچک کردن منو</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">حذف این کاربر</translation>
 <translation id="1654477262762802994">شروع پُرسمان صوتی</translation>
 <translation id="1658406695958299976">متأسفیم، گذرواژه‌تان هنوز تأیید نشده است. توجه: اگر به‌تازگی گذرواژه‌تان را تغییر داده‌اید، گذرواژه جدید شما هنگامی‌که از سیستم خارج شوید، اعمال می‌شود؛ لطفاً اینجا از گذرواژه قدیمی خود استفاده کنید.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، مدیریت‌شده توسط سرپرست</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
 <translation id="1698760176351776263">‏نشانی IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">شناسایی نشد</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">پیامی تایپ کنید</translation>
 <translation id="2050339315714019657">عمودی</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">روشنایی صفحه‌کلید</translation>
 <translation id="209965399369889474">به شبکه متصل نیست</translation>
 <translation id="2126242104232412123">فضای کار جدید</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">هیچ شبکه تلفن همراهی دردسترس نیست</translation>
 <translation id="3249513730522716925">پنجره <ph name="WINDOW_TITLE" /> از میز <ph name="ACTIVE_DESK" /> به میز <ph name="TARGET_DESK" /> منتقل شد</translation>
 <translation id="3255483164551725916">‏What can you do?‎ (چه کاری می‌توانی انجام دهی؟)</translation>
-<translation id="3277674767125718685">دکمه میزان صدا روشن است.</translation>
 <translation id="3290356915286466215">ناامن</translation>
 <translation id="3294437725009624529">مهمان</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> همچنان می‌تواند بعداً به سیستم وارد شود.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">حساب تحت مدیریت <ph name="MANAGER_EMAIL" /> است</translation>
 <translation id="3573179567135747900">به "<ph name="FROM_LOCALE" />" تغییر دهید (به راه‌اندازی دوباره نیاز دارد)</translation>
 <translation id="3576141592585647168">تغییر منطقه زمانی</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />، مدیریت شده توسط سرپرست‌</translation>
 <translation id="3595596368722241419">باتری پر است</translation>
 <translation id="3604801046548457007">میز <ph name="DESK_TITILE" /> ایجاد شد</translation>
 <translation id="3606978283550408104">صفحه‌نمایش بریل متصل شد.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">قوی</translation>
 <translation id="4918086044614829423">می‌پذیرم</translation>
 <translation id="4924411785043111640">بازراه‌اندازی و بازنشانی</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">پیمایش به بالا</translation>
 <translation id="4961318399572185831">فرستادن صفحه</translation>
 <translation id="5030687792513154421">وقت تمام شد</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> به تلفن جدیدی متصل است</translation>
 <translation id="5083553833479578423">باز کردن قفل ویژگی‌های بیشتری از «دستیار».</translation>
 <translation id="5136175204352732067">صفحه‌کلید دیگری متصل شد</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">دستگاه‌های فرستادن موجود هستند</translation>
 <translation id="5207949376430453814">برجسته کردن هشتک نوشتار</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="523505283826916779">تنظیمات دسترس‌پذیری</translation>
 <translation id="5260676007519551770">میز ۴</translation>
 <translation id="5283198616748585639">افزودن ۱ دقیقه</translation>
+<translation id="5286194356314741248">اسکن کردن</translation>
 <translation id="5302048478445481009">زبان</translation>
 <translation id="5313326810920013265">تنظیمات بلوتوث</translation>
 <translation id="5331975486040154427">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="5379115545237091094">تلاش‌های ناموفق زیادی انجام شده است</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">‏میزان مصرف و سابقه این کاربر می‌تواند توسط مدیر (<ph name="MANAGER_EMAIL" />) در chrome.com بازبینی شود.</translation>
 <translation id="5430931332414098647">اشتراک‌گذاری اینترنت فوری</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">به صورت خودکار در عرض <ph name="LOGOUT_TIME_LEFT" /> از سیستم خارج می‌شوید.</translation>
 <translation id="6064337552080329342">متأسفانه، گذرواژه شما تأیید نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="607652042414456612">رایانه شما توسط دستگاه‌های بلوتوث نزدیک قابل شناسایی است و با نام «<ph name="NAME" />» و آدرس <ph name="ADDRESS" /> نشان داده می‌شود</translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال<ph name="SIGNAL_STRENGTH" />، مدیریت‌شده توسط سرپرست</translation>
 <translation id="612734058257491180">‏«دستیار Google» در جلسه مهمان دردسترس نیست.</translation>
 <translation id="615957422585914272">نمایش صفحه‌کلید روی صفحه</translation>
 <translation id="6164005077879661055">با حذف این کاربر نظارت‌شده، کلیه فایل‌ها و داده‌های محلی مربوط به کاربر نظارت‌شده برای همیشه حذف خواهند شد. وب‌سایت‌های بازدید شده و تنظیمات این کاربر نظارت‌شده همچنان برای مدیر در <ph name="MANAGEMENT_URL" /> قابل مشاهده خواهد بود.</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="6665545700722362599">به وب‌سایت‌ها، برنامه‌ها و افزونه‌ها برای استفاده از سرویس‌ها، میکروفون و دوربین یا سایر ویژگی‌های دستگاه مجوز بدهید</translation>
 <translation id="6670153871843998651">میز ۳</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، مدیریت‌شده توسط سرپرست</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">لازم است صفحه‌کلید قابل جدا شدن به‌روزرسانی ضروری شود</translation>
 <translation id="6700713906295497288">‏دکمه منو IME</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">ردیابی عملکرد روشن است</translation>
 <translation id="6752912906630585008">میز <ph name="REMOVED_DESK" /> برداشته شد و با میز <ph name="RECEIVE_DESK" /> ادغام شد</translation>
 <translation id="6777216307882431711">‏درحال تأمین برق دستگاه‌های USB-C متصل</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
 <translation id="6820676911989879663">استراحت کنید!</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">ممکن است شبکه پایش شود</translation>
 <translation id="7536035074519304529">‏نشانی IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">وقت خواب</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، باتری تلفن <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />،‏ <ph name="SPECIFIED_RESOLUTION" /> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> تغییر کرد</translation>
 <translation id="7562368315689366235">پالت صورتک</translation>
 <translation id="7564874036684306347">انتقال پنجره‌ها به میز کار دیگر می‌تواند به رفتار غیرمنتظره منجر شود. اعلان‌ها، پنجره‌ها و کادرهای گفتگوی بعدی ممکن است بین میز کارها تقسیم شوند.</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">جابه‌جایی موقعیت منو</translation>
 <translation id="9089416786594320554">روش‌های ورودی</translation>
 <translation id="9091626656156419976">نمایشگر <ph name="DISPLAY_NAME" /> برداشته شد</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، مدیریت‌شده توسط سرپرست</translation>
 <translation id="9151726767154816831">‏راه‌اندازی مجدد و Powerwash برای به‌روزرسانی</translation>
 <translation id="9179259655489829027">این ویژگی امکان می‌دهد بدون نیاز به گذرواژه، به هر کاربری که به سیستم واردشده به‌سرعت دسترسی داشته باشید. تنها برای حساب‌های مورد اعتمادتان از این ویژگی استفاده کنید.</translation>
 <translation id="9183456764293710005">ذره‌بین تمام‌صفحه</translation>

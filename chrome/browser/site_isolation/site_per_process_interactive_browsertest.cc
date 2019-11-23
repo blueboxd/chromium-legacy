@@ -1286,14 +1286,23 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractivePDFTest,
   content::RenderFrameHost* main_frame = embedder_web_contents->GetMainFrame();
   content::RenderFrameHost* child_text_area = ChildFrameAt(main_frame, 0);
   ASSERT_TRUE(content::ExecJs(child_text_area, "window.focus();"));
-  ASSERT_TRUE(content::EvalJs(
-                  embedder_web_contents,
-                  "new Promise((resolve) => {"
-                  "  iframe1doc = "
-                  "      document.getElementById('iframe1').contentDocument;"
-                  "  resolve(iframe1doc.hasFocus());"
-                  "});")
-                  .ExtractBool());
+  bool starts_focused =
+      content::EvalJs(
+          embedder_web_contents,
+          "new Promise((resolve) => {"
+          "  iframe1doc = "
+          "      document.getElementById('iframe1').contentDocument;"
+          "  resolve(iframe1doc.hasFocus());"
+          "});")
+          .ExtractBool();
+  if (!starts_focused) {
+    LOG(ERROR) << "Embedder focused frame = "
+               << embedder_web_contents->GetFocusedFrame()
+               << ", main frame = " << main_frame
+               << ", iframe_text = " << child_text_area
+               << ", iframe_pdf = " << ChildFrameAt(main_frame, 1);
+  }
+  ASSERT_TRUE(starts_focused);
 
   GURL pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
   ASSERT_TRUE(content::ExecJs(

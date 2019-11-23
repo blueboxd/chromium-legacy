@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">Palieskite mygtuką „Pradėi registravimą“, kad rinktumėte būsimus „JavaScript“ pulto žurnalus ir klaidas iš visų skirtukų. Žurnalai bus renkami (ir saugomi tik atmintyje), kol šis puslapis bus uždarytas arba kol paliesite „Stabdyti registravimą“.</translation>
 <translation id="1657011748321897393">Bendrinant įvyko klaida, nes nesate prisijungę prie tinklo.</translation>
 <translation id="165877110639533037">Nėra atidarytų skirtukų</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> į <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Jei norite gauti žymes visuose įrenginiuose, įjunkite sinchronizavimą.</translation>
 <translation id="1687475363370981210">Pažymėti visus kaip skaitytus</translation>
 <translation id="1690731385917361335">Nėra jokių elementų</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2690858294534178585">Fotoaparatas naudojamas</translation>
 <translation id="2691653761409724435">Nepasiekiama neprisijungus</translation>
+<translation id="2695507686909505111">Puslapis išverstas</translation>
 <translation id="2702801445560668637">Skait. sąraš.</translation>
 <translation id="2704606927547763573">Nukopij.</translation>
 <translation id="2709516037105925701">Automatinis pildymas</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">Nėra interneto ryšio.</translation>
 <translation id="3783017676699494206">Išsaugoti vaizdą</translation>
 <translation id="3789841737615482174">Įdiegti</translation>
+<translation id="3803696231112616155">Siūlyti versti šią svetainę</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3897092660631435901">Meniu</translation>
 <translation id="3915450441834151894">Svetainės informacija</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">Šis puslapis bus atidarytas kitoje programoje.</translation>
 <translation id="4375040482473363939">QR kodo paieška</translation>
 <translation id="4378154925671717803">Telefonas</translation>
+<translation id="4389019817280890563">Palieskite, kad pakeistumėte kalbą.</translation>
 <translation id="441868831736628555">Privatumo pranešimas</translation>
 <translation id="4454246407045105932">Pridėti kalbą</translation>
 <translation id="4476574785019001431">Nustatymai</translation>
@@ -344,6 +348,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="5871497086027727873">Perkelta elementų: 1</translation>
 <translation id="5897956970858271241">Apsilankyti nukopijuotos nuorodos adresu</translation>
 <translation id="5911030830365207728">„Google“ vertėjas</translation>
+<translation id="5913600720976431809">Puslapio vertimo parinktys</translation>
 <translation id="5916664084637901428">Įjungta</translation>
 <translation id="5938160824633642847">Jūsų įrenginys beveik pilnas. Atlaisvinkite vietos ir bandykite dar kartą.</translation>
 <translation id="5948291296578561264">Taip galėsite išsaugoti nuotraukas nuotraukų bibliotekoje.</translation>
@@ -375,6 +380,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6219688215832490856">Niekada neversti</translation>
 <translation id="6254066287920239840">Atidarykite nuorodas programoje, o ne naršyklėje.</translation>
 <translation id="6255097610484507482">Kredito kortelės informacijos redagavimas</translation>
+<translation id="6284652193729350524">Siūlyti versti <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Atsijungti ir išjungti sinchronizavimą</translation>
 <translation id="6308436439357671616">Taip galite fotografuoti ir įkelti nuotraukas.</translation>
 <translation id="6324528485781869530">Sinchronizuojamos paskyros perjungimas</translation>
@@ -429,6 +435,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6903907808598579934">Įjungti sinchronizavimą</translation>
 <translation id="6914583639806229067">Ieškoti nukopijuoto vaizdo</translation>
 <translation id="6914783257214138813">Jūsų slaptažodžiai bus matomi visiems, kurie gali peržiūrėti eksportuotą failą.</translation>
+<translation id="6930799952781667037">Palieskite, kad pakeistumėte šią kalbą.</translation>
 <translation id="6944369514868857500">Pasirinkti kitą paskyrą</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6973630695168034713">Aplankai</translation>
@@ -458,6 +465,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7293171162284876153">Norėdami pradėti sinchronizuoti, įjunkite parinktį „Chrome“ duomenų sinchronizavimas“.</translation>
 <translation id="7336264872878993241">Atsisiųsta <ph name="PERCENT" /> proc.</translation>
 <translation id="7346909386216857016">Gerai, supratau</translation>
+<translation id="734758817008927353">Kortelės išsaugojimo parinktys</translation>
 <translation id="7348502496356775519">Žymėti</translation>
 <translation id="7383797227493018512">Skaitymo sąrašas</translation>
 <translation id="7400418766976504921">URL adresas</translation>
@@ -482,6 +490,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="7671141431838911305">ĮDIEGTI</translation>
 <translation id="7765158879357617694">Perkelti</translation>
 <translation id="7772032839648071052">Patvirtinti slaptafrazę</translation>
+<translation id="7781011649027948662">Versti puslapį?</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="778855399387580014">Pradėti paiešką naujame „Chrome“ skirtuke.</translation>
 <translation id="7791543448312431591">Pridėti</translation>

@@ -74,8 +74,14 @@ const base::Feature kSameSiteDefaultChecksMethodRigorously{
     "SameSiteDefaultChecksMethodRigorously", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
-const base::Feature kCertVerifierBuiltinFeature{
-    "CertVerifierBuiltin", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCertVerifierBuiltinFeature {
+  "CertVerifierBuiltin",
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 #endif
 
 const base::Feature kAppendFrameOriginToNetworkIsolationKey{

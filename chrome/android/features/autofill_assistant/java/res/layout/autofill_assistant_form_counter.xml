@@ -22,13 +22,17 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.BlackTitle2"/>
         <TextView
-            android:id="@+id/subtext"
+            android:id="@+id/description_line_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.BlackCaption"
-            android:visibility="gone"/>
+            android:textAppearance="@style/TextAppearance.BlackCaption"/>
+        <TextView
+            android:id="@+id/description_line_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.BlackCaption"/>
     </LinearLayout>
-    <ImageView
+    <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/decrease_button"
         android:layout_width="32dp"
         android:layout_height="32dp"
@@ -43,7 +47,7 @@
         android:minWidth="20dp"
         android:gravity="center"
         android:textAppearance="@style/TextAppearance.BlackTitle2"/>
-    <ImageView
+    <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/increase_button"
         android:layout_width="32dp"
         android:layout_height="32dp"

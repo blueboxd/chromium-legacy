@@ -46,8 +46,7 @@ ChildProcessLauncherHelper::GetFilesToMap() {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
   return CreateDefaultPosixFilesToMap(
       child_process_id(), mojo_channel_->remote_endpoint(),
-      false /* include_service_required_files */, GetProcessType(),
-      command_line());
+      /*files_to_preload=*/{}, GetProcessType(), command_line());
 }
 
 bool ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
@@ -173,17 +172,6 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
                                    priority.is_background());
   }
 }
-
-// static
-void ChildProcessLauncherHelper::SetRegisteredFilesForService(
-    const std::string& service_name,
-    std::map<std::string, base::FilePath> required_files) {
-  // No file passing from the manifest on Mac yet.
-  DCHECK(required_files.empty());
-}
-
-// static
-void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {}
 
 // static
 base::File OpenFileToShare(const base::FilePath& path,

@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> au <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Hali ya muhtasari</translation>
 <translation id="4382340674111381977">Rudi kwenye ukurasa uliotangulia</translation>
+<translation id="4458670250301149821">Sogeza aikoni ya programu nje au ndani ya folda katika gridi ya programu</translation>
 <translation id="4472417192667361414">Mipangilio ya Mwonekano na Mfumo</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, kisha <ph name="LEFT" /> au <ph name="RIGHT" /> au <ph name="UP" /> au <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Angalia Kisaidizi cha Mikato ya Kibodi</translation>
 <translation id="4628718545549558538">Fungua eneo la hali (ambako picha yako ya akaunti huonekana)</translation>
 <translation id="4642092649622328492">Piga picha ya sehemu ya skrini</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Futa herufi inayofuata (futa kuelekea mbele)</translation>
 <translation id="7500368597227394048">kistariungio</translation>
 <translation id="7611271430932669992">Sogeza uangaziaji kwenye dirisha ibukizi au visanduku</translation>
+<translation id="7635348532214572995">Sogeza aikoni ya programu kwenye gridi ya programu</translation>
 <translation id="766326951329901120">Bandika maudhui kutoka ubao wa kunakili katika muundo wa maandishi dhahiri</translation>
 <translation id="7703010453515335249">bano la kushoto</translation>
 <translation id="7724603315864178912">Kata</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Bandika maudhui kutoka ubao wa kunakili</translation>
 <translation id="9052808072970550123">Nenda kwenye mtumiaji anayefuata</translation>
 <translation id="906458777597946297">Zidisha dirisha</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, kisha <ph name="LEFT" /> au <ph name="RIGHT" /> au <ph name="UP" /> au <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Nenda kwenye mwanzo wa mstari</translation>
 <translation id="9106898733795143799">Kivinjari na Kurasa</translation>
 <translation id="9162942292291287644">Haijapata matokeo yoyote ya utafutaji wa <ph name="QUERY" /></translation>

@@ -398,7 +398,7 @@ void StatusIconLinuxDbus::OnActivate(
     dbus::ExportedObject::ResponseSender sender) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   delegate_->OnClick();
-  sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void StatusIconLinuxDbus::OnContextMenu(
@@ -409,7 +409,7 @@ void StatusIconLinuxDbus::OnContextMenu(
   int32_t x;
   int32_t y;
   if (!reader.PopInt32(&x) || !reader.PopInt32(&y)) {
-    sender.Run(nullptr);
+    std::move(sender).Run(nullptr);
     return;
   }
 
@@ -422,7 +422,7 @@ void StatusIconLinuxDbus::OnContextMenu(
   menu_runner_->RunMenuAt(
       nullptr, nullptr, gfx::Rect(gfx::Point(x, y), gfx::Size()),
       views::MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_MOUSE);
-  sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void StatusIconLinuxDbus::OnScroll(
@@ -430,7 +430,7 @@ void StatusIconLinuxDbus::OnScroll(
     dbus::ExportedObject::ResponseSender sender) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Ignore scroll events.
-  sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void StatusIconLinuxDbus::OnSecondaryActivate(
@@ -439,7 +439,7 @@ void StatusIconLinuxDbus::OnSecondaryActivate(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Intentionally ignore secondary activations.  In the future, we may decide
   // to run the same handler as regular activations.
-  sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void StatusIconLinuxDbus::UpdateMenuImpl(ui::MenuModel* model,

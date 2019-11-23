@@ -271,6 +271,11 @@ class CC_EXPORT SnapContainerData {
       const SnapSelectionStrategy& strategy,
       const SnapSearchResult& cross_axis_snap_result) const;
 
+  // Finds the snap area associated with the target snap area element id for the
+  // given axis.
+  base::Optional<SnapSearchResult> GetTargetSnapAreaSearchResult(
+      SearchAxis axis) const;
+
   // Returns all the info needed to snap at this area on the given axis,
   // including:
   // - The offset at which the snap area and the snap container meet the

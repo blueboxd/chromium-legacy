@@ -85,6 +85,14 @@ bool OffscreenFontSelector::IsPlatformFamilyMatchAvailable(
 
 void OffscreenFontSelector::ReportNotDefGlyph() const {}
 
+// TODO(crbug.com/1025945): Find a way to access the document object to report
+// OffscreenCanvas font usage in workers.
+void OffscreenFontSelector::ReportSuccessfulFontFamilyMatch(
+    const AtomicString& font_family_name) {}
+
+void OffscreenFontSelector::ReportFailedFontFamilyMatch(
+    const AtomicString& font_family_name) {}
+
 void OffscreenFontSelector::FontCacheInvalidated() {
   font_face_cache_.IncrementVersion();
 }

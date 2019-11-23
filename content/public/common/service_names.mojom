@@ -19,10 +19,6 @@ const string kBrowserServiceName = "content_browser";
 // instance which packages other browser-wide services.
 const string kPackagedServicesServiceName = "content_packaged_services";
 
-// The default service name used to identify render processes when connecting
-// them to the Service Manager.
-const string kRendererServiceName = "content_renderer";
-
 // The default service name used to identify utility processes when connecting
 // them to the Service Manager.
 const string kUtilityServiceName = "content_utility";

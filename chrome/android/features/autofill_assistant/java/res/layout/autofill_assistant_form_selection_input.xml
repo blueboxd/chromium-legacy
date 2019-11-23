@@ -3,11 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
     <TextView
         android:id="@+id/label"
@@ -16,13 +15,23 @@
         android:layout_marginBottom="4dp"
         android:textAppearance="@style/TextAppearance.BlackButtonText"/>
 
+    <LinearLayout
+        android:id="@+id/checkbox_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <!-- Choices are created in code. -->
+    </LinearLayout>
+
     <org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList
-        android:id="@+id/choice_list"
+        android:id="@+id/radiobutton_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:can_add_items="false"
         app:row_spacing="0dp"
-        app:column_spacing="8dp">
+        app:column_spacing="8dp"
+        android:visibility="gone">
         <!-- Choices are created in code. -->
     </org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList>
 </LinearLayout>

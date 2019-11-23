@@ -68,7 +68,7 @@ void MachineLearningDecisionServiceProvider::SendSmartDimDecision(
     bool defer_dimming) {
   dbus::MessageWriter writer(response.get());
   writer.AppendBool(defer_dimming);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 }  // namespace chromeos

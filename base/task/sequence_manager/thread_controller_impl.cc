@@ -322,7 +322,13 @@ MessagePump* ThreadControllerImpl::GetBoundMessagePump() const {
 void ThreadControllerImpl::AttachToMessagePump() {
   NOTREACHED();
 }
-#endif
+#endif  // OS_IOS || OS_ANDROID
+
+#if defined(OS_IOS)
+void ThreadControllerImpl::DetachFromMessagePump() {
+  NOTREACHED();
+}
+#endif  // OS_IOS
 
 }  // namespace internal
 }  // namespace sequence_manager

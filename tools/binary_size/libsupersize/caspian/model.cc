@@ -5,11 +5,8 @@
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
 #include <algorithm>
-#include <deque>
-#include <functional>
 #include <iostream>
 #include <list>
-#include <string>
 #include <tuple>
 #include <unordered_map>
 
@@ -317,10 +314,10 @@ DeltaSizeInfo::DeltaSizeInfo(const DeltaSizeInfo&) = default;
 DeltaSizeInfo& DeltaSizeInfo::operator=(const DeltaSizeInfo&) = default;
 
 void TreeNode::WriteIntoJson(
-    Json::Value* out,
     int depth,
     std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>
-        compare_func) {
+        compare_func,
+    Json::Value* out) {
   if (symbol) {
     if (symbol->IsDex()) {
       (*out)["idPath"] = std::string(symbol->FullName());
@@ -328,39 +325,45 @@ void TreeNode::WriteIntoJson(
       (*out)["idPath"] = std::string(symbol->TemplateName());
       (*out)["fullName"] = std::string(symbol->FullName());
     }
+    if (symbol->SourcePath()) {
+      (*out)["srcPath"] = symbol->SourcePath();
+    }
+    if (symbol->Component()) {
+      (*out)["component"] = symbol->Component();
+    }
   } else {
-    (*out)["idPath"] = std::string(this->id_path);
+    (*out)["idPath"] = id_path.ToString();
   }
-  (*out)["shortNameIndex"] = this->short_name_index;
+  (*out)["shortNameIndex"] = short_name_index;
   std::string type;
   if (container_type != ContainerType::kSymbol) {
     type += static_cast<char>(container_type);
   }
-  SectionId biggest_section = this->node_stats.ComputeBiggestSection();
+  SectionId biggest_section = node_stats.ComputeBiggestSection();
   type += static_cast<char>(biggest_section);
   (*out)["type"] = type;
 
-  (*out)["size"] = this->size;
-  (*out)["flags"] = this->flags;
-  this->node_stats.WriteIntoJson(&(*out)["childStats"]);
+  (*out)["size"] = size;
+  (*out)["flags"] = flags;
+  node_stats.WriteIntoJson(&(*out)["childStats"]);
 
   const size_t kMaxChildNodesToExpand = 1000;
-  if (this->children.size() > kMaxChildNodesToExpand) {
+  if (children.size() > kMaxChildNodesToExpand) {
     // When the tree is very flat, don't expand child nodes to avoid cost of
     // sending thousands of children and grandchildren to renderer.
     depth = 0;
   }
 
-  if (depth < 0 && this->children.size() > 1) {
+  if (depth < 0 && children.size() > 1) {
     (*out)["children"] = Json::Value();  // null
   } else {
     (*out)["children"] = Json::Value(Json::arrayValue);
     // Reorder children for output.
     // TODO: Support additional compare functions.
-    std::sort(this->children.begin(), this->children.end(), compare_func);
-    for (unsigned int i = 0; i < this->children.size(); i++) {
-      this->children[i]->WriteIntoJson(&(*out)["children"][i], depth - 1,
-                                       compare_func);
+    std::sort(children.begin(), children.end(), compare_func);
+    for (unsigned int i = 0; i < children.size(); i++) {
+      children[i]->WriteIntoJson(depth - 1, compare_func,
+                                 &(*out)["children"][i]);
     }
   }
 }
@@ -389,7 +392,7 @@ NodeStats::NodeStats(const BaseSymbol& symbol) {
 
 void NodeStats::WriteIntoJson(Json::Value* out) const {
   (*out) = Json::Value(Json::objectValue);
-  for (const auto kv : this->child_stats) {
+  for (const auto kv : child_stats) {
     const std::string sectionId = std::string(1, static_cast<char>(kv.first));
     const Stat stats = kv.second;
     (*out)[sectionId] = Json::Value(Json::objectValue);

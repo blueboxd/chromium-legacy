@@ -8,6 +8,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_OVERVIEW;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
+import android.animation.ObjectAnimator;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
@@ -17,6 +18,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 /** The binder controls the display of the {@link TasksView} in its parent. */
 class TasksSurfaceViewBinder {
+    private static final long FADE_IN_DURATION_MS = 50;
+
     /**
      * The view holder holds the parent view and the tasks surface view.
      */
@@ -48,7 +51,19 @@ class TasksSurfaceViewBinder {
             layoutParams.topMargin = model.get(TOP_BAR_HEIGHT);
         }
 
-        viewHolder.tasksSurfaceView.setVisibility(isShowing ? View.VISIBLE : View.GONE);
+        View taskSurfaceView = viewHolder.tasksSurfaceView;
+        if (!isShowing) {
+            taskSurfaceView.setVisibility(View.GONE);
+        } else {
+            // TODO(yuezhanggg): Figure out why there is a blink in the tab switcher part when
+            // showing overview mode. (crbug.com/995423)
+            taskSurfaceView.setAlpha(0f);
+            taskSurfaceView.setVisibility(View.VISIBLE);
+            final ObjectAnimator taskSurfaceFadeInAnimator =
+                    ObjectAnimator.ofFloat(taskSurfaceView, View.ALPHA, 0f, 1f);
+            taskSurfaceFadeInAnimator.setDuration(FADE_IN_DURATION_MS);
+            taskSurfaceFadeInAnimator.start();
+        }
     }
 
     private static void setBottomBarHeight(ViewHolder viewHolder, int height) {

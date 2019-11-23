@@ -141,7 +141,7 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
       CacheStorageCache::EntryIndex disk_cache_index,
       CacheStorageCache::EntryIndex side_data_disk_cache_index);
 
-  // IO thread wrapper for storage::mojom::BlobStorageContext.
+  // Wrapper for storage::mojom::BlobStorageContext bound to this sequence.
   scoped_refptr<BlobStorageContextWrapper> blob_storage_context_;
 
   // Every subclass should provide its own implementation to avoid partial

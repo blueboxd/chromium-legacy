@@ -20,7 +20,7 @@ namespace {
 // Chrome, there is an option to turn off captions styles, so any time the
 // captions are on, the styles should take priority.
 std::string AddCSSImportant(std::string css_string) {
-  return css_string + " !important";
+  return css_string.empty() ? "" : css_string + " !important";
 }
 
 }  // namespace
@@ -81,6 +81,12 @@ base::Optional<ui::CaptionStyle> GetCaptionStyleFromPrefs(PrefService* prefs) {
 
   style.text_shadow = AddCSSImportant(
       prefs->GetString(prefs::kAccessibilityCaptionsTextShadow));
+
+  if (style.text_size.empty() && style.font_family.empty() &&
+      style.text_color.empty() && style.background_color.empty() &&
+      style.text_shadow.empty()) {
+    return base::nullopt;
+  }
 
   return style;
 }

@@ -59,7 +59,7 @@
 <translation id="2840766858109427815">Ves a la pàgina següent</translation>
 <translation id="2872353916818027657">Canvia el monitor principal</translation>
 <translation id="2914313326123580426">Mostra o amaga el tauler d'eines per a desenvolupadors</translation>
-<translation id="292495055542441795">Activa/desactiva la pantalla completa</translation>
+<translation id="292495055542441795">Commuta la pantalla completa</translation>
 <translation id="3020183492814296499">Dreceres</translation>
 <translation id="3084301071537457911">Destaca l'element següent del prestatge</translation>
 <translation id="309173601632226815">Destaca el botó del menú d'aplicacions al prestatge</translation>
@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> o <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Mode de visió general</translation>
 <translation id="4382340674111381977">Torna a la pàgina anterior</translation>
+<translation id="4458670250301149821">Mou la icona d'una aplicació a dins o fora d'una carpeta a la quadrícula d'aplicacions</translation>
 <translation id="4472417192667361414">Configuració del sistema i de la pantalla</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> i, després, <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Consulta l'aplicació d'ajuda de les tecles de drecera</translation>
 <translation id="4628718545549558538">Obre l'àrea d'estat (on es mostra la imatge del compte)</translation>
 <translation id="4642092649622328492">Fes una captura de pantalla parcial</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Suprimeix la lletra següent (supressió cap endavant)</translation>
 <translation id="7500368597227394048">guionet</translation>
 <translation id="7611271430932669992">Mou el focus a les finestres emergents i als quadres de diàleg</translation>
+<translation id="7635348532214572995">Mou la icona d'una aplicació per la quadrícula d'aplicacions</translation>
 <translation id="766326951329901120">Enganxa el contingut del porta-retalls com a text sense format</translation>
 <translation id="7703010453515335249">claudàtor de tancament</translation>
 <translation id="7724603315864178912">Retalla</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Enganxa el contingut del porta-retalls</translation>
 <translation id="9052808072970550123">Canvia a l'usuari següent</translation>
 <translation id="906458777597946297">Maximitza la finestra</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> i, després, <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Ves al principi de la línia</translation>
 <translation id="9106898733795143799">Pàgina i navegador web</translation>
 <translation id="9162942292291287644">No hi ha cap resultat de cerca per a <ph name="QUERY" /></translation>

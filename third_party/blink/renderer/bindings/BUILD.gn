@@ -149,12 +149,10 @@ action_with_pydeps("generate_bindings_example") {
     web_idl_database,
   ]
   outputs = [
-    "${bindings_output_dir}/core/v8/v8_example.cc",
     "${bindings_output_dir}/core/v8/example_dictionary.cc",
   ]
 
   args = [
-    "example",
     "dictionary",
     "--web_idl_database",
     rebase_path(web_idl_database, root_build_dir),

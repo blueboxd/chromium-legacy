@@ -13,10 +13,8 @@ namespace debug {
 namespace {
 
 base::debug::CrashKeyString* GetUrlCrashKey() {
-  // The name "url-chunk" is special - Crash reporting service knows about it
-  // and can expose it in crash reports.
   static auto* crash_key = base::debug::AllocateCrashKeyString(
-      "url-chunk", base::debug::CrashKeySize::Size256);
+      "request_url", base::debug::CrashKeySize::Size256);
   return crash_key;
 }
 

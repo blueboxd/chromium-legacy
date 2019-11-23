@@ -39,7 +39,7 @@ class FieldInfoManagerTest : public testing::Test {
     store_ = new MockPasswordStore;
     store_->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
     EXPECT_CALL(*store_, GetAllFieldInfoImpl());
-    field_info_manager_ = std::make_unique<FieldInfoManager>(store_);
+    field_info_manager_ = std::make_unique<FieldInfoManagerImpl>(store_);
     task_environment_.RunUntilIdle();
   }
 
@@ -50,7 +50,7 @@ class FieldInfoManagerTest : public testing::Test {
       base::test::TaskEnvironment::MainThreadType::UI};
   scoped_refptr<MockPasswordStore> store_;
   std::vector<FieldInfo> test_data_;
-  std::unique_ptr<FieldInfoManager> field_info_manager_;
+  std::unique_ptr<FieldInfoManagerImpl> field_info_manager_;
 };
 
 TEST_F(FieldInfoManagerTest, AddFieldType) {

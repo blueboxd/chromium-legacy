@@ -11,6 +11,14 @@ permissions, autofill, safe browsing etc...).
 While it's built on top of src/content, the expectation is that the API will
 hide the Content API.
 
+## Design Goals
+1. WebLayer should be powerful enough to build a modern browser. This means:
+    * as fast and secure as Chrome
+    * includes all the same web platform features as Chrome (including UIs and system integration code)
+2. WebLayer embedders should get new web platform features for free (e.g. don't need to keep updating their UIs or code)
+3. WebLayer hides subprocesses, so any code that needs to run in the renderer needs to be part of WebLayer. Script injection
+is generally discouraged for security and performance reasons.
+
 ## Resources and Documentation
 
 Mailing list: [weblayer-dev@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/weblayer-dev)

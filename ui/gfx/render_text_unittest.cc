@@ -76,6 +76,8 @@ enum {
   UNDERLINE_MASK = 1 << TEXT_STYLE_UNDERLINE,
 };
 
+using FontSpan = std::pair<Font, Range>;
+
 bool IsFontsSmoothingEnabled() {
 #if defined(OS_WIN)
   BOOL antialiasing = TRUE;
@@ -170,16 +172,15 @@ void RunMoveCursorLeftRightTest(RenderText* render_text,
 // index of the character in the DecoratedText instance and |font_index| is
 // used to retrieve the font used from |font_spans|.
 DecoratedText::RangedAttribute CreateRangedAttribute(
-    const std::vector<RenderText::FontSpan>& font_spans,
+    const std::vector<FontSpan>& font_spans,
     int index,
     int font_index,
     Font::Weight weight,
     int style_mask) {
-  const auto iter =
-      std::find_if(font_spans.begin(), font_spans.end(),
-                   [font_index](const RenderText::FontSpan& span) {
-                     return IndexInRange(span.second, font_index);
-                   });
+  const auto iter = std::find_if(font_spans.cbegin(), font_spans.cend(),
+                                 [font_index](const FontSpan& span) {
+                                   return IndexInRange(span.second, font_index);
+                                 });
   DCHECK(font_spans.end() != iter);
   const Font& font = iter->first;
 
@@ -388,6 +389,27 @@ class RenderTextTest : public testing::Test {
     return test_api_->GetHarfBuzzRunList();
   }
 
+  // For testing purposes, returns which fonts were chosen for which parts of
+  // the text by returning a vector of Font and Range pairs, where each range
+  // specifies the character range for which the corresponding font has been
+  // chosen.
+  std::vector<FontSpan> GetFontSpans() {
+    test_api()->EnsureLayout();
+
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    std::vector<FontSpan> spans;
+    std::transform(
+        run_list->runs().begin(), run_list->runs().end(),
+        std::back_inserter(spans), [this](const auto& run) {
+          return FontSpan(
+              run->font_params.font,
+              Range(test_api()->DisplayIndexToTextIndex(run->range.start()),
+                    test_api()->DisplayIndexToTextIndex(run->range.end())));
+        });
+
+    return spans;
+  }
+
   // Converts the current run list into a human-readable string. Can be used in
   // test assertions for a readable expectation and failure message.
   //
@@ -419,11 +441,9 @@ class RenderTextTest : public testing::Test {
 
   // Returns a vector of text fragments corresponding to the current list of
   // text runs.
-  std::vector<base::string16> GetRunListStrings() const {
+  std::vector<base::string16> GetRunListStrings() {
     std::vector<base::string16> runs_as_text;
-    const std::vector<RenderText::FontSpan> spans =
-        render_text_->GetFontSpansForTesting();
-    for (const auto& span : spans) {
+    for (const auto& span : GetFontSpans()) {
       runs_as_text.push_back(render_text_->text().substr(span.second.GetMin(),
                                                          span.second.length()));
     }
@@ -3572,9 +3592,7 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
                                    render_text->font_list().GetHeight()));
   EXPECT_EQ(smaller_font.GetHeight(), render_text->GetStringSize().height());
   EXPECT_EQ(smaller_font.GetBaseline(), render_text->GetBaseline());
-  EXPECT_STRCASEEQ(
-      render_text->GetFontSpansForTesting()[0].first.GetFontName().c_str(),
-      smaller_font.GetFontName().c_str());
+  EXPECT_EQ(GetFontSpans()[0].first.GetFontName(), smaller_font.GetFontName());
 
   // Layout the same text with mixed fonts.  The text should be rendered with
   // the smaller font, but the height and baseline are determined with the
@@ -3586,9 +3604,7 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   render_text->SetFontList(font_list);
   render_text->SetDisplayRect(Rect(0, 0, 0,
                                    render_text->font_list().GetHeight()));
-  EXPECT_STRCASEEQ(
-      render_text->GetFontSpansForTesting()[0].first.GetFontName().c_str(),
-      smaller_font.GetFontName().c_str());
+  EXPECT_EQ(GetFontSpans()[0].first.GetFontName(), smaller_font.GetFontName());
   EXPECT_LE(smaller_font.GetHeight(), render_text->GetStringSize().height());
   EXPECT_LE(smaller_font.GetBaseline(), render_text->GetBaseline());
   EXPECT_EQ(font_list.GetHeight(), render_text->GetStringSize().height());
@@ -4041,8 +4057,7 @@ TEST_F(RenderTextTest, SameFontForParentheses) {
       text[end_paren_char_index] = punctuation_pairs[j].right_char;
       render_text->SetText(text);
 
-      const std::vector<RenderText::FontSpan> spans =
-          render_text->GetFontSpansForTesting();
+      const std::vector<FontSpan> spans = GetFontSpans();
 
       int start_paren_span_index = -1;
       int end_paren_span_index = -1;
@@ -5419,7 +5434,7 @@ TEST_F(RenderTextTest, HarfBuzz_ShapeRunsWithMultipleFonts) {
     expected_fonts = {"Segoe UI Emoji", "Segoe UI", "Segoe UI Symbol"};
 
   std::vector<std::string> mapped_fonts;
-  for (const auto& font_span : render_text->GetFontSpansForTesting())
+  for (const auto& font_span : GetFontSpans())
     mapped_fonts.push_back(font_span.first.GetFontName());
   EXPECT_EQ(expected_fonts, mapped_fonts);
 #endif
@@ -5520,10 +5535,9 @@ TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
   RenderTextHarfBuzz* render_text = GetRenderText();
   render_text->SetFontList(font_list);
   render_text->SetText(UTF8ToUTF16("\u2295"));
-  const std::vector<RenderText::FontSpan> spans =
-      render_text->GetFontSpansForTesting();
+  const std::vector<FontSpan> spans = GetFontSpans();
   ASSERT_EQ(static_cast<size_t>(1), spans.size());
-  EXPECT_STRCASEEQ(kSymbolFontName, spans[0].first.GetFontName().c_str());
+  EXPECT_EQ(kSymbolFontName, spans[0].first.GetFontName());
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -5846,8 +5860,7 @@ TEST_F(RenderTextTest, CJKFontWithLocale) {
     render_text->SetText(WideToUTF16(kCJKTest));
     test_api()->EnsureLayout();
 
-    const std::vector<RenderText::FontSpan> font_spans =
-        render_text->GetFontSpansForTesting();
+    const std::vector<FontSpan> font_spans = GetFontSpans();
     ASSERT_EQ(font_spans.size(), 1U);
 
     // Expect the font name to be different for each locale.
@@ -6157,8 +6170,7 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_LTR) {
   render_text->ApplyStyle(TEXT_STYLE_STRIKE, true, Range(1, 7));
   const int cursor_y = GetCursorYForTesting();
 
-  const std::vector<RenderText::FontSpan> font_spans =
-      render_text->GetFontSpansForTesting();
+  const std::vector<FontSpan> font_spans = GetFontSpans();
 
   // Create expected decorated text instances.
   DecoratedText expected_word_1;
@@ -6237,8 +6249,7 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_RTL) {
   render_text->ApplyStyle(TEXT_STYLE_STRIKE, true, Range(2, 5));
   const int cursor_y = GetCursorYForTesting();
 
-  const std::vector<RenderText::FontSpan> font_spans =
-      render_text->GetFontSpansForTesting();
+  const std::vector<FontSpan> font_spans = GetFontSpans();
 
   // Create expected decorated text instance.
   DecoratedText expected_word_1;
@@ -6318,8 +6329,7 @@ TEST_F(RenderTextTest, GetWordLookupDataAtPoint_Multiline) {
   render_text->ApplyStyle(TEXT_STYLE_ITALIC, true, Range(5, 9));
 
   // Set up test expectations.
-  const std::vector<RenderText::FontSpan> font_spans =
-      render_text->GetFontSpansForTesting();
+  const std::vector<FontSpan> font_spans = GetFontSpans();
 
   DecoratedText expected_word_1;
   expected_word_1.text = UTF8ToUTF16("a");
@@ -6425,8 +6435,7 @@ TEST_F(RenderTextTest, GetLookupDataAtRange_Multiline) {
   render_text->ApplyStyle(TEXT_STYLE_UNDERLINE, true, kWordTwoRange);
 
   // Set up test expectations.
-  const std::vector<RenderText::FontSpan> font_spans =
-      render_text->GetFontSpansForTesting();
+  const std::vector<FontSpan> font_spans = GetFontSpans();
 
   DecoratedText expected_word_1;
   expected_word_1.text = UTF8ToUTF16("a");

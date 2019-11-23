@@ -46,7 +46,10 @@ AutofillPaymentApp::AutofillPaymentApp(
       billing_profiles_(billing_profiles),
       app_locale_(app_locale),
       delegate_(nullptr),
-      payment_request_delegate_(payment_request_delegate) {}
+      payment_request_delegate_(payment_request_delegate) {
+  app_method_names_.insert(methods::kBasicCard);
+}
+
 AutofillPaymentApp::~AutofillPaymentApp() {}
 
 void AutofillPaymentApp::InvokePaymentApp(PaymentApp::Delegate* delegate) {
@@ -171,13 +174,6 @@ bool AutofillPaymentApp::IsValidForModifier(
   }
 
   return true;
-}
-
-void AutofillPaymentApp::IsValidForPaymentMethodIdentifier(
-    const std::string& payment_method_identifier,
-    bool* is_valid) const {
-  // This instrument only matches basic-card.
-  *is_valid = payment_method_identifier == methods::kBasicCard;
 }
 
 base::WeakPtr<PaymentApp> AutofillPaymentApp::AsWeakPtr() {

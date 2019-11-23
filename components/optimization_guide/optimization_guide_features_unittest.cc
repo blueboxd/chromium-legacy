@@ -24,7 +24,7 @@ TEST(OptimizationGuideFeaturesTest,
   base::test::ScopedFeatureList scoped_feature_list;
 
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsFetching,
+      features::kRemoteOptimizationGuideFetching,
       {{"optimization_guide_service_url", "http://NotAnHTTPSServer.com"}});
 
   EXPECT_EQ(features::GetOptimizationGuideServiceGetHintsURL().spec(),
@@ -39,7 +39,7 @@ TEST(OptimizationGuideFeaturesTest,
 
   std::string optimization_guide_service_url = "https://finchserver.com/";
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kOptimizationHintsFetching,
+      features::kRemoteOptimizationGuideFetching,
       {{"optimization_guide_service_url", optimization_guide_service_url}});
 
   EXPECT_EQ(features::GetOptimizationGuideServiceGetHintsURL().spec(),

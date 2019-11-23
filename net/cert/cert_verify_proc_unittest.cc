@@ -38,7 +38,7 @@
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
+#include "net/cert_net/cert_net_fetcher_url_request.h"
 #include "net/der/input.h"
 #include "net/der/parser.h"
 #include "net/proxy_resolution/proxy_config.h"
@@ -3037,7 +3037,7 @@ class CertVerifyProcInternalWithNetFetchingTest
 
   static void SetUpOnNetworkThread(
       std::unique_ptr<URLRequestContext>* context,
-      scoped_refptr<CertNetFetcherImpl>* cert_net_fetcher,
+      scoped_refptr<CertNetFetcherURLRequest>* cert_net_fetcher,
       base::WaitableEvent* initialization_complete_event) {
     URLRequestContextBuilder url_request_context_builder;
     url_request_context_builder.set_user_agent("cert_verify_proc_unittest/0.1");
@@ -3048,14 +3048,14 @@ class CertVerifyProcInternalWithNetFetchingTest
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(context->get());
 #endif
-    *cert_net_fetcher = base::MakeRefCounted<net::CertNetFetcherImpl>();
+    *cert_net_fetcher = base::MakeRefCounted<net::CertNetFetcherURLRequest>();
     (*cert_net_fetcher)->SetURLRequestContext(context->get());
     initialization_complete_event->Signal();
   }
 
   static void ShutdownOnNetworkThread(
       std::unique_ptr<URLRequestContext>* context,
-      scoped_refptr<net::CertNetFetcherImpl>* cert_net_fetcher) {
+      scoped_refptr<net::CertNetFetcherURLRequest>* cert_net_fetcher) {
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
@@ -3071,7 +3071,7 @@ class CertVerifyProcInternalWithNetFetchingTest
   // Owned by this thread, but initialized, used, and shutdown on the network
   // thread.
   std::unique_ptr<URLRequestContext> context_;
-  scoped_refptr<CertNetFetcherImpl> cert_net_fetcher_;
+  scoped_refptr<CertNetFetcherURLRequest> cert_net_fetcher_;
 
   EmbeddedTestServer test_server_;
 

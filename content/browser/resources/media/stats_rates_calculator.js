@@ -318,6 +318,71 @@ class DifferenceCalculator {
   }
 }
 
+// Calculates the standard deviation from a totalSquaredSum, totalSum, and
+// totalCount. If the standard deviation cannot be calculated, such as the
+// metric is missing in the current or previous report, undefined is returned.
+class StandardDeviationCalculator {
+  constructor(totalSquaredSumMetric, totalSumMetric, totalCount, label) {
+    this.totalSquaredSumMetric = totalSquaredSumMetric;
+    this.totalSumMetric = totalSumMetric;
+    this.totalCount = totalCount;
+    this.label = label;
+  }
+
+  getCalculatedMetricName() {
+    return '[' + this.label + 'StDev_in_ms]';
+  }
+
+  calculate(id, previousReport, currentReport) {
+    return StandardDeviationCalculator.calculateStandardDeviation(
+        id, previousReport, currentReport, this.totalSquaredSumMetric,
+        this.totalSumMetric, this.totalCount);
+  }
+
+  static calculateStandardDeviation(
+      id, previousReport, currentReport, totalSquaredSumMetric, totalSumMetric,
+      totalCount) {
+    if (!previousReport || !currentReport) {
+      return undefined;
+    }
+    const previousStats = previousReport.get(id);
+    const currentStats = currentReport.get(id);
+    if (!previousStats || !currentStats) {
+      return undefined;
+    }
+    const deltaCount =
+        Number(currentStats[totalCount]) - Number(previousStats[totalCount]);
+    if (deltaCount <= 0) {
+      return undefined;
+    }
+    // Try to convert whatever the values are to numbers. This gets around the
+    // fact that some types that are not supported by base::Value (e.g. uint32,
+    // int64, uint64 and double) are passed as strings.
+    const previousSquaredSumValue =
+        Number(previousStats[totalSquaredSumMetric]);
+    const currentSquaredSumValue = Number(currentStats[totalSquaredSumMetric]);
+    if (typeof previousSquaredSumValue != 'number' ||
+        typeof currentSquaredSumValue != 'number') {
+      return undefined;
+    }
+    const previousSumValue = Number(previousStats[totalSumMetric]);
+    const currentSumValue = Number(currentStats[totalSumMetric]);
+    if (typeof previousSumValue != 'number' ||
+        typeof currentSumValue != 'number') {
+      return undefined;
+    }
+
+    const deltaSquaredSum = currentSquaredSumValue - previousSquaredSumValue;
+    const deltaSum = currentSumValue - previousSumValue;
+    const variance =
+        (deltaSquaredSum - Math.pow(deltaSum, 2) / deltaCount) / deltaCount;
+    if (variance < 0) {
+      return undefined;
+    }
+    return 1000 * Math.sqrt(variance);
+  }
+}
+
 // Keeps track of previous and current stats report and calculates all
 // calculated metrics.
 class StatsRatesCalculator {
@@ -393,6 +458,12 @@ class StatsRatesCalculator {
           totalDecodeTime: new RateCalculator(
               'totalDecodeTime', 'framesDecoded',
               CalculatorModifier.kMillisecondsFromSeconds),
+          totalInterFrameDelay: new RateCalculator(
+              'totalInterFrameDelay', 'framesDecoded',
+              CalculatorModifier.kMillisecondsFromSeconds),
+          totalSquaredInterFrameDelay: new StandardDeviationCalculator(
+              'totalSquaredInterFrameDelay', 'totalInterFrameDelay',
+              'framesDecoded', 'interFrameDelay'),
           qpSum: new RateCalculator('qpSum', 'framesDecoded'),
           codecId: new CodecCalculator(),
         },

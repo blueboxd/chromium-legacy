@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Světle modrá</translation>
 <translation id="1734824808160898225">Je možné, že se <ph name="PRODUCT_NAME" /> nebude moci aktualizovat</translation>
 <translation id="1736419249208073774">Prozkoumat</translation>
-<translation id="1736420071277903564">Počítač</translation>
 <translation id="1737968601308870607">Oznámit chybu</translation>
 <translation id="1741314857973421784">Pokračovat</translation>
 <translation id="1743570585616704562">Nerozpoznáno</translation>
@@ -1128,6 +1127,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2617342710774726426">SIM karta je uzamčena</translation>
 <translation id="2619761439309613843">Denní obnovení</translation>
 <translation id="2620436844016719705">Systém</translation>
+<translation id="2621713457727696555">Zabezpečeno</translation>
 <translation id="26224892172169984">Nepovolovat žádným stránkám zpracovávat protokoly</translation>
 <translation id="2624142942574147739">Tato stránka může používat vaší webovou kameru a mikrofon.</translation>
 <translation id="2626799779920242286">Zkuste to prosím znovu později.</translation>
@@ -1579,6 +1579,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="328571385944182268">Ukládat hesla?</translation>
 <translation id="3288047731229977326">Rozšíření spuštěná v režimu pro vývojáře mohou poškodit počítač. Pokud nejste vývojář, měli byste s ohledem na svou bezpečnost rozšíření spuštěná v tomto režimu deaktivovat.</translation>
 <translation id="3289856944988573801">Chcete-li zkontrolovat dostupnost aktualizací, použijte síť Ethernet nebo Wi-Fi.</translation>
+<translation id="3290356915286466215">Nezabezpečeno</translation>
 <translation id="3293644607209440645">Odeslat tuto stránku</translation>
 <translation id="32939749466444286">Kontejner systému Linux se nespustil. Zkuste to znovu.</translation>
 <translation id="3294437725009624529">Host</translation>
@@ -2020,7 +2021,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3900966090527141178">Export hesel</translation>
 <translation id="3901991538546252627">Připojování k síti <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Opravit aplikaci</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098">Plugin <ph name="PLUGIN_NAME" /> je zastaralý</translation>
 <translation id="3908501907586732282">Aktivovat rozšíření</translation>
 <translation id="3909477809443608991"><ph name="URL" /> chce přehrávat chráněný obsah. Google ověří identitu vašeho zařízení a tento web k ní může získat přístup.</translation>
@@ -2319,7 +2319,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4364327530094270451">Meloun</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> sdílí okno.</translation>
 <translation id="4364830672918311045">Zobrazování oznámení</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> pomocí aplikace <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Zadaný e-mail a heslo se neshodují.</translation>
 <translation id="437184764829821926">Rozšířené nastavení písma</translation>
 <translation id="4374831787438678295">Instalační program Linuxu</translation>
@@ -2961,7 +2960,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5363109466694494651">Obnovit pomocí funkce Powerwash a vrátit předchozí verzi</translation>
 <translation id="5365881113273618889">Vybraná složka obsahuje citlivé soubory. Opravdu chcete aplikaci <ph name="APP_NAME" /> udělit trvalý přístup k zápisu do této složky?</translation>
 <translation id="5367091008316207019">Čtení souboru..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Telefon je uzamčen. Chcete-li pokračovat, odemkněte jej.</translation>
 <translation id="5368779022775404937">Přihlaste se do domény <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Zapnout zrychlení myši</translation>
@@ -4719,6 +4717,7 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7912080627461681647">Vaše heslo bylo na serveru změněno. Odhlaste se a poté se znovu přihlaste.</translation>
 <translation id="7915457674565721553">Chcete-li nastavit rodičovskou kontrolu, připojte se k internetu</translation>
 <translation id="7915471803647590281">Než nám odešlete zpětnou vazbu, sdělte nám prosím, co se děje.</translation>
+<translation id="7918257978052780342">Zaregistrovat</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> s</translation>
 <translation id="792514962475806987">Úroveň přiblížení zadokované lupy:</translation>
 <translation id="7925247922861151263">Selhala bezpečnostní kontrola AAA</translation>

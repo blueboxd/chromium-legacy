@@ -288,6 +288,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
@@ -3279,6 +3280,8 @@ void Document::Shutdown() {
 
   if (num_canvases_ > 0)
     UMA_HISTOGRAM_COUNTS_100("Blink.Canvas.NumCanvasesPerPage", num_canvases_);
+
+  GetFontMatchingMetrics()->PublishUkmMetrics();
 
   GetViewportData().Shutdown();
 
@@ -6968,6 +6971,14 @@ ukm::UkmRecorder* Document::UkmRecorder() {
 
 ukm::SourceId Document::UkmSourceID() const {
   return ukm_source_id_;
+}
+
+FontMatchingMetrics* Document::GetFontMatchingMetrics() {
+  if (font_matching_metrics_)
+    return font_matching_metrics_.get();
+  font_matching_metrics_ = std::make_unique<FontMatchingMetrics>(
+      IsInMainFrame(), UkmRecorder(), UkmSourceID());
+  return font_matching_metrics_.get();
 }
 
 void Document::InitContentSecurityPolicy(ContentSecurityPolicy* csp) {

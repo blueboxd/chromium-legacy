@@ -514,7 +514,6 @@
 <translation id="1734212868489994726">Светлосиньо</translation>
 <translation id="1734824808160898225">Възможно е <ph name="PRODUCT_NAME" /> да не може да се поддържа актуален</translation>
 <translation id="1736419249208073774">Разглеждане</translation>
-<translation id="1736420071277903564">Компютър</translation>
 <translation id="1737968601308870607">Картотекиране на програмната грешка</translation>
 <translation id="1741314857973421784">Напред</translation>
 <translation id="1743570585616704562">Не е разпознато</translation>
@@ -1126,6 +1125,7 @@
 <translation id="2617342710774726426">SIM картата е заключена</translation>
 <translation id="2619761439309613843">Ежедневно опресняване</translation>
 <translation id="2620436844016719705">Система</translation>
+<translation id="2621713457727696555">защитена</translation>
 <translation id="26224892172169984">Забраняване на сайтовете да обработват протоколи</translation>
 <translation id="2624142942574147739">Тази страница осъществява достъп до камерата и микрофона ви.</translation>
 <translation id="2626799779920242286">Моля, опитайте отново по-късно.</translation>
@@ -1577,6 +1577,7 @@
 <translation id="328571385944182268">Да се запазят ли паролите ви?</translation>
 <translation id="3288047731229977326">Разширенията, които се изпълняват в режим за програмисти, могат да навредят на компютъра ви. Ако не сте програмист, за по-голяма безопасност трябва да деактивирате изпълнението им в този режим.</translation>
 <translation id="3289856944988573801">За да проверите за актуализации, моля, използвайте Ethernet или Wi-Fi.</translation>
+<translation id="3290356915286466215">незащитена</translation>
 <translation id="3293644607209440645">Изпращане на тази страница</translation>
 <translation id="32939749466444286">Контейнерът за Linux не стартира. Моля, опитайте отново.</translation>
 <translation id="3294437725009624529">Гост</translation>
@@ -2020,7 +2021,6 @@
 <translation id="3900966090527141178">Експортиране на паролите</translation>
 <translation id="3901991538546252627">Установява се връзка със: <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Поправяне на приложението</translation>
-<translation id="3906954721959377182">Таблет</translation>
 <translation id="3908393983276948098">Приставката <ph name="PLUGIN_NAME" /> не е актуална</translation>
 <translation id="3908501907586732282">Активиране на разширението</translation>
 <translation id="3909477809443608991"><ph name="URL" /> иска разрешение за възпроизвеждане на защитено съдържание. Идентичността на устройството ви ще бъде потвърдена от Google и този сайт може да осъществи достъп до нея.</translation>
@@ -2320,7 +2320,6 @@
 <translation id="4364327530094270451">Пъпеш</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> споделя прозорец.</translation>
 <translation id="4364830672918311045">Показване на известия</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> чрез <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Въведените имейл адрес и парола не съвпадат</translation>
 <translation id="437184764829821926">Разширени настройки за шрифтовете</translation>
 <translation id="4374831787438678295">Инсталационна програма за Linux</translation>
@@ -2962,7 +2961,6 @@
 <translation id="5363109466694494651">Powerwash и възстановяване</translation>
 <translation id="5365881113273618889">Избраната от вас папка съдържа поверителни файлове. Наистина ли искате да предоставите на <ph name="APP_NAME" /> постоянен достъп за записване в тази папка?</translation>
 <translation id="5367091008316207019">Файлът се чете...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Телефонът ви е заключен. Отключете го, за да влезете.</translation>
 <translation id="5368779022775404937">Влизане в домейна <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Активиране на ускоряването на мишката</translation>
@@ -4721,6 +4719,7 @@
 <translation id="7912080627461681647">Паролата ви е променена в сървъра. Моля, излезте от профила си и влезте отново в него.</translation>
 <translation id="7915457674565721553">Свържете се с интернет, за да настроите родителските контроли</translation>
 <translation id="7915471803647590281">Моля, кажете ни какво става, преди да изпратите отзивите.</translation>
+<translation id="7918257978052780342">Записване</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> сек</translation>
 <translation id="792514962475806987">Ниво на мащаба при прикрепен режим:</translation>
 <translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>

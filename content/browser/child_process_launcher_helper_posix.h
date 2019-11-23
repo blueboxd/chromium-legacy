@@ -32,18 +32,9 @@ namespace internal {
 std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
     int child_process_id,
     const mojo::PlatformChannelEndpoint& mojo_channel_remote_endpoint,
-    bool include_service_required_files,
+    std::map<std::string, base::FilePath> files_to_preload,
     const std::string& process_type,
     base::CommandLine* command_line);
-
-// Called by the service manager to register the files that should be mapped for
-// a service in the child process.
-void SetFilesToShareForServicePosix(
-    const std::string& service_name,
-    std::map<std::string, base::FilePath> required_files);
-
-// Called from unit_tests in order to reset all previously registered files.
-void ResetFilesToShareForTestingPosix();
 
 // Opens the file in read mode at the given path. Note that the path should be
 // relative and the way it is resolved is platform specific.

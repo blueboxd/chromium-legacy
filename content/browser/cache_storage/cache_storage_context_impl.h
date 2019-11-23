@@ -125,7 +125,7 @@ class CONTENT_EXPORT CacheStorageContextImpl
       ChromeBlobStorageContext* blob_storage_context);
 
   void SetBlobParametersForCacheOnTaskRunner(
-      scoped_refptr<BlobStorageContextWrapper> blob_storage_context);
+      mojo::PendingRemote<storage::mojom::BlobStorageContext> remote);
 
   void CreateQuotaClientsOnIOThread(
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);

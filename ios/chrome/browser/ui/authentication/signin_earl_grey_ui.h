@@ -14,14 +14,15 @@
 // Methods used for the EarlGrey tests, related to UI.
 @interface SigninEarlGreyUI : NSObject
 
-// Calls [SigninEarlGreyUI signinWithIdentity:identity isManagedAccount:NO].
-+ (void)signinWithIdentity:(FakeChromeIdentity*)identity;
+// Calls [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity
+// isManagedAccount:NO].
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
 // Adds the identity (if not already added), and perform a sign-in. if
-// |isManagedAccount| is true, |identity| needs to be a managed account and the
-// managed dialog is expected while signing in.
-+ (void)signinWithIdentity:(FakeChromeIdentity*)identity
-          isManagedAccount:(BOOL)isManagedAccount;
+// |isManagedAccount| is true, |fakeIdentity| needs to be a managed account and
+// the managed dialog is expected while signing in.
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity
+              isManagedAccount:(BOOL)isManagedAccount;
 
 // Taps on the settings link in the sign-in view. The sign-in view has to be
 // opened before calling this method.

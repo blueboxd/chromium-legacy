@@ -86,12 +86,6 @@ class OptimizationGuideKeyedService
       content::NavigationHandle* navigation_handle,
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationMetadata* optimization_metadata) override;
-  optimization_guide::OptimizationGuideDecision
-  ShouldTargetNavigationAndCanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationTarget optimization_target,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationMetadata* optimization_metadata) override;
 
   // KeyedService implementation:
   void Shutdown() override;

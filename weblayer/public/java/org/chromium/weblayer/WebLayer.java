@@ -190,14 +190,17 @@ public final class WebLayer {
     }
 
     /**
-     * Get or create the profile for profilePath.
+     * Get or create the profile for profileName.
+     * @param profileName Null to indicate in-memory profile. Otherwise, name cannot be empty
+     * and should contain only alphanumeric and underscore characters since it will be used as
+     * a directory name in the file system.
      */
     @NonNull
-    public Profile getProfile(@Nullable String profilePath) {
+    public Profile getProfile(@Nullable String profileName) {
         ThreadCheck.ensureOnUiThread();
         IProfile iprofile;
         try {
-            iprofile = mImpl.getProfile(sanitizeProfilePath(profilePath));
+            iprofile = mImpl.getProfile(sanitizeProfileName(profileName));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -226,12 +229,18 @@ public final class WebLayer {
         }
     }
 
+    /**
+     * Create a new WebLayer Fragment.
+     * @param profileName Null to indicate in-memory profile. Otherwise, name cannot be empty
+     * and should contain only alphanumeric and underscore characters since it will be used as
+     * a directory name in the file system.
+     */
     @NonNull
-    public static Fragment createBrowserFragment(@Nullable String profilePath) {
+    public static Fragment createBrowserFragment(@Nullable String profileName) {
         ThreadCheck.ensureOnUiThread();
         // TODO: use a profile id instead of the path to the actual file.
         Bundle args = new Bundle();
-        args.putString(BrowserFragmentArgs.PROFILE_PATH, sanitizeProfilePath(profilePath));
+        args.putString(BrowserFragmentArgs.PROFILE_NAME, sanitizeProfileName(profileName));
         BrowserFragment fragment = new BrowserFragment();
         fragment.setArguments(args);
         return fragment;
@@ -344,11 +353,11 @@ public final class WebLayer {
         return providerClass.getClassLoader();
     }
 
-    private static String sanitizeProfilePath(String profilePath) {
-        if ("".equals(profilePath)) {
+    private static String sanitizeProfileName(String profileName) {
+        if ("".equals(profileName)) {
             throw new AndroidRuntimeException("Profile path cannot be empty");
         }
-        return profilePath == null ? "" : profilePath;
+        return profileName == null ? "" : profileName;
     }
 
     private static String getImplPackageName(Context appContext)

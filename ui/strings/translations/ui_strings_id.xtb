@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">Rak selalu disembunyikan</translation>
 <translation id="8996630695507351249">Pastikan <ph name="TARGET_DEVICE_NAME" /> tersambung ke internet.</translation>
 <translation id="9002566407876343676">buka</translation>
-<translation id="9039076430527029379">Pindahkan ke Halaman <ph name="PAGE_NUMBER" />, baris <ph name="ROW_NUMBER" />, kolom <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 dtk}other{# dtk}}</translation>
 <translation id="9059834730836941392">Ciutkan notifikasi</translation>
 <translation id="9150735707954472829">Tab</translation>

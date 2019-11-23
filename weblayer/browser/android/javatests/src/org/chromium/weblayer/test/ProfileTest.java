@@ -17,7 +17,6 @@ import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
-import java.io.File;
 import java.util.Collection;
 
 /**
@@ -49,10 +48,8 @@ public class ProfileTest {
             Assert.assertTrue(profiles.contains(firstProfile));
         }
 
-        Profile secondProfile = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            String profilePath = new File(activity.getFilesDir(), "second_test").getPath();
-            return weblayer.getProfile(profilePath);
-        });
+        Profile secondProfile = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return weblayer.getProfile("second_test"); });
 
         {
             Collection<Profile> profiles = getAllProfiles();

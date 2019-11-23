@@ -48,6 +48,7 @@ inline size_t FastHash(StringPiece str) {
 // new version will have to be added in addition.
 //
 // WARNING: This hash function should not be used for any cryptographic purpose.
+BASE_EXPORT uint32_t PersistentHash(base::span<const uint8_t> data);
 BASE_EXPORT uint32_t PersistentHash(const void* data, size_t length);
 BASE_EXPORT uint32_t PersistentHash(const std::string& str);
 

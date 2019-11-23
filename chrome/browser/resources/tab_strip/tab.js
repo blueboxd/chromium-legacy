@@ -37,11 +37,11 @@ function getAccessibleTitle(tab) {
 }
 
 /**
- * TODO(crbug.com/1025390): margin-inline-end cannot be animated yet.
+ * TODO(crbug.com/1025390): padding-inline-end cannot be animated yet.
  * @return {string}
  */
-function getMarginInlineEndProperty() {
-  return isRTL() ? 'marginLeft' : 'marginRight';
+function getPaddingInlineEndProperty() {
+  return isRTL() ? 'paddingLeft' : 'paddingRight';
 }
 
 export class TabElement extends CustomElement {
@@ -254,19 +254,19 @@ export class TabElement extends CustomElement {
    * @return {!Promise}
    */
   slideIn() {
-    const marginInlineEnd = getMarginInlineEndProperty();
+    const paddingInlineEnd = getPaddingInlineEndProperty();
 
     const startState = {
       maxWidth: 0,
       transform: `scale(0)`,
     };
-    startState[marginInlineEnd] = 0;
+    startState[paddingInlineEnd] = 0;
 
     const finishState = {
       maxWidth: `var(--tabstrip-tab-width)`,
       transform: `scale(1)`,
     };
-    finishState[marginInlineEnd] = 'var(--tabstrip-tab-margin-inline-end)';
+    finishState[paddingInlineEnd] = 'var(--tabstrip-tab-spacing)';
 
     return new Promise(resolve => {
       const animation = this.animate([startState, finishState], {
@@ -317,8 +317,8 @@ export class TabElement extends CustomElement {
       const widthAnimationKeyframes = {
         maxWidth: ['var(--tabstrip-tab-width)', 0],
       };
-      widthAnimationKeyframes[getMarginInlineEndProperty()] =
-          ['var(--tabstrip-tab-margin-inline-end)', 0];
+      widthAnimationKeyframes[getPaddingInlineEndProperty()] =
+          ['var(--tabstrip-tab-spacing)', 0];
       const widthAnimation = this.animate(widthAnimationKeyframes, {
         delay: 97.5,
         duration: 300,

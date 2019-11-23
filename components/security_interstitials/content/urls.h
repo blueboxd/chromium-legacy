@@ -10,6 +10,8 @@ namespace security_interstitials {
 extern const char kChromeUIConnectionHelpHost[];
 extern const char kChromeUIConnectionHelpURL[];
 
+extern const char kChromeUIConnectionMonitoringDetectedHost[];
+
 }  // namespace security_interstitials
 
 #endif  // COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_URLS_H_

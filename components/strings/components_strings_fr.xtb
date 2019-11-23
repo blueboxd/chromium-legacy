@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Type de carte non accepté</translation>
 <translation id="1734864079702812349">American Express</translation>
 <translation id="1734878702283171397">Essayez de contacter l'administrateur système.</translation>
+<translation id="1736420071277903564">Ordinateur</translation>
 <translation id="1739107442478692187">Un site ou une application que vous utilisez a subi une violation des données. Nous vous recommandons de vérifier vos mots de passe enregistrés et de modifier celui utilisé pour <ph name="ORIGIN" /> immédiatement.</translation>
 <translation id="1740951997222943430">Saisissez un mois d'expiration valide</translation>
 <translation id="1741613555002899862">Cette règle doit être spécifiée avec une chaîne valide lorsque la règle DnsOverHttpsMode est définie sur <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -595,6 +596,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">La carte a expiré.</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablette</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Utiliser WebAuthn au lieu du code CVC ?</translation>
 <translation id="3946209740501886391">Toujours demander sur ce site</translation>
@@ -1519,7 +1521,6 @@ Informations supplémentaires :
 <translation id="8466379296835108687">{COUNT,plural, =1{1 carte de paiement}one{# carte de paiement}other{# cartes de paiement}}</translation>
 <translation id="8473863474539038330">Adresses et autres</translation>
 <translation id="8479754468255770962">Agrafe en bas à gauche</translation>
-<translation id="8481133456511676116">Essayez avec <ph name="DOMAIN" /></translation>
 <translation id="8483780878231876732">Pour utiliser les cartes de votre compte Google, connectez-vous à Chrome.</translation>
 <translation id="8488350697529856933">S'applique à</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a mis trop de temps à répondre.</translation>

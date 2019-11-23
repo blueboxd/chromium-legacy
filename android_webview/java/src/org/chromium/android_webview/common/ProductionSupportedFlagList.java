@@ -29,4 +29,7 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine("webview-log-js-console-messages",
                     "Mirrors JavaScript console messages to system logs."),
     };
+
+    // TODO(ntfschr): add a method to map String to Flag instance, when we support retrieving flags
+    // from the service.
 }

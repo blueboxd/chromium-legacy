@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Biru muda</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> mungkin tidak dapat diupdate secara otomatis</translation>
 <translation id="1736419249208073774">Jelajahi</translation>
-<translation id="1736420071277903564">Komputer</translation>
 <translation id="1737968601308870607">Bug file</translation>
 <translation id="1741314857973421784">Lanjutkan</translation>
 <translation id="1743570585616704562">Tidak dikenali</translation>
@@ -564,7 +563,7 @@
 <translation id="1794791083288629568">Kirim masukan untuk membantu kami menyelesaikan masalah ini.</translation>
 <translation id="1795214765651529549">Gunakan Klasik</translation>
 <translation id="1799071797295057738">Ekstensi "<ph name="EXTENSION_NAME" />" dinonaktifkan secara otomatis.</translation>
-<translation id="1802624026913571222">Tidur saat layar tertutup</translation>
+<translation id="1802624026913571222">Tidur saat cover ditutup</translation>
 <translation id="1802687198411089702">Halaman tidak merespons. Anda dapat menunggunya atau keluar.</translation>
 <translation id="1802931390041703523">Flash diblokir pada halaman ini</translation>
 <translation id="1803531841600994172">Bahasa target</translation>
@@ -666,7 +665,7 @@
 <translation id="1937774647013465102">Tidak dapat mengimpor jenis arsitektur container <ph name="ARCHITECTURE_CONTAINER" /> dengan perangkat ini yang menggunakan arsitektur <ph name="ARCHITECTURE_DEVICE" />. Anda dapat mencoba memulihkan container ini ke dalam perangkat berbeda, atau mengakses file di dalam gambar container ini dengan membukanya di aplikasi File.</translation>
 <translation id="1938351510777341717">External Command</translation>
 <translation id="1940546824932169984">Perangkat yang terhubung</translation>
-<translation id="1942600407708803723">Mati saat layar tertutup</translation>
+<translation id="1942600407708803723">Mati saat cover ditutup</translation>
 <translation id="1944921356641260203">Pembaruan ditemukan</translation>
 <translation id="1946577776959096882">Lihat akun</translation>
 <translation id="1951012854035635156">Asisten</translation>
@@ -1129,6 +1128,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2617342710774726426">Kartu SIM terkunci</translation>
 <translation id="2619761439309613843">Muat Ulang Harian</translation>
 <translation id="2620436844016719705">Sistem</translation>
+<translation id="2621713457727696555">Aman</translation>
 <translation id="26224892172169984">Jangan izinkan situs apa pun menangani protokol</translation>
 <translation id="2624142942574147739">Halaman ini mengakses kamera dan mikrofon Anda.</translation>
 <translation id="2626799779920242286">Coba lagi nanti.</translation>
@@ -1578,6 +1578,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="328571385944182268">Simpan sandi Anda?</translation>
 <translation id="3288047731229977326">Ekstensi yang berjalan dalam mode pengembang dapat membahayakan komputer Anda. Jika Anda bukan pengembang, Anda sebaiknya menonaktifkan ekstensi yang berjalan dalam mode pengembang ini agar tetap aman.</translation>
 <translation id="3289856944988573801">Untuk memeriksa pembaruan, gunakan Ethernet atau Wi-Fi.</translation>
+<translation id="3290356915286466215">Tidak aman</translation>
 <translation id="3293644607209440645">Kirim halaman ini</translation>
 <translation id="32939749466444286">Container Linux tidak dimulai. Harap coba lagi.</translation>
 <translation id="3294437725009624529">Tamu</translation>
@@ -2019,7 +2020,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3900966090527141178">Ekspor sandi</translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Perbaiki aplikasi</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> sudah usang</translation>
 <translation id="3908501907586732282">Aktifkan ekstensi</translation>
 <translation id="3909477809443608991"><ph name="URL" /> ingin memutar konten yang dilindungi. Identitas perangkat Anda akan diverifikasi oleh Google dan akan dapat diakses oleh situs ini.</translation>
@@ -2319,7 +2319,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> membagikan jendela.</translation>
 <translation id="4364830672918311045">Tampilkan notifikasi</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> dengan <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Email dan sandi yang Anda masukkan tidak cocok</translation>
 <translation id="437184764829821926">Setelan font lanjutan</translation>
 <translation id="4374831787438678295">Installer Linux</translation>
@@ -2961,7 +2960,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5363109466694494651">Powerwash dan Kembalikan</translation>
 <translation id="5365881113273618889">Folder yang Anda pilih berisi file sensitif. Yakin ingin memberi "<ph name="APP_NAME" />" akses tulis permanen ke folder ini?</translation>
 <translation id="5367091008316207019">Membaca file..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Ponsel terkunci. Buka kunci untuk masuk.</translation>
 <translation id="5368779022775404937">Login ke <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Aktifkan akselerasi mouse</translation>
@@ -4719,6 +4717,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7912080627461681647">Sandi Anda telah diubah di server. Harap logout, lalu login kembali.</translation>
 <translation id="7915457674565721553">Sambungkan ke internet untuk menyiapkan kontrol orang tua</translation>
 <translation id="7915471803647590281">Beri tahu kami apa yang terjadi sebelum mengirim masukan.</translation>
+<translation id="7918257978052780342">Daftarkan</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />d</translation>
 <translation id="792514962475806987">Tingkat zoom yang dipasang ke dok:</translation>
 <translation id="7925247922861151263">Pemeriksaan AAA gagal</translation>
@@ -5377,7 +5376,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8845001906332463065">Dapatkan bantuan</translation>
 <translation id="8846132060409673887">Membaca produsen dan model komputer ini</translation>
 <translation id="8846141544112579928">Mencari keyboard...</translation>
-<translation id="8847523528195140327">Logout saat layar tertutup</translation>
+<translation id="8847523528195140327">Logout saat cover ditutup</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Lihat selengkapnya...</translation>
 <translation id="885246833287407341">Argumen fungsi API</translation>

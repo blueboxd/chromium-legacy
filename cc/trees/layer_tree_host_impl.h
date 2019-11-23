@@ -764,13 +764,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
     return paint_worklet_painter_.get();
   }
 
-  // The viewport has two scroll nodes, corresponding to the visual and layout
-  // viewports. However, when we compute the scroll chain we include only one
-  // of these -- we call that the "main" scroll node. When scrolling it, we
-  // scroll using the Viewport class which knows how to distribute scroll
-  // between the two.
-  ScrollNode* ViewportMainScrollNode();
-
   void QueueImageDecode(int request_id, const PaintImage& image);
   std::vector<std::pair<int, bool>> TakeCompletedImageDecodeRequests();
 
@@ -849,6 +842,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info) const;
   void CollectScrollbarUpdates(ScrollAndScaleSet* scroll_info) const;
 
+  // Returns the ScrollNode we should use to scroll, accounting for viewport
+  // scroll chaining rules.
+  ScrollNode* GetNodeToScroll(ScrollNode* node) const;
+
   // Transforms viewport start point and scroll delta to local start point and
   // local delta, respectively. If the transformation of either the start or end
   // point of a scroll is clipped, the function returns false.
@@ -898,7 +895,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool UpdateGpuRasterizationStatus();
   void UpdateTreeResourcesForGpuRasterizationIfNeeded();
 
-  Viewport* viewport() const { return viewport_.get(); }
+  Viewport& viewport() const { return *viewport_.get(); }
 
   InputHandler::ScrollStatus ScrollBeginImpl(
       ScrollState* scroll_state,

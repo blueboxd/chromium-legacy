@@ -161,15 +161,12 @@ SyncToken RasterImplementationGLES::ScheduleImageDecode(
 
 GLuint RasterImplementationGLES::CreateAndConsumeForGpuRaster(
     const gpu::Mailbox& mailbox) {
-  if (mailbox.IsSharedImage()) {
-    return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
-  } else {
-    return gl_->CreateAndConsumeTextureCHROMIUM(mailbox.name);
-  }
+  DCHECK(mailbox.IsSharedImage());
+  return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
 }
 
 void RasterImplementationGLES::DeleteGpuRasterTexture(GLuint texture) {
-  gl_->DeleteTextures(1, &texture);
+  gl_->DeleteTextures(1u, &texture);
 }
 
 void RasterImplementationGLES::BeginGpuRaster() {

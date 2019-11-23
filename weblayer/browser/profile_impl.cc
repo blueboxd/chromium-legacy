@@ -6,6 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -14,6 +18,7 @@
 #include "content/public/browser/resource_context.h"
 #include "weblayer/browser/ssl_host_state_delegate_impl.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/common/weblayer_paths.h"
 #include "weblayer/public/download_delegate.h"
 
 #if defined(OS_ANDROID)
@@ -72,6 +77,16 @@ class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate {
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerDelegateImpl);
 };
+
+bool IsNameValid(const std::string& name) {
+  for (size_t i = 0; i < name.size(); ++i) {
+    char c = name[i];
+    if (!(base::IsAsciiDigit(c) || base::IsAsciiAlpha(c) || c == '_')) {
+      return false;
+    }
+  }
+  return true;
+}
 
 }  // namespace
 
@@ -190,12 +205,26 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
   base::OnceCallback<void()> callback_;
 };
 
-ProfileImpl::ProfileImpl(const base::FilePath& path) : path_(path) {
+ProfileImpl::ProfileImpl(const std::string& name) {
+  base::FilePath path;
+
+  if (!name.empty()) {
+    CHECK(IsNameValid(name));
+    {
+      base::ScopedAllowBlocking allow_blocking;
+      CHECK(base::PathService::Get(DIR_USER_DATA, &path));
+      path = path.AppendASCII("profiles").AppendASCII(name.c_str());
+
+      if (!base::PathExists(path))
+        base::CreateDirectory(path);
+    }
+  }
+
   // Ensure WebCacheManager is created so that it starts observing
   // OnRenderProcessHostCreated events.
   web_cache::WebCacheManager::GetInstance();
 
-  browser_context_ = std::make_unique<BrowserContextImpl>(path_);
+  browser_context_ = std::make_unique<BrowserContextImpl>(path);
 }
 
 ProfileImpl::~ProfileImpl() {
@@ -250,19 +279,19 @@ void ProfileImpl::ClearRendererCache() {
   }
 }
 
-std::unique_ptr<Profile> Profile::Create(const base::FilePath& path) {
-  return std::make_unique<ProfileImpl>(path);
+std::unique_ptr<Profile> Profile::Create(const std::string& name) {
+  return std::make_unique<ProfileImpl>(name);
 }
 
 #if defined(OS_ANDROID)
 ProfileImpl::ProfileImpl(JNIEnv* env,
-                         const base::android::JavaParamRef<jstring>& path)
-    : ProfileImpl(base::FilePath(ConvertJavaStringToUTF8(env, path))) {}
+                         const base::android::JavaParamRef<jstring>& name)
+    : ProfileImpl(ConvertJavaStringToUTF8(env, name)) {}
 
 static jlong JNI_ProfileImpl_CreateProfile(
     JNIEnv* env,
-    const base::android::JavaParamRef<jstring>& path) {
-  return reinterpret_cast<jlong>(new ProfileImpl(env, path));
+    const base::android::JavaParamRef<jstring>& name) {
+  return reinterpret_cast<jlong>(new ProfileImpl(env, name));
 }
 
 static void JNI_ProfileImpl_DeleteProfile(JNIEnv* env, jlong profile) {

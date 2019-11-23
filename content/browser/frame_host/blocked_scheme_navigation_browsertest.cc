@@ -581,7 +581,7 @@ class BlockedSchemeNavigationBrowserTest
   DISALLOW_COPY_AND_ASSIGN(BlockedSchemeNavigationBrowserTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          BlockedSchemeNavigationBrowserTest,
                          ::testing::Values(url::kDataScheme,
                                            url::kFileSystemScheme));

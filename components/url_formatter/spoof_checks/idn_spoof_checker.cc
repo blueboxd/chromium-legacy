@@ -429,14 +429,28 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
             R"([^\p{scx=kana}\p{scx=hira}]\u30fc|^\u30fc|)"
             R"([a-z]\u30fb|\u30fb[a-z]|)"
 
-            // Disallow U+4E00 (CJK unified ideograph) and U+3127 (Bopomofo
-            // Letter I) unless they are next to Hiragana, Katagana or Han.
-            // U+2F00 (Kangxi Radical One) is similar, but it's normalized to
-            // U+4E00 so it's not explicitly checked here.
-            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}])"
-            R"([\u4e00\u3127]|)"
-            R"([\u4e00\u3127])"
-            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}]|)"
+            // Disallow these CJK ideographs if they are next to non-CJK
+            // characters. These characters can be used to spoof Latin
+            // characters or punctuation marks:
+            // U+4E00 (一), U+3127 (ㄧ), U+4E28 (丨), U+4E5B (乛), U+4E03 (七),
+            // U+4E05 (丅), U+5341 (十), U+3007 (〇), U+3112 (ㄒ), U+311A (ㄚ),
+            // U+311F (ㄟ), U+3128 (ㄨ), U+3129 (ㄩ), U+3108 (ㄈ), U+31BA (ㆺ),
+            // U+31B3 (ㆳ), U+5DE5 (工), U+31B2 (ㆲ), U+8BA0 (讠), U+4E01 (丁)
+            // These characters are already blocked:
+            // U+2F00 (⼀) (normalized to U+4E00), U+3192 (㆒), U+2F02 (⼂),
+            // U+2F17 (⼗) and U+3038 (〸) (both normalized to U+5341 (十)).
+            // Check if there is non-{Hiragana, Katagana, Han, Bopomofo} on the
+            // left.
+            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}\p{scx=bopo}])"
+            R"([\u4e00\u3127\u4e28\u4e5b\u4e03\u4e05\u5341\u3007\u3112)"
+            R"(\u311a\u311f\u3128\u3129\u3108\u31ba\u31b3\u5dE5)"
+            R"(\u31b2\u8ba0\u4e01]|)"
+            // Check if there is non-{Hiragana, Katagana, Han, Bopomofo} on the
+            // right.
+            R"([\u4e00\u3127\u4e28\u4e5b\u4e03\u4e05\u5341\u3007\u3112)"
+            R"(\u311a\u311f\u3128\u3129\u3108\u31ba\u31b3\u5de5)"
+            R"(\u31b2\u8ba0\u4e01])"
+            R"([^\p{scx=kana}\p{scx=hira}\p{scx=hani}\p{scx=bopo}]|)"
 
             // Disallow combining diacritical mark (U+0300-U+0339) after a
             // non-LGC character. Other combining diacritical marks are not in

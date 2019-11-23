@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">हल्का नीला</translation>
 <translation id="1734824808160898225">हो सकता है कि <ph name="PRODUCT_NAME" /> खुद को अपडेट नहीं रख पाए</translation>
 <translation id="1736419249208073774">बेहतर जानें</translation>
-<translation id="1736420071277903564">कंप्यूटर</translation>
 <translation id="1737968601308870607">गड़बड़ी की सूचना दें</translation>
 <translation id="1741314857973421784">जारी रखें</translation>
 <translation id="1743570585616704562">उंगली की पहचान नहीं हो सकी</translation>
@@ -564,7 +563,7 @@
 <translation id="1794791083288629568">इस समस्या को ठीक करने में हमारी सहायता करने के लिए फ़ीडबैक भेजें.</translation>
 <translation id="1795214765651529549">क्लासिक का उपयोग करें</translation>
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" एक्सटेंशन अपने आप अक्षम हो गया था.</translation>
-<translation id="1802624026913571222">कवर बंद होने पर, डिवाइस को नींद मोड में करें</translation>
+<translation id="1802624026913571222">कवर बंद होने पर, डिवाइस को नींद मोड में ले जाएं</translation>
 <translation id="1802687198411089702">पेज काम नहीं कर रहा है. आप इंतज़ार कर सकते हैं या बाहर निकल सकते हैं.</translation>
 <translation id="1802931390041703523">इस पेज पर फ़्लैश ब्लॉक कर दिया गया था</translation>
 <translation id="1803531841600994172">वह भाषा जिसमें अनुवाद करना है</translation>
@@ -1129,6 +1128,7 @@
 <translation id="2617342710774726426">सिम कार्ड लॉक है</translation>
 <translation id="2619761439309613843">हर दिन रीफ़्रेश करें</translation>
 <translation id="2620436844016719705">सिस्टम</translation>
+<translation id="2621713457727696555">सुरक्षित</translation>
 <translation id="26224892172169984">किसी भी साइट को प्रोटोकॉल प्रबंधित करने की अनुमति न दें</translation>
 <translation id="2624142942574147739">यह पेज आपके कैमरा और माइक्रोफ़ोन को ऐक्सेस कर रहा है.</translation>
 <translation id="2626799779920242286">कृपया बाद में फिर से प्रयास करें.</translation>
@@ -1580,6 +1580,7 @@
 <translation id="328571385944182268">क्या आप पासवर्ड सेव करना चाहते हैं?</translation>
 <translation id="3288047731229977326">डेवलपर मोड में चलने वाले एक्सटेंशन आपके कंप्यूटर को नुकसान पहुंचा सकते हैं. अगर आप डेवलपर नहीं हैं तो, सुरक्षित रहने के लिए आपको डेवलपर मोड मे चलने वाले इन एक्सटेंशन को बंद कर देना चाहिए.</translation>
 <translation id="3289856944988573801">अपडेट की जाँच करने के लिए, कृपया Ethernet या वाई-फ़ाई का उपयोग करें.</translation>
+<translation id="3290356915286466215">असुरक्षित</translation>
 <translation id="3293644607209440645">यह पेज भेजें</translation>
 <translation id="32939749466444286">Linux कंटेनर शुरू नहीं हुआ. कृपया फिर से कोशिश करें.</translation>
 <translation id="3294437725009624529">अतिथि</translation>
@@ -2021,7 +2022,6 @@
 <translation id="3900966090527141178">पासवर्ड निर्यात करें</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="3905761538810670789">ऐप्लिकेशन को ठीक करें</translation>
-<translation id="3906954721959377182">टैबलेट</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> पुराना है</translation>
 <translation id="3908501907586732282">एक्‍सटेंशन चालू करें</translation>
 <translation id="3909477809443608991"><ph name="URL" /> सुरक्षित सामग्री चलाना चाहता है . Google आपके डिवाइस की पहचान की पुष्टि कर सकता है और यह साइट उसे ऐक्सेस कर सकती है.</translation>
@@ -2320,7 +2320,6 @@
 <translation id="4364327530094270451">खरबूजा</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> किसी विंडो को शेयर कर रहा है.</translation>
 <translation id="4364830672918311045">डिसप्ले नोटिफ़िकेशन</translation>
-<translation id="4366956553771076218"><ph name="APP_NAME" /> के ज़रिए <ph name="ACTION_NAME" />.</translation>
 <translation id="4370975561335139969">  डाले गए ईमेल और पासवर्ड का मिलान नहीं हो रहा</translation>
 <translation id="437184764829821926">बेहतर फ़ॉन्ट सेटिंग</translation>
 <translation id="4374831787438678295">Linux इंस्टॉलर</translation>
@@ -2437,7 +2436,7 @@
 <translation id="4546308221697447294">Google Chrome के ज़रिए तेज़ी से ब्राउज़़ करें</translation>
 <translation id="4547659257713117923">अन्य डिवाइसों से कोई टैब नहीं</translation>
 <translation id="4547672827276975204">अपने आप सेट करें</translation>
-<translation id="4549791035683739768">आपकी सुरक्षा कुंजी में कोई फ़िंगरप्रिंट सेव नहीं है</translation>
+<translation id="4549791035683739768">आपकी सुरक्षा कुंजी में कोई फ़िंगरप्रिंट सेव नहीं की गई है</translation>
 <translation id="4551763574344810652">पहले जैसा करने के लिए <ph name="MODIFIER_KEY_DESCRIPTION" /> दबाएं</translation>
 <translation id="4552089082226364758">फ़्लैश</translation>
 <translation id="4554591392113183336">बाहरी एक्‍सटेंशन मौजूदा की तुलना में समान या निम्नतर संस्‍करण पर है.</translation>
@@ -2962,7 +2961,6 @@
 <translation id="5363109466694494651">पावरवॉश करें और वापस लाएं</translation>
 <translation id="5365881113273618889">आपने जो फ़ोल्डर चुना है उसमें संवेदनशील फ़ाइलें हैं. क्या आप वाकई "<ph name="APP_NAME" />" को इस फ़ोल्डर में लिखने का ऐक्सेस हमेशा के लिए देना चाहते हैं?</translation>
 <translation id="5367091008316207019">फ़ाइल पढ़ी जा रही है..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">आपका फ़ोन लॉक हो गया है. प्रवेश करने के लिए उसे अनलॉक करें.</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> में साइन इन करें</translation>
 <translation id="5369491905435686894">माउस की रफ़्तार बढ़ाने की सुविधा चालू करें</translation>
@@ -4719,6 +4717,7 @@
 <translation id="7912080627461681647">सर्वर पर आपका पासवर्ड बदल दिया गया है. कृपया साइन आउट करके फिर से साइन इन करें.</translation>
 <translation id="7915457674565721553">'माता-पिता के नियंत्रण में' सुविधा सेट करने के लिए इंटरनेट से कनेक्ट करें</translation>
 <translation id="7915471803647590281">कृपया फ़ीडबैक भेजने से पहले हमें बताएं कि क्‍या हो रहा है.</translation>
+<translation id="7918257978052780342">नामांकित करें</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> सेकंड</translation>
 <translation id="792514962475806987">डॉक किया गया ज़ूम स्तर:</translation>
 <translation id="7925247922861151263">AAA जाँच पूरा नहीं हो सका</translation>

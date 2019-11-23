@@ -4,7 +4,7 @@
 
 #include "services/video_capture/receiver_mojo_to_media_adapter.h"
 
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/video_capture/scoped_access_permission_media_to_mojo_adapter.h"
 
 namespace video_capture {
@@ -34,7 +34,7 @@ void ReceiverMojoToMediaAdapter::OnFrameReadyInBuffer(
         access_permission,
     media::mojom::VideoFrameInfoPtr frame_info) {
   mojo::PendingRemote<mojom::ScopedAccessPermission> access_permission_proxy;
-  mojo::MakeStrongBinding<mojom::ScopedAccessPermission>(
+  mojo::MakeSelfOwnedReceiver<mojom::ScopedAccessPermission>(
       std::make_unique<ScopedAccessPermissionMediaToMojoAdapter>(
           std::move(access_permission)),
       access_permission_proxy.InitWithNewPipeAndPassReceiver());

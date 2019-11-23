@@ -238,3 +238,6 @@ crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_WebGL2_BlitFramebuff
 # Disabled upon landing only to avoid having the entire CL reverted if the new
 # tests turn out to be flaky.
 crbug.com/681341 [ mac ] Pixel_WebGLLowToHighPower [ Skip ]
+
+# Flakes on Mac Retine NVIDIA producing a blank image.
+crbug.com/1027518 [ mac nvidia ] Pixel_Video_Context_Loss_VP9 [ Skip ]

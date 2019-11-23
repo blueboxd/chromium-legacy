@@ -7,6 +7,7 @@
 #include <utility>
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/referrer.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -38,6 +39,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -62,6 +64,8 @@ HTMLPortalElement::HTMLPortalElement(
         *this, portal_token, std::move(remote_portal),
         std::move(portal_client_receiver));
   }
+
+  UseCounter::Count(document, WebFeature::kHTMLPortalElement);
 }
 
 HTMLPortalElement::~HTMLPortalElement() {}

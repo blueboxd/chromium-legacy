@@ -175,6 +175,7 @@
 <translation id="173080396488393970">የዚህ ዓይነቱ ካርድ አይደገፍም</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">የሥርዓት አስተዳዳሪውን ለማነጋገር ይሞክሩ።</translation>
+<translation id="1736420071277903564">ኮምፒውተር</translation>
 <translation id="1739107442478692187">የውሂብ ጥሰት እርስዎ በሚጠቀሙት ጣቢያ ወይም መተግበሪያ ላይ አጋጥሟል። Chrome የተቀመጡ ይለፍ ቃላትዎን አሁኑኑ እንዲፈትሹና <ph name="ORIGIN" /> ላይ የይለፍ ቃልዎን እንዲቀይሩ ይመክራል።</translation>
 <translation id="1740951997222943430">ትክክለኛ የአገልግሎት ማብቂያ ወር ያስገቡ</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> ሲሆን መገለጽ እና የሚሰራ ሕብረቁምፊ መሆን አለበት።</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">በ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ላይ አሁን ያሉ አጥቂዎች የእርስዎን መሣሪያ የሚያበላሹ አደገኛ መተግበሪያዎችን ሊጭኑ፣ በእርስዎ ሞባይል ክፍያ መጠየቂያ ላይ የተደበቁ ክፍያ መጠየቂያዎችን ሊያክሉ ወይም የእርስዎን የግል መረጃ ሊሰርቁ ይችላሉ። <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">ምንም በይነመረብ የለም</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />የመመርመሪያ መተግበሪያውን<ph name="END_LINK" /> በመጠቀም ግንኙነትዎን ያስተካክሉት</translation>
+<translation id="22320125457191592">ለእርስዎ</translation>
 <translation id="2239100178324503013">አሁን ላክ</translation>
 <translation id="2248949050832152960">WebAuthnን ተጠቀም</translation>
 <translation id="2250931979407627383">በግራ በኩል ጫፉን ስፋ።</translation>
@@ -371,6 +373,7 @@
 <translation id="2676271551327853224">ROC 8K</translation>
 <translation id="2677748264148917807">ለቅቀህ ውጣ</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">የደህንነት ማስጠንቀቂያ</translation>
 <translation id="2699302886720511147">ተቀባይነት ያላቸው ካርዶች</translation>
 <translation id="2702801445560668637">የንባብ ዝርዝር</translation>
 <translation id="2704283930420550640">ዋጋ ከቅርጸት ጋር አይዛመድም።</translation>
@@ -470,6 +473,7 @@
 <translation id="3207960819495026254">ዕልባት ተደርጎበታል</translation>
 <translation id="3209034400446768650">ገጽ ገንዘብ ሊያስከፍል ይችል ይሆናል</translation>
 <translation id="3209080785413271048">የተቀመጡ የመክፈያ ዘዴዎችዎን ለማረጋገጥ Windows Helloን ይጠቀሙ።</translation>
+<translation id="3212581601480735796">በ<ph name="HOSTNAME" /> ላይ የእርስዎ እንቅስቃሴ ቁጥጥር እየተደረገበት ነው</translation>
 <translation id="3215092763954878852">WebAuthn ን መጠቀም አልተቻለም</translation>
 <translation id="3225919329040284222">አገልጋዩ አብረው የተሰሩ የሚጠበቁ ማሟያዎችን የማያሟላ የእውቅና ማረጋገጫ ነው ያቀረበው። እነዚህ የሚጠበቁ ማሟያዎች እርስዎን ለመጠበቅ ለተረጋገጡ ከፍተኛ ደህንነት ላላቸው ድር ጣቢያዎች ተካትተዋል።</translation>
 <translation id="3226128629678568754">ገጹን ለመጫን የሚያስፈልገው ውሂብ ዳግም ለማስገባት የዳግም ጫን አዝራሩን ይጫኑ።</translation>
@@ -528,6 +532,7 @@
 <translation id="3528485271872257980">ደማቅ ቡናማ</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{በተሰመሩ መሣሪያዎች ላይ ቢያንስ 1 ንጥል}=1{1 ንጥል (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}one{# ንጥሎች (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}other{# ንጥሎች (እና ተጨማሪ የተሰመሩ መሣሪያዎች ላይ)}}</translation>
 <translation id="3539171420378717834">የዚህን ካርድ ቅጂ በዚህ መሣሪያ ላይ አቆይ</translation>
+<translation id="3553513561058684206">ለእርስዎ</translation>
 <translation id="3566021033012934673">ግንኙነትዎ የግል አይደለም</translation>
 <translation id="3574305903863751447"><ph name="CITY" />፣ <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> ላይ የተካተተ ገጽ እንዲህ ይላል፦</translation>
@@ -603,6 +608,7 @@
 <translation id="3897092660631435901">ምናሌ</translation>
 <translation id="3901925938762663762">ካርዱ አገልግሎት ጊዜው አብቅቷል</translation>
 <translation id="3906600011954732550">B5-ተጨማሪ</translation>
+<translation id="3906954721959377182">ጡባዊ</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">ከCVC ይልቅ WebAuthnን ይጠቀሙ?</translation>
 <translation id="3946209740501886391">ሁልጊዜ በዚህ ጣቢያ ላይ ጠይቅ</translation>
@@ -755,6 +761,7 @@
 <translation id="4594403342090139922">&amp;ሰርዝን ቀልብስ</translation>
 <translation id="4597348597567598915">መጠን 8</translation>
 <translation id="4600854749408232102">C6/C5 (የደብዳቤ ፖስታ)</translation>
+<translation id="4613966523036881546">ለአውታረ መረብ ማቋረጥ እና ክትትል ጥቅም ላይ እንደሚውል ስለሚታወቅ የዚህ ግንኙነት የዕውቅና ማረጋገጫ በChrome የታመነ አይደለም።</translation>
 <translation id="4635654612248442824">ጣቢያ <ph name="ORIGIN" /> የመጀመሪያ መመሪያ
     በሁሉም የእሱ ጥያቄ ላይ ተፈጻሚ እንዲሆን ጠይቋል ሆኖም ግን ይህ መመሪያ አሁን ላይ ተፈጻሚ ሊሆን አይችልም።</translation>
 <translation id="464342062220857295">ባህሪያትን ይፈልጉ</translation>
@@ -1460,6 +1467,7 @@
 <translation id="8103161714697287722">የክፍያ ስልት</translation>
 <translation id="8105368624971345109">አጥፋ</translation>
 <translation id="8118489163946903409">የመክፈያ ዘዴ</translation>
+<translation id="8124023448510659215">ለአውታረ መረብ ማቋረጥ እና ክትትል ጥቅም ላይ እንደሚውል ስለሚታወቅ የዚህ ግንኙነት የዕውቅና ማረጋገጫ በChromium የታመነ አይደለም።</translation>
 <translation id="8127301229239896662">«<ph name="SOFTWARE_NAME" />» በእርስዎ ኮምፒውተር ወይም አውታረ መረብ ላይ በአግባቡ አልተጫነም። አስተዳዳሪዎ ይህን ችግር እንዲፈታ ይጠይቁ።</translation>
 <translation id="8131740175452115882">አረጋግጥ</translation>
 <translation id="8149426793427495338">የእርስዎ ኮምፒውተ ተኝቷል።</translation>
@@ -1528,7 +1536,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 ክሬዲት ካርድ}one{# ክሬዲት ካርዶች}other{# ክሬዲት ካርዶች}}</translation>
 <translation id="8473863474539038330">አድራሻዎች እና ተጨማሪ</translation>
 <translation id="8479754468255770962">ከታች ግራ በኩል ስቴፕለር ምታ</translation>
-<translation id="8481133456511676116"><ph name="DOMAIN" /> ለማለት ፈልገው ነው?</translation>
 <translation id="8483780878231876732">ከእርስዎ የGoogle መለያ ካርዶችን ለመጠቀም ወደ Chrome በመለያ ይግቡ</translation>
 <translation id="8488350697529856933">የሚመለከተው ለ</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ምላሽ ለመስጠት ከልክ በላይ ረዥም ጊዜ ወስዷል።</translation>
@@ -1604,6 +1611,8 @@
 <translation id="8957210676456822347">የተያዥ መግቢያ ፈቀዳ</translation>
 <translation id="8962950042226115166">አጠራጣሪ ጣቢያ</translation>
 <translation id="8968766641738584599">ካርድ አስቀምጥ</translation>
+<translation id="8969267497192857913">ማናቸውም እርስዎ የሚተይቡት፣ የሚመለከቱት ማናቸውም ገጽ፣ ወይም ማናቸውም በድር ላይ ያለ ሌላ እንቅስቃሴ እየታየ ነው እና በጣቢያዎች ላይ ያለ ይዘት እርስዎ ሳያውቁት ሊለወጥ ይችላል።
+    <ph name="BEGIN_LEARN_MORE_LINK" />የበለጠ ለመረዳት<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">የአገልጋይ እውቅና ማረጋገጫ ጊዜው አልፎበታል።</translation>
 <translation id="8975012916872825179">እንደ ስልክ ቁጥሮች፣ ኢሜይል አድራሻዎች እና የመላኪያ አድራሻዎች ያሉ መረጃዎችን ያካትታል</translation>
 <translation id="8975263830901772334">እርስዎ የሚያትሟቸው የፋይሎች ስም</translation>

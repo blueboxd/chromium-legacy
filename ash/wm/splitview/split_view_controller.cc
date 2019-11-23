@@ -806,17 +806,15 @@ void SplitViewController::OnWindowBoundsChanged(
     ui::PropertyChangeReason reason) {
   DCHECK_EQ(root_window_, window->GetRootWindow());
 
-  if (!InClamshellSplitViewMode() ||
-      reason == ui::PropertyChangeReason::FROM_ANIMATION) {
+  if (!InClamshellSplitViewMode())
     return;
-  }
 
   WindowState* window_state = WindowState::Get(window);
   const bool is_window_moved = window_state->is_dragged() &&
                                window_state->drag_details()->bounds_change ==
                                    WindowResizer::kBoundsChange_Repositions;
   if (is_window_moved) {
-    EndSplitView();
+    // Ending overview will also end clamshell split view.
     Shell::Get()->overview_controller()->EndOverview();
     return;
   }
@@ -856,6 +854,7 @@ void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
   // we'll just end splitview and overview mode.
   if (WindowState::Get(window)->drag_details()->window_component !=
       GetWindowComponentForResize(window)) {
+    // Ending overview will also end clamshell split view.
     Shell::Get()->overview_controller()->EndOverview();
   }
 }
@@ -866,7 +865,7 @@ void SplitViewController::OnResizeLoopEnded(aura::Window* window) {
 
   if (divider_position_ < GetDividerEndPosition() * kOneThirdPositionRatio ||
       divider_position_ > GetDividerEndPosition() * kTwoThirdPositionRatio) {
-    EndSplitView();
+    // Ending overview will also end clamshell split view.
     Shell::Get()->overview_controller()->EndOverview();
     WindowState::Get(window)->Maximize();
   }
@@ -1087,6 +1086,11 @@ void SplitViewController::OnDisplayMetricsChanged(
       EndSplitView();
     return;
   }
+
+  // In clamshell split view mode, the divider position will be adjusted in
+  // |OnWindowBoundsChanged|.
+  if (split_view_type_ == SplitViewType::kClamshellType)
+    return;
 
   // Before adjusting the divider position for the new display metrics, if the
   // divider is animating to a snap position, then stop it and shove it there.
@@ -1410,14 +1414,14 @@ void SplitViewController::StopAndShoveAnimatedDivider() {
   UpdateSnappedWindowsAndDividerBounds();
 }
 
-bool SplitViewController::ShouldEndSplitViewAfterResizing() {
-  DCHECK(InSplitViewMode());
+bool SplitViewController::ShouldEndTabletSplitViewAfterResizing() {
+  DCHECK(InTabletSplitViewMode());
 
   return divider_position_ == 0 || divider_position_ == GetDividerEndPosition();
 }
 
 void SplitViewController::EndSplitViewAfterResizingIfAppropriate() {
-  if (!ShouldEndSplitViewAfterResizing())
+  if (!ShouldEndTabletSplitViewAfterResizing())
     return;
 
   aura::Window* active_window = GetActiveWindowAfterResizingUponExit();
@@ -1445,7 +1449,7 @@ void SplitViewController::EndSplitViewAfterResizingIfAppropriate() {
 aura::Window* SplitViewController::GetActiveWindowAfterResizingUponExit() {
   DCHECK(InSplitViewMode());
 
-  if (!ShouldEndSplitViewAfterResizing())
+  if (!ShouldEndTabletSplitViewAfterResizing())
     return nullptr;
 
   return divider_position_ == 0 ? GetPhysicalRightOrBottomWindow()

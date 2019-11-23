@@ -133,6 +133,8 @@ class UnitTest(unittest.TestCase):
 
   def generate_list_of_eligible_bots_query_response(
       self, alive_bots, dead_bots):
+    if len(alive_bots) == 0 and len(dead_bots) == 0:
+      return {}
     items = {'items': []}
     for bot_id in alive_bots:
       items['items'].append(
@@ -176,7 +178,6 @@ class UnitTest(unittest.TestCase):
       triggered_map[shard] = bot_id
     return triggered_map
 
-
   def test_all_healthy_shards(self):
     triggerer = self.setup_and_trigger(
         previous_task_assignment_map={0: 'build3', 1: 'build4', 2: 'build5'},
@@ -191,6 +192,15 @@ class UnitTest(unittest.TestCase):
     self.assertEquals(expected_task_assignment.get(0), 'build3')
     self.assertEquals(expected_task_assignment.get(1), 'build4')
     self.assertEquals(expected_task_assignment.get(2), 'build5')
+
+  def test_no_bot_returned(self):
+    with self.assertRaises(ValueError) as context:
+      self.setup_and_trigger(
+          previous_task_assignment_map={0: 'build1'},
+          alive_bots=[],
+          dead_bots=[])
+    err_msg = 'Not enough available machines exist in swarming pool'
+    self.assertTrue(err_msg in context.exception.message)
 
   def test_previously_healthy_now_dead(self):
     # Test that it swaps out build1 and build2 that are dead

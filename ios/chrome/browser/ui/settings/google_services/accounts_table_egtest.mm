@@ -47,9 +47,9 @@ typedef NSString* (^ExpectedTextLabelCallback)(NSString* identityEmail);
 namespace {
 
 // Returns a matcher for a button that matches the userEmail in the given
-// |identity|.
-id<GREYMatcher> ButtonWithIdentity(FakeChromeIdentity* identity) {
-  return ButtonWithAccessibilityLabel(identity.userEmail);
+// |fakeIdentity|.
+id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
+  return ButtonWithAccessibilityLabel(fakeIdentity.userEmail);
 }
 }
 
@@ -62,17 +62,17 @@ id<GREYMatcher> ButtonWithIdentity(FakeChromeIdentity* identity) {
 // Tests that the Sync and Account Settings screen are correctly popped if the
 // signed in account is removed.
 - (void)testSignInPopUpAccountOnSyncSettings {
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
 
   // Sign In |identity|, then open the Sync Settings.
-  [SigninEarlGreyUI signinWithIdentity:identity];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
-  // Forget |identity|, screens should be popped back to the Main Settings.
+  // Forget |fakeIdentity|, screens should be popped back to the Main Settings.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->ForgetIdentity(identity, nil);
+      ->ForgetIdentity(fakeIdentity, nil);
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -85,20 +85,20 @@ id<GREYMatcher> ButtonWithIdentity(FakeChromeIdentity* identity) {
 // Tests that the Account Settings screen is correctly popped if the signed in
 // account is removed while the "Disconnect Account" dialog is up.
 - (void)testSignInPopUpAccountOnDisconnectAccount {
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
+      fakeIdentity);
 
-  // Sign In |identity|, then open the Account Settings.
-  [SigninEarlGreyUI signinWithIdentity:identity];
+  // Sign In |fakeIdentity|, then open the Account Settings.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
   [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
 
-  // Forget |identity|, screens should be popped back to the Main Settings.
+  // Forget |fakeIdentity|, screens should be popped back to the Main Settings.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-      ->ForgetIdentity(identity, nil);
+      ->ForgetIdentity(fakeIdentity, nil);
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
@@ -113,29 +113,29 @@ id<GREYMatcher> ButtonWithIdentity(FakeChromeIdentity* identity) {
 - (void)testSignInReloadOnRemoveAccount {
   ios::FakeChromeIdentityService* identity_service =
       ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
-  FakeChromeIdentity* identity1 = [SigninEarlGreyUtils fakeIdentity1];
-  FakeChromeIdentity* identity2 = [SigninEarlGreyUtils fakeIdentity2];
-  identity_service->AddIdentity(identity2);
+  FakeChromeIdentity* fakeIdentity1 = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity2 = [SigninEarlGreyUtils fakeIdentity2];
+  identity_service->AddIdentity(fakeIdentity2);
 
-  // Sign In |identity|, then open the Account Settings.
-  [SigninEarlGreyUI signinWithIdentity:identity1];
+  // Sign In |fakeIdentity|, then open the Account Settings.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
-  // Remove |identity2| from the device.
-  [[EarlGrey selectElementWithMatcher:ButtonWithIdentity(identity2)]
+  // Remove |fakeIdentity2| from the device.
+  [[EarlGrey selectElementWithMatcher:ButtonWithFakeIdentity(fakeIdentity2)]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Remove account")]
       performAction:grey_tap()];
 
-  // Check that |identity2| isn't available anymore on the Account Settings.
+  // Check that |fakeIdentity2| isn't available anymore on the Account Settings.
   [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityLabel(identity2.userEmail),
-                                   grey_sufficientlyVisible(), nil)]
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(
+                                              fakeIdentity2.userEmail),
+                                          grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  [SigninEarlGreyUtils checkSignedInWithIdentity:identity1];
+  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity1];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -144,15 +144,15 @@ id<GREYMatcher> ButtonWithIdentity(FakeChromeIdentity* identity) {
 // Tests that the Account Settings screen is popped and the user signed out
 // when the account is removed.
 - (void)testSignOutOnRemoveAccount {
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
 
-  // Sign In |identity|, then open the Account Settings.
-  [SigninEarlGreyUI signinWithIdentity:identity];
+  // Sign In |fakeIdentity|, then open the Account Settings.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
-  // Remove |identity| from the device.
-  [[EarlGrey selectElementWithMatcher:ButtonWithIdentity(identity)]
+  // Remove |fakeIdentity| from the device.
+  [[EarlGrey selectElementWithMatcher:ButtonWithFakeIdentity(fakeIdentity)]
       performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:ButtonWithAccessibilityLabel(@"Remove account")]
@@ -174,10 +174,10 @@ id<GREYMatcher> ButtonWithIdentity(FakeChromeIdentity* identity) {
 #if !TARGET_IPHONE_SIMULATOR
   EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
 #endif
-  FakeChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
 
-  // Sign In |identity|, then open the Account Settings.
-  [SigninEarlGreyUI signinWithIdentity:identity];
+  // Sign In |fakeIdentity|, then open the Account Settings.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
 
@@ -186,11 +186,11 @@ id<GREYMatcher> ButtonWithIdentity(FakeChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::CancelButton()]
       performAction:grey_tap()];
 
-  // Check that Account Settings screen is open and |identity| is signed in.
+  // Check that Account Settings screen is open and |fakeIdentity| is signed in.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsAccountsCollectionView()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];

@@ -37,8 +37,6 @@ namespace chromeos {
 
 namespace {
 
-const char kOnInstallStatus[] = "OnInstallStatus";
-
 DlcserviceClient* g_instance = nullptr;
 
 class DlcserviceErrorResponseHandler {
@@ -181,13 +179,10 @@ class DlcserviceClientImpl : public DlcserviceClient {
     dlcservice_proxy_ = bus->GetObjectProxy(
         dlcservice::kDlcServiceServiceName,
         dbus::ObjectPath(dlcservice::kDlcServiceServicePath));
-    // TODO(kimjae): Use from cros_system_api the const once sync'ed for
-    // kOnInstallStatus as dlcservice::kOnInstallStatus and delete the
-    // definition of kOnInstallStatus.
     dlcservice_proxy_->ConnectToSignal(
-        dlcservice::kDlcServiceInterface, kOnInstallStatus,
-        base::Bind(&DlcserviceClientImpl::OnInstallStatus,
-                   weak_ptr_factory_.GetWeakPtr()),
+        dlcservice::kDlcServiceInterface, dlcservice::kOnInstallStatusSignal,
+        base::BindRepeating(&DlcserviceClientImpl::OnInstallStatus,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&DlcserviceClientImpl::OnInstallStatusConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -239,10 +234,6 @@ class DlcserviceClientImpl : public DlcserviceClient {
         SendCompleted(install_status);
         break;
       case dlcservice::Status::RUNNING: {
-        // TODO(kimjae): Currently, update_engine delegate's two actions.
-        // Specifically the Download action and Post Install Runner action,
-        // which means that progress will go from 0 -> 1 two complete cycles.
-        // This can be easily handled either here or inside dlcservice daemon.
         SendProgress(install_status);
         // Need to return here since we don't want to try starting another
         // pending install from the queue (would waste time checking).

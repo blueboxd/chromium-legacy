@@ -80,7 +80,7 @@ class LockActionHandlerLayoutManagerTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
 
-    action_background_controller_factory_ = base::Bind(
+    action_background_controller_factory_ = base::BindRepeating(
         &LockActionHandlerLayoutManagerTest::CreateActionBackgroundController,
         base::Unretained(this));
     LockScreenActionBackgroundController::SetFactoryCallbackForTesting(

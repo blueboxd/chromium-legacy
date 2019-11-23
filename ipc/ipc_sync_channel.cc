@@ -288,8 +288,8 @@ class SyncChannel::ReceivedSyncMsgQueue :
         listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         sync_dispatch_watcher_(std::make_unique<mojo::SyncEventWatcher>(
             &dispatch_event_,
-            base::Bind(&ReceivedSyncMsgQueue::OnDispatchEventReady,
-                       base::Unretained(this)))) {
+            base::BindRepeating(&ReceivedSyncMsgQueue::OnDispatchEventReady,
+                                base::Unretained(this)))) {
     sync_dispatch_watcher_->AllowWokenUpBySyncWatchOnSameThread();
   }
 
@@ -662,13 +662,14 @@ void SyncChannel::WaitForReply(mojo::SyncHandleRegistry* registry,
     bool dispatch = false;
     bool send_done = false;
     bool should_pump_messages = false;
-    base::Closure on_send_done_callback = base::Bind(&OnEventReady, &send_done);
+    base::RepeatingClosure on_send_done_callback =
+        base::BindRepeating(&OnEventReady, &send_done);
     registry->RegisterEvent(context->GetSendDoneEvent(), on_send_done_callback);
 
-    base::Closure on_pump_messages_callback;
+    base::RepeatingClosure on_pump_messages_callback;
     if (pump_messages_event) {
       on_pump_messages_callback =
-          base::Bind(&OnEventReady, &should_pump_messages);
+          base::BindRepeating(&OnEventReady, &should_pump_messages);
       registry->RegisterEvent(pump_messages_event, on_pump_messages_callback);
     }
 

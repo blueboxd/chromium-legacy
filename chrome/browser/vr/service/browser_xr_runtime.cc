@@ -122,7 +122,6 @@ device::mojom::VRDisplayInfoPtr ValidateVRDisplayInfo(
       IsValidTransform(info->stage_parameters->standing_transform, 1000000)) {
     ret->stage_parameters = device::mojom::VRStageParameters::New(
         info->stage_parameters->standing_transform,
-        info->stage_parameters->size_x, info->stage_parameters->size_z,
         info->stage_parameters->bounds);
   }
 

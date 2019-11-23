@@ -2736,9 +2736,6 @@ TEST_F(TransportSecurityStateStaticTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("uprotect.it"));
   EXPECT_TRUE(StaticShouldRedirect("foo.uprotect.it"));
 
-  EXPECT_TRUE(StaticShouldRedirect("squareup.com"));
-  EXPECT_FALSE(HasStaticState("foo.squareup.com"));
-
   EXPECT_TRUE(StaticShouldRedirect("cert.se"));
   EXPECT_TRUE(StaticShouldRedirect("foo.cert.se"));
 

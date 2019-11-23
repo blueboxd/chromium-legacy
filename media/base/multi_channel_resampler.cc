@@ -26,8 +26,8 @@ MultiChannelResampler::MultiChannelResampler(int channels,
   for (int i = 0; i < channels; ++i) {
     resamplers_.push_back(std::make_unique<SincResampler>(
         io_sample_rate_ratio, request_size,
-        base::Bind(&MultiChannelResampler::ProvideInput, base::Unretained(this),
-                   i)));
+        base::BindRepeating(&MultiChannelResampler::ProvideInput,
+                            base::Unretained(this), i)));
   }
 
   // Setup the wrapped AudioBus for channel data.

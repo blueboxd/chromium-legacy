@@ -1,4 +1,40 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="km">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> គ្រប់គ្រង​ឧបករណ៍នេះ ហើយ​ប្រហែលជាអាច​តាមដាន​សកម្មភាព​របស់អ្នកបាន។</translation>
+<translation id="1510238584712386396">ឡាន់ឆ័រ</translation>
+<translation id="1734367976349034509">ឧបករណ៍​នេះ​ត្រូវ​បាន​គ្រប់គ្រង​ដោយ​ក្រុមហ៊ុន</translation>
+<translation id="1930797645656624981">សេវាកម្ម​វិធី​បញ្ចូល Chrome OS</translation>
+<translation id="1979103255016296513">ការផ្លាស់ប្ដូរពាក្យសម្ងាត់​បានផុតកំណត់ហើយ</translation>
+<translation id="2049639323467105390">ឧបករណ៍នេះត្រូវបានគ្រប់គ្រងដោយ <ph name="DOMAIN" />។</translation>
+<translation id="2083960536266308407">រកមិនឃើញអ្វីនៅលើអេក្រង់ទេ</translation>
+<translation id="2338501278241028356">បើកប៊្លូធូស​ដើម្បី​ស្វែងរក​ឧបករណ៍​ដែល​នៅជិត</translation>
+<translation id="2805756323405976993">កម្មវិធី</translation>
+<translation id="2872961005593481000">បិទ</translation>
+<translation id="3008341117444806826">ផ្ទុក​ឡើង​វិញ</translation>
+<translation id="3838338534323494292">ពាក្យសម្ងាត់ថ្មី</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> គ្រប់គ្រង​ឧបករណ៍​នេះ និង​មានសិទ្ធិ​ចូលមើល​សកម្មភាព​អ្នកប្រើប្រាស់​ទាំងអស់ រួមទាំង​ទំព័របណ្ដាញ​ដែលបាន​ចូលមើល ពាក្យសម្ងាត់ និង​អ៊ីមែល​ផងដែរ។</translation>
+<translation id="4227825898293920515">ពាក្យសម្ងាត់ផុតកំណត់​ក្នុងរយៈពេល <ph name="TIME" /></translation>
+<translation id="4429881212383817840">សំបុត្រ Kerberos ជិតផុត​កំណត់ហើយ</translation>
+<translation id="445059817448385655">ពាក្យ​សម្ងាត់​ចាស់</translation>
+<translation id="467510802200863975">ពាក្យសម្ងាត់​មិនត្រូវគ្នាទេ</translation>
+<translation id="4731797938093519117">សិទ្ធិចូលប្រើប្រាស់​សម្រាប់មាតាបិតា</translation>
+<translation id="4890353053343094602">សូមជ្រើសរើស​ពាក្យសម្ងាត់​ថ្មីភ្លាមៗ</translation>
+<translation id="5212543919916444558">ខ្ញុំរកមិនឃើញអ្វីដែលខ្ញុំអាចជួយបាននៅលើអេក្រង់របស់អ្នកទេ។ សាកល្បងចុចមីក្រូហ្វូន ដើម្បីសួរខ្ញុំអំពីអ្វីម្យ៉ាង។</translation>
+<translation id="5222676887888702881">ចាកចេញ</translation>
+<translation id="5317780077021120954">រក្សាទុក</translation>
+<translation id="5332948983412042822">សូមជ្រើសរើស​ពាក្យសម្ងាត់​ថ្មីឥឡូវនេះ</translation>
+<translation id="5457599981699367932">រុករកជារបៀបភ្ញៀវ</translation>
+<translation id="54609108002486618">បាន​គ្រប់គ្រង</translation>
+<translation id="5832805196449965646">បន្ថែមបុគ្គល</translation>
+<translation id="5895138241574237353">ចាប់ផ្តើមឡើងវិញ</translation>
+<translation id="6058625436358447366">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ចាស់ និងថ្មី​របស់អ្នក</translation>
+<translation id="6106186594183574873">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ចាស់​របស់អ្នក</translation>
+<translation id="6146993107019042706">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ថ្មីរបស់អ្នក</translation>
+<translation id="7658239707568436148">បដិសេធ</translation>
+<translation id="7690294790491645610">បញ្ជាក់​ពាក្យ​សម្ងាត់​ថ្មី</translation>
+<translation id="808894953321890993">ប្ដូរ​ពាក្យ​សម្ងាត់</translation>
+<translation id="8747900814994928677">បញ្ជាក់​ការ​ផ្លាស់ប្ដូរ</translation>
+<translation id="910415269708673980">ផ្ទុកសំបុត្រ​ឡើងវិញសម្រាប់ <ph name="PRINCIPAL_NAME" /></translation>
+<translation id="9111102763498581341">ដោះសោរ</translation>
 </translationbundle>

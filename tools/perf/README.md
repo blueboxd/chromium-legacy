@@ -7,7 +7,7 @@
 
 This directory contains a variety of command line tools that can be used to run
 benchmarks, interact with speed services, and manage performance waterfall
-configurations.
+configurations. It also has commands for running functional unittests.
 
 Note you can also read the higher level [Chrome Speed][speed] documentation to
 learn more about the team organization and, in particular, the top level view
@@ -15,6 +15,19 @@ of [How Chrome Measures Performance][chrome_perf_how].
 
 [speed]: /docs/speed/README.md
 [chrome_perf_how]: /docs/speed/how_does_chrome_measure_performance.md
+
+## run_tests
+
+This command allows you to run functional tests against the python code in this
+directory. For example, try:
+
+```
+./run_tests results_dashboard_unittest
+```
+
+Note that the positional argument can be any substring within the test name.
+
+This may require you to set up your `gsutil config` first.
 
 ## run_benchmark
 

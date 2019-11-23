@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">Polička je vždy skrytá</translation>
 <translation id="8996630695507351249">Zkontrolujte, zda je zařízení <ph name="TARGET_DEVICE_NAME" /> připojené k internetu.</translation>
 <translation id="9002566407876343676">otevřít</translation>
-<translation id="9039076430527029379">Přesunout na stránku <ph name="PAGE_NUMBER" />, řádek <ph name="ROW_NUMBER" />, sloupec <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}few{# s}many{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Sbalit oznámení</translation>
 <translation id="9150735707954472829">Karta</translation>

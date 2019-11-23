@@ -175,6 +175,7 @@
 <translation id="173080396488393970">אין תמיכה בכרטיס מסוג זה</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">נסה לפנות אל מנהל המערכת.</translation>
+<translation id="1736420071277903564">מחשב</translation>
 <translation id="1739107442478692187">‏אירעה פרצה באבטחת מידע באחד מהאתרים או האפליקציות שמשמשים אותך. מערכת Chrome ממליצה לך לבדוק כעת את הסיסמאות ששמרת ולשנות את הסיסמה ב-<ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">עליך להזין חודש תפוגה חוקי</translation>
 <translation id="1741613555002899862">‏יש לציין מחרוזת חוקית כשהערך של DnsOverHttpsMode הוא <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -608,6 +609,7 @@
 <translation id="3897092660631435901">תפריט</translation>
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">טאבלט</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">‏האם להשתמש ב-WebAuthn במקום ב-CVC?</translation>
 <translation id="3946209740501886391">שאל תמיד באתר הזה</translation>
@@ -1538,7 +1540,6 @@ Del</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{כרטיס אשראי אחד}two{שני כרטיסי אשראי}many{# כרטיסי אשראי}other{# כרטיסי אשראי}}</translation>
 <translation id="8473863474539038330">כתובות ועוד</translation>
 <translation id="8479754468255770962">סיכת הידוק בפינה השמאלית התחתונה</translation>
-<translation id="8481133456511676116">האם התכוונת ל-<ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">‏כדי להשתמש בכרטיסים מחשבון Google, היכנס אל Chrome</translation>
 <translation id="8488350697529856933">חל על</translation>
 <translation id="8498891568109133222">ל-<ph name="HOST_NAME" /> נדרש זמן רב מדי להגיב.</translation>

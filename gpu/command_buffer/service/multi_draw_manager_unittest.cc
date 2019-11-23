@@ -239,7 +239,7 @@ TEST_P(MultiDrawManagerTest, ElementTypeMismatch) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     MultiDrawManagerTest,
     testing::Combine(
         testing::Values(MultiDrawManager::IndexStorageType::Offset,

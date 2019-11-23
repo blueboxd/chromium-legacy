@@ -700,4 +700,9 @@ std::string GetHistogramNameByUserType(const std::string& base_name,
          (policy_util::IsAccountManaged(profile) ? ".Managed" : ".Unmanaged");
 }
 
+std::string GetHistogramNameByUserTypeForPrimaryProfile(
+    const std::string& base_name) {
+  return GetHistogramNameByUserType(base_name, /*profile=*/nullptr);
+}
+
 }  // namespace arc

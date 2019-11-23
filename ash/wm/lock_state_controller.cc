@@ -145,11 +145,11 @@ void LockStateController::CancelLockAnimation() {
   VLOG(1) << "CancelLockAnimation";
   animating_lock_ = false;
   Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(false);
-  base::Closure next_animation_starter =
-      base::Bind(&LockStateController::LockAnimationCancelled,
-                 weak_ptr_factory_.GetWeakPtr());
+  base::OnceClosure next_animation_starter =
+      base::BindOnce(&LockStateController::LockAnimationCancelled,
+                     weak_ptr_factory_.GetWeakPtr());
   SessionStateAnimator::AnimationSequence* animation_sequence =
-      animator_->BeginAnimationSequence(next_animation_starter);
+      animator_->BeginAnimationSequence(std::move(next_animation_starter));
 
   animation_sequence->StartAnimation(
       SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
@@ -314,11 +314,11 @@ void LockStateController::PreLockAnimation(
     SessionStateAnimator::AnimationSpeed speed,
     bool request_lock_on_completion) {
   Shell::Get()->wallpaper_controller()->UpdateWallpaperBlur(true);
-  base::Closure next_animation_starter =
-      base::Bind(&LockStateController::PreLockAnimationFinished,
-                 weak_ptr_factory_.GetWeakPtr(), request_lock_on_completion);
+  base::OnceClosure next_animation_starter = base::BindOnce(
+      &LockStateController::PreLockAnimationFinished,
+      weak_ptr_factory_.GetWeakPtr(), request_lock_on_completion);
   SessionStateAnimator::AnimationSequence* animation_sequence =
-      animator_->BeginAnimationSequence(next_animation_starter);
+      animator_->BeginAnimationSequence(std::move(next_animation_starter));
 
   animation_sequence->StartAnimation(
       SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,
@@ -337,11 +337,11 @@ void LockStateController::PreLockAnimation(
 
 void LockStateController::StartPostLockAnimation() {
   VLOG(1) << "StartPostLockAnimation";
-  base::Closure next_animation_starter =
-      base::Bind(&LockStateController::PostLockAnimationFinished,
-                 weak_ptr_factory_.GetWeakPtr());
+  base::OnceClosure next_animation_starter =
+      base::BindOnce(&LockStateController::PostLockAnimationFinished,
+                     weak_ptr_factory_.GetWeakPtr());
   SessionStateAnimator::AnimationSequence* animation_sequence =
-      animator_->BeginAnimationSequence(next_animation_starter);
+      animator_->BeginAnimationSequence(std::move(next_animation_starter));
 
   animation_sequence->StartAnimation(
       SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
@@ -375,11 +375,11 @@ void LockStateController::StartUnlockAnimationBeforeUIDestroyed(
 
 void LockStateController::StartUnlockAnimationAfterUIDestroyed() {
   VLOG(1) << "StartUnlockAnimationAfterUIDestroyed";
-  base::Closure next_animation_starter =
-      base::Bind(&LockStateController::UnlockAnimationAfterUIDestroyedFinished,
-                 weak_ptr_factory_.GetWeakPtr());
+  base::OnceClosure next_animation_starter = base::BindOnce(
+      &LockStateController::UnlockAnimationAfterUIDestroyedFinished,
+      weak_ptr_factory_.GetWeakPtr());
   SessionStateAnimator::AnimationSequence* animation_sequence =
-      animator_->BeginAnimationSequence(next_animation_starter);
+      animator_->BeginAnimationSequence(std::move(next_animation_starter));
 
   animation_sequence->StartAnimation(
       SessionStateAnimator::NON_LOCK_SCREEN_CONTAINERS,

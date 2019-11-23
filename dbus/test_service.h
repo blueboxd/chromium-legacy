@@ -74,11 +74,11 @@ class TestService : public base::Thread {
   // Request the ownership of a well-known name "TestService".
   // |callback| will be called with the result when an ownership request is
   // completed.
-  void RequestOwnership(base::Callback<void(bool)> callback);
+  void RequestOwnership(base::OnceCallback<void(bool)> callback);
 
   // Release the ownership of the well-known name "TestService".
   // |callback| will be called when the ownership has been released.
-  void ReleaseOwnership(base::Closure callback);
+  void ReleaseOwnership(base::OnceClosure callback);
 
   // Returns the name of this service.
   const std::string& service_name() const { return service_name_; }
@@ -101,7 +101,7 @@ class TestService : public base::Thread {
   // the requested well-known bus name. |callback| and |service_name| are bound
   // when the service requests the ownership. |success| is the result of the
   // completed request, and is propagated to |callback|.
-  void OnOwnership(base::Callback<void(bool)> callback,
+  void OnOwnership(base::OnceCallback<void(bool)> callback,
                    const std::string& service_name,
                    bool success);
 
@@ -179,10 +179,10 @@ class TestService : public base::Thread {
   void SendPropertyInvalidatedSignalInternal();
 
   // Helper function for RequestOwnership().
-  void RequestOwnershipInternal(base::Callback<void(bool)> callback);
+  void RequestOwnershipInternal(base::OnceCallback<void(bool)> callback);
 
   // Helper function for ReleaseOwnership().
-  void ReleaseOwnershipInternal(base::Closure callback);
+  void ReleaseOwnershipInternal(base::OnceClosure callback);
 
   // Configures the test service to send a PropertiesChanged signal for the
   // "Name" property immediately after a call to GetManagedObjects.

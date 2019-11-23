@@ -1369,7 +1369,7 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
     } else {
       gl_surface_ = nullptr;
       context_state_ = nullptr;
-      LOG(FATAL) << "Failed to make current during initialization.";
+      LOG(ERROR) << "Failed to make current during initialization.";
       return false;
     }
   }

@@ -17,7 +17,10 @@
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
 namespace caspian {
+
 namespace {
+
+using FilterList = std::vector<std::function<bool(const BaseSymbol&)>>;
 
 void MakeSymbol(SizeInfo* info,
                 SectionId section_id,
@@ -44,6 +47,7 @@ void MakeSymbol(SizeInfo* info,
   sym.size_info_ = info;
   info->raw_symbols.push_back(sym);
 }
+}  // namespace
 
 std::unique_ptr<SizeInfo> CreateSizeInfo() {
   std::unique_ptr<SizeInfo> info = std::make_unique<SizeInfo>();
@@ -63,30 +67,30 @@ void CheckAllTreeNodesFindable(TreeBuilder& tree, const Json::Value& node) {
   }
 }
 
-TEST(DiffTest, TestIdPathLens) {
+TEST(TreeBuilderTest, TestIdPathLens) {
   std::unique_ptr<SizeInfo> size_info = CreateSizeInfo();
 
   TreeBuilder builder(size_info.get());
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  FilterList filters;
   builder.Build(std::make_unique<IdPathLens>(), '/', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
-  EXPECT_EQ(builder.Open("")["type"].asString(), "Dt");
+  EXPECT_EQ("Dt", builder.Open("")["type"].asString());
 }
 
-TEST(DiffTest, TestComponentLens) {
+TEST(TreeBuilderTest, TestComponentLens) {
   std::unique_ptr<SizeInfo> size_info = CreateSizeInfo();
 
   TreeBuilder builder(size_info.get());
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  FilterList filters;
   builder.Build(std::make_unique<ComponentLens>(), '>', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
-  EXPECT_EQ(builder.Open("A")["type"].asString(), "Ct");
-  EXPECT_EQ(builder.Open("A")["size"].asInt(), 20);
-  EXPECT_EQ(builder.Open("B")["type"].asString(), "Ct");
-  EXPECT_EQ(builder.Open("B")["size"].asInt(), 30);
+  EXPECT_EQ("Ct", builder.Open("A")["type"].asString());
+  EXPECT_EQ(20, builder.Open("A")["size"].asInt());
+  EXPECT_EQ("Ct", builder.Open("B")["type"].asString());
+  EXPECT_EQ(30, builder.Open("B")["size"].asInt());
 }
 
-TEST(DiffTest, TestTemplateLens) {
+TEST(TreeBuilderTest, TestTemplateLens) {
   std::unique_ptr<SizeInfo> size_info = std::make_unique<SizeInfo>();
   MakeSymbol(size_info.get(), SectionId::kText, 20, "a/b/c", "A",
              "base::internal::Invoker<base::internal::BindState<void "
@@ -99,19 +103,65 @@ TEST(DiffTest, TestTemplateLens) {
              "base::WeakPtr<autofill_assistant::Controller>, unsigned int>, "
              "void ()>::RunOnce(base::internal::BindStateBase*)");
 
-  for (Symbol& sym : size_info->raw_symbols) {
-    sym.size_info_ = size_info.get();
-  }
-
   TreeBuilder builder(size_info.get());
-  std::vector<std::function<bool(const BaseSymbol&)>> filters;
+  FilterList filters;
   builder.Build(std::make_unique<TemplateLens>(), '/', false, filters);
   CheckAllTreeNodesFindable(builder, builder.Open(""));
   EXPECT_EQ(
-      builder.Open("base::internal::Invoker<>::RunOnce")["type"].asString(),
-      "Dt");
-  EXPECT_EQ(builder.Open("base::internal::Invoker<>::RunOnce")["size"].asInt(),
-            50);
+      "Ct",
+      builder.Open("base::internal::Invoker<>::RunOnce")["type"].asString());
+  EXPECT_EQ(50,
+            builder.Open("base::internal::Invoker<>::RunOnce")["size"].asInt());
 }
-}  // namespace
+
+TEST(TreeBuilderTest, TestNoNameUnderGroup) {
+  std::unique_ptr<SizeInfo> size_info = std::make_unique<SizeInfo>();
+  MakeSymbol(size_info.get(), SectionId::kText, 20, "", "A>B>C", "SymbolName");
+
+  TreeBuilder builder(size_info.get());
+  FilterList filters;
+  builder.Build(std::make_unique<ComponentLens>(), '>', false, filters);
+  CheckAllTreeNodesFindable(builder, builder.Open(""));
+  EXPECT_EQ("A>B>C/(No path)",
+            builder.Open("A>B>C")["children"][0]["idPath"].asString());
+}
+
+TEST(TreeBuilderTest, TestJoinDexMethodClasses) {
+  std::unique_ptr<SizeInfo> size_info = std::make_unique<SizeInfo>();
+  MakeSymbol(size_info.get(), SectionId::kDex, 30,
+             "chrome/android/features/start_surface/public/java/src/org/"
+             "chromium/chrome/features/start_surface/StartSurface.java",
+             "Mobile",
+             "org.chromium.chrome.features.start_surface.StartSurface$"
+             "OverviewModeObserver android.graphics.Bitmap a()");
+  MakeSymbol(size_info.get(), SectionId::kDex, 20,
+             "chrome/android/features/start_surface/public/java/src/org/"
+             "chromium/chrome/features/start_surface/StartSurface.java",
+             "Mobile",
+             "org.chromium.chrome.features.start_surface.StartSurface$"
+             "OverviewModeObserver <init>(android.graphics.Bitmap)");
+
+  TreeBuilder builder(size_info.get());
+  FilterList filters;
+  builder.Build(std::make_unique<ComponentLens>(), '>', false, filters);
+  CheckAllTreeNodesFindable(builder, builder.Open(""));
+
+  Json::Value class_symbol = (builder.Open(
+      "Mobile/chrome/android/features/start_surface/public/java/src/"
+      "org/chromium/chrome/features/start_surface/StartSurface.java"))
+      ["children"][0];
+
+  EXPECT_EQ(
+      "org.chromium.chrome.features.start_surface.StartSurface$"
+      "OverviewModeObserver",
+      class_symbol["idPath"].asString());
+  EXPECT_EQ(2u, class_symbol["children"].size());
+
+  Json::Value dex_symbol = class_symbol["children"][0];
+  EXPECT_EQ(0u, dex_symbol["children"].size());
+
+  const std::string id_path = dex_symbol["idPath"].asString();
+  const int short_name_index = dex_symbol["shortNameIndex"].asInt();
+  EXPECT_EQ("android.graphics.Bitmap a()", id_path.substr(short_name_index));
+}
 }  // namespace caspian

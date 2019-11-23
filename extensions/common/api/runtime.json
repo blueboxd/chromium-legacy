@@ -60,8 +60,9 @@
           "id": {"type": "string", "optional": true, "description": "The ID of the extension or app that opened the connection, if any."},
           "url": {"type": "string", "optional": true, "description": "The URL of the page or frame that opened the connection. If the sender is in an iframe, it will be iframe's URL not the URL of the page which hosts it."},
           "nativeApplication": {"type": "string", "optional": true, "description": "The name of the native application that opened the connection, if any."},
-          "tlsChannelId": {"type": "string", "optional": true, "description": "The TLS channel ID of the page or frame that opened the connection, if requested by the extension or app, and if available."}
-        }
+          "tlsChannelId": {"type": "string", "optional": true, "description": "The TLS channel ID of the page or frame that opened the connection, if requested by the extension or app, and if available."},
+	  "origin": {"type": "string", "optional": true, "description": "The origin of the page or frame that opened the connection. It can vary from the url property (e.g., about:blank) or can be opaque (e.g., sandboxed iframes). This is useful for identifying if the origin can be trust if we can't immediately tell from the URL."}
+	}
       },
       {
         "id": "PlatformOs",

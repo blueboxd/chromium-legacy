@@ -141,6 +141,7 @@ ResultSelectionController::GetNextResultLocationForLocation(
 
   if (selected_result_ && event.key_code() == ui::VKEY_TAB &&
       selected_result_->SelectNextResultAction(event.IsShiftDown())) {
+    selection_change_callback_.Run();
     return MoveResult::kNone;
   }
 

@@ -22189,6 +22189,42 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="TabsSuggestions.Close.Accepted">
+  <owner>yusufo@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <description>
+    The tab close suggestions were considered and accepted by the user (with
+    some possible editing).
+  </description>
+</action>
+
+<action name="TabsSuggestions.Close.Dismissed">
+  <owner>yusufo@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <description>
+    The tab close suggestions were considered and dismissed by the user (with
+    some possible editing).
+  </description>
+</action>
+
+<action name="TabsSuggestions.Close.SuggestionsReview.Accepted">
+  <owner>yusufo@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <description>
+    The tab close suggestions were considered by the user by following through
+    the tab suggestions offered in the snackbar.
+  </description>
+</action>
+
+<action name="TabsSuggestions.Close.SuggestionsReview.Dismissed">
+  <owner>yusufo@chromium.org</owner>
+  <owner>davidjm@chromium.org</owner>
+  <description>
+    The tab close suggestions were not considered at all by the user by
+    dismissing the snackbar indicating tab suggestions are available.
+  </description>
+</action>
+
 <action name="TabStrip.UndoCloseTab">
   <owner>yusufo@chromium.org</owner>
   <owner>wychen@chromium.org</owner>

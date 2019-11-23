@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">המדף תמיד מוסתר</translation>
 <translation id="8996630695507351249">יש לוודא ש-<ph name="TARGET_DEVICE_NAME" /> מחובר לאינטרנט.</translation>
 <translation id="9002566407876343676">פתיחה</translation>
-<translation id="9039076430527029379">מעבר אל הדף <ph name="PAGE_NUMBER" />, שורה <ph name="ROW_NUMBER" />, עמודה <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{שנ‘ אחת}two{# שנ‘}many{# שנ‘}other{# שנ‘}}</translation>
 <translation id="9059834730836941392">כיווץ ההודעה</translation>
 <translation id="9150735707954472829">כרטיסייה</translation>

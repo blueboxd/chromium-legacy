@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/loader/mixed_content_autoupgrade_status.h"
 
 #include "third_party/blink/renderer/modules/websockets/websocket_channel.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
@@ -45,23 +44,11 @@ WebSocketCommon::ConnectResult WebSocketCommon::Connect(
       execution_context->GetSecurityContext().GetInsecureRequestPolicy() &
       kUpgradeInsecureRequests;
 
-  if ((upgrade_insecure_requests_set ||
-       MixedContentChecker::ShouldAutoupgrade(
-           execution_context->GetHttpsState(),
-           WebMixedContentContextType::kBlockable)) &&
-      url_.Protocol() == "ws" &&
+  if (upgrade_insecure_requests_set && url_.Protocol() == "ws" &&
       !SecurityOrigin::Create(url_)->IsPotentiallyTrustworthy()) {
-    if (upgrade_insecure_requests_set) {
-      UseCounter::Count(
-          execution_context,
-          WebFeature::kUpgradeInsecureRequestsUpgradedRequestWebsocket);
-    } else {
-      was_autoupgraded_to_wss_ = true;
-      LogMixedAutoupgradeStatus(MixedContentAutoupgradeStatus::kStarted);
-      execution_context->AddConsoleMessage(
-          MixedContentChecker::CreateConsoleMessageAboutWebSocketAutoupgrade(
-              execution_context->Url(), url_));
-    }
+    UseCounter::Count(
+        execution_context,
+        WebFeature::kUpgradeInsecureRequestsUpgradedRequestWebsocket);
     url_.SetProtocol("wss");
     if (url_.Port() == 80)
       url_.SetPort(443);
@@ -196,15 +183,6 @@ void WebSocketCommon::CloseInternal(int code,
   state_ = kClosing;
   if (channel)
     channel->Close(code, cleansed_reason);
-}
-
-void WebSocketCommon::LogMixedAutoupgradeStatus(
-    blink::MixedContentAutoupgradeStatus status) const {
-  if (!was_autoupgraded_to_wss_)
-    return;
-  // For websockets we use the response received element to log successful
-  // connections.
-  UMA_HISTOGRAM_ENUMERATION("MixedAutoupgrade.Websocket.Status", status);
 }
 
 inline bool WebSocketCommon::IsValidSubprotocolCharacter(UChar character) {

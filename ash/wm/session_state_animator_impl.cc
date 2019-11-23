@@ -289,27 +289,27 @@ void StartGrayscaleBrightnessAnimationForWindow(
 // finished. It is used in when undoing shutdown animation.
 class CallbackAnimationObserver : public ui::LayerAnimationObserver {
  public:
-  explicit CallbackAnimationObserver(base::Closure callback)
-      : callback_(callback) {}
+  explicit CallbackAnimationObserver(base::OnceClosure callback)
+      : callback_(std::move(callback)) {}
   ~CallbackAnimationObserver() override = default;
 
  private:
   // Overridden from ui::LayerAnimationObserver:
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* seq) override {
     // Drop foreground once animation is over.
-    callback_.Run();
+    std::move(callback_).Run();
     delete this;
   }
 
   void OnLayerAnimationAborted(ui::LayerAnimationSequence* seq) override {
     // Drop foreground once animation is over.
-    callback_.Run();
+    std::move(callback_).Run();
     delete this;
   }
 
   void OnLayerAnimationScheduled(ui::LayerAnimationSequence* seq) override {}
 
-  base::Closure callback_;
+  base::OnceClosure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackAnimationObserver);
 };
@@ -550,7 +550,7 @@ void SessionStateAnimatorImpl::StartAnimationWithCallback(
     base::OnceClosure callback) {
   aura::Window::Windows containers;
   GetContainers(container_mask, &containers);
-  base::Closure animation_done_closure =
+  base::RepeatingClosure animation_done_closure =
       base::BarrierClosure(containers.size(), std::move(callback));
   for (aura::Window::Windows::const_iterator it = containers.begin();
        it != containers.end(); ++it) {

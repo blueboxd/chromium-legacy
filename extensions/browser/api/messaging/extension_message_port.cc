@@ -279,13 +279,14 @@ void ExtensionMessagePort::DispatchOnConnect(
     int guest_render_frame_routing_id,
     const MessagingEndpoint& source_endpoint,
     const std::string& target_extension_id,
-    const GURL& source_url) {
+    const GURL& source_url,
+    base::Optional<url::Origin> source_origin) {
   SendToPort(base::BindRepeating(
       &ExtensionMessagePort::BuildDispatchOnConnectIPC,
       // Called synchronously.
       base::Unretained(this), channel_name, source_tab.get(), source_frame_id,
       guest_process_id, guest_render_frame_routing_id, source_endpoint,
-      target_extension_id, source_url));
+      target_extension_id, source_url, source_origin));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(
@@ -492,6 +493,7 @@ std::unique_ptr<IPC::Message> ExtensionMessagePort::BuildDispatchOnConnectIPC(
     const MessagingEndpoint& source_endpoint,
     const std::string& target_extension_id,
     const GURL& source_url,
+    base::Optional<url::Origin> source_origin,
     const IPCTarget& target) {
   ExtensionMsg_TabConnectionInfo source;
   if (source_tab) {
@@ -508,6 +510,7 @@ std::unique_ptr<IPC::Message> ExtensionMessagePort::BuildDispatchOnConnectIPC(
   info.target_id = target_extension_id;
   info.source_endpoint = source_endpoint;
   info.source_url = source_url;
+  info.source_origin = std::move(source_origin);
   info.guest_process_id = guest_process_id;
   info.guest_render_frame_routing_id = guest_render_frame_routing_id;
 

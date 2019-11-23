@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Ljusblå</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> kanske inte kan uppdateras automatiskt</translation>
 <translation id="1736419249208073774">Utforska</translation>
-<translation id="1736420071277903564">Dator</translation>
 <translation id="1737968601308870607">Rapportera fel</translation>
 <translation id="1741314857973421784">Fortsätt</translation>
 <translation id="1743570585616704562">Identifierades inte</translation>
@@ -666,7 +665,7 @@
 <translation id="1937774647013465102">Det går inte att importera en behållararkitektur av typen <ph name="ARCHITECTURE_CONTAINER" /> med den här enheten, som är en <ph name="ARCHITECTURE_DEVICE" />. Du kan testa att återställa behållaren till en annan enhet, eller så kan du öppna filerna i behållarbilden via appen Filer.</translation>
 <translation id="1938351510777341717">Extern kommandotangent</translation>
 <translation id="1940546824932169984">Anslutna enheter</translation>
-<translation id="1942600407708803723">Stäng av när fodralet är stängs</translation>
+<translation id="1942600407708803723">Stäng av när fodralet stängs</translation>
 <translation id="1944921356641260203">En uppdatering hittades</translation>
 <translation id="1946577776959096882">Visa konton</translation>
 <translation id="1951012854035635156">Assistent</translation>
@@ -1129,6 +1128,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2617342710774726426">SIM-kortet är låst</translation>
 <translation id="2619761439309613843">Daglig uppdatering</translation>
 <translation id="2620436844016719705">System</translation>
+<translation id="2621713457727696555">Skyddat</translation>
 <translation id="26224892172169984">Tillåt inte att någon webbplats hanterar protokoll</translation>
 <translation id="2624142942574147739">Din kamera och mikrofon används på sidan.</translation>
 <translation id="2626799779920242286">Försök igen senare.</translation>
@@ -1580,6 +1580,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="328571385944182268">Vill du spara lösenorden?</translation>
 <translation id="3288047731229977326">Tillägg som körs i utvecklarläge kan skada datorn. Om du inte är en utvecklare bör du inaktivera tillägg som körs i utvecklarläge för att skydda dig.</translation>
 <translation id="3289856944988573801">Använd Ethernet eller Wi-Fi om du vill söka efter uppdateringar.</translation>
+<translation id="3290356915286466215">Inte skyddat</translation>
 <translation id="3293644607209440645">Skicka sidan</translation>
 <translation id="32939749466444286">Det gick inte att starta Linux-behållaren. Försök igen.</translation>
 <translation id="3294437725009624529">Gäst</translation>
@@ -2021,7 +2022,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3900966090527141178">Exportera lösenord</translation>
 <translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Reparera appen</translation>
-<translation id="3906954721959377182">Surfplatta</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> är inaktuellt.</translation>
 <translation id="3908501907586732282">Aktivera tillägg</translation>
 <translation id="3909477809443608991"><ph name="URL" /> vill spela upp skyddat innehåll. Enhetens identitet verifieras av Google och kan öppnas av webbplatsen.</translation>
@@ -2321,7 +2321,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4364327530094270451">Melon</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> delar ett fönster.</translation>
 <translation id="4364830672918311045">Visa aviseringar</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> med <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">E-postadressen och lösenordet matchar inte</translation>
 <translation id="437184764829821926">Avancerade inställningar för teckensnitt</translation>
 <translation id="4374831787438678295">Linux-installationsprogram</translation>
@@ -2963,7 +2962,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5363109466694494651">Använd Powerwash och återställ</translation>
 <translation id="5365881113273618889">Mappen som du valde innehåller känsliga filer. Vill du bevilja <ph name="APP_NAME" /> permanent skrivåtkomst till den här mappen?</translation>
 <translation id="5367091008316207019">Läser fil ...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Din mobil är låst. Lås upp den.</translation>
 <translation id="5368779022775404937">Logga in på <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Aktivera musacceleration</translation>
@@ -4721,6 +4719,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7912080627461681647">Lösenordet har ändrats på servern. Logga ut och logga sedan in igen.</translation>
 <translation id="7915457674565721553">Anslut till internet om du vill ställa in föräldrakontroller</translation>
 <translation id="7915471803647590281">Berätta för oss vad som händer innan du skickar feedback.</translation>
+<translation id="7918257978052780342">Registrera</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> sek</translation>
 <translation id="792514962475806987">Zoomnivå för dockad skärmförstoring</translation>
 <translation id="7925247922861151263">Kontroll med AAA misslyckades</translation>

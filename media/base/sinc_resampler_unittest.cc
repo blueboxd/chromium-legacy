@@ -45,9 +45,9 @@ TEST(SincResamplerTest, ChunkedResample) {
 
   // Choose a high ratio of input to output samples which will result in quick
   // exhaustion of SincResampler's internal buffers.
-  SincResampler resampler(
-      kSampleRateRatio, SincResampler::kDefaultRequestSize,
-      base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
+  SincResampler resampler(kSampleRateRatio, SincResampler::kDefaultRequestSize,
+                          base::BindRepeating(&MockSource::ProvideInput,
+                                              base::Unretained(&mock_source)));
 
   static const int kChunks = 2;
   int max_chunk_size = resampler.ChunkSize() * kChunks;
@@ -71,9 +71,9 @@ TEST(SincResamplerTest, PrimedResample) {
 
   // Choose a high ratio of input to output samples which will result in quick
   // exhaustion of SincResampler's internal buffers.
-  SincResampler resampler(
-      kSampleRateRatio, SincResampler::kDefaultRequestSize,
-      base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
+  SincResampler resampler(kSampleRateRatio, SincResampler::kDefaultRequestSize,
+                          base::BindRepeating(&MockSource::ProvideInput,
+                                              base::Unretained(&mock_source)));
 
   // Verify the priming adjusts the chunk size within reasonable limits.
   const int first_chunk_size = resampler.ChunkSize();
@@ -113,9 +113,9 @@ TEST(SincResamplerTest, PrimedResample) {
 // Test flush resets the internal state properly.
 TEST(SincResamplerTest, Flush) {
   MockSource mock_source;
-  SincResampler resampler(
-      kSampleRateRatio, SincResampler::kDefaultRequestSize,
-      base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
+  SincResampler resampler(kSampleRateRatio, SincResampler::kDefaultRequestSize,
+                          base::BindRepeating(&MockSource::ProvideInput,
+                                              base::Unretained(&mock_source)));
   std::unique_ptr<float[]> resampled_destination(
       new float[resampler.ChunkSize()]);
 
@@ -137,9 +137,9 @@ TEST(SincResamplerTest, Flush) {
 
 TEST(SincResamplerTest, DISABLED_SetRatioBench) {
   MockSource mock_source;
-  SincResampler resampler(
-      kSampleRateRatio, SincResampler::kDefaultRequestSize,
-      base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
+  SincResampler resampler(kSampleRateRatio, SincResampler::kDefaultRequestSize,
+                          base::BindRepeating(&MockSource::ProvideInput,
+                                              base::Unretained(&mock_source)));
 
   base::TimeTicks start = base::TimeTicks::Now();
   for (int i = 1; i < 10000; ++i)
@@ -165,9 +165,9 @@ static const double kKernelInterpolationFactor = 0.5;
 TEST(SincResamplerTest, Convolve) {
   // Initialize a dummy resampler.
   MockSource mock_source;
-  SincResampler resampler(
-      kSampleRateRatio, SincResampler::kDefaultRequestSize,
-      base::Bind(&MockSource::ProvideInput, base::Unretained(&mock_source)));
+  SincResampler resampler(kSampleRateRatio, SincResampler::kDefaultRequestSize,
+                          base::BindRepeating(&MockSource::ProvideInput,
+                                              base::Unretained(&mock_source)));
 
   // The optimized Convolve methods are slightly more precise than Convolve_C(),
   // so comparison must be done using an epsilon.
@@ -284,8 +284,8 @@ TEST_P(SincResamplerTest, Resample) {
   const double io_ratio = input_rate_ / static_cast<double>(output_rate_);
   SincResampler resampler(
       io_ratio, SincResampler::kDefaultRequestSize,
-      base::Bind(&SinusoidalLinearChirpSource::ProvideInput,
-                 base::Unretained(&resampler_source)));
+      base::BindRepeating(&SinusoidalLinearChirpSource::ProvideInput,
+                          base::Unretained(&resampler_source)));
 
   // Force an update to the sample rate ratio to ensure dyanmic sample rate
   // changes are working correctly.

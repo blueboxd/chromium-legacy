@@ -107,18 +107,20 @@ public class LocationBarPhone extends LocationBarLayout {
     private void updateUrlBarPaddingForSearchEngineIcon() {
         if (mUrlBar == null || mStatusView == null) return;
 
-        // TODO(crbug.com/1019019): Come up with a better solution for M80 or M81.
-        int endPadding = 0;
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(mToolbarDataProvider.isIncognito())
-                && hasFocus()) {
+        mUrlBar.post(() -> {
+            // TODO(crbug.com/1019019): Come up with a better solution for M80 or M81.
             // This padding prevents the UrlBar's content from extending past the available space
             // and into the next view while focused.
-            endPadding = mStatusView.getEndPaddingPixelSizeForFocusState(true)
-                    - mStatusView.getEndPaddingPixelSizeForFocusState(false);
-        }
+            final int endPadding = SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                           mToolbarDataProvider.isIncognito())
+                            && hasFocus()
+                    ? mStatusView.getEndPaddingPixelSizeForFocusState(true)
+                            - mStatusView.getEndPaddingPixelSizeForFocusState(false)
+                    : 0;
 
-        mUrlBar.setPaddingRelative(mUrlBar.getPaddingStart(), mUrlBar.getPaddingTop(), endPadding,
-                mUrlBar.getPaddingBottom());
+            mUrlBar.setPaddingRelative(mUrlBar.getPaddingStart(), mUrlBar.getPaddingTop(),
+                    endPadding, mUrlBar.getPaddingBottom());
+        });
     }
 
     /**

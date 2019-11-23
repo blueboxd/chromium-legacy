@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7781829728241885113">Ahir</translation>
 <translation id="7814458197256864873">&amp;Copia</translation>
+<translation id="7848989271541991537">S'ha mogut a la pàgina <ph name="PAGE_NUMBER" />, fila <ph name="ROW_NUMBER" />, columna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">No bloquegis</translation>
 <translation id="7907591526440419938">Obre un fitxer</translation>
 <translation id="7969046989155602842">Ordre</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">El prestatge està sempre amagat</translation>
 <translation id="8996630695507351249">Assegura't que el dispositiu <ph name="TARGET_DEVICE_NAME" /> estigui connectat a Internet.</translation>
 <translation id="9002566407876343676">obrir</translation>
-<translation id="9039076430527029379">Mou a la pàgina <ph name="PAGE_NUMBER" />, fila <ph name="ROW_NUMBER" />, columna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>
 <translation id="9059834730836941392">Replega la notificació</translation>
 <translation id="9150735707954472829">Pestanya</translation>

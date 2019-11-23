@@ -38,39 +38,39 @@
 
     <h2>$i18n{textToSpeechProperties}</h2>
     <div class="settings-box first">
-      <div class="start settings-box-text" id="rate">
+      <div class="start settings-box-text" id="rate" aria-hidden="true">
         $i18n{textToSpeechRate}
       </div>
       <settings-slider show-markers
           pref="{{prefs.settings.tts.speech_rate}}"
           ticks="[[speechRateTicks_()]]"
+          label-aria="$i18n{textToSpeechRate}"
           label-min="$i18n{textToSpeechRateMinimumLabel}"
-          label-max="$i18n{textToSpeechRateMaximumLabel}"
-          aria-describedby="rate">
+          label-max="$i18n{textToSpeechRateMaximumLabel}">
       </settings-slider>
     </div>
     <div class="settings-box continuation">
-      <div class="start settings-box-text" id="pitch">
+      <div class="start settings-box-text" id="pitch" aria-hidden="true">
         $i18n{textToSpeechPitch}
       </div>
       <settings-slider show-markers
           pref="{{prefs.settings.tts.speech_pitch}}"
           ticks="[[speechPitchTicks_()]]"
+          label-aria="$i18n{textToSpeechPitch}"
           label-min="$i18n{textToSpeechPitchMinimumLabel}"
-          label-max="$i18n{textToSpeechPitchMaximumLabel}"
-          aria-describedby="pitch">
+          label-max="$i18n{textToSpeechPitchMaximumLabel}">
       </settings-slider>
     </div>
     <div class="settings-box continuation">
-      <div class="start settings-box-text" id="volume">
+      <div class="start settings-box-text" id="volume" aria-hidden="true">
         $i18n{textToSpeechVolume}
       </div>
       <settings-slider show-markers
           pref="{{prefs.settings.tts.speech_volume}}"
           ticks="[[speechVolumeTicks_()]]"
+          label-aria="$i18n{textToSpeechVolume}"
           label-min="$i18n{textToSpeechVolumeMinimumLabel}"
-          label-max="$i18n{textToSpeechVolumeMaximumLabel}"
-          aria-describedby="volume">
+          label-max="$i18n{textToSpeechVolumeMaximumLabel}">
       </settings-slider>
     </div>
 

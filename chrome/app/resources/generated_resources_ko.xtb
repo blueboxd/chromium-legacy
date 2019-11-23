@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">연한 파란색</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" />에서 자동 업데이트를 수행하지 못할 수 있습니다</translation>
 <translation id="1736419249208073774">탐색</translation>
-<translation id="1736420071277903564">컴퓨터</translation>
 <translation id="1737968601308870607">버그 신고</translation>
 <translation id="1741314857973421784">계속</translation>
 <translation id="1743570585616704562">인식할 수 없음</translation>
@@ -1129,6 +1128,7 @@
 <translation id="2617342710774726426">SIM 카드가 잠겨 있습니다.</translation>
 <translation id="2619761439309613843">매일 새로고침</translation>
 <translation id="2620436844016719705">시스템</translation>
+<translation id="2621713457727696555">잠김</translation>
 <translation id="26224892172169984">모든 사이트에서 프로토콜 처리 허용 안함</translation>
 <translation id="2624142942574147739">카메라와 마이크에 액세스하는 페이지입니다.</translation>
 <translation id="2626799779920242286">나중에 다시 시도해 주세요.</translation>
@@ -1580,6 +1580,7 @@
 <translation id="328571385944182268">비밀번호를 저장하시겠습니까?</translation>
 <translation id="3288047731229977326">개발자 모드로 실행 중인 확장 프로그램은 컴퓨터에 해를 줄 수 있습니다. 개발자가 아닌 경우 컴퓨터를 안전하게 사용하려면 개발자 모드로 실행 중인 확장 프로그램을 사용 중지해야 합니다.</translation>
 <translation id="3289856944988573801">업데이트를 확인하려면 이더넷 또는 Wi-Fi를 사용하세요.</translation>
+<translation id="3290356915286466215">잠기지 않음</translation>
 <translation id="3293644607209440645">이 페이지 전송</translation>
 <translation id="32939749466444286">Linux 컨테이너가 시작되지 않았습니다. 다시 시도해 주세요.</translation>
 <translation id="3294437725009624529">게스트</translation>
@@ -2021,7 +2022,6 @@
 <translation id="3900966090527141178">비밀번호 내보내기</translation>
 <translation id="3901991538546252627"><ph name="NAME" />에 연결 중</translation>
 <translation id="3905761538810670789">앱 복구</translation>
-<translation id="3906954721959377182">태블릿</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" />이(가) 이전 버전입니다.</translation>
 <translation id="3908501907586732282">확장 프로그램 사용</translation>
 <translation id="3909477809443608991"><ph name="URL" />에서 보호된 콘텐츠를 재생하려고 합니다. Google에서 이 기기의 신원을 확인하며 이 사이트에서 이 기기에 액세스할 수 있습니다.</translation>
@@ -2319,7 +2319,6 @@
 <translation id="4364327530094270451">멜론</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />이(가) 창을 공유합니다.</translation>
 <translation id="4364830672918311045">알림 표시</translation>
-<translation id="4366956553771076218"><ph name="APP_NAME" /> 앱으로 <ph name="ACTION_NAME" /> 작업을 실행합니다.</translation>
 <translation id="4370975561335139969">입력한 이메일과 비밀번호가 일치하지 않습니다.</translation>
 <translation id="437184764829821926">고급 글꼴 설정</translation>
 <translation id="4374831787438678295">Linux 설치 프로그램</translation>
@@ -2961,7 +2960,6 @@
 <translation id="5363109466694494651">Powerwash 및 되돌리기</translation>
 <translation id="5365881113273618889">선택한 폴더에 민감한 파일이 포함되어 있습니다. 이 폴더에 '<ph name="APP_NAME" />' 영구 쓰기 액세스 권한을 부여하시겠습니까?</translation>
 <translation id="5367091008316207019">파일 읽는 중..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">휴대전화가 잠겨있습니다. 이용하려면 기기를 잠금 해제하세요.</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> 로그인</translation>
 <translation id="5369491905435686894">마우스 가속 사용</translation>
@@ -4719,6 +4717,7 @@
 <translation id="7912080627461681647">서버에서 비밀번호가 변경되었습니다. 로그아웃한 다음 다시 로그인해 주세요.</translation>
 <translation id="7915457674565721553">자녀 보호 기능을 설정하려면 인터넷에 연결하세요.</translation>
 <translation id="7915471803647590281">의견을 보내기 전에 현재 상황을 입력해 주세요.</translation>
+<translation id="7918257978052780342">등록</translation>
 <translation id="7919210519031517829"><ph name="DURATION" />초</translation>
 <translation id="792514962475806987">고정 돋보기 확대/축소 수준:</translation>
 <translation id="7925247922861151263">AAA 확인 실패</translation>

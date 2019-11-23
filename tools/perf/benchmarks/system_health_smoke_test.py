@@ -292,6 +292,13 @@ def _create_story_set(benchmark_class):
   return benchmark_class().CreateStorySet(options=None)
 
 
+def _should_skip_story(benchmark_class, story):
+  # Per crbug.com/1019383 we don't have many device cycles to work with on
+  # Android, so let's just run the most important stories.
+  return (benchmark_class.Name() == 'system_health.memory_mobile' and
+      'health_check' not in story.tags)
+
+
 def validate_smoke_test_name_versions():
   benchmark_classes = GetSystemHealthBenchmarksToSmokeTest()
   assert benchmark_classes, 'This list should never be empty'
@@ -300,11 +307,7 @@ def validate_smoke_test_name_versions():
     stories_set = _create_story_set(benchmark_class)
 
     for story_to_smoke_test in stories_set.stories:
-      # TODO: combine the tag check logic in _create_story_set
-      # Per crbug.com/1019383 we don't have many device cycles to work with on
-      # Android, so let's just run the most important stories.
-      if (benchmark_class.Name() == 'system_health.memory_mobile' and
-          'health_check' not in story_to_smoke_test.tags):
+      if _should_skip_story(benchmark_class, story_to_smoke_test):
         continue
       names_stories_to_smoke_tests.append(
           benchmark_class.Name() + '/' + story_to_smoke_test.name)
@@ -339,21 +342,19 @@ def load_tests(loader, standard_tests, pattern):
   for benchmark_class in benchmark_classes:
     stories_set = _create_story_set(benchmark_class)
 
+    remote_story_names = []
+    for story_to_smoke_test in stories_set:
+      if _should_skip_story(benchmark_class, story_to_smoke_test):
+        continue
+      if not story_to_smoke_test.is_local:
+        remote_story_names.append(story_to_smoke_test)
+      suite.addTest(
+          _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test))
     # Prefetch WPR archive needed by the stories set to avoid race condition
     # when fetching them when tests are run in parallel.
     # See crbug.com/700426 for more details.
-    story_names = [s.name for s in stories_set if not s.is_local]
     stories_set.wpr_archive_info.DownloadArchivesIfNeeded(
-        story_names=story_names)
-
-    for story_to_smoke_test in stories_set:
-      # Per crbug.com/1019383 we don't have many device cycles to work with on
-      # Android, so let's just run the most important stories.
-      if (benchmark_class.Name() == 'system_health.memory_mobile' and
-          'health_check' not in story_to_smoke_test.tags):
-        continue
-      suite.addTest(
-          _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test))
+        story_names=remote_story_names)
 
   return suite
 

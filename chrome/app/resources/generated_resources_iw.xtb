@@ -514,7 +514,6 @@
 <translation id="1734212868489994726">תכלת</translation>
 <translation id="1734824808160898225">ייתכן ש-<ph name="PRODUCT_NAME" /> לא יוכל להתעדכן</translation>
 <translation id="1736419249208073774">מידע נוסף</translation>
-<translation id="1736420071277903564">מחשב</translation>
 <translation id="1737968601308870607">דיווח על באג</translation>
 <translation id="1741314857973421784">המשך</translation>
 <translation id="1743570585616704562">לא מזוהה</translation>
@@ -561,7 +560,7 @@
 <translation id="1794791083288629568"> שליחת משוב כדי לעזור לנו לפתור את הבעיה.</translation>
 <translation id="1795214765651529549">השתמש בעיצוב קלאסי</translation>
 <translation id="1799071797295057738">התוסף "<ph name="EXTENSION_NAME" />" הושבת באופן אוטומטי.</translation>
-<translation id="1802624026913571222">מעבר למצב שינה בעת סגירת הכיסוי</translation>
+<translation id="1802624026913571222">מעבר למצב שינה כשסוגרים את הכיסוי</translation>
 <translation id="1802687198411089702">הדף לא מגיב. באפשרות לחכות או לצאת.</translation>
 <translation id="1802931390041703523">‏Flash נחסם בדף הזה</translation>
 <translation id="1803531841600994172">שפת היעד של התרגום</translation>
@@ -663,7 +662,7 @@
 <translation id="1937774647013465102">לא ניתן לייבא ארכיטקטורת מאגר מסוג <ph name="ARCHITECTURE_CONTAINER" /> באמצעות המכשיר הזה, כי הוא מסוג <ph name="ARCHITECTURE_DEVICE" />. אפשר לנסות לשחזר את המאגר במכשיר אחר או לפתוח את האפליקציה 'קבצים' כדי לגשת לקבצים בתוך תמונת המאגר.</translation>
 <translation id="1938351510777341717">‏מקש Command חיצוני</translation>
 <translation id="1940546824932169984">מכשירים מחוברים</translation>
-<translation id="1942600407708803723">כיבוי בעת סגירת הכיסוי</translation>
+<translation id="1942600407708803723">כיבוי כשסוגרים את הכיסוי</translation>
 <translation id="1944921356641260203">נמצא עדכון</translation>
 <translation id="1946577776959096882">הצגת חשבונות</translation>
 <translation id="1951012854035635156">Assistant</translation>
@@ -755,7 +754,7 @@
 <translation id="2099686503067610784">למחוק את אישור השרת "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="2101225219012730419">גרסה:</translation>
-<translation id="2111670510994270194">כרטיסייה חדשה מצד ימין</translation>
+<translation id="2111670510994270194">כרטיסייה חדשה מצד שמאל</translation>
 <translation id="21133533946938348">הצמד כרטיסייה</translation>
 <translation id="2113479184312716848">פתח &amp;קובץ...</translation>
 <translation id="2113921862428609753">גישה לפרטי רשות</translation>
@@ -1126,6 +1125,7 @@
 <translation id="2617342710774726426">‏כרטיס ה-SIM נעול</translation>
 <translation id="2619761439309613843">רענון יומי</translation>
 <translation id="2620436844016719705">מערכת</translation>
+<translation id="2621713457727696555">מאובטחת</translation>
 <translation id="26224892172169984">אל תאפשר לאף אתר לטפל בפרוטוקולים</translation>
 <translation id="2624142942574147739">הדף הזה ניגש למצלמה ולמיקרופון שלך.</translation>
 <translation id="2626799779920242286">נסה שוב מאוחר יותר.</translation>
@@ -1577,6 +1577,7 @@
 <translation id="328571385944182268">לשמור את הסיסמאות?</translation>
 <translation id="3288047731229977326">תוספים הרצים במצב מפתח יכולים להזיק למחשב שלך. אם אינך מפתח, עליך להשבית את התוספים הרצים במצב מפתח כדי לשמור על ביטחונך.</translation>
 <translation id="3289856944988573801">‏כדי לבדוק אם יש עדכונים, השתמש ב-Ethernet או ב-Wi-Fi.</translation>
+<translation id="3290356915286466215">לא מאובטחת</translation>
 <translation id="3293644607209440645">שליחת הדף הזה</translation>
 <translation id="32939749466444286">‏הקונטיינר של Linux לא הופעל. צריך לנסות שוב.</translation>
 <translation id="3294437725009624529">אורח</translation>
@@ -2018,7 +2019,6 @@
 <translation id="3900966090527141178">ייצוא סיסמאות</translation>
 <translation id="3901991538546252627">מתחבר אל: <ph name="NAME" /></translation>
 <translation id="3905761538810670789">תקן את היישום</translation>
-<translation id="3906954721959377182">טאבלט</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> לא מעודכן</translation>
 <translation id="3908501907586732282">הפעל תוסף</translation>
 <translation id="3909477809443608991">‏<ph name="URL" /> רוצה להציג תוכן מוגן. הזהות של המכשיר שלך תאומת על ידי Google ולאתר תהיה גישה אליה.</translation>
@@ -2318,7 +2318,6 @@
 <translation id="4364327530094270451">מלון</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> משתף חלון.</translation>
 <translation id="4364830672918311045">הצגת הודעות</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> באמצעות <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">כתובת האימייל והסיסמה שהזנת אינן תואמות</translation>
 <translation id="437184764829821926">הגדרות גופן מתקדמות</translation>
 <translation id="4374831787438678295">‏מנהל ההתקנה של Linux</translation>
@@ -2615,7 +2614,7 @@
 <translation id="4839303808932127586">שמ&amp;ור וידאו כ...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{עוד אחד}two{עוד #}many{עוד #}other{עוד #}}</translation>
 <translation id="4842976633412754305">דף זה מנסה לטעון סקריפטים ממקורות שאינם מאומתים.</translation>
-<translation id="4843488774506045600">פרטי התחברות סופקו על-ידי <ph name="EXTENSION_NAME" /></translation>
+<translation id="4843488774506045600">שירות ההתחברות סופק על-ידי <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">מקלדות אחרות</translation>
 <translation id="4846680374085650406">אתה פועל בהתאם להמלצה של מנהל המערכת לגבי הגדרה זו.</translation>
 <translation id="4848518990323155912">‏הפעל נעילת כרטיס SIM (דרוש הזנה של PIN כדי להשתמש בנתונים לנייד)</translation>
@@ -2960,7 +2959,6 @@
 <translation id="5363109466694494651">‏בצע Powerwash וחזור לגרסה הקודמת</translation>
 <translation id="5365881113273618889">התיקייה שבחרת מכילה קבצים רגישים. האפליקציה <ph name="APP_NAME" /> תקבל הרשאת כתיבה קבועה לתיקייה הזו. להמשיך?</translation>
 <translation id="5367091008316207019">קורא את הקובץ..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">הטלפון שלך נעול. בטל את הנעילה כדי להיכנס.</translation>
 <translation id="5368779022775404937">כניסה אל <ph name="REALM" /></translation>
 <translation id="5369491905435686894">הפעלת האצה של עכבר</translation>
@@ -3328,7 +3326,7 @@
 <translation id="5869948122057593679">סגירת כל החלונות</translation>
 <translation id="5870086504539785141">סגור את תפריט הנגישות</translation>
 <translation id="5870155679953074650">שגיאות חמורות</translation>
-<translation id="5876851302954717356">כרטיסייה חדשה מצד ימין</translation>
+<translation id="5876851302954717356">כרטיסייה חדשה מצד שמאל</translation>
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5877584842898320529">המדפסת שבחרת אינה זמינה או שאינה מותקנת כראוי. <ph name="BR" /> יש לבדוק את המדפסת או לנסות לבחור מדפסת אחרת.</translation>
 <translation id="5882919346125742463">רשתות מוכרות</translation>
@@ -4717,6 +4715,7 @@
 <translation id="7912080627461681647">הסיסמה שלך שונתה בשרת. צא ולאחר מכן היכנס מחדש.</translation>
 <translation id="7915457674565721553">יש להתחבר לאינטרנט כדי להגדיר בקרת הורים</translation>
 <translation id="7915471803647590281">ספר לנו מה קורה לפני שליחת המשוב.</translation>
+<translation id="7918257978052780342">הירשם</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> שנ'</translation>
 <translation id="792514962475806987">רמת זום במצב מעוגן:</translation>
 <translation id="7925247922861151263">‏בדיקת AAA נכשלה</translation>
@@ -5377,7 +5376,7 @@
 <translation id="8845001906332463065">קבל עזרה</translation>
 <translation id="8846132060409673887">קריאת היצרן והדגם של המחשב הזה</translation>
 <translation id="8846141544112579928">מחפש מקלדת...</translation>
-<translation id="8847523528195140327">יציאה מהחשבון בעת סגירת הכיסוי</translation>
+<translation id="8847523528195140327">יציאה מהחשבון כשסוגרים את הכיסוי</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">עוד אפשרויות...</translation>
 <translation id="885246833287407341">‏ארגומנטים של פונקציות API</translation>

@@ -19,10 +19,6 @@
 #include "ipc/ipc_message.h"
 #include "tools/ipc_fuzzer/message_lib/message_file.h"
 
-namespace content {
-class ServiceManagerConnection;
-}
-
 namespace mojo {
 class IncomingInvitation;
 namespace core {
@@ -60,8 +56,6 @@ class ReplayProcess : public IPC::Listener {
 
   std::unique_ptr<mojo::core::ScopedIPCSupport> mojo_ipc_support_;
   std::unique_ptr<mojo::IncomingInvitation> mojo_invitation_;
-  std::unique_ptr<content::ServiceManagerConnection>
-      service_manager_connection_;
   std::unique_ptr<IPC::ChannelProxy> channel_;
   base::SingleThreadTaskExecutor main_task_executor_;
   base::Thread io_thread_;

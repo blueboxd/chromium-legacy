@@ -98,6 +98,20 @@ enum class UserInteractionType {
   kMaxValue = APP_STARTED_FROM_OMNIBOX,
 };
 
+// Enumerates relevant Mojo connections.
+// These values are  persisted to logs, and should therefore never be renumbered
+// nor reused. Should be synced with ArcMojoConnectionType in
+// tools/metrics/histograms/enums.xml.
+enum class MojoConnectionType {
+  // Mojo connection to AppLauncher was lost.
+  APP_LAUNCHER = 0,
+
+  // Mojo connection to IntentHelper was lost.
+  INTENT_HELPER = 1,
+
+  kMaxValue = INTENT_HELPER,
+};
+
 }  // namespace arc
 
 #endif  // COMPONENTS_ARC_METRICS_ARC_METRICS_CONSTANTS_H_

@@ -11,6 +11,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_constants.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -43,6 +44,11 @@ using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace {
+
+// Whether non-modal dialogs are being used.
+bool AreDialogsNonModal() {
+  return base::FeatureList::IsEnabled(dialogs::kNonModalDialogs);
+}
 
 // Body script for test page that shows an alert with kAlertMessage and returns
 // kAlertResult.
@@ -95,13 +101,15 @@ std::string GetPromptScriptBody() {
 // Script to inject that will show a JavaScript alert in a loop 20 times, then
 // returns kAlertLoopFinishedText.
 const char kAlertLoopURLPath[] = "/loop";
+const char kAlertLoopMessage[] = "This is a looped alert.";
 const char kAlertLoopFinishedText[] = "Loop Finished";
 const char kAlertLoopScriptBodyFormat[] = "for (i = 0; i < 20; ++i) {"
-                                          "  alert(\"ALERT TEXT\");"
+                                          "  alert(\"%s\");"
                                           "}"
                                           "return \"%s\";";
 std::string GetAlertLoopScriptBody() {
-  return base::StringPrintf(kAlertLoopScriptBodyFormat, kAlertLoopFinishedText);
+  return base::StringPrintf(kAlertLoopScriptBodyFormat, kAlertLoopMessage,
+                            kAlertLoopFinishedText);
 }
 
 // HTTP server constants.
@@ -133,8 +141,12 @@ std::string GetTestPageContents(std::string script_body) {
 }
 // The URL path for a page that shows an alert onload.
 const char kOnLoadURLPath[] = "/onload";
-const char kOnLoadContents[] =
-    "<!DOCTYPE html><html><body onload=\"alert('alert')\"></body></html>";
+const char kOnLoadAlertMessage[] = "onload Alert";
+const char kOnLoadContentsFormat[] =
+    "<!DOCTYPE html><html><body onload=\"alert('%s')\"></body></html>";
+std::string GetOnLoadPageContents() {
+  return base::StringPrintf(kOnLoadContentsFormat, kOnLoadAlertMessage);
+}
 // The URL path for a page with a link to kOnLoadURLPath.
 const char kLinkPageURLPath[] = "/link";
 const char kLinkPageContentsFormat[] =
@@ -165,7 +177,7 @@ std::unique_ptr<net::test_server::HttpResponse> LoadTestPage(
 // net::EmbeddedTestServer handler for kOnLoadURLPath.
 std::unique_ptr<net::test_server::HttpResponse> LoadPageWithOnLoadAlert(
     const net::test_server::HttpRequest& request) {
-  return GetHttpResponseWithContent(kOnLoadContents);
+  return GetHttpResponseWithContent(GetOnLoadPageContents());
 }
 // net::EmbeddedTestServer handler for kLinkPageURLPath.
 std::unique_ptr<net::test_server::HttpResponse> LoadPageWithLinkToOnLoadPage(
@@ -193,13 +205,45 @@ void WaitForAlertWithText(NSString* alert_text, bool visible) {
              error_text_format, alert_text);
 }
 
-// Waits for a JavaScript dialog from |url| to be shown or hidden.
-void WaitForJavaScriptDialog(const GURL& url, bool visible) {
-  base::string16 URLString = url_formatter::FormatUrlForSecurityDisplay(
-      url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-  NSString* expectedTitle =
-      l10n_util::GetNSStringF(IDS_JAVASCRIPT_MESSAGEBOX_TITLE, URLString);
-  WaitForAlertWithText(expectedTitle, visible);
+// Waits for a JavaScript dialog from |url| with |message| to be shown or
+// hidden.
+void WaitForJavaScriptDialog(const GURL& url,
+                             const char* message,
+                             bool visible,
+                             bool is_main_frame) {
+  // Wait for the JavaScript dialog identifier.
+  id<GREYMatcher> visibility_matcher = visible ? grey_notNil() : grey_nil();
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    id<GREYMatcher> dialog_matcher =
+        grey_accessibilityID(kJavaScriptDialogAccessibilityIdentifier);
+    [[EarlGrey selectElementWithMatcher:dialog_matcher]
+        assertWithMatcher:visibility_matcher
+                    error:&error];
+    return !error;
+  };
+  NSString* error_text = visible ? @"JavaScript dialog was not shown."
+                                 : @"JavaScript dialog was not hidden.";
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForUIElementTimeout, condition),
+             error_text);
+
+  // Check the title.  Non-modal main-frame dialogs do not have a title label.
+  if (!AreDialogsNonModal() || !is_main_frame) {
+    base::string16 url_string = url_formatter::FormatUrlForSecurityDisplay(
+        url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+    NSString* expected_title =
+        l10n_util::GetNSStringF(IDS_JAVASCRIPT_MESSAGEBOX_TITLE, url_string);
+    id<GREYMatcher> title_matcher =
+        chrome_test_util::StaticTextWithAccessibilityLabel(expected_title);
+    [[EarlGrey selectElementWithMatcher:title_matcher]
+        assertWithMatcher:visibility_matcher];
+  }
+
+  // Check the message.
+  id<GREYMatcher> message_matcher =
+      chrome_test_util::StaticTextWithAccessibilityLabel(@(message));
+  [[EarlGrey selectElementWithMatcher:message_matcher]
+      assertWithMatcher:visibility_matcher];
 }
 
 // Types |input| in the prompt.
@@ -288,17 +332,13 @@ void TapSuppressDialogsButton() {
   [ChromeEarlGrey waitForWebStateContainingElement:
                       [ElementSelector selectorWithElementID:kTestPageLinkID]];
   [ChromeEarlGrey tapWebStateElementWithID:@(kTestPageLinkID)];
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
-
-  // Check the message of the alert.
-  id<GREYMatcher> messageLabel =
-      chrome_test_util::StaticTextWithAccessibilityLabel(@(kAlertMessage));
-  [[EarlGrey selectElementWithMatcher:messageLabel]
-      assertWithMatcher:grey_notNil()];
+  WaitForJavaScriptDialog(kURL, kAlertMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   // Tap the OK button to close the alert.
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+  WaitForJavaScriptDialog(kURL, kAlertMessage, /*visible=*/false,
+                          /*is_main_frame=*/true);
 
   // Wait for the expected text to be added to the test page.
   [ChromeEarlGrey waitForWebStateContainingText:kAlertResult];
@@ -313,18 +353,13 @@ void TapSuppressDialogsButton() {
   [ChromeEarlGrey waitForWebStateContainingElement:
                       [ElementSelector selectorWithElementID:kTestPageLinkID]];
   [ChromeEarlGrey tapWebStateElementWithID:@(kTestPageLinkID)];
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
-
-  // Check the message of the dialog.
-  id<GREYMatcher> messageLabel =
-      chrome_test_util::StaticTextWithAccessibilityLabel(
-          @(kConfirmationMessage));
-  [[EarlGrey selectElementWithMatcher:messageLabel]
-      assertWithMatcher:grey_notNil()];
+  WaitForJavaScriptDialog(kURL, kConfirmationMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   // Tap the OK button to close the confirmation.
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+  WaitForJavaScriptDialog(kURL, kConfirmationMessage, /*visible=*/false,
+                          /*is_main_frame=*/true);
 
   // Wait for the expected text to be added to the test page.
   [ChromeEarlGrey waitForWebStateContainingText:kConfirmationResultOK];
@@ -339,18 +374,14 @@ void TapSuppressDialogsButton() {
   [ChromeEarlGrey waitForWebStateContainingElement:
                       [ElementSelector selectorWithElementID:kTestPageLinkID]];
   [ChromeEarlGrey tapWebStateElementWithID:@(kTestPageLinkID)];
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
-
-  // Check the message of the dialog.
-  id<GREYMatcher> messageLabel =
-      chrome_test_util::StaticTextWithAccessibilityLabel(
-          @(kConfirmationMessage));
-  [[EarlGrey selectElementWithMatcher:messageLabel]
-      assertWithMatcher:grey_notNil()];
+  WaitForJavaScriptDialog(kURL, kConfirmationMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   // Tap the OK button to close the confirmation.
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+
+  WaitForJavaScriptDialog(kURL, kConfirmationMessage, /*visible=*/false,
+                          /*is_main_frame=*/true);
 
   // Wait for the expected text to be added to the test page.
   [ChromeEarlGrey waitForWebStateContainingText:kConfirmationResultCancelled];
@@ -371,20 +402,16 @@ void TapSuppressDialogsButton() {
   [ChromeEarlGrey waitForWebStateContainingElement:
                       [ElementSelector selectorWithElementID:kTestPageLinkID]];
   [ChromeEarlGrey tapWebStateElementWithID:@(kTestPageLinkID)];
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
-
-  // Check the message of the dialog.
-  id<GREYMatcher> messageLabel =
-      chrome_test_util::StaticTextWithAccessibilityLabel(@(kPromptMessage));
-  [[EarlGrey selectElementWithMatcher:messageLabel]
-      assertWithMatcher:grey_notNil()];
+  WaitForJavaScriptDialog(kURL, kPromptMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   // Enter text into text field.
   TypeInPrompt(@(kPromptTestUserInput));
 
   // Tap the OK button to close the confirmation.
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+  WaitForJavaScriptDialog(kURL, kPromptMessage, /*visible=*/false,
+                          /*is_main_frame=*/true);
 
   // Wait for the html  to be reset to the input text.
   [ChromeEarlGrey waitForWebStateContainingText:kPromptTestUserInput];
@@ -405,20 +432,16 @@ void TapSuppressDialogsButton() {
   [ChromeEarlGrey waitForWebStateContainingElement:
                       [ElementSelector selectorWithElementID:kTestPageLinkID]];
   [ChromeEarlGrey tapWebStateElementWithID:@(kTestPageLinkID)];
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
-
-  // Check the message of the dialog.
-  id<GREYMatcher> messageLabel =
-      chrome_test_util::StaticTextWithAccessibilityLabel(@(kPromptMessage));
-  [[EarlGrey selectElementWithMatcher:messageLabel]
-      assertWithMatcher:grey_notNil()];
+  WaitForJavaScriptDialog(kURL, kPromptMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   // Enter text into text field.
   TypeInPrompt(@(kPromptTestUserInput));
 
   // Tap the Cancel button.
   TapCancel();
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+  WaitForJavaScriptDialog(kURL, kPromptMessage, /*visible=*/false,
+                          /*is_main_frame=*/true);
 
   // Wait for the html  to be reset to the cancel text.
   [ChromeEarlGrey waitForWebStateContainingText:kPromptResultCancelled];
@@ -432,25 +455,31 @@ void TapSuppressDialogsButton() {
   [ChromeEarlGrey waitForWebStateContainingElement:
                       [ElementSelector selectorWithElementID:kTestPageLinkID]];
   [ChromeEarlGrey tapWebStateElementWithID:@(kTestPageLinkID)];
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
+  WaitForJavaScriptDialog(kURL, kAlertLoopMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   // Tap the OK button to close the alert, then verify that the next alert in
   // the loop is shown.
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
+  WaitForJavaScriptDialog(kURL, kAlertLoopMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   // Tap the suppress dialogs button.
   TapSuppressDialogsButton();
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+  WaitForJavaScriptDialog(kURL, kAlertLoopMessage, /*visible=*/false,
+                          /*is_main_frame=*/true);
 
-  // Wait for confirmation action sheet to be shown.
-  NSString* alertLabel =
-      l10n_util::GetNSString(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION);
-  WaitForAlertWithText(alertLabel, /*visible=*/true);
+  // Modal dialogs have an additional action sheet for dialog suppression.
+  if (!AreDialogsNonModal()) {
+    // Wait for confirmation action sheet to be shown.
+    NSString* alertLabel =
+        l10n_util::GetNSString(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION);
+    WaitForAlertWithText(alertLabel, /*visible=*/true);
 
-  // Tap the suppress dialogs confirmation button.
-  TapSuppressDialogsButton();
-  WaitForAlertWithText(alertLabel, /*visible=*/false);
+    // Tap the suppress dialogs confirmation button.
+    TapSuppressDialogsButton();
+    WaitForAlertWithText(alertLabel, /*visible=*/false);
+  }
 
   // Wait for the html  to be reset to the loop finished text.
   [ChromeEarlGrey waitForWebStateContainingText:kAlertLoopFinishedText];
@@ -480,18 +509,23 @@ void TapSuppressDialogsButton() {
   // Tap the link to trigger the dialog.
   [ChromeEarlGrey tapWebStateElementWithID:@(kTestPageLinkID)];
 
-  // Make sure the alert is not present.
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+  // Make sure the alert is not presented modally over settings.
+  if (!AreDialogsNonModal()) {
+    WaitForJavaScriptDialog(kURL, kAlertMessage, /*visible=*/false,
+                            /*is_main_frame=*/true);
+  }
 
   // Close the settings.
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
   // Make sure the alert is present.
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
+  WaitForJavaScriptDialog(kURL, kAlertMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+  WaitForJavaScriptDialog(kURL, kAlertMessage, /*visible=*/false,
+                          /*is_main_frame=*/true);
 
   // Wait for the expected text to be added to the test page.
   [ChromeEarlGrey waitForWebStateContainingText:kAlertResult];
@@ -519,10 +553,12 @@ void TapSuppressDialogsButton() {
 
   // Show an alert and assert it is present.
   [ChromeEarlGrey tapWebStateElementWithID:@(kTestPageLinkID)];
-  WaitForJavaScriptDialog(kURL, /*visible=*/true);
+  WaitForJavaScriptDialog(kURL, kAlertMessage, /*visible=*/true,
+                          /*is_main_frame=*/true);
 
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-  WaitForJavaScriptDialog(kURL, /*visible=*/false);
+  WaitForJavaScriptDialog(kURL, kAlertMessage, /*visible=*/false,
+                          /*is_main_frame=*/true);
 
   // Wait for the expected text to be added to the test page.
   [ChromeEarlGrey waitForWebStateContainingText:kAlertResult];
@@ -536,7 +572,8 @@ void TapSuppressDialogsButton() {
   }
 
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
-  [ChromeEarlGrey loadURL:self.testServer->GetURL(kLinkPageURLPath)];
+  const GURL kURL = self.testServer->GetURL(kLinkPageURLPath);
+  [ChromeEarlGrey loadURL:kURL];
   [ChromeEarlGrey waitForWebStateContainingText:kLinkPageLinkText];
 
   // TODO(crbug.com/712358): Use method LongPressElementAndTapOnButton once
@@ -568,7 +605,8 @@ void TapSuppressDialogsButton() {
 
     // Wait for the alert to be shown.
     GURL kOnLoadURL = self.testServer->GetURL(kOnLoadURLPath);
-    WaitForJavaScriptDialog(kOnLoadURL, /*visible=*/true);
+    WaitForJavaScriptDialog(kURL, kOnLoadAlertMessage, /*visible=*/true,
+                            /*is_main_frame=*/true);
 
     // Verify that the omnibox shows the correct URL when the dialog is visible.
     std::string title =

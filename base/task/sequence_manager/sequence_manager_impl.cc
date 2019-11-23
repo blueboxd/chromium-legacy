@@ -215,6 +215,13 @@ SequenceManagerImpl::~SequenceManagerImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("sequence_manager"), "SequenceManager", this);
 
+#if defined(OS_IOS)
+  if (settings_.message_loop_type == MessagePumpType::UI &&
+      associated_thread_->IsBound()) {
+    controller_->DetachFromMessagePump();
+  }
+#endif
+
   // Make sure no Task is running as given that RunLoop does not support the
   // Delegate being destroyed from a Task and
   // ThreadControllerWithMessagePumpImpl does not support being destroyed from a
@@ -310,6 +317,13 @@ void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
 #if defined(OS_ANDROID)
   if (settings_.message_loop_type == MessagePumpType::UI ||
       settings_.message_loop_type == MessagePumpType::JAVA) {
+    controller_->AttachToMessagePump();
+  }
+#endif
+
+  // On iOS attach to the native loop when there is one.
+#if defined(OS_IOS)
+  if (settings_.message_loop_type == MessagePumpType::UI) {
     controller_->AttachToMessagePump();
   }
 #endif

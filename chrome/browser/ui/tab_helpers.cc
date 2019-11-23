@@ -101,6 +101,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/base/media_switches.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
@@ -112,10 +113,8 @@
 #include "chrome/browser/ui/android/view_android_helper.h"
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
-#include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
-#include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -131,12 +130,6 @@
 #include "chrome/browser/ui/hats/hats_helper.h"
 #endif
 
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-#include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
-#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
-#include "chrome/browser/offline_pages/recent_tab_helper.h"
-#endif
-
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
@@ -150,12 +143,23 @@
 #include "extensions/browser/view_type_utils.h"
 #endif
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
+#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
+#include "chrome/browser/offline_pages/recent_tab_helper.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/plugin_observer.h"
+#include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/browser/printing/printing_init.h"
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #endif
 
 using content::WebContents;
@@ -301,13 +305,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   FramebustBlockTabHelper::CreateForWebContents(web_contents);
-  HungPluginTabHelper::CreateForWebContents(web_contents);
   IntentPickerTabHelper::CreateForWebContents(web_contents);
   JavaScriptDialogTabHelper::CreateForWebContents(web_contents);
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
-  PluginObserver::CreateForWebContents(web_contents);
   SadTabHelper::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
@@ -343,12 +345,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
   // --- Feature tab helpers behind flags ---
 
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
-  offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
-  offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
-#endif
-
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper::CreateForWebContents(web_contents);
 #endif
@@ -361,12 +357,22 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     web_app::WebAppMetrics::Get(profile);
 #endif
 
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
+  offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
+  offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
 #endif
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+  HungPluginTabHelper::CreateForWebContents(web_contents);
+  PluginObserver::CreateForWebContents(web_contents);
+#endif
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::InitializePrinting(web_contents);
+#endif
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
 #endif
 
   if (dom_distiller::IsDomDistillerEnabled()) {

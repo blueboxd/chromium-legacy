@@ -37,7 +37,6 @@ bind_gen/codegen_accumulator.py
 bind_gen/codegen_context.py
 bind_gen/codegen_utils.py
 bind_gen/dictionary.py
-bind_gen/example.py
 bind_gen/interface.py
 bind_gen/mako_renderer.py
 bind_gen/name_style.py

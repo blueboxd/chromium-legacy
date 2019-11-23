@@ -36,6 +36,7 @@ ChildProcessLauncher::ChildProcessLauncher(
     Client* client,
     mojo::OutgoingInvitation mojo_invitation,
     const mojo::ProcessErrorCallback& process_error_callback,
+    std::map<std::string, base::FilePath> files_to_preload,
     bool terminate_on_shutdown)
     : client_(client),
       starting_(true),
@@ -56,7 +57,8 @@ ChildProcessLauncher::ChildProcessLauncher(
 #if defined(OS_ANDROID)
       client_->CanUseWarmUpConnection(),
 #endif
-      std::move(mojo_invitation), process_error_callback);
+      std::move(mojo_invitation), process_error_callback,
+      std::move(files_to_preload));
   helper_->StartLaunchOnClientThread();
 }
 
@@ -154,19 +156,6 @@ bool ChildProcessLauncher::Terminate(int exit_code) {
 bool ChildProcessLauncher::TerminateProcess(const base::Process& process,
                                             int exit_code) {
   return ChildProcessLauncherHelper::TerminateProcess(process, exit_code);
-}
-
-// static
-void ChildProcessLauncher::SetRegisteredFilesForService(
-    const std::string& service_name,
-    std::map<std::string, base::FilePath> required_files) {
-  ChildProcessLauncherHelper::SetRegisteredFilesForService(
-      service_name, std::move(required_files));
-}
-
-// static
-void ChildProcessLauncher::ResetRegisteredFilesForTesting() {
-  ChildProcessLauncherHelper::ResetRegisteredFilesForTesting();
 }
 
 #if defined(OS_ANDROID)

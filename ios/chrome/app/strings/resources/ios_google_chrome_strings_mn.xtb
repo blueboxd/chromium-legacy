@@ -1,4 +1,55 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mn">
+<translation id="1282031177488366470">Chrome-н онцлог болон гүйцэтгэлийг сайжруулахад туслах</translation>
+<translation id="1682483655351012182">Chrome-н өгөгдлөө синк хийх</translation>
+<translation id="1759842336958782510">Хромэ</translation>
+<translation id="1816764564654397850">Google Chrome-н нууцлалын мэдэгдэл</translation>
+<translation id="1863312987075920112">Энэ аппыг ашигласнаар та Chrome-н <ph name="BEGIN_LINK_TOS" />Үйлчилгээний нөхцөл<ph name="END_LINK_TOS" /> болон <ph name="BEGIN_LINK_PRIVACY" />Нууцлалын мэдэгдлийг<ph name="END_LINK_PRIVACY" /> зөвшөөрч байна.</translation>
+<translation id="2147651015520127414">Энэхүү вэбсайтын сертификатыг <ph name="ISSUER" /> олгосон болохыг Chrome баталж байна.</translation>
+<translation id="2199719347983604670">Chrome синкийн өгөгдөл</translation>
+<translation id="2347208864470321755">Энэ горим асаалттай байгаа үед Google нь Chrome Translate-ыг ашиглан бусад хэл дээр бичигдсэн хуудсуудыг орчуулахыг санал болгоно. <ph name="BEGIN_LINK" />Илүү ихийг мэдэж аваарай<ph name="END_LINK" /></translation>
+<translation id="2441696206556358796">Зураг хадгалахын тулд Тохиргоо хэсгийг товшин Chrome-д таны зургийг хэрэглэхийг зөвшөөрнө үү.</translation>
+<translation id="2576431527583832481">Chrome-ийн шинэ хувилбар саяхан гарлаа.</translation>
+<translation id="257708665678654955">Та Google Chrome-г дараагийн удаа энэ сайтаас <ph name="LANGUAGE_NAME" /> хуудсыг орчуулахыг зөвшөөрөх үү?</translation>
+<translation id="3030414234702425231">Та <ph name="SIGNOUT_MANAGED_DOMAIN" />-н удирддаг бүртгэлээс гарч байгаа тул таны Chrome-н өгөгдлийг энэ төхөөрөмжөөс устгана. Таны өгөгдөл таны Google Бүртгэлд хэвээр үлдэнэ.</translation>
+<translation id="3148688391461398285">Өөрийн байршил дээр тулгуурлан Chrome дотор илүү сайн ажиллах туршлага олж аваарай.</translation>
+<translation id="3167189358072330585">Таны бүртгэл Google Chrome-д ажиллахгүй байна. Нэвтрэхийн тулд та домайн админтайгаа холбогдох, эсвэл Google Бүртгэлийн энгийн хувилбарыг ашиглаарай.</translation>
+<translation id="3196546062792660320">Chrome таны бүртгэлийг вэбэд оруулснаар таны цагийг хэмнэдэг. Та Тохиргоо хэсэгт бүртгэл нэмэх, эсвэл устгах боломжтой.</translation>
+<translation id="3282568296779691940">Chrome руу нэвтрэх</translation>
+<translation id="3345341804167540816">Chrome-г хүссэн газраа ашиглаарай</translation>
+<translation id="384394811301901750">Google Chrome таны камерыг одоогоор ашиглах боломжгүй</translation>
+<translation id="3980220367029651214">Та синк хийх бүртгэлийг <ph name="USER_EMAIL1" />-с <ph name="USER_EMAIL2" /> рүү шилжүүлж байна. Таны одоогийн Chrome-н өгөгдлийг <ph name="DOMAIN" />-с удирддаг. Энэ нь таны өгөгдлийг төхөөрөмжөөс устгах хэдий ч таны өгөгдөл <ph name="USER_EMAIL1" />-д хадгалагдсан хэвээр байна.</translation>
+<translation id="3988789688219830639">Google Chrome-д таны зураг, видеонд нэвтрэх зөвшөөрөл байхгүй байна. Та iOS Тохиргоо &gt; Нууцлал &gt; Зураг хэсэгт хандалтыг идэвхжүүлээрэй.</translation>
+<translation id="4099578267706723511">Хэрэглээний статистик мэдээ болон алдаа ослын тайланг автоматаар Google рүү илгээх замаар Google Chrome-ийг улам сайжруулахад тусална уу.</translation>
+<translation id="415767770115540173">Өөрийн байршил дээр тулгуурлан Chrome дахь Google хэрэглээгээ сайжруулаарай.</translation>
+<translation id="424864128008805179">Chrome-с гарах уу?</translation>
+<translation id="4249068189593983585">Chrome-н зөвлөгөө. Табын бусад сонголтыг харахын тулд дэлгэцийнхээ доод эсвэл дээд хэсэгт байрлах самбараас Табыг харуулах товчлуурыг удаан дарна уу.</translation>
+<translation id="4523886039239821078">Зарим нэмэлт апп-ууд нь Chrome-ыг эвдрэхэд хүргэдэг. Тиймээс тэдгээрийг утсгана уу:</translation>
+<translation id="5389212809648216794">Таны камерыг өөр апп ашиглаж байгаа тул үүнийг Google Chrome ашиглах боломжгүй</translation>
+<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Chrome-н шинэчилсэн үйлчилгээний нөхцөлийг шалгана уу.<ph name="END_LINK" /></translation>
+<translation id="5639704535586432836">Тохиргоо &gt; Нууцлал &gt; Камер &gt; Google Chrome-г нээж, камерыг асаана уу.</translation>
+<translation id="5642200033778930880">Google Chrome таны камерыг Хувааж харах горимд ашиглах боломжгүй</translation>
+<translation id="5690427481109656848">Google ХХК</translation>
+<translation id="5854621639439811139">Chrome-н зөвлөгөө. Буцаах, Урагшлуулах, Хайх зэрэг зарим товчлуур таны дэлгэцийн доод хэсэгт байрладаг боллоо.</translation>
+<translation id="6036420186814142909">Google Chrome нь танд интернэтийн мэдээллээ удирдах болон вэб хуудсуудыг богино хугацаанд хэрхэн хурдан ачаалах боломжтой болгоход туслах тохиргоонуудтай <ph name="BEGIN_LINK" />Илүү ихийг мэдэж аваарай<ph name="END_LINK" /></translation>
+<translation id="6573431926118603307">Таны бусад төхөөрөмжөөрөө Chrome-д нээсэн чихтэй хуудас энд харагдах болно.</translation>
+<translation id="6600954340915313787">Chrome руу хуулсан</translation>
+<translation id="6648150602980899529">Та <ph name="DOMAIN" />-с удирдсан бүртгэлээр нэвтэрч байгаа бөгөөд үүнд таны Chrome-н өгөгдлийг удирдах админы удирдлагыг өгч байна. Таны өгөгдөл энэ бүртгэлтэй бүрмөсөн холбоотой болно. Chrome-с гарснаар таны бүх өгөгдлийг энэ төхөөрөмжөөс устгах бөгөөд тэдгээр өгөгдлүүд таны Google бүртгэлд хадгалагдсан хэвээр байна.</translation>
+<translation id="6676840375528380067">Энэ төхөөрөмжөөс Chrome-н өгөгдлөө устгах уу?</translation>
+<translation id="690638524486313356">Google Chrome-н үйлчилгээний нөхцөл</translation>
+<translation id="7165736900384873061">Google Chrome QR скан хийгчийг ашиглах</translation>
+<translation id="7172660552945675509">Зөвлөгөө: <ph name="BEGIN_LINK" />Chrome-г апп-ны мөр рүү зөөнө үү<ph name="END_LINK" /></translation>
+<translation id="7173660919484573146">Chrome таны нууц үгэнд зөвшөөрөгдсөн хандалт олгохын тулд Нүүрний ID-г ашигладаг.</translation>
+<translation id="7265369419224458312">Таны компьютерт нээлттэй байгаа цонх руу эндээс нэвтэрнэ үү.
+
+Компьютертээ Chrome-г нээж, цэс хэсэгт очоод "Chrome руу нэвтрэх..." гэснийг сонгоно уу.</translation>
+<translation id="7400722733683201933">Google Chrome-ийн тухай</translation>
+<translation id="756809126120519699">Chrome-н өгөгдлийг устгасан</translation>
+<translation id="7626032353295482388">Chrome-д тавтай морил</translation>
+<translation id="7698568245838009292">Chrome камерт хандах хүсэлтэй байна</translation>
+<translation id="8370517070665726704">Зохиогчийн эрх <ph name="YEAR" /> Google ХХК. Бүх эрх хуулиар хамгаалагдсан.</translation>
+<translation id="840168496893712993">Зарим нэмэлт програмууд нь Chrome-ыг эвдрэхэд хүргэдэг. Тэднийг устгах гээд оролдоод үзнэ үү.</translation>
+<translation id="8459495907675268833">Chrome болон синк хийсэн төхөөрөмжөөс сонгосон өгөгдлийг устгaлаа. Tаны Google Бүртгэл history.google.com-д Google-н бусад үйлчилгээнээс авсан үйл ажиллагаа, хайлт зэрэг өөр хэлбэрийн хайлтын түүхтэй байж болно.</translation>
+<translation id="8540666473246803645">Google Chrome</translation>
 </translationbundle>

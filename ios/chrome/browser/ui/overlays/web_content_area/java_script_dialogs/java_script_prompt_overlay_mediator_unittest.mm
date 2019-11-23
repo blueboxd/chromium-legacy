@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_prompt_overlay.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_constants.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/test/alert_overlay_mediator_test.h"
@@ -98,7 +99,7 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupMainFrame) {
   EXPECT_NSEQ(base::SysUTF8ToNSString(default_prompt_value()),
               consumer().textFieldConfigurations[0].text);
   EXPECT_FALSE(!!consumer().textFieldConfigurations[0].placeholder);
-  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibilityIdentifier,
+  EXPECT_NSEQ(kJavaScriptDialogTextFieldAccessibilityIdentifier,
               consumer().textFieldConfigurations[0].accessibilityIdentifier);
   ASSERT_EQ(2U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
@@ -117,7 +118,7 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupIframe) {
   EXPECT_NSEQ(base::SysUTF8ToNSString(default_prompt_value()),
               consumer().textFieldConfigurations[0].text);
   EXPECT_FALSE(!!consumer().textFieldConfigurations[0].placeholder);
-  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibilityIdentifier,
+  EXPECT_NSEQ(kJavaScriptDialogTextFieldAccessibilityIdentifier,
               consumer().textFieldConfigurations[0].accessibilityIdentifier);
   ASSERT_EQ(2U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
@@ -138,7 +139,7 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupWithBlockingOption) {
   EXPECT_NSEQ(base::SysUTF8ToNSString(default_prompt_value()),
               consumer().textFieldConfigurations[0].text);
   EXPECT_FALSE(!!consumer().textFieldConfigurations[0].placeholder);
-  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibilityIdentifier,
+  EXPECT_NSEQ(kJavaScriptDialogTextFieldAccessibilityIdentifier,
               consumer().textFieldConfigurations[0].accessibilityIdentifier);
   ASSERT_EQ(3U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);

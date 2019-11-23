@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
+<link rel="import" href="../route_origin_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="multidevice_constants.html">
 <link rel="import" href="multidevice_feature_behavior.html">
@@ -47,8 +48,8 @@
                   if="[[hasSubpageClickHandler_(
               feature, pageContentData, subpageRoute)]]"
                   restamp>
-          <cr-icon-button class="subpage-arrow" aria-labelledby="featureName"
-              aria-describedby="featureSecondary"
+          <cr-icon-button id="subpageButton" class="subpage-arrow"
+              aria-labelledby="featureName" aria-describedby="featureSecondary"
               aria-roledescription="$i18n{subpageArrowRoleDescription}">
           </cr-icon-button>
         </template>

@@ -23,8 +23,8 @@ SilentSinkSuspender::SilentSinkSuspender(
       silence_timeout_(silence_timeout),
       fake_sink_(worker, params_),
       sink_transition_callback_(
-          base::Bind(&SilentSinkSuspender::TransitionSinks,
-                     base::Unretained(this))) {
+          base::BindRepeating(&SilentSinkSuspender::TransitionSinks,
+                              base::Unretained(this))) {
   DCHECK(params_.IsValid());
   DCHECK(sink_);
   DCHECK(callback_);

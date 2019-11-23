@@ -39,8 +39,8 @@ class ModemMessagingProxy {
     proxy_->ConnectToSignal(
         modemmanager::kModemManager1MessagingInterface,
         modemmanager::kSMSAddedSignal,
-        base::Bind(&ModemMessagingProxy::OnSmsAdded,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&ModemMessagingProxy::OnSmsAdded,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ModemMessagingProxy::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }

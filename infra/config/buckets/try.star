@@ -1245,11 +1245,13 @@ linux_builder(
 
 linux_builder(
     name = 'linux_chromium_chromeos_asan_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
 linux_builder(
     name = 'linux_chromium_chromeos_msan_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
 )
 
@@ -1369,6 +1371,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_mojo_chromeos',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 linux_builder(

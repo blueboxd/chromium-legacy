@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> arba <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Apžvalgos režimas</translation>
 <translation id="4382340674111381977">Grįžti į ankstesnį puslapį</translation>
+<translation id="4458670250301149821">Perkelti programos piktogramą į aplanką ir (arba) iš jo programos tinklelyje</translation>
 <translation id="4472417192667361414">Sistemos ir pateikties nustatymai</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, tada <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> arba <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Žr. sparčiųjų klavišų pagalbos priemonę</translation>
 <translation id="4628718545549558538">Atidaryti būsenos sritį (kur rodoma paskyros nuotrauka)</translation>
 <translation id="4642092649622328492">Padaryti dalinę ekrano kopiją</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Ištrinti kitą raidę (ištrinti į priekį)</translation>
 <translation id="7500368597227394048">brūkšnelis</translation>
 <translation id="7611271430932669992">Paryškinti iššokančiuosius ir dialogo langus</translation>
+<translation id="7635348532214572995">Perkelti programos piktogramą programos tinklelyje</translation>
 <translation id="766326951329901120">Įklijuoti turinį iš iškarpinės kaip grynąjį tekstą</translation>
 <translation id="7703010453515335249">atidaromasis laužtinis skliaustas</translation>
 <translation id="7724603315864178912">Iškirpti</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Įklijuoti turinį iš iškarpinės</translation>
 <translation id="9052808072970550123">Perjungti į kitą naudotoją</translation>
 <translation id="906458777597946297">Padidinti langą</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, tada <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> arba <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Eiti į eilutės pradžią</translation>
 <translation id="9106898733795143799">Puslapis ir žiniatinklio naršyklė</translation>
 <translation id="9162942292291287644">Nėra paieškos rezultatų pagal užklausą „<ph name="QUERY" />“</translation>

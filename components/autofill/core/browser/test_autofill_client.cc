@@ -108,18 +108,20 @@ void TestAutofillClient::ShowLocalCardMigrationResults(
     MigrationDeleteCardCallback delete_local_card_callback) {}
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-void TestAutofillClient::ShowVerifyPendingDialog(
-    base::OnceClosure cancel_card_verification_callback) {}
-
-void TestAutofillClient::CloseVerifyPendingDialog() {}
-#endif
-
 void TestAutofillClient::ShowWebauthnOfferDialog(
-    WebauthnOfferDialogCallback callback) {}
+    WebauthnOfferDialogCallback offer_dialog_callback) {}
+
+void TestAutofillClient::UpdateWebauthnOfferDialogWithError() {}
 
 bool TestAutofillClient::CloseWebauthnOfferDialog() {
   return true;
 }
+
+void TestAutofillClient::ShowWebauthnVerifyPendingDialog(
+    base::OnceClosure cancel_card_verification_callback) {}
+
+void TestAutofillClient::CloseWebauthnVerifyPendingDialog() {}
+#endif
 
 void TestAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,

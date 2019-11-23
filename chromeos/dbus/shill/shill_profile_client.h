@@ -32,7 +32,6 @@ class ShillPropertyChangedObserver;
 // initializes the DBusThreadManager instance.
 class COMPONENT_EXPORT(SHILL_CLIENT) ShillProfileClient {
  public:
-  typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallbackWithoutStatus
       DictionaryValueCallbackWithoutStatus;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
@@ -125,24 +124,23 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillProfileClient {
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
-  virtual void GetProperties(
-      const dbus::ObjectPath& profile_path,
-      const DictionaryValueCallbackWithoutStatus& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void GetProperties(const dbus::ObjectPath& profile_path,
+                             DictionaryValueCallbackWithoutStatus callback,
+                             ErrorCallback error_callback) = 0;
 
   // Calls GetEntry method.
   // |callback| is called after the method call succeeds.
   virtual void GetEntry(const dbus::ObjectPath& profile_path,
                         const std::string& entry_path,
-                        const DictionaryValueCallbackWithoutStatus& callback,
-                        const ErrorCallback& error_callback) = 0;
+                        DictionaryValueCallbackWithoutStatus callback,
+                        ErrorCallback error_callback) = 0;
 
   // Calls DeleteEntry method.
   // |callback| is called after the method call succeeds.
   virtual void DeleteEntry(const dbus::ObjectPath& profile_path,
                            const std::string& entry_path,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) = 0;
+                           base::OnceClosure callback,
+                           ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;

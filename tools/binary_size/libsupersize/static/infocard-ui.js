@@ -80,13 +80,14 @@ const displayInfocard = (() => {
      */
     _updatePaths(node) {
       let pathFragment;
+      // srcPath is set only for leaf nodes.
       if (node.srcPath) {
         pathFragment = dom.createFragment([
             dom.textElement('span', 'Path: ', 'symbol-name-info'),
             document.createTextNode(node.srcPath),
             document.createElement('br'),
             dom.textElement('span', 'Component: ', 'symbol-name-info'),
-            document.createTextNode(node.componet || '(No component)'),
+            document.createTextNode(node.component || '(No component)'),
         ]);
       } else {
         const path = node.idPath.slice(0, node.shortNameIndex);

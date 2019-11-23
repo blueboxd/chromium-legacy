@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> চার্জ করা হচ্ছে</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" />, আপনার ডিভাইসের অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" /> <ph name="COME_BACK_TIME" />-এ আবার ব্যবহার করতে পারবেন।</translation>
 <translation id="1290331692326790741">সিগন্যালটি ভাল নয়</translation>
 <translation id="1293264513303784526">USB-C ডিভাইস (বাঁ পোর্ট)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">ব্লুটুথ সেটিংস দেখান। <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">সবসময় শেল্ফ দেখান</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" />, ফোনের ব্যাটারি <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">ওভারফ্লো</translation>
 <translation id="1346748346194534595">ডানে</translation>
 <translation id="1351937230027495976">মেনুটি আড়াল করুন</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">এই ব্যবহারকারীকে সরান</translation>
 <translation id="1654477262762802994">ভয়েস কোয়েরি শুরু করুন</translation>
 <translation id="1658406695958299976">দুঃখিত, আপনার পাসওয়ার্ড এখনও পর্যন্ত যাচাই করা যায়নি। দ্রষ্টব্য: আপনি যদি সম্প্রতি আপনার পাসওয়ার্ড পরিবর্তন করে থাকেন, তাহলে আপনি সাইন-আউট করার পর আপনার নতুন পাসওয়ার্ড প্রয়োগ করা হবে, অনুগ্রহ করে এখানে পুরানো পাসওয়ার্ড ব্যবহার করুন।</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, আপনার ডিভাইসের অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> বাকি আছে</translation>
 <translation id="1698760176351776263">IPv6 ঠিকানা: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">শনাক্ত করা যায়নি</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">একটি মেসেজ লিখুন</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">কীবোর্ডের উজ্জ্বলতা</translation>
 <translation id="209965399369889474">কোনও নেটওয়ার্কে কানেক্ট করা নেই</translation>
 <translation id="2126242104232412123">নতুন ডেস্ক</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">কোনো মোবাইল নেটওয়ার্ক উপলব্ধ নেই</translation>
 <translation id="3249513730522716925">Window <ph name="WINDOW_TITLE" /> ডেস্ক <ph name="ACTIVE_DESK" /> থেকে ডেস্ক <ph name="TARGET_DESK" />-এ সরানো হয়েছে</translation>
 <translation id="3255483164551725916">আপনি কি করতে পারেন?</translation>
-<translation id="3277674767125718685">ভলিউম চালু করা আছে।</translation>
 <translation id="3290356915286466215">সুরক্ষিত নেই</translation>
 <translation id="3294437725009624529">অতিথি</translation>
 <translation id="3308453408813785101">তা সত্ত্বেও, <ph name="USER_EMAIL_ADDRESS" /> পরে সাইন-ইন করতে পারবেন।</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">অ্যাকাউন্টটি <ph name="MANAGER_EMAIL" /> ম্যানেজ করছেন</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" তে ফেরান (পুনর্সূচনা প্রয়োজন)</translation>
 <translation id="3576141592585647168">টাইমজোন পরিবর্তন করা</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, আপনার ডিভাইসের অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
 <translation id="3604801046548457007">ডেস্ক <ph name="DESK_TITILE" /> তৈরি করা হয়েছে</translation>
 <translation id="3606978283550408104">ব্রেইল প্রদর্শন সংযুক্ত হয়েছে৷</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">জোরালো</translation>
 <translation id="4918086044614829423">স্বীকার</translation>
 <translation id="4924411785043111640">রিস্টার্ট করুন এবং রিসেট করুন</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">উপরের দিকে স্ক্রল করুন</translation>
 <translation id="4961318399572185831">স্ক্রিন কাস্ট করুন</translation>
 <translation id="5030687792513154421">সময় শেষ</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" />টি নতুন ফোনে কানেক্ট করা হয়েছে</translation>
 <translation id="5083553833479578423">অ্যাসিস্ট্যান্ট-এর আরও বৈশিষ্ট্য আনলক করুন।</translation>
 <translation id="5136175204352732067">বিভিন্ন কীবোর্ড কানেক্ট করা হয়েছে</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
 <translation id="5207949376430453814">পাঠ্যের কার্সার হাইলাইট করুন</translation>
 <translation id="5222676887888702881">সাইন-আউট করুন</translation>
 <translation id="523505283826916779">অ্যাক্সেসিবিলিটি সেটিংস</translation>
 <translation id="5260676007519551770">ডেস্ক ৪</translation>
 <translation id="5283198616748585639">১ মিনিট যোগ করুন</translation>
+<translation id="5286194356314741248">স্ক্যান হচ্ছে</translation>
 <translation id="5302048478445481009">ভাষা</translation>
 <translation id="5313326810920013265">ব্লুটুথ সেটিংস</translation>
 <translation id="5331975486040154427">USB-C ডিভাইস (বাঁ দিকের পিছনের পোর্ট)</translation>
 <translation id="5379115545237091094">অনেক বেশি চেষ্টা করেছেন</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">chrome.com-এ পরিচালক (<ph name="MANAGER_EMAIL" />) এই ব্যবহারকারীর ব্যবহার এবং ইতিহাস পর্যালোচনা করতে পারেন৷</translation>
 <translation id="5430931332414098647">ঝটপট টিথারিং</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">আপনি <ph name="LOGOUT_TIME_LEFT" /> এর মধ্যে স্বয়ংক্রিয়ভাবে প্রস্থান করুন হবেন৷</translation>
 <translation id="6064337552080329342">আপনার পাসওয়ার্ড যাচাই করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।</translation>
 <translation id="607652042414456612">আপনার কম্পিউটার কাছাকাছি ব্লুটুথ ডিভাইসে খুঁজে পাওয়া সম্ভব এবং ঠিকানা <ph name="ADDRESS" /> সমেত "<ph name="NAME" />" হিসাবে প্রদর্শিত হবে</translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" />, আপনার ডিভাইসের অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>
 <translation id="612734058257491180">Google অ্যাসিস্ট্যান্ট কোনও গেস্ট সেশনে উপলভ্য নয়।</translation>
 <translation id="615957422585914272">অন-স্ক্রিন কীবোর্ড প্রদর্শন করুন</translation>
 <translation id="6164005077879661055">একবার এই তত্ত্বাবধানে থাকা ব্যবহারকারী সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং
@@ -404,7 +395,6 @@
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
 <translation id="6665545700722362599">ওয়েবসাইট, অ্যাপ এবং এক্সটেনশনকে লোকেশন ভিত্তিক পরিষেবা, ডিভাইসের মাইক্রোফোন, ক্যামেরা ও অন্যান্য ফিচার ব্যবহারের অনুমতি দেয়</translation>
 <translation id="6670153871843998651">ডেস্ক ৩</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" />, আপনার ডিভাইসের অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">আলাদা করা যায় এমন কীবোর্ডের একটি জরুরি আপডেট প্রয়োজন</translation>
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>
@@ -415,7 +405,6 @@
 <translation id="6751826523481687655">পারফরম্যান্স ট্রেস করার বিকল্প চালু আছে</translation>
 <translation id="6752912906630585008">ডেস্ক <ph name="REMOVED_DESK" />-কে সরিয়ে দিয়ে <ph name="RECEIVE_DESK" />-এর সাথে মার্জ করা হয়েছে</translation>
 <translation id="6777216307882431711">কানেক্ট করা USB-C ডিভাইসগুলি চার্জ করা হচ্ছে</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">চালু করুন</translation>
 <translation id="6803622936009808957">সমর্থিত রেসুলিউশানগুলি খুঁজে না পাওয়ায় প্রদর্শনগুলি মিরর মানে প্রতিবিম্বিত করতে পারেনি। এর পরিবর্তে প্রসারিত ডেস্কটপে প্রবেশ করেছে।</translation>
 <translation id="6820676911989879663">বিরতি নিন!</translation>
@@ -461,7 +450,6 @@
 <translation id="7526573455193969409">নেটওয়ার্কের উপরে নজর রাখা হতে পারে</translation>
 <translation id="7536035074519304529">আইপি অ্যাড্রেস: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">শুতে যাওয়ার সময় হয়েছে</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" />, ফোনের ব্যাটারি <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" />-এ পরিবর্তিত হয়েছে</translation>
 <translation id="7562368315689366235">ইমোজি প্যালেট</translation>
 <translation id="7564874036684306347">কোনও উইন্ডো অন্য ডেস্কটপে সরানো হলে সেটির আচরণে অপ্রত্যাশিত পরিবর্তন হতে পারে। পরবর্তী বিজ্ঞপ্তি, উইন্ডো এবং ডায়ালগ দুটি ডেস্কটপ মিলিয়ে দেখানো হতে পারে।</translation>
@@ -580,7 +568,6 @@
 <translation id="9084606467167974638">মেনুর অবস্থান টগল করুন</translation>
 <translation id="9089416786594320554">ইনপুট পদ্ধতিসমূহ</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> প্রদর্শন সরানো হয়েছে</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, সিগন্যাল কতটা জোরালো <ph name="SIGNAL_STRENGTH" />, আপনার ডিভাইসের অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>
 <translation id="9151726767154816831">আপডেট করার জন্য আবার শুরু করুন এবং পাওয়ারওয়াশ করুন</translation>
 <translation id="9179259655489829027">এই বৈশিষ্ট্যের মাধ্যমে আপনি কোনও পাসওয়ার্ড ছাড়াই সাইন-ইন করা যেকোনও ব্যবহারকারীকে দ্রুত অ্যাক্সেস করতে পারেন। এটি শুধুমাত্র বিশ্বস্ত অ্যাকাউন্টেই ব্যবহার করুন।</translation>
 <translation id="9183456764293710005">ফুল-স্ক্রিন ম্যাগনিফায়ার</translation>

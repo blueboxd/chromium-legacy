@@ -203,7 +203,7 @@ void GbmPixmapWayland::CreateDmabufBasedBuffer() {
   }
   // Asks Wayland to create a wl_buffer based on the |file| fd.
   buffer_manager_->CreateDmabufBasedBuffer(
-      widget_, std::move(fd), GetBufferSize(), strides, offsets, modifiers,
+      std::move(fd), GetBufferSize(), strides, offsets, modifiers,
       gbm_bo_->GetFormat(), plane_count, GetUniqueId());
 }
 

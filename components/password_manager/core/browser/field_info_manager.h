@@ -15,20 +15,36 @@ namespace password_manager {
 
 class PasswordStore;
 
+class FieldInfoManager {
+ public:
+  virtual ~FieldInfoManager() = default;
+  virtual void AddFieldType(uint64_t form_signature,
+                            uint32_t field_signature,
+                            autofill::ServerFieldType field_type) = 0;
+
+  virtual autofill::ServerFieldType GetFieldType(
+      uint64_t form_signature,
+      uint32_t field_signature) const = 0;
+};
+
 // Keeps semantic types of web forms fields. Fields are specified with a pair
 // (FormSignature, FieldSignature), which uniquely defines fields in the web
 // (more details on the signature calculation are in signature_util.cc). Types
 // might be PASSWORD, USERNAME, NEW_PASSWORD etc.
-class FieldInfoManager : public KeyedService, public PasswordStoreConsumer {
+class FieldInfoManagerImpl : public FieldInfoManager,
+                             public KeyedService,
+                             public PasswordStoreConsumer {
  public:
-  FieldInfoManager(scoped_refptr<password_manager::PasswordStore> store);
-  ~FieldInfoManager() override;
+  FieldInfoManagerImpl(scoped_refptr<password_manager::PasswordStore> store);
+  ~FieldInfoManagerImpl() override;
 
+  // FieldInfoManager:
   void AddFieldType(uint64_t form_signature,
                     uint32_t field_signature,
-                    autofill::ServerFieldType field_type);
-  autofill::ServerFieldType GetFieldType(uint64_t form_signature,
-                                         uint32_t field_signature) const;
+                    autofill::ServerFieldType field_type) override;
+  autofill::ServerFieldType GetFieldType(
+      uint64_t form_signature,
+      uint32_t field_signature) const override;
 
  private:
   // PasswordStoreConsumer:

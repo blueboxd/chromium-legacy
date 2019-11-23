@@ -1521,10 +1521,12 @@ TEST_F(RootScrollerSimTest, ResizeFromResizeAfterLayout) {
                           <style>html {height: 300%;}</style>">
           </iframe>
       )HTML");
+  RunPendingTasks();
+  Compositor().BeginFrame();
+
   Element* container = GetDocument().getElementById("container");
   GetDocument().setRootScroller(container);
   Compositor().BeginFrame();
-  RunPendingTasks();
   ASSERT_EQ(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
   ASSERT_EQ(IntSize(800, 600), GetDocument().View()->Size());

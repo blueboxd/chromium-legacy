@@ -35,8 +35,9 @@ Polymer({
   is: 'settings-storage',
 
   behaviors: [
-    settings.RouteObserverBehavior, settings.RouteOriginBehavior,
-    WebUIListenerBehavior
+    settings.RouteObserverBehavior,
+    settings.RouteOriginBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -69,10 +70,7 @@ Polymer({
     sizeStat_: Object,
   },
 
-  /**
-   * The route corresponding to this page.
-   * @private {!settings.Route|undefined}
-   */
+  /** settings.RouteOriginBehavior override */
   route_: settings.routes.STORAGE,
 
   observers: ['handleCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],

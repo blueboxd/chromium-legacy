@@ -1,4 +1,53 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mk">
+<translation id="102360288709523007">Помогнете да го подобриме Chromium со автоматско испраќање статистика за користење и извештаи за падови во Google.</translation>
+<translation id="1185134272377778587">За Chromium</translation>
+<translation id="1289966288285062467">Известување за приватност на Chromium</translation>
+<translation id="1472013873724362412">Сметката не работи на Chromium. Контактирајте го администраторот на доменот или употребете обична сметка на Google за да се најавите.</translation>
+<translation id="1507010443238049608">Помогнете да се подобрат функциите и изведбата на Chromium</translation>
+<translation id="1617663976202781617">Податоци од синхронизацијата на Chromium</translation>
+<translation id="1736662517232558588">Податоците на Chromium се избришани</translation>
+<translation id="1838412507805038478">Chromium потврди дека <ph name="ISSUER" /> го издал сертификатот за веб-сајтов.</translation>
+<translation id="1843424232666537147">Chromium има функции што помагаат во управувањето со интернет сообраќајот и со брзината на вчитување веб-страници.
+<ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
+<translation id="2075400798887076382">Пристапувајте до картичките што ви се отворени на компјутерот тука. Само отворете го Chromium на компјутерот, појдете во менито и изберете „Најави се на Chromium…“</translation>
+<translation id="2168108852149185974">Некои додатоци предизвикуваат пад на Chromium. Деинсталирајте:</translation>
+<translation id="2178608107313874732">Chromium не може да ја користи камерата сега</translation>
+<translation id="2195025571279539885">Дали сакате Chromium следниот пат да ви понуди да преведува страници од <ph name="LANGUAGE_NAME" /> од овој сајт?</translation>
+<translation id="2590893390871230428">Синхронизирајте ги податоците од Chromium</translation>
+<translation id="2730884209570016437">Chromium не може да ја користи камерата затоа што друга апликација ја користи во моментов</translation>
+<translation id="2915596697727466327">Chromium користи Face ID за да обезбеди овластен пристап до вашите лозинки.</translation>
+<translation id="3256316712990552818">Копирано на Chromium</translation>
+<translation id="3805899903892079518">Chromium нема пристап до фотографиите или видеата. Овозможете пристап во Поставки на iOS &gt; Приватност &gt; Фотографии.</translation>
+<translation id="4555020257205549924">Кога е вклучена функцијава, Chromium ќе нуди да преведува страници што се напишани на други јазици користејќи го „Преведи на Google“. <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Вклучете го скенерот на Chromium</translation>
+<translation id="4787850887676698916">Картичките што сте ги отвориле во Chromium на другите уреди ќе се појават тука.</translation>
+<translation id="4999538639245140991">Бидејќи се одјавувате од сметка управувана од <ph name="SIGNOUT_MANAGED_DOMAIN" />, вашите податоци на Chromium ќе се избришат од уредов. Податоците ќе останат на сметката на Google.</translation>
+<translation id="5573014823074921752">Совет за Chromium: за повеќе опции за картичките, допрете го и задржете го копчето „Прикажи ги картичките“ во алатникот, што се наоѓа најдолу или најгоре на екранот.</translation>
+<translation id="5862307444128926510">Добре дојдовте во Chromium</translation>
+<translation id="5945387852661427312">Се најавувате со сметка управувана од <ph name="DOMAIN" /> и му давате контрола на нејзиниот администратор над податоците на Chromium. Вашите податоци ќе бидат трајно врзани за оваа сметка. Одјавувањето од Chromium ќе ги избрише податоците од уредов, но тие ќе останат зачувани на сметката на Google.</translation>
+<translation id="6068866989048414399">Услови за користење на Chromium</translation>
+<translation id="6268381023930128611">Ќе се одјавите од Chromium?</translation>
+<translation id="6424492062988593837">Chromium е подобрен! Достапна е нова верзија.</translation>
+<translation id="6604711459180487467">Добијте подобро искуство со Chromium според вашата локација.</translation>
+<translation id="6626296268883197964">Ако ја користите апликацијава, се согласувате со <ph name="BEGIN_LINK_TOS" />Условите на користење<ph name="END_LINK_TOS" /> и <ph name="BEGIN_LINK_PRIVACY" />Известувањето за приватност<ph name="END_LINK_PRIVACY" /> на Chromium.</translation>
+<translation id="7099326575020694068">Chromium не може да ја користи камерата во режимот „Поделен приказ“</translation>
+<translation id="7208566199746267865">Chromium ви заштедува време со тоа што ви ги носи сметките на Интернет. Може да додавате или отстранувате сметки во „Поставки“.</translation>
+<translation id="7269362888766543920">Некои додатоци предизвикуваат падови на Chromium. Обидете се да ги деинсталирате.</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="7357211569052832586">Избраните податоци се отстранети од Chromium и синхронизираните уреди. Вашата сметка на Google можеби има други форми на историја на прелистување, како на пр., пребарувања и активност од други услуги на Google на history.google.com.</translation>
+<translation id="7400689562045506105">Користете го Chromium насекаде</translation>
+<translation id="7674213385180944843">Отворете „Поставки“ &gt; „Приватност“ &gt; „Камера“ &gt; Chromium и вклучете ја камерата.</translation>
+<translation id="7746854981345936341">Совет за Chromium: некои копчиња отсега се наоѓаат најдолу на екранот, како што се „Назад“, „Напред“ и „Пребарај“.</translation>
+<translation id="786327964234957808">Ги заменувате сметките за синхронизација од <ph name="USER_EMAIL1" /> на <ph name="USER_EMAIL2" />. Вашите постоечки податоци на Chromium се управувани од <ph name="DOMAIN" />. Ова ќе ги избрише податоците од уредов, но тие ќе останат на <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Започнете со користење на скенерот на Chromium</translation>
+<translation id="8073677936375100957">Да се избришат податоците на Chromium од уредов?</translation>
+<translation id="8175055321229419309">Совет: <ph name="BEGIN_LINK" />преместете го Chromium во приклучокот<ph name="END_LINK" /></translation>
+<translation id="8252885722420466166">Добијте подобро искуство на Google со Chromium според вашата локација.</translation>
+<translation id="8586442755830160949">Авторско право <ph name="YEAR" /> на Авторите на Chromium. Сите права се задржани.</translation>
+<translation id="8809780021347235332">За да ги зачувате сликите, допрете на „Поставки“ за да дозволите Chromium да ги користи фотографиите</translation>
+<translation id="9022552996538154597">Најавете се на Chromium</translation>
+<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Прегледајте ги изменетите Услови на користење на Chromium.<ph name="END_LINK" /></translation>
+<translation id="985602178874221306">Автори на Chromium</translation>
 </translationbundle>

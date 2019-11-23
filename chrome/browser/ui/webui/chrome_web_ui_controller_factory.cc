@@ -81,6 +81,7 @@
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/security_interstitials/content/connection_help_ui.h"
+#include "components/security_interstitials/content/known_interception_disclosure_ui.h"
 #include "components/security_interstitials/content/urls.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -373,6 +374,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<InterventionsInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIInvalidationsHost)
     return &NewWebUI<InvalidationsUI>;
+  if (url.host_piece() ==
+      security_interstitials::kChromeUIConnectionMonitoringDetectedHost) {
+    return &NewWebUI<security_interstitials::KnownInterceptionDisclosureUI>;
+  }
   if (url.host_piece() == chrome::kChromeUILocalStateHost)
     return &NewWebUI<LocalStateUI>;
   if (url.host_piece() == chrome::kChromeUIMemoryInternalsHost)

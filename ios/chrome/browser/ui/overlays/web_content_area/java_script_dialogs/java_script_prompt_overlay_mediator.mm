@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_prompt_overlay.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
+#import "ios/chrome/browser/ui/dialogs/dialog_constants.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
 #import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
@@ -22,9 +23,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kJavaScriptPromptTextFieldAccessibilityIdentifier =
-    @"JavaScriptPromptTextFieldAccessibilityIdentifier";
 
 @interface JavaScriptPromptOverlayMediator ()
 @property(nonatomic, readonly) OverlayRequest* request;
@@ -80,7 +78,7 @@ NSString* const kJavaScriptPromptTextFieldAccessibilityIdentifier =
   return @[ [[TextFieldConfiguration alloc]
                  initWithText:defaultPromptValue
                   placeholder:nil
-      accessibilityIdentifier:kJavaScriptPromptTextFieldAccessibilityIdentifier
+      accessibilityIdentifier:kJavaScriptDialogTextFieldAccessibilityIdentifier
               secureTextEntry:NO] ];
 }
 
@@ -109,6 +107,10 @@ NSString* const kJavaScriptPromptTextFieldAccessibilityIdentifier =
   if (blockingAction)
     actions = [actions arrayByAddingObject:blockingAction];
   return actions;
+}
+
+- (NSString*)alertAccessibilityIdentifier {
+  return kJavaScriptDialogAccessibilityIdentifier;
 }
 
 @end

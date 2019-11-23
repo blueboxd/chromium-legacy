@@ -118,33 +118,6 @@ GetOptimizationGuideDecisionFromOptimizationTypeDecision(
   }
 }
 
-// Returns the OptimizationGuideDecision based on |decisions|
-// 1) If any decision is false, return false.
-// 2) If all decisions are true, return true.
-// 3) Otherwise, return unknown.
-optimization_guide::OptimizationGuideDecision ResolveOptimizationGuideDecisions(
-    const std::vector<optimization_guide::OptimizationGuideDecision>&
-        decisions) {
-  bool has_all_true_decisions = true;
-  for (const auto decision : decisions) {
-    if (decision == optimization_guide::OptimizationGuideDecision::kFalse)
-      return optimization_guide::OptimizationGuideDecision::kFalse;
-
-    if (decision != optimization_guide::OptimizationGuideDecision::kTrue) {
-      has_all_true_decisions = false;
-      break;
-    }
-  }
-
-  return has_all_true_decisions
-             ? optimization_guide::OptimizationGuideDecision::kTrue
-             : optimization_guide::OptimizationGuideDecision::kUnknown;
-  static_assert(optimization_guide::OptimizationGuideDecision::kMaxValue ==
-                    optimization_guide::OptimizationGuideDecision::kFalse,
-                "This function should be updated when a new "
-                "OptimizationGuideDecision is added");
-}
-
 }  // namespace
 
 OptimizationGuideKeyedService::OptimizationGuideKeyedService(
@@ -175,11 +148,12 @@ void OptimizationGuideKeyedService::Initialize(
       profile_path, profile->GetPrefs(), database_provider,
       top_host_provider_.get(), url_loader_factory);
   if (optimization_guide::features::IsOptimizationTargetPredictionEnabled() &&
-      optimization_guide::features::IsHintsFetchingEnabled()) {
+      optimization_guide::features::IsRemoteFetchingEnabled()) {
     prediction_manager_ =
         std::make_unique<optimization_guide::PredictionManager>(
             pre_initialized_optimization_targets_, profile_path,
-            database_provider, top_host_provider_.get(), url_loader_factory);
+            database_provider, top_host_provider_.get(), url_loader_factory,
+            profile->GetPrefs(), profile);
   }
 }
 
@@ -270,27 +244,6 @@ OptimizationGuideKeyedService::CanApplyOptimization(
                               optimization_type_decision);
   return GetOptimizationGuideDecisionFromOptimizationTypeDecision(
       optimization_type_decision);
-}
-
-optimization_guide::OptimizationGuideDecision
-OptimizationGuideKeyedService::ShouldTargetNavigationAndCanApplyOptimization(
-    content::NavigationHandle* navigation_handle,
-    optimization_guide::proto::OptimizationTarget optimization_target,
-    optimization_guide::proto::OptimizationType optimization_type,
-    optimization_guide::OptimizationMetadata* optimization_metadata) {
-  optimization_guide::OptimizationGuideDecision
-      optimization_target_guide_decision =
-          ShouldTargetNavigation(navigation_handle, optimization_target);
-
-  // Get both decisions regardless of what the first decision is for logging
-  // purposes.
-
-  optimization_guide::OptimizationGuideDecision
-      optimization_type_guide_decision = CanApplyOptimization(
-          navigation_handle, optimization_type, optimization_metadata);
-
-  return ResolveOptimizationGuideDecisions(
-      {optimization_target_guide_decision, optimization_type_guide_decision});
 }
 
 void OptimizationGuideKeyedService::ClearData() {

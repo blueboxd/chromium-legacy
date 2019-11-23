@@ -29,6 +29,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -88,6 +89,8 @@ SearchResultTileItemView::SearchResultTileItemView(
   // When |result_| is null, the tile is invisible. Calling SetSearchResult with
   // a non-null item makes the tile visible.
   SetVisible(false);
+
+  GetViewAccessibility().OverrideIsLeaf(true);
 
   // Prevent the icon view from interfering with our mouse events.
   icon_ = new views::ImageView;
@@ -269,6 +272,12 @@ void SearchResultTileItemView::ButtonPressed(views::Button* sender,
 void SearchResultTileItemView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   views::Button::GetAccessibleNodeData(node_data);
+
+  // The tile is a list item in the search result page's result list.
+  node_data->role = ax::mojom::Role::kListBoxOption;
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected());
+  node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
+
   // Specify |ax::mojom::StringAttribute::kDescription| with an empty string, so
   // that long truncated names are not read twice. Details of this issue: - The
   // Play Store app's name is shown in a label |title_|. - If the name is too
@@ -464,7 +473,6 @@ void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
 
 void SearchResultTileItemView::SetTitle(const base::string16& title) {
   title_->SetText(title);
-  title_->NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 void SearchResultTileItemView::SetRating(float rating) {

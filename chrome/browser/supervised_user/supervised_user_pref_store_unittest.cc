@@ -168,7 +168,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // The custodian can allow sites and apps to request permissions.
   // Currently tested indirectly by enabling geolocation requests.
-  // TODO(michaelpg): Update Kids Management server to set a new bit for
+  // TODO(crbug/1024646): Update Kids Management server to set a new bit for
   // extension permissions and update this test.
   fixture.changed_prefs()->Clear();
   service_.SetLocalSetting(supervised_users::kGeolocationDisabled,
@@ -202,4 +202,3 @@ TEST_F(SupervisedUserPrefStoreTest, CreatePrefStoreAfterInitialization) {
   EXPECT_TRUE(fixture.initialization_completed());
   EXPECT_EQ(0u, fixture.changed_prefs()->size());
 }
-

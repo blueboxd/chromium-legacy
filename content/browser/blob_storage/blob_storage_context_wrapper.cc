@@ -11,18 +11,18 @@ namespace content {
 
 BlobStorageContextWrapper::BlobStorageContextWrapper(
     mojo::PendingRemote<storage::mojom::BlobStorageContext> context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   context_.Bind(std::move(context));
 }
 
 mojo::Remote<storage::mojom::BlobStorageContext>&
 BlobStorageContextWrapper::context() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return context_;
 }
 
 BlobStorageContextWrapper::~BlobStorageContextWrapper() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 }  // namespace content

@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">Tik op de knop 'Logboekregistratie starten' om toekomstige logboeken van JavaScript-console en fouten van alle tabbladen te verzamelen. Er worden logboeken verzameld (en alleen opgeslagen in het geheugen) totdat de pagina wordt gesloten of op 'Logboekregistratie stoppen' wordt getikt.</translation>
 <translation id="1657011748321897393">Delen is mislukt omdat je niet verbonden bent met het netwerk.</translation>
 <translation id="165877110639533037">Geen geopende tabbladen</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> naar <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Schakel synchronisatie in om al je bladwijzers op al je apparaten te bekijken.</translation>
 <translation id="1687475363370981210">Alles als gelezen markeren</translation>
 <translation id="1690731385917361335">Geen items</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="2690858294534178585">Camera wordt gebruikt</translation>
 <translation id="2691653761409724435">Niet offline beschikbaar</translation>
+<translation id="2695507686909505111">Pagina vertaald</translation>
 <translation id="2702801445560668637">Leeslijst</translation>
 <translation id="2704606927547763573">Gekopieerd</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">Geen internetverbinding.</translation>
 <translation id="3783017676699494206">Afbeelding opslaan</translation>
 <translation id="3789841737615482174">Installeren</translation>
+<translation id="3803696231112616155">Aanbieden om deze site te vertalen</translation>
 <translation id="385051799172605136">Vorige</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Site-informatie</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">Deze pagina wordt geopend in een andere app.</translation>
 <translation id="4375040482473363939">Zoeken naar QR-code</translation>
 <translation id="4378154925671717803">Telefoon</translation>
+<translation id="4389019817280890563">Tik om de taal te wijzigen.</translation>
 <translation id="441868831736628555">Privacybeleid</translation>
 <translation id="4454246407045105932">Taal toevoegen</translation>
 <translation id="4476574785019001431">Instellingen</translation>
@@ -344,6 +348,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="5871497086027727873">1 item verplaatst</translation>
 <translation id="5897956970858271241">Gekopieerde link bezoeken</translation>
 <translation id="5911030830365207728">Google Translate</translation>
+<translation id="5913600720976431809">Opties om de pagina te vertalen</translation>
 <translation id="5916664084637901428">Aan</translation>
 <translation id="5938160824633642847">Je apparaat is bijna vol. Maak ruimte vrij en probeer het opnieuw.</translation>
 <translation id="5948291296578561264">Hiermee kun je foto's opslaan in je fotobibliotheek.</translation>
@@ -375,6 +380,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6219688215832490856">Nooit vertalen</translation>
 <translation id="6254066287920239840">Open links in de app in plaats van in de browser.</translation>
 <translation id="6255097610484507482">Creditcard bewerken</translation>
+<translation id="6284652193729350524">Aanbieden om <ph name="LANGUAGE" /> te vertalen</translation>
 <translation id="6303969859164067831">Uitloggen en synchronisatie uitschakelen</translation>
 <translation id="6308436439357671616">Hiermee kun je foto's maken en uploaden.</translation>
 <translation id="6324528485781869530">Synchronisatieaccount wisselen</translation>
@@ -429,6 +435,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="6903907808598579934">Synchronisatie inschakelen</translation>
 <translation id="6914583639806229067">Zoeken naar gekopieerde afbeelding</translation>
 <translation id="6914783257214138813">Je wachtwoorden zijn zichtbaar voor iedereen die het geëxporteerde bestand kan bekijken.</translation>
+<translation id="6930799952781667037">Tik om over te schakelen naar deze taal.</translation>
 <translation id="6944369514868857500">Een ander account kiezen</translation>
 <translation id="6945221475159498467">Selecteren</translation>
 <translation id="6973630695168034713">Mappen</translation>
@@ -458,6 +465,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7293171162284876153">Schakel 'Je Chrome-gegevens synchroniseren' in om de synchronisatie te starten.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent gedownload</translation>
 <translation id="7346909386216857016">OK, begrepen</translation>
+<translation id="734758817008927353">Opties om een kaart op te slaan</translation>
 <translation id="7348502496356775519">Bladwijzer maken</translation>
 <translation id="7383797227493018512">Leeslijst</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -482,6 +490,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7671141431838911305">INSTALLEER</translation>
 <translation id="7765158879357617694">Verplaatsen</translation>
 <translation id="7772032839648071052">Bevestig de wachtwoordzin</translation>
+<translation id="7781011649027948662">Pagina vertalen?</translation>
 <translation id="7781829728241885113">Gisteren</translation>
 <translation id="778855399387580014">Start een zoekopdracht op een nieuw Chrome-tabblad.</translation>
 <translation id="7791543448312431591">Toevoegen</translation>

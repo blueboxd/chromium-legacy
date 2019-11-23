@@ -15,8 +15,10 @@ namespace weblayer {
 enum {
   PATH_START = 1000,
 
+  DIR_USER_DATA = PATH_START,  // Directory where user data can be written.
+
 #if defined(OS_ANDROID)
-  DIR_CRASH_DUMPS = PATH_START,  // Directory where crash dumps are written.
+  DIR_CRASH_DUMPS,  // Directory where crash dumps are written.
 #endif
 
   PATH_END

@@ -182,7 +182,6 @@ source_set("content_browser_manifest") {
   ]
 
   deps = [
-    ":v8_snapshot_overlay_manifest",
     "//base",
     "//content/public/common:service_names",
     "//services/content/public/cpp:manifest",
@@ -193,62 +192,8 @@ source_set("content_browser_manifest") {
   ]
 }
 
-source_set("content_renderer_manifest") {
-  sources = [
-    "content_renderer_manifest.cc",
-    "content_renderer_manifest.h",
-  ]
-
-  deps = [
-    ":v8_snapshot_overlay_manifest",
-    "//base",
-    "//content/public/common:service_names",
-  ]
-
-  public_deps = [
-    "//services/service_manager/public/cpp",
-  ]
-}
-
-source_set("content_utility_manifest") {
-  sources = [
-    "content_utility_manifest.cc",
-    "content_utility_manifest.h",
-  ]
-
-  deps = [
-    ":v8_snapshot_overlay_manifest",
-    "//base",
-    "//content/public/common:service_names",
-  ]
-
-  public_deps = [
-    "//services/service_manager/public/cpp",
-  ]
-}
-
-source_set("v8_snapshot_overlay_manifest") {
-  sources = [
-    "v8_snapshot_overlay_manifest.cc",
-    "v8_snapshot_overlay_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//content/public/common:content_descriptor_keys",
-  ]
-
-  public_deps = [
-    "//services/service_manager/public/cpp",
-  ]
-
-  configs += [ "//tools/v8_context_snapshot:use_v8_context_snapshot" ]
-}
-
 group("service_manifests") {
   public_deps = [
     ":content_browser_manifest",
-    ":content_renderer_manifest",
-    ":content_utility_manifest",
   ]
 }

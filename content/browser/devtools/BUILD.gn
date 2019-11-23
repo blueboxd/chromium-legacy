@@ -122,22 +122,3 @@ proto_library("devtools_background_services_proto") {
     "devtools_background_services.proto",
   ]
 }
-
-source_set("inspector_protocol_crdtp_test") {
-  testonly = true
-  sources = [
-    "../../../third_party/inspector_protocol/crdtp/cbor_test.cc",
-    "../../../third_party/inspector_protocol/crdtp/glue_test.cc",
-    "../../../third_party/inspector_protocol/crdtp/json_test.cc",
-    "../../../third_party/inspector_protocol/crdtp/span_test.cc",
-    "../../../third_party/inspector_protocol/crdtp/status_test.cc",
-    "../../../third_party/inspector_protocol/crdtp/test_platform.h",
-    "../../../third_party/inspector_protocol/crdtp/test_platform.cc",
-  ]
-  deps = [
-    "//base",
-    "//testing/gmock",
-    "//testing/gtest",
-    "//third_party/inspector_protocol:crdtp",
-  ]
-}

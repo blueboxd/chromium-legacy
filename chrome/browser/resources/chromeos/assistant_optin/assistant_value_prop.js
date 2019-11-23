@@ -164,6 +164,7 @@ Polymer({
         this.sanitizer_.sanitizeHtml(title);
     this.$['overlay-additional-info-text'].innerHTML =
         this.sanitizer_.sanitizeHtml(additionalInfo);
+    this.$['learn-more-overlay'].setTitleAriaLabel(title);
 
     this.$['learn-more-overlay'].showModal();
     this.$['overlay-close-button'].focus();

@@ -234,6 +234,7 @@ source_set("tests") {
     "//net:test_support",
     "//services/network:network_service",
     "//services/network:test_support",
+    "//services/network/public/cpp/cert_verifier:tests",
     "//testing/gtest",
   ]
 

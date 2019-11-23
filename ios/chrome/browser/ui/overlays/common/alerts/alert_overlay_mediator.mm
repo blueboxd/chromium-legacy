@@ -27,6 +27,7 @@
   [_consumer setTextFieldConfigurations:self.alertTextFieldConfigurations];
   NSArray<AlertAction*>* alertActions = self.alertActions;
   [_consumer setActions:alertActions];
+  [_consumer setAlertAccessibilityIdentifier:self.alertAccessibilityIdentifier];
   DCHECK_GT(alertTitle.length + alertMessage.length, 0U);
   DCHECK_GT(alertActions.count, 0U);
 }
@@ -51,6 +52,11 @@
 }
 
 - (NSArray<AlertAction*>*)alertActions {
+  // Subclasses implement.
+  return nil;
+}
+
+- (NSString*)alertAccessibilityIdentifier {
   // Subclasses implement.
   return nil;
 }

@@ -11,7 +11,7 @@ import("//testing/test.gni")
 jumbo_component("services") {
   output_name = "media_mojo_services"
   sources = [
-    "deferred_destroy_strong_binding_set.h",
+    "deferred_destroy_unique_receiver_set.h",
     "gpu_mojo_media_client.cc",
     "gpu_mojo_media_client.h",
     "interface_factory_impl.cc",
@@ -188,7 +188,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "deferred_destroy_strong_binding_set_unittest.cc",
+    "deferred_destroy_unique_receiver_set_unittest.cc",
     "media_metrics_provider_unittest.cc",
     "mojo_audio_input_stream_unittest.cc",
     "mojo_audio_output_stream_provider_unittest.cc",

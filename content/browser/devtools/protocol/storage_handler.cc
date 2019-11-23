@@ -518,7 +518,7 @@ Response StorageHandler::FindStoragePartition(
     return response;
   *storage_partition =
       BrowserContext::GetDefaultStoragePartition(browser_context);
-  if (!storage_partition_)
+  if (!*storage_partition)
     return Response::InternalError();
   return Response::OK();
 }

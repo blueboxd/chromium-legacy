@@ -13,6 +13,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/animation/animation_delegate_views.h"
 
 namespace views {
 class Widget;
@@ -22,7 +23,7 @@ class FullscreenControlView;
 
 // FullscreenControlPopup is a helper class that holds a FullscreenControlView
 // and allows showing and hiding the view with a drop down animation.
-class FullscreenControlPopup : public gfx::AnimationDelegate {
+class FullscreenControlPopup : public views::AnimationDelegateViews {
  public:
   FullscreenControlPopup(gfx::NativeView parent_view,
                          const base::RepeatingClosure& on_button_pressed,
@@ -55,7 +56,10 @@ class FullscreenControlPopup : public gfx::AnimationDelegate {
   FullscreenControlView* control_view() { return control_view_; }
 
  private:
-  // gfx::AnimationDelegate:
+  FullscreenControlPopup(std::unique_ptr<views::Widget> popup,
+                         const base::RepeatingClosure& on_visibility_changed);
+
+  // views::AnimationDelegateViews:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 

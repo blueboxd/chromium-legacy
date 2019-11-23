@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1275285675049378717">Laddar <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, hanteras av administratören</translation>
 <translation id="1289185460362160437">Prova igen på <ph name="COME_BACK_DAY_OF_WEEK" /> klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">svag signal</translation>
 <translation id="1293264513303784526">USB-C-enhet (vänster port)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Visa Bluetooth-inställningar. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Visa alltid hyllan</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, telefonens batteri <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Fler alternativ</translation>
 <translation id="1346748346194534595">Höger</translation>
 <translation id="1351937230027495976">Komprimera menyn</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="1654477262762802994">Säg en sökfråga</translation>
 <translation id="1658406695958299976">Det gick inte att verifiera lösenordet. Obs! Om du nyligen har bytt lösenord börjar det nya lösenordet att gälla först när du loggar ut. Använd det gamla lösenordet här.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, hanteras av administratören</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
 <translation id="1698760176351776263">IPv6-adress: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Identifierades inte</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+Sök+H</translation>
 <translation id="2016340657076538683">Skriv ett meddelande</translation>
 <translation id="2050339315714019657">Stående</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Ljusstyrka för tangentbordet</translation>
 <translation id="209965399369889474">Ingen nätverksanslutning</translation>
 <translation id="2126242104232412123">Ny arbetsyta</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">Det finns inget tillgängligt mobilnätverk</translation>
 <translation id="3249513730522716925">Fönstret <ph name="WINDOW_TITLE" /> flyttades från skrivbordet <ph name="ACTIVE_DESK" /> till skrivbordet <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Vad kan du göra?</translation>
-<translation id="3277674767125718685">Ljudet är på.</translation>
 <translation id="3290356915286466215">Inte skyddat</translation>
 <translation id="3294437725009624529">Gäst</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan ändå logga in igen senare.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">Kontot hanteras av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Byt tillbaka till "<ph name="FROM_LOCALE" />" (kräver omstart)</translation>
 <translation id="3576141592585647168">Ändra tidszon</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, hanteras av administratören</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
 <translation id="3604801046548457007">Skrivbordet <ph name="DESK_TITILE" /> har skapats</translation>
 <translation id="3606978283550408104">Punktskriftsskärm ansluten.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4918086044614829423">Acceptera</translation>
 <translation id="4924411785043111640">Starta om och återställ</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Rulla upp</translation>
 <translation id="4961318399572185831">Casta skärmen</translation>
 <translation id="5030687792513154421">Tiden är slut</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> har anslutits till en ny mobil</translation>
 <translation id="5083553833479578423">Lås upp fler funktioner för Assistent</translation>
 <translation id="5136175204352732067">Ett annat tangentbord har anslutits</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
 <translation id="5207949376430453814">Markera textmarkören</translation>
 <translation id="5222676887888702881">Logga ut</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="5260676007519551770">Skrivbord 4</translation>
 <translation id="5283198616748585639">Lägg till en min</translation>
+<translation id="5286194356314741248">Skannar</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5313326810920013265">Bluetooth-inställningar</translation>
 <translation id="5331975486040154427">USB-C-enhet (bakre porten på vänster sida)</translation>
 <translation id="5379115545237091094">För många försök</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">Användning och historik för den här användaren kan granskas av den ansvarige (<ph name="MANAGER_EMAIL" />) på chrome.com.</translation>
 <translation id="5430931332414098647">Direktinternetdelning</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">Du loggas ut automatiskt om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Lösenordet kunde inte verifieras. Försök igen.</translation>
 <translation id="607652042414456612">Din dator kan upptäckas av Bluetooth-enheter som finns i närheten och den visas som <ph name="NAME" /> med adressen <ph name="ADDRESS" /></translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, hanteras av administratören</translation>
 <translation id="612734058257491180">Google-assistenten är inte tillgänglig i en gästsession.</translation>
 <translation id="615957422585914272">Visa skärmtangentbordet</translation>
 <translation id="6164005077879661055">Alla filer och lokala data som är kopplade till den hanterade användaren tas bort permanent när den hanterade användaren tas bort. Besökta webbplatser och inställningar för den hanterade användaren kan fortfarande vara synliga för den som hanterar användaren på <ph name="MANAGEMENT_URL" />.</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">Lösenord</translation>
 <translation id="6665545700722362599">Ge webbplatser, appar och tillägg behörighet att använda platstjänster, enhetens mikrofon, kamera eller andra funktioner</translation>
 <translation id="6670153871843998651">Skrivbord 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, hanteras av administratören</translation>
 <translation id="6691659475504239918">Sök+Skift+H</translation>
 <translation id="6696025732084565524">Det behövs en viktig uppdatering till ditt frånkopplingsbara tangentbord</translation>
 <translation id="6700713906295497288">IME-menyknapp</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">Prestandaspårning har aktiverats</translation>
 <translation id="6752912906630585008">Skrivbordet <ph name="REMOVED_DESK" /> har tagits bort och slagits samman med skrivbordet <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Laddar anslutna USB-C-enheter</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, signalstyrka <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
 <translation id="6820676911989879663">Ta en paus!</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">Nätverket kan vara övervakat</translation>
 <translation id="7536035074519304529">IP-adress: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Läggdags</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, telefonens batteri <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> har inte stöd för <ph name="SPECIFIED_RESOLUTION" />. Upplösningen ändrades till <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7564874036684306347">Om du flyttar fönster till ett annat skrivbord kan det leda till oväntat beteende. Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivborden.</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">Växla menyposition</translation>
 <translation id="9089416786594320554">Inmatningsmetoder</translation>
 <translation id="9091626656156419976">Skärmen <ph name="DISPLAY_NAME" /> har tagits bort</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" />, hanteras av administratören</translation>
 <translation id="9151726767154816831">Starta om och utför en Powerwash-återställning för att uppdatera</translation>
 <translation id="9179259655489829027">Med den här funktionen kan du snabbt öppna en inloggad användare utan att behöva ange lösenordet. Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="9183456764293710005">Helskärmsförstoring</translation>

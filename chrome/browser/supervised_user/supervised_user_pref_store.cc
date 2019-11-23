@@ -162,10 +162,10 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     {
-      // TODO(michaelpg): Update Kids Management server to set a new bit for
+      // TODO(crbug/1024646): Update Kids Management server to set a new bit for
       // extension permissions. Until then, rely on other side effects of the
-      // "allow sites and apps to ask for permissions" setting, like
-      // geolocation being disallowed.
+      // "Permissions for sites and apps" setting, like geolocation being
+      // disallowed.
       bool permissions_disallowed = true;
       settings->GetBoolean(supervised_users::kGeolocationDisabled,
                            &permissions_disallowed);

@@ -234,6 +234,10 @@ void WebContentController::ProcessInputEvent(const webview::InputEvent& ev) {
             base::TimeTicks() +
                 base::TimeDelta::FromMicroseconds(ev.timestamp()),
             ev.flags(), mouse.changed_button_flags());
+        if (contents->GetAccessibilityMode().has_mode(
+                ui::AXMode::kWebContents)) {
+          evt.set_flags(evt.flags() | ui::EF_TOUCH_ACCESSIBILITY);
+        }
         handler->OnMouseEvent(&evt);
       } else {
         client_->OnError("mouse() not supplied for mouse event");
@@ -251,7 +255,11 @@ void WebContentController::JavascriptCallback(int64_t id, base::Value result) {
       std::make_unique<webview::WebviewResponse>();
   response->set_id(id);
   response->mutable_evaluate_javascript()->set_json(json);
-  client_->EnqueueSend(std::move(response));
+
+  // Async response may come after Destroy() was called but before the web page
+  // closed.
+  if (client_)
+    client_->EnqueueSend(std::move(response));
 }
 
 void WebContentController::HandleEvaluateJavascript(
@@ -447,6 +455,10 @@ JsChannelCallback WebContentController::GetJsChannelCallback() {
 }
 
 void WebContentController::SendInitialChannelSet(JsClientInstance* instance) {
+  // Calls may come after Destroy() was called but before the web page closed.
+  if (!js_channels_)
+    return;
+
   JsChannelCallback callback = GetJsChannelCallback();
   for (auto& channel : current_javascript_channel_set_)
     instance->AddChannel(channel, callback);

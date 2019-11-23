@@ -11,7 +11,7 @@ class AuthenticatorRequestSheetView;
 class AuthenticatorRequestDialogModel;
 
 namespace autofill {
-class WebauthnOfferDialogModel;
+class WebauthnDialogModel;
 }
 
 // Creates the appropriate AuthenticatorRequestSheetView subclass instance,
@@ -21,9 +21,9 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
     AuthenticatorRequestDialogModel* dialog_model);
 
 // Creates the AuthenticatorRequestSheetView instance used by
-// WebauthnOfferDialogView.
+// WebauthnDialogView.
 std::unique_ptr<AuthenticatorRequestSheetView>
 CreateSheetViewForAutofillWebAuthn(
-    std::unique_ptr<autofill::WebauthnOfferDialogModel> model);
+    std::unique_ptr<autofill::WebauthnDialogModel> model);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_WEBAUTHN_SHEET_VIEW_FACTORY_H_

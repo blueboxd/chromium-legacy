@@ -100,7 +100,7 @@ void ResetTopHostBlacklistState(PrefService* pref_service) {
 std::unique_ptr<OptimizationGuideTopHostProvider>
 OptimizationGuideTopHostProvider::CreateIfAllowed(
     content::BrowserContext* browser_context) {
-  if (IsUserPermittedToFetchHints(
+  if (IsUserPermittedToFetchFromRemoteOptimizationGuide(
           Profile::FromBrowserContext(browser_context))) {
     return std::make_unique<OptimizationGuideTopHostProvider>(
         browser_context, base::DefaultClock::GetInstance());
@@ -205,7 +205,8 @@ void OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
       navigation_handle->GetWebContents()->GetBrowserContext());
   PrefService* pref_service = profile->GetPrefs();
 
-  bool is_user_permitted_to_fetch_hints = IsUserPermittedToFetchHints(profile);
+  bool is_user_permitted_to_fetch_hints =
+      IsUserPermittedToFetchFromRemoteOptimizationGuide(profile);
   if (!is_user_permitted_to_fetch_hints) {
     // User toggled state during the session. Make sure the blacklist is
     // cleared.
@@ -247,7 +248,7 @@ std::vector<std::string> OptimizationGuideTopHostProvider::GetTopHosts() {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
 
   // The user toggled state during the session. Return empty.
-  if (!IsUserPermittedToFetchHints(profile))
+  if (!IsUserPermittedToFetchFromRemoteOptimizationGuide(profile))
     return std::vector<std::string>();
 
   // It's possible that the blacklist is initialized but

@@ -2603,30 +2603,10 @@ crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-block
 crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
 # Failures on Mac scrollbars for compositor threaded scrollbar scrolling.
-crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
-crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
-crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-div-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-scrolling-on-root-scrollbar.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scroll-chaining-for-gesture-based-scrolling.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-occluded-by-div.html [ Failure ]
-crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
 crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Failure ]
+crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
+crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
 
 # 1px scroll offset difference for compositor threaded scrollbar scrolling on Linux.
 crbug.com/1009892 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling_hidpi/fast/scrolling/scrollbars/dsf-ready/mouse-interactions-dsf-2.html [ Failure Timeout ]
@@ -2742,6 +2722,9 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/standard-font-family-13.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/standard-font-family-13.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/standard-font-family-13.html [ Failure ]
@@ -5790,9 +5773,6 @@ crbug.com/1014812 virtual/threaded/external/wpt/animation-worklet/playback-rate.
 crbug.com/1014950 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
 crbug.com/1014950 [ Mac ] virtual/threaded/http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-no-url-end-to-end.js [ Pass Timeout ]
 crbug.com/1015187 [ Linux Mac ] virtual/cross-origin-isolation/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
-
-# Temporarily disabled until we find the root cause in v8
-crbug.com/1027131 fast/encoding/resource-default-encoding.html [ Pass Failure ]
 
 # Sheriff 2019-10-18
 crbug.com/1015859 [ Linux ] http/tests/devtools/a11y-axe-core/performance/landing-page-a11y-test.js [ Pass Failure ]

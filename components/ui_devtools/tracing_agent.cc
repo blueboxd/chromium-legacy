@@ -16,7 +16,6 @@
 #include "base/trace_event/traced_value.h"
 #include "components/ui_devtools/connector_delegate.h"
 #include "components/ui_devtools/devtools_base_agent.h"
-#include "components/ui_devtools/devtools_protocol_encoding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -24,6 +23,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace ui_devtools {
 
@@ -311,7 +311,8 @@ void TracingAgent::OnTraceDataCollected(
                  trace_data_buffer_state_.offset);
   message += "] } }";
   std::vector<uint8_t> cbor;
-  crdtp::Status status = ConvertJSONToCBOR(crdtp::SpanFrom(message), &cbor);
+  crdtp::Status status =
+      crdtp::json::ConvertJSONToCBOR(crdtp::SpanFrom(message), &cbor);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
 
   frontend()->sendRawCBORNotification(std::move(cbor));

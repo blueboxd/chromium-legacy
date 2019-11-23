@@ -5915,6 +5915,12 @@
     'marshmallow_pie_isolated_scripts': [
       'android_isolated_scripts',
       'components_perftests_isolated_scripts',
+      'telemetry_perf_unittests_isolated_scripts',
+    ],
+
+    'marshmallow_pie_isolated_scripts_with_proguard': [
+      'android_isolated_scripts',
+      'components_perftests_isolated_scripts',
       'monochrome_apk_checker_isolated_script',
       'telemetry_perf_unittests_isolated_scripts',
     ],

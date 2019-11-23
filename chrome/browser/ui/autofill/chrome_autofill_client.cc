@@ -84,8 +84,8 @@
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/verify_pending_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/verify_pending_dialog_view.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_controller_impl.h"
-#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog_view.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -273,7 +273,30 @@ void ChromeAutofillClient::ShowLocalCardMigrationResults(
 }
 
 #if !defined(OS_ANDROID)
-void ChromeAutofillClient::ShowVerifyPendingDialog(
+void ChromeAutofillClient::ShowWebauthnOfferDialog(
+    WebauthnOfferDialogCallback offer_dialog_callback) {
+  autofill::WebauthnDialogControllerImpl::CreateForWebContents(web_contents());
+  autofill::WebauthnDialogControllerImpl::FromWebContents(web_contents())
+      ->ShowOfferDialog(std::move(offer_dialog_callback));
+}
+
+void ChromeAutofillClient::UpdateWebauthnOfferDialogWithError() {
+  WebauthnDialogControllerImpl* controller =
+      autofill::WebauthnDialogControllerImpl::FromWebContents(web_contents());
+  if (controller)
+    controller->UpdateDialogWithError();
+}
+
+bool ChromeAutofillClient::CloseWebauthnOfferDialog() {
+  WebauthnDialogControllerImpl* controller =
+      autofill::WebauthnDialogControllerImpl::FromWebContents(web_contents());
+  if (controller)
+    return controller->CloseDialog();
+
+  return false;
+}
+
+void ChromeAutofillClient::ShowWebauthnVerifyPendingDialog(
     base::OnceClosure cancel_card_verification_callback) {
   autofill::VerifyPendingDialogControllerImpl::CreateForWebContents(
       web_contents());
@@ -281,7 +304,7 @@ void ChromeAutofillClient::ShowVerifyPendingDialog(
       ->ShowDialog(std::move(cancel_card_verification_callback));
 }
 
-void ChromeAutofillClient::CloseVerifyPendingDialog() {
+void ChromeAutofillClient::CloseWebauthnVerifyPendingDialog() {
   VerifyPendingDialogControllerImpl* controller =
       autofill::VerifyPendingDialogControllerImpl::FromWebContents(
           web_contents());
@@ -291,37 +314,6 @@ void ChromeAutofillClient::CloseVerifyPendingDialog() {
   controller->OnCardVerificationCompleted();
 }
 #endif
-
-void ChromeAutofillClient::ShowWebauthnOfferDialog(
-    WebauthnOfferDialogCallback callback) {
-#if !defined(OS_ANDROID)
-  autofill::WebauthnOfferDialogControllerImpl::CreateForWebContents(
-      web_contents());
-  autofill::WebauthnOfferDialogControllerImpl::FromWebContents(web_contents())
-      ->ShowOfferDialog(std::move(callback));
-#endif
-}
-
-bool ChromeAutofillClient::CloseWebauthnOfferDialog() {
-#if !defined(OS_ANDROID)
-  WebauthnOfferDialogControllerImpl* controller =
-      autofill::WebauthnOfferDialogControllerImpl::FromWebContents(
-          web_contents());
-  if (controller)
-    return controller->CloseDialog();
-#endif
-  return false;
-}
-
-void ChromeAutofillClient::UpdateWebauthnOfferDialogWithError() {
-#if !defined(OS_ANDROID)
-  WebauthnOfferDialogControllerImpl* controller =
-      autofill::WebauthnOfferDialogControllerImpl::FromWebContents(
-          web_contents());
-  if (controller)
-    controller->UpdateDialogWithError();
-#endif
-}
 
 void ChromeAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,

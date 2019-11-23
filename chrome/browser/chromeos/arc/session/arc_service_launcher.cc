@@ -200,7 +200,10 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcKioskBridge::GetForBrowserContext(profile);
   ArcLockScreenBridge::GetForBrowserContext(profile);
   ArcMediaSessionBridge::GetForBrowserContext(profile);
-  ArcMetricsService::GetForBrowserContext(profile);
+  ArcMetricsService::GetForBrowserContext(profile)->SetHistogramNamer(
+      base::BindRepeating([](const std::string& base_name) {
+        return GetHistogramNameByUserTypeForPrimaryProfile(base_name);
+      }));
   ArcMetricsServiceProxy::GetForBrowserContext(profile);
   ArcMidisBridge::GetForBrowserContext(profile);
   ArcNetHostImpl::GetForBrowserContext(profile)->SetPrefService(

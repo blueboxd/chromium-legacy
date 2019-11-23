@@ -5,7 +5,9 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/task/single_thread_task_executor.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -35,16 +37,17 @@ class ShutdownServiceApp : public Service, public mojom::ShutdownTestService {
   }
 
   // mojom::ShutdownTestService:
-  void SetClient(mojom::ShutdownTestClientPtr client) override {}
+  void SetClient(
+      mojo::PendingRemote<mojom::ShutdownTestClient> client) override {}
   void ShutDown() override { Terminate(); }
 
-  void Create(mojom::ShutdownTestServiceRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Create(mojo::PendingReceiver<mojom::ShutdownTestService> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   ServiceBinding service_binding_;
   BinderRegistry registry_;
-  mojo::BindingSet<mojom::ShutdownTestService> bindings_;
+  mojo::ReceiverSet<mojom::ShutdownTestService> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownServiceApp);
 };

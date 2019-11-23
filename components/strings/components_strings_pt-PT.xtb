@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Este tipo de cartão não é suportado</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Experimente contactar o gestor do sistema.</translation>
+<translation id="1736420071277903564">Computador</translation>
 <translation id="1739107442478692187">Ocorreu uma violação de dados num site ou numa aplicação que utiliza. O Chrome recomenda que verifique as palavras-passe guardadas e que altere a sua palavra-passe em <ph name="ORIGIN" /> agora.</translation>
 <translation id="1740951997222943430">Introduza um mês de expiração válido</translation>
 <translation id="1741613555002899862">A política tem de ser especificada, bem como uma string válida quando a DnsOverHttpsMode é <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -610,6 +611,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">O cartão expirou</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Pretende utilizar o WebAuthn em vez do CVC?</translation>
 <translation id="3946209740501886391">Perguntar sempre neste site</translation>
@@ -1534,7 +1536,6 @@ Detalhes adicionais:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 cartão de crédito}other{# cartões de crédito}}</translation>
 <translation id="8473863474539038330">Endereços e mais</translation>
 <translation id="8479754468255770962">Agrafo na parte inferior esquerda</translation>
-<translation id="8481133456511676116">Será que quis dizer <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Para utilizar cartões da sua Conta Google, inicie sessão no Chrome.</translation>
 <translation id="8488350697529856933">Aplica-se a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou demasiado tempo a responder.</translation>

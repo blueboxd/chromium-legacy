@@ -41,9 +41,6 @@ const ACMatchClassificationStyle = {
   DIM: 1 << 2,
 };
 
-/** @type {string} */
-let lastInput;
-
 /** @typedef {{inline: string, text: string}} */
 let RealboxOutput;
 
@@ -239,8 +236,8 @@ const REALBOX_KEYDOWN_HANDLED_KEYS = [
 
 // Local statics.
 
-/** @type {!Array<!AutocompleteMatch>} */
-let autocompleteMatches = [];
+/** @type {?AutocompleteResult} */
+let autocompleteResult = null;
 
 /**
  * The currently visible notification element. Null if no notification is
@@ -255,6 +252,13 @@ let currNotification = null;
  * @type {?Object}
  */
 let delayedHideNotification = null;
+
+/**
+ * Whether 'Enter' was pressed but did not navigate to a match due to matches
+ * being stale.
+ * @type {boolean}
+ */
+let enterWasPressed = false;
 
 /**
  * True if dark mode is enabled.
@@ -275,8 +279,18 @@ let isDeletingInput = false;
  */
 let lastBlacklistedTile = null;
 
-/** @type {?number} */
-let lastRealboxFocusTime = null;
+/**
+ * The 'Enter' event that was ignored due to matches being stale. Will be used
+ * to navigate to the default match once up-to-date matches arrive.
+ * @type {?Event}
+ */
+let lastEnterEvent = null;
+
+/**
+ * The last queried input.
+ * @type {string|undefined}
+ */
+let lastInput;
 
 /**
  * Last text/inline autocompletion shown in the realbox (either by user input or
@@ -284,6 +298,9 @@ let lastRealboxFocusTime = null;
  * @type {!RealboxOutput}
  */
 let lastOutput = {text: '', inline: ''};
+
+/** @type {?number} */
+let lastRealboxFocusTime = null;
 
 /**
  * The browser embeddedSearch.newTabPage object.
@@ -1083,7 +1100,7 @@ function listen() {
  * @param {!Event} e
  */
 function navigateToMatch(match, e) {
-  const line = autocompleteMatches.indexOf(match);
+  const line = autocompleteResult.matches.indexOf(match);
   assert(line >= 0);
   assert(lastRealboxFocusTime);
   window.chrome.embeddedSearch.searchBox.openAutocompleteMatch(
@@ -1158,6 +1175,7 @@ function autocompleteResultChanged(result) {
   }
 
   populateAutocompleteMatches(result.matches);
+  autocompleteResult = result;
 
   $(IDS.REALBOX).focus();
 
@@ -1170,6 +1188,11 @@ function autocompleteResultChanged(result) {
   if (first && first.allowedToBeDefaultMatch) {
     selectMatchEl(assert($(IDS.REALBOX_MATCHES).firstElementChild));
     updateRealboxOutput({inline: first.inlineAutocompletion});
+
+    if (enterWasPressed) {
+      assert(lastEnterEvent);
+      navigateToMatch(first, lastEnterEvent);
+    }
   }
 }
 
@@ -1178,7 +1201,7 @@ function onRealboxCutCopy(e) {
   const realboxEl = $(IDS.REALBOX);
   if (!realboxEl.value || realboxEl.selectionStart !== 0 ||
       realboxEl.selectionEnd !== realboxEl.value.length ||
-      autocompleteMatches.length === 0) {
+      !autocompleteResult || autocompleteResult.matches.length === 0) {
     // Only handle cut/copy when realbox has content and it's all selected.
     return;
   }
@@ -1188,7 +1211,7 @@ function onRealboxCutCopy(e) {
     return matchEl.classList.contains(CLASSES.SELECTED);
   });
 
-  const selectedMatch = autocompleteMatches[selected];
+  const selectedMatch = autocompleteResult.matches[selected];
   if (selectedMatch && !selectedMatch.isSearchType) {
     e.clipboardData.setData('text/plain', selectedMatch.destinationUrl);
     e.preventDefault();
@@ -1235,7 +1258,7 @@ function onRealboxWrapperFocusIn(e) {
     // It doesn't really make sense to use fillFromMatch() here as the focus
     // change drops the selection (and is probably just noisy to
     // screenreaders).
-    const newFill = autocompleteMatches[selectedIndex].fillIntoEdit;
+    const newFill = autocompleteResult.matches[selectedIndex].fillIntoEdit;
     updateRealboxOutput({moveCursorToEnd: true, inline: '', text: newFill});
   }
 }
@@ -1302,11 +1325,22 @@ function onRealboxWrapperKeydown(e) {
     return matchEl.classList.contains(CLASSES.SELECTED);
   });
 
-  assert(autocompleteMatches.length === matchEls.length);
+  assert(autocompleteResult.matches.length === matchEls.length);
 
   if (key === 'Enter') {
-    if (matchEls[selected] && matchEls.concat(realboxEl).includes(e.target)) {
-      navigateToMatch(autocompleteMatches[selected], e);
+    if (matchEls.concat(realboxEl).includes(e.target)) {
+      if (lastInput === autocompleteResult.input) {
+        if (autocompleteResult.matches[selected]) {
+          navigateToMatch(autocompleteResult.matches[selected], e);
+        }
+      } else {
+        // User typed and pressed 'Enter' too quickly. Ignore this for now
+        // because the matches are stale. Navigate to the default match (if one
+        // exists) once the up-to-date results arrive.
+        enterWasPressed = true;
+        lastEnterEvent = e;
+        e.preventDefault();
+      }
     }
     return;
   }
@@ -1324,7 +1358,7 @@ function onRealboxWrapperKeydown(e) {
 
   if (key === 'Delete') {
     if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
-      const selectedMatch = autocompleteMatches[selected];
+      const selectedMatch = autocompleteResult.matches[selected];
       if (selectedMatch && selectedMatch.supportsDeletion) {
         window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(
             selected);
@@ -1365,7 +1399,7 @@ function onRealboxWrapperKeydown(e) {
     matchEls[newSelected].focus();
   }
 
-  const newMatch = autocompleteMatches[newSelected];
+  const newMatch = autocompleteResult.matches[newSelected];
   const newFill = newMatch.fillIntoEdit;
   let newInline = '';
   if (newMatch.allowedToBeDefaultMatch) {
@@ -1557,7 +1591,6 @@ function populateAutocompleteMatches(matches) {
   const hasMatches = matches.length > 0;
   setRealboxMatchesVisible(hasMatches);
   setRealboxWrapperListenForKeydown(hasMatches);
-  autocompleteMatches = matches;
 }
 
 /**
@@ -1866,9 +1899,8 @@ function setAttributionVisibility(show) {
   $(IDS.ATTRIBUTION).style.display = show ? '' : 'none';
 }
 
-/** @suppress {checkTypes} */
 function clearAutocompleteMatches() {
-  autocompleteMatches = [];
+  autocompleteResult = null;
   window.chrome.embeddedSearch.searchBox.stopAutocomplete(
       /*clearResult=*/ true);
   // Autocomplete sends updates once it is stopped. Invalidate those results

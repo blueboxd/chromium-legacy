@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Ta vrsta kartice ni podprta</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Poskusite se obrniti na skrbnika sistema.</translation>
+<translation id="1736420071277903564">Računalnik</translation>
 <translation id="1739107442478692187">Na spletnem mestu ali v aplikaciji, ki ga oziroma jo uporabljate, je prišlo do podatkovne kršitve. Chrome priporoča, da preverite shranjena gesla in spremenite geslo za spletno mesto <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Vnesite veljaven mesec poteka veljavnosti</translation>
 <translation id="1741613555002899862">Mora biti navedeno in veljaven niz, ko je način pravilnika DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -610,6 +611,7 @@
 <translation id="3897092660631435901">Meni</translation>
 <translation id="3901925938762663762">Kartica je potekla</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablični računalnik</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> – <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Želite namesto kode CVC uporabiti WebAuthn?</translation>
 <translation id="3946209740501886391">Vedno vprašaj na tem spletnem mestu</translation>
@@ -1535,7 +1537,6 @@ Dodatne podrobnosti:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditna kartica}one{# kreditna kartica}two{# kreditni kartici}few{# kreditne kartice}other{# kreditnih kartic}}</translation>
 <translation id="8473863474539038330">Naslovi in drugo</translation>
 <translation id="8479754468255770962">Spenjanje spodaj levo</translation>
-<translation id="8481133456511676116">Ali ste mislili <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Če želite uporabljati kartice iz Google Računa, se prijavite v Chrome</translation>
 <translation id="8488350697529856933">Velja za</translation>
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>

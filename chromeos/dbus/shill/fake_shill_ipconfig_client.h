@@ -29,7 +29,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillIPConfigClient
       const dbus::ObjectPath& ipconfig_path,
       ShillPropertyChangedObserver* observer) override;
   void GetProperties(const dbus::ObjectPath& ipconfig_path,
-                     const DictionaryValueCallback& callback) override;
+                     DictionaryValueCallback callback) override;
   void SetProperty(const dbus::ObjectPath& ipconfig_path,
                    const std::string& name,
                    const base::Value& value,
@@ -48,7 +48,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillIPConfigClient
  private:
   // Runs callback with |values|.
   void PassProperties(const base::DictionaryValue* values,
-                      const DictionaryValueCallback& callback) const;
+                      DictionaryValueCallback callback) const;
 
   // Dictionary of <ipconfig_path, property dictionaries>
   base::DictionaryValue ipconfigs_;

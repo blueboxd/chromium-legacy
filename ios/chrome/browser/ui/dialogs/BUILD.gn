@@ -137,6 +137,7 @@ source_set("eg_tests") {
   ]
   deps = [
     ":constants",
+    ":feature_flags",
     "//base",
     "//base/test:test_support",
     "//components/strings",
@@ -175,6 +176,7 @@ source_set("eg2_tests") {
   ]
   deps = [
     ":constants",
+    ":feature_flags",
     "//base",
     "//base/test:test_support",
     "//components/strings",

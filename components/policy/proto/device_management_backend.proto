@@ -1174,6 +1174,9 @@ message ChromeSignedInUser {
 message ExtensionRequest {
   // ID of the installed app/extension for a Chrome app or extension.
   optional string id = 1;
+
+  // When the user commits to requesting the extension.
+  optional int64 request_timestamp = 2;
 }
 
 // Extension information.

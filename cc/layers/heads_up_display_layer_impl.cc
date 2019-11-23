@@ -37,6 +37,7 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
@@ -370,7 +371,9 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     } else {
       auto* gl = context_provider->ContextGL();
       GLuint mailbox_texture_id =
-          gl->CreateAndConsumeTextureCHROMIUM(backing->mailbox.name);
+          gl->CreateAndTexStorage2DSharedImageCHROMIUM(backing->mailbox.name);
+      gl->BeginSharedImageAccessDirectCHROMIUM(
+          mailbox_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
       {
         ScopedGpuRaster scoped_gpu_raster(context_provider);
@@ -389,6 +392,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
         DrawHudContents(&canvas);
       }
 
+      gl->EndSharedImageAccessDirectCHROMIUM(mailbox_texture_id);
       gl->DeleteTextures(1, &mailbox_texture_id);
       backing->mailbox_sync_token =
           viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
@@ -414,8 +418,12 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     TRACE_EVENT0("cc", "UploadHudTexture");
     SkPixmap pixmap;
     staging_surface_->peekPixels(&pixmap);
+
     GLuint mailbox_texture_id =
-        gl->CreateAndConsumeTextureCHROMIUM(backing->mailbox.name);
+        gl->CreateAndTexStorage2DSharedImageCHROMIUM(backing->mailbox.name);
+    gl->BeginSharedImageAccessDirectCHROMIUM(
+        mailbox_texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+
     gl->BindTexture(backing->texture_target, mailbox_texture_id);
     DCHECK(GLSupportsFormat(pool_resource.format()));
     // We should use gl compatible format for skia SW rasterization.
@@ -424,6 +432,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     gl->TexSubImage2D(
         backing->texture_target, 0, 0, 0, pool_resource.size().width(),
         pool_resource.size().height(), format, type, pixmap.addr());
+
+    gl->EndSharedImageAccessDirectCHROMIUM(mailbox_texture_id);
     gl->DeleteTextures(1, &mailbox_texture_id);
     backing->mailbox_sync_token =
         viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);

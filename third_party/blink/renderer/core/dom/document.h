@@ -124,6 +124,7 @@ template <typename EventType>
 class EventWithHitTestResults;
 class FloatQuad;
 class FloatRect;
+class FontMatchingMetrics;
 class FormController;
 class HTMLAllCollection;
 class HTMLBodyElement;
@@ -1466,6 +1467,10 @@ class CORE_EXPORT Document : public ContainerNode,
   ukm::UkmRecorder* UkmRecorder();
   ukm::SourceId UkmSourceID() const;
 
+  // Tracks and reports UKM metrics of the number of attempted font family match
+  // attempts (both successful and not successful) by the page.
+  FontMatchingMetrics* GetFontMatchingMetrics();
+
   // May return nullptr.
   FrameOrWorkerScheduler* GetScheduler() override;
 
@@ -2073,10 +2078,14 @@ class CORE_EXPORT Document : public ContainerNode,
   std::unique_ptr<DocumentOutliveTimeReporter> document_outlive_time_reporter_;
 
   // |ukm_recorder_| and |source_id_| will allow objects that are part of
-  // the document to recorde UKM.
+  // the document to record UKM.
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
   int64_t ukm_source_id_;
   bool needs_to_record_ukm_outlive_time_;
+
+  // Tracks and reports UKM metrics of the number of attempted font family match
+  // attempts (both successful and not successful) by the page.
+  std::unique_ptr<FontMatchingMetrics> font_matching_metrics_;
 
 #if DCHECK_IS_ON()
   unsigned slot_assignment_recalc_forbidden_recursion_depth_ = 0;

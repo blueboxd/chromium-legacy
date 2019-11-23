@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Kanselleer</translation>
 <translation id="7781829728241885113">Gister</translation>
 <translation id="7814458197256864873">Kopieer</translation>
+<translation id="7848989271541991537">Is geskuif na Bladsy <ph name="PAGE_NUMBER" />, ry <ph name="ROW_NUMBER" />, kolom <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Moenie blokkeer nie</translation>
 <translation id="7907591526440419938">Maak lêer oop</translation>
 <translation id="7969046989155602842">Command</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Rak is altyd versteek</translation>
 <translation id="8996630695507351249">Maak seker dat <ph name="TARGET_DEVICE_NAME" /> aan die internet gekoppel is.</translation>
 <translation id="9002566407876343676">maak oop</translation>
-<translation id="9039076430527029379">Beweeg na bladsy <ph name="PAGE_NUMBER" />, ry <ph name="ROW_NUMBER" />, kolom <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek.}other{# sek.}}</translation>
 <translation id="9059834730836941392">Vou kennisgewing in</translation>
 <translation id="9150735707954472829">Oortjie</translation>

@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
+#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
@@ -42,10 +43,12 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormSignature;
 using autofill::FormStructure;
+using autofill::NOT_USERNAME;
 using autofill::PasswordForm;
 using autofill::PasswordFormFillData;
 using autofill::PasswordFormGenerationData;
 using autofill::ServerFieldType;
+using autofill::SINGLE_USERNAME;
 using base::ASCIIToUTF16;
 using base::TestMockTimeTaskRunner;
 using testing::_;
@@ -139,6 +142,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                void(const PasswordForm&, const PasswordFormManagerForUI*));
 
   MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
+
+  MOCK_CONST_METHOD0(GetFieldInfoManager, FieldInfoManager*());
 };
 
 void CheckPendingCredentials(const PasswordForm& expected,
@@ -253,6 +258,12 @@ class MockFormSaver : public StubFormSaver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFormSaver);
+};
+
+class MockFieldInfoManager : public FieldInfoManager {
+ public:
+  MOCK_METHOD3(AddFieldType, void(uint64_t, uint32_t, ServerFieldType));
+  MOCK_CONST_METHOD2(GetFieldType, ServerFieldType(uint64_t, uint32_t));
 };
 
 class PasswordFormManagerTest : public testing::Test {
@@ -2147,6 +2158,104 @@ TEST_F(PasswordFormManagerTest, UsernameFirstFlowVotes) {
                                  _, true, nullptr));
 
   form_manager_->Save();
+}
+
+// Tests that server prediction are taken into consideration for offering
+// username on username first flow.
+TEST_F(PasswordFormManagerTest, PossibleUsernameServerPredictions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
+
+  const base::string16 possible_username = ASCIIToUTF16("possible_username");
+  PossibleUsernameData possible_username_data(
+      saved_match_.signon_realm, 101u /* renderer_id */, possible_username,
+      base::Time::Now(), 0 /* driver_id */);
+
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
+
+  for (ServerFieldType prediction : {SINGLE_USERNAME, NOT_USERNAME}) {
+    SCOPED_TRACE(testing::Message("prediction=") << prediction);
+    TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+
+    FormPredictions form_predictions;
+    form_predictions.fields.push_back(
+        {.renderer_id = possible_username_data.renderer_id,
+         .type = prediction});
+
+    possible_username_data.form_predictions = form_predictions;
+
+    CreateFormManager(observed_form_only_password_fields_);
+    fetcher_->NotifyFetchCompleted();
+
+    ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+                                                 &possible_username_data));
+
+    if (prediction == SINGLE_USERNAME) {
+      // Check that a username is chosen from |possible_username_data|.
+      EXPECT_EQ(possible_username,
+                form_manager_->GetPendingCredentials().username_value);
+    } else {
+      // Check that a username is not chosen from |possible_username_data|.
+      EXPECT_TRUE(
+          form_manager_->GetPendingCredentials().username_value.empty());
+    }
+  }
+}
+
+// Tests that data from FieldInfoManager is taken into consideration for
+// offering username on username first flow.
+TEST_F(PasswordFormManagerTest, PossibleUsernameFieldManager) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kUsernameFirstFlow);
+
+  const base::string16 possible_username = ASCIIToUTF16("possible_username");
+  PossibleUsernameData possible_username_data(
+      saved_match_.signon_realm, 101u /* renderer_id */, possible_username,
+      base::Time::Now(), 0 /* driver_id */);
+
+  FormData submitted_form = observed_form_only_password_fields_;
+  submitted_form.fields[0].value = ASCIIToUTF16("strongpassword");
+
+  for (ServerFieldType prediction : {SINGLE_USERNAME, NOT_USERNAME}) {
+    SCOPED_TRACE(testing::Message("prediction=") << prediction);
+    TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+
+    const int kFormSignature = 1234;
+    const int kFieldSignature = 12;
+    FormPredictions form_predictions;
+    form_predictions.form_signature = kFormSignature;
+    // Simulate that the server knows nothing about username field.
+    form_predictions.fields.push_back(
+        {.renderer_id = possible_username_data.renderer_id,
+         .signature = kFieldSignature,
+         .type = autofill::UNKNOWN_TYPE});
+    possible_username_data.form_predictions = form_predictions;
+
+    MockFieldInfoManager mock_field_manager;
+    EXPECT_CALL(client_, GetFieldInfoManager())
+        .WillOnce(Return(&mock_field_manager));
+    EXPECT_CALL(mock_field_manager,
+                GetFieldType(kFormSignature, kFieldSignature))
+        .WillOnce(Return(prediction));
+
+    CreateFormManager(observed_form_only_password_fields_);
+    fetcher_->NotifyFetchCompleted();
+
+    ASSERT_TRUE(form_manager_->ProvisionallySave(submitted_form, &driver_,
+                                                 &possible_username_data));
+
+    if (prediction == SINGLE_USERNAME) {
+      // Check that a username is chosen from |possible_username_data|.
+      EXPECT_EQ(possible_username,
+                form_manager_->GetPendingCredentials().username_value);
+    } else {
+      // Check that a username is not chosen from |possible_username_data|.
+      EXPECT_TRUE(
+          form_manager_->GetPendingCredentials().username_value.empty());
+    }
+    Mock::VerifyAndClearExpectations(&client_);
+  }
 }
 
 class MockPasswordSaveManager : public PasswordSaveManager {

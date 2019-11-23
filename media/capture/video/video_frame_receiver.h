@@ -18,7 +18,7 @@ namespace media {
 // cannot be posted back to. The mostly equivalent interface
 // video_capture::mojom::VideoFrameHandler cannot be used by
 // VideoCaptureDeviceClient directly, because creating a
-// video_catpure::mojom::ScopedAccessPermissionPtr for passing into
+// video_catpure::mojom::ScopedAccessPermission for passing into
 // OnFrameReadyInBuffer() requires a thread with a task runner.
 class CAPTURE_EXPORT VideoFrameReceiver {
  public:

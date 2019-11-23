@@ -91,6 +91,7 @@ js_library("internet_subpage") {
   deps = [
     ":internet_page_browser_proxy",
     "..:route",
+    "..:route_origin_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",

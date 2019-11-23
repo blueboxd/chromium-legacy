@@ -199,6 +199,10 @@ message ModelInfo {
   repeated ClientModelFeature supported_model_features = 3;
   // The set of model types the requesting client can use to make predictions.
   repeated ModelType supported_model_types = 4;
+  // The set of host model features that are referenced by the model.
+  //
+  // Note that this should only be populated if part of the response.
+  repeated string supported_host_model_features = 5;
 }
 
 // The scenarios for which the optimization guide has models for.

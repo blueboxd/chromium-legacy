@@ -158,7 +158,7 @@ void SignOut() {
   // Note: URL-keyed anonymized data collection is turned on as part of the
   // flow to Sign in to Chrome and Turn sync on. This matches the main user
   // flow that enables UKM.
-  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   [ChromeEarlGrey waitForSyncInitialized:YES
                              syncTimeout:kSyncUKMOperationsTimeout];
 
@@ -285,7 +285,7 @@ void SignOut() {
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:NO],
              @"Failed to assert that UKM was not enabled.");
 
-  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");
 }
@@ -341,7 +341,7 @@ void SignOut() {
                      @"Client ID was not reset.");
 
   originalClientID = [MetricsAppInterface UKMClientID];
-  [SigninEarlGreyUI signinWithIdentity:[SigninEarlGreyUtils fakeIdentity1]];
+  [SigninEarlGreyUI signinWithFakeIdentity:[SigninEarlGreyUtils fakeIdentity1]];
 
   GREYAssert([MetricsAppInterface checkUKMRecordingEnabled:YES],
              @"Failed to assert that UKM was enabled.");

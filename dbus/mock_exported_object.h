@@ -22,11 +22,11 @@ class MockExportedObject : public ExportedObject {
   MOCK_METHOD3(ExportMethodAndBlock,
                bool(const std::string& interface_name,
                     const std::string& method_name,
-                    MethodCallCallback method_call_callback));
+                    const MethodCallCallback& method_call_callback));
   MOCK_METHOD4(ExportMethod,
                void(const std::string& interface_name,
                     const std::string& method_name,
-                    MethodCallCallback method_call_callback,
+                    const MethodCallCallback& method_call_callback,
                     OnExportedCallback on_exported_callback));
   MOCK_METHOD2(UnexportMethodAndBlock,
                bool(const std::string& interface_name,

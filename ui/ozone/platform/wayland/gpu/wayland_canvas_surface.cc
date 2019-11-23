@@ -78,9 +78,8 @@ class WaylandCanvasSurface::SharedMemoryBuffer {
         base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
             std::move(shm_region));
     base::subtle::ScopedFDPair fd_pair = platform_shm.PassPlatformHandle();
-    buffer_manager_->CreateShmBasedBuffer(widget_, std::move(fd_pair.fd),
-                                          checked_length.ValueOrDie(), size,
-                                          buffer_id_);
+    buffer_manager_->CreateShmBasedBuffer(
+        std::move(fd_pair.fd), checked_length.ValueOrDie(), size, buffer_id_);
 
     sk_surface_ = SkSurface::MakeRasterDirect(
         SkImageInfo::MakeN32Premul(size.width(), size.height()),

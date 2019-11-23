@@ -193,6 +193,7 @@
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="7814458197256864873">&amp;Kopijuoti</translation>
+<translation id="7848989271541991537">Perkelta į <ph name="PAGE_NUMBER" /> puslapį, <ph name="ROW_NUMBER" /> eilutę, <ph name="COLUMN_NUMBER" /> stulpelį.</translation>
 <translation id="7879499977785298635">Neblokuoti</translation>
 <translation id="7907591526440419938">Atidaryti failą</translation>
 <translation id="7969046989155602842">Komanda</translation>
@@ -233,7 +234,6 @@
 <translation id="8926951137623668982">Lentyna visada slepiama</translation>
 <translation id="8996630695507351249">Įsitikinkite, kad „<ph name="TARGET_DEVICE_NAME" />“ prijungtas prie interneto.</translation>
 <translation id="9002566407876343676">atidaryti</translation>
-<translation id="9039076430527029379">Perkelti į <ph name="PAGE_NUMBER" /> puslapį, <ph name="ROW_NUMBER" /> eilutę, <ph name="COLUMN_NUMBER" /> stulpelį.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 sek.}one{# sek.}few{# sek.}many{# sek.}other{# sek.}}</translation>
 <translation id="9059834730836941392">Sutraukti pranešimą</translation>
 <translation id="9150735707954472829">Skirtukas</translation>

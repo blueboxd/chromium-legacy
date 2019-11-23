@@ -40,13 +40,12 @@ body {
 }
 
 .time-cell {
-  border: 1px solid transparent;
+  border: 2px solid transparent;
+  border-radius: 2px;
   color: #101010;
   font-size: 14px;
   height: 32px;
   line-height: 32px;
-  margin: 1px;
-  scroll-margin: 1px;
   scroll-snap-align: start;
   text-align: center;
   width: 48px;
@@ -54,18 +53,15 @@ body {
 
 .time-cell:hover {
   background: #E5E5E5;
-  border-radius: 2px;
 }
 
 .time-cell.selected {
   background-color: #CECECE;
-  border-radius: 2px;
   font-weight: bold;
 }
 
 .time-column:focus .time-cell.selected {
-  outline: auto 1px -webkit-focus-ring-color;
-  outline-offset: 0px;
+  border-color: highlight;
 }
 
 .submission-controls {
@@ -74,7 +70,7 @@ body {
   bottom: 0px;
   display: flex;
   flex-direction: row;
-  height: 41px;
+  height: 40px;
   position: absolute;
   width: 100%;
 }
@@ -86,7 +82,8 @@ body {
 
 .submission-button {
   background-color: #FFFFFF;
-  border: 1px solid white;
+  border: 2px solid transparent;
+  border-radius: 2px;
   height: 32px;
   margin: 4px;
   padding: 8px;
@@ -95,7 +92,11 @@ body {
 
 .submission-button:hover {
   background-color: #E5E5E5;
-  border-radius: 2px;
+}
+
+.submission-button:focus {
+  border-color: highlight;
+  outline: none;
 }
 
 @media (forced-colors: active) {
@@ -103,7 +104,6 @@ body {
     background-color: Window;
     color: WindowText;
     forced-color-adjust: none;
-    scroll-margin: 0px;
   }
 
   .time-cell:hover {
@@ -117,14 +117,11 @@ body {
   }
 
   .time-column:focus .time-cell.selected {
-    border: 2px solid WindowText;
-    margin: 0px;
-    outline: none;
+    border-color: WindowText;
   }
 
   .submission-button {
     background-color: Window;
-    border-color: transparent;
     forced-color-adjust: none;
   }
 
@@ -134,7 +131,7 @@ body {
   }
 
   .submission-button:focus {
-    outline-color: WindowText;
+    border-color: WindowText;
   }
 
   .submission-button path {

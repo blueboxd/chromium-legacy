@@ -420,6 +420,7 @@ cast_source_set("browser") {
       "//chromecast/browser/webview/proto",
       "//components/exo",
       "//components/exo/wayland",
+      "//content/public/browser",
       "//services/viz/privileged/mojom/compositing",
       "//ui/display/manager",
     ]

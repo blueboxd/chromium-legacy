@@ -1,4 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mn">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> энэ төхөөрөмжийг удирддаг бөгөөд таны үйл ажиллагааг хянах боломжтой байж болзошгүй.</translation>
+<translation id="1510238584712386396">Launcher</translation>
+<translation id="1734367976349034509">Энэ төхөөрөмжийг байгууллагаас удирддаг</translation>
+<translation id="1930797645656624981">Chrome OS-н оруулах аргын үйлчилгээ</translation>
+<translation id="1979103255016296513">Нууц үг солих хугацаа хэтэрсэн</translation>
+<translation id="2049639323467105390">Энэ төхөөрөмжийг <ph name="DOMAIN" /> удирдан ажиллаж байна .</translation>
+<translation id="2083960536266308407">Дэлгэцээс юу ч олсонгүй</translation>
+<translation id="2338501278241028356">Ойролцоох төхөөрөмж хайхын тулд Bluetooth-г асаана уу</translation>
+<translation id="2805756323405976993">Програм</translation>
+<translation id="2872961005593481000">Унтраах</translation>
+<translation id="3008341117444806826">ДАХИН ШИНЭЧЛЭХ</translation>
+<translation id="3838338534323494292">Шинэ нууц үг</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> энэ төхөөрөмжийг удирддаг бөгөөд хэрэглэгчийн зочилсон вэб хуудас, нууц үг болон имэйл зэрэг бүх үйл ажиллагаанд хандах эрхтэй.</translation>
+<translation id="4227825898293920515">Нууц үгний хугацаа <ph name="TIME" />-н дотор дуусна</translation>
+<translation id="4429881212383817840">Kerberos тасалбарын хугацаа удахгүй дуусна</translation>
+<translation id="445059817448385655">Хуучин нууц үг</translation>
+<translation id="467510802200863975">Нууц үг таарахгүй байна</translation>
+<translation id="4731797938093519117">Эцэг эхийн хандалт</translation>
+<translation id="4890353053343094602">Нэн даруй шинийг сонгоно уу</translation>
+<translation id="5212543919916444558">Би таны дэлгэцээс туслах боломжтой зүйл олсонгүй.
+Асуух зүйл байвал микрофоныг товшиж үзнэ үү.</translation>
+<translation id="5222676887888702881">Гарах</translation>
+<translation id="5317780077021120954">Хадгалах</translation>
+<translation id="5332948983412042822">Одоо шинийг сонгоно уу</translation>
+<translation id="5457599981699367932">Зочны хувиар хайлт хийх</translation>
+<translation id="54609108002486618">Удирдсан</translation>
+<translation id="5832805196449965646">Хүн нэм</translation>
+<translation id="5895138241574237353">Дахин асаах</translation>
+<translation id="6058625436358447366">Дуусгахын тулд хуучин болон шинэ нууц үгээ оруулна уу</translation>
+<translation id="6106186594183574873">Дуусгахын тулд хуучин нууц үгээ оруулна уу</translation>
+<translation id="6146993107019042706">Дуусгахын тулд шинэ нууц үгээ оруулна уу</translation>
+<translation id="7658239707568436148">Болих</translation>
+<translation id="7690294790491645610">Шинэ нууц үг баталгаажуулна уу</translation>
+<translation id="808894953321890993">Нууц үгийг солих</translation>
+<translation id="8747900814994928677">Өөрчлөлтийг баталгаажуулах</translation>
+<translation id="910415269708673980"><ph name="PRINCIPAL_NAME" />-н тасалбарыг дахин шинэчлэх</translation>
+<translation id="9111102763498581341">Нээх</translation>
 </translationbundle>

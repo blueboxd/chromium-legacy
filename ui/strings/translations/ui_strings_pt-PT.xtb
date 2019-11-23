@@ -233,7 +233,6 @@
 <translation id="8926951137623668982">Prateleira sempre oculta</translation>
 <translation id="8996630695507351249">Certifique-se de que o <ph name="TARGET_DEVICE_NAME" /> está ligado à Internet.</translation>
 <translation id="9002566407876343676">abrir</translation>
-<translation id="9039076430527029379">Mover para a página <ph name="PAGE_NUMBER" />, linha <ph name="ROW_NUMBER" />, coluna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 seg}other{# seg}}</translation>
 <translation id="9059834730836941392">Reduzir notificação</translation>
 <translation id="9150735707954472829">Tabulação</translation>

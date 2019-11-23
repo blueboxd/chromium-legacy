@@ -26,9 +26,9 @@ namespace chromeos {
 // initializes the DBusThreadManager instance.
 class COMPONENT_EXPORT(SHILL_CLIENT) ModemMessagingClient {
  public:
-  typedef base::Callback<void(const dbus::ObjectPath& message_path,
-                              bool complete)>
-      SmsReceivedHandler;
+  using SmsReceivedHandler =
+      base::RepeatingCallback<void(const dbus::ObjectPath& message_path,
+                                   bool complete)>;
 
   // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);

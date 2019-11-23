@@ -114,6 +114,7 @@
 <translation id="479989351350248267">cerca</translation>
 <translation id="4812940957355064477">Introduïu un número.</translation>
 <translation id="4912536737030637138">entrada bibliogràfica</translation>
+<translation id="492244087561876220">comentari</translation>
 <translation id="4975562563186953947">Elements seleccionats: <ph name="SELECTED_COUNT" /></translation>
 <translation id="4992066212339426712">Deixa de silenciar</translation>
 <translation id="49969490063480558">Introduïu un domini precedit per "<ph name="ATSIGN" />". "<ph name="INVALIDADDRESS" />" no és una adreça electrònica completa.</translation>
@@ -255,6 +256,7 @@
 <translation id="8987927404178983737">Mes</translation>
 <translation id="901493112792887934">temps actual en segons</translation>
 <translation id="901834265349196618">correu electrònic</translation>
+<translation id="9023835124071926463">secció de comentaris</translation>
 <translation id="9048119486235211610">navegació</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9093215626363556771">surt del mode de pantalla en pantalla</translation>

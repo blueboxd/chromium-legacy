@@ -635,7 +635,7 @@
 <translation id="5686790454216892815">ชื่อไฟล์ยาวเกินไป</translation>
 <translation id="5689516760719285838">ตำแหน่ง</translation>
 <translation id="569536719314091526">แปลหน้านี้เป็นภาษาใดก็ได้จากปุ่มตัวเลือกเพิ่มเติม</translation>
-<translation id="5710871682236653961">ถามก่อนอนุญาตให้เว็บไซต์ส่งและรับข้อมูลเมื่อคุณแตะอุปกรณ์ NFC (แนะนำ)</translation>
+<translation id="5710871682236653961">ถามก่อนที่จะอนุญาตให้เว็บไซต์ส่งและรับข้อมูลเมื่อคุณแตะอุปกรณ์ NFC (แนะนำ)</translation>
 <translation id="572328651809341494">แท็บล่าสุด</translation>
 <translation id="5726692708398506830">ขยายรายละเอียดทั้งหมดบนหน้า</translation>
 <translation id="5748802427693696783">สลับเป็นแท็บมาตรฐานแล้ว</translation>
@@ -774,7 +774,6 @@
 <translation id="6697947395630195233">Chrome ต้องการสิทธิ์เข้าถึงตำแหน่งของคุณเพื่อแชร์ตำแหน่งกับไซต์นี้</translation>
 <translation id="6698801883190606802">จัดการข้อมูลที่ซิงค์</translation>
 <translation id="6699370405921460408">เซิร์ฟเวอร์ของ Google จะเพิ่มประสิทธิภาพหน้าเว็บที่คุณเข้าชม</translation>
-<translation id="6706288973712894588">คุณกำลังออฟไลน์อยู่\n<ph name="BEGIN_LINK" />สำรวจฟีดออฟไลน์<ph name="END_LINK" /></translation>
 <translation id="6709133671862442373">ข่าวสาร</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="671481426037969117">ตัวจับเวลา <ph name="FQDN" /> หมดเวลาแล้ว และจะเริ่มอีกครั้งพรุ่งนี้</translation>

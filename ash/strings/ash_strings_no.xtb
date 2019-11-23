@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1275285675049378717">Gir strøm til <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" />) – signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="1289185460362160437">Kom tilbake <ph name="COME_BACK_DAY_OF_WEEK" /> <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Svakt signal</translation>
 <translation id="1293264513303784526">USB-C-enhet (porten på venstre side)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Vis Bluetooth-innstillinger. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Vis alltid hyllen</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> – telefonbatterinivå <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Overflyt</translation>
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="1351937230027495976">Skjul menyen</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">Fjern denne brukeren</translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
 <translation id="1658406695958299976">Beklager, men passordet ditt kunne fremdeles ikke bekreftes. Merk: Hvis du endret passordet ditt nylig, trer det nye passordet ditt i kraft så snart du logger av. Bruk det gamle passordet ditt her.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" /> (<ph name="CONNECTION_STATUS" />) – administreres av administratoren din</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Ikke gjenkjent</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
 <translation id="2016340657076538683">Skriv inn en melding</translation>
 <translation id="2050339315714019657">Stående</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" /> (<ph name="CONNECTION_STATUS" />) – signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Lysstyrke på tastaturet</translation>
 <translation id="209965399369889474">Ikke koblet til nettverket</translation>
 <translation id="2126242104232412123">Nytt skrivebord</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
 <translation id="3249513730522716925">Vinduet <ph name="WINDOW_TITLE" /> ble flyttet fra skrivebord <ph name="ACTIVE_DESK" /> til skrivebord <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Hva kan du gjøre?</translation>
-<translation id="3277674767125718685">Lyden er på.</translation>
 <translation id="3290356915286466215">Usikret</translation>
 <translation id="3294437725009624529">Gjest</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan fortsatt logge på senere.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">Kontoen er administrert av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
 <translation id="3576141592585647168">Endre tidssonen</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" /> – administreres av administratoren din</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
 <translation id="3604801046548457007">Opprettet skrivebord <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">En leselist er tilkoblet.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918086044614829423">Godta</translation>
 <translation id="4924411785043111640">Start på nytt og tilbakestill</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" />) – signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Rull opp</translation>
 <translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="5030687792513154421">Tiden er ute</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> koblet til en ny telefon</translation>
 <translation id="5083553833479578423">Lås opp flere Assistent-funksjoner.</translation>
 <translation id="5136175204352732067">Et annet tastatur er koblet til</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" /> – <ph name="CONNECTION_STATUS" />) – signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
 <translation id="5207949376430453814">Fremhev tekstinnsettingspunktet</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
 <translation id="5260676007519551770">Skrivebord 4</translation>
 <translation id="5283198616748585639">Legg til 1 min</translation>
+<translation id="5286194356314741248">Skanning</translation>
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5313326810920013265">Bluetooth-innstillinger</translation>
 <translation id="5331975486040154427">USB-C-enhet (porten bak på venstre side)</translation>
 <translation id="5379115545237091094">For mange forsøk</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" /> (<ph name="CONNECTION_STATUS" />)</translation>
 <translation id="5397578532367286026">Bruken og loggen for denne brukeren kan gjennomgås av administratoren (<ph name="MANAGER_EMAIL" />) på chrome.com</translation>
 <translation id="5430931332414098647">Umiddelbar internettdeling</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777">Du logges automatisk av om <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Beklager, men passordet ditt kunne ikke bekreftes. Prøv på nytt.</translation>
 <translation id="607652042414456612">Datamaskinen din kan registreres av Bluetooth-enheter i nærheten, og vises med navnet «<ph name="NAME" />» og adressen <ph name="ADDRESS" /></translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" /> (<ph name="CONNECTION_STATUS" />) – signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="612734058257491180">Google-assistenten er ikke tilgjengelig i gjesteøkter.</translation>
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="6164005077879661055">Alle filer og lokale data tilknyttet den administrerte brukeren slettes permanent når den administrerte brukeren fjernes. Besøkte nettsteder og innstillinger for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL" />.</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">Passord</translation>
 <translation id="6665545700722362599">gi nettsteder, apper og utvidelser tillatelse til å bruke posisjonstjenester, enhetens mikrofon, kamera eller andre funksjoner</translation>
 <translation id="6670153871843998651">Skrivebord 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="6691659475504239918">Søk + Shift + H</translation>
 <translation id="6696025732084565524">Det avtakbare tastaturet trenger en kritisk oppdatering</translation>
 <translation id="6700713906295497288">IME-menyknappen</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">Ytelsessporing er slått på</translation>
 <translation id="6752912906630585008">Skrivebord <ph name="REMOVED_DESK" /> ble fjernet og slått sammen med skrivebord <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Gir strøm til tilkoblede USB-C-enheter</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Spill av</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="6820676911989879663">Ta en pause!</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">Nettverket kan være overvåket</translation>
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Nå er det sengetid</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" /> (<ph name="CONNECTION_STATUS" />) – signalstyrke <ph name="SIGNAL_STRENGTH" /> – telefonbatterinivå <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> støtter ikke <ph name="SPECIFIED_RESOLUTION" />. Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7564874036684306347">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd. Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">Endre menyplasseringen</translation>
 <translation id="9089416786594320554">Inndatametoder</translation>
 <translation id="9091626656156419976">Fjernet skjermen <ph name="DISPLAY_NAME" /></translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" /> – <ph name="CONNECTION_STATUS" />) – signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="9151726767154816831">Start på nytt, og kjør Powerwash for å oppdatere</translation>
 <translation id="9179259655489829027">Med denne funksjonen får du rask tilgang til påloggede brukere uten å måtte skrive inn passord. Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="9183456764293710005">Lupe for hele skjermen</translation>

@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Этот тип карты не поддерживается.</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Обратитесь за помощью к системному администратору.</translation>
+<translation id="1736420071277903564">Компьютер</translation>
 <translation id="1739107442478692187">На сайте или в приложении, которые вы используете, произошла утечка данных. Рекомендуем проверить безопасность сохраненных паролей и сменить пароль для следующего источника: <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Недопустимый формат месяца.</translation>
 <translation id="1741613555002899862">Необходимо указать значение и ввести действительную строку, если для правила DnsOverHttpsMode выбрано значение <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -594,6 +595,7 @@
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3901925938762663762">Срок действия карты истек</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Планшет</translation>
 <translation id="3909695131102177774"><ph name="LABEL" />. <ph name="ERROR" />.</translation>
 <translation id="3939773374150895049">Использовать WebAuthn вместо CVC-кода?</translation>
 <translation id="3946209740501886391">Всегда спрашивать на этом сайте</translation>
@@ -1518,7 +1520,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 банковская карта}one{# банковская карта}few{# банковские карты}many{# банковских карт}other{# банковской карты}}</translation>
 <translation id="8473863474539038330">Адреса и другие данные</translation>
 <translation id="8479754468255770962">Скоба в левом нижнем углу</translation>
-<translation id="8481133456511676116">Вам нужен домен <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Чтобы использовать карты, привязанные к аккаунту Google Account, войдите в Chrome</translation>
 <translation id="8488350697529856933">Объект применения</translation>
 <translation id="8498891568109133222">Превышено время ожидания ответа от сайта <ph name="HOST_NAME" />.</translation>

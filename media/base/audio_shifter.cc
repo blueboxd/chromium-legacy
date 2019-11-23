@@ -104,11 +104,11 @@ AudioShifter::AudioShifter(base::TimeDelta max_buffer_size,
       running_(false),
       position_(0),
       previous_requested_samples_(0),
-      resampler_(
-          channels,
-          1.0,
-          96,
-          base::Bind(&AudioShifter::ResamplerCallback, base::Unretained(this))),
+      resampler_(channels,
+                 1.0,
+                 96,
+                 base::BindRepeating(&AudioShifter::ResamplerCallback,
+                                     base::Unretained(this))),
       current_ratio_(1.0) {}
 
 AudioShifter::~AudioShifter() = default;

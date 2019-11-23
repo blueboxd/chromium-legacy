@@ -33,9 +33,9 @@ struct FakeShillProfileClient::ProfileProperties {
 namespace {
 
 void PassDictionary(
-    const ShillProfileClient::DictionaryValueCallbackWithoutStatus& callback,
+    ShillProfileClient::DictionaryValueCallbackWithoutStatus callback,
     const base::DictionaryValue* dictionary) {
-  callback.Run(*dictionary);
+  std::move(callback).Run(*dictionary);
 }
 
 }  // namespace
@@ -54,11 +54,13 @@ void FakeShillProfileClient::RemovePropertyChangedObserver(
 
 void FakeShillProfileClient::GetProperties(
     const dbus::ObjectPath& profile_path,
-    const DictionaryValueCallbackWithoutStatus& callback,
-    const ErrorCallback& error_callback) {
-  ProfileProperties* profile = GetProfile(profile_path, error_callback);
-  if (!profile)
+    DictionaryValueCallbackWithoutStatus callback,
+    ErrorCallback error_callback) {
+  ProfileProperties* profile = GetProfile(profile_path);
+  if (!profile) {
+    std::move(error_callback).Run("Error.InvalidProfile", "Invalid profile");
     return;
+  }
 
   auto entry_paths = std::make_unique<base::ListValue>();
   for (base::DictionaryValue::Iterator it(profile->entries); !it.IsAtEnd();
@@ -72,60 +74,64 @@ void FakeShillProfileClient::GetProperties(
                                       std::move(entry_paths));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&PassDictionary, callback,
+      FROM_HERE, base::BindOnce(&PassDictionary, std::move(callback),
                                 base::Owned(properties.release())));
 }
 
 void FakeShillProfileClient::GetEntry(
     const dbus::ObjectPath& profile_path,
     const std::string& entry_path,
-    const DictionaryValueCallbackWithoutStatus& callback,
-    const ErrorCallback& error_callback) {
-  ProfileProperties* profile = GetProfile(profile_path, error_callback);
-  if (!profile)
+    DictionaryValueCallbackWithoutStatus callback,
+    ErrorCallback error_callback) {
+  ProfileProperties* profile = GetProfile(profile_path);
+  if (!profile) {
+    std::move(error_callback).Run("Error.InvalidProfile", "Invalid profile");
     return;
+  }
 
   base::DictionaryValue* entry = nullptr;
   profile->entries.GetDictionaryWithoutPathExpansion(entry_path, &entry);
   if (!entry) {
-    error_callback.Run("Error.InvalidProfileEntry", "Invalid profile entry");
+    std::move(error_callback)
+        .Run("Error.InvalidProfileEntry", "Invalid profile entry");
     return;
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&PassDictionary, callback,
+      FROM_HERE, base::BindOnce(&PassDictionary, std::move(callback),
                                 base::Owned(entry->DeepCopy())));
 }
 
 void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
                                          const std::string& entry_path,
-                                         const base::Closure& callback,
-                                         const ErrorCallback& error_callback) {
+                                         base::OnceClosure callback,
+                                         ErrorCallback error_callback) {
   switch (simulate_delete_result_) {
     case FakeShillSimulatedResult::kSuccess:
       break;
     case FakeShillSimulatedResult::kFailure:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(error_callback, "Error", "Simulated failure"));
+          FROM_HERE, base::BindOnce(std::move(error_callback), "Error",
+                                    "Simulated failure"));
       return;
     case FakeShillSimulatedResult::kTimeout:
       // No callbacks get executed and the caller should eventually timeout.
       return;
   }
 
-  ProfileProperties* profile = GetProfile(profile_path, error_callback);
+  ProfileProperties* profile = GetProfile(profile_path);
   if (!profile) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(error_callback, "Error.InvalidProfile",
-                                  profile_path.value()));
+        FROM_HERE,
+        base::BindOnce(std::move(error_callback), "Error.InvalidProfile",
+                       profile_path.value()));
     return;
   }
 
   if (!profile->entries.RemoveWithoutPathExpansion(entry_path, nullptr)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(error_callback, "Error.InvalidProfileEntry",
-                                  entry_path));
+        FROM_HERE, base::BindOnce(std::move(error_callback),
+                                  "Error.InvalidProfileEntry", entry_path));
     return;
   }
 
@@ -133,7 +139,7 @@ void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,
       ->GetTestInterface()
       ->ClearConfiguredServiceProperties(entry_path);
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 ShillProfileClient::TestInterface* FakeShillProfileClient::GetTestInterface() {
@@ -142,7 +148,7 @@ ShillProfileClient::TestInterface* FakeShillProfileClient::GetTestInterface() {
 
 void FakeShillProfileClient::AddProfile(const std::string& profile_path,
                                         const std::string& userhash) {
-  if (GetProfile(dbus::ObjectPath(profile_path), ErrorCallback()))
+  if (GetProfile(dbus::ObjectPath(profile_path)))
     return;
 
   // If adding a shared profile, make sure there are no user profiles currently
@@ -161,8 +167,7 @@ void FakeShillProfileClient::AddProfile(const std::string& profile_path,
 void FakeShillProfileClient::AddEntry(const std::string& profile_path,
                                       const std::string& entry_path,
                                       const base::DictionaryValue& properties) {
-  ProfileProperties* profile =
-      GetProfile(dbus::ObjectPath(profile_path), ErrorCallback());
+  ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path));
   DCHECK(profile);
   profile->entries.SetKey(entry_path, properties.Clone());
   ShillManagerClient::Get()->GetTestInterface()->AddManagerService(entry_path,
@@ -171,8 +176,7 @@ void FakeShillProfileClient::AddEntry(const std::string& profile_path,
 
 bool FakeShillProfileClient::AddService(const std::string& profile_path,
                                         const std::string& service_path) {
-  ProfileProperties* profile =
-      GetProfile(dbus::ObjectPath(profile_path), ErrorCallback());
+  ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path));
   if (!profile) {
     LOG(ERROR) << "AddService: No matching profile: " << profile_path
                << " for: " << service_path;
@@ -185,8 +189,7 @@ bool FakeShillProfileClient::AddService(const std::string& profile_path,
 
 bool FakeShillProfileClient::UpdateService(const std::string& profile_path,
                                            const std::string& service_path) {
-  ProfileProperties* profile =
-      GetProfile(dbus::ObjectPath(profile_path), ErrorCallback());
+  ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path));
   if (!profile) {
     LOG(ERROR) << "UpdateService: No matching profile: " << profile_path
                << " for: " << service_path;
@@ -287,14 +290,11 @@ void FakeShillProfileClient::SetSimulateDeleteResult(
 }
 
 FakeShillProfileClient::ProfileProperties* FakeShillProfileClient::GetProfile(
-    const dbus::ObjectPath& profile_path,
-    const ErrorCallback& error_callback) {
+    const dbus::ObjectPath& profile_path) {
   for (auto& profile : profiles_) {
     if (profile->path == profile_path.value())
       return profile.get();
   }
-  if (!error_callback.is_null())
-    error_callback.Run("Error.InvalidProfile", "Invalid profile");
   return nullptr;
 }
 

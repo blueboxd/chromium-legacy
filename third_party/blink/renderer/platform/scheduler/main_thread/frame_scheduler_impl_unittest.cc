@@ -2300,6 +2300,7 @@ class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest {
       std::unique_ptr<WebSchedulingTaskQueue> task_queue =
           frame_scheduler_->CreateWebSchedulingTaskQueue(priority);
       web_scheduling_task_runners_.push_back(task_queue->GetTaskRunner());
+      task_queues_.push_back(std::move(task_queue));
     }
   }
 
@@ -2353,6 +2354,8 @@ class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest {
 
   Vector<scoped_refptr<base::SingleThreadTaskRunner>>
       web_scheduling_task_runners_;
+
+  Vector<std::unique_ptr<WebSchedulingTaskQueue>> task_queues_;
 };
 
 TEST_F(WebSchedulingTaskQueueTest, TasksRunInPriorityOrder) {
@@ -2363,6 +2366,18 @@ TEST_F(WebSchedulingTaskQueueTest, TasksRunInPriorityOrder) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, testing::ElementsAre("I1", "I2", "H1", "H2", "D1",
                                               "D2", "L1", "L2", "E1", "E2"));
+}
+
+TEST_F(WebSchedulingTaskQueueTest, DynamicTaskPriorityOrder) {
+  Vector<String> run_order;
+
+  PostWebSchedulingTestTasks(&run_order, "E1 E2 D1 D2 I1 I2");
+  task_queues_[static_cast<int>(WebSchedulingPriority::kImmediatePriority)]
+      ->SetPriority(WebSchedulingPriority::kLowPriority);
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("D1", "D2", "I1", "I2", "E1", "E2"));
 }
 
 }  // namespace frame_scheduler_impl_unittest

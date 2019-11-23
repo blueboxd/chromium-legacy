@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ወይም <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">የአጠቃላይ እይታ ሁነታ</translation>
 <translation id="4382340674111381977">ወደ ቀዳሚ ገጽ ወደ ኋላ ይመለሱ</translation>
+<translation id="4458670250301149821">በመተግበሪያ ፍርግርግ ውስጥ ከአቃፊ ወደ ውስጥ/ውጭ የመተግበሪያ አዶን ያንቀሳቅሱ</translation>
 <translation id="4472417192667361414">የስርዓት እና የማሳያ ቅንብሮች</translation>
+<translation id="449214506787633354"><ph name="CTRL" />፣ በመቀጠል <ph name="LEFT" /> ወይም <ph name="RIGHT" /> ወይም <ph name="UP" /> ወይም <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">የቁልፍ ሰሌዳ አቋራጭ አጋዥን ይመልከቱ</translation>
 <translation id="4628718545549558538">የሁኔታ አካባቢን ይክፈቱ (የመለያ ሥዕልዎ ብቅ የሚልበት ቦታ)</translation>
 <translation id="4642092649622328492">ከፊል ቅጽበታዊ ገጽ ዕይታን ያንሱ</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">ቀጣዩን ፊደል ይሰርዙ (ወደፊት ስረዛ)</translation>
 <translation id="7500368597227394048">ሰረዝ</translation>
 <translation id="7611271430932669992">ትኩረቱን ወደ ብቅ-ባዮች እና መገናኛዎች ይውሰዱ</translation>
+<translation id="7635348532214572995">በመተግበሪያው ፍርግርግ ዙሪያ የመተግበሪያ አዶን አንቀሳቅስ</translation>
 <translation id="766326951329901120">ይዘትን ከቅንጥብ ሰሌዳው ላይ እንደ ዝርግ ጽሑፍ ለጥፍ</translation>
 <translation id="7703010453515335249">ቅንፍ ግራ</translation>
 <translation id="7724603315864178912">ቁረጥ</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">ይዘትን ከቅንጥብ ሰሌዳው ይለጥፉ</translation>
 <translation id="9052808072970550123">ወደ ቀጣዩ ተጠቃሚ ቀይር</translation>
 <translation id="906458777597946297">መስኮቱን ያስፉት</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />፣ በመቀጠል <ph name="LEFT" /> ወይም <ph name="RIGHT" /> ወይም <ph name="UP" /> ወይም <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">ወደ የመስመር መጀመሪያ ይሂዱ</translation>
 <translation id="9106898733795143799">ገጽ እና ድር አሳሽ</translation>
 <translation id="9162942292291287644">ለ<ph name="QUERY" /> ምንም የፍለጋ ውጤቶች የሉም</translation>

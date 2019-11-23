@@ -13,6 +13,7 @@ namespace optimization_guide {
 namespace prefs {
 
 extern const char kHintsFetcherLastFetchAttempt[];
+extern const char kModelAndFeaturesLastFetchAttempt[];
 extern const char kHintsFetcherTopHostBlacklist[];
 extern const char kHintsFetcherTopHostBlacklistState[];
 extern const char kTimeHintsFetcherTopHostBlacklistLastInitialized[];

@@ -201,6 +201,8 @@ static void RasterizeSource(
     ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
   GLuint texture_id = ri->CreateAndConsumeForGpuRaster(*mailbox);
+  ri->BeginSharedImageAccessDirectCHROMIUM(
+      texture_id, GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   {
     ScopedGrContextAccess gr_context_access(context_provider);
     base::Optional<viz::ClientResourceProvider::ScopedSkSurface> scoped_surface;
@@ -240,7 +242,7 @@ static void RasterizeSource(
                                     playback_rect, transform,
                                     playback_settings);
   }
-
+  ri->EndSharedImageAccessDirectCHROMIUM(texture_id);
   ri->DeleteGpuRasterTexture(texture_id);
 }
 

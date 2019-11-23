@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/path_service.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
 #include "content/public/common/content_switches.h"
@@ -12,6 +13,7 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
+#include "pdf/pdf_features.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_settings.h"
@@ -327,6 +329,78 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
             image_node->data().relative_bounds.bounds);
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_AX_UNLABELED_IMAGE_ROLE_DESCRIPTION),
             image_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+}
+
+TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
+  // Enable feature flag
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chrome_pdf::features::kAccessiblePDFHighlight);
+
+  text_runs_.emplace_back(kFirstTextRun);
+  text_runs_.emplace_back(kSecondTextRun);
+  chars_.insert(chars_.end(), std::begin(kDummyCharsData),
+                std::end(kDummyCharsData));
+
+  {
+    ppapi::PdfAccessibilityHighlightInfo highlight;
+    highlight.bounds = PP_MakeFloatRectFromXYWH(1.0f, 1.0f, 5.0f, 6.0f);
+    highlight.text_run_index = 0;
+    highlight.text_run_count = 2;
+    page_objects_.highlights.push_back(std::move(highlight));
+  }
+
+  page_info_.text_run_count = text_runs_.size();
+  page_info_.char_count = chars_.size();
+
+  content::RenderFrame* render_frame = view_->GetMainRenderFrame();
+  render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
+  ASSERT_TRUE(render_frame->GetRenderAccessibility());
+
+  FakeRendererPpapiHost host(view_->GetMainRenderFrame());
+  PP_Instance instance = 0;
+  pdf::PdfAccessibilityTree pdf_accessibility_tree(&host, instance);
+
+  pdf_accessibility_tree.SetAccessibilityViewportInfo(viewport_info_);
+  pdf_accessibility_tree.SetAccessibilityDocInfo(doc_info_);
+  pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
+                                                  chars_, page_objects_);
+
+  /*
+   * Expected tree structure
+   * Document
+   * ++ Region
+   * ++++ Paragraph
+   * ++++++ Highlight
+   * ++++++++ Static Text
+   */
+
+  ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
+  ASSERT_TRUE(root_node);
+  EXPECT_EQ(ax::mojom::Role::kDocument, root_node->data().role);
+  ASSERT_EQ(1u, root_node->children().size());
+
+  ui::AXNode* page_node = root_node->children()[0];
+  ASSERT_TRUE(page_node);
+  EXPECT_EQ(ax::mojom::Role::kRegion, page_node->data().role);
+  ASSERT_EQ(1u, page_node->children().size());
+
+  ui::AXNode* paragraph_node = page_node->children()[0];
+  ASSERT_TRUE(paragraph_node);
+  EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  ASSERT_EQ(1u, paragraph_node->children().size());
+
+  ui::AXNode* highlight_node = paragraph_node->children()[0];
+  ASSERT_TRUE(highlight_node);
+  EXPECT_EQ(ax::mojom::Role::kButton, highlight_node->data().role);
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            highlight_node->data().relative_bounds.bounds);
+  ASSERT_EQ(1u, highlight_node->children().size());
+
+  ui::AXNode* static_text_node = highlight_node->children()[0];
+  ASSERT_TRUE(static_text_node);
+  EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
+  ASSERT_EQ(2u, static_text_node->children().size());
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {

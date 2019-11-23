@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -44,6 +45,12 @@ namespace base {
 namespace test {
 
 namespace {
+
+ObserverList<TaskEnvironment::DestructionObserver>& GetDestructionObservers() {
+  static NoDestructor<ObserverList<TaskEnvironment::DestructionObserver>>
+      instance;
+  return *instance;
+}
 
 base::MessagePumpType GetMessagePumpTypeForMainThreadType(
     TaskEnvironment::MainThreadType main_thread_type) {
@@ -471,6 +478,8 @@ TaskEnvironment::~TaskEnvironment() {
   // If we've been moved then bail out.
   if (!owns_instance_)
     return;
+  for (auto& observer : GetDestructionObservers())
+    observer.WillDestroyCurrentTaskEnvironment();
   DestroyThreadPool();
   task_queue_ = nullptr;
   NotifyDestructionObserversAndReleaseSequenceManager();
@@ -715,6 +724,16 @@ bool TaskEnvironment::NextTaskIsDelayed() const {
 void TaskEnvironment::DescribePendingMainThreadTasks() const {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   LOG(INFO) << sequence_manager_->DescribeAllPendingTasks();
+}
+
+// static
+void TaskEnvironment::AddDestructionObserver(DestructionObserver* observer) {
+  GetDestructionObservers().AddObserver(observer);
+}
+
+// static
+void TaskEnvironment::RemoveDestructionObserver(DestructionObserver* observer) {
+  GetDestructionObservers().RemoveObserver(observer);
 }
 
 TaskEnvironment::TestTaskTracker::TestTaskTracker()

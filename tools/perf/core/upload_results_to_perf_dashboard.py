@@ -52,12 +52,14 @@ def _GetDashboardJson(options):
     # pylint: disable=redefined-variable-type
     dashboard_json = results_dashboard.MakeListOfPoints(
       results, options.configuration_name, stripped_test_name,
-      {}, options.perf_dashboard_machine_group,
+      options.buildername, options.buildnumber, {},
+      options.perf_dashboard_machine_group,
       revisions_dict=revisions)
   else:
     dashboard_json = results_dashboard.MakeDashboardJsonV1(
       results,
       revisions, stripped_test_name, options.configuration_name,
+      options.buildername, options.buildnumber,
       {}, reference_build,
       perf_dashboard_machine_group=options.perf_dashboard_machine_group)
   return dashboard_json

@@ -121,7 +121,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("file", "file:leveldb")
           .RequireCapability("network", "network_service")
           .RequireCapability("network", "test")
-          .RequireCapability(mojom::kRendererServiceName, "browser")
           .RequireCapability("media", "media:media")
           .RequireCapability("media_renderer", "media:media")
           .RequireCapability("*", "app")
@@ -209,8 +208,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
                   "viz.mojom.Gpu"})
-          .RequireInterfaceFilterCapability_Deprecated(
-              mojom::kRendererServiceName, "navigation:frame", "browser")
           .PackageService(content::GetManifest())
           .Build()};
   return *manifest;

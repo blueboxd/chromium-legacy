@@ -119,7 +119,7 @@ class BluetoothAdvertisementServiceProviderImpl
       std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 'ss'.");
-      response_sender.Run(std::move(error_response));
+      std::move(response_sender).Run(std::move(error_response));
       return;
     }
 
@@ -130,7 +130,7 @@ class BluetoothAdvertisementServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
-      response_sender.Run(std::move(error_response));
+      std::move(response_sender).Run(std::move(error_response));
       return;
     }
 
@@ -171,11 +171,11 @@ class BluetoothAdvertisementServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such property: '" + property_name + "'.");
-      response_sender.Run(std::move(error_response));
+      std::move(response_sender).Run(std::move(error_response));
     }
 
     writer.CloseContainer(&variant_writer);
-    response_sender.Run(std::move(response));
+    std::move(response_sender).Run(std::move(response));
   }
 
   // Called by dbus:: when the Bluetooth daemon fetches all properties of the
@@ -193,7 +193,7 @@ class BluetoothAdvertisementServiceProviderImpl
       std::unique_ptr<dbus::ErrorResponse> error_response =
           dbus::ErrorResponse::FromMethodCall(method_call, kErrorInvalidArgs,
                                               "Expected 's'.");
-      response_sender.Run(std::move(error_response));
+      std::move(response_sender).Run(std::move(error_response));
       return;
     }
 
@@ -204,11 +204,11 @@ class BluetoothAdvertisementServiceProviderImpl
           dbus::ErrorResponse::FromMethodCall(
               method_call, kErrorInvalidArgs,
               "No such interface: '" + interface_name + "'.");
-      response_sender.Run(std::move(error_response));
+      std::move(response_sender).Run(std::move(error_response));
       return;
     }
 
-    response_sender.Run(CreateGetAllResponse(method_call));
+    std::move(response_sender).Run(CreateGetAllResponse(method_call));
   }
 
   // Called by dbus:: when a method is exported.
@@ -258,7 +258,7 @@ class BluetoothAdvertisementServiceProviderImpl
     variant_writer.AppendArrayOfBytes(value.data(), value.size());
     writer.CloseContainer(&variant_writer);
 
-    response_sender.Run(std::move(response));
+    std::move(response_sender).Run(std::move(response));
   }
 
   void AppendArrayVariantOfStrings(dbus::MessageWriter* dict_writer,

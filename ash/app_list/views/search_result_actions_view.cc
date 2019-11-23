@@ -80,7 +80,6 @@ class SearchResultImageButton : public views::ImageButton {
   SearchResultActionsView* parent_;
   const bool visible_on_hover_;
   bool to_be_activate_by_long_press_ = false;
-  bool selected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultImageButton);
 };
@@ -188,13 +187,6 @@ void SearchResultImageButton::UpdateOnStateChanged() {
     SetVisible(parent_->IsSearchResultHoveredOrSelected() ||
                parent()->Contains(GetFocusManager()->GetFocusedView()));
   }
-
-  const bool selected = parent_->GetSelectedAction() == tag();
-  if (selected_ != selected) {
-    selected_ = selected;
-    if (selected)
-      NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-  }
 }
 
 void SearchResultImageButton::OnPaintBackground(gfx::Canvas* canvas) {
@@ -235,10 +227,8 @@ SearchResultActionsView::SearchResultActionsView(
 SearchResultActionsView::~SearchResultActionsView() {}
 
 void SearchResultActionsView::SetActions(const SearchResult::Actions& actions) {
-  if (selected_action_.has_value()) {
+  if (selected_action_.has_value())
     selected_action_.reset();
-    delegate_->OnSearchResultActionsUnSelected();
-  }
   buttons_.clear();
   RemoveAllChildViews(true);
 
@@ -306,9 +296,20 @@ bool SearchResultActionsView::SelectNextAction(bool reverse_tab_order) {
   return true;
 }
 
+void SearchResultActionsView::NotifyA11yResultSelected() {
+  DCHECK(HasSelectedAction());
+
+  int selected_action = GetSelectedAction();
+  for (views::Button* button : buttons_) {
+    if (button->tag() == selected_action) {
+      button->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+      return;
+    }
+  }
+}
+
 void SearchResultActionsView::ClearSelectedAction() {
   selected_action_.reset();
-  delegate_->OnSearchResultActionsUnSelected();
   UpdateButtonsOnStateChanged();
 }
 

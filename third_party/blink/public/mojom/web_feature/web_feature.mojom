@@ -2475,6 +2475,13 @@ enum WebFeature {
   kRegisterProtocolHandlerCrossOriginSubframe = 3093,
   kWebNfcNdefReaderScan = 3094,
   kWebNfcNdefWriterPush = 3095,
+  kHTMLPortalElement = 3096,
+  kV8HTMLPortalElement_Activate_Method = 3097,
+  kV8HTMLPortalElement_PostMessage_Method = 3098,
+  kV8Window_PortalHost_AttributeGetter = 3099,
+  kV8PortalHost_PostMessage_Method = 3100,
+  kV8PortalActivateEvent_Data_AttributeGetter = 3101,
+  kV8PortalActivateEvent_AdoptPredecessor_Method = 3102,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

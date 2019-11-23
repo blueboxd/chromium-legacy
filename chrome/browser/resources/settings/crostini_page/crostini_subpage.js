@@ -59,10 +59,7 @@ Polymer({
     },
   },
 
-  /**
-   * The route corresponding to this page.
-   * @private {!settings.Route|undefined}
-   */
+  /** settings.RouteOriginBehavior override */
   route_: settings.routes.CROSTINI_DETAILS,
 
   observers: [

@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> tai <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Yleiskatsaustila</translation>
 <translation id="4382340674111381977">Palaa edelliselle sivulle</translation>
+<translation id="4458670250301149821">Siirrä sovelluskuvake kansioon tai pois siitä sovellusruudukossa</translation>
 <translation id="4472417192667361414">Järjestelmä- ja näyttöasetukset</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, sitten <ph name="LEFT" />/<ph name="RIGHT" />/<ph name="UP" />/<ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Avaa pikanäppäinapuri</translation>
 <translation id="4628718545549558538">Avaa tila-alue, jossa tilikuvasi näkyy</translation>
 <translation id="4642092649622328492">Ota osittainen kuvakaappaus</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Poista seuraava kirjain (eteenpäin poistaminen)</translation>
 <translation id="7500368597227394048">yhdysmerkki</translation>
 <translation id="7611271430932669992">Aktivoi ponnahdus- ja valintaikkunat</translation>
+<translation id="7635348532214572995">Siirrä sovelluskuvake muualle sovellusruudukossa</translation>
 <translation id="766326951329901120">Liitä leikepöydän sisältö vain teksti ‑muodossa</translation>
 <translation id="7703010453515335249">vasemmanpuoleinen hakasulje</translation>
 <translation id="7724603315864178912">Leikkaa</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Liitä leikepöydän sisältö</translation>
 <translation id="9052808072970550123">Vaihda seuraavaan käyttäjään</translation>
 <translation id="906458777597946297">Suurenna ikkuna</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, sitten <ph name="LEFT" />/<ph name="RIGHT" />/<ph name="UP" />/<ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Siirry rivin alkuun</translation>
 <translation id="9106898733795143799">Sivu ja verkkoselain</translation>
 <translation id="9162942292291287644">Ei hakutuloksia kyselylle <ph name="QUERY" /></translation>

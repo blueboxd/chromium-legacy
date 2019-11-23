@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> vagy <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Áttekintési mód</translation>
 <translation id="4382340674111381977">Vissza az előző oldalra</translation>
+<translation id="4458670250301149821">Az alkalmazás áthelyezése az alkalmazásrácson lévő egyik mappába vagy mappából</translation>
 <translation id="4472417192667361414">Rendszer- és kijelzőbeállítások</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, majd <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> vagy <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">A billentyűparancsokat ismertető súgó megtekintése</translation>
 <translation id="4628718545549558538">Az állapotsor megnyitása (ahol fiókja képe látható)</translation>
 <translation id="4642092649622328492">Részleges képernyőkép készítése</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Következő betű törlése (előre törlés)</translation>
 <translation id="7500368597227394048">kötőjel</translation>
 <translation id="7611271430932669992">A fókusz áthelyezése az előugró és párbeszédablakokra</translation>
+<translation id="7635348532214572995">Alkalmazásikon áthelyezése az alkalmazásrácson</translation>
 <translation id="766326951329901120">Tartalom beillesztése a vágólapról egyszerű szövegként</translation>
 <translation id="7703010453515335249">bal oldali szögletes zárójel</translation>
 <translation id="7724603315864178912">Kivágás</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Tartalom beillesztése a vágólapról</translation>
 <translation id="9052808072970550123">Váltás a következő felhasználóra</translation>
 <translation id="906458777597946297">Ablak teljes méretre állítása</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, majd <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> vagy <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Ugrás a sor elejére</translation>
 <translation id="9106898733795143799">Oldal és böngésző</translation>
 <translation id="9162942292291287644">Nincs keresési találat a következőre: <ph name="QUERY" /></translation>

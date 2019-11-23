@@ -130,7 +130,7 @@ class SystemMediaControlsLinuxTest : public testing::Test,
   void OnOwnership(const std::string& service_name,
                    Unused,
                    dbus::Bus::OnOwnershipCallback callback) {
-    callback.Run(service_name, true);
+    std::move(callback).Run(service_name, true);
   }
 
   // Store the exported method if necessary and tell the service that the export
@@ -141,7 +141,7 @@ class SystemMediaControlsLinuxTest : public testing::Test,
                   dbus::ExportedObject::OnExportedCallback callback) {
     if (interface_name == kMprisAPIPlayerInterfaceName)
       player_interface_exported_methods_[method_name] = exported_method;
-    callback.Run(interface_name, method_name, true);
+    std::move(callback).Run(interface_name, method_name, true);
   }
 
   void OnResponse(std::unique_ptr<dbus::Response> response) {

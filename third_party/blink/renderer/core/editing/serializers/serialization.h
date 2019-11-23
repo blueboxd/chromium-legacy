@@ -96,6 +96,10 @@ CreateMarkup(const PositionInFlatTree& start,
              const PositionInFlatTree& end,
              const CreateMarkupOptions& options = CreateMarkupOptions());
 
+String SanitizeMarkupWithContext(const String& raw_markup,
+                                 unsigned fragment_start,
+                                 unsigned fragment_end);
+
 void MergeWithNextTextNode(Text*, ExceptionState&);
 
 bool PropertyMissingOrEqualToNone(CSSPropertyValueSet*, CSSPropertyID);

@@ -2032,6 +2032,9 @@ New Search
       <message name="IDS_IOS_TRANSLATE_INFOBAR_NEVER_TRANSLATE_SOURCE_BUTTON_TITLE" desc="The text for the button in the Translate Infobar modal to never translate the source language. The variable inserted will be the source language.[iOS only]">
         Never translate <ph name="LANGUAGE">$1</ph>
       </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_SELECT_LANGUAGE_MODAL_TITLE" desc="The title of the Translate Infobar Select Langage Modal Title. [iOS only]">
+        Select Language
+      </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_BANNER_SUBTITLE" desc="The text for the subtitle of the Translate Message Banner asking the user to translate the page. The variables inserted will be the source language and the target language from left to right. [iOS only]">
         <ph name="SOURCE_LANGUAGE">$1</ph> to <ph name="TARGET_LANGUAGE">$2</ph>
       </message>

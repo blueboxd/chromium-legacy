@@ -513,13 +513,6 @@ class GFX_EXPORT RenderText {
   void set_shadows(const ShadowValues& shadows) { shadows_ = shadows; }
   const ShadowValues& shadows() const { return shadows_; }
 
-  typedef std::pair<Font, Range> FontSpan;
-  // For testing purposes, returns which fonts were chosen for which parts of
-  // the text by returning a vector of Font and Range pairs, where each range
-  // specifies the character range for which the corresponding font has been
-  // chosen.
-  virtual std::vector<FontSpan> GetFontSpansForTesting() = 0;
-
   // Returns rectangle surrounding the current string (from origin to size)
   RectF GetStringRect();
 

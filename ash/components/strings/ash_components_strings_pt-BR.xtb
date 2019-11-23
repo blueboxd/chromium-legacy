@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ou <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Modo de visão geral</translation>
 <translation id="4382340674111381977">Voltar para a página anterior</translation>
+<translation id="4458670250301149821">Mover um ícone de app para dentro/fora de uma pasta na grade de apps</translation>
 <translation id="4472417192667361414">Configurações de exibição e do sistema</translation>
+<translation id="449214506787633354"><ph name="CTRL" /> e depois <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> ou <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Ver assistente de atalhos do teclado</translation>
 <translation id="4628718545549558538">Abrir a área de status, onde a imagem da sua conta aparece</translation>
 <translation id="4642092649622328492">Fazer uma captura de tela parcial</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Excluir a próxima letra (excluir para frente)</translation>
 <translation id="7500368597227394048">hífen</translation>
 <translation id="7611271430932669992">Mover o foco para pop-ups e caixas de diálogo</translation>
+<translation id="7635348532214572995">Mover um ícone de app pela grade de apps</translation>
 <translation id="766326951329901120">Colar conteúdo da área de transferência como texto simples</translation>
 <translation id="7703010453515335249">colchete esquerdo</translation>
 <translation id="7724603315864178912">Recortar</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Colar conteúdo da área de transferência</translation>
 <translation id="9052808072970550123">Alternar para o próximo usuário</translation>
 <translation id="906458777597946297">Maximizar janela</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" /> e depois <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> ou <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Ir para o início da linha</translation>
 <translation id="9106898733795143799">Página e navegador da Web</translation>
 <translation id="9162942292291287644">Nenhum resultado da pesquisa para <ph name="QUERY" /></translation>

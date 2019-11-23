@@ -5,12 +5,17 @@
 cr.define('settings', function() {
   /** @polymerBehavior */
   const RouteOriginBehaviorImpl = {
-    /**
-     * A map whose values are query selectors of subpage buttons on the page
-     *     keyed by the route path they lead to.
-     * @protected {!Map<string, string>}
-     */
-    focusConfig_: new Map(),
+    properties: {
+      /**
+       * A map whose values are query selectors of subpage buttons on the page
+       *     keyed by the route path they lead to.
+       * @protected {!Map<string, string>}
+       */
+      focusConfig_: {
+        type: Object,
+        value: () => new Map(),
+      },
+    },
 
     /**
      * The route corresponding to this page.
@@ -31,8 +36,8 @@ cr.define('settings', function() {
       }
     },
 
-    /** override */
-    ready: function() {
+    /** @override */
+    attached: function() {
       // All elements with this behavior must specify their route.
       assert(this.route_ instanceof settings.Route);
     },

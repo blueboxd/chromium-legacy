@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Ten typ karty nie jest obsługiwany</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Skontaktuj się z administratorem systemu.</translation>
+<translation id="1736420071277903564">Komputer</translation>
 <translation id="1739107442478692187">W używanej przez Ciebie witrynie lub aplikacji doszło do naruszenia bezpieczeństwa danych. Chrome zaleca natychmiastowe sprawdzenie zapisanych haseł i zmianę hasła na <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Wpisz miesiąc w prawidłowym formacie</translation>
 <translation id="1741613555002899862">Należy wskazać tę zasadę oraz prawidłowy ciąg, kiedy zasada DnsOverHttpsMode jest ustawiona jako <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -610,6 +611,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Karta straciła ważność</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Używać WebAuthn zamiast kodu CVC?</translation>
 <translation id="3946209740501886391">Zawsze pytaj na tej stronie</translation>
@@ -1535,7 +1537,6 @@ Dodatkowe informacje:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 karta kredytowa}few{# karty kredytowe}many{# kart kredytowych}other{# karty kredytowej}}</translation>
 <translation id="8473863474539038330">Adresy i ustawienia</translation>
 <translation id="8479754468255770962">Zszywka w lewym dolnym rogu</translation>
-<translation id="8481133456511676116">Czy chodziło Ci o <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Aby użyć kart z konta Google, zaloguj się w Chrome</translation>
 <translation id="8488350697529856933">Dotyczy</translation>
 <translation id="8498891568109133222">Serwer <ph name="HOST_NAME" /> potrzebował zbyt wiele czasu na odpowiedź.</translation>

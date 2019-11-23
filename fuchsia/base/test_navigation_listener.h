@@ -30,16 +30,20 @@ class TestNavigationListener : public fuchsia::web::NavigationEventListener {
   void RunUntilNavigationStateMatches(
       const fuchsia::web::NavigationState& expected_state);
 
-  // Calls RunUntilNavigationStateMatches with a NagivationState that has
+  // Calls RunUntilNavigationStateMatches with a NavigationState that has
   // |expected_url|.
   void RunUntilUrlEquals(const GURL& expected_url);
 
-  // Calls RunUntilNavigationStateMatches with a NagivationState that has
+  // Calls RunUntilNavigationStateMatches with a NavigationState that has
+  // |expected_title|.
+  void RunUntilTitleEquals(const base::StringPiece expected_title);
+
+  // Calls RunUntilNavigationStateMatches with a NavigationState that has
   // |expected_url| and |expected_title|.
   void RunUntilUrlAndTitleEquals(const GURL& expected_url,
                                  base::StringPiece expected_title);
 
-  // Calls RunUntilNavigationStateMatches with a NagivationState that has
+  // Calls RunUntilNavigationStateMatches with a NavigationState that has
   // all the expected fields.
   void RunUntilUrlTitleBackForwardEquals(const GURL& expected_url,
                                          base::StringPiece expected_title,

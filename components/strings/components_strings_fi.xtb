@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Tätä korttityyppiä ei tueta.</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Ota yhteyttä järjestelmänvalvojaan.</translation>
+<translation id="1736420071277903564">Tietokone</translation>
 <translation id="1739107442478692187">Käyttämälläsi sivustolla tai sovelluksessa tapahtui tietosuojaloukkaus. Chrome suosittelee, että tarkistat tallennetut salasanasi ja vaihdat salasanan heti (<ph name="ORIGIN" />).</translation>
 <translation id="1740951997222943430">Anna kelvollinen viimeinen voimassaolokuukausi.</translation>
 <translation id="1741613555002899862">On määritettävä kelvollisena merkkijonona, kun DnsOverHttpsMode on <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -273,6 +274,7 @@
 <translation id="2218879909401188352">Sivustolla <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> tällä hetkellä olevat hyökkääjät voivat asentaa vaarallisia laitettasi vahingoittavia sovelluksia, lisätä piilomaksuja puhelinlaskuusi tai varastaa henkilökohtaisia tietojasi. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2224337661447660594">Ei internetyhteyttä</translation>
 <translation id="2230458221926704099">Korjaa yhteytesi käyttämällä <ph name="BEGIN_LINK" />diagnostiikkasovellusta<ph name="END_LINK" />.</translation>
+<translation id="22320125457191592">Sinulle</translation>
 <translation id="2239100178324503013">Lähetä nyt</translation>
 <translation id="2248949050832152960">Käytä WebAuthnia</translation>
 <translation id="2250931979407627383">Reunasidonta vasemmalla</translation>
@@ -373,6 +375,7 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Poistu</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2691924980723297736">Turvallisuusvaroitus</translation>
 <translation id="2699302886720511147">Hyväksytyt kortit</translation>
 <translation id="2702801445560668637">Lukulista</translation>
 <translation id="2704283930420550640">Arvo ei vastaa muotoa.</translation>
@@ -476,6 +479,7 @@
 <translation id="3207960819495026254">Kirjanmerkeissä</translation>
 <translation id="3209034400446768650">Sivu voi veloittaa</translation>
 <translation id="3209080785413271048">Vahvista tallennetut maksutavat Windows Hellolla</translation>
+<translation id="3212581601480735796">Toimintaasi (<ph name="HOSTNAME" />) tarkkaillaan</translation>
 <translation id="3215092763954878852">WebAuthn:n käyttö ei onnistunut</translation>
 <translation id="3225919329040284222">Palvelin esitti varmenteen, joka ei vastaa sisäänrakennettuja odotuksia. Tietyillä tehokkaasti suojatuilla sivustoilla on odotuksia, joilla suojataan käyttäjiä.</translation>
 <translation id="3226128629678568754">Paina päivityspainiketta, niin sivun lataukseen tarvittavat tiedot lähetetään uudelleen.</translation>
@@ -534,6 +538,7 @@
 <translation id="3528485271872257980">Tummanruskea</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Vähintään 1 kohde synkronoiduilla laitteilla}=1{1 kohde (ja lisää synkronoiduilla laitteilla)}other{# kohdetta (ja lisää synkronoiduilla laitteilla)}}</translation>
 <translation id="3539171420378717834">Säilytä tämän kortin kopio laitteella.</translation>
+<translation id="3553513561058684206">Sinulle</translation>
 <translation id="3566021033012934673">Yhteytesi ei ole salattu</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Viesti upotetulta sivulta osoitteessa <ph name="SITE" /></translation>
@@ -611,6 +616,7 @@
 <translation id="3897092660631435901">Valikko</translation>
 <translation id="3901925938762663762">Kortti on vanhentunut.</translation>
 <translation id="3906600011954732550">B5-ekstra</translation>
+<translation id="3906954721959377182">Tabletti</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Käytetäänkö WebAuthnia CVC:n sijaan?</translation>
 <translation id="3946209740501886391">Kysy aina tällä sivustolla</translation>
@@ -763,6 +769,7 @@
 <translation id="4594403342090139922">K&amp;umoa poisto</translation>
 <translation id="4597348597567598915">Koko 8</translation>
 <translation id="4600854749408232102">C6/C5 (kirjekuori)</translation>
+<translation id="4613966523036881546">Google Chrome ei luota tämän yhteyden varmenteeseen, koska sitä on aiemmin käytetty verkon kaappaamiseen ja tarkkailuun.</translation>
 <translation id="4635654612248442824">Sivusto <ph name="ORIGIN" /> pyytää alkuperäkäytännön
     soveltamista kaikkiin sen pyyntöihin, mutta käytäntöä ei voi soveltaa tällä hetkellä.</translation>
 <translation id="464342062220857295">Hakutoiminnot</translation>
@@ -1468,6 +1475,7 @@ Lisätietoja:
 <translation id="8103161714697287722">Maksutapa</translation>
 <translation id="8105368624971345109">Poista käytöstä</translation>
 <translation id="8118489163946903409">Maksutapa</translation>
+<translation id="8124023448510659215">Chromium ei luota tämän yhteyden varmenteeseen, koska sitä on aiemmin käytetty verkon kaappaamiseen ja tarkkailuun.</translation>
 <translation id="8127301229239896662"><ph name="SOFTWARE_NAME" /> on asennettu virheellisesti tietokoneellesi tai verkkoon. Pyydä järjestelmänvalvojaasi ratkaisemaan ongelma.</translation>
 <translation id="8131740175452115882">Vahvista</translation>
 <translation id="8149426793427495338">Tietokoneesi siirtyi virransäästötilaan.</translation>
@@ -1536,7 +1544,6 @@ Lisätietoja:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 luottokortti}other{# luottokorttia}}</translation>
 <translation id="8473863474539038330">Osoitteet ja muita tietoja</translation>
 <translation id="8479754468255770962">Niitti vasemmassa alakulmassa</translation>
-<translation id="8481133456511676116">Tarkoititko: <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Jos haluat käyttää Google-tilillesi tallennettuja kortteja, kirjaudu Chromeen</translation>
 <translation id="8488350697529856933">Käyttöalue</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ei vastannut riittävän nopeasti.</translation>
@@ -1612,6 +1619,8 @@ Lisätietoja:
 <translation id="8957210676456822347">Captive portal -valtuutus</translation>
 <translation id="8962950042226115166">Epäilyttävä sivusto</translation>
 <translation id="8968766641738584599">Tallenna kortti</translation>
+<translation id="8969267497192857913">Joku muu näkee kaikki kirjoittamasi asiat, avaamasi sivut ja muut toimesi verkossa, ja sivustojen sisältöä voidaan muuttaa tietämättäsi.
+    <ph name="BEGIN_LEARN_MORE_LINK" />Lue lisää<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="8971063699422889582">Palvelimen varmenne on vanhentunut.</translation>
 <translation id="8975012916872825179">Tallenna puhelinnumerot, sähköpostiosoitteet, toimitusosoitteet ja muita tietoja</translation>
 <translation id="8975263830901772334">Tulostamiesi tiedostojen nimet</translation>

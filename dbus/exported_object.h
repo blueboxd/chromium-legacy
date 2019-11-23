@@ -40,32 +40,33 @@ class CHROME_DBUS_EXPORT ExportedObject
   ExportedObject(Bus* bus, const ObjectPath& object_path);
 
   // Called to send a response from an exported method. |response| is the
-  // response message. Callers should pass NULL in the event of an error that
+  // response message. Callers should pass nullptr in the event of an error that
   // prevents the sending of a response.
-  typedef base::Callback<void(std::unique_ptr<Response> response)>
-      ResponseSender;
+  using ResponseSender =
+      base::OnceCallback<void(std::unique_ptr<Response> response)>;
 
   // Called when an exported method is called. |method_call| is the request
   // message. |sender| is the callback that's used to send a response.
   //
   // |method_call| is owned by ExportedObject, hence client code should not
   // delete |method_call|.
-  typedef base::Callback<void (MethodCall* method_call, ResponseSender sender)>
-      MethodCallCallback;
+  using MethodCallCallback =
+      base::RepeatingCallback<void(MethodCall* method_call,
+                                   ResponseSender sender)>;
 
   // Called when method exporting is done.
   // |success| indicates whether exporting was successful or not.
-  typedef base::Callback<void (const std::string& interface_name,
-                               const std::string& method_name,
-                               bool success)>
-      OnExportedCallback;
+  using OnExportedCallback =
+      base::OnceCallback<void(const std::string& interface_name,
+                              const std::string& method_name,
+                              bool success)>;
 
   // Called when method unexporting is done.
   // |success| indicates whether unexporting was successful or not.
-  typedef base::Callback<void(const std::string& interface_name,
+  using OnUnexportedCallback =
+      base::OnceCallback<void(const std::string& interface_name,
                               const std::string& method_name,
-                              bool success)>
-      OnUnexportedCallback;
+                              bool success)>;
 
   // Exports the method specified by |interface_name| and |method_name|,
   // and blocks until exporting is done. Returns true on success.
@@ -84,9 +85,10 @@ class CHROME_DBUS_EXPORT ExportedObject
   // soon as you acquire a service name, by watching the name owner change.
   //
   // BLOCKING CALL.
-  virtual bool ExportMethodAndBlock(const std::string& interface_name,
-                                    const std::string& method_name,
-                                    MethodCallCallback method_call_callback);
+  virtual bool ExportMethodAndBlock(
+      const std::string& interface_name,
+      const std::string& method_name,
+      const MethodCallCallback& method_call_callback);
 
   // Unexports the method specified by |interface_name| and |method_name|,
   // and blocks until unexporting is done. Returns true on success.
@@ -102,7 +104,7 @@ class CHROME_DBUS_EXPORT ExportedObject
   // Must be called in the origin thread.
   virtual void ExportMethod(const std::string& interface_name,
                             const std::string& method_name,
-                            MethodCallCallback method_call_callback,
+                            const MethodCallCallback& method_call_callback,
                             OnExportedCallback on_exported_callback);
 
   // Requests to unexport the method specified by |interface_name| and
@@ -137,7 +139,7 @@ class CHROME_DBUS_EXPORT ExportedObject
   // Helper function for ExportMethod().
   void ExportMethodInternal(const std::string& interface_name,
                             const std::string& method_name,
-                            MethodCallCallback method_call_callback,
+                            const MethodCallCallback& method_call_callback,
                             OnExportedCallback exported_callback);
 
   // Helper function for UnexportMethod().
@@ -173,7 +175,7 @@ class CHROME_DBUS_EXPORT ExportedObject
                                   DBusMessage* raw_message);
 
   // Runs the method. Helper function for HandleMessage().
-  void RunMethod(MethodCallCallback method_call_callback,
+  void RunMethod(const MethodCallCallback& method_call_callback,
                  std::unique_ptr<MethodCall> method_call,
                  base::TimeTicks start_time);
 

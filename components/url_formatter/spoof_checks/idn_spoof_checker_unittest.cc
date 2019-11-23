@@ -1151,7 +1151,28 @@ const IDNTestCase kIdnCases[] = {
     {"xn--l-fda.cat", L"·l.cat", false},
     {"xn--l-gda.cat", L"l·.cat", false},
 
-};  // namespace
+    {"xn--googlecom-gk6n.com", L"google丨com.com", false},   // (U+4E28)
+    {"xn--googlecom-0y6n.com", L"google乛com.com", false},   // (U+4E5B)
+    {"xn--googlecom-v85n.com", L"google七com.com", false},   // (U+4E03)
+    {"xn--googlecom-g95n.com", L"google丅com.com", false},   // (U+4E05)
+    {"xn--googlecom-go6n.com", L"google⼂com.com", false},   // (U+2F02)
+    {"xn--googlecom-b76o.com", L"google⼗com.com", false},   // (U+2F17)
+    {"xn--googlecom-b76o.com", L"google〸com.com", false},   // (U+3038)
+    {"xn--googlecom-ql3h.com", L"google〇com.com", false},   // (U+3007)
+    {"xn--googlecom-0r5h.com", L"googleㄒcom.com", false},   // (U+3112)
+    {"xn--googlecom-bu5h.com", L"googleㄚcom.com", false},   // (U+311A)
+    {"xn--googlecom-qv5h.com", L"googleㄟcom.com", false},   // (U+311F)
+    {"xn--googlecom-0x5h.com", L"googleㄧcom.com", false},   // (U+3127)
+    {"xn--googlecom-by5h.com", L"googleㄨcom.com", false},   // (U+3128)
+    {"xn--googlecom-ly5h.com", L"googleㄩcom.com", false},   // (U+3129)
+    {"xn--googlecom-5o5h.com", L"googleㄈcom.com", false},   // (U+3108)
+    {"xn--googlecom-075n.com", L"google㆒com.com", false},   // (U+3192)
+    {"xn--googlecom-046h.com", L"googleㆺcom.com", false},   // (U+31BA)
+    {"xn--googlecom-026h.com", L"googleㆳcom.com", false},   // (U+31B3)
+    {"xn--googlecom-lg9q.com", L"google工com.com", false},   // (U+5DE5)
+    {"xn--googlecom-g040a.com", L"google讠com.com", false},  // (U+8BA0)
+    {"xn--googlecom-b85n.com", L"google丁com.com", false},   // (U+4E01)
+};                                                           // namespace
 
 namespace test {
 #include "components/url_formatter/spoof_checks/top_domains/test_domains-trie-inc.cc"

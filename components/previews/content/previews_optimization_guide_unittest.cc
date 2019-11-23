@@ -94,18 +94,6 @@ class TestOptimizationGuideDecider
     return std::get<0>(response);
   }
 
-  optimization_guide::OptimizationGuideDecision
-  ShouldTargetNavigationAndCanApplyOptimization(
-      content::NavigationHandle* navigation_handle,
-      optimization_guide::proto::OptimizationTarget optimization_target,
-      optimization_guide::proto::OptimizationType optimization_type,
-      optimization_guide::OptimizationMetadata* optimization_metadata)
-      override {
-    // Should not be called.
-    EXPECT_TRUE(false);
-    return optimization_guide::OptimizationGuideDecision::kFalse;
-  }
-
   void SetResponses(
       std::map<std::tuple<GURL, optimization_guide::proto::OptimizationType>,
                std::tuple<optimization_guide::OptimizationGuideDecision,

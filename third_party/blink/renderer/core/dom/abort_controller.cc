@@ -10,11 +10,11 @@
 namespace blink {
 
 AbortController* AbortController::Create(ExecutionContext* context) {
-  return MakeGarbageCollected<AbortController>(context);
+  return MakeGarbageCollected<AbortController>(
+      MakeGarbageCollected<AbortSignal>(context));
 }
 
-AbortController::AbortController(ExecutionContext* execution_context)
-    : signal_(MakeGarbageCollected<AbortSignal>(execution_context)) {}
+AbortController::AbortController(AbortSignal* signal) : signal_(signal) {}
 
 AbortController::~AbortController() = default;
 

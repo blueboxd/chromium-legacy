@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Açık mavi</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> kendisini güncel tutamayabilir</translation>
 <translation id="1736419249208073774">Keşfet</translation>
-<translation id="1736420071277903564">Bilgisayar</translation>
 <translation id="1737968601308870607">Hata bildir</translation>
 <translation id="1741314857973421784">Devam</translation>
 <translation id="1743570585616704562">Tanınmadı</translation>
@@ -1129,6 +1128,7 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2617342710774726426">SIM kart kilitli</translation>
 <translation id="2619761439309613843">Günlük Yenileme</translation>
 <translation id="2620436844016719705">Sistem</translation>
+<translation id="2621713457727696555">Güvenliği sağlandı</translation>
 <translation id="26224892172169984">Protokolleri işlemek için hiçbir siteye izin verme</translation>
 <translation id="2624142942574147739">Bu sayfa kameranıza ve mikrofonunuza erişiyor.</translation>
 <translation id="2626799779920242286">Lütfen daha sonra tekrar deneyin.</translation>
@@ -1580,6 +1580,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="328571385944182268">Şifreleriniz kaydedilsin mi?</translation>
 <translation id="3288047731229977326">Geliştirici modunda çalışan uzantılar bilgisayarınıza zarar verebilir. Geliştirici değilseniz, geliştirici modundayken güvende olmak için bu uzantıların çalışmasını devre dışı bırakmanız gerekir.</translation>
 <translation id="3289856944988573801">Güncellemeleri kontrol etmek için lütfen Ethernet veya Kablosuz kullanın.</translation>
+<translation id="3290356915286466215">Güvenli değil</translation>
 <translation id="3293644607209440645">Bu sayfayı gönder</translation>
 <translation id="32939749466444286">Linux kapsayıcısı başlamadı. Lütfen tekrar deneyin.</translation>
 <translation id="3294437725009624529">Misafir</translation>
@@ -2021,7 +2022,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3900966090527141178">Şifreleri dışa aktarın</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> ağına bağlanılıyor</translation>
 <translation id="3905761538810670789">Uygulamayı onar</translation>
-<translation id="3906954721959377182">Tablet</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> güncel değil</translation>
 <translation id="3908501907586732282">Uzantıyı etkinleştir</translation>
 <translation id="3909477809443608991"><ph name="URL" />, korunan içeriği oynatmak istiyor. Cihazınızın kimliği Google tarafından doğrulanır ve bu site tarafından erişilebilir.</translation>
@@ -2321,7 +2321,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4364327530094270451">Kavun</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" />, bir pencereyi paylaşıyor.</translation>
 <translation id="4364830672918311045">Bildirimleri görüntüleme</translation>
-<translation id="4366956553771076218"><ph name="APP_NAME" /> ile <ph name="ACTION_NAME" />.</translation>
 <translation id="4370975561335139969">Girdiğiniz e-posta ve şifre eşleşmiyor</translation>
 <translation id="437184764829821926">Gelişmiş yazı tipi ayarları</translation>
 <translation id="4374831787438678295">Linux yükleyici</translation>
@@ -2963,7 +2962,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5363109466694494651">Powerwash Uygula ve Geri Al</translation>
 <translation id="5365881113273618889">Seçtiğiniz klasör hassas dosyalar içeriyor. "<ph name="APP_NAME" />" uygulamasına bu klasör için kalıcı yazma erişimi vermek istediğinizden emin misiniz?</translation>
 <translation id="5367091008316207019">Dosya okunuyor..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Telefonunuz kilitli. Giriş yapmak için kilidini açın.</translation>
 <translation id="5368779022775404937"><ph name="REALM" /> alan adında oturum açın</translation>
 <translation id="5369491905435686894">Fare hızlandırmasını etkinleştir</translation>
@@ -4721,6 +4719,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7912080627461681647">Şifreniz sunucuda değiştirildi. Lütfen oturumu kapatıp tekrar açın.</translation>
 <translation id="7915457674565721553">Ebeveyn denetimlerini kurmak için internete bağlanın</translation>
 <translation id="7915471803647590281">Geri bildirimi göndermeden önce lütfen bize ne olduğunu söyleyin.</translation>
+<translation id="7918257978052780342">Kaydol</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> sn.</translation>
 <translation id="792514962475806987">Yerleştirilmişken yakınlaştırma düzeyi:</translation>
 <translation id="7925247922861151263">AAA kontrolü başarısız oldu</translation>

@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">Gusa kitufe cha "Anza Kuweka Kumbukumbu" ili ukusanye kumbukumbu na hitilafu za Kidhibiti cha JavaScript kutoka vichupo vyote. Kumbukumbu zitakusanywa (na kuhifadhiwa katika hifadhi pekee) hadi wakati ukurasa huu unafungwa au kitufe cha "Acha Kuweka Kumbukumbu" kinaguswa.</translation>
 <translation id="1657011748321897393">Kushiriki kulishindwa kwa sababu hujaunganishwa kwenye mtandao.</translation>
 <translation id="165877110639533037">Hakuna Vichupo Vilivyo Wazi</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> kwenda <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Ili upate alamisho kwenye vifaa vyako vyote, washa usawazishaji.</translation>
 <translation id="1687475363370981210">Tia Alama kuwa Umesoma Zote</translation>
 <translation id="1690731385917361335">Hakuna vipengee</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">Wasilisha</translation>
 <translation id="2690858294534178585">Kamera inatumika</translation>
 <translation id="2691653761409724435">Haipatikani nje ya mtandao</translation>
+<translation id="2695507686909505111">Ukurasa Umetafsiriwa</translation>
 <translation id="2702801445560668637">Orodha ya Kusoma</translation>
 <translation id="2704606927547763573">Imenakiliwa</translation>
 <translation id="2709516037105925701">Kujaza Kiotomatiki</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">Hakuna muunganisho wa intaneti.</translation>
 <translation id="3783017676699494206">Hifadhi Picha</translation>
 <translation id="3789841737615482174">Sakinisha</translation>
+<translation id="3803696231112616155">Jitolee kutafsiri tovuti hii</translation>
 <translation id="385051799172605136">Rudi nyuma</translation>
 <translation id="3897092660631435901">Menyu</translation>
 <translation id="3915450441834151894">Maelezo ya Tovuti</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">Ukurasa huu utafunguka katika programu nyingine.</translation>
 <translation id="4375040482473363939">Tafuta msimbo wa QR</translation>
 <translation id="4378154925671717803">Simu</translation>
+<translation id="4389019817280890563">Gusa ili ubadilishe lugha.</translation>
 <translation id="441868831736628555">Ilani ya Faragha</translation>
 <translation id="4454246407045105932">Ongeza Lugha</translation>
 <translation id="4476574785019001431">Mipangilio</translation>
@@ -344,6 +348,7 @@ Lazima Handoff iwashwe pia katika sehemu ya Jumla ya Mipangilio, na lazima vifaa
 <translation id="5871497086027727873">Kipengee 1 kimesogezwa</translation>
 <translation id="5897956970858271241">Fungua Kiungo Ulichonakili</translation>
 <translation id="5911030830365207728">Google Tafsiri</translation>
+<translation id="5913600720976431809">Chaguo za Kutafsiri ukurasa</translation>
 <translation id="5916664084637901428">Imewashwa</translation>
 <translation id="5938160824633642847">Nafasi ya kifaa chako inakaribia kujaa. Tafadhali futa baadhi vipengee ili upate nafasi kisha ujaribu tena.</translation>
 <translation id="5948291296578561264">Hatua hii inakuruhusu uhifadhi picha kwenye maktaba ya picha.</translation>
@@ -375,6 +380,7 @@ Lazima Handoff iwashwe pia katika sehemu ya Jumla ya Mipangilio, na lazima vifaa
 <translation id="6219688215832490856">Usitafsiri Kamwe</translation>
 <translation id="6254066287920239840">Hufungua viungo katika programu badala ya kivinjari.</translation>
 <translation id="6255097610484507482">Badilisha Kadi ya Malipo</translation>
+<translation id="6284652193729350524">Jitolee kutafsiri kutoka <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Ondoka kwenye akaunti na uzime usawazishaji</translation>
 <translation id="6308436439357671616">Hii hukuwezesha kupiga na kupakia picha.</translation>
 <translation id="6324528485781869530">Badilisha Akaunti ya Usawazishaji</translation>
@@ -429,6 +435,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="6903907808598579934">Washa kipengele cha kusawazisha</translation>
 <translation id="6914583639806229067">Tafuta Picha Uliyonakili</translation>
 <translation id="6914783257214138813">Mtu yeyote anayeweza kuona faili uliyohamisha ataona manenosiri yako.</translation>
+<translation id="6930799952781667037">Gusa ili utumie lugha hii.</translation>
 <translation id="6944369514868857500">Chagua Akaunti Nyingine</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="6973630695168034713">Folda</translation>
@@ -458,6 +465,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7293171162284876153">Ili uanze kusawazisha, washa mipangilio ya "Sawazisha data yako kwenye Chrome".</translation>
 <translation id="7336264872878993241">Faili imepakuliwa asilimia <ph name="PERCENT" /></translation>
 <translation id="7346909386216857016">Sawa, nimeelewa</translation>
+<translation id="734758817008927353">Chaguo za Kuhifadhi Kadi</translation>
 <translation id="7348502496356775519">Alamisha</translation>
 <translation id="7383797227493018512">Orodha ya Kusoma</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -482,6 +490,7 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="7671141431838911305">SAKINISHA</translation>
 <translation id="7765158879357617694">Sogeza</translation>
 <translation id="7772032839648071052">Thibitisha kaulisiri</translation>
+<translation id="7781011649027948662">Ungependa Kutafsiri Ukurasa?</translation>
 <translation id="7781829728241885113">Jana</translation>
 <translation id="778855399387580014">Anza kutafuta ukitumia kichupo kipya cha Chrome.</translation>
 <translation id="7791543448312431591">Ongeza</translation>

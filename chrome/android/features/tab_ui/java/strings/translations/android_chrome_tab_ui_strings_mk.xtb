@@ -1,4 +1,29 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mk">
+<translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> ваши картички не се користени во последно време. Дали да се затворат?</translation>
+<translation id="1181037720776840403">Отстрани</translation>
+<translation id="125153950246128346">Допрете за да видите друга картичка</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> картичка}one{<ph name="TABS_COUNT_MANY" /> картичка}other{<ph name="TABS_COUNT_MANY" /> картички}}</translation>
+<translation id="257674075312929031">Група</translation>
+<translation id="2613747923081026172">Создај група</translation>
+<translation id="2671423594960767771">Сподели ја групата</translation>
+<translation id="2977480621796371840">Отстрани од групата</translation>
+<translation id="4212246570487010370">Продолжете да прелистувате</translation>
+<translation id="4648718555153979859">Вашите картички се групирани заедно тука</translation>
+<translation id="5007392906805964215">Прегледајте</translation>
+<translation id="5073204694187207510">Сокриј ја табелата на цел екран</translation>
+<translation id="5082793167783849073">Набрзина споредете ги страниците со правење група. За да започнете, допрете и задржете го линкот.</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> картички се групирани</translation>
+<translation id="5792534911093536736">Повеќе картички</translation>
+<translation id="58326064309361797">Повлечете ги картичките за ги групирате</translation>
+<translation id="6040143037577758943">Затвори</translation>
+<translation id="6193448654517602979">Изберете картички</translation>
+<translation id="6615455863669487791">Покажи ми</translation>
+<translation id="6840760312327750441">За групирање на картичките, допрете и задржете една картичка. Потоа, повлечете ја врз друга картичка.</translation>
+<translation id="7151209024774799310">Отстранете картички од групата</translation>
+<translation id="7559245342362162951">Прикажи ги картичките од групата во табела на цел екран</translation>
+<translation id="9150694013019234766">Префрлајте се од една на друга картичка во групата со картички најдолу на екранот</translation>
+<translation id="9169594135889675189">Додај нова картичка во групата</translation>
+<translation id="959682366969460160">Организирајте се</translation>
 </translationbundle>

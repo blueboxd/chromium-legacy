@@ -1,4 +1,29 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="az">
+<translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> tab son zamanlarda istifadə edilməyib. Onlar bağlansın?</translation>
+<translation id="1181037720776840403">Silin</translation>
+<translation id="125153950246128346">Başqa taba baxmaq üçün klikləyin</translation>
+<translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> tab}other{<ph name="TABS_COUNT_MANY" /> tab}}</translation>
+<translation id="257674075312929031">Qrup</translation>
+<translation id="2613747923081026172">Qrup yaradın</translation>
+<translation id="2671423594960767771">Qrupu paylaşın</translation>
+<translation id="2977480621796371840">Qrupdan çıxarın</translation>
+<translation id="4212246570487010370">Axtarmağa davam edin</translation>
+<translation id="4648718555153979859">Tablar burada qruplaşdırılır</translation>
+<translation id="5007392906805964215">Nəzərdən keçirin</translation>
+<translation id="5073204694187207510">Tam ekran cədvəlini gizlədin</translation>
+<translation id="5082793167783849073">Qruplaşdırmaqla səhifələri asanlıqla müqayisə edin. Başlamaq üçün linkə toxunub saxlayın.</translation>
+<translation id="5580090775658607195"><ph name="TAB_COUNT" /> tab qruplaşdırıldı</translation>
+<translation id="5792534911093536736">Daha çox tab</translation>
+<translation id="58326064309361797">Tabları qruplaşdırmaq üçün sürüşdürün</translation>
+<translation id="6040143037577758943">Qapat</translation>
+<translation id="6193448654517602979">Tablar seçin</translation>
+<translation id="6615455863669487791">Mənə göstərin</translation>
+<translation id="6840760312327750441">Panelləri qruplaşdırmaq üçün panelə toxunub saxlayın. Daha sonra digər panelin üzərinə çəkin.</translation>
+<translation id="7151209024774799310">Tabları qrupdan silin</translation>
+<translation id="7559245342362162951">Qrup tabını tam ekran cədvəlində göstərin</translation>
+<translation id="9150694013019234766">Ekranın aşağısındakı tab qrupunda tablar arasında keçid edin</translation>
+<translation id="9169594135889675189">Qrupa yeni tab əlavə edin</translation>
+<translation id="959682366969460160">Sistemləşdirin</translation>
 </translationbundle>

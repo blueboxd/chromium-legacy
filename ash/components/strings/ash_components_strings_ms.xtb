@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> atau <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Mod ikhtisar</translation>
 <translation id="4382340674111381977">Kembali ke halaman sebelumnya</translation>
+<translation id="4458670250301149821">Alihkan ikon apl ke dalam/ke luar daripada folder dalam grid apl</translation>
 <translation id="4472417192667361414">Tetapan Sistem &amp; Paparan</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, kemudian <ph name="LEFT" /> atau <ph name="RIGHT" /> atau <ph name="UP" /> atau <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Lihat Pembantu Pintasan Papan Kekunci</translation>
 <translation id="4628718545549558538">Buka area status (tempat gambar akaun anda dipaparkan)</translation>
 <translation id="4642092649622328492">Ambil tangkapan skrin separa</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Padamkan huruf seterusnya (memadam ke hadapan)</translation>
 <translation id="7500368597227394048">tanda sempang</translation>
 <translation id="7611271430932669992">Alihkan fokus ke tetingkap timbul dan dialog</translation>
+<translation id="7635348532214572995">Gerakkan ikon apl sekeliling grid apl</translation>
 <translation id="766326951329901120">Tampal kandungan dari papan keratan sebagai teks biasa</translation>
 <translation id="7703010453515335249">tanda kurung kiri</translation>
 <translation id="7724603315864178912">Potong</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Tampal kandungan daripada papan keratan</translation>
 <translation id="9052808072970550123">Beralih kepada pengguna seterusnya</translation>
 <translation id="906458777597946297">Maksimumkan tetingkap</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, kemudian <ph name="LEFT" /> atau <ph name="RIGHT" /> atau <ph name="UP" /> atau <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Pergi ke permulaan baris</translation>
 <translation id="9106898733795143799">Halaman &amp; Penyemak Imbas Web</translation>
 <translation id="9162942292291287644">Tiada hasil carian untuk <ph name="QUERY" /></translation>

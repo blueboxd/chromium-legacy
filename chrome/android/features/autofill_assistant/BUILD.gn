@@ -210,6 +210,7 @@ android_library("test_java") {
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantBottomsheetTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDetailsUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantDirectActionHandlerTest.java",
+    "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantFormActionTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantHeaderUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantInfoBoxUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantOverlayUiTest.java",

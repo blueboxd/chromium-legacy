@@ -51,6 +51,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -481,6 +483,24 @@ public class TabModalPresenterTest {
     }
 
     private void checkBrowserControls(boolean restricted) {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                View menu = mActivity.getToolbarManager().getMenuButtonView();
+                if (menu == null) {
+                    updateFailureReason("Menu button is null.");
+                    return false;
+                }
+                // getMenuButtonView returns the menu button for the browsing mode toolbar view
+                // regardless of whether the app is in the tab switching UI.  If showing the tab
+                // switcher, then do not force the toolbar button to be visible.
+                if (mActivity.isInOverviewMode()) return true;
+
+                updateFailureReason("Menu button is not shown.");
+                return menu.isShown();
+            }
+        });
+
         if (restricted) {
             assertTrue("All tabs should be obscured", mActivity.isViewObscuringAllTabs());
             onView(allOf(isDisplayed(), withId(R.id.menu_button))).check(matches(not(isEnabled())));

@@ -516,6 +516,15 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
           Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="1852294065645015766">Izinkan pemutaran otomatis media</translation>
+<translation id="1853782273088286010">Mengontrol apakah klien DNS built-in akan digunakan dalam <ph name="PRODUCT_NAME" />.
+
+      Kebijakan ini tidak memengaruhi server DNS yang digunakan, hanya stack software yang digunakan untuk berkomunikasi dengan server tersebut. Misalnya, jika sistem operasi dikonfigurasi untuk menggunakan server DNS perusahaan, server yang sama tersebut akan digunakan oleh klien DNS built-in. Namun, mungkin saja klien DNS built-in akan menangani server dalam berbagai cara menggunakan protokol terkait DNS yang lebih modern seperti DNS-over-TLS.
+
+      Jika kebijakan ini ditetapkan ke true, klien DNS built-in akan digunakan, jika tersedia.
+
+      Jika kebijakan ini ditetapkan ke false, klien DNS built-in tidak akan pernah digunakan.
+
+      Jika kebijakan ini tidak ditetapkan, klien DNS built-in akan diaktifkan secara default di MacOS, Android (saat DNS Pribadi atau VPN tidak diaktifkan), serta ChromeOS, dan pengguna akan dapat mengubah apakah klien DNS built-in digunakan atau tidak dengan mengedit chrome://flags atau menentukan tanda baris perintah.</translation>
 <translation id="1857152770025485173">Kebijakan ini mencegah pengguna memuat halaman dari URL yang masuk daftar hitam. Daftar hitam menyediakan daftar pola URL yang menentukan URL mana yang masuk daftar hitam.
 
       Pola URL harus diformat sesuai dengan https://www.chromium.org/administrators/url-blacklist-filter-format.
@@ -1371,6 +1380,13 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Kebijakan ini adalah opsional. Jika tidak disetel, penggantian istilah penelusuran tidak akan dilakukan.
 
           Kebijakan ini hanya akan ditaati jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
+<translation id="3049248142961638857">Menentukan hostname perangkat yang digunakan dalam permintaan DHCP.
+
+      Jika kebijakan ini ditetapkan ke string yang tidak kosong, string tersebut akan digunakan sebagai hostname perangkat selama proses permintaan DHCP.
+
+      String tersebut dapat berisi variabel <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />, <ph name="LOCATION_PLACEHOLDER" /> yang akan diganti dengan nilai pada perangkat sebelum digunakan sebagai hostname. Substitusi yang dihasilkan harus berupa hostname valid (sesuai dengan RFC 1035, bagian 3.1).
+
+      Jika kebijakan ini tidak ditetapkan, atau nilai setelah substitusi bukan merupakan hostname yang valid, tidak ada hostname yang akan disetel dalam permintaan DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740">Memungkinkan penonaktifan pengoptimalan WPAD (Web Proxy Auto-Discovery) di <ph name="PRODUCT_NAME" />.
 
@@ -2629,6 +2645,11 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Kebijakan ini hanya tersedia pada instance Windows yang dihubungkan ke domain <ph name="MS_AD_NAME" />, atau instance Windows 10 Pro atau Enterprise yang terdaftar untuk pengelolaan perangkat.</translation>
 <translation id="5208240613060747912">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
+<translation id="5212118847531454979">Memungkinkan Anda menyetel jangka waktu, dalam milidetik, untuk memberi tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan kembali atau bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
+
+      Selama jangka waktu ini, pengguna akan berulang-ulang diberi tahu tentang perlunya update. Untuk perangkat <ph name="PRODUCT_OS_NAME" />, notifikasi mulai ulang akan muncul di baki sistem sesuai dengan kebijakan <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Untuk browser <ph name="PRODUCT_NAME" />, menu aplikasi akan berubah untuk menunjukkan bahwa peluncuran ulang diperlukan setelah sepertiga periode notifikasi berlalu. Warna notifikasi akan berubah setelah dua pertiga periode notifikasi berlalu, dan berubah lagi setelah seluruh periode notifikasi berlalu. Notifikasi tambahan yang diaktifkan oleh kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> mengikuti jadwal yang sama seperti ini.
+
+      Jika tidak ditetapkan, jangka waktu default selama 604800000 milidetik (satu minggu) akan digunakan.</translation>
 <translation id="5212810195096589189">Tentukan izin CLI VM</translation>
 <translation id="5213038356678567351">Situs yang seharusnya tidak pernah memicu pengalihan browser.</translation>
 <translation id="5219844027738217407">Untuk aplikasi Android, kebijakan ini hanya memengaruhi mikrofon. Jika kebijakan disetel ke true, mikrofon akan dibisukan untuk semua aplikasi Android, tanpa pengecualian.</translation>
@@ -2885,6 +2906,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika tidak ditentukan, tidak akan mengubah URL bibit Variasi.</translation>
 <translation id="5561811616825571914">Memilih sertifikat klien untuk situs ini secara otomatis di layar login</translation>
+<translation id="5564865786900450806">Menyembunyikan peringatan yang muncul saat <ph name="PRODUCT_NAME" /> dijalankan di komputer atau sistem operasi yang tidak didukung lagi.
+
+      Jika kebijakan ini ditetapkan ke false atau tidak ditetapkan, peringatan akan muncul di komputer atau sistem operasi yang tidak didukung atau semacamnya.</translation>
 <translation id="5565178130821694365">Sandi harus dimasukkan setiap dua hari (48 jam)</translation>
 <translation id="5566210228171064229">Izinkan pencetakan dengan dan tanpa PIN</translation>
 <translation id="556865034069957245">Kebijakan ini mengontrol ketersediaan mode layar penuh di mana semua UI <ph name="PRODUCT_NAME" /> disembunyikan dan hanya konten web yang terlihat.
@@ -4408,6 +4432,9 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
           Jika Anda menonaktifkan setelan ini, meta tag halaman akan dipindai.
 
           Jika kebijakan ini tidak disetel, meta tag halaman akan dipindai.</translation>
+<translation id="829641334878002866">Memungkinkan Anda menentukan jangka waktu, dalam milidetik, antara notifikasi pertama bahwa perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update tertunda dan akhir dari jangka waktu yang ditentukan oleh kebijakan <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Jika tidak ditetapkan, jangka waktu default selama 259200000 milidetik (tiga hari) akan digunakan untuk perangkat <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8300455783946254851">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> saat menggunakan sambungan seluler jika disetel ke True. Dalam kasus ini, data hanya disinkronkan ke Google Drive saat tersambung melalui Wi-Fi atau Ethernet.
 
           Jika tidak disetel atau disetel ke False, pengguna akan dapat mentransfer file ke Google Drive melalui sambungan seluler.</translation>

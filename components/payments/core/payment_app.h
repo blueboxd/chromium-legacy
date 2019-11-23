@@ -92,9 +92,9 @@ class PaymentApp {
   // given |payment_method_identifier|. The |is_valid| is an out-param instead
   // of the return value to enable binding this method with a base::WeakPtr,
   // which prohibits non-void methods.
-  virtual void IsValidForPaymentMethodIdentifier(
+  void IsValidForPaymentMethodIdentifier(
       const std::string& payment_method_identifier,
-      bool* is_valid) const = 0;
+      bool* is_valid) const;
 
   // Returns a WeakPtr to this payment app.
   virtual base::WeakPtr<PaymentApp> AsWeakPtr() = 0;
@@ -107,6 +107,9 @@ class PaymentApp {
   virtual bool HandlesPayerEmail() const = 0;
   virtual bool HandlesPayerPhone() const = 0;
 
+  // Returns the set of payment methods supported by this app.
+  const std::set<std::string>& GetAppMethodNames() const;
+
   // Sorts the apps using the overloaded < operator.
   static void SortApps(std::vector<std::unique_ptr<PaymentApp>>* apps);
   static void SortApps(std::vector<PaymentApp*>* apps);
@@ -116,6 +119,9 @@ class PaymentApp {
 
  protected:
   PaymentApp(int icon_resource_id, Type type);
+
+  // The set of payment methods supported by this app.
+  std::set<std::string> app_method_names_;
 
  private:
   bool operator<(const PaymentApp& other) const;

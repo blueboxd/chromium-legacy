@@ -26,7 +26,6 @@
 <translation id="1272079795634619415">நிறுத்து</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> மூலம் சார்ஜ் ஆகிறது</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
-<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார்</translation>
 <translation id="1289185460362160437"><ph name="COME_BACK_DAY_OF_WEEK" />, <ph name="COME_BACK_TIME" />க்கு சாதனத்தை மீண்டும் பயன்படுத்தலாம்.</translation>
 <translation id="1290331692326790741">வலுவற்ற சிக்னல்</translation>
 <translation id="1293264513303784526">USB-C சாதனம் (இடது போர்ட்)</translation>
@@ -34,7 +33,6 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">புளூடூத் அமைப்புகளைக் காண்பிக்கும். <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">ஷெல்ஃபை எப்போதும் காட்டு</translation>
-<translation id="1331336659607007576"><ph name="PHONE_NAME" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" />, மொபைல் பேட்டரி <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">கூடுதல் விருப்பங்கள்</translation>
 <translation id="1346748346194534595">வலது</translation>
 <translation id="1351937230027495976">மெனுவைச் சுருக்கு</translation>
@@ -57,7 +55,6 @@
 <translation id="1608626060424371292">இவரை அகற்று</translation>
 <translation id="1654477262762802994">குரல் வினவலைத் தொடங்கு</translation>
 <translation id="1658406695958299976">மன்னிக்கவும், உங்கள் கடவுச்சொல் இன்னும் சரிபார்க்கப்படவில்லை. குறிப்பு: உங்கள் கடவுச்சொல்லைச் சமீபத்தில் மாற்றியிருந்தால், நீங்கள் வெளியேறியவுடன் புதிய கடவுச்சொல் பயன்படுத்தப்படும், இங்கு பழைய கடவுச்சொல்லைப் பயன்படுத்தவும்.</translation>
-<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார்</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> மணி நேரம்</translation>
 <translation id="1698760176351776263">IPv6 முகவரி: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">அடையாளங்காண முடியவில்லை</translation>
@@ -88,7 +85,6 @@
 <translation id="2012624427112548395">Ctrl+தேடல்+H</translation>
 <translation id="2016340657076538683">செய்தியை உள்ளிடவும்</translation>
 <translation id="2050339315714019657">செங்குத்து நிலை</translation>
-<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">விசைப்பலகை ஒளிர்வு</translation>
 <translation id="209965399369889474">நெட்வொர்க்குடன் இணைக்கப்படவில்லை</translation>
 <translation id="2126242104232412123">புதிய டெஸ்க்</translation>
@@ -172,7 +168,6 @@
 <translation id="3236488194889173876">மொபைல் நெட்வொர்க் இல்லை</translation>
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> என்ற சாளரமானது டெஸ்க்<ph name="ACTIVE_DESK" />ல் இருந்து டெஸ்க் <ph name="TARGET_DESK" />க்கு நகர்த்தப்பட்டது</translation>
 <translation id="3255483164551725916">உன்னால் என்னவெல்லாம் செய்ய முடியும்?</translation>
-<translation id="3277674767125718685">ஒலி ஆன் செய்யப்பட்டுள்ளது.</translation>
 <translation id="3290356915286466215">பாதுகாப்பற்ற வைஃபை நெட்வொர்க்</translation>
 <translation id="3294437725009624529">விருந்தினர்</translation>
 <translation id="3308453408813785101">அப்போதும் <ph name="USER_EMAIL_ADDRESS" /> பின்னர் உள்நுழையலாம்.</translation>
@@ -194,7 +189,6 @@
 <translation id="3513798432020909783">கணக்கை நிர்வகிப்பது: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="3576141592585647168">நேரமண்டலத்தை மாற்றுக</translation>
-<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார்</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
 <translation id="3604801046548457007">டெஸ்க் <ph name="DESK_TITILE" /> உருவாக்கப்பட்டது</translation>
 <translation id="3606978283550408104">பிரெய்ல் திரை இணைக்கப்பட்டது.</translation>
@@ -293,25 +287,23 @@
 <translation id="4917385247580444890">வலிமையானது</translation>
 <translation id="4918086044614829423">ஏற்கிறேன்</translation>
 <translation id="4924411785043111640">மீண்டும் தொடங்கி, மீட்டமை</translation>
-<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">மேலே உருட்டு</translation>
 <translation id="4961318399572185831">திரையை அலைபரப்பு</translation>
 <translation id="5030687792513154421">நேரம் முடிந்தது</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ஒரு புதிய ஃபோனுடன் இணைக்கப்பட்டுள்ளது</translation>
 <translation id="5083553833479578423">மேலும் பல அசிஸ்டண்ட் அம்சங்களைப் பெறுக.</translation>
 <translation id="5136175204352732067">வேறொரு விசைப்பலகை இணைக்கப்பட்டது</translation>
-<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Cast சாதனங்கள் உள்ளன</translation>
 <translation id="5207949376430453814">உரைச் சுட்டியைத் தனிப்படுத்து</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
 <translation id="523505283826916779">அணுகல்தன்மை அமைப்புகள்</translation>
 <translation id="5260676007519551770">மேசை 4</translation>
 <translation id="5283198616748585639">1 நிமிடத்தைச் சேர்</translation>
+<translation id="5286194356314741248">ஸ்கேன் செய்கிறது</translation>
 <translation id="5302048478445481009">மொழி</translation>
 <translation id="5313326810920013265">புளூடூத் அமைப்புகள்</translation>
 <translation id="5331975486040154427">USB-C சாதனம் (இடது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
 <translation id="5379115545237091094">அதிகபட்சம் முயன்றுவிட்டீர்கள்</translation>
-<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">இந்தப் பயனரின் பயன்பாடு மற்றும் வரலாறு chrome.com இன் நிர்வாகியால் (<ph name="MANAGER_EMAIL" />) மதிப்பாய்வு செய்யப்படும்.</translation>
 <translation id="5430931332414098647">உடனடி இணைப்பு முறை</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -365,7 +357,6 @@
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> இல் தானாகவே வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="6064337552080329342">கடவுச்சொல்லைச் சரிபார்க்க முடியவில்லை. மீண்டும் முயலவும்.</translation>
 <translation id="607652042414456612">உங்கள் கம்ப்யூட்டர் அருகிலுள்ள Bluetooth சாதனங்களால் கண்டறியப்படும், மேலும் <ph name="ADDRESS" /> என்ற முகவரியுடன் "<ph name="NAME" />" என்ற பெயரில் தோன்றும்</translation>
-<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார்</translation>
 <translation id="612734058257491180">விருந்தினர் அமர்வில் Google அசிஸ்டண்ட்டைப் பயன்படுத்த இயலாது.</translation>
 <translation id="615957422585914272">ஸ்கிரீன் கீபோர்டைக் காட்டு</translation>
 <translation id="6164005077879661055">இந்தக் மேற்பார்வையிடப்படும் பயனர் அகற்றப்பட்டவுடன் மேற்பார்வையிடப்படும் பயனருடன் தொடர்புடைய எல்லா கோப்புகளும், அகத் தரவும் நிரந்தரமாக நீக்கப்படும். இந்தக் மேற்பார்வையிடப்படும் பயனர் பார்வையிட்ட இணையதளங்களையும் அமைப்புகளையும் <ph name="MANAGEMENT_URL" /> இல் இன்னும் நிர்வாகியால் பார்க்க முடியும்.</translation>
@@ -403,7 +394,6 @@
 <translation id="6657585470893396449">கடவுச்சொல்</translation>
 <translation id="6665545700722362599">இருப்பிடச் சேவைகள், சாதனத்தின் மைக்ரோஃபோன், கேமரா அல்லது பிற அம்சங்களை இணையதளங்கள், ஆப்ஸ், நீட்டிப்புகள் ஆகியவை பயன்படுத்த அனுமதி அளித்தல்</translation>
 <translation id="6670153871843998651">மேசை 3</translation>
-<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார்</translation>
 <translation id="6691659475504239918">தேடல்+Shift+H</translation>
 <translation id="6696025732084565524">உங்கள் அகற்றத்தக்க விசைப்பலகைக்கு முக்கியப் புதுப்பிப்பு வேண்டும்</translation>
 <translation id="6700713906295497288">IME மெனு பொத்தான்</translation>
@@ -414,7 +404,6 @@
 <translation id="6751826523481687655">செயல்திறன் டிரேஸிங் இயக்கத்தில் உள்ளது</translation>
 <translation id="6752912906630585008">டெஸ்க் <ph name="REMOVED_DESK" /> அகற்றப்பட்டு டெஸ்க் <ph name="RECEIVE_DESK" /> உடன் சேர்க்கப்பட்டது</translation>
 <translation id="6777216307882431711">இணைக்கப்பட்ட USB-C சாதனங்களுக்கு சார்ஜ் ஏற்றப்படுகிறது</translation>
-<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">இயக்கு</translation>
 <translation id="6803622936009808957">ஆதரிக்கும் தெளிவுகள் கிடைக்காததால் காட்சிகளைப் பிரதிபலிக்க முடியவில்லை. பதிலாக நீட்டிக்கப்பட்ட டெஸ்க்டாப்பிற்குச் சென்றது.</translation>
 <translation id="6820676911989879663">சிறிது நேரம் இடைவேளை எடுத்துக்கொள்ளவும்!</translation>
@@ -460,7 +449,6 @@
 <translation id="7526573455193969409">நெட்வொர்க் கண்காணிக்கப்படலாம்</translation>
 <translation id="7536035074519304529">IP முகவரி: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">தூங்கும் நேரம்</translation>
-<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" />, மொபைல் பேட்டரி <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> ஐ <ph name="DISPLAY_NAME" /> ஆதரிக்கவில்லை. <ph name="FALLBACK_RESOLUTION" /> க்குத் தெளிவு மாற்றப்பட்டது</translation>
 <translation id="7562368315689366235">ஈமொஜி தட்டு</translation>
 <translation id="7564874036684306347">சாளரத்தை வேறு டெஸ்க்டாப்க்கு மாற்றினால், அது எதிர்பாராதவிதமாகச் செயல்படக் கூடும். அடுத்தடுத்து வரும் அறிவிப்புகளும் சாளரங்களும் உரையாடல்களும் டெஸ்க்டாப்களுக்கு இடையே பிரிக்கப்படலாம்.</translation>
@@ -579,7 +567,6 @@
 <translation id="9084606467167974638">மெனுவை நிலைமாற்றும்</translation>
 <translation id="9089416786594320554">உள்ளீட்டு முறைகள்</translation>
 <translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> டிஸ்ப்ளே அகற்றப்பட்டது</translation>
-<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார்</translation>
 <translation id="9151726767154816831">புதுப்பிக்க, மறுதுவக்கம் செய்து பவர்வாஷ் செய்யவும்</translation>
 <translation id="9179259655489829027">கடவுச்சொல்லைக் கேட்காமல், உள்நுழைந்த பயனர் எவரையும் உடனடியாக அணுக இந்த அம்சம் உங்களை அனுமதிக்கிறது. நீங்கள் நம்பும் கணக்குகளுடன் மட்டும் இந்த அம்சத்தைப் பயன்படுத்தவும்.</translation>
 <translation id="9183456764293710005">முழுத்திரைப் பெரிதாக்கி</translation>

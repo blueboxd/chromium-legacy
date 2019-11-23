@@ -236,4 +236,15 @@ const CSSValue* EditingStyleUtilities::BackgroundColorValueInEffect(
   return nullptr;
 }
 
+void EditingStyleUtilities::StripUAStyleRulesForMarkupSanitization(
+    EditingStyle* style) {
+  // This is a hacky approach to avoid 'font-family: ""' appearing in
+  // sanitized markup.
+  // TODO(editing-dev): Implement a non-hacky fix up for all properties
+  String font_family =
+      style->Style()->GetPropertyValue(CSSPropertyID::kFontFamily);
+  if (font_family == "\"\"")
+    style->Style()->RemoveProperty(CSSPropertyID::kFontFamily);
+}
+
 }  // namespace blink

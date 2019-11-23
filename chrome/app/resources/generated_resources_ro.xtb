@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">Albastru deschis</translation>
 <translation id="1734824808160898225">Este posibil ca <ph name="PRODUCT_NAME" /> să nu se poată actualiza</translation>
 <translation id="1736419249208073774">Explorează</translation>
-<translation id="1736420071277903564">Computer</translation>
 <translation id="1737968601308870607">Trimite o eroare</translation>
 <translation id="1741314857973421784">Continuă</translation>
 <translation id="1743570585616704562">Nu este recunoscută</translation>
@@ -1129,6 +1128,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2617342710774726426">Cardul SIM este blocat</translation>
 <translation id="2619761439309613843">Actualizare zilnică</translation>
 <translation id="2620436844016719705">Sistem</translation>
+<translation id="2621713457727696555">Securizată</translation>
 <translation id="26224892172169984">Nu permite site-urilor să gestioneze protocoale</translation>
 <translation id="2624142942574147739">Această pagină vă accesează camera și microfonul.</translation>
 <translation id="2626799779920242286">Încercați din nou mai târziu.</translation>
@@ -1580,6 +1580,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="328571385944182268">Salvezi parolele?</translation>
 <translation id="3288047731229977326">Extensiile care rulează în modul pentru dezvoltatori pot afecta computerul. Dacă nu sunteți dezvoltator, se recomandă să dezactivați aceste extensii, pentru siguranță.</translation>
 <translation id="3289856944988573801">Pentru a verifica dacă există actualizări, utilizați Ethernet sau Wi-Fi.</translation>
+<translation id="3290356915286466215">Nesecurizată</translation>
 <translation id="3293644607209440645">Trimite pagina</translation>
 <translation id="32939749466444286">Containerul Linux nu a pornit. Încearcă din nou.</translation>
 <translation id="3294437725009624529">Invitat</translation>
@@ -2021,7 +2022,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3900966090527141178">Exportă parolele</translation>
 <translation id="3901991538546252627">Se conectează la <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Repară aplicația</translation>
-<translation id="3906954721959377182">Tabletă</translation>
 <translation id="3908393983276948098">Pluginul <ph name="PLUGIN_NAME" /> este învechit</translation>
 <translation id="3908501907586732282">Activați extensia</translation>
 <translation id="3909477809443608991"><ph name="URL" /> vrea să redea conținut protejat. Identitatea dispozitivului tău va fi verificată de Google și poate fi accesată de acest site.</translation>
@@ -2321,7 +2321,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4364327530094270451">Pepene galben</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> trimite conținutul unei ferestre.</translation>
 <translation id="4364830672918311045">Afișează notificările</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> cu <ph name="APP_NAME" />.</translation>
 <translation id="4370975561335139969">Adresa de e-mail și parola pe care le-ai introdus nu se potrivesc</translation>
 <translation id="437184764829821926">Setări avansate pentru fonturi</translation>
 <translation id="4374831787438678295">Programul de instalare Linux</translation>
@@ -2438,7 +2437,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4546308221697447294">Navighează rapid folosind Google Chrome</translation>
 <translation id="4547659257713117923">Nu există file de pe alte dispozitive</translation>
 <translation id="4547672827276975204">Setează în mod automat</translation>
-<translation id="4549791035683739768">Cheia de securitate nu are amprente digitale stocate</translation>
+<translation id="4549791035683739768">Cheia de securitate nu are amprente stocate.</translation>
 <translation id="4551763574344810652">Apasă pe <ph name="MODIFIER_KEY_DESCRIPTION" /> pentru a anula</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Extensia externă este în aceeași versiune sau într-o versiune inferioară celei existente.</translation>
@@ -2618,7 +2617,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4839303808932127586">Sal&amp;vează videoclipul ca...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Încă una}few{ Încă #}other{Încă #}}</translation>
 <translation id="4842976633412754305">Pagina încearcă să încarce scripturi din surse neautentificate.</translation>
-<translation id="4843488774506045600">Date de conectare oferite de <ph name="EXTENSION_NAME" /></translation>
+<translation id="4843488774506045600">Serviciu de conectare oferit de <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Alte tastaturi</translation>
 <translation id="4846680374085650406">Urmați recomandarea administratorului pentru această setare.</translation>
 <translation id="4848518990323155912">Activează blocarea cardului SIM (pentru a utiliza datele mobile, este necesar un cod PIN)</translation>
@@ -2963,7 +2962,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5363109466694494651">Folosește Powerwash și revino la o versiune anterioară</translation>
 <translation id="5365881113273618889">Dosarul pe care l-ai selectat conține fișiere cu informații sensibile. Sigur dorești să permiți accesul de scriere permanent pentru „<ph name="APP_NAME" />” la acest dosar?</translation>
 <translation id="5367091008316207019">Se citește fișierul...</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Telefonul este blocat. Pentru acces, deblochează-l.</translation>
 <translation id="5368779022775404937">Conectează-te la <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Activează accelerarea mouse-ului</translation>
@@ -4721,6 +4719,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7912080627461681647">Parola a fost modificată pe server. Deconectează-te, apoi conectează-te din nou.</translation>
 <translation id="7915457674565721553">Conectează-te la internet pentru a configura controlul parental</translation>
 <translation id="7915471803647590281">Spune-ne ce se întâmplă înainte de a trimite feedback.</translation>
+<translation id="7918257978052780342">Înscrieți</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> sec.</translation>
 <translation id="792514962475806987">Nivelul de zoom al lupei andocate:</translation>
 <translation id="7925247922861151263">Verificarea AAA nu a reușit</translation>

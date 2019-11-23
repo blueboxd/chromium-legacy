@@ -80,7 +80,7 @@
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_util.h"
-#include "net/cert_net/cert_net_fetcher_impl.h"
+#include "net/cert_net/cert_net_fetcher_url_request.h"
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store_test_helpers.h"
@@ -9555,7 +9555,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
   }
 
   void SetUp() override {
-    cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherImpl>();
+    cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherURLRequest>();
     cert_verifier_ = CertVerifier::CreateDefault(cert_net_fetcher_);
     context_.set_cert_verifier(cert_verifier_.get());
     context_.SetCTPolicyEnforcer(std::make_unique<DefaultCTPolicyEnforcer>());
@@ -9631,7 +9631,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
   std::unique_ptr<ScopedTestRoot> test_root_;
   std::unique_ptr<TestSSLConfigService> ssl_config_service_;
-  scoped_refptr<CertNetFetcherImpl> cert_net_fetcher_;
+  scoped_refptr<CertNetFetcherURLRequest> cert_net_fetcher_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   TestURLRequestContext context_;
   std::unique_ptr<ScopedTestEVPolicy> ev_test_policy_;

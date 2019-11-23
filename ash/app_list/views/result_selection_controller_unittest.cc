@@ -54,7 +54,6 @@ class TestResultViewWithActions : public TestResultView,
 
   // SearchResultActionsViewDelegate:
   void OnSearchResultActionActivated(size_t index, int event_flags) override {}
-  void OnSearchResultActionsUnSelected() override {}
   bool IsSearchResultHoveredOrSelected() override { return selected(); }
 
   SearchResultActionsView* GetActionsView() {
@@ -470,7 +469,7 @@ class ResultSelectionTest : public testing::Test,
     // expected to change.
     EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
               result_selection_controller_->MoveSelection(tab_key_));
-    EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+    EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
     ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(0));
@@ -479,7 +478,7 @@ class ResultSelectionTest : public testing::Test,
     // expected to change.
     EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
               result_selection_controller_->MoveSelection(tab_key_));
-    EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+    EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
     ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(1));
@@ -516,7 +515,7 @@ class ResultSelectionTest : public testing::Test,
     // TAB - stay at the same result, but select next action.
     EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
               result_selection_controller_->MoveSelection(tab_key_));
-    EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+    EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(0));
@@ -524,7 +523,7 @@ class ResultSelectionTest : public testing::Test,
     // Shift-TAB - same result, but deselects actions.
     EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
               result_selection_controller_->MoveSelection(shift_tab_key_));
-    EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+    EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionNotSelected());
@@ -532,7 +531,7 @@ class ResultSelectionTest : public testing::Test,
     // TAB - reselect the first action.
     EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
               result_selection_controller_->MoveSelection(tab_key_));
-    EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+    EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(0));
@@ -540,7 +539,7 @@ class ResultSelectionTest : public testing::Test,
     // TAB - select the next action.
     EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
               result_selection_controller_->MoveSelection(tab_key_));
-    EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+    EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(1));
@@ -568,7 +567,7 @@ class ResultSelectionTest : public testing::Test,
     // Shift-TAB - move to previous action.
     EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
               result_selection_controller_->MoveSelection(shift_tab_key_));
-    EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+    EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
     ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
     EXPECT_TRUE(CurrentResultActionSelected(0));
@@ -873,7 +872,7 @@ TEST_F(ResultSelectionTest, TabCycleInContainerWithResultActions) {
   // expected to change.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
@@ -891,7 +890,7 @@ TEST_F(ResultSelectionTest, TabCycleInContainerWithResultActions) {
   // TAB - next action selected.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
   ASSERT_EQ(create_test_location(1, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
@@ -972,7 +971,7 @@ TEST_F(ResultSelectionTest, TabCycleInContainerSingleResultWithActionUsingTab) {
   // expected to change.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
 
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
@@ -1055,7 +1054,7 @@ TEST_P(ResultSelectionTest,
   // TAB to select an action.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
@@ -1071,7 +1070,7 @@ TEST_P(ResultSelectionTest,
   // TAB to select an action.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
@@ -1112,7 +1111,7 @@ TEST_F(ResultSelectionTest,
   // TAB to select an action.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
@@ -1128,7 +1127,7 @@ TEST_F(ResultSelectionTest,
   // TAB to select an action.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
@@ -1168,7 +1167,7 @@ TEST_F(ResultSelectionTest, ResetWhileFirstResultActionSelected) {
   // TAB to select an action.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
   ASSERT_EQ(create_test_location(0, 0), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
@@ -1214,7 +1213,7 @@ TEST_F(ResultSelectionTest, ResetWhileResultActionSelected) {
   // TAB to select an action.
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(1, GetAndResetSelectionChangeCount());
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(0));
 
@@ -1264,7 +1263,7 @@ TEST_F(ResultSelectionTest, ActionRemovedWhileSelected) {
             result_selection_controller_->MoveSelection(tab_key_));
   EXPECT_EQ(ResultSelectionController::MoveResult::kNone,
             result_selection_controller_->MoveSelection(tab_key_));
-  EXPECT_EQ(0, GetAndResetSelectionChangeCount());
+  EXPECT_EQ(3, GetAndResetSelectionChangeCount());
   ASSERT_EQ(create_test_location(0, 1), GetCurrentLocation());
   EXPECT_TRUE(CurrentResultActionSelected(2));
 

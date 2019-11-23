@@ -175,6 +175,7 @@
 <translation id="173080396488393970">Denne korttype understøttes ikke</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Prøv at kontakte systemadministratoren.</translation>
+<translation id="1736420071277903564">Computer</translation>
 <translation id="1739107442478692187">Der opstod et brud på datasikkerheden på et website eller i en app, du bruger. Chrome anbefaler, at du tjekker dine gemte adgangskoder og ændrer din adgangskode til <ph name="ORIGIN" /> med det samme.</translation>
 <translation id="1740951997222943430">Angiv en gyldig udløbsmåned</translation>
 <translation id="1741613555002899862">Skal angives og være en gyldig streng, når DnsOverHttpsMode er <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
@@ -610,6 +611,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3901925938762663762">Kortet er udløbet</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">Tablet</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Vil du bruge WebAuthn i stedet for kontrolkoden?</translation>
 <translation id="3946209740501886391">Spørg altid på dette website</translation>
@@ -1535,7 +1537,6 @@ Yderligere oplysninger:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditkort}one{# kreditkort}other{# kreditkort}}</translation>
 <translation id="8473863474539038330">Adresser m.m.</translation>
 <translation id="8479754468255770962">Hæftning nederst til venstre</translation>
-<translation id="8481133456511676116">Mente du <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Hvis du vil bruge kort fra din Google-konto, skal du logge ind i Chrome</translation>
 <translation id="8488350697529856933">Gælder for</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> var for lang tid om at svare.</translation>

@@ -175,6 +175,7 @@
 <translation id="173080396488393970">不支援這種信用卡類型</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">建議您與系統管理員聯絡。</translation>
+<translation id="1736420071277903564">電腦</translation>
 <translation id="1739107442478692187">你使用的網站或應用程式發生資料侵害事件。Chrome 建議你檢查儲存的密碼，並立即變更 <ph name="ORIGIN" /> 上的密碼。</translation>
 <translation id="1740951997222943430">請輸入有效的到期月份</translation>
 <translation id="1741613555002899862">將 DnsOverHttpsMode 設為 <ph name="SECURE_DNS_MODE_SECURE" /> 時，必須指定有效的字串。</translation>
@@ -595,6 +596,7 @@
 <translation id="3897092660631435901">選單</translation>
 <translation id="3901925938762663762">這張信用卡已過期</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
+<translation id="3906954721959377182">平板電腦</translation>
 <translation id="3909695131102177774"><ph name="LABEL" />：<ph name="ERROR" /></translation>
 <translation id="3939773374150895049">要使用 WebAuthn 取代信用卡安全碼嗎？</translation>
 <translation id="3946209740501886391">一律詢問你是否接受這個網站的要求</translation>
@@ -1519,7 +1521,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 張信用卡}other{# 張信用卡}}</translation>
 <translation id="8473863474539038330">地址和其他資訊</translation>
 <translation id="8479754468255770962">釘裝 (左下方)</translation>
-<translation id="8481133456511676116">你是不是要前往 <ph name="DOMAIN" />？</translation>
 <translation id="8483780878231876732">如要使用您的 Google 帳戶中的信用卡，請登入 Chrome</translation>
 <translation id="8488350697529856933">適用對象</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的回應時間過長。</translation>

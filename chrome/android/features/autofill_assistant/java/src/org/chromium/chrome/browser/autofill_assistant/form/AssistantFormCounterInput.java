@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.AssistantTextUtils;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 import java.util.ArrayList;
@@ -39,7 +40,8 @@ class AssistantFormCounterInput extends AssistantFormInput {
     private static class CounterViewHolder {
         private final View mView;
         private final TextView mLabelView;
-        private final TextView mSubtextView;
+        private final TextView mDescriptionLine1View;
+        private final TextView mDescriptionLine2View;
         private final TextView mValueView;
         private final View mDecreaseButtonView;
         private final View mIncreaseButtonView;
@@ -48,7 +50,8 @@ class AssistantFormCounterInput extends AssistantFormInput {
             mView = LayoutInflater.from(context).inflate(
                     R.layout.autofill_assistant_form_counter, /*root= */ null);
             mLabelView = mView.findViewById(R.id.label);
-            mSubtextView = mView.findViewById(R.id.subtext);
+            mDescriptionLine1View = mView.findViewById(R.id.description_line_1);
+            mDescriptionLine2View = mView.findViewById(R.id.description_line_2);
             mValueView = mView.findViewById(R.id.value);
             mDecreaseButtonView = mView.findViewById(R.id.decrease_button);
             mIncreaseButtonView = mView.findViewById(R.id.increase_button);
@@ -191,10 +194,13 @@ class AssistantFormCounterInput extends AssistantFormInput {
             AssistantFormCounter counter = counters.get(i);
             CounterViewHolder view = views.get(i);
 
-            if (!counter.getSubtext().isEmpty()) {
-                view.mSubtextView.setVisibility(View.VISIBLE);
-                view.mSubtextView.setText(counter.getSubtext());
-            }
+            // TODO(b/144402029) Add support for text links.
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    view.mDescriptionLine1View, counter.getDescriptionLine1(), null);
+            AssistantTextUtils.applyVisualAppearanceTags(
+                    view.mDescriptionLine2View, counter.getDescriptionLine2(), null);
+            hideIfEmpty(view.mDescriptionLine1View);
+            hideIfEmpty(view.mDescriptionLine2View);
 
             updateLabelAndValue(counter, view);
 
@@ -253,5 +259,9 @@ class AssistantFormCounterInput extends AssistantFormInput {
         updateButtonsState(counters, views);
 
         mDelegate.onCounterChanged(counterIndex, counter.getValue());
+    }
+
+    private void hideIfEmpty(TextView view) {
+        view.setVisibility(view.length() == 0 ? View.GONE : View.VISIBLE);
     }
 }

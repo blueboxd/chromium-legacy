@@ -101,16 +101,17 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   uint32_t connection_state = 2;
 
-  PrepareForMethodCall(shill::kUpdateConnectionStateFunction,
-                       base::Bind(&ExpectUint32Argument, connection_state),
-                       response.get());
+  PrepareForMethodCall(
+      shill::kUpdateConnectionStateFunction,
+      base::BindRepeating(&ExpectUint32Argument, connection_state),
+      response.get());
 
   EXPECT_CALL(*this, MockSuccess()).Times(0);
   client_->UpdateConnectionState(
       kExampleIPConfigPath, connection_state,
-      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
-                 base::Unretained(this)),
-      base::Bind(&Failure));
+      base::BindOnce(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&Failure));
 
   client_->RemoveShillThirdPartyVpnObserver(kExampleIPConfigPath);
   testing::Mock::VerifyAndClearExpectations(this);
@@ -144,14 +145,15 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
 
   PrepareForMethodCall(
       shill::kSetParametersFunction,
-      base::Bind(&ExpectDictionaryValueArgument, &parameters, true),
+      base::BindRepeating(&ExpectDictionaryValueArgument, &parameters, true),
       response.get());
 
   client_->SetParameters(
       kExampleIPConfigPath, parameters,
-      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccessWithWarning,
-                 base::Unretained(this)),
-      base::Bind(&Failure));
+      base::BindOnce(
+          &ShillThirdPartyVpnDriverClientTest::MockSuccessWithWarning,
+          base::Unretained(this)),
+      base::BindOnce(&Failure));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -162,15 +164,16 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, UpdateConnectionState) {
 
   EXPECT_CALL(*this, MockSuccess()).Times(1);
 
-  PrepareForMethodCall(shill::kUpdateConnectionStateFunction,
-                       base::Bind(&ExpectUint32Argument, connection_state),
-                       response.get());
+  PrepareForMethodCall(
+      shill::kUpdateConnectionStateFunction,
+      base::BindRepeating(&ExpectUint32Argument, connection_state),
+      response.get());
 
   client_->UpdateConnectionState(
       kExampleIPConfigPath, connection_state,
-      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
-                 base::Unretained(this)),
-      base::Bind(&Failure));
+      base::BindOnce(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&Failure));
 
   base::RunLoop().RunUntilIdle();
 }
@@ -183,16 +186,17 @@ TEST_F(ShillThirdPartyVpnDriverClientTest, SendPacket) {
 
   EXPECT_CALL(*this, MockSuccess()).Times(1);
 
-  PrepareForMethodCall(shill::kSendPacketFunction,
-                       base::Bind(&ExpectArrayOfBytesArgument,
-                                  std::string(data.begin(), data.end())),
-                       response.get());
+  PrepareForMethodCall(
+      shill::kSendPacketFunction,
+      base::BindRepeating(&ExpectArrayOfBytesArgument,
+                          std::string(data.begin(), data.end())),
+      response.get());
 
   client_->SendPacket(
       kExampleIPConfigPath, data,
-      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
-                 base::Unretained(this)),
-      base::Bind(&Failure));
+      base::BindOnce(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
+                     base::Unretained(this)),
+      base::BindOnce(&Failure));
 
   base::RunLoop().RunUntilIdle();
 }

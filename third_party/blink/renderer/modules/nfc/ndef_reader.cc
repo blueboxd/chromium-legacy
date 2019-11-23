@@ -9,6 +9,7 @@
 #include "services/device/public/mojom/nfc.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_error_event.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_message.h"
@@ -16,10 +17,15 @@
 #include "third_party/blink/renderer/modules/nfc/ndef_scan_options.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_utils.h"
+#include "third_party/blink/renderer/modules/permissions/permission_utils.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
+
+using mojom::blink::PermissionName;
+using mojom::blink::PermissionService;
+using mojom::blink::PermissionStatus;
 
 namespace {
 
@@ -66,9 +72,10 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
                                const NDEFScanOptions* options,
                                ExceptionState& exception_state) {
   ExecutionContext* execution_context = GetExecutionContext();
+  Document* document = To<Document>(execution_context);
   // https://w3c.github.io/web-nfc/#security-policies
   // WebNFC API must be only accessible from top level browsing context.
-  if (!execution_context || !To<Document>(execution_context)->IsInMainFrame()) {
+  if (!execution_context || !document->IsInMainFrame()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
                                       "NFC interfaces are only avaliable "
                                       "in a top-level browsing context");
@@ -118,12 +125,42 @@ ScriptPromise NDEFReader::scan(ScriptState* script_state,
                                               WrapPersistent(resolver_.Get())));
   }
 
+  GetPermissionService()->RequestPermission(
+      CreatePermissionDescriptor(PermissionName::NFC),
+      LocalFrame::HasTransientUserActivation(document->GetFrame()),
+      WTF::Bind(&NDEFReader::OnRequestPermission, WrapPersistent(this),
+                WrapPersistent(resolver_.Get()), WrapPersistent(options)));
+  return resolver_->Promise();
+}
+
+PermissionService* NDEFReader::GetPermissionService() {
+  if (!permission_service_) {
+    ConnectToPermissionService(
+        GetExecutionContext(),
+        permission_service_.BindNewPipeAndPassReceiver());
+  }
+  return permission_service_.get();
+}
+
+void NDEFReader::OnRequestPermission(ScriptPromiseResolver* resolver,
+                                     const NDEFScanOptions* options,
+                                     PermissionStatus status) {
+  if (status != PermissionStatus::GRANTED) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotAllowedError, "NFC permission request denied."));
+    return;
+  }
+  if (options->hasSignal() && options->signal()->aborted()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, "The NFC operation was cancelled."));
+    return;
+  }
+
   UseCounter::Count(GetExecutionContext(), WebFeature::kWebNfcNdefReaderScan);
 
   GetNfcProxy()->StartReading(
       this, options,
-      WTF::Bind(&OnScanRequestCompleted, WrapPersistent(resolver_.Get())));
-  return resolver_->Promise();
+      WTF::Bind(&OnScanRequestCompleted, WrapPersistent(resolver)));
 }
 
 void NDEFReader::Trace(blink::Visitor* visitor) {

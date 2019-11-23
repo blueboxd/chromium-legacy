@@ -168,7 +168,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothMediaEndpointServiceProviderImpl
                  << method_call->ToString();
     }
 
-    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+    std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Called by dbus:: when the remote device receives the configuration for
@@ -194,9 +194,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothMediaEndpointServiceProviderImpl
 
     // |delegate_| generates the response to |SelectConfiguration| and sends it
     // back via |callback|.
-    Delegate::SelectConfigurationCallback callback = base::Bind(
-        &BluetoothMediaEndpointServiceProviderImpl::OnConfiguration,
-        weak_ptr_factory_.GetWeakPtr(), method_call, response_sender);
+    Delegate::SelectConfigurationCallback callback =
+        base::Bind(&BluetoothMediaEndpointServiceProviderImpl::OnConfiguration,
+                   weak_ptr_factory_.GetWeakPtr(), method_call,
+                   base::Passed(&response_sender));
 
     delegate_->SelectConfiguration(configuration, callback);
   }
@@ -220,7 +221,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothMediaEndpointServiceProviderImpl
 
     delegate_->ClearConfiguration(transport_path);
 
-    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+    std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Called by Bluetooth daemon to do the clean up after unregistering the Media
@@ -234,7 +235,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothMediaEndpointServiceProviderImpl
 
     delegate_->Released();
 
-    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+    std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
   }
 
   // Called by Delegate to response to a method requiring transport
@@ -256,7 +257,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothMediaEndpointServiceProviderImpl
     } else {
       writer.AppendArrayOfBytes(&configuration[0], configuration.size());
     }
-    response_sender.Run(std::move(response));
+    std::move(response_sender).Run(std::move(response));
   }
 
   // Origin thread (i.e. the UI thread in production).

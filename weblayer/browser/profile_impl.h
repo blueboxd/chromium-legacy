@@ -23,7 +23,7 @@ namespace weblayer {
 
 class ProfileImpl : public Profile {
  public:
-  explicit ProfileImpl(const base::FilePath& path);
+  explicit ProfileImpl(const std::string& name);
   ~ProfileImpl() override;
 
   content::BrowserContext* GetBrowserContext();
@@ -51,7 +51,6 @@ class ProfileImpl : public Profile {
 
   void ClearRendererCache();
 
-  base::FilePath path_;
   std::unique_ptr<BrowserContextImpl> browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);

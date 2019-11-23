@@ -94,7 +94,6 @@ class AwAutofillClient : public autofill::AutofillClient,
       const std::vector<autofill::MigratableCreditCard>&
           migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
-  void ShowWebauthnOfferDialog(WebauthnOfferDialogCallback callback) override;
   void ConfirmSaveAutofillProfile(const autofill::AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(

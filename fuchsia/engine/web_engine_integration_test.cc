@@ -60,6 +60,22 @@ class WebEngineIntegrationTest : public testing::Test {
     return create_params;
   }
 
+  fuchsia::web::CreateContextParams DefaultContextParamsWithTestData() const {
+    fuchsia::web::CreateContextParams create_params = DefaultContextParams();
+
+    fuchsia::web::ContentDirectoryProvider provider;
+    provider.set_name("testdata");
+    base::FilePath pkg_path;
+    CHECK(base::PathService::Get(base::DIR_ASSETS, &pkg_path));
+    provider.set_directory(base::fuchsia::OpenDirectory(
+        pkg_path.AppendASCII("fuchsia/engine/test/data")));
+
+    create_params.mutable_content_directories()->emplace_back(
+        std::move(provider));
+
+    return create_params;
+  }
+
   void CreateContextAndFrame(fuchsia::web::CreateContextParams params) {
     web_context_provider_->Create(std::move(params), context_.NewRequest());
     context_.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
@@ -322,31 +338,45 @@ TEST_F(WebEngineIntegrationTest, ContentDirectoryProvider) {
   const GURL kUrl("fuchsia-dir://testdata/title1.html");
   constexpr char kTitle[] = "title 1";
 
-  fuchsia::web::CreateContextParams create_params = DefaultContextParams();
-
-  fuchsia::web::ContentDirectoryProvider provider;
-  provider.set_name("testdata");
-  base::FilePath pkg_path;
-  CHECK(base::PathService::Get(base::DIR_ASSETS, &pkg_path));
-  provider.set_directory(base::fuchsia::OpenDirectory(
-      pkg_path.AppendASCII("fuchsia/engine/test/data")));
-
-  create_params.mutable_content_directories()->emplace_back(
-      std::move(provider));
+  fuchsia::web::CreateContextParams create_params =
+      DefaultContextParamsWithTestData();
 
   CreateContextAndFrame(std::move(create_params));
-
-  fuchsia::web::NavigationControllerPtr controller;
-  frame_->GetNavigationController(controller.NewRequest());
-  controller.set_error_handler([](zx_status_t status) { ADD_FAILURE(); });
 
   // Navigate to test1.html and verify that the resource was correctly
   // downloaded and interpreted by inspecting the document title.
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), kUrl.spec()));
+      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
+      kUrl.spec()));
   cr_fuchsia::TestNavigationListener navigation_listener;
   fidl::Binding<fuchsia::web::NavigationEventListener> listener_binding(
       &navigation_listener);
   frame_->SetNavigationEventListener(listener_binding.NewBinding());
   navigation_listener.RunUntilUrlAndTitleEquals(kUrl, kTitle);
+}
+
+TEST_F(WebEngineIntegrationTest, PlayAudio) {
+  fuchsia::web::CreateContextParams create_params =
+      DefaultContextParamsWithTestData();
+  auto features = fuchsia::web::ContextFeatureFlags::AUDIO;
+  if (create_params.has_features())
+    features |= create_params.features();
+  create_params.set_features(features);
+  CreateContextAndFrame(std::move(create_params));
+
+  fuchsia::web::LoadUrlParams load_url_params;
+
+  // |was_user_activated| needs to be set to ensure the page can play audio
+  // without user gesture.
+  load_url_params.set_was_user_activated(true);
+
+  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      navigation_controller_.get(), std::move(load_url_params),
+      "fuchsia-dir://testdata/play_audio.html"));
+
+  cr_fuchsia::TestNavigationListener navigation_listener;
+  fidl::Binding<fuchsia::web::NavigationEventListener> listener_binding(
+      &navigation_listener);
+  frame_->SetNavigationEventListener(listener_binding.NewBinding());
+  navigation_listener.RunUntilTitleEquals("ended");
 }

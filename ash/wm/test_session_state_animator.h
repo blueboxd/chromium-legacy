@@ -88,9 +88,10 @@ class TestSessionStateAnimator : public SessionStateAnimator {
                     SessionStateAnimator::Container container,
                     AnimationType type,
                     AnimationSpeed speed,
-                    base::Closure success_callback,
-                    base::Closure failed_callback);
-    ActiveAnimation(const ActiveAnimation& other);
+                    base::OnceClosure success_callback,
+                    base::OnceClosure failed_callback);
+    ActiveAnimation(ActiveAnimation&& other);
+    ActiveAnimation& operator=(ActiveAnimation&& other);
     virtual ~ActiveAnimation();
 
     // The time epoch that this animation was scheduled.
@@ -109,10 +110,10 @@ class TestSessionStateAnimator : public SessionStateAnimator {
     AnimationSpeed speed;
 
     // The callback to be invoked upon a successful completion.
-    base::Closure success_callback;
+    base::OnceClosure success_callback;
 
     // The callback to be invoked upon an unsuccessful completion.
-    base::Closure failed_callback;
+    base::OnceClosure failed_callback;
   };
 
   typedef std::vector<ActiveAnimation> AnimationList;
@@ -133,8 +134,8 @@ class TestSessionStateAnimator : public SessionStateAnimator {
   void AddAnimation(SessionStateAnimator::Container container,
                     AnimationType type,
                     AnimationSpeed speed,
-                    base::Closure success_callback,
-                    base::Closure failed_callback);
+                    base::OnceClosure success_callback,
+                    base::OnceClosure failed_callback);
 
   // If an animation is currently active for the given |container| it will be
   // aborted by invoking OnAnimationAborted and removed from the list of active

@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/payments/content/mock_identity_observer.h"
 #include "components/payments/core/mock_payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/test/browser_task_environment.h"
@@ -119,7 +118,10 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
     app_ = std::make_unique<ServiceWorkerPaymentApp>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
-        std::move(stored_app), &delegate_, identity_observer_.AsWeakPtr());
+        std::move(stored_app), &delegate_,
+        base::Bind(
+            [](const url::Origin& origin,
+               int64_t registration_id) { /* Intentionally left blank. */ }));
   }
 
   ServiceWorkerPaymentApp* GetApp() { return app_.get(); }
@@ -134,7 +136,6 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
 
  private:
   MockPaymentRequestDelegate delegate_;
-  MockIdentityObserver identity_observer_;
   content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
 

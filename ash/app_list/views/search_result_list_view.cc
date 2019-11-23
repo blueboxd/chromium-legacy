@@ -21,9 +21,11 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/geometry/insets.h"
@@ -269,6 +271,13 @@ int SearchResultListView::DoUpdate() {
         // Reset |display_icon_|.
         result_view->SetDisplayIcon(gfx::ImageSkia());
       }
+      if (IsAssistantSearchEnabled(view_delegate_) &&
+          display_results[i]->is_omnibox_search()) {
+        display_results[i]->set_accessible_name(l10n_util::GetStringFUTF16(
+            IDS_ASH_ASSISTANT_QUERY_ACCESSIBILITY_ANNOUNCEMENT,
+            display_results[i]->title()));
+      }
+
       result_view->SetResult(display_results[i]);
       result_view->SetVisible(true);
     } else {

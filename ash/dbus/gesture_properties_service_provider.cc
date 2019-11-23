@@ -24,7 +24,7 @@ GesturePropertiesServiceProvider::~GesturePropertiesServiceProvider() = default;
 
 void GesturePropertiesServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
-  dbus::ExportedObject::OnExportedCallback on_exported =
+  auto on_exported =
       base::BindRepeating(&GesturePropertiesServiceProvider::OnExported,
                           weak_ptr_factory_.GetWeakPtr());
   exported_object->ExportMethod(
@@ -63,16 +63,16 @@ void GesturePropertiesServiceProvider::OnExported(
 
 namespace {
 
-void GetPropertyCallback(
-    dbus::MethodCall* method_call,
-    std::unique_ptr<dbus::Response> response,
-    const dbus::ExportedObject::ResponseSender& response_sender,
-    bool is_read_only,
-    ui::ozone::mojom::GesturePropValuePtr values) {
+void GetPropertyCallback(dbus::MethodCall* method_call,
+                         std::unique_ptr<dbus::Response> response,
+                         dbus::ExportedObject::ResponseSender response_sender,
+                         bool is_read_only,
+                         ui::ozone::mojom::GesturePropValuePtr values) {
   if (values.is_null()) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS,
-        "The device ID or property name specified was not found."));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS,
+            "The device ID or property name specified was not found."));
     return;
   }
 
@@ -132,17 +132,17 @@ void GetPropertyCallback(
       break;
     }
   }
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
-void SetPropertyCallback(
-    dbus::MethodCall* method_call,
-    const dbus::ExportedObject::ResponseSender& response_sender,
-    ui::ozone::mojom::SetGesturePropErrorCode error) {
+void SetPropertyCallback(dbus::MethodCall* method_call,
+                         dbus::ExportedObject::ResponseSender response_sender,
+                         ui::ozone::mojom::SetGesturePropErrorCode error) {
   std::string error_message;
   switch (error) {
     case ui::ozone::mojom::SetGesturePropErrorCode::SUCCESS:
-      response_sender.Run(dbus::Response::FromMethodCall(method_call));
+      std::move(response_sender)
+          .Run(dbus::Response::FromMethodCall(method_call));
       return;
     case ui::ozone::mojom::SetGesturePropErrorCode::NOT_FOUND:
       error_message = "The device ID or property name specified was not found.";
@@ -166,14 +166,14 @@ void SetPropertyCallback(
       break;
   }
   LOG(ERROR) << "SetProperty error: " << error_message;
-  response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-      method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+  std::move(response_sender)
+      .Run(dbus::ErrorResponse::FromMethodCall(
+          method_call, DBUS_ERROR_INVALID_ARGS, error_message));
 }
 
-void ListDevicesCallback(
-    std::unique_ptr<dbus::Response> response,
-    const dbus::ExportedObject::ResponseSender& response_sender,
-    const base::flat_map<int, std::string>& result) {
+void ListDevicesCallback(std::unique_ptr<dbus::Response> response,
+                         dbus::ExportedObject::ResponseSender response_sender,
+                         const base::flat_map<int, std::string>& result) {
   dbus::MessageWriter writer(response.get());
   writer.AppendUint32(result.size());
   dbus::MessageWriter dict_writer(nullptr);
@@ -186,17 +186,17 @@ void ListDevicesCallback(
     dict_writer.CloseContainer(&dict_entry_writer);
   }
   writer.CloseContainer(&dict_writer);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 void ListPropertiesCallback(
     std::unique_ptr<dbus::Response> response,
-    const dbus::ExportedObject::ResponseSender& response_sender,
+    dbus::ExportedObject::ResponseSender response_sender,
     const std::vector<std::string>& result) {
   dbus::MessageWriter writer(response.get());
   writer.AppendUint32(result.size());
   writer.AppendArrayOfStrings(result);
-  response_sender.Run(std::move(response));
+  std::move(response_sender).Run(std::move(response));
 }
 
 }  // namespace
@@ -208,7 +208,7 @@ void GesturePropertiesServiceProvider::ListDevices(
       dbus::Response::FromMethodCall(method_call);
 
   GetService()->ListDevices(base::BindOnce(
-      &ListDevicesCallback, std::move(response), response_sender));
+      &ListDevicesCallback, std::move(response), std::move(response_sender)));
 }
 
 void GesturePropertiesServiceProvider::ListProperties(
@@ -217,9 +217,10 @@ void GesturePropertiesServiceProvider::ListProperties(
   dbus::MessageReader reader(method_call);
   int32_t device_id;
   if (!reader.PopInt32(&device_id)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS,
-        "The device ID (int32) is missing."));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS,
+            "The device ID (int32) is missing."));
     return;
   }
 
@@ -228,7 +229,7 @@ void GesturePropertiesServiceProvider::ListProperties(
 
   GetService()->ListProperties(
       device_id, base::BindOnce(&ListPropertiesCallback, std::move(response),
-                                response_sender));
+                                std::move(response_sender)));
 }
 
 void GesturePropertiesServiceProvider::GetProperty(
@@ -240,9 +241,10 @@ void GesturePropertiesServiceProvider::GetProperty(
   std::string property_name;
 
   if (!reader.PopInt32(&device_id) || !reader.PopString(&property_name)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS,
-        "The device ID (int32) and/or property name (string) is missing."));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS,
+            "The device ID (int32) and/or property name (string) is missing."));
     return;
   }
 
@@ -252,7 +254,7 @@ void GesturePropertiesServiceProvider::GetProperty(
   GetService()->GetProperty(
       device_id, property_name,
       base::BindOnce(&GetPropertyCallback, method_call, std::move(response),
-                     response_sender));
+                     std::move(response_sender)));
 }
 
 static ui::ozone::mojom::GesturePropValuePtr GesturePropValueFromVariant(
@@ -326,15 +328,17 @@ void GesturePropertiesServiceProvider::SetProperty(
   std::string property_name;
 
   if (!reader.PopInt32(&device_id) || !reader.PopString(&property_name)) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS,
-        "The device ID (int32) and/or property name (string) is missing."));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS,
+            "The device ID (int32) and/or property name (string) is missing."));
     return;
   }
 
   if (!reader.HasMoreData()) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "No value(s) specified."));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, "No value(s) specified."));
     return;
   }
 
@@ -343,14 +347,15 @@ void GesturePropertiesServiceProvider::SetProperty(
       GesturePropValueFromVariant(&reader, &error_message);
 
   if (values.is_null()) {
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, error_message));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_INVALID_ARGS, error_message));
     return;
   }
 
-  GetService()->SetProperty(
-      device_id, property_name, std::move(values),
-      base::BindOnce(&SetPropertyCallback, method_call, response_sender));
+  GetService()->SetProperty(device_id, property_name, std::move(values),
+                            base::BindOnce(&SetPropertyCallback, method_call,
+                                           std::move(response_sender)));
 }
 
 ui::ozone::mojom::GesturePropertiesService*

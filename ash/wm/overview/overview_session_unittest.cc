@@ -5614,6 +5614,48 @@ TEST_P(SplitViewOverviewSessionInClamshellTest,
                 .width());
 }
 
+// Tests that the ratio between the divider position and the work area width is
+// the same before and after changing the display orientation in clamshell mode.
+TEST_P(SplitViewOverviewSessionInClamshellTest, DisplayOrientationChangeTest) {
+  UpdateDisplay("600x400");
+  std::unique_ptr<aura::Window> window(
+      CreateWindowWithHitTestComponent(HTRIGHT, gfx::Rect(400, 400)));
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  const auto test_many_orientation_changes =
+      [this](const std::string& description) {
+        SCOPED_TRACE(description);
+        for (display::Display::Rotation rotation :
+             {display::Display::ROTATE_270, display::Display::ROTATE_180,
+              display::Display::ROTATE_90, display::Display::ROTATE_0,
+              display::Display::ROTATE_180, display::Display::ROTATE_0}) {
+          const auto compute_divider_position_ratio = [this]() {
+            return static_cast<float>(
+                       split_view_controller()->divider_position()) /
+                   static_cast<float>(display::Screen::GetScreen()
+                                          ->GetPrimaryDisplay()
+                                          .work_area()
+                                          .width());
+          };
+          const float before = compute_divider_position_ratio();
+          Shell::Get()->display_manager()->SetDisplayRotation(
+              display::Screen::GetScreen()->GetPrimaryDisplay().id(), rotation,
+              display::Display::RotationSource::ACTIVE);
+          const float after = compute_divider_position_ratio();
+          EXPECT_NEAR(before, after, 0.001f);
+        }
+      };
+  EXPECT_EQ(split_view_controller()->GetDefaultDividerPosition(),
+            split_view_controller()->divider_position());
+  test_many_orientation_changes("centered divider");
+  EXPECT_EQ(split_view_controller()->GetDefaultDividerPosition(),
+            split_view_controller()->divider_position());
+  ui::test::EventGenerator(Shell::GetPrimaryRootWindow(), window.get())
+      .DragMouseBy(50, 50);
+  EXPECT_NE(split_view_controller()->GetDefaultDividerPosition(),
+            split_view_controller()->divider_position());
+  test_many_orientation_changes("off-center divider");
+}
+
 using SplitViewOverviewSessionInClamshellTestMultiDisplayOnly =
     SplitViewOverviewSessionInClamshellTest;
 

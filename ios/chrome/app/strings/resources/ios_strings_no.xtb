@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">Trykk på «Start logging»-knappen for å samle inn fremtidige JavaScript-konsollogger og -feil fra alle faner. Loggene samles inn (og lagres bare i minnet) frem til denne siden lukkes eller du trykker på «Stopp logging».</translation>
 <translation id="1657011748321897393">Delingen mislyktes fordi du ikke er tilkoblet nettverket.</translation>
 <translation id="165877110639533037">Ingen åpne faner</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">For å få bokmerkene dine på alle enhetene dine, slå på synkronisering.</translation>
 <translation id="1687475363370981210">Merk alle som lest</translation>
 <translation id="1690731385917361335">Ingen elementer</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">Send</translation>
 <translation id="2690858294534178585">Kameraet er i bruk</translation>
 <translation id="2691653761409724435">Ikke tilgjengelig uten nett</translation>
+<translation id="2695507686909505111">Siden er oversatt</translation>
 <translation id="2702801445560668637">Leseliste</translation>
 <translation id="2704606927547763573">Kopiert</translation>
 <translation id="2709516037105925701">Autofyll</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">Ingen internettilkobling.</translation>
 <translation id="3783017676699494206">Lagre bildet</translation>
 <translation id="3789841737615482174">Installer</translation>
+<translation id="3803696231112616155">Tilby å oversette dette nettstedet</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3897092660631435901">Meny</translation>
 <translation id="3915450441834151894">Opplysninger om nettstedet</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">Denne siden åpnes i et annet program.</translation>
 <translation id="4375040482473363939">QR-kodesøk</translation>
 <translation id="4378154925671717803">Telefon</translation>
+<translation id="4389019817280890563">Trykk for å bytte språk.</translation>
 <translation id="441868831736628555">Merknad om personvern</translation>
 <translation id="4454246407045105932">Legg til språk</translation>
 <translation id="4476574785019001431">Innstillinger</translation>
@@ -344,6 +348,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5871497086027727873">1 element er flyttet</translation>
 <translation id="5897956970858271241">Besøk den kopierte linken</translation>
 <translation id="5911030830365207728">Google Oversetter</translation>
+<translation id="5913600720976431809">Alternativer for oversetting av siden</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5938160824633642847">Enheten er nesten full. Frigjør plass og prøv på nytt.</translation>
 <translation id="5948291296578561264">Da kan du lagre bilder i bildebiblioteket ditt.</translation>
@@ -375,6 +380,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6219688215832490856">Oversett aldri</translation>
 <translation id="6254066287920239840">Åpne linker i appen i stedet for i nettleseren.</translation>
 <translation id="6255097610484507482">Rediger kredittkort</translation>
+<translation id="6284652193729350524">Tilby å oversette <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Logg av og slå av synkronisering</translation>
 <translation id="6308436439357671616">Dette gjør at du kan ta og laste opp bilder.</translation>
 <translation id="6324528485781869530">Bytt synkroniseringskonto</translation>
@@ -429,6 +435,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6903907808598579934">Slå på synkronisering</translation>
 <translation id="6914583639806229067">Søk etter bildet du kopierte</translation>
 <translation id="6914783257214138813">Passordene dine blir synlige for alle som kan se den eksporterte filen.</translation>
+<translation id="6930799952781667037">Trykk for å bytte til dette språket.</translation>
 <translation id="6944369514868857500">Velg en annen konto</translation>
 <translation id="6945221475159498467">Velg</translation>
 <translation id="6973630695168034713">Mapper</translation>
@@ -458,6 +465,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7293171162284876153">For å starte synkronisering, slå på «Synkroniser Chrome-dataene dine».</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosent fullført</translation>
 <translation id="7346909386216857016">Greit</translation>
+<translation id="734758817008927353">Alternativer for lagring av kort</translation>
 <translation id="7348502496356775519">Sett som bokmerke</translation>
 <translation id="7383797227493018512">Leseliste</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
@@ -482,6 +490,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="7671141431838911305">INSTALLER</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7772032839648071052">Bekreft passord</translation>
+<translation id="7781011649027948662">Vil du oversette siden?</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="778855399387580014">Start et søk i en ny Chrome-fane.</translation>
 <translation id="7791543448312431591">Legg til</translation>

@@ -517,7 +517,6 @@
 <translation id="1734212868489994726">สีฟ้าอ่อน</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> อาจอัปเดตตัวเองตลอดเวลาไม่ได้</translation>
 <translation id="1736419249208073774">สำรวจ</translation>
-<translation id="1736420071277903564">คอมพิวเตอร์</translation>
 <translation id="1737968601308870607">ข้อบกพร่องของไฟล์</translation>
 <translation id="1741314857973421784">ต่อไป</translation>
 <translation id="1743570585616704562">ไม่รู้จัก</translation>
@@ -1129,6 +1128,7 @@
 <translation id="2617342710774726426">ซิมการ์ดถูกล็อก</translation>
 <translation id="2619761439309613843">รีเฟรชทุกวัน</translation>
 <translation id="2620436844016719705">ระบบ</translation>
+<translation id="2621713457727696555">ปลอดภัย</translation>
 <translation id="26224892172169984">ไม่อนุญาตให้ไซต์ใดๆ จัดการโปรโตคอล</translation>
 <translation id="2624142942574147739">หน้าเว็บนี้กำลังเข้าถึงกล้องถ่ายรูปและไมโครโฟนของคุณ</translation>
 <translation id="2626799779920242286">โปรดลองอีกครั้งในภายหลัง</translation>
@@ -1580,6 +1580,7 @@
 <translation id="328571385944182268">บันทึกรหัสผ่านไหม</translation>
 <translation id="3288047731229977326">ส่วนขยายที่ทำงานอยู่ในโหมดนักพัฒนาซอฟต์แวร์อาจเป็นอันตรายต่อคอมพิวเตอร์ของคุณ หากคุณไม่ใช่นักพัฒนาซอฟต์แวร์ คุณควรปิดส่วนขยายที่ทำงานอยู่ในโหมดนักพัฒนาซอฟต์แวร์เพื่อรักษาความปลอดภัย</translation>
 <translation id="3289856944988573801">ในการตรวจหาการอัปเดต โปรดใช้อีเทอร์เน็ตหรือ WiFi</translation>
+<translation id="3290356915286466215">ไม่มีการรักษาความปลอดภัย</translation>
 <translation id="3293644607209440645">ส่งหน้านี้</translation>
 <translation id="32939749466444286">คอนเทนเนอร์ Linux ไม่เริ่มทำงาน โปรดลองอีกครั้ง</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
@@ -2021,7 +2022,6 @@
 <translation id="3900966090527141178">ส่งออกรหัสผ่าน</translation>
 <translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME" /></translation>
 <translation id="3905761538810670789">ซ่อมแอป</translation>
-<translation id="3906954721959377182">แท็บเล็ต</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> ล้าสมัย</translation>
 <translation id="3908501907586732282">เปิดใช้งานส่วนขยาย</translation>
 <translation id="3909477809443608991"><ph name="URL" /> ต้องการเล่นเนื้อหาที่ได้รับความคุ้มครอง ข้อมูลประจำตัวของอุปกรณ์จะได้รับการยืนยันโดย Google และเว็บไซต์นี้อาจเข้าถึงข้อมูลดังกล่าว</translation>
@@ -2321,7 +2321,6 @@
 <translation id="4364327530094270451">เมลอน</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> กำลังแชร์หน้าต่าง</translation>
 <translation id="4364830672918311045">แสดงการแจ้งเตือน</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" />ด้วย <ph name="APP_NAME" /></translation>
 <translation id="4370975561335139969">อีเมลและรหัสผ่านที่คุณป้อนไม่ตรงกัน</translation>
 <translation id="437184764829821926">การตั้งค่าแบบอักษรขึ้นสูง</translation>
 <translation id="4374831787438678295">โปรแกรมติดตั้ง Linux</translation>
@@ -2963,7 +2962,6 @@
 <translation id="5363109466694494651">Powerwash และเปลี่ยนกลับ</translation>
 <translation id="5365881113273618889">โฟลเดอร์ที่คุณเลือกมีไฟล์ที่ละเอียดอ่อน แน่ใจไหมว่าต้องการให้สิทธิ์การเข้าถึงในการเขียนโฟลเดอร์นี้อย่างถาวรแก่ "<ph name="APP_NAME" />"</translation>
 <translation id="5367091008316207019">กำลังอ่านไฟล์..</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> - <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">โทรศัพท์ล็อกอยู่ โปรดปลดล็อกเพื่อเข้าใช้งาน</translation>
 <translation id="5368779022775404937">ลงชื่อเข้าใช้ <ph name="REALM" /></translation>
 <translation id="5369491905435686894">เปิดใช้การเร่งความเร็วเมาส์</translation>
@@ -4721,6 +4719,7 @@
 <translation id="7912080627461681647">มีการเปลี่ยนรหัสผ่านของคุณในเซิร์ฟเวอร์ โปรดออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="7915457674565721553">เชื่อมต่ออินเทอร์เน็ตเพื่อตั้งค่าการควบคุมโดยผู้ปกครอง</translation>
 <translation id="7915471803647590281">โปรดแจ้งให้เราทราบถึงสิ่งที่เกิดขึ้นก่อนส่งความคิดเห็น</translation>
+<translation id="7918257978052780342">ลงทะเบียน</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> วิ</translation>
 <translation id="792514962475806987">ระดับการซูมหน้าจอบางส่วน:</translation>
 <translation id="7925247922861151263">การตรวจสอบ AAA ล้มเหลว</translation>

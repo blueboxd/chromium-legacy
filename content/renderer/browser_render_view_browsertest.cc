@@ -146,11 +146,7 @@ class RenderViewBrowserTest : public ContentBrowserTest {
 #define MAYBE_ConfirmCacheInformationPlumbed \
   DISABLED_ConfirmCacheInformationPlumbed
 #else
-
-// Disabled due to failures (crbug.com/1026725)
-#define MAYBE_ConfirmCacheInformationPlumbed \
-  DISABLED_ConfirmCacheInformationPlumbed
-
+#define MAYBE_ConfirmCacheInformationPlumbed ConfirmCacheInformationPlumbed
 #endif  // defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest,
                        MAYBE_ConfirmCacheInformationPlumbed) {

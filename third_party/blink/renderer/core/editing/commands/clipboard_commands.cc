@@ -359,11 +359,13 @@ ClipboardCommands::GetFragmentFromClipboard(LocalFrame& frame) {
     KURL url;
     const String markup = SystemClipboard::GetInstance().ReadHTML(
         url, fragment_start, fragment_end);
-    if (!markup.IsEmpty()) {
+    const String sanitized_markup =
+        SanitizeMarkupWithContext(markup, fragment_start, fragment_end);
+    if (!sanitized_markup.IsEmpty()) {
       DCHECK(frame.GetDocument());
-      fragment = CreateFragmentFromMarkupWithContext(
-          *frame.GetDocument(), markup, fragment_start, fragment_end, url,
-          kDisallowScriptingAndPluginContent);
+      fragment =
+          CreateFragmentFromMarkup(*frame.GetDocument(), sanitized_markup, url,
+                                   kDisallowScriptingAndPluginContent);
     }
   }
   if (fragment)

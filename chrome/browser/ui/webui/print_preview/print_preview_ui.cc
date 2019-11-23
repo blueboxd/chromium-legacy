@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 
-#include <map>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
@@ -90,7 +90,7 @@ constexpr char kGeneratedPath[] =
 
 PrintPreviewUI::TestDelegate* g_test_delegate = nullptr;
 
-// Thread-safe wrapper around a std::map to keep track of mappings from
+// Thread-safe wrapper around a base::flat_map to keep track of mappings from
 // PrintPreviewUI IDs to most recent print preview request IDs.
 class PrintPreviewRequestIdMapWithLock {
  public:
@@ -122,7 +122,7 @@ class PrintPreviewRequestIdMapWithLock {
 
  private:
   // Mapping from PrintPreviewUI ID to print preview request ID.
-  typedef std::map<int, int> PrintPreviewRequestIdMap;
+  using PrintPreviewRequestIdMap = base::flat_map<int, int>;
 
   PrintPreviewRequestIdMap map_;
   base::Lock lock_;

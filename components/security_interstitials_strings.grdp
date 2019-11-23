@@ -487,4 +487,50 @@
   <message name="IDS_SAFETY_TIP_ANDROID_LOOKALIKE_DESCRIPTION" desc="Body of an infobar warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.">
     <ph name='LOOKALIKE_DOMAIN'>$1<ex>fake-google.com</ex></ph> looks similar to <ph name='SUGGESTED_DOMAIN'>$2<ex>google.com</ex></ph>. Attackers sometimes mimic sites by using similar URLs.
   </message>
+
+  <!-- Known interception disclosure WebUI strings -->
+  <if expr="not is_ios">
+    <!-- Title of the page -->
+    <message name="IDS_KNOWN_INTERCEPTION_TITLE" desc="Title of network interception disclosure page.">
+      Monitoring Detected
+    </message>
+
+    <!-- Main message title and description -->
+    <if expr="_google_chrome">
+      <message name="IDS_KNOWN_INTERCEPTION_SUBTITLE" desc="Title of chrome://connection-monitoring-detected/ page, shows when Chrome has detected known network monitoring activity">
+        Chrome has detected that your connection is being monitored
+      </message>
+    </if>
+    <if expr="not _google_chrome">
+      <message name="IDS_KNOWN_INTERCEPTION_SUBTITLE" desc="Title of chrome://connection-monitoring-detected/ page, shows when Chromium has detected known network monitoring activity">
+        Chromium has detected that your connection is being monitored
+      </message>
+    </if>
+    <message name="IDS_KNOWN_INTERCEPTION_DESCRIPTION" desc="Summary text for chrome://connection-monitoring-detected/ page">
+      Your activity on the web and any information you enter is being watched, and content may be changed without your knowledge.
+    </message>
+
+    <!-- Subsection on what this warning means -->
+    <message name="IDS_KNOWN_INTERCEPTION_MEANING_SUBHEADING" desc="Title for the subsection explaining the risks">
+      What this means
+    </message>
+    <message name="IDS_KNOWN_INTERCEPTION_MEANING_DESCRIPTION" desc="Description for the subsection explaining the risks">
+      The network monitor can pretend to be the sites you visit, and can see your activity and any information you enter (for example, passwords, messages, or credit cards). You should take care when doing anything sensitive online, as it will be visible to the network monitor, and the network monitor can change the content on the pages you visit. This includes activity in other browsers and programs that access the Internet.
+    </message>
+
+    <!-- Subsection on why we're showing the UI -->
+    <message name="IDS_KNOWN_INTERCEPTION_CAUSE_SUBHEADING" desc="Title for the subsection explaining why the warning is shown">
+      Why this is happening
+    </message>
+    <if expr="_google_chrome">
+      <message name="IDS_KNOWN_INTERCEPTION_CAUSE_DESCRIPTION" desc="Description for the subsection explaining why the warning is shown">
+        The certificate for this connection is not trusted by Chrome, because it is known to be used for network interception and monitoring. You may be seeing this error because of a certificate you installed on your device. When making secure connections, Chrome trusts certificates that have been locally installed on a user's computer or mobile device. This allows users to run tools to inspect and debug their connections during website development, or for corporate environments to intercept and monitor internal traffic. For cases where this is being abused to intercept traffic on the public Internet, Chrome shows a warning.
+      </message>
+    </if>
+    <if expr="not _google_chrome">
+      <message name="IDS_KNOWN_INTERCEPTION_CAUSE_DESCRIPTION" desc="Description for the subsection explaining why the warning is shown">
+        The certificate for this connection is not trusted by Chromium, because it is known to be used for network interception and monitoring. You may be seeing this error because of a certificate you installed on your device. When making secure connections, Chromium trusts certificates that have been locally installed on a user's computer or mobile device. This allows users to run tools to inspect and debug their connections during website development, or for corporate environments to intercept and monitor internal traffic. For cases where this is being abused to intercept traffic on the public Internet, Chromium shows a warning.
+      </message>
+    </if>
+  </if>
 </grit-part>

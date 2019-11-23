@@ -21,14 +21,6 @@ SingleThreadTaskExecutor::SingleThreadTaskExecutor(MessagePumpType type)
       simple_task_executor_(sequence_manager_.get(), task_runner()) {
   sequence_manager_->SetDefaultTaskRunner(default_task_queue_->task_runner());
   sequence_manager_->BindToMessagePump(MessagePump::Create(type));
-
-#if defined(OS_IOS)
-  if (type == MessagePumpType::UI) {
-    static_cast<sequence_manager::internal::SequenceManagerImpl*>(
-        sequence_manager_.get())
-        ->AttachToMessagePump();
-  }
-#endif
 }
 
 SingleThreadTaskExecutor::~SingleThreadTaskExecutor() = default;

@@ -844,6 +844,7 @@ void MainThreadSchedulerImpl::WillBeginFrame(const viz::BeginFrameArgs& args) {
     any_thread().begin_main_frame_on_critical_path = args.on_critical_path;
   }
   main_thread_only().compositing_experiment.OnWillBeginMainFrame();
+  main_thread_only().compositor_priority_experiments.OnWillBeginMainFrame();
 }
 
 void MainThreadSchedulerImpl::DidCommitFrameToCompositor() {

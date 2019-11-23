@@ -446,7 +446,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
                 layerTitleCache, tabContentManager, resourceManager, fullscreenManager,
                 TabFeatureUtilities.isTabToGtsAnimationEnabled() ? mTabListDelegate.getResourceId()
                                                                  : 0,
-                mBackgroundAlpha);
+                mBackgroundAlpha, mStartSurface.getTabListDelegate().getTabListTopOffset());
         mFrameCount++;
         if (mLastFrameTime != 0) {
             long elapsed = SystemClock.elapsedRealtime() - mLastFrameTime;

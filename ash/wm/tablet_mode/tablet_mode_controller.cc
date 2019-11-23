@@ -393,10 +393,10 @@ void TabletModeController::MaybeObserveBoundsAnimation(aura::Window* window) {
   }
 
   destroy_observer_ = std::make_unique<DestroyObserver>(
-      window, base::Bind(&TabletModeController::StopObservingAnimation,
-                         weak_factory_.GetWeakPtr(),
-                         /*record_stats=*/false,
-                         /*delete_screenshot=*/true));
+      window, base::BindOnce(&TabletModeController::StopObservingAnimation,
+                             weak_factory_.GetWeakPtr(),
+                             /*record_stats=*/false,
+                             /*delete_screenshot=*/true));
   animating_layer_ = window->layer();
   animating_layer_->GetAnimator()->AddObserver(this);
 }
@@ -996,8 +996,8 @@ void TabletModeController::ResetDestroyObserver() {
 void TabletModeController::TakeScreenshot(aura::Window* top_window) {
   DCHECK(!top_window->IsRootWindow());
   destroy_observer_ = std::make_unique<DestroyObserver>(
-      top_window, base::Bind(&TabletModeController::ResetDestroyObserver,
-                             weak_factory_.GetWeakPtr()));
+      top_window, base::BindOnce(&TabletModeController::ResetDestroyObserver,
+                                 weak_factory_.GetWeakPtr()));
   screenshot_set_callback_.Reset(base::BindOnce(
       &TabletModeController::FinishInitTabletMode, weak_factory_.GetWeakPtr()));
 

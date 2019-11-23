@@ -1,4 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="as">
+<translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" />এ এই ডিভাইচটো পৰিচালনা কৰে তথা আপোনাৰ কাৰ্যকলাপো নিৰীক্ষণ কৰিব পাৰে।</translation>
+<translation id="1510238584712386396">লঞ্চাৰ</translation>
+<translation id="1734367976349034509">এই ডিভাইচ এণ্টাৰপ্ৰাইজৰ দ্বাৰা পৰিচালিত</translation>
+<translation id="1930797645656624981">Chrome OS ইনপুট পদ্ধতি সেৱা</translation>
+<translation id="1979103255016296513">পাছৱর্ড সলনি কৰাৰ সময় উকলিছে</translation>
+<translation id="2049639323467105390">এই ডিভাইচটো <ph name="DOMAIN" />এ পৰিচালনা কৰে।</translation>
+<translation id="2083960536266308407">স্ক্রীণত একো পোৱা নগ'ল</translation>
+<translation id="2338501278241028356">ওচৰ-পাজৰৰ ডিভাইচসমূহ চাবলৈ ব্লুটুথ অন কৰক</translation>
+<translation id="2805756323405976993">এপ্</translation>
+<translation id="2872961005593481000">শ্বাট ডাউন কৰক</translation>
+<translation id="3008341117444806826">ৰিফ্ৰেশ্ব কৰক</translation>
+<translation id="3838338534323494292">নতুন পাছৱৰ্ড</translation>
+<translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" />এ এই ডিভাইচটো পৰিচালনা কৰে আৰু চোৱা ৱেবপৃষ্ঠাসমূহ, পাছৱৰ্ডসমূহ আৰু ইমেইলকে ধৰি ব্যৱহাৰকাৰীৰ সকলো কাৰ্যকলাপ এক্সেছ কৰিব পাৰে।</translation>
+<translation id="4227825898293920515">পাছৱর্ডৰ ম্যাদ উকলাৰ সময় <ph name="TIME" /></translation>
+<translation id="4429881212383817840">Kerberos টিকেটৰ ম্যাদ শীঘ্ৰেই উকলি যাব</translation>
+<translation id="445059817448385655">পুৰণি পাছৱৰ্ড</translation>
+<translation id="467510802200863975">পাছৱৰ্ডসমূহ মিলা নাই</translation>
+<translation id="4731797938093519117">অভিভাৱকৰ এক্সেছ</translation>
+<translation id="4890353053343094602">তৎক্ষণাত নতুন এটা বাছনি কৰক</translation>
+<translation id="5212543919916444558">আপোনাক সহায় কৰিব পৰাকৈ মই আপোনাৰ স্ক্ৰীণত একো বিচাৰি পোৱা নাই।
+মোক কিবা সুধিবলৈ মাইকটো টিপক।</translation>
+<translation id="5222676887888702881">ছাইন আউট কৰক</translation>
+<translation id="5317780077021120954">ছেভ কৰক</translation>
+<translation id="5332948983412042822">এতিয়া নতুন এটা বাছনি কৰক</translation>
+<translation id="5457599981699367932">অতিথি হিচাপে ব্ৰাউজ কৰক</translation>
+<translation id="54609108002486618">পৰিচালিত</translation>
+<translation id="5832805196449965646">অন্য লোক যোগ কৰক</translation>
+<translation id="5895138241574237353">ৰিষ্টাৰ্ট কৰক</translation>
+<translation id="6058625436358447366">সম্পূর্ণ কৰিবলৈ আপোনাৰ পুৰণি আৰু নতুন পাছৱর্ডসমূহ দিয়ক</translation>
+<translation id="6106186594183574873">সম্পূর্ণ কৰিবলৈ আপোনাৰ পুৰণি পাছৱর্ড দিয়ক</translation>
+<translation id="6146993107019042706">সম্পূর্ণ কৰিবলৈ আপোনাৰ নতুন পাছৱর্ড দিয়ক</translation>
+<translation id="7658239707568436148">বাতিল কৰক</translation>
+<translation id="7690294790491645610">নতুন পাছৱর্ড নিশ্চিত কৰক</translation>
+<translation id="808894953321890993">পাছৱৰ্ড সলনি কৰক</translation>
+<translation id="8747900814994928677">সলনি কৰাটো নিশ্চিত কৰক</translation>
+<translation id="910415269708673980"><ph name="PRINCIPAL_NAME" />ৰ টিকেট ৰিফ্ৰেশ্ব কৰক</translation>
+<translation id="9111102763498581341">আনলক</translation>
 </translationbundle>

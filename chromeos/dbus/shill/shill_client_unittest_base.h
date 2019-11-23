@@ -82,8 +82,8 @@ class ShillClientUnittestBase : public testing::Test {
 
  protected:
   // A callback to intercept and check the method call arguments.
-  typedef base::Callback<void(dbus::MessageReader* reader)>
-      ArgumentCheckCallback;
+  using ArgumentCheckCallback =
+      base::RepeatingCallback<void(dbus::MessageReader* reader)>;
 
   // Sets expectations for called method name and arguments, and sets response.
   void PrepareForMethodCall(const std::string& method_name,

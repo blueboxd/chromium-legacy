@@ -7,5 +7,5 @@
 [
   ImplementedAs=DOMWindowPortalHost
 ] partial interface Window {
-  [RuntimeEnabled=Portals] readonly attribute PortalHost? portalHost;
+  [RuntimeEnabled=Portals, Measure] readonly attribute PortalHost? portalHost;
 };

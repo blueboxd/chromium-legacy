@@ -482,20 +482,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
   node2.SetName("Name2");
   root.child_ids.push_back(node2.id);
 
-  AXNodeData node3;
-  node3.id = 4;
-  node3.relative_bounds.bounds = gfx::RectF(10, 10, 10, 10);
-  node3.SetName("Name3");
-  root.child_ids.push_back(node3.id);
-
-  // Overlapping child view.
-  AXNodeData node4;
-  node4.id = 5;
-  node4.relative_bounds.bounds = gfx::RectF(10, 10, 5, 5);
-  node4.SetName("Name4");
-  node3.child_ids.push_back(node4.id);
-
-  Init(root, node1, node2, node3, node4);
+  Init(root, node1, node2);
 
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
 
@@ -509,19 +496,13 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
   ASSERT_NE(nullptr, obj_1.ptr());
   CheckVariantHasName(obj_1, L"Name1");
 
-  // This is directly on node 3 and 4.
-  ScopedVariant obj_2;
-  EXPECT_EQ(S_OK, root_obj->accHitTest(12, 12, obj_2.Receive()));
-  ASSERT_NE(nullptr, obj_2.ptr());
-  CheckVariantHasName(obj_2, L"Name4");
-
   // This is directly on node 2 with a scale factor of 1.5.
-  ScopedVariant obj_3;
+  ScopedVariant obj_2;
   std::unique_ptr<base::AutoReset<float>> scale_factor_reset =
       TestAXNodeWrapper::SetScaleFactor(1.5);
-  EXPECT_EQ(S_OK, root_obj->accHitTest(38, 38, obj_3.Receive()));
-  ASSERT_NE(nullptr, obj_3.ptr());
-  CheckVariantHasName(obj_3, L"Name2");
+  EXPECT_EQ(S_OK, root_obj->accHitTest(38, 38, obj_2.Receive()));
+  ASSERT_NE(nullptr, obj_2.ptr());
+  CheckVariantHasName(obj_2, L"Name2");
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {

@@ -57,8 +57,8 @@ class ObjectManagerTest
                                 const std::string& interface_name) override {
     Properties* properties = new Properties(
         object_proxy, interface_name,
-        base::Bind(&ObjectManagerTest::OnPropertyChanged,
-                   base::Unretained(this), object_path));
+        base::BindRepeating(&ObjectManagerTest::OnPropertyChanged,
+                            base::Unretained(this), object_path));
     return static_cast<PropertySet*>(properties);
   }
 
@@ -199,10 +199,9 @@ class ObjectManagerTest
     writer.AppendString(action);
     writer.AppendObjectPath(object_path);
 
-    object_proxy->CallMethod(&method_call,
-                             ObjectProxy::TIMEOUT_USE_DEFAULT,
-                             base::Bind(&ObjectManagerTest::MethodCallback,
-                                        base::Unretained(this)));
+    object_proxy->CallMethod(&method_call, ObjectProxy::TIMEOUT_USE_DEFAULT,
+                             base::BindOnce(&ObjectManagerTest::MethodCallback,
+                                            base::Unretained(this)));
     WaitForMethodCallback();
   }
 

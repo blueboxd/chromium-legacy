@@ -6,19 +6,25 @@ package org.chromium.chrome.browser.autofill_assistant.form;
 
 abstract class AssistantFormCounter {
     private final String mLabel;
-    private final String mSubtext;
+    private final String mDescriptionLine1;
+    private final String mDescriptionLine2;
 
-    private AssistantFormCounter(String label, String subtext) {
+    private AssistantFormCounter(String label, String descriptionLine1, String descriptionLine2) {
         mLabel = label;
-        mSubtext = subtext;
+        mDescriptionLine1 = descriptionLine1;
+        mDescriptionLine2 = descriptionLine2;
     }
 
     String getLabel() {
         return mLabel;
     }
 
-    String getSubtext() {
-        return mSubtext;
+    String getDescriptionLine1() {
+        return mDescriptionLine1;
+    }
+
+    String getDescriptionLine2() {
+        return mDescriptionLine2;
     }
 
     abstract int getValue();
@@ -31,13 +37,16 @@ abstract class AssistantFormCounter {
 
     abstract void increaseValue();
 
-    static AssistantFormCounter create(String label, String subtext, int initialValue, int minValue,
-            int maxValue, int[] allowedValues) {
+    static AssistantFormCounter create(String label, String descriptionLine1,
+            String descriptionLine2, int initialValue, int minValue, int maxValue,
+            int[] allowedValues) {
         if (allowedValues.length > 0) {
-            return new FiniteCounter(label, subtext, initialValue, allowedValues);
+            return new FiniteCounter(
+                    label, descriptionLine1, descriptionLine2, initialValue, allowedValues);
         }
 
-        return new BoundedCounter(label, subtext, initialValue, minValue, maxValue);
+        return new BoundedCounter(
+                label, descriptionLine1, descriptionLine2, initialValue, minValue, maxValue);
     }
 
     /** A counter whose value is limited by a min and max value. */
@@ -46,9 +55,9 @@ abstract class AssistantFormCounter {
         private final int mMaxValue;
         private int mValue;
 
-        private BoundedCounter(
-                String label, String subtext, int initialValue, int minValue, int maxValue) {
-            super(label, subtext);
+        private BoundedCounter(String label, String descriptionLine1, String descriptionLine2,
+                int initialValue, int minValue, int maxValue) {
+            super(label, descriptionLine1, descriptionLine2);
             mMinValue = minValue;
             mMaxValue = maxValue;
             mValue = initialValue;
@@ -85,8 +94,9 @@ abstract class AssistantFormCounter {
         private final int[] mAllowedValues;
         private int mValueIndex;
 
-        private FiniteCounter(String label, String subtext, int initialValue, int[] allowedValues) {
-            super(label, subtext);
+        private FiniteCounter(String label, String descriptionLine1, String descriptionLine2,
+                int initialValue, int[] allowedValues) {
+            super(label, descriptionLine1, descriptionLine2);
             mAllowedValues = allowedValues;
 
             for (int i = 0; i < mAllowedValues.length; i++) {

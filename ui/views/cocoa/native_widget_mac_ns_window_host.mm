@@ -37,7 +37,6 @@
 #include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
 
@@ -1098,12 +1097,11 @@ void NativeWidgetMacNSWindowHost::DoDialogButtonAction(
   views::DialogDelegate* dialog =
       root_view_->GetWidget()->widget_delegate()->AsDialogDelegate();
   DCHECK(dialog);
-  views::DialogClientView* client = dialog->GetDialogClientView();
   if (button == ui::DIALOG_BUTTON_OK) {
-    client->AcceptWindow();
+    dialog->AcceptDialog();
   } else {
     DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-    client->CancelWindow();
+    dialog->CancelDialog();
   }
 }
 

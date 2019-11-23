@@ -1142,8 +1142,13 @@ FrameSchedulerImpl::CreateWebSchedulingTaskQueue(
   scoped_refptr<MainThreadTaskQueue> task_queue =
       frame_task_queue_controller_->NewWebSchedulingTaskQueue(
           PausableTaskQueueTraits(), priority);
-  return std::make_unique<WebSchedulingTaskQueueImpl>(priority,
-                                                      task_queue.get());
+  return std::make_unique<WebSchedulingTaskQueueImpl>(task_queue->AsWeakPtr());
+}
+
+void FrameSchedulerImpl::OnWebSchedulingTaskQueuePriorityChanged(
+    MainThreadTaskQueue* queue) {
+  UpdateQueuePolicy(queue,
+                    frame_task_queue_controller_->GetQueueEnabledVoter(queue));
 }
 
 const base::UnguessableToken& FrameSchedulerImpl::GetAgentClusterId() const {

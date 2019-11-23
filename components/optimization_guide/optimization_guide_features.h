@@ -21,8 +21,8 @@ namespace features {
 extern const base::Feature kOptimizationHints;
 extern const base::Feature kOptimizationHintsExperiments;
 constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
-extern const base::Feature kOptimizationHintsFetching;
-extern const base::Feature kOptimizationHintsFetchingAnonymousDataConsent;
+extern const base::Feature kRemoteOptimizationGuideFetching;
+extern const base::Feature kRemoteOptimizationGuideFetchingAnonymousDataConsent;
 extern const base::Feature kOptimizationTargetPrediction;
 
 // The maximum number of hosts that can be stored in the
@@ -67,13 +67,13 @@ GURL GetOptimizationGuideServiceGetModelsURL();
 // Whether server optimization hints are enabled.
 bool IsOptimizationHintsEnabled();
 
-// Returns true if the feature to fetch hints from the remote Optimization Guide
+// Returns true if the feature to fetch from the remote Optimization Guide
 // Service is enabled.
-bool IsHintsFetchingEnabled();
+bool IsRemoteFetchingEnabled();
 
-// Returns true if the feature to fetch hints for users that have consented to
+// Returns true if the feature to fetch data for users that have consented to
 // anonymous data collection is enabled but are not Data Saver users.
-bool IsHintsFetchingForAnonymousDataConsentEnabled();
+bool IsRemoteFetchingForAnonymousDataConsentEnabled();
 
 // The maximum data byte size for a server-provided bloom filter. This is
 // a client-side safety limit for RAM use in case server sends too large of

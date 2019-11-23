@@ -103,17 +103,15 @@ void ContentsView::Init(AppListModel* model) {
   AddLauncherPage(horizontal_page_container_, ash::AppListState::kStateApps);
 
   // Search results UI.
-  search_results_page_view_ = new SearchResultPageView(view_delegate);
+  search_results_page_view_ =
+      new SearchResultPageView(view_delegate, view_delegate->GetSearchModel());
 
-  // Search result containers.
-  SearchModel::SearchResults* results =
-      view_delegate->GetSearchModel()->results();
-
+  // Search result containers:
   if (app_list_features::IsAnswerCardEnabled()) {
     search_result_answer_card_view_ =
         new SearchResultAnswerCardView(view_delegate);
     search_results_page_view_->AddSearchResultContainerView(
-        results, search_result_answer_card_view_);
+        search_result_answer_card_view_);
   }
 
   expand_arrow_view_ = new ExpandArrowView(this, app_list_view_);
@@ -123,12 +121,12 @@ void ContentsView::Init(AppListModel* model) {
       search_results_page_view_, GetSearchBoxView()->search_box(),
       view_delegate);
   search_results_page_view_->AddSearchResultContainerView(
-      results, search_result_tile_item_list_view_);
+      search_result_tile_item_list_view_);
 
   search_result_list_view_ =
       new SearchResultListView(GetAppListMainView(), view_delegate);
   search_results_page_view_->AddSearchResultContainerView(
-      results, search_result_list_view_);
+      search_result_list_view_);
 
   AddLauncherPage(search_results_page_view_,
                   ash::AppListState::kStateSearchResults);

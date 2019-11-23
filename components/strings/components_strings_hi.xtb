@@ -175,6 +175,7 @@
 <translation id="173080396488393970">इस तरह का कार्ड काम नहीं करता</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">सिस्टम व्यवस्थापक से संपर्क करने का प्रयास करें.</translation>
+<translation id="1736420071277903564">कंप्यूटर</translation>
 <translation id="1739107442478692187">आप जो साइट या ऐप्लिकेशन इस्तेमाल करते हैं उसमें डेटा का उल्लंघन हुआ है. Chrome सुझाव देता है कि आप अपने सेव किए हुए पासवर्ड की जांच करते रहें और अब उसे <ph name="ORIGIN" /> पर बदलते रहें.</translation>
 <translation id="1740951997222943430">खत्म होने का मान्य महीना डालें</translation>
 <translation id="1741613555002899862">DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> होने पर, नीति तय हाेनी चाहिए. साथ ही, इसकी एक मान्य स्ट्रिंग भी होनी चाहिए.</translation>
@@ -607,6 +608,7 @@
 <translation id="3897092660631435901">मेन्यू</translation>
 <translation id="3901925938762663762">इस कार्ड की समय सीमा खत्म हो गई है</translation>
 <translation id="3906600011954732550">बी5-एक्स्ट्रा</translation>
+<translation id="3906954721959377182">टैबलेट</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">क्या आप कार्ड वेरीफ़िकेशन कोड (सीवीसी) के बजाय WebAuthn का इस्तेमाल करना चाहते हैं?</translation>
 <translation id="3946209740501886391">इस साइट पर हमेशा पूछें</translation>
@@ -1532,7 +1534,6 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 क्रेडिट कार्ड}one{# क्रेडिट कार्ड}other{# क्रेडिट कार्ड}}</translation>
 <translation id="8473863474539038330">पते वगैरह</translation>
 <translation id="8479754468255770962">नीचे बाईं ओर स्टेपल</translation>
-<translation id="8481133456511676116">क्या आपका मतलब <ph name="DOMAIN" /> से है?</translation>
 <translation id="8483780878231876732">कार्ड का इस्तेमाल अपने Google खाते से करने के लिए, Chrome में साइन करें</translation>
 <translation id="8488350697529856933">इस पर लागू होती है</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> को लोड होने में बहुत ज़्यादा समय लगा.</translation>

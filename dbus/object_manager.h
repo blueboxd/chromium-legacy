@@ -86,9 +86,9 @@
 //       override {
 //     Properties* properties = new Properties(
 //           object_proxy, interface_name,
-//           base::Bind(&PropertyChanged,
-//                      weak_ptr_factory_.GetWeakPtr(),
-//                      object_path));
+//           base::BindRepeating(&PropertyChanged,
+//                               weak_ptr_factory_.GetWeakPtr(),
+//                               object_path));
 //     return static_cast<dbus::PropertySet*>(properties);
 //   }
 //

@@ -10275,7 +10275,8 @@ TEST_F(HttpCacheTest, SplitCache) {
 
   // Now request with a.com as the top frame origin. It shouldn't be cached
   // since the cached resource has a different top frame origin.
-  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_a);
+  net::NetworkIsolationKey key_a(origin_a, origin_a);
+  trans_info.network_isolation_key = key_a;
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
@@ -10301,7 +10302,7 @@ TEST_F(HttpCacheTest, SplitCache) {
   EXPECT_TRUE(response.was_cached);
 
   // a.com should still be cached.
-  trans_info.network_isolation_key = NetworkIsolationKey(origin_a, origin_b);
+  trans_info.network_isolation_key = key_a;
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);

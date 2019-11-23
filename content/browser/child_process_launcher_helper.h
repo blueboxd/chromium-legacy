@@ -102,7 +102,8 @@ class ChildProcessLauncherHelper :
       bool is_pre_warmup_required,
 #endif
       mojo::OutgoingInvitation mojo_invitation,
-      const mojo::ProcessErrorCallback& process_error_callback);
+      const mojo::ProcessErrorCallback& process_error_callback,
+      std::map<std::string, base::FilePath> files_to_preload);
 
   // The methods below are defined in the order they are called.
 
@@ -183,12 +184,6 @@ class ChildProcessLauncherHelper :
       base::Process process,
       const ChildProcessLauncherPriority& priority);
 
-  static void SetRegisteredFilesForService(
-      const std::string& service_name,
-      std::map<std::string, base::FilePath> required_files);
-
-  static void ResetRegisteredFilesForTesting();
-
 #if defined(OS_ANDROID)
   void OnChildProcessStarted(JNIEnv* env,
                              jint handle);
@@ -241,6 +236,7 @@ class ChildProcessLauncherHelper :
   bool terminate_on_shutdown_;
   mojo::OutgoingInvitation mojo_invitation_;
   const mojo::ProcessErrorCallback process_error_callback_;
+  const std::map<std::string, base::FilePath> files_to_preload_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<sandbox::SeatbeltExecClient> seatbelt_exec_client_;

@@ -17,7 +17,6 @@ namespace ui {
 namespace {
 
 constexpr int kMinXrandrVersion = 103;  // Need at least xrandr version 1.3
-constexpr auto kDisplayListUpdateDelay = base::TimeDelta::FromMilliseconds(250);
 
 }  // namespace
 
@@ -111,10 +110,10 @@ void XDisplayManager::UpdateDisplayList() {
 }
 
 void XDisplayManager::DispatchDelayedDisplayListUpdate() {
-  delayed_update_task_.Reset(base::BindOnce(&XDisplayManager::UpdateDisplayList,
-                                            base::Unretained(this)));
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, delayed_update_task_.callback(), kDisplayListUpdateDelay);
+  update_task_.Reset(base::BindOnce(&XDisplayManager::UpdateDisplayList,
+                                    base::Unretained(this)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                update_task_.callback());
 }
 
 gfx::Point XDisplayManager::GetCursorLocation() const {

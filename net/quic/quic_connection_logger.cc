@@ -165,7 +165,7 @@ base::Value NetLogQuicWindowUpdateFrameParams(
     const quic::QuicWindowUpdateFrame* frame) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetIntKey("stream_id", frame->stream_id);
-  dict.SetKey("byte_offset", NetLogNumberValue(frame->byte_offset));
+  dict.SetKey("byte_offset", NetLogNumberValue(frame->max_data));
   return dict;
 }
 

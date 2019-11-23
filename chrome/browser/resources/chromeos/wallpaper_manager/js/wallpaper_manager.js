@@ -372,35 +372,40 @@ WallpaperManager.prototype.showError_ = function(errorMessage) {
  * do not depend on the download should be initialized here.
  */
 WallpaperManager.prototype.preDownloadDomInit_ = function() {
+  // Ensure that wallpaper manager exits preview if the window gets hidden.
+  document.addEventListener('visibilitychange', () => {
+    if (this.isDuringPreview_() && document.hidden)
+      $('cancel-preview-wallpaper').click();
+  });
   this.document_.defaultView.addEventListener(
       'resize', this.onResize_.bind(this));
   this.document_.defaultView.addEventListener(
       'keydown', this.onKeyDown_.bind(this));
-    $('minimize-button').addEventListener('click', function() {
-      chrome.app.window.current().minimize();
-    });
-    $('close-button').addEventListener('click', function() {
-      window.close();
-    });
-    window.addEventListener(Constants.WallpaperChangedBy3rdParty, e => {
-      this.currentWallpaper_ = e.detail.wallpaperFileName;
-      this.decorateCurrentWallpaperInfoBar_();
-      // Clear the check mark (if any). Do not try to locate the new wallpaper
-      // in the picker to avoid changing the selected category abruptly.
-      this.wallpaperGrid_.selectedItem = null;
-      this.disableDailyRefresh_();
-    });
-    var imagePicker = this.document_.body.querySelector('.image-picker');
-    imagePicker.addEventListener('scroll', function() {
-      var scrollTimer;
-      return () => {
-        imagePicker.classList.add('show-scroll-bar');
-        window.clearTimeout(scrollTimer);
-        scrollTimer = window.setTimeout(() => {
-          imagePicker.classList.remove('show-scroll-bar');
-        }, 500);
-      };
-    }());
+  $('minimize-button').addEventListener('click', function() {
+    chrome.app.window.current().minimize();
+  });
+  $('close-button').addEventListener('click', function() {
+    window.close();
+  });
+  window.addEventListener(Constants.WallpaperChangedBy3rdParty, e => {
+    this.currentWallpaper_ = e.detail.wallpaperFileName;
+    this.decorateCurrentWallpaperInfoBar_();
+    // Clear the check mark (if any). Do not try to locate the new wallpaper
+    // in the picker to avoid changing the selected category abruptly.
+    this.wallpaperGrid_.selectedItem = null;
+    this.disableDailyRefresh_();
+  });
+  var imagePicker = this.document_.body.querySelector('.image-picker');
+  imagePicker.addEventListener('scroll', function() {
+    var scrollTimer;
+    return () => {
+      imagePicker.classList.add('show-scroll-bar');
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        imagePicker.classList.remove('show-scroll-bar');
+      }, 500);
+    };
+  }());
 };
 
 /**
@@ -1084,7 +1089,8 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
       this.document_.body.classList.remove('preview-animation');
       this.updateSpinnerVisibility_(false);
       // Exit full screen, but the window should still be maximized.
-      chrome.app.window.current().maximize();
+      if (chrome.app.window.current().isFullscreen())
+        chrome.app.window.current().maximize();
       // TODO(crbug.com/841968): Force refreshing the images. This is a
       // workaround until the issue is fixed.
       this.wallpaperGrid_.dataModel = null;

@@ -6,13 +6,21 @@
 
 #include <memory>
 
+#include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/history/core/browser/history_database_params.h"
+#include "components/history/core/browser/history_service.h"
+#include "components/history/core/test/test_history_database.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_index_provider.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_storage_partition.h"
@@ -21,6 +29,8 @@
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace {
 
 using offline_items_collection::ContentId;
 using offline_items_collection::OfflineContentAggregator;
@@ -35,16 +45,47 @@ constexpr double kEngagementScore = 42.0;
 const GURL kLaunchURL = GURL("https://example.com/foo");
 const url::Origin kOrigin = url::Origin::Create(kLaunchURL.GetOrigin());
 
+// Hosts the test profile. Global to be accessible from
+// |BuildTestHistoryService|.
+base::FilePath profile_path;
+
+std::unique_ptr<KeyedService> BuildTestHistoryService(
+    content::BrowserContext* context) {
+  std::unique_ptr<history::HistoryService> service(
+      std::make_unique<history::HistoryService>());
+  service->Init(history::TestHistoryDatabaseParamsForPath(profile_path));
+  return std::move(service);
+}
+
+std::unique_ptr<KeyedService> BuildTestSiteEngagementService(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  std::unique_ptr<SiteEngagementService> service(
+      std::make_unique<SiteEngagementService>(profile));
+  service->ResetBaseScoreForURL(kOrigin.GetURL(), kEngagementScore);
+  return std::move(service);
+}
+
+}  // namespace
+
 class ContentIndexProviderImplTest : public testing::Test,
                                      public OfflineContentProvider::Observer {
  public:
   void SetUp() override {
-    ASSERT_TRUE(profile_.CreateHistoryService(/* delete_file= */ true,
-                                              /* no_db= */ false));
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),
+                              base::BindRepeating(&BuildTestHistoryService));
+    builder.AddTestingFactory(
+        SiteEngagementServiceFactory::GetInstance(),
+        base::BindRepeating(&BuildTestSiteEngagementService));
 
-    auto* service = SiteEngagementService::Get(&profile_);
-    service->ResetBaseScoreForURL(kOrigin.GetURL(), kEngagementScore);
-    provider_ = std::make_unique<ContentIndexProviderImpl>(&profile_);
+    ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
+    profile_path = profile_dir_.GetPath();
+    builder.SetPath(profile_dir_.GetPath());
+
+    profile_ = builder.Build();
+
+    provider_ = std::make_unique<ContentIndexProviderImpl>(profile_.get());
     provider_->AddObserver(this);
   }
 
@@ -69,8 +110,9 @@ class ContentIndexProviderImplTest : public testing::Test,
   }
 
  protected:
+  base::ScopedTempDir profile_dir_;
   content::BrowserTaskEnvironment task_environment_;
-  TestingProfile profile_;
+  std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ContentIndexProviderImpl> provider_;
 };
 

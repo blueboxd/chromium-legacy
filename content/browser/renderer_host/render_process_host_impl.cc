@@ -139,6 +139,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/theme_helper.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
+#include "content/browser/v8_snapshot_files.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/child_process_host_impl.h"
@@ -146,7 +147,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/resource_messages.h"
-#include "content/common/service_manager/child_connection.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/common/view_messages.h"
@@ -168,7 +168,6 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/webrtc_log.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
@@ -1673,7 +1672,7 @@ bool RenderProcessHostImpl::Init() {
     in_process_renderer_.reset(g_renderer_main_thread_factory(
         InProcessChildThreadParams(
             base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-            &mojo_invitation_, child_connection_->service_token()),
+            &mojo_invitation_),
         base::checked_cast<int32_t>(id_)));
 
     base::Thread::Options options;
@@ -1713,7 +1712,8 @@ bool RenderProcessHostImpl::Init() {
     child_process_launcher_ = std::make_unique<ChildProcessLauncher>(
         std::make_unique<RendererSandboxedProcessLauncherDelegate>(),
         std::move(cmd_line), GetID(), this, std::move(mojo_invitation_),
-        base::BindRepeating(&RenderProcessHostImpl::OnMojoError, id_));
+        base::BindRepeating(&RenderProcessHostImpl::OnMojoError, id_),
+        GetV8SnapshotFilesToPreload());
     channel_->Pause();
 
     // In single process mode, browser-side tracing and memory will cover the
@@ -1741,49 +1741,22 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
-  // Acquire a Connector which will route connections to a new instance of the
-  // renderer service.
-  service_manager::Connector* connector =
-      BrowserContext::GetConnectorFor(browser_context_);
-  if (!connector) {
-    // Note that some embedders (e.g. Android WebView) may not initialize a
-    // Connector per BrowserContext. In those cases we fall back to the
-    // browser-wide Connector.
-    connector = GetSystemConnector();
-    if (!connector && !ServiceManagerConnection::GetForProcess()) {
-      // Additionally, some test code may not initialize the system Connector.
-      // We initialize one that the ChildConnection below can use.
-      // TODO(crbug.com/904240): Figure out why some unit tests fail when this
-      // doesn't create a full ServiceManagerConnection.
-      service_manager::mojom::ServicePtr unused_service;
-      ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
-          mojo::MakeRequest(&unused_service), io_task_runner));
-      connector = ServiceManagerConnection::GetForProcess()->GetConnector();
-    }
-  }
-
-  // Establish a ServiceManager connection for the new render service instance.
+  // Establish a ChildProcess interface connection to the new renderer. This is
+  // connected as the primordial message pipe via a Mojo invitation to the
+  // process.
   mojo_invitation_ = {};
-  child_connection_ = std::make_unique<ChildConnection>(
-      service_manager::Identity(
-          mojom::kRendererServiceName,
-          BrowserContext::GetServiceInstanceGroupFor(GetBrowserContext()),
-          base::Token::CreateRandom(), base::Token::CreateRandom()),
-      &mojo_invitation_, connector, io_task_runner);
+  child_process_.reset();
+  child_process_.Bind(mojo::PendingRemote<mojom::ChildProcess>(
+      mojo_invitation_.AttachMessagePipe(0), /*version=*/0));
 
-  // Send an interface request to bootstrap the IPC::Channel. Note that this
-  // request will happily sit on the pipe until the process is launched and
-  // connected to the ServiceManager. We take the other end immediately and
-  // plug it into a new ChannelProxy.
-  mojo::MessagePipe pipe;
-  BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
+  // Bootstrap the IPC Channel.
+  mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap;
+  child_process_->BootstrapLegacyIpc(
+      bootstrap.InitWithNewPipeAndPassReceiver());
   std::unique_ptr<IPC::ChannelFactory> channel_factory =
       IPC::ChannelMojo::CreateServerFactory(
-          std::move(pipe.handle0), io_task_runner,
+          bootstrap.PassPipe(), io_task_runner,
           base::ThreadTaskRunnerHandle::Get());
-
-  child_process_.reset();
-  content::BindInterface(this, child_process_.BindNewPipeAndPassReceiver());
 
   ResetChannelProxy();
 
@@ -2441,24 +2414,9 @@ int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
 
-void RenderProcessHostImpl::BindInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  child_connection_->BindInterface(interface_name, std::move(interface_pipe));
-}
-
 void RenderProcessHostImpl::BindReceiver(
     mojo::GenericPendingReceiver receiver) {
   child_process_->BindReceiver(std::move(receiver));
-}
-
-const service_manager::Identity& RenderProcessHostImpl::GetChildIdentity() {
-  // GetChildIdentity should only be called if the RPH is (or soon will be)
-  // backed by an actual renderer process.  This helps prevent leaks similar to
-  // the ones raised in https://crbug.com/813045.
-  DCHECK(IsInitializedAndNotDead());
-
-  return child_connection_->child_identity();
 }
 
 std::unique_ptr<base::PersistentMemoryAllocator>
@@ -3012,9 +2970,6 @@ void RenderProcessHostImpl::AppendRendererCommandLine(
 
   AppendCompositorCommandLineFlags(command_line);
 
-  command_line->AppendSwitchASCII(
-      service_manager::switches::kServiceRequestChannelToken,
-      child_connection_->service_token());
   command_line->AppendSwitchASCII(switches::kRendererClientId,
                                   std::to_string(GetID()));
 
@@ -3940,18 +3895,6 @@ RenderProcessHost* RenderProcessHost::FromID(int render_process_id) {
 }
 
 // static
-RenderProcessHost* RenderProcessHost::FromRendererInstanceId(
-    const base::Token& instance_id) {
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance()) {
-    RenderProcessHost* process = i.GetCurrentValue();
-    if (process->GetChildIdentity().instance_id() == instance_id)
-      return process;
-  }
-  return nullptr;
-}
-
-// static
 bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
     BrowserContext* browser_context,
     const GURL& url) {
@@ -4631,11 +4574,6 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     // done in response to NOTIFICATION_RENDER_PROCESS_CREATED; see below)
     // preempt already queued messages.
     channel_->Unpause(false /* flush */);
-
-    if (child_connection_) {
-      child_connection_->SetProcess(
-          child_process_launcher_->GetProcess().Duplicate());
-    }
 
     if (coordinator_connector_receiver_.is_bound())
       coordinator_connector_receiver_.Resume();

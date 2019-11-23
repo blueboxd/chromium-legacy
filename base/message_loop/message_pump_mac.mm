@@ -234,6 +234,12 @@ void MessagePumpCFRunLoopBase::SetTimerSlack(TimerSlack timer_slack) {
   timer_slack_ = timer_slack;
 }
 
+#if defined(OS_IOS)
+void MessagePumpCFRunLoopBase::Attach(Delegate* delegate) {}
+
+void MessagePumpCFRunLoopBase::Detach() {}
+#endif  // OS_IOS
+
 // Must be called on the run loop thread.
 MessagePumpCFRunLoopBase::MessagePumpCFRunLoopBase(int initial_mode_mask)
     : delegate_(NULL),
@@ -795,6 +801,13 @@ void MessagePumpUIApplication::Attach(Delegate* delegate) {
   run_loop_ = new RunLoop();
   CHECK(run_loop_->BeforeRun());
   SetDelegate(delegate);
+}
+
+void MessagePumpUIApplication::Detach() {
+  DCHECK(run_loop_);
+  run_loop_->AfterRun();
+  SetDelegate(nullptr);
+  run_loop_ = nullptr;
 }
 
 #else

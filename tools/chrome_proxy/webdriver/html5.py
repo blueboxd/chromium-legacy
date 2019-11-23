@@ -8,7 +8,6 @@ from common import IntegrationTest
 
 
 class HTML5(IntegrationTest):
-
   # This test site has a div with id="pointsPanel" that is rendered if the
   # browser is capable of using HTML5.
   def testHTML5(self):

@@ -107,10 +107,12 @@ using content::WebContents;
 
 namespace {
 
-ash::ShelfAction SelectItem(const ash::ShelfID& id,
-                            ui::EventType event_type = ui::ET_MOUSE_PRESSED,
-                            int64_t display_id = display::kInvalidDisplayId) {
-  return SelectShelfItem(id, event_type, display_id);
+ash::ShelfAction SelectItem(
+    const ash::ShelfID& id,
+    ui::EventType event_type = ui::ET_MOUSE_PRESSED,
+    int64_t display_id = display::kInvalidDisplayId,
+    ash::ShelfLaunchSource source = ash::LAUNCH_FROM_UNKNOWN) {
+  return SelectShelfItem(id, event_type, display_id, source);
 }
 
 // Find the browser that associated with |app_name|.
@@ -336,8 +338,10 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
   ash::ShelfAction SelectItemAndFlushMojoCallsForAppService(
       const ash::ShelfID& id,
       ui::EventType event_type = ui::ET_MOUSE_PRESSED,
-      int64_t display_id = display::kInvalidDisplayId) {
-    const ash::ShelfAction action = SelectItem(id, event_type, display_id);
+      int64_t display_id = display::kInvalidDisplayId,
+      ash::ShelfLaunchSource source = ash::LAUNCH_FROM_UNKNOWN) {
+    const ash::ShelfAction action =
+        SelectItem(id, event_type, display_id, source);
     FlushMojoCallsForAppService();
     return action;
   }
@@ -650,6 +654,37 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowActivation) {
   CloseAppWindow(window1);
   --item_count;
   EXPECT_EQ(item_count, shelf_model()->item_count());
+}
+
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, MultipleBrowsers) {
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  Browser* const browser1 = chrome::FindLastActive();
+  ASSERT_TRUE(browser1);
+
+  Browser* const browser2 = CreateBrowser(profile());
+  ASSERT_TRUE(browser2);
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+  EXPECT_NE(browser1->window(), browser2->window());
+  EXPECT_TRUE(browser2->window()->IsActive());
+
+  const Extension* app = LoadAndLaunchPlatformApp("launch", "Launched");
+  ui::BaseWindow* const app_window =
+      CreateAppWindow(browser()->profile(), app)->GetBaseWindow();
+
+  const ash::ShelfItem item = GetLastLauncherItem();
+  EXPECT_EQ(app->id(), item.id.app_id);
+  EXPECT_EQ(ash::TYPE_APP, item.type);
+  EXPECT_EQ(ash::STATUS_RUNNING, item.status);
+
+  EXPECT_TRUE(app_window->IsActive());
+  EXPECT_FALSE(browser2->window()->IsActive());
+
+  controller_->ActivateApp(extension_misc::kChromeAppId,
+                           ash::LAUNCH_FROM_APP_LIST, 0,
+                           display::kInvalidDisplayId);
+
+  EXPECT_FALSE(app_window->IsActive());
+  EXPECT_TRUE(browser2->window()->IsActive());
 }
 
 // Confirm the minimizing click behavior for apps.
@@ -2326,7 +2361,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestWithDesks, MultipleDesks) {
   // The shelf context menu should show 2 items for both browsers. No new items
   // should be created and existing window should not be minimized.
   EXPECT_EQ(ash::ShelfAction::SHELF_ACTION_NONE,
-            SelectItemAndFlushMojoCallsForAppService(browser_id));
+            SelectItemAndFlushMojoCallsForAppService(
+                browser_id, ui::ET_MOUSE_PRESSED, display::kInvalidDisplayId,
+                ash::LAUNCH_FROM_SHELF));
   EXPECT_EQ(
       2u, controller_
               ->GetAppMenuItemsForTesting(shelf_model()->items()[browser_index])

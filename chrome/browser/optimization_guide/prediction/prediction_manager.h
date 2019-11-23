@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_PREDICTION_PREDICTION_MANAGER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -13,6 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/clock.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "components/optimization_guide/optimization_guide_enums.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -35,6 +38,9 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
+class PrefService;
+class Profile;
+
 namespace optimization_guide {
 
 enum class OptimizationGuideDecision;
@@ -55,14 +61,19 @@ class PredictionManager
       const base::FilePath& profile_path,
       leveldb_proto::ProtoDatabaseProvider* database_provider,
       TopHostProvider* top_host_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  // For tests only.
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service,
+      Profile* profile);
+
   PredictionManager(
       const std::vector<optimization_guide::proto::OptimizationTarget>&
           optimization_targets_at_initialization,
       std::unique_ptr<OptimizationGuideStore> model_and_features_store,
       TopHostProvider* top_host_provider,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service,
+      Profile* profile);
+
   ~PredictionManager() override;
 
   // Register the optimization targets that may have ShouldTargetNavigtation
@@ -107,6 +118,9 @@ class PredictionManager
     return !registered_optimization_targets_.empty();
   }
 
+  // Override |clock_| for testing.
+  void SetClockForTesting(const base::Clock* clock);
+
  protected:
   // Return the prediction model for the optimization target used by this
   // PredictionManager for testing.
@@ -124,8 +138,7 @@ class PredictionManager
 
   // Create a PredictionModel, virtual for testing.
   virtual std::unique_ptr<PredictionModel> CreatePredictionModel(
-      const proto::PredictionModel& model,
-      const base::flat_set<std::string>& host_model_features) const;
+      const proto::PredictionModel& model) const;
 
   // Process |host_model_features| to be stored in |host_model_features_map|.
   void UpdateHostModelFeatures(
@@ -214,10 +227,22 @@ class PredictionManager
   void ProcessAndStoreHostModelFeatures(
       const proto::HostModelFeatures& host_model_features);
 
-  // Capture the set of feature names that each host in
-  // |host_model_features_map_| has and store them in
-  // |supported_host_model_features_|
-  void UpdateSupportedHostModelFeatures();
+  // Return the time when a prediction model and host model features fetch was
+  // last attempted.
+  base::Time GetLastFetchAttemptTime() const;
+
+  // Set the last time when a prediction model and host model features fetch
+  // was last attempted to |last_attempt_time|.
+  void SetLastModelAndFeaturesFetchAttemptTime(base::Time last_attempt_time);
+
+  // Determine whether to schedule fetching new prediction models and host model
+  // features or fetch immediately due to override.
+  void MaybeScheduleModelAndHostModelFeaturesFetch();
+
+  // Schedule |fetch_timer_| to fire based on:
+  // 1. The update time for host model features in the store and
+  // 2. The last time a fetch attempt was made.
+  void ScheduleModelsAndHostModelFeaturesFetch();
 
   // A map of optimization target to the prediction model capable of making
   // an optimization target decision for it.
@@ -234,10 +259,6 @@ class PredictionManager
   // restricted.
   base::flat_map<std::string, base::flat_map<std::string, float>>
       host_model_features_map_;
-
-  // The set of features available across all every host in
-  // |host_model_features_map_|.
-  base::flat_set<std::string> supported_host_model_features_;
 
   // The current session's FCP statistics for HTTP/HTTPS navigations.
   OptimizationGuideSessionStatistic session_fcp_;
@@ -265,6 +286,20 @@ class PredictionManager
   // The current estimate of the EffectiveConnectionType.
   net::EffectiveConnectionType current_effective_connection_type_ =
       net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+
+  // A reference to the PrefService for this profile. Not owned.
+  PrefService* pref_service_ = nullptr;
+
+  // A reference to the profile. Not owned.
+  Profile* profile_ = nullptr;
+
+  // The timer used to schedule fetching prediction models and host model
+  // features from the remote Optimization Guide Service.
+  base::OneShotTimer fetch_timer_;
+
+  // The clock used to schedule fetching from the remote Optimization Guide
+  // Service.
+  const base::Clock* clock_;
 
   // Whether the |model_and_features_store_| is initialized and ready for use.
   bool store_is_ready_ = false;

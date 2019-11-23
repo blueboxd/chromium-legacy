@@ -7,12 +7,6 @@
 namespace printing {
 namespace features {
 
-#if defined(OS_WIN)
-// Use XPS for printing instead of GDI.
-const base::Feature kUseXpsForPrinting{"UseXpsForPrinting",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_MACOSX)
 const base::Feature kEnableCustomMacPaperSizes{
     "EnableCustomMacPaperSizes", base::FEATURE_DISABLED_BY_DEFAULT};

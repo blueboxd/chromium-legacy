@@ -43,15 +43,16 @@ void LockToSingleUserServiceProvider::NotifyVmStarting(
   if (manager == nullptr) {
     LOG(ERROR) << "VmStarting received before LockToSingleUserManager ready";
 
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_FAILED,
-        "VmStarting received before LockToSingleUserManager ready"));
+    std::move(response_sender)
+        .Run(dbus::ErrorResponse::FromMethodCall(
+            method_call, DBUS_ERROR_FAILED,
+            "VmStarting received before LockToSingleUserManager ready"));
 
     return;
   }
 
   manager->DbusNotifyVmStarting();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 }  // namespace chromeos

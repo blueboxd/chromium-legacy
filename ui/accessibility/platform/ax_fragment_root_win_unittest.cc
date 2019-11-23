@@ -52,25 +52,12 @@ TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
   element2_data.relative_bounds.bounds = gfx::RectF(0, 50, 30, 30);
   root_data.child_ids.push_back(element2_data.id);
 
-  AXNodeData element3_data;
-  element3_data.id = 4;
-  element3_data.relative_bounds.bounds = gfx::RectF(50, 0, 20, 20);
-  root_data.child_ids.push_back(element3_data.id);
-
-  // Overlapping child view.
-  AXNodeData element4_data;
-  element4_data.id = 5;
-  element4_data.relative_bounds.bounds = gfx::RectF(50, 0, 10, 10);
-  element3_data.child_ids.push_back(element4_data.id);
-
-  Init(root_data, element1_data, element2_data, element3_data, element4_data);
+  Init(root_data, element1_data, element2_data);
   InitFragmentRoot();
 
   AXNode* root_node = GetRootNode();
   AXNode* element1_node = root_node->children()[0];
   AXNode* element2_node = root_node->children()[1];
-  AXNode* element3_node = root_node->children()[2];
-  AXNode* element4_node = root_node->children()[2]->children()[0];
 
   ComPtr<IRawElementProviderFragmentRoot> fragment_root_prov(GetFragmentRoot());
   ComPtr<IRawElementProviderFragment> root_provider(
@@ -79,10 +66,6 @@ TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
       QueryInterfaceFromNode<IRawElementProviderFragment>(element1_node);
   ComPtr<IRawElementProviderFragment> element2_provider =
       QueryInterfaceFromNode<IRawElementProviderFragment>(element2_node);
-  ComPtr<IRawElementProviderFragment> element3_provider =
-      QueryInterfaceFromNode<IRawElementProviderFragment>(element3_node);
-  ComPtr<IRawElementProviderFragment> element4_provider =
-      QueryInterfaceFromNode<IRawElementProviderFragment>(element4_node);
 
   ComPtr<IRawElementProviderFragment> provider_from_point;
   EXPECT_HRESULT_SUCCEEDED(fragment_root_prov->ElementProviderFromPoint(
@@ -96,11 +79,6 @@ TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
   EXPECT_HRESULT_SUCCEEDED(fragment_root_prov->ElementProviderFromPoint(
       47, 67, &provider_from_point));
   EXPECT_EQ(root_provider.Get(), provider_from_point.Get());
-
-  // This is on node 3 and 4.
-  EXPECT_HRESULT_SUCCEEDED(fragment_root_prov->ElementProviderFromPoint(
-      55, 5, &provider_from_point));
-  EXPECT_EQ(element4_provider.Get(), provider_from_point.Get());
 
   // This is on node 1 with scale factor of 1.5.
   std::unique_ptr<base::AutoReset<float>> scale_factor_reset =

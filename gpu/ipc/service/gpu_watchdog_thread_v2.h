@@ -14,6 +14,30 @@ namespace gpu {
 // OnGPUWatchdogTimeout for at most 4 times before the gpu thread is killed.
 constexpr int kMaxCountOfMoreGpuThreadTimeAllowed = 4;
 #endif
+constexpr base::TimeDelta kMaxWaitTime = base::TimeDelta::FromSeconds(60);
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GpuWatchdogTimeoutEvent {
+  // Recorded each time OnWatchdogTimeout() is called.
+  kTimeout,
+  // Recorded when a GPU main thread is killed for a detected hang.
+  kKill,
+  // Window only: Recorded when a hang is detected but we allow the GPU main
+  // thread to continue until it spent the full
+  // thread time doing the work.
+  kMoreThreadTime,
+  // Windows only: The GPU makes progress after givenmore thread time. The GPU
+  // main thread is not killed.
+  kProgressAfterMoreThreadTime,
+  // A gpu hang is detected but watchdog waits for 60 seconds before taking
+  // action.
+  kTimeoutWait,
+  // The GPU makes progress within 60 sec in OnWatchdogTimeout(). The GPU main
+  // thread is not killed.
+  kProgressAfterWait,
+  kMaxValue = kProgressAfterWait,
+};
 
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
     : public GpuWatchdogThread,
@@ -22,8 +46,11 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   static std::unique_ptr<GpuWatchdogThreadImplV2> Create(
       bool start_backgrounded);
 
-  static std::unique_ptr<GpuWatchdogThreadImplV2>
-  Create(bool start_backgrounded, base::TimeDelta timeout, bool test_mode);
+  static std::unique_ptr<GpuWatchdogThreadImplV2> Create(
+      bool start_backgrounded,
+      base::TimeDelta timeout,
+      base::TimeDelta max_wait_time,
+      bool test_mode);
 
   ~GpuWatchdogThreadImplV2() override;
 
@@ -61,7 +88,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
     kGeneralGpuFlow = 2,
   };
 
-  GpuWatchdogThreadImplV2(base::TimeDelta timeout, bool test_mode);
+  GpuWatchdogThreadImplV2(base::TimeDelta timeout,
+                          base::TimeDelta max_wait_time,
+                          bool test_mode);
   void OnAddPowerObserver();
   void RestartWatchdogTimeoutTask(PauseResumeSource source_of_request);
   void StopWatchdogTimeoutTask(PauseResumeSource source_of_request);
@@ -75,9 +104,13 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 #if defined(OS_WIN)
   base::ThreadTicks GetWatchedThreadTime();
 #endif
+  bool GpuRespondsAfterWaiting();
 
   // Do not change the function name. It is used for [GPU HANG] carsh reports.
   void DeliberatelyTerminateToRecoverFromHang();
+
+  // Histogram recorded in OnWatchdogTimeout()
+  void GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent timeout_event);
 
   // This counter is only written on the gpu thread, and read on both threads.
   base::subtle::Atomic32 arm_disarm_counter_ = 0;
@@ -122,7 +155,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 
   // After GPU hang detected, how many times has the GPU thread been allowed to
   // continue due to not enough thread time.
-  int count_of_more_gpu_thread_time_allowed = 0;
+  int count_of_more_gpu_thread_time_allowed_ = 0;
+
+  base::TimeDelta extented_thread_time_;
 #endif
 
   // The system has entered the power suspension mode.
@@ -130,9 +165,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 
   // The GPU process has started tearing down. Accessed only in the gpu process.
   bool in_gpu_process_teardown_ = false;
-
-  // OnWatchdogTimeout() is called for the first time after power resume.
-  bool is_first_timeout_after_power_resume = false;
 
   // Chrome is running on the background on Android. Gpu is probably very slow
   // or stalled.
@@ -145,6 +177,12 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // observer.
   bool is_add_power_observer_called_ = false;
   bool is_power_observer_added_ = false;
+
+  // For the experiment and the debugging purpose
+  bool in_gpu_initialization_ = false;
+  int num_of_timeout_after_power_resume_ = 0;
+  int num_of_timeout_after_foregrounded_ = 0;
+  base::TimeDelta max_wait_time_;
 
   // For gpu testing only.
   const bool is_test_mode_;

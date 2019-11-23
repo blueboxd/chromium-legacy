@@ -26,18 +26,18 @@ public final class Profile {
 
     /* package */ static Profile of(IProfile impl) {
         ThreadCheck.ensureOnUiThread();
-        String path;
+        String name;
         try {
-            path = impl.getPath();
+            name = impl.getName();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
-        Profile profile = sProfiles.get(path);
+        Profile profile = sProfiles.get(name);
         if (profile != null) {
             return profile;
         }
 
-        return new Profile(path, impl);
+        return new Profile(name, impl);
     }
 
     /**
@@ -50,14 +50,14 @@ public final class Profile {
         return Collections.unmodifiableCollection(sProfiles.values());
     }
 
-    private final String mPath;
+    private final String mName;
     private IProfile mImpl;
 
-    private Profile(String path, IProfile impl) {
-        mPath = path;
+    private Profile(String name, IProfile impl) {
+        mName = name;
         mImpl = impl;
 
-        sProfiles.put(path, this);
+        sProfiles.put(name, this);
     }
 
     /**
@@ -99,6 +99,6 @@ public final class Profile {
             throw new APICallException(e);
         }
         mImpl = null;
-        sProfiles.remove(mPath);
+        sProfiles.remove(mName);
     }
 }

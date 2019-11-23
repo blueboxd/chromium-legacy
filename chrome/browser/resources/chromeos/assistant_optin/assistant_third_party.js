@@ -78,16 +78,18 @@ Polymer({
     }
     e.preventDefault();
     this.lastFocusedElement = e.target;
-    this.showThirdPartyOverlay(e.target.href);
+    this.showThirdPartyOverlay(e.target.href, e.target.innerText);
   },
 
   /**
    * Shows third party information links in overlay dialog.
    * @param {string} url URL to show.
+   * @param {string} title Title of the dialog.
    */
-  showThirdPartyOverlay: function(url) {
+  showThirdPartyOverlay: function(url, title) {
     this.$['webview-container'].classList.add('overlay-loading');
     this.$['overlay-webview'].src = url;
+    this.$['third-party-overlay'].setTitleAriaLabel(title);
     this.$['third-party-overlay'].showModal();
     this.$['overlay-close-button'].focus();
   },

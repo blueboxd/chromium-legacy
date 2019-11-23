@@ -15,6 +15,7 @@ namespace features {
 
 extern const base::Feature kSaveEditedPDFForm;
 extern const base::Feature kPDFAnnotations;
+extern const base::Feature kAccessiblePDFHighlight;
 
 }  // namespace features
 }  // namespace chrome_pdf

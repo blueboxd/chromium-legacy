@@ -307,31 +307,33 @@ class AutofillClient : public RiskDataLoader {
       MigrationDeleteCardCallback delete_local_card_callback) = 0;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+  // Will show a dialog offering the option to use device's platform
+  // authenticator in the future instead of CVC to verify the card being
+  // unmasked. Runs |offer_dialog_callback| if the OK button or the cancel
+  // button in the dialog is clicked. This is only implemented on desktop.
+  virtual void ShowWebauthnOfferDialog(
+      WebauthnOfferDialogCallback offer_dialog_callback) = 0;
+
+  // Will update the WebAuthn offer dialog content to the error state.
+  // Implemented only on desktop.
+  virtual void UpdateWebauthnOfferDialogWithError() = 0;
+
+  // TODO(crbug.com/949269): Merge CloseWebauthnOfferDialog() and
+  // CloseWebauthnVerifyPendingDialog() into one function.
+  // Will close the WebAuthn offer dialog. Returns true if dialog was visible
+  // and has been closed. Implemented only on desktop.
+  virtual bool CloseWebauthnOfferDialog() = 0;
+
   // Will show a dialog indicating the card verification is in progress. It is
   // shown after verification starts only if the WebAuthn is enabled.
   // Implemented only on desktop.
-  virtual void ShowVerifyPendingDialog(
+  virtual void ShowWebauthnVerifyPendingDialog(
       base::OnceClosure cancel_card_verification_callback) = 0;
 
   // Close the verify pending dialog once the card verificiation is completed or
   // verification falls back to CVC.
-  virtual void CloseVerifyPendingDialog() = 0;
+  virtual void CloseWebauthnVerifyPendingDialog() = 0;
 #endif
-
-  // Will show a dialog offering the option to use device's platform
-  // authenticator in the future instead of CVC to verify the card being
-  // unmasked. Runs |callback| if the OK button or the cancel button in the
-  // dialog is clicked. This is only implemented on desktop.
-  virtual void ShowWebauthnOfferDialog(
-      WebauthnOfferDialogCallback callback) = 0;
-
-  // Will close the WebAuthn offer dialog. Returns true if dialog was visible
-  // and has been closed. Implemented only on desktop.
-  virtual bool CloseWebauthnOfferDialog();
-
-  // Will update the WebAuthn offer dialog content to the error state.
-  // Implemented only on desktop.
-  virtual void UpdateWebauthnOfferDialogWithError() {}
 
   // Runs |callback| if the |profile| should be imported as personal data.
   virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,

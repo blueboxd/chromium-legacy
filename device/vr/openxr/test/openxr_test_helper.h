@@ -51,20 +51,27 @@ class OpenXrTestHelper : public device::ServiceTestHook {
                                   XrActionStateVector2f* data) const;
   XrResult GetActionStatePose(XrAction action, XrActionStatePose* data) const;
   XrSpace CreateReferenceSpace(XrReferenceSpaceType type);
-  XrAction CreateAction(XrActionSet action_set,
-                        const XrActionCreateInfo& create_info);
+  XrResult CreateAction(XrActionSet action_set,
+                        const XrActionCreateInfo& create_info,
+                        XrAction* action);
   XrActionSet CreateActionSet(const XrActionSetCreateInfo& createInfo);
-  XrSpace CreateActionSpace(XrAction);
+  XrResult CreateActionSpace(
+      const XrActionSpaceCreateInfo& action_space_create_info,
+      XrSpace* space);
   XrPath GetPath(const char* path_string);
   XrPath GetCurrentInteractionProfile();
 
   XrResult GetSession(XrSession* session);
   XrResult BeginSession();
   XrResult EndSession();
+  XrResult BeginFrame();
+  XrResult EndFrame();
 
   XrResult BindActionAndPath(XrActionSuggestedBinding binding);
 
   void SetD3DDevice(ID3D11Device* d3d_device);
+  XrResult AttachActionSets(const XrSessionActionSetsAttachInfo& attach_info);
+  uint32_t AttachedActionSetsSize() const;
   XrResult SyncActionData(XrActionSet action_set);
   const std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>>&
   GetSwapchainTextures() const;
@@ -86,6 +93,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult ValidateActionSet(XrActionSet action_set) const;
   XrResult ValidateActionSetCreateInfo(
       const XrActionSetCreateInfo& create_info) const;
+  XrResult ValidateActionSetNotAttached(XrActionSet action_set) const;
   XrResult ValidateActionSpaceCreateInfo(
       const XrActionSpaceCreateInfo& create_info) const;
   XrResult ValidateInstance(XrInstance instance) const;
@@ -95,6 +103,10 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   XrResult ValidateSpace(XrSpace space) const;
   XrResult ValidatePath(XrPath path) const;
   XrResult ValidatePredictedDisplayTime(XrTime time) const;
+  XrResult ValidateXrCompositionLayerProjection(
+      const XrCompositionLayerProjection& projection_layer) const;
+  XrResult ValidateXrCompositionLayerProjectionView(
+      const XrCompositionLayerProjectionView& projection_view) const;
   XrResult ValidateXrPosefIsIdentity(const XrPosef& pose) const;
   XrResult ValidateViews(uint32_t view_capacity_input, XrView* views) const;
 
@@ -111,6 +123,9 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   static XrViewConfigurationView kViewConfigurationViews[];
   static const XrViewConfigurationType kViewConfigurationType;
   static const XrEnvironmentBlendMode kEnvironmentBlendMode;
+  static const char* kLocalReferenceSpacePath;
+  static const char* kStageReferenceSpacePath;
+  static const char* kViewReferenceSpacePath;
 
  private:
   struct ActionProperties {
@@ -124,6 +139,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   base::Optional<gfx::Transform> GetPose();
   device::ControllerFrameData GetControllerDataFromPath(
       std::string path_string) const;
+  bool IsSessionRunning() const;
 
   bool create_fake_instance_;
 
@@ -134,10 +150,11 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   // to validate that they were queried before being used.
   XrSystemId system_id_;
   XrSession session_;
-  XrSessionState session_state_;
   XrSwapchain swapchain_;
 
   // Properties that changes depending on the state of the runtime.
+  XrSessionState session_state_;
+  bool frame_begin_;
   Microsoft::WRL::ComPtr<ID3D11Device> d3d_device_;
   std::vector<Microsoft::WRL::ComPtr<ID3D11Texture2D>> textures_arr_;
   uint32_t acquired_swapchain_texture_;
@@ -154,6 +171,7 @@ class OpenXrTestHelper : public device::ServiceTestHook {
   std::unordered_map<XrSpace, XrAction> action_spaces_;
   std::unordered_map<XrSpace, std::string> reference_spaces_;
   std::unordered_map<XrActionSet, std::vector<XrAction>> action_sets_;
+  std::unordered_map<XrActionSet, std::vector<XrAction>> attached_action_sets_;
   std::unordered_map<XrAction, XrActionStateFloat> float_action_states_;
   std::unordered_map<XrAction, XrActionStateBoolean> boolean_action_states_;
   std::unordered_map<XrAction, XrActionStateVector2f> v2f_action_states_;

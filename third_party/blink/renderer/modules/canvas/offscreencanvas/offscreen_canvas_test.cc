@@ -196,5 +196,5 @@ const TestParams kTestCases[] = {
     {true, false},
     {true, true}};
 
-INSTANTIATE_TEST_SUITE_P(, OffscreenCanvasTest, ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(All, OffscreenCanvasTest, ValuesIn(kTestCases));
 }  // namespace blink

@@ -216,7 +216,7 @@ struct DumpAccessibilityTreeTestPassToString {
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     DumpAccessibilityTreeTest,
     ::testing::Range(size_t{0},
                      AccessibilityTreeFormatter::GetTestPasses().size()),

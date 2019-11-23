@@ -1,4 +1,53 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bs">
+<translation id="102360288709523007">Pomozite nam da poboljšamo Chromium slanjem statistika korištenja i izvještaja o padovima aplikacija Googleu.</translation>
+<translation id="1185134272377778587">O programu Chromium</translation>
+<translation id="1289966288285062467">Obavještenje o privatnosti za Chromium</translation>
+<translation id="1472013873724362412">Vaš račun ne funkcionira na Chromiumu. Obratite se administratoru domene ili koristite obični Google račun za prijavu.</translation>
+<translation id="1507010443238049608">Pomozite nam da poboljšamo funkcije i performanse Chromiuma</translation>
+<translation id="1617663976202781617">Sinhronizacija podataka s Chromiuma</translation>
+<translation id="1736662517232558588">Chromium podaci su obrisani</translation>
+<translation id="1838412507805038478">Chromium je potvrdio da je <ph name="ISSUER" /> izdao certifikat web-lokacije.</translation>
+<translation id="1843424232666537147">Chromium sadrži funkcije koje vam pomažu kod upravljanja internetskim podacima i brzine učitavanja web lokacija.
+<ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="2075400798887076382">Karticama koje ste otvorili na računalu možete pristupiti i ovdje. Samo otvorite Chromium na računalu, otvorite izbornik i odaberite "Prijava na Chromium…"</translation>
+<translation id="2168108852149185974">Neki programski dodaci uzrokuju pad aplikacije Chromium. Deinstalirajte:</translation>
+<translation id="2178608107313874732">Chromium trenutno ne može koristiti kameru</translation>
+<translation id="2195025571279539885">Želite li da vam Chromium sljedeći put ponudi prijevod stranica na <ph name="LANGUAGE_NAME" /> jeziku s ove web lokacije?</translation>
+<translation id="2590893390871230428">Sinhroniziraj Chromium podatke</translation>
+<translation id="2730884209570016437">Chromium ne može koristiti kameru jer je koristi druga aplikacija</translation>
+<translation id="2915596697727466327">Chromium koristi Face ID za odobravanje pristupa vašim lozinkama.</translation>
+<translation id="3256316712990552818">Kopirano u Chromium</translation>
+<translation id="3805899903892079518">Chromium nema pristup vašim fotografijama ili videozapisima. Omogućite pristup u meniju iOS postavke &gt; Privatnost &gt; Fotografije.</translation>
+<translation id="4555020257205549924">Kada je ova funkcija uključena, Chromium će ponuditi prevođenje stranica koje su napisane na drugim jezicima, pomoću Google Prevodioca. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="4681781466797808448">Uključite Chromium skener</translation>
+<translation id="4787850887676698916">Ovdje će se pojaviti kartice koje ste otvorili u Chromiumu na drugim uređajima.</translation>
+<translation id="4999538639245140991">Pošto se odjavljujete s računa kojim upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, vaši podaci iz Chromiuma će se izbrisati s ovog uređaja. Vaši podaci će ostati na vašem Google računu.</translation>
+<translation id="5573014823074921752">Savjet za Chromium. Za više opcija za kartice dodirnite i zadržite dugme Prikaži kartice na alatnoj traci, na dnu ili na vrhu ekrana.</translation>
+<translation id="5862307444128926510">Dobro došli u Chromium</translation>
+<translation id="5945387852661427312">Prijavljujete se s računom kojim upravlja domena <ph name="DOMAIN" /> i dajete njenom administratoru kontrolu nad svojim podacima iz Chromiuma. Vaši podaci će se trajno povezati s ovim računom. Odjavom iz Chromiuma će se izbrisati vaši podaci s ovog uređaja, ali će ostati pohranjeni na vašem Google računu.</translation>
+<translation id="6068866989048414399">Uslovi korištenja usluge Chromium</translation>
+<translation id="6268381023930128611">Odjaviti se iz Chromiuma?</translation>
+<translation id="6424492062988593837">Chromium je sada još bolji! Dostupna je nova verzija.</translation>
+<translation id="6604711459180487467">Ostvarite bolje iskustvo u Chromiumu prema vašoj lokaciji.</translation>
+<translation id="6626296268883197964">Korištenjem ove aplikacije, prihvatate <ph name="BEGIN_LINK_TOS" />Uslove korištenja usluge<ph name="END_LINK_TOS" /> i <ph name="BEGIN_LINK_PRIVACY" />Obavještenje o privatnosti<ph name="END_LINK_PRIVACY" /> Chromiuma.</translation>
+<translation id="7099326575020694068">Chromium ne može koristiti kameru u načinu rada podijeljenog prikaza</translation>
+<translation id="7208566199746267865">Chromium vam štedi vrijeme povezivanjem računa na web. U Postavkama možete dodati ili ukloniti račune.</translation>
+<translation id="7269362888766543920">Neki programski dodaci uzrokuju pad aplikacije Chromium. Pokušajte ih deinstalirati.</translation>
+<translation id="7337881442233988129">Chromium</translation>
+<translation id="7357211569052832586">Odabrani podaci su uklonjeni iz Chromiuma i sinhroniziranih uređaja. Vaš Google uređaj može imati druge oblike historije pregledanja kao što su pretraživanja i aktivnosti s drugih Googleovih usluga na history.google.com.</translation>
+<translation id="7400689562045506105">Koristite Chromium svugdje</translation>
+<translation id="7674213385180944843">Otvorite Postavke &gt; Privatnost &gt; Kamera &gt; Chromium i uključite kameru.</translation>
+<translation id="7746854981345936341">Savjet za Chromium. Neka dugmad poput dugmadi za nazad, naprijed i pretraživanje su sada na dnu ekrana.</translation>
+<translation id="786327964234957808">Prebacujete račune za sinhronizaciju s <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Vašim postojećim podacima iz Chromea upravlja domena <ph name="DOMAIN" />. Ovim će se izbrisati vaši podaci s ovog uređaja, ali će vaši podaci ostati na računu <ph name="USER_EMAIL1" />.</translation>
+<translation id="7890287942691234100">Počnite koristiti Chromium skener</translation>
+<translation id="8073677936375100957">Izbrisati Chromium podatke s ovog uređaja?</translation>
+<translation id="8175055321229419309">Savjet: <ph name="BEGIN_LINK" />Pomjerite Chromium na priključnu stranicu<ph name="END_LINK" /></translation>
+<translation id="8252885722420466166">Ostvarite bolje iskustvo s Googleom u Chromiumu na osnovu svoje lokacije.</translation>
+<translation id="8586442755830160949">Autorska prava <ph name="YEAR" /> Autori Chromiuma. Sva prava zadržana.</translation>
+<translation id="8809780021347235332">Da sačuvate slike, dodirnite Postavke kako bi ste Chromiumu dozvolili da koristi vaše fotografije</translation>
+<translation id="9022552996538154597">Prijavite se u Chromium</translation>
+<translation id="9217078088703304241"><ph name="BEGIN_LINK" />Pregledajte ažurirane Uslove korištenja usluge Chromium<ph name="END_LINK" /></translation>
+<translation id="985602178874221306">Autori Chromiuma</translation>
 </translationbundle>

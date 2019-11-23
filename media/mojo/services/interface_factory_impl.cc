@@ -14,7 +14,6 @@
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "media/mojo/services/mojo_decryptor_service.h"
 #include "media/mojo/services/mojo_media_client.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
@@ -53,7 +52,7 @@ InterfaceFactoryImpl::InterfaceFactoryImpl(
   DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);
 
-  SetBindingConnectionErrorHandler();
+  SetReceiverDisconnectHandler();
 }
 
 InterfaceFactoryImpl::~InterfaceFactoryImpl() {
@@ -258,37 +257,37 @@ bool InterfaceFactoryImpl::IsEmpty() {
   return true;
 }
 
-void InterfaceFactoryImpl::SetBindingConnectionErrorHandler() {
+void InterfaceFactoryImpl::SetReceiverDisconnectHandler() {
   // base::Unretained is safe because all receivers are owned by |this|. If
   // |this| is destructed, the receivers will be destructed as well and the
-  // connection error handler should never be called.
-  auto connection_error_cb = base::BindRepeating(
-      &InterfaceFactoryImpl::OnBindingConnectionError, base::Unretained(this));
+  // disconnect handler should never be called.
+  auto disconnect_cb = base::BindRepeating(
+      &InterfaceFactoryImpl::OnReceiverDisconnect, base::Unretained(this));
 
 #if BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
-  audio_decoder_receivers_.set_disconnect_handler(connection_error_cb);
+  audio_decoder_receivers_.set_disconnect_handler(disconnect_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_AUDIO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
-  video_decoder_receivers_.set_disconnect_handler(connection_error_cb);
+  video_decoder_receivers_.set_disconnect_handler(disconnect_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_VIDEO_DECODER)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  renderer_receivers_.set_disconnect_handler(connection_error_cb);
+  renderer_receivers_.set_disconnect_handler(disconnect_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_RENDERER)
 
 #if BUILDFLAG(ENABLE_MOJO_CDM)
-  cdm_receivers_.set_disconnect_handler(connection_error_cb);
+  cdm_receivers_.set_disconnect_handler(disconnect_cb);
 #endif  // BUILDFLAG(ENABLE_MOJO_CDM)
 
 #if BUILDFLAG(ENABLE_CDM_PROXY)
-  cdm_proxy_receivers_.set_disconnect_handler(connection_error_cb);
+  cdm_proxy_receivers_.set_disconnect_handler(disconnect_cb);
 #endif  // BUILDFLAG(ENABLE_CDM_PROXY)
 
-  decryptor_receivers_.set_disconnect_handler(connection_error_cb);
+  decryptor_receivers_.set_disconnect_handler(disconnect_cb);
 }
 
-void InterfaceFactoryImpl::OnBindingConnectionError() {
+void InterfaceFactoryImpl::OnReceiverDisconnect() {
   DVLOG(2) << __func__;
   if (destroy_cb_ && IsEmpty())
     std::move(destroy_cb_).Run();

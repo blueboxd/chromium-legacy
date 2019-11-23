@@ -36,7 +36,7 @@ void NullVideoSink::Start(RenderCallback* callback) {
   started_ = true;
   last_now_ = current_render_time_ = tick_clock_->NowTicks();
   cancelable_worker_.Reset(
-      base::Bind(&NullVideoSink::CallRender, base::Unretained(this)));
+      base::BindRepeating(&NullVideoSink::CallRender, base::Unretained(this)));
   task_runner_->PostTask(FROM_HERE, cancelable_worker_.callback());
 }
 

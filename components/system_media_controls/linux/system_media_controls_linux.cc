@@ -295,7 +295,7 @@ void SystemMediaControlsLinux::Next(
     dbus::ExportedObject::ResponseSender response_sender) {
   for (SystemMediaControlsObserver& obs : observers_)
     obs.OnNext();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void SystemMediaControlsLinux::Previous(
@@ -303,7 +303,7 @@ void SystemMediaControlsLinux::Previous(
     dbus::ExportedObject::ResponseSender response_sender) {
   for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPrevious();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void SystemMediaControlsLinux::Pause(
@@ -311,7 +311,7 @@ void SystemMediaControlsLinux::Pause(
     dbus::ExportedObject::ResponseSender response_sender) {
   for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPause();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void SystemMediaControlsLinux::PlayPause(
@@ -319,7 +319,7 @@ void SystemMediaControlsLinux::PlayPause(
     dbus::ExportedObject::ResponseSender response_sender) {
   for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPlayPause();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void SystemMediaControlsLinux::Stop(
@@ -327,7 +327,7 @@ void SystemMediaControlsLinux::Stop(
     dbus::ExportedObject::ResponseSender response_sender) {
   for (SystemMediaControlsObserver& obs : observers_)
     obs.OnStop();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void SystemMediaControlsLinux::Play(
@@ -335,13 +335,13 @@ void SystemMediaControlsLinux::Play(
     dbus::ExportedObject::ResponseSender response_sender) {
   for (SystemMediaControlsObserver& obs : observers_)
     obs.OnPlay();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void SystemMediaControlsLinux::DoNothing(
     dbus::MethodCall* method_call,
     dbus::ExportedObject::ResponseSender response_sender) {
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void SystemMediaControlsLinux::SetMetadataPropertyInternal(

@@ -60,6 +60,7 @@
 <translation id="1650222530560417226">Tap the 'Start Logging' button to collect future JavaScript console logs and errors from all tabs. Logs will be collected (and stored only in memory) until this page is closed or 'Stop Logging' is tapped.</translation>
 <translation id="1657011748321897393">Sharing failed because you are not connected to the network.</translation>
 <translation id="165877110639533037">No Open Tabs</translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">To get your bookmarks on all your devices, turn on sync.</translation>
 <translation id="1687475363370981210">Mark All Read</translation>
 <translation id="1690731385917361335">No items</translation>
@@ -127,6 +128,7 @@
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2690858294534178585">Camera is in use</translation>
 <translation id="2691653761409724435">Not available offline</translation>
+<translation id="2695507686909505111">Page translated</translation>
 <translation id="2702801445560668637">Reading List</translation>
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
@@ -206,6 +208,7 @@
 <translation id="3779810277399252432">No Internet connection.</translation>
 <translation id="3783017676699494206">Save Image</translation>
 <translation id="3789841737615482174">Install</translation>
+<translation id="3803696231112616155">Offer to translate this site</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Site Information</translation>
@@ -243,6 +246,7 @@
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4375040482473363939">QR code Search</translation>
 <translation id="4378154925671717803">Phone</translation>
+<translation id="4389019817280890563">Tap to change language.</translation>
 <translation id="441868831736628555">Privacy Notice</translation>
 <translation id="4454246407045105932">Add language</translation>
 <translation id="4476574785019001431">Settings</translation>
@@ -344,6 +348,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5871497086027727873">1 item moved</translation>
 <translation id="5897956970858271241">Visit copied link</translation>
 <translation id="5911030830365207728">Google Translate</translation>
+<translation id="5913600720976431809">Options to translate the page</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5938160824633642847">Your device is almost full. Free up space and try again.</translation>
 <translation id="5948291296578561264">This lets you save photos to your photo library.</translation>
@@ -375,6 +380,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6219688215832490856">Never translate</translation>
 <translation id="6254066287920239840">Open links in the app instead of the browser.</translation>
 <translation id="6255097610484507482">Edit Credit Card</translation>
+<translation id="6284652193729350524">Offer to translate <ph name="LANGUAGE" /></translation>
 <translation id="6303969859164067831">Sign out and turn off sync</translation>
 <translation id="6308436439357671616">This lets you take and upload photos.</translation>
 <translation id="6324528485781869530">Switch Sync Account</translation>
@@ -429,6 +435,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6903907808598579934">Turn on sync</translation>
 <translation id="6914583639806229067">Search for image that you copied</translation>
 <translation id="6914783257214138813">Your passwords will be visible to anyone who can see the exported file.</translation>
+<translation id="6930799952781667037">Tap to change to this language.</translation>
 <translation id="6944369514868857500">Choose another account</translation>
 <translation id="6945221475159498467">Select</translation>
 <translation id="6973630695168034713">Folders</translation>
@@ -458,6 +465,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7293171162284876153">To start sync, turn on 'Sync your Chrome data'.</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> percent downloaded</translation>
 <translation id="7346909386216857016">OK, got it</translation>
+<translation id="734758817008927353">Options to save card</translation>
 <translation id="7348502496356775519">Bookmark</translation>
 <translation id="7383797227493018512">Reading List</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -482,6 +490,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7671141431838911305">INSTALL</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7772032839648071052">Confirm passphrase</translation>
+<translation id="7781011649027948662">Translate page?</translation>
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="778855399387580014">Start a search in a new Chrome tab.</translation>
 <translation id="7791543448312431591">Add</translation>

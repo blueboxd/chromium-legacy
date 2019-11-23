@@ -16,7 +16,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/content/service_worker_payment_app_finder.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/test_payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
@@ -111,7 +111,7 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
                                         std::string(), CONTENT_SETTING_BLOCK);
   }
 
-  // Sets a TestDownloader for ServiceWorkerPaymentAppFactory and ignores port
+  // Sets a TestDownloader for ServiceWorkerPaymentAppFinder and ignores port
   // in app scope.
   void SetDownloaderAndIgnorePortInOriginComparisonForTesting() {
     content::BrowserContext* context = browser()
@@ -129,7 +129,7 @@ class PaymentRequestPaymentAppTest : public PaymentRequestBrowserTestBase {
                                  frankpay_.GetURL("frankpay.com", "/"));
     downloader->AddTestServerURL("https://kylepay.com/",
                                  kylepay_.GetURL("kylepay.com", "/"));
-    ServiceWorkerPaymentAppFactory::GetInstance()
+    ServiceWorkerPaymentAppFinder::GetInstance()
         ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
             std::move(downloader));
   }

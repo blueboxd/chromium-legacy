@@ -39,7 +39,11 @@ void VideoGeometrySetterService::GetVideoGeometryChangeSubscriber(
 void VideoGeometrySetterService::GetVideoGeometrySetter(
     mojo::PendingReceiver<mojom::VideoGeometrySetter> pending_receiver) {
   MAKE_SURE_ON_SEQUENCE(GetVideoGeometrySetter, std::move(pending_receiver));
-  video_geometry_setter_receivers_.Add(this, std::move(pending_receiver));
+  if (video_geometry_setter_receiver_.is_bound()) {
+    LOG(ERROR) << __func__ << " VideoGeometrySetter dropped";
+    video_geometry_setter_receiver_.reset();
+  }
+  video_geometry_setter_receiver_.Bind(std::move(pending_receiver));
 }
 
 void VideoGeometrySetterService::SubscribeToVideoGeometryChange(

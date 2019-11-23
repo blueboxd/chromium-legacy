@@ -103,7 +103,12 @@ ArcMetricsService::ArcMetricsService(content::BrowserContext* context,
                                    base::BindRepeating(arc::IsArcAppWindow),
                                    prefs::kEngagementPrefsPrefix,
                                    kUmaPrefix),
-      process_observer_(this) {
+      process_observer_(this),
+      intent_helper_observer_(this, &arc_bridge_service_observer_),
+      app_launcher_observer_(this, &arc_bridge_service_observer_) {
+  arc_bridge_service_->AddObserver(&arc_bridge_service_observer_);
+  arc_bridge_service_->app()->AddObserver(&app_launcher_observer_);
+  arc_bridge_service_->intent_helper()->AddObserver(&intent_helper_observer_);
   arc_bridge_service_->metrics()->SetHost(this);
   arc_bridge_service_->process()->AddObserver(&process_observer_);
   // If WMHelper doesn't exist, do nothing. This occurs in tests.
@@ -125,6 +130,14 @@ ArcMetricsService::~ArcMetricsService() {
     exo::WMHelper::GetInstance()->RemoveActivationObserver(this);
   arc_bridge_service_->process()->RemoveObserver(&process_observer_);
   arc_bridge_service_->metrics()->SetHost(nullptr);
+  arc_bridge_service_->intent_helper()->RemoveObserver(
+      &intent_helper_observer_);
+  arc_bridge_service_->app()->RemoveObserver(&app_launcher_observer_);
+  arc_bridge_service_->RemoveObserver(&arc_bridge_service_observer_);
+}
+
+void ArcMetricsService::SetHistogramNamer(HistogramNamer histogram_namer) {
+  histogram_namer_ = histogram_namer;
 }
 
 void ArcMetricsService::OnProcessConnectionReady() {
@@ -308,6 +321,53 @@ void ArcMetricsService::ProcessObserver::OnConnectionReady() {
 
 void ArcMetricsService::ProcessObserver::OnConnectionClosed() {
   arc_metrics_service_->OnProcessConnectionClosed();
+}
+
+ArcMetricsService::ArcBridgeServiceObserver::ArcBridgeServiceObserver() =
+    default;
+
+ArcMetricsService::ArcBridgeServiceObserver::~ArcBridgeServiceObserver() =
+    default;
+
+void ArcMetricsService::ArcBridgeServiceObserver::BeforeArcBridgeClosed() {
+  arc_bridge_closing_ = true;
+}
+void ArcMetricsService::ArcBridgeServiceObserver::AfterArcBridgeClosed() {
+  arc_bridge_closing_ = false;
+}
+
+ArcMetricsService::IntentHelperObserver::IntentHelperObserver(
+    ArcMetricsService* arc_metrics_service,
+    ArcBridgeServiceObserver* arc_bridge_service_observer)
+    : arc_metrics_service_(arc_metrics_service),
+      arc_bridge_service_observer_(arc_bridge_service_observer) {}
+
+ArcMetricsService::IntentHelperObserver::~IntentHelperObserver() = default;
+
+void ArcMetricsService::IntentHelperObserver::OnConnectionClosed() {
+  // Ignore closed connections due to the container shutting down.
+  if (!arc_bridge_service_observer_->arc_bridge_closing_) {
+    base::UmaHistogramEnumeration(arc_metrics_service_->histogram_namer_.Run(
+                                      "Arc.Session.MojoDisconnection"),
+                                  MojoConnectionType::INTENT_HELPER);
+  }
+}
+
+ArcMetricsService::AppLauncherObserver::AppLauncherObserver(
+    ArcMetricsService* arc_metrics_service,
+    ArcBridgeServiceObserver* arc_bridge_service_observer)
+    : arc_metrics_service_(arc_metrics_service),
+      arc_bridge_service_observer_(arc_bridge_service_observer) {}
+
+ArcMetricsService::AppLauncherObserver::~AppLauncherObserver() = default;
+
+void ArcMetricsService::AppLauncherObserver::OnConnectionClosed() {
+  // Ignore closed connections due to the container shutting down.
+  if (!arc_bridge_service_observer_->arc_bridge_closing_) {
+    base::UmaHistogramEnumeration(arc_metrics_service_->histogram_namer_.Run(
+                                      "Arc.Session.MojoDisconnection"),
+                                  MojoConnectionType::APP_LAUNCHER);
+  }
 }
 
 }  // namespace arc

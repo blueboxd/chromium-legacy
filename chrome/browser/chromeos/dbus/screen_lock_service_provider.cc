@@ -40,7 +40,7 @@ void ScreenLockServiceProvider::ShowLockScreen(
   // Please add any additional logic to
   // ScreenLocker::HandleShowLockScreenRequest() instead of placing it here.
   ScreenLocker::HandleShowLockScreenRequest();
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  std::move(response_sender).Run(dbus::Response::FromMethodCall(method_call));
 }
 
 }  // namespace chromeos

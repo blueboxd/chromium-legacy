@@ -221,21 +221,24 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRounded) {
                                      16, 18, 20, 22, 30, 40, 50);
   blur->SetBackdropFilterBounds(backdrop_filter_bounds);
 
-#if defined(OS_WIN) || defined(ARCH_CPU_ARM64)
-  // Windows and ARM64 have 436 pixels off by 1: crbug.com/259915
-  float percentage_pixels_large_error = 1.09f;  // 436px / (200*200)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 1.f;
-  int large_error_allowed = 1;
-  int small_error_allowed = 0;
+  // Skia has various algorithms for clipping by a path, depending on the
+  // available hardware, including MSAA techniques. MSAA results vary
+  // substantially by platform; with 4x MSAA, a difference of 1 sample can
+  // cause up to a 25% color difference!
+  // See http://crbug.com/259915
+  int small_error_threshold = 64;  // 25% of 255.
+  // Allow for ~1 perimeter of the clip path to have a small error.
+  float percentage_pixels_small_error = 100.f * (100*4) / (200*200);
+  int large_error_limit = 128;  // Off by two samples in 4 MSAA.
+  float percentage_pixels_large_or_small_error =
+          1.01f * percentage_pixels_small_error;
+  // Divide average error by 4 since we blur most of the result.
+  float average_error_allowed_in_bad_pixels = small_error_threshold / 4.f;
   pixel_comparator_.reset(new FuzzyPixelComparator(
       true,  // discard_alpha
-      percentage_pixels_large_error, percentage_pixels_small_error,
-      average_error_allowed_in_bad_pixels, large_error_allowed,
-      small_error_allowed));
-#else
-  pixel_comparator_ = std::make_unique<FuzzyPixelOffByOneComparator>(false);
-#endif
+      percentage_pixels_large_or_small_error, percentage_pixels_small_error,
+      average_error_allowed_in_bad_pixels, large_error_limit,
+      small_error_threshold));
 
   RunPixelTest(renderer_type(), background,
                (renderer_type() == RENDERER_SOFTWARE)

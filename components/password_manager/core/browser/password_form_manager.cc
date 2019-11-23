@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/password_form_filling.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
@@ -32,7 +33,10 @@
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormSignature;
+using autofill::FormStructure;
+using autofill::NOT_USERNAME;
 using autofill::PasswordForm;
+using autofill::SINGLE_USERNAME;
 using autofill::ValueElementPair;
 using base::TimeDelta;
 using base::TimeTicks;
@@ -84,6 +88,19 @@ bool FormContainsFieldWithName(const FormData& form,
 
 bool IsUsernameFirstFlowFeatureEnabled() {
   return base::FeatureList::IsEnabled(features::kUsernameFirstFlow);
+}
+
+// Find a field in |predictions| with given renderer id.
+const PasswordFieldPrediction* FindFieldPrediction(
+    const base::Optional<FormPredictions>& predictions,
+    uint32_t field_renderer_id) {
+  if (!predictions)
+    return nullptr;
+  for (const auto& field : predictions->fields) {
+    if (field.renderer_id == field_renderer_id)
+      return &field;
+  }
+  return nullptr;
 }
 
 }  // namespace
@@ -588,10 +605,8 @@ bool PasswordFormManager::ProvisionallySave(
   votes_uploader_.clear_single_username_vote_data();
 
   if (IsUsernameFirstFlowFeatureEnabled() &&
-      parsed_submitted_form_->username_value.empty() && possible_username &&
-      IsPossibleUsernameValid(*possible_username,
-                              parsed_submitted_form_->signon_realm,
-                              base::Time::Now())) {
+      parsed_submitted_form_->username_value.empty() &&
+      UsePossibleUsername(possible_username)) {
     parsed_submitted_form_->username_value = possible_username->value;
     metrics_recorder_->set_possible_username_used(true);
     if (possible_username->form_predictions) {
@@ -867,6 +882,53 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
       submitted_form, saved_usernames, saved_passwords, IsBlacklisted(),
       form_fetcher_->GetInteractionsStats());
 #endif
+}
+
+bool PasswordFormManager::UsePossibleUsername(
+    const PossibleUsernameData* possible_username) {
+  if (!possible_username)
+    return false;
+
+  // The username form and password forms signon realms must be the same.
+  if (GetSignonRealm(observed_form_.url) != possible_username->signon_realm)
+    return false;
+
+  // The username candidate field should not be in |observed_form_|, otherwise
+  // that is a task of FormParser to choose it from |observed_form_|.
+  if (possible_username->driver_id == driver_id_) {
+    for (const auto& field : observed_form_.fields) {
+      if (field.unique_renderer_id == possible_username->renderer_id)
+        return false;
+    }
+  }
+
+  // Check whether server predictions have a definite answer.
+  const PasswordFieldPrediction* field_prediction = FindFieldPrediction(
+      possible_username->form_predictions, possible_username->renderer_id);
+  if (field_prediction) {
+    if (field_prediction->type == SINGLE_USERNAME)
+      return true;
+    if (field_prediction->type == NOT_USERNAME)
+      return false;
+  }
+
+  // Check whether it is already learned from previous user actions whether
+  // |possible_username| corresponds to the valid username form.
+  const FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
+  if (field_info_manager && field_prediction) {
+    auto form_signature = possible_username->form_predictions->form_signature;
+    auto field_signature = field_prediction->signature;
+    autofill::ServerFieldType type =
+        field_info_manager->GetFieldType(form_signature, field_signature);
+    if (type == SINGLE_USERNAME)
+      return true;
+    if (type == NOT_USERNAME)
+      return false;
+  }
+
+  return IsPossibleUsernameValid(*possible_username,
+                                 parsed_submitted_form_->signon_realm,
+                                 base::Time::Now());
 }
 
 }  // namespace password_manager

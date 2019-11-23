@@ -65,6 +65,7 @@ bool IsShelfBackgroundTypeWithRoundedCorners(
     case SHELF_BACKGROUND_HOME_LAUNCHER:
     case SHELF_BACKGROUND_LOGIN:
     case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
+    case SHELF_BACKGROUND_IN_APP:
       return false;
   }
 }

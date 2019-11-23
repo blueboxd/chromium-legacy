@@ -30,6 +30,26 @@ const url::Origin& GetAllowedOrigin() {
   return *origin;
 }
 
+// This function is intended to convert a binary blob representing an encryption
+// key and provided by the web via a Javascript ArrayBuffer.
+std::vector<uint8_t> ArrayBufferAsBytes(
+    const v8::Local<v8::ArrayBuffer>& array_buffer) {
+  auto backing_store = array_buffer->GetBackingStore();
+  const uint8_t* start =
+      reinterpret_cast<const uint8_t*>(backing_store->Data());
+  const size_t length = backing_store->ByteLength();
+  return std::vector<uint8_t>(start, start + length);
+}
+
+std::vector<std::vector<uint8_t>> EncryptionKeysAsBytes(
+    const std::vector<v8::Local<v8::ArrayBuffer>>& encryption_keys) {
+  std::vector<std::vector<uint8_t>> encryption_keys_as_bytes;
+  for (const v8::Local<v8::ArrayBuffer>& encryption_key : encryption_keys) {
+    encryption_keys_as_bytes.push_back(ArrayBufferAsBytes(encryption_key));
+  }
+  return encryption_keys_as_bytes;
+}
+
 }  // namespace
 
 // static
@@ -93,9 +113,32 @@ void SyncEncryptionKeysExtension::Install() {
 void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
   DCHECK(render_frame());
 
+  // This function as exposed to the web has the following signature:
+  //   setSyncEncryptionKeys(callback, gaia_id, encryption_keys)
+  //
+  // Where:
+  //   callback: Allows caller to get notified upon completion.
+  //   gaia_id: String representing the user's server-provided ID.
+  //   encryption_keys: Array where each element is an ArrayBuffer representing
+  //                    an encryption key (binary blob).
+
   v8::HandleScope handle_scope(args->isolate());
 
-  std::vector<std::string> encryption_keys;
+  v8::Local<v8::Function> callback;
+  if (!args->GetNext(&callback)) {
+    DLOG(ERROR) << "No callback";
+    args->ThrowError();
+    return;
+  }
+
+  std::string gaia_id;
+  if (!args->GetNext(&gaia_id)) {
+    DLOG(ERROR) << "No account ID";
+    args->ThrowError();
+    return;
+  }
+
+  std::vector<v8::Local<v8::ArrayBuffer>> encryption_keys;
   if (!args->GetNext(&encryption_keys)) {
     DLOG(ERROR) << "Not array of strings";
     args->ThrowError();
@@ -108,20 +151,6 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
     return;
   }
 
-  std::string gaia_id;
-  if (!args->GetNext(&gaia_id)) {
-    DLOG(ERROR) << "No account ID";
-    args->ThrowError();
-    return;
-  }
-
-  v8::Local<v8::Function> callback;
-  if (!args->GetNext(&callback)) {
-    DLOG(ERROR) << "No callback";
-    args->ThrowError();
-    return;
-  }
-
   auto global_callback =
       std::make_unique<v8::Global<v8::Function>>(args->isolate(), callback);
 
@@ -130,7 +159,7 @@ void SyncEncryptionKeysExtension::SetSyncEncryptionKeys(gin::Arguments* args) {
   }
 
   remote_->SetEncryptionKeys(
-      encryption_keys, gaia_id,
+      EncryptionKeysAsBytes(encryption_keys), gaia_id,
       base::BindOnce(&SyncEncryptionKeysExtension::RunCompletionCallback,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(global_callback)));

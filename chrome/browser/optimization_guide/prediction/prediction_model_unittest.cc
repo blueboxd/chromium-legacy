@@ -4,7 +4,7 @@
 
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 
-#include <memory>
+#include <utility>
 
 #include "components/optimization_guide/proto/models.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,9 +57,10 @@ TEST(PredictionModelTest, ValidPredictionModel) {
   model_info->add_supported_model_features(
       optimization_guide::proto::ClientModelFeature::
           CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE);
+  model_info->add_supported_host_model_features("agg1");
 
   std::unique_ptr<PredictionModel> model =
-      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+      PredictionModel::Create(std::move(prediction_model));
 
   EXPECT_EQ(1, model->GetVersion());
   EXPECT_EQ(2u, model->GetModelFeatures().size());
@@ -73,7 +74,7 @@ TEST(PredictionModelTest, NoModel) {
       std::make_unique<optimization_guide::proto::PredictionModel>();
 
   std::unique_ptr<PredictionModel> model =
-      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+      PredictionModel::Create(std::move(prediction_model));
   EXPECT_FALSE(model);
 }
 
@@ -86,7 +87,7 @@ TEST(PredictionModelTest, NoModelVersion) {
   decision_tree_model->set_weight(2.0);
 
   std::unique_ptr<PredictionModel> model =
-      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+      PredictionModel::Create(std::move(prediction_model));
   EXPECT_FALSE(model);
 }
 
@@ -103,7 +104,7 @@ TEST(PredictionModelTest, NoModelType) {
   model_info->set_version(1);
 
   std::unique_ptr<PredictionModel> model =
-      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+      PredictionModel::Create(std::move(prediction_model));
   EXPECT_FALSE(model);
 }
 
@@ -122,7 +123,7 @@ TEST(PredictionModelTest, UnknownModelType) {
       optimization_guide::proto::ModelType::MODEL_TYPE_UNKNOWN);
 
   std::unique_ptr<PredictionModel> model =
-      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+      PredictionModel::Create(std::move(prediction_model));
   EXPECT_FALSE(model);
 }
 
@@ -143,7 +144,7 @@ TEST(PredictionModelTest, MultipleModelTypes) {
       optimization_guide::proto::ModelType::MODEL_TYPE_UNKNOWN);
 
   std::unique_ptr<PredictionModel> model =
-      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+      PredictionModel::Create(std::move(prediction_model));
   EXPECT_FALSE(model);
 }
 
@@ -166,7 +167,7 @@ TEST(PredictionModelTest, UnknownModelClientFeature) {
           CLIENT_MODEL_FEATURE_UNKNOWN);
 
   std::unique_ptr<PredictionModel> model =
-      PredictionModel::Create(std::move(prediction_model), {"agg1"});
+      PredictionModel::Create(std::move(prediction_model));
   EXPECT_FALSE(model);
 }
 

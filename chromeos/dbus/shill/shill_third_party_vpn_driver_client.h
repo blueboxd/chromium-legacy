@@ -32,6 +32,9 @@ class ShillThirdPartyVpnObserver;
 // DBusThreadManager instance.
 class COMPONENT_EXPORT(SHILL_CLIENT) ShillThirdPartyVpnDriverClient {
  public:
+  using ErrorCallback = ShillClientHelper::ErrorCallback;
+  using StringCallback = ShillClientHelper::StringCallback;
+
   class TestInterface {
    public:
     virtual void OnPacketReceived(const std::string& object_path_value,
@@ -68,27 +71,24 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillThirdPartyVpnDriverClient {
 
   // Calls SetParameters method.
   // |callback| is called after the method call succeeds.
-  virtual void SetParameters(
-      const std::string& object_path_value,
-      const base::DictionaryValue& parameters,
-      const ShillClientHelper::StringCallback& callback,
-      const ShillClientHelper::ErrorCallback& error_callback) = 0;
+  virtual void SetParameters(const std::string& object_path_value,
+                             const base::DictionaryValue& parameters,
+                             StringCallback callback,
+                             ErrorCallback error_callback) = 0;
 
   // Calls UpdateConnectionState method.
   // |callback| is called after the method call succeeds.
-  virtual void UpdateConnectionState(
-      const std::string& object_path_value,
-      const uint32_t connection_state,
-      const base::Closure& callback,
-      const ShillClientHelper::ErrorCallback& error_callback) = 0;
+  virtual void UpdateConnectionState(const std::string& object_path_value,
+                                     const uint32_t connection_state,
+                                     base::OnceClosure callback,
+                                     ErrorCallback error_callback) = 0;
 
   // Calls SendPacket method.
   // |callback| is called after the method call succeeds.
-  virtual void SendPacket(
-      const std::string& object_path_value,
-      const std::vector<char>& ip_packet,
-      const base::Closure& callback,
-      const ShillClientHelper::ErrorCallback& error_callback) = 0;
+  virtual void SendPacket(const std::string& object_path_value,
+                          const std::vector<char>& ip_packet,
+                          base::OnceClosure callback,
+                          ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns nullptr.
   virtual ShillThirdPartyVpnDriverClient::TestInterface* GetTestInterface() = 0;

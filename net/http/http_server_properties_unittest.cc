@@ -2273,6 +2273,10 @@ TEST_F(AlternateProtocolServerPropertiesTest, RemoveExpiredBrokenAltSvc3) {
 
 TEST_F(AlternateProtocolServerPropertiesTest,
        GetAlternativeServiceInfoAsValue) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kAppendFrameOriginToNetworkIsolationKey);
+
   base::Time::Exploded now_exploded;
   now_exploded.year = 2018;
   now_exploded.month = 1;

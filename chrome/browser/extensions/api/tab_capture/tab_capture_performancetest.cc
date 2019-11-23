@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
 // On ChromeOS, software compositing is not an option, and using MSAN on
 // ChromeOS causes problems due to its hardware OpenGL library.
 #if !defined(MEMORY_SANITIZER)
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TabCapturePerformanceTest,
                          testing::Values(kUseGpu,
                                          kTestThroughWebRTC | kUseGpu));
@@ -342,7 +342,7 @@ INSTANTIATE_TEST_SUITE_P(,
 #else
 
 // Run everything on non-ChromeOS platforms.
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          TabCapturePerformanceTest,
                          testing::Values(0,
                                          kUseGpu,

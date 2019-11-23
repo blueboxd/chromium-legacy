@@ -452,7 +452,7 @@ TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
                   kFormSignature, kUsernameFieldSignature, SINGLE_USERNAME)));
 
   // Init FieldInfoManager.
-  FieldInfoManager field_info_manager(store);
+  FieldInfoManagerImpl field_info_manager(store);
   EXPECT_CALL(client_, GetFieldInfoManager())
       .WillOnce(Return(&field_info_manager));
 

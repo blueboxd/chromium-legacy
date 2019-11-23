@@ -17,6 +17,7 @@
 #include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace base {
@@ -64,9 +65,8 @@ class VideoGeometrySetterService : public mojom::VideoGeometryChangeSubscriber,
 
   mojo::ReceiverSet<mojom::VideoGeometryChangeSubscriber>
       video_geometry_change_subscriber_receivers_;
-  // TODO(guohuideng): change mojo::ReceiverSet to mojo::Receiver.
-  mojo::ReceiverSet<mojom::VideoGeometrySetter>
-      video_geometry_setter_receivers_;
+  mojo::Receiver<mojom::VideoGeometrySetter> video_geometry_setter_receiver_{
+      this};
 
   base::WeakPtrFactory<VideoGeometrySetterService> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(VideoGeometrySetterService);

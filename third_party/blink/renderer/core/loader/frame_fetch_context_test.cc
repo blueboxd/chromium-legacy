@@ -341,7 +341,7 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     const KURL input_url(input);
     const KURL main_frame_url(main_frame);
     ResourceRequest resource_request(input_url);
-    resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
+    resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
 
     RecreateFetchContext(main_frame_url);
     document->SetInsecureRequestPolicy(policy);

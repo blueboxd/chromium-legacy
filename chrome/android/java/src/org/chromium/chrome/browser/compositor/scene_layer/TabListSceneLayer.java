@@ -55,11 +55,14 @@ public class TabListSceneLayer extends SceneLayer {
      * @param fullscreenManager The fullscreen manager for browser controls information.
      * @param backgroundResourceId The resource ID for background. {@link #INVALID_RESOURCE_ID} if
      *                             none. Only used in GridTabSwitcher.
+     * @param backgroundAlpha The alpha of the background. Only used in GridTabSwitcher.
+     * @param backgroundTopOffset The top offset of the background. Only used in GridTabSwitcher.
+     *
      */
     public void pushLayers(Context context, RectF viewport, RectF contentViewport, Layout layout,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
             ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager,
-            int backgroundResourceId, float backgroundAlpha) {
+            int backgroundResourceId, float backgroundAlpha, int backgroundTopOffset) {
         if (mNativePtr == 0) return;
 
         Resources res = context.getResources();
@@ -76,8 +79,8 @@ public class TabListSceneLayer extends SceneLayer {
                 tabContentManager, resourceManager);
 
         if (backgroundResourceId != INVALID_RESOURCE_ID) {
-            TabListSceneLayerJni.get().putBackgroundLayer(
-                    mNativePtr, TabListSceneLayer.this, backgroundResourceId, backgroundAlpha);
+            TabListSceneLayerJni.get().putBackgroundLayer(mNativePtr, TabListSceneLayer.this,
+                    backgroundResourceId, backgroundAlpha, backgroundTopOffset);
         }
 
         boolean isHTSEnabled =
@@ -213,6 +216,6 @@ public class TabListSceneLayer extends SceneLayer {
                 float sideBorderScale, boolean insetVerticalBorder);
 
         void putBackgroundLayer(long nativeTabListSceneLayer, TabListSceneLayer caller,
-                int resourceId, float alpha);
+                int resourceId, float alpha, int topOffset);
     }
 }

@@ -63,17 +63,6 @@ bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
   return process.Terminate(exit_code, false);
 }
 
-// static
-void ChildProcessLauncherHelper::SetRegisteredFilesForService(
-    const std::string& service_name,
-    std::map<std::string, base::FilePath> required_files) {
-  NOTREACHED() << " for service " << service_name;
-}
-
-// static
-void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
-}
-
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
 

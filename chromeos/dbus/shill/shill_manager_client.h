@@ -28,7 +28,6 @@ class ShillPropertyChangedObserver;
 // initializes the DBusThreadManager instance.
 class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
  public:
-  typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
   typedef ShillClientHelper::ErrorCallback ErrorCallback;
 
@@ -138,43 +137,42 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
 
   // Calls GetProperties method.
   // |callback| is called after the method call succeeds.
-  virtual void GetProperties(const DictionaryValueCallback& callback) = 0;
+  virtual void GetProperties(DictionaryValueCallback callback) = 0;
 
   // Calls GetNetworksForGeolocation method.
   // |callback| is called after the method call succeeds.
-  virtual void GetNetworksForGeolocation(
-      const DictionaryValueCallback& callback) = 0;
+  virtual void GetNetworksForGeolocation(DictionaryValueCallback callback) = 0;
 
   // Calls SetProperty method.
   // |callback| is called after the method call succeeds.
   virtual void SetProperty(const std::string& name,
                            const base::Value& value,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) = 0;
+                           base::OnceClosure callback,
+                           ErrorCallback error_callback) = 0;
 
   // Calls RequestScan method.
   // |callback| is called after the method call succeeds.
   virtual void RequestScan(const std::string& type,
-                           const base::Closure& callback,
-                           const ErrorCallback& error_callback) = 0;
+                           base::OnceClosure callback,
+                           ErrorCallback error_callback) = 0;
 
   // Calls EnableTechnology method.
   // |callback| is called after the method call succeeds.
   virtual void EnableTechnology(const std::string& type,
-                                const base::Closure& callback,
-                                const ErrorCallback& error_callback) = 0;
+                                base::OnceClosure callback,
+                                ErrorCallback error_callback) = 0;
 
   // Calls DisableTechnology method.
   // |callback| is called after the method call succeeds.
   virtual void DisableTechnology(const std::string& type,
-                                 const base::Closure& callback,
-                                 const ErrorCallback& error_callback) = 0;
+                                 base::OnceClosure callback,
+                                 ErrorCallback error_callback) = 0;
 
   // Calls ConfigureService method.
   // |callback| is called after the method call succeeds.
   virtual void ConfigureService(const base::DictionaryValue& properties,
                                 ObjectPathCallback callback,
-                                const ErrorCallback& error_callback) = 0;
+                                ErrorCallback error_callback) = 0;
 
   // Calls ConfigureServiceForProfile method.
   // |callback| is called with the created service if the method call succeeds.
@@ -182,25 +180,24 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
       const dbus::ObjectPath& profile_path,
       const base::DictionaryValue& properties,
       ObjectPathCallback callback,
-      const ErrorCallback& error_callback) = 0;
+      ErrorCallback error_callback) = 0;
 
   // Calls GetService method.
   // |callback| is called after the method call succeeds.
   virtual void GetService(const base::DictionaryValue& properties,
                           ObjectPathCallback callback,
-                          const ErrorCallback& error_callback) = 0;
+                          ErrorCallback error_callback) = 0;
 
   // For each technology present, connects to the "best" service available.
   // Called once the user is logged in and certificates are loaded.
-  virtual void ConnectToBestServices(const base::Closure& callback,
-                                     const ErrorCallback& error_callback) = 0;
+  virtual void ConnectToBestServices(base::OnceClosure callback,
+                                     ErrorCallback error_callback) = 0;
 
   // Enable or disable network bandwidth throttling, on all interfaces on the
   // system.
-  virtual void SetNetworkThrottlingStatus(
-      const NetworkThrottlingStatus& status,
-      const base::Closure& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void SetNetworkThrottlingStatus(const NetworkThrottlingStatus& status,
+                                          base::OnceClosure callback,
+                                          ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;

@@ -6,7 +6,7 @@ import("//build/config/ui.gni")
 
 declare_args() {
   # Optional system library.
-  use_xkbcommon = false
+  use_xkbcommon = use_ozone && is_linux && !is_chromecast
 
   # Whether the platform provides a native accessibility toolkit.
   has_native_accessibility = use_atk || is_win || is_mac

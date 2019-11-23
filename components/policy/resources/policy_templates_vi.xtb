@@ -536,6 +536,15 @@
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="1852294065645015766">Cho phép tự động phát nội dung nghe nhìn</translation>
+<translation id="1853782273088286010">Kiểm soát xem ứng dụng DNS tích hợp có được dùng trong <ph name="PRODUCT_NAME" /> hay không.
+
+      Chính sách này không ảnh hưởng đến việc máy chủ DNS nào sẽ dùng, mà chỉ ảnh hưởng đến ngăn phần mềm dùng để giao tiếp với các máy chủ đó. Ví dụ: nếu hệ điều hành được định cấu hình để dùng một máy chủ DNS cho doanh nghiệp, thì ứng dụng DNS tích hợp sẽ dùng chính máy chủ đó. Tuy nhiên, ứng dụng DNS tích hợp có thể sẽ xác định các máy chủ theo những cách khác nhau bằng việc dùng các giao thức hiện đại hơn liên quan đến DNS, chẳng hạn như DNS qua TLS.
+
+      Nếu bạn đặt chính sách này thành true, thì ứng dụng DNS tích hợp sẽ được dùng, nếu có.
+
+      Nếu bạn đặt chính sách này thành false, thì ứng dụng DNS tích hợp sẽ không bao giờ được dùng.
+
+      Nếu bạn không đặt chính sách này, thì ứng dụng DNS tích hợp sẽ bật theo mặc định trên MacOS, Android (khi cả VPN lẫn DNS riêng tư đều không được bật) và ChromeOS, đồng thời người dùng có thể thay đổi tùy chọn có sử dụng ứng dụng DNS tích hợp hay không bằng cách chỉnh sửa chrome://flags hoặc chỉ định một cờ dòng lệnh.</translation>
 <translation id="1857152770025485173">Chính sách này ngăn người dùng tải trang web từ các URL có trong danh sách cấm. Danh sách cấm cung cấp một danh sách các mẫu URL cho biết URL nào bị cấm.
 
       Bạn phải định dạng mẫu URL theo định dạng trên trang web https://www.chromium.org/administrators/url-blacklist-filter-format.
@@ -1409,6 +1418,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có thay thế cụm từ tìm kiếm nào được thực hiện.
 
           Chính sách này chỉ được lưu tâm nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
+<translation id="3049248142961638857">Xác định tên máy chủ của thiết bị dùng trong các yêu cầu DHCP.
+
+      Nếu bạn đặt chính sách này thành một chuỗi có nội dung, thì chuỗi đó sẽ được dùng làm tên máy chủ của thiết bị trong quá trình yêu cầu DHCP.
+
+      Chuỗi này có thể chứa các biến <ph name="ASSET_ID_PLACEHOLDER" />, <ph name="SERIAL_NUM_PLACEHOLDER" />, <ph name="MAC_ADDR_PLACEHOLDER" />, <ph name="MACHINE_NAME_PLACEHOLDER" />, <ph name="LOCATION_PLACEHOLDER" /> mà sẽ được thay thế bằng các giá trị trên thiết bị trước khi dùng làm tên máy chủ. Giá trị thay thế thu được sẽ là tên máy chủ hợp lệ (theo RFC 1035, mục 3.1).
+
+      Nếu bạn không đặt chính sách này hoặc giá trị sau khi thay thế không phải là tên máy chủ hợp lệ, thì tên máy chủ sẽ không được đặt trong yêu cầu DHCP. </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740">Cho phép tắt tối ưu hóa WPAD (Tự động phát hiện proxy web) trong <ph name="PRODUCT_NAME" />.
 
@@ -2701,6 +2717,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5208240613060747912">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web không được phép hiển thị thông báo.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
+<translation id="5212118847531454979">Cho phép bạn đặt khoảng thời gian tính bằng mili giây mà người dùng nhận được thông báo phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại thiết bị <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
+
+      Trong khoảng thời gian này, người dùng sẽ được nhắc lại nhiều lần về việc cần phải cập nhật. Đối với các thiết bị <ph name="PRODUCT_OS_NAME" />, thông báo khởi động lại sẽ xuất hiện trong khay hệ thống theo chính sách <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Đối với các trình duyệt <ph name="PRODUCT_NAME" />, trình đơn ứng dụng sẽ thay đổi để cho thấy cần chạy lại sau khi hết một phần ba thời gian thông báo. Thông báo này sẽ đổi màu khi hết hai phần ba thời gian thông báo và đổi màu một lần nữa khi hết toàn bộ thời gian thông báo. Các thông báo bổ sung được bật theo chính sách <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> cũng tuân theo trình tự này.
+
+      Nếu bạn không đặt chính sách này, thì khoảng thời gian mặc định là 604800000 mili giây (một tuần) sẽ được dùng.</translation>
 <translation id="5212810195096589189">Chỉ định quyền của CLI máy ảo</translation>
 <translation id="5213038356678567351">Các trang web sẽ không bao giờ kích hoạt quá trình chuyển trình duyệt.</translation>
 <translation id="5219844027738217407">Đối với các ứng dụng Android, chính sách này chỉ ảnh hưởng đến micrô. Khi chính sách này được đặt thành true, micrô sẽ bị tắt tiếng cho tất cả ứng dụng Android mà không có ngoại lệ nào.</translation>
@@ -2967,6 +2988,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không được chỉ định, sẽ không sửa đổi URL khởi đầu Biến thể.</translation>
 <translation id="5561811616825571914">Tự động chọn chứng chỉ ứng dụng cho những trang web này trên màn hình đăng nhập</translation>
+<translation id="5564865786900450806">Ẩn cảnh báo xuất hiện khi <ph name="PRODUCT_NAME" /> đang chạy trên máy tính hoặc hệ điều hành không còn được hỗ trợ.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành false, thì cảnh báo sẽ xuất hiện trên các máy tính hoặc hệ điều hành không được hỗ trợ nêu trên.</translation>
 <translation id="5565178130821694365">Yêu cầu cứ 2 ngày (48 giờ) nhập mật khẩu một lần</translation>
 <translation id="5566210228171064229">Cho phép in khi có và không có mã PIN</translation>
 <translation id="556865034069957245">Chính sách này kiểm soát khả năng sử dụng chế độ toàn màn hình mà ở đó tất cả giao diện người dùng của <ph name="PRODUCT_NAME" /> đều bị ẩn và chỉ nội dung web hiển thị.
@@ -4540,6 +4564,9 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Nếu bạn tắt cài đặt này, trang sẽ được quét tìm thẻ meta.
 
           Nếu chính sách này không được đặt, trang sẽ được quét tìm thẻ meta.</translation>
+<translation id="829641334878002866">Cho phép bạn đặt khoảng thời gian tính bằng mili giây, từ lúc nhận được thông báo đầu tiên cho biết phải khởi động lại thiết bị <ph name="PRODUCT_OS_NAME" /> để áp dụng một bản cập nhật đang chờ xử lý đến lúc kết thúc khoảng thời gian được chỉ định trong chính sách <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
+
+      Nếu bạn không đặt chính sách này, thì khoảng thời gian mặc định là 259200000 mili giây (3 ngày) sẽ được dùng cho các thiết bị <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8300455783946254851">Tắt đồng bộ hóa Google Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /> khi sử dụng kết nối di động đã đặt thành True. Trong trường hợp đó, dữ liệu chỉ được đồng bộ hóa với Google Drive khi được kết nối qua WiFi hoặc Ethernet.
 
           Nếu không được đặt hoặc được đặt thành False, người dùng có thể chuyển tệp sang Google Drive qua kết nối mạng di động.</translation>

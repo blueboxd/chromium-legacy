@@ -88,7 +88,6 @@ PASS window.cached_performance_timing.secureConnectionStart is 0
 PASS window.cached_performance_timing.unloadEventEnd is 0
 PASS window.cached_performance_timing.unloadEventStart is 0
 PASS window.cached_personalbar.visible is false
-PASS window.cached_scheduler_currentTaskQueue.priority is 'default'
 PASS window.cached_screen.availHeight is 0
 PASS window.cached_screen.availLeft is 0
 PASS window.cached_screen.availTop is 0

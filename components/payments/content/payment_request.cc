@@ -188,7 +188,8 @@ void PaymentRequest::Init(
       web_contents_, top_level_origin_, frame_origin_, spec_.get(),
       /*delegate=*/this, delegate_->GetApplicationLocale(),
       delegate_->GetPersonalDataManager(), delegate_.get(),
-      /*sw_identity_observer=*/weak_ptr_factory_.GetWeakPtr(),
+      base::BindRepeating(&PaymentRequest::SetInvokedServiceWorkerIdentity,
+                          weak_ptr_factory_.GetWeakPtr()),
       &journey_logger_);
 
   journey_logger_.SetRequestedInformation(

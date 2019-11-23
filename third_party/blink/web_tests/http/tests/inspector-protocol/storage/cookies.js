@@ -1,9 +1,9 @@
 (async function(testRunner) {
-  const {dp} = await testRunner.startBlank(
+  const {dp, page} = await testRunner.startBlank(
       `Tests that cookies are read and written.`);
 
-  async function logCookies(title) {
-    var data = (await dp.Storage.getCookies()).result;
+  async function logCookies(title, browserContextId) {
+    var data = (await dp.Storage.getCookies({ browserContextId })).result;
     testRunner.log(`\n${title}: ${data.cookies.length} cookies`);
     data.cookies.sort((a, b) => a.name.localeCompare(b.name));
     for (var cookie of data.cookies) {
@@ -40,21 +40,29 @@
   }
 
 
-  await logCookies('Initial');
+  testRunner.runTestSuite([
+    async function testPageContext() {
+      await logCookies('Initial');
 
-  await setCookieViaFetch();
-  await logCookies('Post-fetch');
+      await setCookieViaFetch();
+      await logCookies('Post-fetch');
 
-  const cookies = [
-    {url: 'http://127.0.0.1', name: 'foo', value: 'bar1'},
-    {url: 'http://127.0.0.1', name: 'foo', value: 'second bar2'},
-    {url: 'http://127.0.0.1', name: 'foo2', value: 'bar1'}
-  ];
-  await dp.Storage.setCookies({cookies});
-  await logCookies('Post-set');
+      const cookies = [
+        {url: 'http://127.0.0.1', name: 'foo', value: 'bar1'},
+        {url: 'http://127.0.0.1', name: 'foo', value: 'second bar2'},
+        {url: 'http://127.0.0.1', name: 'foo2', value: 'bar1'}
+      ];
+      await dp.Storage.setCookies({cookies});
+      await logCookies('Post-set');
 
-  await dp.Storage.clearCookies();
-  await logCookies('Post-clear');
+      await dp.Storage.clearCookies();
+      await logCookies('Post-clear');
+    },
 
-  testRunner.completeTest();
+    async function testInvalidContext() {
+      var data = (await dp.Storage.getCookies({ browserContextId: 'invalid' }));
+      testRunner.log(data);
+    }
+  ]);
+
 })

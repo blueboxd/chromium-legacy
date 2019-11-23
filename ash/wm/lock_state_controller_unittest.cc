@@ -287,8 +287,8 @@ class LockStateControllerTest : public PowerButtonTestBase {
   }
 
   void SuccessfulAuthentication(bool* call_flag) {
-    base::Closure closure = base::Bind(&CheckCalledCallback, call_flag);
-    lock_state_controller_->OnLockScreenHide(closure);
+    base::OnceClosure closure = base::BindOnce(&CheckCalledCallback, call_flag);
+    lock_state_controller_->OnLockScreenHide(std::move(closure));
   }
 
   std::unique_ptr<ShutdownController::ScopedResetterForTest>

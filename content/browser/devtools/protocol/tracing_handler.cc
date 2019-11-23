@@ -28,7 +28,6 @@
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_io_context.h"
-#include "content/browser/devtools/devtools_protocol_encoding.h"
 #include "content/browser/devtools/devtools_stream_file.h"
 #include "content/browser/devtools/devtools_traceable_screenshot.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
@@ -591,7 +590,8 @@ void TracingHandler::OnTraceDataCollected(
                  trace_data_buffer_state_.offset);
   message += "] } }";
   std::vector<uint8_t> cbor;
-  crdtp::Status status = ConvertJSONToCBOR(crdtp::SpanFrom(message), &cbor);
+  crdtp::Status status =
+      crdtp::json::ConvertJSONToCBOR(crdtp::SpanFrom(message), &cbor);
   LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
   frontend_->sendRawCBORNotification(std::move(cbor));
 }

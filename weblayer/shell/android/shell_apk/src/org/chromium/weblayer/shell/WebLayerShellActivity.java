@@ -41,7 +41,6 @@ import org.chromium.weblayer.TabCallback;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -229,12 +228,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         }
 
         String profileName = "DefaultProfile";
-        String profilePath = null;
-        if (!TextUtils.isEmpty(profileName)) {
-            profilePath = new File(getFilesDir(), profileName).getPath();
-        } // else create an in-memory Profile.
-
-        Fragment fragment = WebLayer.createBrowserFragment(profilePath);
+        Fragment fragment = WebLayer.createBrowserFragment(profileName);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(mMainViewId, fragment);
 

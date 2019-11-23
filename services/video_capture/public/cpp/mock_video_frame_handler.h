@@ -56,7 +56,8 @@ class MockVideoFrameHandler : public mojom::VideoFrameHandler {
   const mojo::Receiver<mojom::VideoFrameHandler> video_frame_handler_;
   std::vector<int32_t> known_buffer_ids_;
   bool should_store_access_permissions_;
-  std::vector<mojom::ScopedAccessPermissionPtr> access_permissions_;
+  std::vector<mojo::PendingRemote<mojom::ScopedAccessPermission>>
+      access_permissions_;
 };
 
 }  // namespace video_capture

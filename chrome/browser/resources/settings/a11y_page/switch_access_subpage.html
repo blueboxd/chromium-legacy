@@ -57,14 +57,16 @@
       </settings-toggle-button>
       <div class="settings-box continuation list-item"
           hidden$="[[!prefs.switch_access.auto_scan.enabled.value]]">
-        <div class="start sub-item settings-box-text" id="scanSpeed">
-          [[getLabelForSpeedSlider_(prefs.switch_access.auto_scan.speed_ms.*)]]
+        <div class="start sub-item settings-box-text" id="scanSpeed"
+            aria-hidden="true">
+          $i18n{switchAccessAutoScanSpeedLabel}
         </div>
-        <settings-slider id="scanSpeedSlider" aria-describedby="scanSpeed"
+        <settings-slider id="scanSpeedSlider"
             pref="{{prefs.switch_access.auto_scan.speed_ms}}"
             ticks="[[autoScanSpeedRangeMs_]]"
             min="[[minScanSpeedMs_]]"
             max="[[maxScanSpeedMs_]]"
+            label-aria="$i18n{switchAccessAutoScanSpeedLabel}"
             label-min="[[minScanSpeedLabelSec_]]"
             label-max="[[maxScanSpeedLabelSec_]]">
         </settings-dropdown-menu>
@@ -72,15 +74,16 @@
       <div class="settings-box continuation list-item"
           hidden$="[[!showKeyboardScanSettings_(
           prefs.switch_access.auto_scan.enabled.value)]]">
-        <div class="start sub-item settings-box-text" id="keyboardScanSpeed">
+        <div class="start sub-item settings-box-text" id="keyboardScanSpeed"
+            aria-hidden="true">
           $i18n{switchAccessAutoScanKeyboardSpeedLabel}
         </div>
         <settings-slider id="keyboardScanSpeedSlider"
-            aria-describedby="keyboardScanSpeed"
             pref="{{prefs.switch_access.auto_scan.keyboard.speed_ms}}"
             ticks="[[autoScanSpeedRangeMs_]]"
             min="[[minScanSpeedMs_]]"
             max="[[maxScanSpeedMs_]]"
+            label-aria="$i18n{switchAccessAutoScanKeyboardSpeedLabel}"
             label-min="[[minScanSpeedLabelSec_]]"
             label-max="[[maxScanSpeedLabelSec_]]">
         </settings-dropdown-menu>

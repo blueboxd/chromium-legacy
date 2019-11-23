@@ -33,24 +33,24 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
 
 @implementation SigninEarlGreyUI
 
-+ (void)signinWithIdentity:(FakeChromeIdentity*)identity {
-  [self signinWithIdentity:identity isManagedAccount:NO];
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
+  [self signinWithFakeIdentity:fakeIdentity isManagedAccount:NO];
 }
 
-+ (void)signinWithIdentity:(FakeChromeIdentity*)identity
-          isManagedAccount:(BOOL)isManagedAccount {
-  [SigninEarlGreyUtils addIdentity:identity];
++ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity
+              isManagedAccount:(BOOL)isManagedAccount {
+  [SigninEarlGreyUtils addFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
-  [self selectIdentityWithEmail:identity.userEmail];
+  [self selectIdentityWithEmail:fakeIdentity.userEmail];
   [self confirmSigninConfirmationDialog];
   if (isManagedAccount) {
     [self confirmSigninWithManagedAccount];
   }
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
+  [SigninEarlGreyUtils checkSignedInWithFakeIdentity:fakeIdentity];
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {

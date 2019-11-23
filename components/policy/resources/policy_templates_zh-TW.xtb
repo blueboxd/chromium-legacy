@@ -518,6 +518,15 @@
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="1852294065645015766">允許自動播放媒體</translation>
+<translation id="1853782273088286010">控管是否要在 <ph name="PRODUCT_NAME" /> 中使用內建的 DNS 用戶端。
+
+      這項政策不會影響系統使用的 DNS 伺服器，只會影響與 DNS 伺服器建立連線的軟體堆疊。比方說，如果作業系統設為使用企業版 DNS 伺服器，內建 DNS 用戶端也會使用相同的伺服器。不過，內建的 DNS 用戶端可能會採用新版 DNS 相關通訊協定 (例如 DNS-over-TLS)，透過其他方式與伺服器互動。
+
+      如果將這項政策設為 True，系統將使用內建的 DNS 用戶端 (如果可用)。
+
+      如果將這項政策設為 False，系統一律不會使用內建的 DNS 用戶端。
+
+      如果不設定這項政策，Mac OS、Android (當不公開 DNS 和 VPN 皆未啟用時) 和 Chrome 作業系統在預設狀態下會啟用內建的 DNS 用戶端；使用者可以透過編輯 chrome://flags 或指定指令列標記，來決定系統是否要使用內建的 DNS 用戶端。</translation>
 <translation id="1857152770025485173">這項政策會禁止使用者載入黑名單中所列網頁。黑名單是一份網址模式清單，列出了要封鎖的網址。
 
       網址模式的格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 中的規定。
@@ -1367,6 +1376,13 @@
           這個政策為選擇性，如果你並未設定這項政策，系統就不會取代任何搜尋字詞。
 
           只有當你啟用「DefaultSearchProviderEnabled」政策時，這項政策才會生效。</translation>
+<translation id="3049248142961638857">決定 DHCP 要求所使用的裝置主機名稱。
+
+      如果將這項政策的值設為非空白字串，系統會將該字串設為 DHCP 要求中的裝置主機名稱。
+
+      字串可包含 <ph name="ASSET_ID_PLACEHOLDER" />、<ph name="SERIAL_NUM_PLACEHOLDER" />、<ph name="MAC_ADDR_PLACEHOLDER" />、<ph name="MACHINE_NAME_PLACEHOLDER" />、<ph name="LOCATION_PLACEHOLDER" /> 變數，這些變數會先替換成裝置的值，再做為主機名稱使用。請注意，替換後的值必須是有效的主機名稱 (根據 RFC 1035 文件第 3.1 條的規定)。
+
+      如果不設定這項政策，或是替換後的值不是有效的主機名稱，系統將不會設定 DHCP 要求中的主機名稱。 </translation>
 <translation id="3053265701996417839">Microsoft Windows 7</translation>
 <translation id="3069958900488014740">允許關閉 <ph name="PRODUCT_NAME" /> 的 WPAD (Web Proxy Auto Discovery) 最佳化設定。
 
@@ -2602,6 +2618,11 @@
 
           這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="5208240613060747912">允許你設定網址模式清單，指定不可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
+<translation id="5212118847531454979">你可以設定時間範圍 (以毫秒為單位)，系統會在這段時間內通知使用者必須重新啟動 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置，才能套用未安裝的更新。
+
+      在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，系統會根據 <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> 政策，在系統匣中顯示重新啟動通知。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間結束後再次變色。由 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策啟用的其他通知也會遵循相同的時間表。
+
+      如果不設定這項政策，系統會使用 604800000 毫秒 (一週) 做為預設時間範圍。</translation>
 <translation id="5212810195096589189">指定 VM CLI 的權限</translation>
 <translation id="5213038356678567351">完全不該觸發瀏覽器切換的網站。</translation>
 <translation id="5219844027738217407">這項政策對 Android 應用程式的影響僅限於麥克風。將這項政策設為 true 時，所有 Android 應用程式皆無法使用麥克風 (設為靜音)，沒有任何例外。</translation>
@@ -2861,6 +2882,9 @@
 
       如果未指定這項政策，則系統不會修改變異版本種子網址。</translation>
 <translation id="5561811616825571914">在登入畫面自動為這些網站選取用戶端憑證</translation>
+<translation id="5564865786900450806">在 Google 已停止支援的電腦或作業系統執行 <ph name="PRODUCT_NAME" /> 時，不顯示警告訊息。
+
+      如果將這項政策設為 False 或不予設定，不受支援的電腦或作業系統上將顯示警告訊息。</translation>
 <translation id="5565178130821694365">每兩天 (48 小時) 須輸入一次密碼</translation>
 <translation id="5566210228171064229">不論是否使用 PIN 碼，都允許列印</translation>
 <translation id="556865034069957245">這項政策可控管系統是否提供全螢幕模式，如果啟用這項政策，系統會隱藏畫面上所有 <ph name="PRODUCT_NAME" /> UI，並且只顯示網路內容。
@@ -4135,7 +4159,7 @@
       如果不設定這項政策，系統會徵求使用者許可來執行舊版外掛程式。</translation>
 <translation id="7862137072381331997">如果啟用這項政策，安全瀏覽功能會即時檢查使用者造訪的所有網址。
 
-      如果不設定這項政策或將它設為停用，系統會套用一般使用者的安全瀏覽檢查。一般使用者的安全瀏覽檢查仍可能包含即時查詢，實際情況取決於「改善搜尋和瀏覽體驗」的偏好設定。如果要強制停用即時查詢，請參閱 <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" /> 政策。</translation>
+      如果不設定這項政策或設為停用，系統會套用一般使用者的安全瀏覽檢查。一般使用者的安全瀏覽檢查仍可能包含即時查詢，實際情況取決於「改善搜尋和瀏覽體驗」的偏好設定。如果要強制停用即時查詢，請參閱 <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" /> 政策。</translation>
 <translation id="7863947545897944083">在登入畫面上啟用高對比模式無障礙功能。
 
           如果將這項政策設為 True，系統將一律在登入畫面上啟用高對比模式。
@@ -4377,6 +4401,9 @@
           如果你停用這項設定，系統將會掃描網頁的中繼標記。
 
           如未設定這項政策，系統將會掃描網頁的中繼標記。</translation>
+<translation id="829641334878002866">這項政策可讓你設定時間範圍 (以毫秒為單位)，指定從系統第一次通知使用者重新啟動 <ph name="PRODUCT_OS_NAME" />裝置以套用待處理的更新開始，到 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策指定的結束時間為止，兩者之間的時間範圍。
+
+      如果不設定這項政策，<ph name="PRODUCT_OS_NAME" />裝置會使用 259200000 毫秒 (三天) 做為預設時間範圍。</translation>
 <translation id="8300455783946254851">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會在使用行動網路連線時停用 Google 雲端硬碟同步功能。這種情形下，系統只有在連上 WiFi 或乙太網路連線時才會將資料同步處理至 Google 雲端硬碟。
 
           如果你設為 False 或未設定，使用者即可透過行動網路連線將檔案傳輸至 Google 雲端硬碟。</translation>

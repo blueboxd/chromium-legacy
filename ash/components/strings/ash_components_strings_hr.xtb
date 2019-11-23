@@ -98,7 +98,9 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ili <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Način pregleda</translation>
 <translation id="4382340674111381977">Povratak na prethodnu stranicu</translation>
+<translation id="4458670250301149821">Pomicanje ikone aplikacije u mapu na rešetki aplikacija ili iz nje</translation>
 <translation id="4472417192667361414">Postavke sustava i prikaza</translation>
+<translation id="449214506787633354"><ph name="CTRL" />, a zatim <ph name="LEFT" /> ili <ph name="RIGHT" /> ili <ph name="UP" /> ili <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Pregled pomoći za tipkovne prečace</translation>
 <translation id="4628718545549558538">Kliknite područje statusa (na mjestu na kojem se prikazuje slika računa)</translation>
 <translation id="4642092649622328492">Snimanje dijela zaslona</translation>
@@ -170,6 +172,7 @@
 <translation id="7439718573248533901">Brisanje sljedećeg slova (brisanje unaprijed)</translation>
 <translation id="7500368597227394048">crtica</translation>
 <translation id="7611271430932669992">Premještanje fokusa na skočne prozore i dijaloge</translation>
+<translation id="7635348532214572995">Pomicanje ikone aplikacije po rešetki aplikacija</translation>
 <translation id="766326951329901120">Lijepljenje sadržaja iz međuspremnika kao običnog teksta</translation>
 <translation id="7703010453515335249">lijeva zagrada</translation>
 <translation id="7724603315864178912">Izreži</translation>
@@ -204,6 +207,7 @@
 <translation id="9041599225465145264">Lijepljenje sadržaja iz međuspremnika</translation>
 <translation id="9052808072970550123">Prelazak na sljedećeg korisnika</translation>
 <translation id="906458777597946297">Maksimiziranje prozora</translation>
+<translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, a zatim <ph name="LEFT" /> ili <ph name="RIGHT" /> ili <ph name="UP" /> ili <ph name="DOWN" /></translation>
 <translation id="9091855755813503076">Prelazak na početak retka</translation>
 <translation id="9106898733795143799">Stranica i web-preglednik</translation>
 <translation id="9162942292291287644">Nema rezultata pretraživanja za upit <ph name="QUERY" /></translation>

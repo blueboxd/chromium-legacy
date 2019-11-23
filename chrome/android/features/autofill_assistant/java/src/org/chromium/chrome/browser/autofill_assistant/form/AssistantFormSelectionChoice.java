@@ -6,15 +6,28 @@ package org.chromium.chrome.browser.autofill_assistant.form;
 
 class AssistantFormSelectionChoice {
     private final String mLabel;
+    private final String mDescriptionLine1;
+    private final String mDescriptionLine2;
     private final boolean mIsInitiallySelected;
 
-    public AssistantFormSelectionChoice(String label, boolean isInitiallySelected) {
+    public AssistantFormSelectionChoice(String label, String descriptionLine1,
+            String descriptionLine2, boolean isInitiallySelected) {
         mLabel = label;
+        mDescriptionLine1 = descriptionLine1;
+        mDescriptionLine2 = descriptionLine2;
         mIsInitiallySelected = isInitiallySelected;
     }
 
     public String getLabel() {
         return mLabel;
+    }
+
+    public String getDescriptionLine1() {
+        return mDescriptionLine1;
+    }
+
+    public String getDescriptionLine2() {
+        return mDescriptionLine2;
     }
 
     public boolean isInitiallySelected() {

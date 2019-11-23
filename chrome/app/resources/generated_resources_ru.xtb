@@ -516,7 +516,6 @@
 <translation id="1734212868489994726">Голубой</translation>
 <translation id="1734824808160898225">Возможно, <ph name="PRODUCT_NAME" /> не сможет обновляться автоматически.</translation>
 <translation id="1736419249208073774">Подробнее</translation>
-<translation id="1736420071277903564">Компьютер</translation>
 <translation id="1737968601308870607">Сообщить об ошибке</translation>
 <translation id="1741314857973421784">Далее</translation>
 <translation id="1743570585616704562">Не распознано</translation>
@@ -1127,6 +1126,7 @@
 <translation id="2617342710774726426">SIM-карта заблокирована</translation>
 <translation id="2619761439309613843">Обновлять ежедневно</translation>
 <translation id="2620436844016719705">Система</translation>
+<translation id="2621713457727696555">Защищена</translation>
 <translation id="26224892172169984">Запретить обработку протоколов на всех сайтах</translation>
 <translation id="2624142942574147739">Этот сайт может использовать ваши камеру и микрофон</translation>
 <translation id="2626799779920242286">Повторите попытку позже.</translation>
@@ -1578,6 +1578,7 @@
 <translation id="328571385944182268">Сохранить пароли?</translation>
 <translation id="3288047731229977326">Расширения, запущенные в режиме разработчика, могут причинить вред вашему компьютеру. Если вы не являетесь разработчиком, их следует отключить, чтобы обеспечить безопасность данных.</translation>
 <translation id="3289856944988573801">Чтобы проверить наличие обновлений, подключитесь через сеть Ethernet или Wi-Fi.</translation>
+<translation id="3290356915286466215">Не защищена</translation>
 <translation id="3293644607209440645">Отправить страницу</translation>
 <translation id="32939749466444286">Не удалось запустить контейнер Linux. Повторите попытку.</translation>
 <translation id="3294437725009624529">Гость</translation>
@@ -2019,7 +2020,6 @@
 <translation id="3900966090527141178">Экспорт паролей</translation>
 <translation id="3901991538546252627">Подключение к <ph name="NAME" /></translation>
 <translation id="3905761538810670789">Восстановить приложение</translation>
-<translation id="3906954721959377182">Планшет</translation>
 <translation id="3908393983276948098">Плагин <ph name="PLUGIN_NAME" /> устарел</translation>
 <translation id="3908501907586732282">Включить расширение</translation>
 <translation id="3909477809443608991">Сайт <ph name="URL" /> собирается воспроизвести защищенный контент. Ваше устройство пройдет проверку в Google, и этот сайт сможет получать к нему доступ.</translation>
@@ -2319,7 +2319,6 @@
 <translation id="4364327530094270451">Дыня</translation>
 <translation id="4364567974334641491">Приложение "<ph name="APP_NAME" />" предоставило доступ к окну.</translation>
 <translation id="4364830672918311045">Показывать уведомления</translation>
-<translation id="4366956553771076218"><ph name="ACTION_NAME" /> в приложении "<ph name="APP_NAME" />".</translation>
 <translation id="4370975561335139969">Указан неправильный адрес или пароль</translation>
 <translation id="437184764829821926">Расширенные настройки шрифтов</translation>
 <translation id="4374831787438678295">Установщик Linux</translation>
@@ -2961,7 +2960,6 @@
 <translation id="5363109466694494651">Powerwash и откат</translation>
 <translation id="5365881113273618889">Выбранная папка содержит конфиденциальные файлы. Предоставить приложению "<ph name="APP_NAME" />" постоянный доступ для записи данных?</translation>
 <translation id="5367091008316207019">Чтение файла…</translation>
-<translation id="5367319243122320268"><ph name="NETWORK_NAME" /> – <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5368720394188453070">Для входа разблокируйте телефон.</translation>
 <translation id="5368779022775404937">Вход в <ph name="REALM" /></translation>
 <translation id="5369491905435686894">Включить ускорение мыши</translation>
@@ -4719,6 +4717,7 @@
 <translation id="7912080627461681647">Пароль был изменен на сервере. Выйдите из аккаунта и войдите снова.</translation>
 <translation id="7915457674565721553">Чтобы настроить родительский контроль, подключитесь к Интернету.</translation>
 <translation id="7915471803647590281">Введите текст отзыва.</translation>
+<translation id="7918257978052780342">Зарегистрироваться</translation>
 <translation id="7919210519031517829"><ph name="DURATION" /> сек.</translation>
 <translation id="792514962475806987">Масштаб закрепленной лупы:</translation>
 <translation id="7925247922861151263">Сбой при проверке AAA</translation>
@@ -5504,7 +5503,7 @@
 <translation id="9023015617655685412">Добавить страницу в закладки...</translation>
 <translation id="9024127637873500333">&amp;Открыть в новой вкладке</translation>
 <translation id="9024158959543687197">Не удалось подключить ресурс. Проверьте URL и повторите попытку.</translation>
-<translation id="9024885274934357065">Устройство разблокировано при помощи функции Smart Lock. Чтобы разблокировать, нажмите Ввод.</translation>
+<translation id="9024885274934357065">Устройство разблокируется при помощи функции Smart Lock. Чтобы разблокировать, нажмите Ввод.</translation>
 <translation id="9026731007018893674">Без названия</translation>
 <translation id="9026852570893462412">Подождите несколько минут. Скачивание виртуальной машины…</translation>
 <translation id="9027459031423301635">Открыть ссылку в новой вкладке</translation>

@@ -6,61 +6,38 @@
 #define TOOLS_BINARY_SIZE_LIBSUPERSIZE_CASPIAN_TREE_BUILDER_H_
 
 #include <deque>
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <unordered_map>
 #include <vector>
 
+#include "tools/binary_size/libsupersize/caspian/lens.h"
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
 namespace caspian {
-class BaseLens {
- public:
-  virtual ~BaseLens() = default;
-  virtual std::string_view ParentName(
-      const BaseSymbol& symbol,
-      std::deque<std::string>* owned_strings) = 0;
-};
-
-class IdPathLens : public BaseLens {
- public:
-  std::string_view ParentName(const BaseSymbol& symbol,
-                              std::deque<std::string>* owned_strings) override;
-};
-
-class ComponentLens : public BaseLens {
- public:
-  std::string_view ParentName(const BaseSymbol& symbol,
-                              std::deque<std::string>* owned_strings) override;
-};
-
-class TemplateLens : public BaseLens {
- public:
-  std::string_view ParentName(const BaseSymbol& symbol,
-                              std::deque<std::string>* owned_strings) override;
-};
-
 class TreeBuilder {
  public:
-  TreeBuilder(SizeInfo* size_info);
-  TreeBuilder(DeltaSizeInfo* size_info);
+  explicit TreeBuilder(SizeInfo* size_info);
+  explicit TreeBuilder(DeltaSizeInfo* size_info);
   ~TreeBuilder();
   void Build(std::unique_ptr<BaseLens> lens,
              char separator,
              bool method_count_mode,
              std::vector<std::function<bool(const BaseSymbol&)>> filters);
+  TreeNode* Find(std::string_view path);
   Json::Value Open(const char* path);
 
  private:
-  void AddFileEntry(const std::string_view source_path,
+  void AddFileEntry(GroupedPath source_path,
                     const std::vector<const BaseSymbol*>& symbols);
 
   TreeNode* GetOrMakeParentNode(TreeNode* child_node);
 
   void AttachToParent(TreeNode* child, TreeNode* parent);
 
-  ContainerType ContainerTypeFromChild(std::string_view child_id_path) const;
+  ContainerType ContainerTypeFromChild(GroupedPath child_path) const;
 
   bool ShouldIncludeSymbol(const BaseSymbol& symbol) const;
 
@@ -69,9 +46,7 @@ class TreeBuilder {
   void JoinDexMethodClasses(TreeNode* node);
 
   TreeNode root_;
-  // TODO: A full hash table might be overkill here - could walk tree to find
-  // node.
-  std::unordered_map<std::string_view, TreeNode*> _parents;
+  std::unordered_map<GroupedPath, TreeNode*> _parents;
 
   // Contained TreeNode hold lightweight string_views to fields in SizeInfo.
   // If grouping by component, this isn't possible: TreeNode id_paths are not

@@ -332,12 +332,12 @@ void SearchResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (!GetVisible())
     return;
 
-  // This is a work around to deal with the nested button case(append and remove
+  // Mark the result is a list item in the list of search results.
+  // Also avoids an issue with the nested button case(append and remove
   // button are child button of SearchResultView), which is not supported by
   // ChromeVox. see details in crbug.com/924776.
-  // We change the role of the parent view SearchResultView to kGenericContainer
-  // i.e., not a kButton anymore.
-  node_data->role = ax::mojom::Role::kGenericContainer;
+  node_data->role = ax::mojom::Role::kListBoxOption;
+  node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected());
   node_data->AddState(ax::mojom::State::kFocusable);
   node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
   node_data->SetName(GetAccessibleName());
@@ -442,13 +442,6 @@ void SearchResultView::OnSearchResultActionActivated(size_t index,
       list_view_->SearchResultActionActivated(this, index, event_flags);
     }
   }
-}
-
-void SearchResultView::OnSearchResultActionsUnSelected() {
-  // If the selection has changed to default result action, announce the
-  // selection change to a11y stack.
-  if (selected())
-    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 }
 
 bool SearchResultView::IsSearchResultHoveredOrSelected() {

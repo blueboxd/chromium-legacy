@@ -51,7 +51,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_utils.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -1116,8 +1115,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
   // AppendExtraCommandLineSwitches will be called again in process_->Launch(),
   // Call LaunchWithoutExtraCommandLineSwitches() so the command line switches
   // will not be appended twice.
-  process_->LaunchWithoutExtraCommandLineSwitches(std::move(delegate),
-                                                  std::move(cmd_line), true);
+  process_->LaunchWithoutExtraCommandLineSwitches(
+      std::move(delegate), std::move(cmd_line), /*files_to_preload=*/{}, true);
   process_launched_ = true;
 
   if (kind_ == GPU_PROCESS_KIND_SANDBOXED) {

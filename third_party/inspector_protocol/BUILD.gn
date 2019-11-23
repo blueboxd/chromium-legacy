@@ -6,18 +6,16 @@ import("//build/config/jumbo.gni")
 
 jumbo_component("crdtp") {
   sources = [
+    "crdtp/cbor.cc",
     "crdtp/cbor.h",
     "crdtp/export.h",
     "crdtp/glue.h",
-    "crdtp/status.h",
+    "crdtp/json.cc",
     "crdtp/json.h",
-    "crdtp/json_platform.h",
     "crdtp/parser_handler.h",
     "crdtp/span.h",
-    "crdtp/status.h",
-    "crdtp/cbor.cc",
-    "crdtp/json.cc",
     "crdtp/status.cc",
+    "crdtp/status.h",
   ]
 
   defines = [ "CRDTP_IMPLEMENTATION" ]
@@ -26,8 +24,49 @@ jumbo_component("crdtp") {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
+  deps = [
+    ":crdtp_platform",
+  ]
 }
-# encoding/encoding_test.cc:
-# There's no target for this file here, instead it is included
-# in //content/test:content_unittest
-# via //content/browser/devtools:inspector_protocol_encoding_test.
+
+# A small adapter library which only :crdtp may depend on.
+source_set("crdtp_platform") {
+  visibility = [ ":crdtp" ]
+  sources = [
+    "crdtp/chromium/json_platform_chromium.cc",
+    "crdtp/json_platform.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+# These tests are linked into //content/test:content_unittests.
+source_set("crdtp_test") {
+  testonly = true
+  sources = [
+    "crdtp/cbor_test.cc",
+    "crdtp/glue_test.cc",
+    "crdtp/json_test.cc",
+    "crdtp/span_test.cc",
+    "crdtp/status_test.cc",
+  ]
+  deps = [
+    ":crdtp_test_platform",
+  ]
+}
+
+# A small adapter library which only :crdtp_test may depend on.
+source_set("crdtp_test_platform") {
+  testonly = true
+  sources = [
+    "crdtp/test_platform.cc",
+    "crdtp/test_platform.h",
+  ]
+  public_deps = [
+    "//base",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/inspector_protocol:crdtp",
+  ]
+}

@@ -123,17 +123,21 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   void SetLocalDescription(blink::RTCVoidRequest* request) override;
   void SetLocalDescription(
       blink::RTCVoidRequest* request,
-      const blink::WebRTCSessionDescription& description) override;
+      scoped_refptr<RTCSessionDescriptionPlatform> description) override;
   void SetRemoteDescription(
       blink::RTCVoidRequest* request,
-      const blink::WebRTCSessionDescription& description) override;
+      scoped_refptr<RTCSessionDescriptionPlatform> description) override;
 
-  blink::WebRTCSessionDescription LocalDescription() override;
-  blink::WebRTCSessionDescription RemoteDescription() override;
-  blink::WebRTCSessionDescription CurrentLocalDescription() override;
-  blink::WebRTCSessionDescription CurrentRemoteDescription() override;
-  blink::WebRTCSessionDescription PendingLocalDescription() override;
-  blink::WebRTCSessionDescription PendingRemoteDescription() override;
+  scoped_refptr<RTCSessionDescriptionPlatform> LocalDescription() override;
+  scoped_refptr<RTCSessionDescriptionPlatform> RemoteDescription() override;
+  scoped_refptr<RTCSessionDescriptionPlatform> CurrentLocalDescription()
+      override;
+  scoped_refptr<RTCSessionDescriptionPlatform> CurrentRemoteDescription()
+      override;
+  scoped_refptr<RTCSessionDescriptionPlatform> PendingLocalDescription()
+      override;
+  scoped_refptr<RTCSessionDescriptionPlatform> PendingRemoteDescription()
+      override;
 
   const webrtc::PeerConnectionInterface::RTCConfiguration& GetConfiguration()
       const override;
@@ -261,7 +265,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       const String& type,
       webrtc::SdpParseError* error);
 
-  blink::WebRTCSessionDescription GetWebRTCSessionDescriptionOnSignalingThread(
+  scoped_refptr<RTCSessionDescriptionPlatform>
+  GetRTCSessionDescriptionPlatformOnSignalingThread(
       base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
           description_cb,
       const char* log_text);

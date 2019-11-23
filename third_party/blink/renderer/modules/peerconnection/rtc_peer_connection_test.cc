@@ -12,7 +12,6 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
-#include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/webrtc/api/rtc_error.h"
 #include "v8/include/v8.h"
@@ -674,8 +674,8 @@ void CompleteRequest(RTCVoidRequest* request, bool resolve) {
 template <>
 void CompleteRequest(RTCSessionDescriptionRequest* request, bool resolve) {
   if (resolve) {
-    WebRTCSessionDescription description =
-        WebRTCSessionDescription(WebString(), WebString());
+    auto description =
+        RTCSessionDescriptionPlatform::Create(WebString(), WebString());
     request->RequestSucceeded(description);
   } else {
     request->RequestFailed(
@@ -731,13 +731,15 @@ class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
                                                         request);
   }
 
-  void SetLocalDescription(RTCVoidRequest* request,
-                           const WebRTCSessionDescription&) override {
+  void SetLocalDescription(
+      RTCVoidRequest* request,
+      scoped_refptr<RTCSessionDescriptionPlatform>) override {
     PostToCompleteRequest<RTCVoidRequest>(async_operation_action_, request);
   }
 
-  void SetRemoteDescription(RTCVoidRequest* request,
-                            const WebRTCSessionDescription&) override {
+  void SetRemoteDescription(
+      RTCVoidRequest* request,
+      scoped_refptr<RTCSessionDescriptionPlatform>) override {
     PostToCompleteRequest<RTCVoidRequest>(async_operation_action_, request);
   }
 

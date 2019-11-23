@@ -19,6 +19,7 @@ function $(id) {
 var TestUtils = function() {};
 
 /**
+ * OBSOLETE: please use multiline string literals. ``.
  * Extracts some inlined html encoded as a comment inside a function,
  * so you can use it like this:
  *
@@ -26,15 +27,15 @@ var TestUtils = function() {};
  *     <p>Html goes here</p>
  * * /});
  *
- * @param {Function} commentEncodedHtml The html , embedded as a
- *     comment inside an anonymous function - see example, above.
+ * @param {string|Function} html The html contents. Obsolete support for the
+ *     html , embedded as a comment inside an anonymous function - see example,
+ *     above, still exists.
  * @param {!Array=} opt_args Optional arguments to be substituted in the form
  *     $0, ... within the code block.
  * @return {string} The html text.
  */
-TestUtils.extractHtmlFromCommentEncodedString = function(
-    commentEncodedHtml, opt_args) {
-  var stringified = commentEncodedHtml.toString();
+TestUtils.extractHtmlFromCommentEncodedString = function(html, opt_args) {
+  var stringified = html.toString();
   if (opt_args) {
     for (var i = 0; i < opt_args.length; i++)
       stringified = stringified.replace('$' + i, opt_args[i]);

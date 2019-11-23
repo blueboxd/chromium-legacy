@@ -51,10 +51,8 @@ class MockExtensionErrorUI : public ExtensionErrorUI {
 // ExtensionService.
 MockExtensionErrorUI* g_error_ui = NULL;
 
-MockExtensionErrorUI::MockExtensionErrorUI(
-    ExtensionErrorUI::Delegate* delegate)
-    : ExtensionErrorUI(delegate),
-      delegate_(delegate) {
+MockExtensionErrorUI::MockExtensionErrorUI(ExtensionErrorUI::Delegate* delegate)
+    : delegate_(delegate) {
   // We should never make more than one of these in a test.
   DCHECK(!g_error_ui);
   g_error_ui = this;
@@ -65,15 +63,15 @@ MockExtensionErrorUI::~MockExtensionErrorUI() {
 }
 
 void MockExtensionErrorUI::CloseUI() {
-  BubbleViewDidClose();
+  delegate_->OnAlertClosed();
 }
 
 void MockExtensionErrorUI::Accept() {
-  BubbleViewAcceptButtonPressed();
+  delegate_->OnAlertAccept();
 }
 
 void MockExtensionErrorUI::Details() {
-  BubbleViewCancelButtonPressed();
+  delegate_->OnAlertDetails();
 }
 
 bool MockExtensionErrorUI::ShowErrorInBubbleView() {

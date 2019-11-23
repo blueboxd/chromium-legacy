@@ -32,12 +32,14 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
              scoped_refptr<DawnControlClientHolder> dawn_control_client);
 
   const String& name() const;
+  ScriptValue extensions(ScriptState* script_state) const;
 
   ScriptPromise requestDevice(ScriptState* script_state,
                               const GPUDeviceDescriptor* descriptor);
 
  private:
   String name_;
+  WGPUDeviceProperties adapter_properties_;
 
   DISALLOW_COPY_AND_ASSIGN(GPUAdapter);
 };

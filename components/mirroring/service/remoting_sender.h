@@ -15,7 +15,8 @@
 #include "base/sequence_checker.h"
 #include "media/cast/sender/frame_sender.h"
 #include "media/mojo/mojom/remoting.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace base {
 class TickClock;
@@ -39,7 +40,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) RemotingSender final
                  media::cast::CastTransport* transport,
                  const media::cast::FrameSenderConfig& config,
                  mojo::ScopedDataPipeConsumerHandle pipe,
-                 media::mojom::RemotingDataStreamSenderRequest request,
+                 mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+                     stream_sender,
                  base::OnceClosure error_callback);
   ~RemotingSender() override;
 
@@ -88,10 +90,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) RemotingSender final
 
   std::unique_ptr<media::MojoDataPipeReader> data_pipe_reader_;
 
-  // Mojo binding for this instance. Implementation at the other end of the
-  // message pipe uses the RemotingDataStreamSender interface to control when
+  // Mojo receiver for this instance. Implementation at the other end of the
+  // message pipe uses the RemotingDataStreamSender remote to control when
   // this RemotingSender consumes from |pipe_|.
-  mojo::Binding<media::mojom::RemotingDataStreamSender> binding_;
+  mojo::Receiver<media::mojom::RemotingDataStreamSender> stream_sender_;
 
   // The next frame's payload data. Populated by call to OnFrameRead() when
   // reading succeeded.

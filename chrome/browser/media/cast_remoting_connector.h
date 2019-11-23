@@ -176,9 +176,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
       mojo::ScopedDataPipeConsumerHandle audio_pipe,
       mojo::ScopedDataPipeConsumerHandle video_pipe,
       mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
-          audio_sender_receiver,
+          audio_sender,
       mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
-          video_sender_receiver);
+          video_sender);
   void StopRemoting(RemotingBridge* bridge,
                     media::mojom::RemotingStopReason reason,
                     bool is_initiated_by_source);
@@ -195,8 +195,10 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   void OnDataStreamsStarted(
       mojo::ScopedDataPipeConsumerHandle audio_pipe,
       mojo::ScopedDataPipeConsumerHandle video_pipe,
-      media::mojom::RemotingDataStreamSenderRequest audio_sender_request,
-      media::mojom::RemotingDataStreamSenderRequest video_sender_request,
+      mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+          audio_sender,
+      mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+          video_sender,
       int32_t audio_stream_id,
       int32_t video_stream_id);
 

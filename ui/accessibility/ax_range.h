@@ -100,16 +100,33 @@ class AXRange {
 
   bool operator!=(const AXRange& other) const { return !(*this == other); }
 
-  AXRange AsForwardRange() const {
-    // When we have a range with an empty text representation, its endpoints
-    // would be considered equal as text positions, but they could be located in
-    // different anchors of the AXTree. Compare them as tree positions first to
-    // preserve their relative order from the pre-order traversal of the tree,
-    // so that AXRange::Iterator behaves correctly.
-    AXPositionInstance anchor_tree_position = anchor_->AsTreePosition();
-    AXPositionInstance focus_tree_position = focus_->AsTreePosition();
+  // Given a pair of AXPosition, determines how the first compares with the
+  // second, relative to the order they would be iterated over by using
+  // AXRange::Iterator to traverse all leaf text ranges in a tree.
+  //
+  // Notice that this method is different from using AXPosition::CompareTo since
+  // the following logic takes into account BOTH tree pre-order traversal and
+  // text offsets when both positions are located within the same anchor.
+  //
+  // Returns:
+  //         0 - If both positions are equivalent.
+  //        <0 - If the first position would come BEFORE the second.
+  //        >0 - If the first position would come AFTER the second.
+  //   nullopt - If positions are not comparable (see AXPosition::CompareTo).
+  static base::Optional<int> CompareEndpoints(const AXPositionType* first,
+                                              const AXPositionType* second) {
+    base::Optional<int> tree_position_comparison =
+        first->AsTreePosition()->CompareTo(*second->AsTreePosition());
 
-    return (*focus_tree_position < *anchor_tree_position || *focus_ < *anchor_)
+    // When the tree comparison is nullopt, using value_or(1) forces a default
+    // value of 1, making the following statement return nullopt as well.
+    return (tree_position_comparison.value_or(1) != 0)
+               ? tree_position_comparison
+               : first->CompareTo(*second);
+  }
+
+  AXRange AsForwardRange() const {
+    return (CompareEndpoints(anchor(), focus()).value_or(0) > 0)
                ? AXRange(focus_->Clone(), anchor_->Clone())
                : AXRange(anchor_->Clone(), focus_->Clone());
   }
@@ -259,6 +276,7 @@ class AXRange {
     bool found_trailing_newline = false;
     size_t computed_newlines_count = 0;
     for (const AXRange& leaf_text_range : *this) {
+      DCHECK(leaf_text_range.IsLeafTextRange());
       AXPositionType* start = leaf_text_range.anchor();
       AXPositionType* end = leaf_text_range.focus();
 
@@ -313,19 +331,9 @@ class AXRange {
     std::vector<gfx::Rect> rects;
 
     for (const AXRange& leaf_text_range : *this) {
-      DCHECK(!leaf_text_range.IsNull());
-      AXPositionInstance current_line_end =
-          leaf_text_range.focus()->AsLeafTextPosition();
-      AXPositionInstance current_line_start =
-          leaf_text_range.anchor()->AsLeafTextPosition();
-
-      if (current_line_start->GetAnchor()->data().role ==
-          ax::mojom::Role::kInlineTextBox) {
-        current_line_start = current_line_start->CreateParentPosition();
-        current_line_end = current_line_end->CreateParentPosition();
-      }
-
-      AXTreeID current_tree_id = current_line_start->tree_id();
+      DCHECK(leaf_text_range.IsLeafTextRange());
+      AXPositionType* current_line_start = leaf_text_range.anchor();
+      AXPositionType* current_line_end = leaf_text_range.focus();
 
       // For text anchors, we retrieve the bounding rectangles of its text
       // content. For non-text anchors (such as checkboxes, images, etc.), we
@@ -335,21 +343,22 @@ class AXRange {
           (current_line_start->IsInLineBreak() ||
            current_line_start->IsInTextObject())
               ? delegate->GetInnerTextRangeBoundsRect(
-                    current_tree_id, current_line_start->anchor_id(),
+                    current_line_start->tree_id(),
+                    current_line_start->anchor_id(),
                     current_line_start->text_offset(),
                     current_line_end->text_offset(), &offscreen_result)
-              : delegate->GetBoundsRect(current_tree_id,
+              : delegate->GetBoundsRect(current_line_start->tree_id(),
                                         current_line_start->anchor_id(),
                                         &offscreen_result);
 
-      // We only add rects that do not represent a degenerate range and rects
-      // that are onscreen.
-      // If the represented range is degenerate, the bounding rectangles will be
-      // empty.
-      // If the represented range is offscreen, the bounding rectangles will be
-      // clipped, with its width/height set to 1. The bounding rectangles is not
-      // set to empty when it is offscreen.
-      // Documentation for offscreen bounding box size calculation:
+      // If the bounding box of the current range is clipped because it lies
+      // outside an ancestor’s bounds, then the bounding box is pushed to the
+      // nearest edge of such ancestor's bounds, with its width and height
+      // forced to be 1, and the node will be marked as "offscreen".
+      //
+      // Only add rectangles that are not empty and not marked as "offscreen".
+      //
+      // See the documentation for how bounding boxes are calculated in AXTree:
       // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/accessibility/offscreen.md
       if (!current_rect.IsEmpty() &&
           offscreen_result == AXOffscreenResult::kOnscreen)

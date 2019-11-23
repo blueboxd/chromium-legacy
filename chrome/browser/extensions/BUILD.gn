@@ -527,7 +527,6 @@ jumbo_static_library("extensions") {
     "extension_disabled_ui.h",
     "extension_error_controller.cc",
     "extension_error_controller.h",
-    "extension_error_ui.cc",
     "extension_error_ui.h",
     "extension_error_ui_default.cc",
     "extension_error_ui_default.h",

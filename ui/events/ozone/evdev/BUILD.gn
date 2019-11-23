@@ -69,14 +69,8 @@ component("evdev") {
     "touch_filter/edge_touch_filter.h",
     "touch_filter/false_touch_finder.cc",
     "touch_filter/false_touch_finder.h",
-    "touch_filter/far_apart_taps_touch_noise_filter.cc",
-    "touch_filter/far_apart_taps_touch_noise_filter.h",
     "touch_filter/heuristic_stylus_palm_detection_filter.cc",
     "touch_filter/heuristic_stylus_palm_detection_filter.h",
-    "touch_filter/horizontally_aligned_touch_noise_filter.cc",
-    "touch_filter/horizontally_aligned_touch_noise_filter.h",
-    "touch_filter/low_pressure_filter.cc",
-    "touch_filter/low_pressure_filter.h",
     "touch_filter/neural_stylus_palm_detection_filter.cc",
     "touch_filter/neural_stylus_palm_detection_filter.h",
     "touch_filter/neural_stylus_palm_detection_filter_model.cc",
@@ -94,8 +88,6 @@ component("evdev") {
     "touch_filter/palm_model/onedevice_train_palm_detection_filter_model.cc",
     "touch_filter/palm_model/onedevice_train_palm_detection_filter_model.h",
     "touch_filter/shared_palm_detection_filter_state.h",
-    "touch_filter/single_position_touch_noise_filter.cc",
-    "touch_filter/single_position_touch_noise_filter.h",
     "touch_filter/touch_filter.h",
   ]
 

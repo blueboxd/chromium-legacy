@@ -15,8 +15,8 @@
 #include "third_party/blink/public/mojom/peerconnection/peer_connection_tracker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
-#include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 

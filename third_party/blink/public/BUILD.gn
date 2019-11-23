@@ -271,7 +271,6 @@ source_set("blink_headers") {
     "platform/web_rtc_rtp_receiver.h",
     "platform/web_rtc_rtp_source.h",
     "platform/web_rtc_rtp_transceiver.h",
-    "platform/web_rtc_session_description.h",
     "platform/web_rtc_stats.h",
     "platform/web_rtc_stats_request.h",
     "platform/web_rtc_stats_response.h",

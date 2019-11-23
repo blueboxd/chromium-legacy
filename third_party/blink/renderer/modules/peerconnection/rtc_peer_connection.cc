@@ -46,7 +46,6 @@
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
-#include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -116,6 +115,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -1299,7 +1299,8 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
                                      *session_description_init),
       this, resolver, "RTCPeerConnection", "setLocalDescription");
   peer_handler_->SetLocalDescription(
-      request, WebRTCSessionDescription(session_description_init->type(), sdp));
+      request, RTCSessionDescriptionPlatform::Create(
+                   session_description_init->type(), sdp));
   return promise;
 }
 
@@ -1348,36 +1349,34 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
                                      *session_description_init),
       this, success_callback, error_callback);
   peer_handler_->SetLocalDescription(
-      request, WebRTCSessionDescription(session_description_init->type(),
-                                        session_description_init->sdp()));
+      request,
+      RTCSessionDescriptionPlatform::Create(session_description_init->type(),
+                                            session_description_init->sdp()));
   return ScriptPromise::CastUndefined(script_state);
 }
 
 RTCSessionDescription* RTCPeerConnection::localDescription() {
-  WebRTCSessionDescription web_session_description =
-      peer_handler_->LocalDescription();
-  if (web_session_description.IsNull())
+  auto platform_session_description = peer_handler_->LocalDescription();
+  if (!platform_session_description)
     return nullptr;
 
-  return RTCSessionDescription::Create(web_session_description);
+  return RTCSessionDescription::Create(platform_session_description);
 }
 
 RTCSessionDescription* RTCPeerConnection::currentLocalDescription() {
-  WebRTCSessionDescription web_session_description =
-      peer_handler_->CurrentLocalDescription();
-  if (web_session_description.IsNull())
+  auto platform_session_description = peer_handler_->CurrentLocalDescription();
+  if (!platform_session_description)
     return nullptr;
 
-  return RTCSessionDescription::Create(web_session_description);
+  return RTCSessionDescription::Create(platform_session_description);
 }
 
 RTCSessionDescription* RTCPeerConnection::pendingLocalDescription() {
-  WebRTCSessionDescription web_session_description =
-      peer_handler_->PendingLocalDescription();
-  if (web_session_description.IsNull())
+  auto platform_session_description = peer_handler_->PendingLocalDescription();
+  if (!platform_session_description)
     return nullptr;
 
-  return RTCSessionDescription::Create(web_session_description);
+  return RTCSessionDescription::Create(platform_session_description);
 }
 
 ScriptPromise RTCPeerConnection::setRemoteDescription(
@@ -1405,8 +1404,9 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
                                      *session_description_init),
       this, resolver, "RTCPeerConnection", "setRemoteDescription");
   peer_handler_->SetRemoteDescription(
-      request, WebRTCSessionDescription(session_description_init->type(),
-                                        session_description_init->sdp()));
+      request,
+      RTCSessionDescriptionPlatform::Create(session_description_init->type(),
+                                            session_description_init->sdp()));
   return promise;
 }
 
@@ -1449,36 +1449,34 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
                                      *session_description_init),
       this, success_callback, error_callback);
   peer_handler_->SetRemoteDescription(
-      request, WebRTCSessionDescription(session_description_init->type(),
-                                        session_description_init->sdp()));
+      request,
+      RTCSessionDescriptionPlatform::Create(session_description_init->type(),
+                                            session_description_init->sdp()));
   return ScriptPromise::CastUndefined(script_state);
 }
 
 RTCSessionDescription* RTCPeerConnection::remoteDescription() {
-  WebRTCSessionDescription web_session_description =
-      peer_handler_->RemoteDescription();
-  if (web_session_description.IsNull())
+  auto platform_session_description = peer_handler_->RemoteDescription();
+  if (!platform_session_description)
     return nullptr;
 
-  return RTCSessionDescription::Create(web_session_description);
+  return RTCSessionDescription::Create(platform_session_description);
 }
 
 RTCSessionDescription* RTCPeerConnection::currentRemoteDescription() {
-  WebRTCSessionDescription web_session_description =
-      peer_handler_->CurrentRemoteDescription();
-  if (web_session_description.IsNull())
+  auto platform_session_description = peer_handler_->CurrentRemoteDescription();
+  if (!platform_session_description)
     return nullptr;
 
-  return RTCSessionDescription::Create(web_session_description);
+  return RTCSessionDescription::Create(platform_session_description);
 }
 
 RTCSessionDescription* RTCPeerConnection::pendingRemoteDescription() {
-  WebRTCSessionDescription web_session_description =
-      peer_handler_->PendingRemoteDescription();
-  if (web_session_description.IsNull())
+  auto platform_session_description = peer_handler_->PendingRemoteDescription();
+  if (!platform_session_description)
     return nullptr;
 
-  return RTCSessionDescription::Create(web_session_description);
+  return RTCSessionDescription::Create(platform_session_description);
 }
 
 RTCConfiguration* RTCPeerConnection::getConfiguration(

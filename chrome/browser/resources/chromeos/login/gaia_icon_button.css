@@ -3,7 +3,7 @@
  * found in the LICENSE file. */
 
 cr-icon-button {
-  --cr-icon-button-color: currentColor;
+  --cr-icon-button-fill-color: currentColor;
   --cr-icon-button-icon-size: 24px;
   --cr-icon-button-size: 24px;
   margin: 0;

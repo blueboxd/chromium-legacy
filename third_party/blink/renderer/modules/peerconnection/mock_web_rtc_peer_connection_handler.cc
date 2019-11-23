@@ -11,12 +11,12 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
-#include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
@@ -276,38 +276,40 @@ void MockWebRTCPeerConnectionHandler::SetLocalDescription(RTCVoidRequest*) {}
 
 void MockWebRTCPeerConnectionHandler::SetLocalDescription(
     RTCVoidRequest*,
-    const WebRTCSessionDescription&) {}
+    scoped_refptr<RTCSessionDescriptionPlatform>) {}
 
 void MockWebRTCPeerConnectionHandler::SetRemoteDescription(
     RTCVoidRequest*,
-    const WebRTCSessionDescription&) {}
+    scoped_refptr<RTCSessionDescriptionPlatform>) {}
 
-WebRTCSessionDescription MockWebRTCPeerConnectionHandler::LocalDescription() {
-  return WebRTCSessionDescription();
+scoped_refptr<RTCSessionDescriptionPlatform>
+MockWebRTCPeerConnectionHandler::LocalDescription() {
+  return nullptr;
 }
 
-WebRTCSessionDescription MockWebRTCPeerConnectionHandler::RemoteDescription() {
-  return WebRTCSessionDescription();
+scoped_refptr<RTCSessionDescriptionPlatform>
+MockWebRTCPeerConnectionHandler::RemoteDescription() {
+  return nullptr;
 }
 
-WebRTCSessionDescription
+scoped_refptr<RTCSessionDescriptionPlatform>
 MockWebRTCPeerConnectionHandler::CurrentLocalDescription() {
-  return WebRTCSessionDescription();
+  return nullptr;
 }
 
-WebRTCSessionDescription
+scoped_refptr<RTCSessionDescriptionPlatform>
 MockWebRTCPeerConnectionHandler::CurrentRemoteDescription() {
-  return WebRTCSessionDescription();
+  return nullptr;
 }
 
-WebRTCSessionDescription
+scoped_refptr<RTCSessionDescriptionPlatform>
 MockWebRTCPeerConnectionHandler::PendingLocalDescription() {
-  return WebRTCSessionDescription();
+  return nullptr;
 }
 
-WebRTCSessionDescription
+scoped_refptr<RTCSessionDescriptionPlatform>
 MockWebRTCPeerConnectionHandler::PendingRemoteDescription() {
-  return WebRTCSessionDescription();
+  return nullptr;
 }
 
 const webrtc::PeerConnectionInterface::RTCConfiguration&

@@ -1415,27 +1415,8 @@ class TouchEventConverterEvdevTouchNoiseTest
   TouchEventConverterEvdevTouchNoiseTest() {}
   ~TouchEventConverterEvdevTouchNoiseTest() override {}
 
-  // Makes the FalseTouchFinder use |filter| and only |filter| to filter out
-  // touch noise. Also removes any delay filters.
-  void SetTouchNoiseFilter(std::unique_ptr<TouchFilter> filter) {
-    FalseTouchFinder* finder = device()->false_touch_finder();
-    finder->noise_filters_.clear();
-    finder->noise_filters_.push_back(std::move(filter));
-    finder->delay_filters_.clear();
-  }
-
-  // Returns the first of FalseTouchFinder's filters.
-  ui::TouchFilter* first_filter() {
-    FalseTouchFinder* finder = device()->false_touch_finder();
-    return finder->noise_filters_.empty() ?
-        nullptr :
-        finder->noise_filters_.begin()->get();
-  }
-
   // TouchEventConverterEvdevTest:
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kExtraTouchNoiseFiltering);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEdgeTouchFiltering);
     TouchEventConverterEvdevTest::SetUp();
@@ -1444,96 +1425,6 @@ class TouchEventConverterEvdevTouchNoiseTest
  private:
   DISALLOW_COPY_AND_ASSIGN(TouchEventConverterEvdevTouchNoiseTest);
 };
-
-// Test that if FalseTouchFinder identifies an event for an in-progress touch as
-// noise, that the event is converted to ET_TOUCH_CANCELLED and that all
-// subsequent events for the in-progress touch are cancelled.
-TEST_F(TouchEventConverterEvdevTouchNoiseTest, TouchNoiseFiltering) {
-  struct input_event mock_kernel_queue[] = {
-    {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 684},
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 40},
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 41},
-    {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 42},
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 43},
-    {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-    {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, -1},
-    {{0, 0}, EV_SYN, SYN_REPORT, 0}
-  };
-
-  MockTouchEventConverterEvdev* dev = device();
-  SetTouchNoiseFilter(std::unique_ptr<TouchFilter>(
-      new EventTypeTouchNoiseFilter(ET_TOUCH_PRESSED)));
-  dev->ConfigureReadMock(mock_kernel_queue, base::size(mock_kernel_queue), 0);
-  dev->ReadNow();
-  ASSERT_EQ(0u, size());
-
-  ClearDispatchedEvents();
-  SetTouchNoiseFilter(std::unique_ptr<TouchFilter>(
-      new EventTypeTouchNoiseFilter(ET_TOUCH_MOVED)));
-  dev->ConfigureReadMock(mock_kernel_queue, base::size(mock_kernel_queue), 0);
-  dev->ReadNow();
-  ASSERT_EQ(2u, size());
-  TouchEventParams event0 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, event0.type);
-  EXPECT_EQ(40, event0.location.x());
-  EXPECT_EQ(41, event0.location.y());
-  EXPECT_EQ(ET_TOUCH_CANCELLED, dispatched_touch_event(1).type);
-
-  ClearDispatchedEvents();
-  SetTouchNoiseFilter(std::unique_ptr<TouchFilter>(
-      new EventTypeTouchNoiseFilter(ET_TOUCH_RELEASED)));
-  dev->ConfigureReadMock(mock_kernel_queue, base::size(mock_kernel_queue), 0);
-  dev->ReadNow();
-  ASSERT_EQ(3u, size());
-  event0 = dispatched_touch_event(0);
-  EXPECT_EQ(ET_TOUCH_PRESSED, event0.type);
-  EXPECT_EQ(40, event0.location.x());
-  EXPECT_EQ(41, event0.location.y());
-  TouchEventParams event1 = dispatched_touch_event(1);
-  EXPECT_EQ(ET_TOUCH_MOVED, event1.type);
-  EXPECT_EQ(42, event1.location.x());
-  EXPECT_EQ(43, event1.location.y());
-  EXPECT_EQ(ET_TOUCH_CANCELLED, dispatched_touch_event(2).type);
-}
-
-// Test that TouchEventConverterEvdev keeps sending events to
-// FalseTouchFinder after the touch is canceled.
-TEST_F(TouchEventConverterEvdevTouchNoiseTest,
-       DoNotSendTouchCancelsToFalseTouchFinder) {
-  struct input_event mock_kernel_queue[] = {
-    {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 684},
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 40},
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 41},
-    {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 42},
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 43},
-    {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 43},
-    {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 44},
-    {{0, 0}, EV_SYN, SYN_REPORT, 0},
-
-    {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, -1},
-    {{0, 0}, EV_SYN, SYN_REPORT, 0}
-  };
-
-  MockTouchEventConverterEvdev* dev = device();
-  SetTouchNoiseFilter(std::unique_ptr<TouchFilter>(
-      new EventTypeTouchNoiseFilter(ET_TOUCH_PRESSED)));
-  dev->ConfigureReadMock(mock_kernel_queue, base::size(mock_kernel_queue), 0);
-  dev->ReadNow();
-  ASSERT_EQ(0u, size());
-
-  EventTypeTouchNoiseFilter* filter =
-      static_cast<EventTypeTouchNoiseFilter*>(first_filter());
-  EXPECT_EQ(1u, filter->num_events(ET_TOUCH_PRESSED));
-  EXPECT_EQ(2u, filter->num_events(ET_TOUCH_MOVED));
-  EXPECT_EQ(1u, filter->num_events(ET_TOUCH_RELEASED));
-}
 
 TEST_F(TouchEventConverterEvdevTest, ActiveStylusTouchAndRelease) {
   ui::MockTouchEventConverterEvdev* dev = device();

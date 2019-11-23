@@ -52,7 +52,11 @@ ChromeVoxUnitTestBase.prototype = {
   /**
    * Loads some inlined html into the current document, replacing
    * whatever was there previously. This version takes the html
-   * encoded as a comment inside a function, so you can use it like this:
+   * encoded as a multiline string. `
+   * <button>
+   * `
+   * OBSOLETE: prior to multiline string support in js.
+   * Use a comment inside a function, so you can use it like this:
    *
    * this.loadDoc(function() {/*!
    *     <p>Html goes here</p>

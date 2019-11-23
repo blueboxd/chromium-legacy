@@ -435,6 +435,11 @@ bool URLPattern::MatchesURL(const GURL& test) const {
   if (match_all_urls_)
     return true;
 
+  // Unless |match_all_urls_| is true, the grammar only permits matching
+  // URLs with nonempty paths.
+  if (!test.has_path())
+    return false;
+
   std::string path_for_request = test.PathForRequest();
   if (has_inner_url) {
     path_for_request = base::StringPrintf("%s%s", test_url->path_piece().data(),

@@ -180,19 +180,19 @@ html[dir=rtl] .main-pane {
 }
 
 .auth-container .submit-button[disabled] {
-  --cr-icon-button-color: #000;
+  --cr-icon-button-fill-color: #000;
   opacity: 0.26;
 }
 
 .auth-container .submit-button {
-  --cr-icon-button-color: var(--google-blue-500);
+  --cr-icon-button-fill-color: var(--google-blue-500);
   --cr-icon-button-icon-size: 22px;
   --cr-icon-button-size: 43px;
   position: relative;
 }
 
 .auth-container .submit-button.error-shown {
-  --cr-icon-button-color: #CD2A00;
+  --cr-icon-button-fill-color: #CD2A00;
 }
 
 .name-container {

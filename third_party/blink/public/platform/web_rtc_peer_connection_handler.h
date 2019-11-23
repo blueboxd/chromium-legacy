@@ -49,16 +49,16 @@ enum class RTCErrorType;
 namespace blink {
 
 class RTCAnswerOptionsPlatform;
+class RTCIceCandidatePlatform;
 class RTCOfferOptionsPlatform;
+class RTCRtpSenderPlatform;
+class RTCSessionDescriptionPlatform;
 class RTCSessionDescriptionRequest;
 class RTCVoidRequest;
-class RTCIceCandidatePlatform;
 class WebLocalFrame;
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
-class RTCRtpSenderPlatform;
-class WebRTCSessionDescription;
 class WebRTCStatsRequest;
 class WebString;
 struct WebRTCDataChannelInit;
@@ -99,16 +99,22 @@ class WebRTCPeerConnectionHandler {
   virtual void CreateAnswer(RTCSessionDescriptionRequest*,
                             RTCAnswerOptionsPlatform*) = 0;
   virtual void SetLocalDescription(RTCVoidRequest*) = 0;
-  virtual void SetLocalDescription(RTCVoidRequest*,
-                                   const WebRTCSessionDescription&) = 0;
-  virtual void SetRemoteDescription(RTCVoidRequest*,
-                                    const WebRTCSessionDescription&) = 0;
-  virtual WebRTCSessionDescription LocalDescription() = 0;
-  virtual WebRTCSessionDescription RemoteDescription() = 0;
-  virtual WebRTCSessionDescription CurrentLocalDescription() = 0;
-  virtual WebRTCSessionDescription CurrentRemoteDescription() = 0;
-  virtual WebRTCSessionDescription PendingLocalDescription() = 0;
-  virtual WebRTCSessionDescription PendingRemoteDescription() = 0;
+  virtual void SetLocalDescription(
+      RTCVoidRequest*,
+      scoped_refptr<RTCSessionDescriptionPlatform>) = 0;
+  virtual void SetRemoteDescription(
+      RTCVoidRequest*,
+      scoped_refptr<RTCSessionDescriptionPlatform>) = 0;
+  virtual scoped_refptr<RTCSessionDescriptionPlatform> LocalDescription() = 0;
+  virtual scoped_refptr<RTCSessionDescriptionPlatform> RemoteDescription() = 0;
+  virtual scoped_refptr<RTCSessionDescriptionPlatform>
+  CurrentLocalDescription() = 0;
+  virtual scoped_refptr<RTCSessionDescriptionPlatform>
+  CurrentRemoteDescription() = 0;
+  virtual scoped_refptr<RTCSessionDescriptionPlatform>
+  PendingLocalDescription() = 0;
+  virtual scoped_refptr<RTCSessionDescriptionPlatform>
+  PendingRemoteDescription() = 0;
   virtual const webrtc::PeerConnectionInterface::RTCConfiguration&
   GetConfiguration() const = 0;
   virtual webrtc::RTCErrorType SetConfiguration(

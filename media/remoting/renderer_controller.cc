@@ -226,25 +226,24 @@ void RendererController::StartDataPipe(
   if (!audio && !video) {
     LOG(ERROR) << "No audio nor video to establish data pipe";
     std::move(done_callback)
-        .Run(mojom::RemotingDataStreamSenderPtrInfo(),
-             mojom::RemotingDataStreamSenderPtrInfo(),
+        .Run(mojo::NullRemote(), mojo::NullRemote(),
              mojo::ScopedDataPipeProducerHandle(),
              mojo::ScopedDataPipeProducerHandle());
     return;
   }
-  mojom::RemotingDataStreamSenderPtr audio_stream_sender;
-  mojom::RemotingDataStreamSenderPtr video_stream_sender;
-  remoter_->StartDataStreams(audio ? std::move(audio_data_pipe->consumer_handle)
-                                   : mojo::ScopedDataPipeConsumerHandle(),
-                             video ? std::move(video_data_pipe->consumer_handle)
-                                   : mojo::ScopedDataPipeConsumerHandle(),
-                             audio ? mojo::MakeRequest(&audio_stream_sender)
-                                   : mojom::RemotingDataStreamSenderRequest(),
-                             video ? mojo::MakeRequest(&video_stream_sender)
-                                   : mojom::RemotingDataStreamSenderRequest());
+  mojo::PendingRemote<mojom::RemotingDataStreamSender> audio_stream_sender;
+  mojo::PendingRemote<mojom::RemotingDataStreamSender> video_stream_sender;
+  remoter_->StartDataStreams(
+      audio ? std::move(audio_data_pipe->consumer_handle)
+            : mojo::ScopedDataPipeConsumerHandle(),
+      video ? std::move(video_data_pipe->consumer_handle)
+            : mojo::ScopedDataPipeConsumerHandle(),
+      audio ? audio_stream_sender.InitWithNewPipeAndPassReceiver()
+            : mojo::NullReceiver(),
+      video ? video_stream_sender.InitWithNewPipeAndPassReceiver()
+            : mojo::NullReceiver());
   std::move(done_callback)
-      .Run(audio_stream_sender.PassInterface(),
-           video_stream_sender.PassInterface(),
+      .Run(std::move(audio_stream_sender), std::move(video_stream_sender),
            audio ? std::move(audio_data_pipe->producer_handle)
                  : mojo::ScopedDataPipeProducerHandle(),
            video ? std::move(video_data_pipe->producer_handle)

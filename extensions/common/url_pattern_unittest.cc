@@ -378,6 +378,23 @@ TEST(ExtensionURLPatternTest, DoesntMatchInvalid) {
   EXPECT_FALSE(pattern.MatchesURL(GURL("http:")));
 }
 
+TEST(ExtensionURLPatternTest, WildcardMatchesPathlessUrl) {
+  URLPattern pattern(URLPattern::SCHEME_ALL);
+  // The all_urls pattern should match a valid URL with no path.
+  EXPECT_EQ(URLPattern::ParseResult::kSuccess,
+            pattern.Parse(URLPattern::kAllUrlsPattern));
+  EXPECT_TRUE(pattern.MatchesURL(GURL("javascript:")));
+}
+
+TEST(ExtensionURLPatternTest, NonwildcardDoesntMatchPathlessUrl) {
+  URLPattern pattern(URLPattern::SCHEME_ALL);
+  // Any pattern other than the all_urls pattern should not
+  // match a valid URL with no path, because any such pattern
+  // must contain a nonempty path.
+  EXPECT_EQ(URLPattern::ParseResult::kSuccess, pattern.Parse("*://*/*"));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("javascript:")));
+}
+
 static const struct MatchPatterns {
   const char* pattern;
   const char* matches;

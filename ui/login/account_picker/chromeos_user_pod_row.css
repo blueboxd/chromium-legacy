@@ -208,7 +208,7 @@ html[dir=rtl] .pod.focused:not(.multiprofiles-policy-applied):not(.public-accoun
 .auth-container .submit-button {
   --cr-icon-button--icon-size: 20px;
   --cr-icon-button-size: 20px;
-  --cr-icon-button-color: white;
+  --cr-icon-button-fill-color: white;
   margin: 15px 0 5px 0;
   opacity: 1;
 }
@@ -965,7 +965,7 @@ html[dir=rtl] .pod.public-account .button-container {
 }
 
 .public-account-submit-button {
-  --cr-icon-button-color: #FFF;
+  --cr-icon-button-fill-color: #FFF;
   --cr-icon-button-size: 40px;
   opacity: 1;
 }

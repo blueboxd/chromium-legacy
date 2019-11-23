@@ -13,7 +13,8 @@
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
 #include "media/mojo/mojom/remoting.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace media {
 class MojoDataPipeReader;
@@ -53,19 +54,21 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
   ~CastRemotingSender() final;
 
   // Look-up a CastRemotingSender instance by its |rtp_stream_id| and then bind
-  // to the given |request|. The client of the RemotingDataStreamSender will
-  // then instruct this CastRemotingSender when to read from the data |pipe| and
-  // send the data to the Cast Receiver. If the bind fails, or an error occurs
-  // reading from the data pipe during later operation, the |error_callback| is
-  // run.
+  // to the given |stream_sender|. The client of the RemotingDataStreamSender
+  // will then instruct this CastRemotingSender when to read from the data
+  // |pipe| and send the data to the Cast Receiver. If the bind fails, or an
+  // error occurs reading from the data pipe during later operation, the
+  // |error_callback| is run.
   //
   // Threading note: This function is thread-safe, but its internal
   // implementation runs on the IO BrowserThread. If |error_callback| is run, it
   // will execute on the thread that called this function.
-  static void FindAndBind(int32_t rtp_stream_id,
-                          mojo::ScopedDataPipeConsumerHandle pipe,
-                          media::mojom::RemotingDataStreamSenderRequest request,
-                          base::OnceClosure error_callback);
+  static void FindAndBind(
+      int32_t rtp_stream_id,
+      mojo::ScopedDataPipeConsumerHandle pipe,
+      mojo::PendingReceiver<media::mojom::RemotingDataStreamSender>
+          stream_sender,
+      base::OnceClosure error_callback);
 
  private:
   // Friend class for unit tests.
@@ -159,10 +162,10 @@ class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
 
   std::unique_ptr<media::MojoDataPipeReader> data_pipe_reader_;
 
-  // Mojo binding for this instance. Implementation at the other end of the
-  // message pipe uses the RemotingDataStreamSender interface to control when
+  // Mojo receiver for this instance. Implementation at the other end of the
+  // message pipe uses the RemotingDataStreamSender remote to control when
   // this CastRemotingSender consumes from |pipe_|.
-  mojo::Binding<RemotingDataStreamSender> binding_;
+  mojo::Receiver<RemotingDataStreamSender> receiver_{this};
 
   // This is the maximum delay that the sender should get ack from receiver.
   // Otherwise, sender will call ResendForKickstart().

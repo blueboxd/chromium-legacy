@@ -8,9 +8,9 @@
 #include "media/base/decoder_buffer.h"
 #include "media/mojo/common/mojo_data_pipe_read_write.h"
 #include "media/mojo/mojom/remoting.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
@@ -40,7 +40,7 @@ class FakeRemotingDataStreamSender : public mojom::RemotingDataStreamSender {
 
   void OnFrameRead(bool success);
 
-  mojo::Binding<RemotingDataStreamSender> receiver_;
+  mojo::Receiver<RemotingDataStreamSender> receiver_;
   MojoDataPipeReader data_pipe_reader_;
 
   std::vector<uint8_t> next_frame_data_;

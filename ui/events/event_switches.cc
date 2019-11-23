@@ -27,19 +27,8 @@ const char kPenDevices[] = "pen-devices";
 #endif
 
 #if defined(USE_X11) || defined(USE_OZONE)
-// Tells Chrome to do additional touch noise filtering. Should only be used if
-// the driver level filtering is insufficient.
-const char kExtraTouchNoiseFiltering[] = "touch-noise-filtering";
-
-// The calibration factors given as "<left>,<right>,<top>,<bottom>".
-const char kTouchCalibration[] = "touch-calibration";
-
 // Tells Chrome to do edge touch filtering. Useful for convertible tablet.
 const char kEdgeTouchFiltering[] = "edge-touch-filtering";
-
-// Tells Chrome to do filter out low pressure touches, as from a pencil. Should
-// only be used if the driver level filtering is insufficient.
-const char kLowPressureTouchFiltering[] = "low-pressure-touch-filtering";
 
 // Disable CancelAllTouches() function for the implementation on cancel single
 // touches.

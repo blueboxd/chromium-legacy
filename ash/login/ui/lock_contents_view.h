@@ -106,8 +106,6 @@ class ASH_EXPORT LockContentsView
   };
 
   enum class AcceleratorAction {
-    kFocusNextUser,
-    kFocusPreviousUser,
     kShowSystemInfo,
     kShowFeedback,
     kShowResetScreen,
@@ -137,6 +135,7 @@ class ASH_EXPORT LockContentsView
   void Layout() override;
   void AddedToWidget() override;
   void OnFocus() override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;

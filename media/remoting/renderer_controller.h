@@ -74,11 +74,11 @@ class RendererController final : public mojom::RemotingSource,
     return remote_rendering_started_;
   }
 
-  using DataPipeStartCallback =
-      base::OnceCallback<void(mojom::RemotingDataStreamSenderPtrInfo audio,
-                              mojom::RemotingDataStreamSenderPtrInfo video,
-                              mojo::ScopedDataPipeProducerHandle audio_handle,
-                              mojo::ScopedDataPipeProducerHandle video_handle)>;
+  using DataPipeStartCallback = base::OnceCallback<void(
+      mojo::PendingRemote<mojom::RemotingDataStreamSender> audio,
+      mojo::PendingRemote<mojom::RemotingDataStreamSender> video,
+      mojo::ScopedDataPipeProducerHandle audio_handle,
+      mojo::ScopedDataPipeProducerHandle video_handle)>;
   void StartDataPipe(std::unique_ptr<mojo::DataPipe> audio_data_pipe,
                      std::unique_ptr<mojo::DataPipe> video_data_pipe,
                      DataPipeStartCallback done_callback);

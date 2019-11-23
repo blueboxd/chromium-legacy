@@ -7,7 +7,7 @@
  */
 
 cr-icon-button {
-  --cr-icon-button-color: var(--google-grey-refresh-500);
+  --cr-icon-button-fill-color: var(--google-grey-refresh-500);
   cursor: default;
   margin: 0;
 }

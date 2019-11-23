@@ -34,7 +34,7 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
     DemuxerStream* demuxer_stream,
     const base::WeakPtr<RpcBroker>& rpc_broker,
     int rpc_handle,
-    mojom::RemotingDataStreamSenderPtrInfo stream_sender_info,
+    mojo::PendingRemote<mojom::RemotingDataStreamSender> stream_sender_remote,
     mojo::ScopedDataPipeProducerHandle producer_handle,
     ErrorCallback error_callback)
     : main_task_runner_(std::move(main_task_runner)),
@@ -66,8 +66,8 @@ DemuxerStreamAdapter::DemuxerStreamAdapter(
       FROM_HERE, base::BindOnce(&RpcBroker::RegisterMessageReceiverCallback,
                                 rpc_broker_, rpc_handle_, receive_callback));
 
-  stream_sender_.Bind(std::move(stream_sender_info));
-  stream_sender_.set_connection_error_handler(
+  stream_sender_.Bind(std::move(stream_sender_remote));
+  stream_sender_.set_disconnect_handler(
       base::BindOnce(&DemuxerStreamAdapter::OnFatalError,
                      weak_factory_.GetWeakPtr(), MOJO_PIPE_ERROR));
 }

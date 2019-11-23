@@ -42,33 +42,9 @@ namespace {
 
 const int kMaxTrackingId = 0xffff;  // TRKID_MAX in kernel.
 
-struct TouchCalibration {
-  int bezel_left = 0;
-  int bezel_right = 0;
-  int bezel_top = 0;
-  int bezel_bottom = 0;
-};
-
 // Convert tilt from [min, min + num_values) to [-90deg, +90deg)
 float ScaleTilt(int value, int min_value, int num_values) {
   return 180.f * (value - min_value) / num_values - 90.f;
-}
-
-void GetTouchCalibration(TouchCalibration* cal) {
-  std::vector<std::string> parts = base::SplitString(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTouchCalibration),
-      ",", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (parts.size() >= 4) {
-    if (!base::StringToInt(parts[0], &cal->bezel_left))
-      LOG(ERROR) << "Incorrect left border calibration value passed.";
-    if (!base::StringToInt(parts[1], &cal->bezel_right))
-      LOG(ERROR) << "Incorrect right border calibration value passed.";
-    if (!base::StringToInt(parts[2], &cal->bezel_top))
-      LOG(ERROR) << "Incorrect top border calibration value passed.";
-    if (!base::StringToInt(parts[3], &cal->bezel_bottom))
-      LOG(ERROR) << "Incorrect bottom border calibration value passed.";
-  }
 }
 
 int32_t AbsCodeToMtCode(int32_t code) {
@@ -194,21 +170,6 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
 
   quirk_left_mouse_button_ =
       !has_mt_ && !info.HasKeyEvent(BTN_TOUCH) && info.HasKeyEvent(BTN_LEFT);
-
-  // Apply --touch-calibration.
-  if (type() == INPUT_DEVICE_INTERNAL) {
-    TouchCalibration cal;
-    GetTouchCalibration(&cal);
-    x_min_tuxels_ += cal.bezel_left;
-    x_num_tuxels_ -= cal.bezel_left + cal.bezel_right;
-    y_min_tuxels_ += cal.bezel_top;
-    y_num_tuxels_ -= cal.bezel_top + cal.bezel_bottom;
-
-    VLOG(1) << "applying touch calibration: "
-            << base::StringPrintf("[%d, %d, %d, %d]", cal.bezel_left,
-                                  cal.bezel_right, cal.bezel_top,
-                                  cal.bezel_bottom);
-  }
 
   // TODO(denniskempin): Use EVIOCGKEY to synchronize key state.
 
@@ -570,9 +531,7 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
     }
     event->held |= hold.test(i);
     event->cancelled |= suppress.test(i);
-    if (event->altered && (event->cancelled ||
-                           (false_touch_finder_ &&
-                            false_touch_finder_->SlotHasNoise(event->slot)))) {
+    if (event->altered && event->cancelled) {
       if (MaybeCancelAllTouches()) {
         // If all touches were cancelled, break out of this loop.
         break;

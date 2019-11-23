@@ -2125,12 +2125,21 @@ void LockContentsView::SetDisplayStyle(DisplayStyle style) {
   Layout();
 }
 
+bool LockContentsView::OnKeyPressed(const ui::KeyEvent& event) {
+  switch (event.key_code()) {
+    case ui::VKEY_RIGHT:
+      FocusNextUser();
+      return true;
+    case ui::VKEY_LEFT:
+      FocusPreviousUser();
+      return true;
+    default:
+      return false;
+  }
+}
+
 void LockContentsView::RegisterAccelerators() {
-  // Accelerators that apply on login and lock:
-  accel_map_[ui::Accelerator(ui::VKEY_RIGHT, 0)] =
-      AcceleratorAction::kFocusNextUser;
-  accel_map_[ui::Accelerator(ui::VKEY_LEFT, 0)] =
-      AcceleratorAction::kFocusPreviousUser;
+  // Applies on login and lock:
   accel_map_[ui::Accelerator(ui::VKEY_V, ui::EF_ALT_DOWN)] =
       AcceleratorAction::kShowSystemInfo;
 
@@ -2160,12 +2169,6 @@ void LockContentsView::RegisterAccelerators() {
 
 void LockContentsView::PerformAction(AcceleratorAction action) {
   switch (action) {
-    case AcceleratorAction::kFocusNextUser:
-      FocusNextUser();
-      break;
-    case AcceleratorAction::kFocusPreviousUser:
-      FocusPreviousUser();
-      break;
     case AcceleratorAction::kShowSystemInfo:
       ShowSystemInfo();
       break;

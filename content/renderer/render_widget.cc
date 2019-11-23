@@ -1014,9 +1014,8 @@ void RenderWidget::OnDisableDeviceEmulation() {
   // TODO(https://crbug.com/1006052): We should move emulation into the browser
   // and send consistent ScreenInfo and ScreenRects to all RenderWidgets based
   // on emulation.
-  if (!delegate_)
+  if (!delegate_ || !device_emulator_)
     return;
-  DCHECK(device_emulator_);
   device_emulator_->DisableAndApply();
   device_emulator_.reset();
 }

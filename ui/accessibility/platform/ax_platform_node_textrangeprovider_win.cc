@@ -681,8 +681,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
 
   bool is_start_endpoint = endpoint == TextPatternRangeEndpoint_Start;
   AXPositionInstance& position_to_move = is_start_endpoint ? start_ : end_;
-  AXPositionInstance new_position;
 
+  AXPositionInstance new_position;
   switch (unit) {
     case TextUnit_Character:
       new_position =
@@ -716,8 +716,12 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
   position_to_move = std::move(new_position);
 
   // If the start was moved past the end, create a degenerate range with the end
-  // equal to the start. Do the equivalent if the end moved past the start.
-  if (*end_->AsTreePosition() < *start_->AsTreePosition() || *end_ < *start_) {
+  // equal to the start; do the equivalent if the end moved past the start.
+  base::Optional<int> endpoint_comparison =
+      AXNodeRange::CompareEndpoints(start_.get(), end_.get());
+  DCHECK(endpoint_comparison.has_value());
+
+  if (endpoint_comparison.value_or(0) > 0) {
     if (is_start_endpoint)
       end_ = start_->Clone();
     else

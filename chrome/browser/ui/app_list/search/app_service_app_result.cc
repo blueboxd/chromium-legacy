@@ -17,6 +17,9 @@
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/services/app_service/public/cpp/app_update.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "extensions/common/extension.h"
 
@@ -143,7 +146,31 @@ void AppServiceAppResult::Launch(int event_flags,
 
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
-  if (proxy) {
+  if (!proxy)
+    return;
+
+  // For Chrome apps or Web apps, if it is non-platform app, it could be
+  // selecting an existing delegate for the app, so call
+  // ChromeLauncherController's ActivateApp interface. Platform apps or ARC
+  // apps, Crostini apps treat activations as a launch. The app can decide
+  // whether to show a new window or focus an existing window as it sees fit.
+  //
+  // TODO(crbug.com/1026730): Move this special case to ExtensionApps,
+  // when AppService Instance feature is done.
+  bool is_active_app = false;
+  proxy->AppRegistryCache().ForOneApp(
+      app_id(), [&is_active_app](const apps::AppUpdate& update) {
+        if ((update.AppType() == apps::mojom::AppType::kExtension ||
+             update.AppType() == apps::mojom::AppType::kWeb) &&
+            update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse) {
+          is_active_app = true;
+        }
+      });
+  if (is_active_app) {
+    ChromeLauncherController::instance()->ActivateApp(
+        app_id(), ash::LAUNCH_FROM_APP_LIST_SEARCH, event_flags,
+        controller()->GetAppListDisplayId());
+  } else {
     proxy->Launch(app_id(), event_flags, launch_source,
                   controller()->GetAppListDisplayId());
   }

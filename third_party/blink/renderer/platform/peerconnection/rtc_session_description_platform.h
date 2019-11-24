@@ -5,21 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_SESSION_DESCRIPTION_PLATFORM_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_SESSION_DESCRIPTION_PLATFORM_H_
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
 class PLATFORM_EXPORT RTCSessionDescriptionPlatform final
-    : public RefCounted<RTCSessionDescriptionPlatform> {
-  USING_FAST_MALLOC(RTCSessionDescriptionPlatform);
-
+    : public GarbageCollected<RTCSessionDescriptionPlatform> {
  public:
-  static scoped_refptr<RTCSessionDescriptionPlatform> Create(
-      const WebString& type,
-      const WebString& sdp);
+  RTCSessionDescriptionPlatform(const WebString& type, const WebString& sdp);
 
   WebString GetType() { return type_; }
   void SetType(const WebString& type) { type_ = type; }
@@ -27,9 +24,9 @@ class PLATFORM_EXPORT RTCSessionDescriptionPlatform final
   WebString Sdp() { return sdp_; }
   void SetSdp(const WebString& sdp) { sdp_ = sdp; }
 
- private:
-  RTCSessionDescriptionPlatform(const WebString& type, const WebString& sdp);
+  void Trace(blink::Visitor* visitor) {}
 
+ private:
   WebString type_;
   WebString sdp_;
 };

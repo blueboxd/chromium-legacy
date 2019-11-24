@@ -55,17 +55,17 @@ RTCSessionDescription* RTCSessionDescription::Create(
     UseCounter::Count(context, WebFeature::kRTCSessionDescriptionInitNoSdp);
 
   return MakeGarbageCollected<RTCSessionDescription>(
-      RTCSessionDescriptionPlatform::Create(type, sdp));
+      MakeGarbageCollected<RTCSessionDescriptionPlatform>(type, sdp));
 }
 
 RTCSessionDescription* RTCSessionDescription::Create(
-    scoped_refptr<RTCSessionDescriptionPlatform> platform_session_description) {
+    RTCSessionDescriptionPlatform* platform_session_description) {
   return MakeGarbageCollected<RTCSessionDescription>(
       platform_session_description);
 }
 
 RTCSessionDescription::RTCSessionDescription(
-    scoped_refptr<RTCSessionDescriptionPlatform> platform_session_description)
+    RTCSessionDescriptionPlatform* platform_session_description)
     : platform_session_description_(platform_session_description) {}
 
 String RTCSessionDescription::type() const {
@@ -91,9 +91,13 @@ ScriptValue RTCSessionDescription::toJSONForBinding(ScriptState* script_state) {
   return result.GetScriptValue();
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
-RTCSessionDescription::WebSessionDescription() {
+RTCSessionDescriptionPlatform* RTCSessionDescription::WebSessionDescription() {
   return platform_session_description_;
+}
+
+void RTCSessionDescription::Trace(blink::Visitor* visitor) {
+  visitor->Trace(platform_session_description_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

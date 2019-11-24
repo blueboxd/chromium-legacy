@@ -6,12 +6,6 @@
 
 namespace blink {
 
-scoped_refptr<RTCSessionDescriptionPlatform>
-RTCSessionDescriptionPlatform::Create(const WebString& type,
-                                      const WebString& sdp) {
-  return base::AdoptRef(new RTCSessionDescriptionPlatform(type, sdp));
-}
-
 RTCSessionDescriptionPlatform::RTCSessionDescriptionPlatform(
     const WebString& type,
     const WebString& sdp)

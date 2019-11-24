@@ -36,7 +36,7 @@ class RTCSessionDescriptionRequestPromiseImpl final
   ~RTCSessionDescriptionRequestPromiseImpl() override;
 
   // RTCSessionDescriptionRequest
-  void RequestSucceeded(scoped_refptr<RTCSessionDescriptionPlatform>) override;
+  void RequestSucceeded(RTCSessionDescriptionPlatform*) override;
   void RequestFailed(const webrtc::RTCError& error) override;
 
   void Trace(blink::Visitor*) override;

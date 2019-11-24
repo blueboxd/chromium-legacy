@@ -4630,22 +4630,44 @@ void LayoutBlockFlow::RecalcInlineChildrenVisualOverflow() {
     if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
       if (const NGFragmentItems* items = fragment->Items()) {
         NGInlineCursor cursor(*items);
-        NGFragmentItem::RecalcInkOverflowAll(&cursor);
-        return;
+        NGFragmentItem::RecalcInkOverflowForCursor(&cursor);
       }
+
+      if (fragment->HasFloatingDescendantsForPaint())
+        RecalcFloatingDescendantsVisualOverflow(*fragment);
+      return;
     }
   }
 
   for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.AtEnd();
        walker.Advance()) {
     LayoutObject* layout_object = walker.Current().GetLayoutObject();
-    RecalcNormalFlowChildVisualOverflowIfNeeded(layout_object);
+    layout_object->RecalcNormalFlowChildVisualOverflowIfNeeded();
   }
 
   // Child inline boxes' self visual overflow is already computed at the same
   // time as layout overflow. But we need to add replaced children visual rects.
   for (RootInlineBox* box = FirstRootBox(); box; box = box->NextRootBox())
     box->AddReplacedChildrenVisualOverflow(box->LineTop(), box->LineBottom());
+}
+
+void LayoutBlockFlow::RecalcFloatingDescendantsVisualOverflow(
+    const NGPhysicalContainerFragment& fragment) {
+  DCHECK(fragment.HasFloatingDescendantsForPaint());
+
+  for (const NGLink& child : fragment.Children()) {
+    if (child->IsFloating()) {
+      child->GetMutableLayoutObject()
+          ->RecalcNormalFlowChildVisualOverflowIfNeeded();
+      continue;
+    }
+
+    if (const NGPhysicalContainerFragment* child_container_fragment =
+            DynamicTo<NGPhysicalContainerFragment>(child.get())) {
+      if (child_container_fragment->HasFloatingDescendantsForPaint())
+        RecalcFloatingDescendantsVisualOverflow(*child_container_fragment);
+    }
+  }
 }
 
 PositionWithAffinity LayoutBlockFlow::PositionForPoint(

@@ -1299,7 +1299,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
                                      *session_description_init),
       this, resolver, "RTCPeerConnection", "setLocalDescription");
   peer_handler_->SetLocalDescription(
-      request, RTCSessionDescriptionPlatform::Create(
+      request, MakeGarbageCollected<RTCSessionDescriptionPlatform>(
                    session_description_init->type(), sdp));
   return promise;
 }
@@ -1350,13 +1350,13 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
       this, success_callback, error_callback);
   peer_handler_->SetLocalDescription(
       request,
-      RTCSessionDescriptionPlatform::Create(session_description_init->type(),
-                                            session_description_init->sdp()));
+      MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+          session_description_init->type(), session_description_init->sdp()));
   return ScriptPromise::CastUndefined(script_state);
 }
 
 RTCSessionDescription* RTCPeerConnection::localDescription() {
-  auto platform_session_description = peer_handler_->LocalDescription();
+  auto* platform_session_description = peer_handler_->LocalDescription();
   if (!platform_session_description)
     return nullptr;
 
@@ -1364,7 +1364,7 @@ RTCSessionDescription* RTCPeerConnection::localDescription() {
 }
 
 RTCSessionDescription* RTCPeerConnection::currentLocalDescription() {
-  auto platform_session_description = peer_handler_->CurrentLocalDescription();
+  auto* platform_session_description = peer_handler_->CurrentLocalDescription();
   if (!platform_session_description)
     return nullptr;
 
@@ -1372,7 +1372,7 @@ RTCSessionDescription* RTCPeerConnection::currentLocalDescription() {
 }
 
 RTCSessionDescription* RTCPeerConnection::pendingLocalDescription() {
-  auto platform_session_description = peer_handler_->PendingLocalDescription();
+  auto* platform_session_description = peer_handler_->PendingLocalDescription();
   if (!platform_session_description)
     return nullptr;
 
@@ -1405,8 +1405,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
       this, resolver, "RTCPeerConnection", "setRemoteDescription");
   peer_handler_->SetRemoteDescription(
       request,
-      RTCSessionDescriptionPlatform::Create(session_description_init->type(),
-                                            session_description_init->sdp()));
+      MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+          session_description_init->type(), session_description_init->sdp()));
   return promise;
 }
 
@@ -1450,13 +1450,13 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
       this, success_callback, error_callback);
   peer_handler_->SetRemoteDescription(
       request,
-      RTCSessionDescriptionPlatform::Create(session_description_init->type(),
-                                            session_description_init->sdp()));
+      MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+          session_description_init->type(), session_description_init->sdp()));
   return ScriptPromise::CastUndefined(script_state);
 }
 
 RTCSessionDescription* RTCPeerConnection::remoteDescription() {
-  auto platform_session_description = peer_handler_->RemoteDescription();
+  auto* platform_session_description = peer_handler_->RemoteDescription();
   if (!platform_session_description)
     return nullptr;
 
@@ -1464,7 +1464,8 @@ RTCSessionDescription* RTCPeerConnection::remoteDescription() {
 }
 
 RTCSessionDescription* RTCPeerConnection::currentRemoteDescription() {
-  auto platform_session_description = peer_handler_->CurrentRemoteDescription();
+  auto* platform_session_description =
+      peer_handler_->CurrentRemoteDescription();
   if (!platform_session_description)
     return nullptr;
 
@@ -1472,7 +1473,8 @@ RTCSessionDescription* RTCPeerConnection::currentRemoteDescription() {
 }
 
 RTCSessionDescription* RTCPeerConnection::pendingRemoteDescription() {
-  auto platform_session_description = peer_handler_->PendingRemoteDescription();
+  auto* platform_session_description =
+      peer_handler_->PendingRemoteDescription();
   if (!platform_session_description)
     return nullptr;
 

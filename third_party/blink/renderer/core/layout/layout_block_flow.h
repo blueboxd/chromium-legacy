@@ -62,6 +62,7 @@ class MarginInfo;
 class NGBlockBreakToken;
 class NGFragmentItems;
 class NGOffsetMapping;
+class NGPhysicalContainerFragment;
 class NGPhysicalFragment;
 
 struct NGInlineNodeData;
@@ -888,6 +889,9 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                               LayoutUnit bottom,
                               MarginInfo&);
   void SetCollapsedBottomMargin(const MarginInfo&);
+
+  static void RecalcFloatingDescendantsVisualOverflow(
+      const NGPhysicalContainerFragment& fragment);
 
   // Apply any forced fragmentainer break that's set on the current class A
   // break point.

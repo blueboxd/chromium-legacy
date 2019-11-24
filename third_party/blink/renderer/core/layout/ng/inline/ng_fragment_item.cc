@@ -20,7 +20,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       style_variant_(static_cast<unsigned>(text.StyleVariant())),
       is_generated_text_(text.IsGeneratedText()),
       is_hidden_for_paint_(text.IsHiddenForPaint()),
-      text_direction_(static_cast<unsigned>(text.ResolvedDirection())) {
+      text_direction_(static_cast<unsigned>(text.ResolvedDirection())),
+      ink_overflow_computed_(false) {
   DCHECK_LE(text_.start_offset, text_.end_offset);
 #if DCHECK_IS_ON()
   if (text_.shape_result) {
@@ -45,7 +46,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
       type_(kLine),
       style_variant_(static_cast<unsigned>(line.StyleVariant())),
       is_hidden_for_paint_(false),
-      text_direction_(static_cast<unsigned>(line.BaseDirection())) {}
+      text_direction_(static_cast<unsigned>(line.BaseDirection())),
+      ink_overflow_computed_(false) {}
 
 NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
                                wtf_size_t item_count,
@@ -56,7 +58,8 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
       type_(kBox),
       style_variant_(static_cast<unsigned>(box.StyleVariant())),
       is_hidden_for_paint_(box.IsHiddenForPaint()),
-      text_direction_(static_cast<unsigned>(resolved_direction)) {}
+      text_direction_(static_cast<unsigned>(resolved_direction)),
+      ink_overflow_computed_(false) {}
 
 NGFragmentItem::~NGFragmentItem() {
   switch (Type()) {
@@ -120,11 +123,32 @@ bool NGFragmentItem::HasSelfPaintingLayer() const {
   return false;
 }
 
+inline const LayoutBox* NGFragmentItem::InkOverflowOwnerBox() const {
+  if (Type() == kBox)
+    return ToLayoutBoxOrNull(GetLayoutObject());
+  return nullptr;
+}
+
+inline LayoutBox* NGFragmentItem::MutableInkOverflowOwnerBox() {
+  if (Type() == kBox)
+    return ToLayoutBoxOrNull(const_cast<LayoutObject*>(layout_object_));
+  return nullptr;
+}
+
 PhysicalRect NGFragmentItem::SelfInkOverflow() const {
-  return ink_overflow_ ? ink_overflow_->self_ink_overflow : LocalRect();
+  if (const LayoutBox* box = InkOverflowOwnerBox())
+    return box->PhysicalSelfVisualOverflowRect();
+
+  if (!ink_overflow_)
+    return LocalRect();
+
+  return ink_overflow_->self_ink_overflow;
 }
 
 PhysicalRect NGFragmentItem::InkOverflow() const {
+  if (const LayoutBox* box = InkOverflowOwnerBox())
+    return box->PhysicalVisualOverflowRect();
+
   if (!ink_overflow_)
     return LocalRect();
 
@@ -231,7 +255,8 @@ PhysicalRect NGFragmentItem::LocalVisualRectFor(
   return visual_rect;
 }
 
-PhysicalRect NGFragmentItem::RecalcInkOverflowAll(NGInlineCursor* cursor) {
+PhysicalRect NGFragmentItem::RecalcInkOverflowForCursor(
+    NGInlineCursor* cursor) {
   DCHECK(cursor);
   PhysicalRect contents_ink_overflow;
   while (*cursor) {
@@ -254,15 +279,16 @@ void NGFragmentItem::RecalcInkOverflow(
     PhysicalRect* self_and_contents_rect_out) {
   DCHECK_EQ(this, cursor->CurrentItem());
 
-  if (Type() == kText) {
+  if (IsText()) {
     cursor->MoveToNext();
 
     // Re-computing text item is not necessary, because all changes that needs
     // to re-compute ink overflow invalidate layout.
-    if (ink_overflow_) {
-      *self_and_contents_rect_out = ink_overflow_->self_ink_overflow;
+    if (ink_overflow_computed_) {
+      *self_and_contents_rect_out = SelfInkOverflow();
       return;
     }
+    ink_overflow_computed_ = true;
 
     NGTextFragmentPaintInfo paint_info = TextPaintInfo(cursor->Items());
     if (paint_info.shape_result) {
@@ -278,18 +304,21 @@ void NGFragmentItem::RecalcInkOverflow(
     return;
   }
 
-  if (Type() == kGeneratedText) {
-    cursor->MoveToNext();
-    // TODO(kojii): Implement.
-    ink_overflow_ = nullptr;
-    *self_and_contents_rect_out = LocalRect();
+  // If this item has an owner |LayoutBox|, let it compute. It will call back NG
+  // to compute and store the result to |LayoutBox|. Pre-paint requires ink
+  // overflow to be stored in |LayoutBox|.
+  if (LayoutBox* owner_box = MutableInkOverflowOwnerBox()) {
+    DCHECK(!HasChildren());
+    cursor->MoveToNextSibling();
+    owner_box->RecalcNormalFlowChildVisualOverflowIfNeeded();
+    *self_and_contents_rect_out = owner_box->PhysicalVisualOverflowRect();
     return;
   }
 
-  // Compute the contents ink overflow from descendants.
+  // Re-compute descendants, then compute the contents ink overflow from them.
   NGInlineCursor descendants_cursor = cursor->CursorForDescendants();
   cursor->MoveToNextSibling();
-  PhysicalRect contents_rect = RecalcInkOverflowAll(&descendants_cursor);
+  PhysicalRect contents_rect = RecalcInkOverflowForCursor(&descendants_cursor);
 
   // Compute the self ink overflow.
   PhysicalRect self_rect;
@@ -297,6 +326,7 @@ void NGFragmentItem::RecalcInkOverflow(
     // Line boxes don't have self overflow. Compute content overflow only.
     *self_and_contents_rect_out = contents_rect;
   } else if (const NGPhysicalBoxFragment* box_fragment = BoxFragment()) {
+    DCHECK(box_fragment->IsInlineBox());
     self_rect = box_fragment->ComputeSelfInkOverflow();
     *self_and_contents_rect_out = UnionRect(self_rect, contents_rect);
   } else {

@@ -46,8 +46,7 @@ class RTCSessionDescriptionRequest
  public:
   virtual ~RTCSessionDescriptionRequest() = default;
 
-  virtual void RequestSucceeded(
-      scoped_refptr<RTCSessionDescriptionPlatform>) = 0;
+  virtual void RequestSucceeded(RTCSessionDescriptionPlatform*) = 0;
   virtual void RequestFailed(const webrtc::RTCError&) = 0;
 
   virtual void Trace(blink::Visitor* visitor) {}

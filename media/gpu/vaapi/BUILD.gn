@@ -213,6 +213,7 @@ source_set("jpeg_decoder_unit_test") {
     ":vaapi_image_decoder_test_common",
     ":vaapi_test_utils",
     "//base",
+    "//media/gpu/test:local_gpu_memory_buffer_manager",
     "//media/parsers",
     "//testing/gtest",
     "//third_party/libyuv:libyuv",
@@ -220,9 +221,6 @@ source_set("jpeg_decoder_unit_test") {
     "//ui/gfx/codec",
     "//ui/gfx/geometry",
   ]
-  if (is_chromeos) {
-    deps += [ "//media/capture:chromeos_test_utils" ]
-  }
 }
 
 source_set("webp_decoder_unit_test") {
@@ -235,15 +233,13 @@ source_set("webp_decoder_unit_test") {
     ":vaapi_image_decoder_test_common",
     ":vaapi_test_utils",
     "//base",
+    "//media/gpu/test:local_gpu_memory_buffer_manager",
     "//media/parsers",
     "//testing/gtest",
     "//third_party/libwebp",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]
-  if (is_chromeos) {
-    deps += [ "//media/capture:chromeos_test_utils" ]
-  }
 }
 
 source_set("vaapi_utils_unittest") {
@@ -270,6 +266,7 @@ test("vaapi_unittest") {
     ":vaapi_utils_unittest",
     ":webp_decoder_unit_test",
     "//base",
+    "//media/gpu/test:helpers",
     "//testing/gtest",
   ]
 }

@@ -661,8 +661,8 @@ TEST_F(RTCPeerConnectionHandlerTest, CreateAnswer) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
-  auto description =
-      RTCSessionDescriptionPlatform::Create(kDummySdpType, kDummySdp);
+  auto* description = MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+      kDummySdpType, kDummySdp);
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
   // before |mock_peer_connection| is called.
   testing::InSequence sequence;
@@ -690,8 +690,8 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescription) {
 // Test that setLocalDescription with invalid SDP will result in a failure, and
 // is tracked as a failure with PeerConnectionTracker.
 TEST_F(RTCPeerConnectionHandlerTest, setLocalDescriptionParseError) {
-  auto description =
-      RTCSessionDescriptionPlatform::Create(kDummySdpType, kDummySdp);
+  auto* description = MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+      kDummySdpType, kDummySdp);
   testing::InSequence sequence;
   // Expect two "Track" calls, one for the start of the attempt and one for the
   // failure.
@@ -714,8 +714,8 @@ TEST_F(RTCPeerConnectionHandlerTest, setLocalDescriptionParseError) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
-  auto description =
-      RTCSessionDescriptionPlatform::Create(kDummySdpType, kDummySdp);
+  auto* description = MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+      kDummySdpType, kDummySdp);
 
   // PeerConnectionTracker::TrackSetSessionDescription is expected to be called
   // before |mock_peer_connection| is called.
@@ -745,8 +745,8 @@ TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescription) {
 // Test that setRemoteDescription with invalid SDP will result in a failure, and
 // is tracked as a failure with PeerConnectionTracker.
 TEST_F(RTCPeerConnectionHandlerTest, setRemoteDescriptionParseError) {
-  auto description =
-      RTCSessionDescriptionPlatform::Create(kDummySdpType, kDummySdp);
+  auto* description = MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+      kDummySdpType, kDummySdp);
   testing::InSequence sequence;
   // Expect two "Track" calls, one for the start of the attempt and one for the
   // failure.

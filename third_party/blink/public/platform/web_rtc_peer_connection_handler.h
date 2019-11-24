@@ -99,22 +99,16 @@ class WebRTCPeerConnectionHandler {
   virtual void CreateAnswer(RTCSessionDescriptionRequest*,
                             RTCAnswerOptionsPlatform*) = 0;
   virtual void SetLocalDescription(RTCVoidRequest*) = 0;
-  virtual void SetLocalDescription(
-      RTCVoidRequest*,
-      scoped_refptr<RTCSessionDescriptionPlatform>) = 0;
-  virtual void SetRemoteDescription(
-      RTCVoidRequest*,
-      scoped_refptr<RTCSessionDescriptionPlatform>) = 0;
-  virtual scoped_refptr<RTCSessionDescriptionPlatform> LocalDescription() = 0;
-  virtual scoped_refptr<RTCSessionDescriptionPlatform> RemoteDescription() = 0;
-  virtual scoped_refptr<RTCSessionDescriptionPlatform>
-  CurrentLocalDescription() = 0;
-  virtual scoped_refptr<RTCSessionDescriptionPlatform>
-  CurrentRemoteDescription() = 0;
-  virtual scoped_refptr<RTCSessionDescriptionPlatform>
-  PendingLocalDescription() = 0;
-  virtual scoped_refptr<RTCSessionDescriptionPlatform>
-  PendingRemoteDescription() = 0;
+  virtual void SetLocalDescription(RTCVoidRequest*,
+                                   RTCSessionDescriptionPlatform*) = 0;
+  virtual void SetRemoteDescription(RTCVoidRequest*,
+                                    RTCSessionDescriptionPlatform*) = 0;
+  virtual RTCSessionDescriptionPlatform* LocalDescription() = 0;
+  virtual RTCSessionDescriptionPlatform* RemoteDescription() = 0;
+  virtual RTCSessionDescriptionPlatform* CurrentLocalDescription() = 0;
+  virtual RTCSessionDescriptionPlatform* CurrentRemoteDescription() = 0;
+  virtual RTCSessionDescriptionPlatform* PendingLocalDescription() = 0;
+  virtual RTCSessionDescriptionPlatform* PendingRemoteDescription() = 0;
   virtual const webrtc::PeerConnectionInterface::RTCConfiguration&
   GetConfiguration() const = 0;
   virtual webrtc::RTCErrorType SetConfiguration(

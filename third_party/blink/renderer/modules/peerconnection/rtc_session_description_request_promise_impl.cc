@@ -44,7 +44,7 @@ RTCSessionDescriptionRequestPromiseImpl::
     ~RTCSessionDescriptionRequestPromiseImpl() = default;
 
 void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
-    scoped_refptr<RTCSessionDescriptionPlatform> platform_session_description) {
+    RTCSessionDescriptionPlatform* platform_session_description) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
     requester_->NoteSessionDescriptionRequestCompleted(operation_, true);
     auto* description =

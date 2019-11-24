@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
 }
 
 // Fails on linux-chromeos-dbg see crbug/1027919.
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 #define MAYBE_ShowMenuWithShowMenuOption DISABLED_ShowMenuWithShowMenuOption
 #else
 #define MAYBE_ShowMenuWithShowMenuOption ShowMenuWithShowMenuOption

@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
@@ -134,9 +136,14 @@ bool WidgetDelegate::GetSavedWindowPlacement(
     gfx::Rect* bounds,
     ui::WindowShowState* show_state) const {
   std::string window_name = GetWindowName();
-  return !window_name.empty() &&
-         ViewsDelegate::GetInstance()->GetSavedWindowPlacement(
-             widget, window_name, bounds, show_state);
+  if (window_name.empty() ||
+      !ViewsDelegate::GetInstance()->GetSavedWindowPlacement(
+          widget, window_name, bounds, show_state))
+    return false;
+  // Try to find a display intersecting the saved bounds.
+  const auto& display =
+      display::Screen::GetScreen()->GetDisplayMatching(*bounds);
+  return display.bounds().Intersects(*bounds);
 }
 
 bool WidgetDelegate::ShouldRestoreWindowSize() const {

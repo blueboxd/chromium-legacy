@@ -322,7 +322,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
  protected:
   bool RecalcNormalFlowChildLayoutOverflowIfNeeded(LayoutObject*);
-  void RecalcNormalFlowChildVisualOverflowIfNeeded(LayoutObject*);
   bool RecalcPositionedDescendantsLayoutOverflow();
   void RecalcPositionedDescendantsVisualOverflow();
   bool RecalcSelfLayoutOverflow();

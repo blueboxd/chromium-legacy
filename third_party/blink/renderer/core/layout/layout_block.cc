@@ -2096,15 +2096,6 @@ bool LayoutBlock::RecalcNormalFlowChildLayoutOverflowIfNeeded(
   return layout_object->RecalcLayoutOverflow();
 }
 
-void LayoutBlock::RecalcNormalFlowChildVisualOverflowIfNeeded(
-    LayoutObject* layout_object) {
-  if (layout_object->IsOutOfFlowPositioned() ||
-      (layout_object->HasLayer() &&
-       ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer()))
-    return;
-  layout_object->RecalcVisualOverflow();
-}
-
 bool LayoutBlock::RecalcChildLayoutOverflow() {
   DCHECK(!IsTable());
   DCHECK(ChildNeedsLayoutOverflowRecalc());
@@ -2138,7 +2129,7 @@ void LayoutBlock::RecalcChildVisualOverflow() {
     To<LayoutBlockFlow>(this)->RecalcInlineChildrenVisualOverflow();
   } else {
     for (LayoutBox* box = FirstChildBox(); box; box = box->NextSiblingBox()) {
-      RecalcNormalFlowChildVisualOverflowIfNeeded(box);
+      box->RecalcNormalFlowChildVisualOverflowIfNeeded();
     }
   }
 

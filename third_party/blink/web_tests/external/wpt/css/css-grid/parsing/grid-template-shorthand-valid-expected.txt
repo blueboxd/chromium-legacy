@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+FAIL e.style['grid-template'] = "auto / auto" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "none / [a] 0px" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "none / [] 0px" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "[a] 10px / auto" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "[a] 10px / none" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "[] 10px [] / [] auto []" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "[a] \"a\" 10px" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "[a] \"a\" 10px []" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "\"a\" 10px" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "[] \"a\" 10px" should set the property value assert_not_equals: property should be set got disallowed value ""
+FAIL e.style['grid-template'] = "[a] \"a\" 10px [a]" should set the property value assert_not_equals: property should be set got disallowed value ""
+Harness: the test ran to completion.
+

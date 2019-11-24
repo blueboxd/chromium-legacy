@@ -67,7 +67,7 @@ class RTCSessionDescriptionRequestImpl final
                                    V8RTCPeerConnectionErrorCallback*);
   ~RTCSessionDescriptionRequestImpl() override;
 
-  void RequestSucceeded(scoped_refptr<RTCSessionDescriptionPlatform>) override;
+  void RequestSucceeded(RTCSessionDescriptionPlatform*) override;
   void RequestFailed(const webrtc::RTCError& error) override;
 
   // ContextLifecycleObserver

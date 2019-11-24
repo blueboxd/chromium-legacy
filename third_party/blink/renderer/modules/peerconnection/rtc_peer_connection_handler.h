@@ -121,23 +121,18 @@ class MODULES_EXPORT RTCPeerConnectionHandler
                     blink::RTCAnswerOptionsPlatform* options) override;
 
   void SetLocalDescription(blink::RTCVoidRequest* request) override;
-  void SetLocalDescription(
-      blink::RTCVoidRequest* request,
-      scoped_refptr<RTCSessionDescriptionPlatform> description) override;
+  void SetLocalDescription(blink::RTCVoidRequest* request,
+                           RTCSessionDescriptionPlatform* description) override;
   void SetRemoteDescription(
       blink::RTCVoidRequest* request,
-      scoped_refptr<RTCSessionDescriptionPlatform> description) override;
+      RTCSessionDescriptionPlatform* description) override;
 
-  scoped_refptr<RTCSessionDescriptionPlatform> LocalDescription() override;
-  scoped_refptr<RTCSessionDescriptionPlatform> RemoteDescription() override;
-  scoped_refptr<RTCSessionDescriptionPlatform> CurrentLocalDescription()
-      override;
-  scoped_refptr<RTCSessionDescriptionPlatform> CurrentRemoteDescription()
-      override;
-  scoped_refptr<RTCSessionDescriptionPlatform> PendingLocalDescription()
-      override;
-  scoped_refptr<RTCSessionDescriptionPlatform> PendingRemoteDescription()
-      override;
+  RTCSessionDescriptionPlatform* LocalDescription() override;
+  RTCSessionDescriptionPlatform* RemoteDescription() override;
+  RTCSessionDescriptionPlatform* CurrentLocalDescription() override;
+  RTCSessionDescriptionPlatform* CurrentRemoteDescription() override;
+  RTCSessionDescriptionPlatform* PendingLocalDescription() override;
+  RTCSessionDescriptionPlatform* PendingRemoteDescription() override;
 
   const webrtc::PeerConnectionInterface::RTCConfiguration& GetConfiguration()
       const override;
@@ -265,7 +260,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       const String& type,
       webrtc::SdpParseError* error);
 
-  scoped_refptr<RTCSessionDescriptionPlatform>
+  RTCSessionDescriptionPlatform*
   GetRTCSessionDescriptionPlatformOnSignalingThread(
       base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
           description_cb,

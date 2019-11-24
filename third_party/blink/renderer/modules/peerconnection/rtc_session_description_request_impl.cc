@@ -66,7 +66,7 @@ RTCSessionDescriptionRequestImpl::RTCSessionDescriptionRequestImpl(
 RTCSessionDescriptionRequestImpl::~RTCSessionDescriptionRequestImpl() = default;
 
 void RTCSessionDescriptionRequestImpl::RequestSucceeded(
-    scoped_refptr<RTCSessionDescriptionPlatform> description_platform) {
+    RTCSessionDescriptionPlatform* description_platform) {
   bool should_fire_callback =
       requester_ ? requester_->ShouldFireDefaultCallbacks() : false;
   if (should_fire_callback && success_callback_) {

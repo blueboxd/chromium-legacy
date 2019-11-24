@@ -674,8 +674,8 @@ void CompleteRequest(RTCVoidRequest* request, bool resolve) {
 template <>
 void CompleteRequest(RTCSessionDescriptionRequest* request, bool resolve) {
   if (resolve) {
-    auto description =
-        RTCSessionDescriptionPlatform::Create(WebString(), WebString());
+    auto* description = MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+        WebString(), WebString());
     request->RequestSucceeded(description);
   } else {
     request->RequestFailed(
@@ -731,15 +731,13 @@ class FakeWebRTCPeerConnectionHandler : public MockWebRTCPeerConnectionHandler {
                                                         request);
   }
 
-  void SetLocalDescription(
-      RTCVoidRequest* request,
-      scoped_refptr<RTCSessionDescriptionPlatform>) override {
+  void SetLocalDescription(RTCVoidRequest* request,
+                           RTCSessionDescriptionPlatform*) override {
     PostToCompleteRequest<RTCVoidRequest>(async_operation_action_, request);
   }
 
-  void SetRemoteDescription(
-      RTCVoidRequest* request,
-      scoped_refptr<RTCSessionDescriptionPlatform>) override {
+  void SetRemoteDescription(RTCVoidRequest* request,
+                            RTCSessionDescriptionPlatform*) override {
     PostToCompleteRequest<RTCVoidRequest>(async_operation_action_, request);
   }
 

@@ -1420,6 +1420,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Recalculates visual overflow for this object and non-self-painting
   // PaintLayer descendants.
   virtual void RecalcVisualOverflow();
+  void RecalcNormalFlowChildVisualOverflowIfNeeded();
 
   // Subclasses must reimplement this method to compute the size and position
   // of this object and all its descendants.

@@ -107,7 +107,8 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, SanityCheckIncognito) {
 }
 
 // http://crbug.com/654704 PRE_ tests aren't supported on Android.
-#if defined(OS_ANDROID)
+// Also crbug/1027940: Fails on linux-chromeos-rel.
+#if defined(OS_ANDROID) || defined(OS_LINUX)
 #define MAYBE_DataPersists DISABLED_DataPersists
 #else
 #define MAYBE_DataPersists DataPersists

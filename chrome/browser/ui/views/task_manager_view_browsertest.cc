@@ -35,12 +35,10 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "ui/views/controls/table/table_view.h"
-
-#if defined(OS_CHROMEOS)
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#endif
+#include "ui/views/controls/table/table_view.h"
+#include "ui/views/test/widget_test.h"
 
 namespace task_manager {
 
@@ -114,6 +112,12 @@ class TaskManagerViewTest : public InProcessBrowserTest {
         return i;
     }
     return -1;
+  }
+
+  void HideTaskManagerSync() {
+    views::test::WidgetDestroyedWaiter waiter(GetView()->GetWidget());
+    chrome::HideTaskManager();
+    waiter.Wait();
   }
 
  private:
@@ -347,7 +351,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, DISABLED_SelectionConsistency) {
 }
 
 // Make sure the task manager's bounds are saved across instances on Chrome OS.
-#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, RestoreBounds) {
   chrome::ShowTaskManager(browser());
 
@@ -356,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, RestoreBounds) {
   const gfx::Rect non_default_bounds = default_bounds + gfx::Vector2d(0, 17);
 
   GetView()->GetWidget()->SetBounds(non_default_bounds);
-  GetView()->GetWidget()->CloseNow();
+  HideTaskManagerSync();
 
   chrome::ShowTaskManager(browser());
   EXPECT_EQ(non_default_bounds,
@@ -369,13 +372,12 @@ IN_PROC_BROWSER_TEST_F(TaskManagerViewTest, RestoreBounds) {
   const gfx::Rect offscreen_bounds =
       default_bounds + gfx::Vector2d(0, display.bounds().bottom());
   GetView()->GetWidget()->SetBounds(offscreen_bounds);
-  GetView()->GetWidget()->CloseNow();
+  HideTaskManagerSync();
 
   chrome::ShowTaskManager(browser());
   gfx::Rect restored_bounds = GetView()->GetWidget()->GetWindowBoundsInScreen();
   EXPECT_NE(offscreen_bounds, restored_bounds);
   EXPECT_TRUE(display.bounds().Contains(restored_bounds));
 }
-#endif
 
 }  // namespace task_manager

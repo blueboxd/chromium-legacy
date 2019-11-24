@@ -276,38 +276,38 @@ void MockWebRTCPeerConnectionHandler::SetLocalDescription(RTCVoidRequest*) {}
 
 void MockWebRTCPeerConnectionHandler::SetLocalDescription(
     RTCVoidRequest*,
-    scoped_refptr<RTCSessionDescriptionPlatform>) {}
+    RTCSessionDescriptionPlatform*) {}
 
 void MockWebRTCPeerConnectionHandler::SetRemoteDescription(
     RTCVoidRequest*,
-    scoped_refptr<RTCSessionDescriptionPlatform>) {}
+    RTCSessionDescriptionPlatform*) {}
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 MockWebRTCPeerConnectionHandler::LocalDescription() {
   return nullptr;
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 MockWebRTCPeerConnectionHandler::RemoteDescription() {
   return nullptr;
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 MockWebRTCPeerConnectionHandler::CurrentLocalDescription() {
   return nullptr;
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 MockWebRTCPeerConnectionHandler::CurrentRemoteDescription() {
   return nullptr;
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 MockWebRTCPeerConnectionHandler::PendingLocalDescription() {
   return nullptr;
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 MockWebRTCPeerConnectionHandler::PendingRemoteDescription() {
   return nullptr;
 }

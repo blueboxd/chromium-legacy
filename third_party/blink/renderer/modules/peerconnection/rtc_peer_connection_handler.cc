@@ -78,16 +78,14 @@ enum RtcpMux {
   RTCP_MUX_MAX
 };
 
-scoped_refptr<RTCSessionDescriptionPlatform> CreateWebKitSessionDescription(
+RTCSessionDescriptionPlatform* CreateWebKitSessionDescription(
     const std::string& sdp,
     const std::string& type) {
-  scoped_refptr<RTCSessionDescriptionPlatform> description =
-      RTCSessionDescriptionPlatform::Create(blink::WebString::FromUTF8(type),
-                                            blink::WebString::FromUTF8(sdp));
-  return description;
+  return MakeGarbageCollected<RTCSessionDescriptionPlatform>(
+      blink::WebString::FromUTF8(type), blink::WebString::FromUTF8(sdp));
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform> CreateWebKitSessionDescription(
+RTCSessionDescriptionPlatform* CreateWebKitSessionDescription(
     const webrtc::SessionDescriptionInterface* native_desc) {
   if (!native_desc) {
     LOG(ERROR) << "Native session description is null.";
@@ -1303,7 +1301,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
 
 void RTCPeerConnectionHandler::SetLocalDescription(
     blink::RTCVoidRequest* request,
-    scoped_refptr<RTCSessionDescriptionPlatform> description) {
+    RTCSessionDescriptionPlatform* description) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setLocalDescription");
 
@@ -1383,7 +1381,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
 
 void RTCPeerConnectionHandler::SetRemoteDescription(
     blink::RTCVoidRequest* request,
-    scoped_refptr<RTCSessionDescriptionPlatform> description) {
+    RTCSessionDescriptionPlatform* description) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setRemoteDescription");
 
@@ -1463,8 +1461,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
           "SetRemoteDescription"));
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
-RTCPeerConnectionHandler::LocalDescription() {
+RTCSessionDescriptionPlatform* RTCPeerConnectionHandler::LocalDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::localDescription");
 
@@ -1476,8 +1473,7 @@ RTCPeerConnectionHandler::LocalDescription() {
       std::move(description_cb), "localDescription");
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
-RTCPeerConnectionHandler::RemoteDescription() {
+RTCSessionDescriptionPlatform* RTCPeerConnectionHandler::RemoteDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::remoteDescription");
   base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
@@ -1488,7 +1484,7 @@ RTCPeerConnectionHandler::RemoteDescription() {
       std::move(description_cb), "remoteDescription");
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::CurrentLocalDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::currentLocalDescription");
@@ -1501,7 +1497,7 @@ RTCPeerConnectionHandler::CurrentLocalDescription() {
       std::move(description_cb), "currentLocalDescription");
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::CurrentRemoteDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::currentRemoteDescription");
@@ -1513,7 +1509,7 @@ RTCPeerConnectionHandler::CurrentRemoteDescription() {
       std::move(description_cb), "currentRemoteDescription");
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::PendingLocalDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::pendingLocalDescription");
@@ -1525,7 +1521,7 @@ RTCPeerConnectionHandler::PendingLocalDescription() {
       std::move(description_cb), "pendingLocalDescription");
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::PendingRemoteDescription() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::pendingRemoteDescription");
@@ -2612,7 +2608,7 @@ RTCPeerConnectionHandler::signaling_thread() const {
   return dependency_factory_->GetWebRtcSignalingTaskRunner();
 }
 
-scoped_refptr<RTCSessionDescriptionPlatform>
+RTCSessionDescriptionPlatform*
 RTCPeerConnectionHandler::GetRTCSessionDescriptionPlatformOnSignalingThread(
     base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
         description_cb,
@@ -2637,7 +2633,7 @@ RTCPeerConnectionHandler::GetRTCSessionDescriptionPlatformOnSignalingThread(
   if (!success)
     return nullptr;
 
-  return RTCSessionDescriptionPlatform::Create(type, sdp);
+  return MakeGarbageCollected<RTCSessionDescriptionPlatform>(type, sdp);
 }
 
 void RTCPeerConnectionHandler::ReportICEState(

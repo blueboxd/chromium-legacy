@@ -48,10 +48,9 @@ class RTCSessionDescription final : public ScriptWrappable {
  public:
   static RTCSessionDescription* Create(ExecutionContext*,
                                        const RTCSessionDescriptionInit*);
-  static RTCSessionDescription* Create(
-      scoped_refptr<RTCSessionDescriptionPlatform>);
+  static RTCSessionDescription* Create(RTCSessionDescriptionPlatform*);
 
-  explicit RTCSessionDescription(scoped_refptr<RTCSessionDescriptionPlatform>);
+  explicit RTCSessionDescription(RTCSessionDescriptionPlatform*);
 
   String type() const;
   void setType(const String&);
@@ -61,10 +60,12 @@ class RTCSessionDescription final : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState*);
 
-  scoped_refptr<RTCSessionDescriptionPlatform> WebSessionDescription();
+  RTCSessionDescriptionPlatform* WebSessionDescription();
+
+  void Trace(blink::Visitor*) override;
 
  private:
-  scoped_refptr<RTCSessionDescriptionPlatform> platform_session_description_;
+  Member<RTCSessionDescriptionPlatform> platform_session_description_;
 };
 
 }  // namespace blink

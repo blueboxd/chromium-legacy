@@ -39,22 +39,16 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
   void CreateAnswer(RTCSessionDescriptionRequest*,
                     RTCAnswerOptionsPlatform*) override;
   void SetLocalDescription(RTCVoidRequest*) override;
-  void SetLocalDescription(
-      RTCVoidRequest*,
-      scoped_refptr<RTCSessionDescriptionPlatform>) override;
-  void SetRemoteDescription(
-      RTCVoidRequest*,
-      scoped_refptr<RTCSessionDescriptionPlatform>) override;
-  scoped_refptr<RTCSessionDescriptionPlatform> LocalDescription() override;
-  scoped_refptr<RTCSessionDescriptionPlatform> RemoteDescription() override;
-  scoped_refptr<RTCSessionDescriptionPlatform> CurrentLocalDescription()
-      override;
-  scoped_refptr<RTCSessionDescriptionPlatform> CurrentRemoteDescription()
-      override;
-  scoped_refptr<RTCSessionDescriptionPlatform> PendingLocalDescription()
-      override;
-  scoped_refptr<RTCSessionDescriptionPlatform> PendingRemoteDescription()
-      override;
+  void SetLocalDescription(RTCVoidRequest*,
+                           RTCSessionDescriptionPlatform*) override;
+  void SetRemoteDescription(RTCVoidRequest*,
+                            RTCSessionDescriptionPlatform*) override;
+  RTCSessionDescriptionPlatform* LocalDescription() override;
+  RTCSessionDescriptionPlatform* RemoteDescription() override;
+  RTCSessionDescriptionPlatform* CurrentLocalDescription() override;
+  RTCSessionDescriptionPlatform* CurrentRemoteDescription() override;
+  RTCSessionDescriptionPlatform* PendingLocalDescription() override;
+  RTCSessionDescriptionPlatform* PendingRemoteDescription() override;
   const webrtc::PeerConnectionInterface::RTCConfiguration& GetConfiguration()
       const override;
   webrtc::RTCErrorType SetConfiguration(

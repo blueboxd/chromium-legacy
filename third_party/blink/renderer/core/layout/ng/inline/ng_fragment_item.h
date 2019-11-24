@@ -204,7 +204,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   static PhysicalRect LocalVisualRectFor(const LayoutObject& layout_object);
 
   // Re-compute the ink overflow for the |cursor| until its end.
-  static PhysicalRect RecalcInkOverflowAll(NGInlineCursor* cursor);
+  static PhysicalRect RecalcInkOverflowForCursor(NGInlineCursor* cursor);
 
   // Re-compute the ink overflow for this item. |cursor| should be at |this|,
   // and is advanced to the next item on return.
@@ -333,6 +333,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
 
  private:
+  const LayoutBox* InkOverflowOwnerBox() const;
+  LayoutBox* MutableInkOverflowOwnerBox();
+
   const LayoutObject* layout_object_;
 
   // TODO(kojii): We can make them sub-classes if we need to make the vector of
@@ -364,6 +367,9 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   // Note: For |TextItem| and |GeneratedTextItem|, |text_direction_| equals to
   // |ShapeResult::Direction()|.
   unsigned text_direction_ : 1;  // TextDirection.
+
+  // Used only when |IsText()| to avoid re-computing ink overflow.
+  unsigned ink_overflow_computed_ : 1;
 };
 
 }  // namespace blink

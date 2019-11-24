@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -61,7 +62,7 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
 
     @Override
     public void destroy() {
-        if (mTab != null) mTab.destroy();
+        if (mTab != null) ((TabImpl) mTab).destroy();
         mTab = null;
 
         ProfileManager.removeObserver(this);
@@ -86,7 +87,7 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
                 "Startup.Android.StartupTabPreloader.TabTaken", tabMatches);
 
         if (!tabMatches) {
-            mTab.destroy();
+            ((TabImpl) mTab).destroy();
             mTab = null;
             mLoadUrlParams = null;
             return null;

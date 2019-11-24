@@ -19,6 +19,7 @@ import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -71,7 +72,7 @@ public class ScreenshotTabObserverTest {
         MetricsUtils.HistogramDelta histogramDeltaTwoScreenshots =
                 new MetricsUtils.HistogramDelta("Tab.Screenshot.ScreenshotsPerPage", 2);
         mObserver.onScreenshotTaken();
-        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> mTab.destroy());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> ((TabImpl) mTab).destroy());
         // Check the first 3 buckets of the NumberOfScrenshots metric.
         Assert.assertEquals("Should be no pages with zero snapshots reported", 0,
                 histogramDeltaZeroScreenshots.getDelta());
@@ -90,7 +91,7 @@ public class ScreenshotTabObserverTest {
                 new MetricsUtils.HistogramDelta("Tab.Screenshot.ScreenshotsPerPage", 2);
         mObserver.onScreenshotTaken();
         mObserver.onScreenshotTaken();
-        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> mTab.destroy());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> ((TabImpl) mTab).destroy());
         Assert.assertEquals("Should be one page with two snapshots reported", 1,
                 histogramDeltaTwoScreenshots.getDelta());
     }
@@ -108,7 +109,7 @@ public class ScreenshotTabObserverTest {
                 new MetricsUtils.HistogramDelta("Tab.Screenshot.Action", 2);
         mObserver.onScreenshotTaken();
         mObserver.onActionPerformedAfterScreenshot(ScreenshotTabObserver.SCREENSHOT_ACTION_SHARE);
-        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> mTab.destroy());
+        TestThreadUtils.runOnUiThreadBlocking((Runnable) () -> ((TabImpl) mTab).destroy());
         Assert.assertEquals("Should be no none actions reported", 0,
                 histogramDeltaScreenshotNoAction.getDelta());
         Assert.assertEquals("Should be one share action reported", 1,

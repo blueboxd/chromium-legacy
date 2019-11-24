@@ -39,7 +39,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     private static final Class<InterceptNavigationDelegateImpl> USER_DATA_KEY =
             InterceptNavigationDelegateImpl.class;
 
-    private final Tab mTab;
+    private final TabImpl mTab;
     private final AuthenticatorNavigationInterceptor mAuthenticatorHelper;
     private @OverrideUrlLoadingResult int mLastOverrideUrlLoadingResult =
             OverrideUrlLoadingResult.NO_OVERRIDE;
@@ -67,7 +67,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      */
     @VisibleForTesting
     InterceptNavigationDelegateImpl(Tab tab) {
-        mTab = tab;
+        mTab = (TabImpl) tab;
         mAuthenticatorHelper = AppHooks.get().createAuthenticatorNavigationInterceptor(mTab);
         mDelegateObserver = new EmptyTabObserver() {
             @Override
@@ -79,7 +79,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             public void onActivityAttachmentChanged(Tab tab, boolean attached) {
                 if (attached) {
                     setExternalNavigationHandler(
-                            tab.getDelegateFactory().createExternalNavigationHandler(tab));
+                            mTab.getDelegateFactory().createExternalNavigationHandler(tab));
                 }
             }
 

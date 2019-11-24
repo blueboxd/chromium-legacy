@@ -49,6 +49,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -129,8 +130,8 @@ public class TabGridDialogMediatorUnitTest {
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
 
-    private Tab mTab1;
-    private Tab mTab2;
+    private TabImpl mTab1;
+    private TabImpl mTab2;
     private PropertyModel mModel;
     private TabGridDialogMediator mMediator;
 
@@ -427,7 +428,7 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void tabAddition() {
-        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         // Mock that the animation source view is not null.
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
 
@@ -524,7 +525,7 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     public void tabClosure_NonRootTab_StillGroupAfterClosure_WithStoredTitle() {
         // Mock that tab1, tab2 and newTab are in the same group and tab1 is the root tab.
-        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab));
         createTabGroup(tabgroup, TAB1_ID);
 
@@ -551,7 +552,7 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     public void tabClosure_RootTab_StillGroupAfterClosure_WithStoredTitle() {
         // Mock that tab1, tab2 and newTab are in the same group and newTab is the root tab.
-        Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab));
         createTabGroup(tabgroup, TAB3_ID);
 
@@ -942,8 +943,8 @@ public class TabGridDialogMediatorUnitTest {
                 .removeTabModelFilterObserver(mTabModelObserverCaptor.capture());
     }
 
-    private Tab prepareTab(int id, String title) {
-        Tab tab = mock(Tab.class);
+    private TabImpl prepareTab(int id, String title) {
+        TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         doReturn(id).when(tab).getRootId();
         doReturn("").when(tab).getUrl();
@@ -955,7 +956,7 @@ public class TabGridDialogMediatorUnitTest {
     private void createTabGroup(List<Tab> tabs, int rootId) {
         for (Tab tab : tabs) {
             when(mTabGroupModelFilter.getRelatedTabList(tab.getId())).thenReturn(tabs);
-            doReturn(rootId).when(tab).getRootId();
+            doReturn(rootId).when(((TabImpl) tab)).getRootId();
         }
     }
 }

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.contextualsearch.SimpleSearchTermResolver;
 import org.chromium.chrome.browser.contextualsearch.SimpleSearchTermResolver.ResolveResponse;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -66,8 +67,8 @@ public class TaskRecognizer extends EmptyTabObserver implements ResolveResponse 
      * @param tab The tab that might be about a product.  Must be the current front tab.
      */
     private void tryToShowProduct(Tab tab) {
-        boolean isCurrentSelectedTab = tab != null && tab.getActivity() != null
-                && tab.equals(tab.getActivity().getActivityTab());
+        boolean isCurrentSelectedTab = tab != null && ((TabImpl) tab).getActivity() != null
+                && tab.equals(((TabImpl) tab).getActivity().getActivityTab());
         if (mTabInUse != null || !isCurrentSelectedTab) {
             return;
         }
@@ -131,9 +132,9 @@ public class TaskRecognizer extends EmptyTabObserver implements ResolveResponse 
      */
     private void createEphemeralTabFor(
             Tab activeTab, ResolvedSearchTerm resolvedSearchTerm, Uri searchUrl) {
-        if (activeTab == null || activeTab.getActivity() == null) return;
+        if (activeTab == null || ((TabImpl) activeTab).getActivity() == null) return;
 
-        EphemeralTabPanel displayPanel = activeTab.getActivity().getEphemeralTabPanel();
+        EphemeralTabPanel displayPanel = ((TabImpl) activeTab).getActivity().getEphemeralTabPanel();
         if (displayPanel != null) {
             displayPanel.requestOpenPanel(searchUrl.toString(), resolvedSearchTerm.displayText(),
                     activeTab.isIncognito());

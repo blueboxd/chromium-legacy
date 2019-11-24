@@ -21,6 +21,7 @@ import androidx.browser.customtabs.CustomTabsCallback;
 
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -124,7 +125,7 @@ public class DynamicModuleNavigationEventObserver extends EmptyTabObserver {
 
     @Override
     public void onDidAttachInterstitialPage(Tab tab) {
-        if (tab.getSecurityLevel() != ConnectionSecurityLevel.DANGEROUS) return;
+        if (((TabImpl) tab).getSecurityLevel() != ConnectionSecurityLevel.DANGEROUS) return;
         notifyOnNavigationEvent(NAVIGATION_FAILED, getExtrasBundleForNavigationEvent(tab));
     }
 }

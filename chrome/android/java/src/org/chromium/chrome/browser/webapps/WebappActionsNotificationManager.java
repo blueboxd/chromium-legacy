@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.Clipboard;
 
@@ -141,7 +142,9 @@ class WebappActionsNotificationManager {
             return true;
         } else if (ACTION_FOCUS.equals(intent.getAction())) {
             Tab tab = webappActivity.getActivityTab();
-            if (tab != null) Clipboard.getInstance().copyUrlToClipboard(tab.getOriginalUrl());
+            if (tab != null) {
+                Clipboard.getInstance().copyUrlToClipboard(((TabImpl) tab).getOriginalUrl());
+            }
             RecordUserAction.record("Webapp.NotificationFocused");
             return true;
         }

@@ -9,8 +9,8 @@
       // Check scroll position in a timeout to make sure that the anchor has been scrolled to.
       setTimeout(function() {
           shouldBeTrue('document.scrollingElement.scrollTop > 0');
-          shouldBeTrue('document.scrollingElement.scrollLeft == 0');
-          finishJSTest();          
+          shouldBeTrue('document.scrollingElement.scrollLeft > 0');
+          finishJSTest();
       }, 0);
     }
     var jsTestIsAsync = true;

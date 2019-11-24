@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -82,17 +83,17 @@ public class FeedNewTabPage
         ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
                 FeedProcessScopeFactory.getFeedConsumptionObserver(),
                 FeedProcessScopeFactory.getFeedOfflineIndicator(),
-                OfflinePageBridge.getForProfile(mTab.getProfile()),
+                OfflinePageBridge.getForProfile(((TabImpl) mTab).getProfile()),
                 FeedProcessScopeFactory.getFeedLoggingBridge());
-        LayoutInflater inflater = LayoutInflater.from(mTab.getActivity());
+        LayoutInflater inflater = LayoutInflater.from(((TabImpl) mTab).getActivity());
         mNewTabPageLayout = (NewTabPageLayout) inflater.inflate(R.layout.new_tab_page_layout, null);
         SectionHeaderView sectionHeaderView = (SectionHeaderView) inflater.inflate(
                 R.layout.new_tab_page_snippets_expandable_header, null, false);
-        mCoordinator = new FeedSurfaceCoordinator(mTab.getActivity(),
+        mCoordinator = new FeedSurfaceCoordinator(((TabImpl) mTab).getActivity(),
                 host.createHistoryNavigationDelegate(),
                 new SnapScrollHelper(mNewTabPageManager, mNewTabPageLayout), mNewTabPageLayout,
                 sectionHeaderView, actionApi,
-                mTab.getActivity().getNightModeStateProvider().isInNightMode(), this);
+                ((TabImpl) mTab).getActivity().getNightModeStateProvider().isInNightMode(), this);
 
         // Record the timestamp at which the new tab page's construction started.
         NewTabPageUma.trackTimeToFirstDraw(mCoordinator.getView(), mConstructedTimeNs);

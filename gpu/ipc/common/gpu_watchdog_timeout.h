@@ -33,7 +33,7 @@ constexpr int kRestartFactor = 2;
 // It takes longer to initialize GPU process in Windows. See
 // https://crbug.com/949839 for details.
 #if defined(OS_WIN)
-constexpr int kInitFactor = 4;
+constexpr int kInitFactor = 2;
 #else
 constexpr int kInitFactor = 1;
 #endif

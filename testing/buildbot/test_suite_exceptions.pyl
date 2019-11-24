@@ -54,7 +54,6 @@
       'Android FYI Release (Nexus 5)',  # crbug.com/915429
       'Android FYI Release (Nexus 6)',  # anglebug.com/2433
       'Linux FYI GPU TSAN Release',  # crbug.com/950542
-      'Win10 FYI x64 Exp Release (Intel HD 630)',  # crbug.com/1002313
     ],
   },
   'angle_unittests': {

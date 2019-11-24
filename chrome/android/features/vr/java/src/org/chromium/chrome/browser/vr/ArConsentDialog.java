@@ -16,6 +16,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -50,7 +51,7 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
     @CalledByNative
     private static ArConsentDialog showDialog(long instance, @NonNull final Tab tab) {
         ArConsentDialog dialog = new ArConsentDialog(instance);
-        dialog.show(tab.getActivity());
+        dialog.show(((TabImpl) tab).getActivity());
         return dialog;
     }
 

@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.RecentTabsManager;
 import org.chromium.chrome.browser.ntp.RecentTabsPage;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -79,7 +80,7 @@ public class NativePageFactory {
 
         protected NativePage buildRecentTabsPage(ChromeActivity activity, Tab tab) {
             RecentTabsManager recentTabsManager =
-                    new RecentTabsManager(tab, tab.getProfile(), activity);
+                    new RecentTabsManager(tab, ((TabImpl) tab).getProfile(), activity);
             return new RecentTabsPage(activity, recentTabsManager, new TabShim(tab));
         }
     }

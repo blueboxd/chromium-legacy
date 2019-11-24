@@ -23,6 +23,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content.R;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.WebContents;
@@ -35,7 +36,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 @Config(manifest = Config.NONE)
 public class ChromeActionModeCallbackTest {
     @Mock
-    private Tab mTab;
+    private TabImpl mTab;
     @Mock
     private ActionModeCallbackHelper mActionModeCallbackHelper;
     @Mock

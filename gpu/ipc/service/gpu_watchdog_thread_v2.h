@@ -178,6 +178,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   bool is_add_power_observer_called_ = false;
   bool is_power_observer_added_ = false;
 
+  // whether GpuWatchdogThreadEvent::kGpuWatchdogStart has been recorded.
+  bool is_watchdog_start_histogram_recorded = false;
+
   // For the experiment and the debugging purpose
   bool in_gpu_initialization_ = false;
   int num_of_timeout_after_power_resume_ = 0;

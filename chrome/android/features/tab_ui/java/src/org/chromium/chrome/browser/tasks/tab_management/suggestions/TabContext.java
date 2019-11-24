@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -82,8 +83,9 @@ public class TabContext {
          */
         public static TabInfo createFromTab(Tab tab) {
             String referrerUrl = getReferrerUrlFromTab(tab);
-            return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrl(), tab.getOriginalUrl(),
-                    referrerUrl != null ? referrerUrl : "", tab.getTimestampMillis());
+            return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrl(),
+                    ((TabImpl) tab).getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
+                    tab.getTimestampMillis());
         }
 
         private static String getReferrerUrlFromTab(Tab tab) {
@@ -186,8 +188,8 @@ public class TabContext {
             List<Tab> relatedTabs = tabModelFilter.getRelatedTabList(currentTab.getId());
 
             if (relatedTabs != null && relatedTabs.size() > 1) {
-                existingGroups.add(
-                        new TabGroupInfo(currentTab.getRootId(), createTabInfoList(relatedTabs)));
+                existingGroups.add(new TabGroupInfo(
+                        ((TabImpl) currentTab).getRootId(), createTabInfoList(relatedTabs)));
             } else {
                 ungroupedTabs.add(TabInfo.createFromTab(currentTab));
             }

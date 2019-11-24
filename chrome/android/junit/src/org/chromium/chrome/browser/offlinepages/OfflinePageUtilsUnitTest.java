@@ -31,7 +31,7 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.test.util.SadTabRule;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -50,7 +50,7 @@ public class OfflinePageUtilsUnitTest {
     @Mock
     private File mMockDataDirectory;
     @Mock
-    private Tab mTab;
+    private TabImpl mTab;
     @Mock
     private WebContents mWebContents;
     @Mock

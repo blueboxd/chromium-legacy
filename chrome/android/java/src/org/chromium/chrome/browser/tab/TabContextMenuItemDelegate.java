@@ -43,7 +43,7 @@ import java.util.Locale;
  * A default {@link ContextMenuItemDelegate} that supports the context menu functionality in Tab.
  */
 public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
-    private final Tab mTab;
+    private final TabImpl mTab;
     private boolean mLoadOriginalImageRequestedForPageLoad;
     private EmptyTabObserver mDataReductionProxyContextMenuTabObserver;
 
@@ -51,7 +51,7 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
      * Builds a {@link TabContextMenuItemDelegate} instance.
      */
     public TabContextMenuItemDelegate(Tab tab) {
-        mTab = tab;
+        mTab = (TabImpl) tab;
         mDataReductionProxyContextMenuTabObserver = new EmptyTabObserver() {
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
@@ -220,8 +220,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
                                   .getDataReductionProxyPassThroughHeader()
                         : null);
         loadUrlParams.setReferrer(referrer);
-        mTab.getActivity().getTabModelSelector().openNewTab(loadUrlParams,
-                TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
+        mTab.getActivity().getTabModelSelector().openNewTab(
+                loadUrlParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab, isIncognito());
     }
 
     @Override

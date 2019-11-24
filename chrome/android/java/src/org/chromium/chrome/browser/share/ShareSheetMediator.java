@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -187,7 +188,7 @@ class ShareSheetMediator {
         if (webContents.getMainFrame() == null) return false;
         String url = currentTab.getUrl();
         if (TextUtils.isEmpty(url)) return false;
-        if (currentTab.isShowingErrorPage() || currentTab.isShowingInterstitialPage()
+        if (currentTab.isShowingErrorPage() || ((TabImpl) currentTab).isShowingInterstitialPage()
                 || SadTab.isShowing(currentTab)) {
             return false;
         }

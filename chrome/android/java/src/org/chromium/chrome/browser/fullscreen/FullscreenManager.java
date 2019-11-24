@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.WebContents;
 
@@ -156,7 +157,7 @@ public abstract class FullscreenManager {
      */
     protected void updateMultiTouchZoomSupport(boolean enable) {
         Tab tab = getTab();
-        if (tab == null || tab.isHidden()) return;
+        if (tab == null || ((TabImpl) tab).isHidden()) return;
         WebContents webContents = tab.getWebContents();
         if (webContents != null) {
             GestureListenerManager manager = GestureListenerManager.fromWebContents(webContents);

@@ -706,8 +706,6 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 
-crbug.com/916631 external/wpt/css/cssom-view/scrollIntoView-horizontal-partially-visible.html [ Failure ]
-
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
@@ -2722,6 +2720,9 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/quirks/percentage-height-quirk-excludes-flex-grid-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-sizing/percentage-resolution-001.html [ Failure ]

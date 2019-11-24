@@ -150,10 +150,6 @@ std::string ReplaceHtmlTemplateValues(
 
   substitutions.push_back(svg.str());  // $6
 
-  substitutions.push_back(original_url);  // $7
-  substitutions.push_back(l10n_util::GetStringUTF8(
-      IDS_DOM_DISTILLER_VIEWER_CLOSE_READER_VIEW));  // $8
-
   return base::ReplaceStringPlaceholders(html_template, substitutions, nullptr);
 }
 

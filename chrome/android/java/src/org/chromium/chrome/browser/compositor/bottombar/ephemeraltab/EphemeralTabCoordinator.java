@@ -180,7 +180,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     private int getMaxSheetHeight() {
         Tab tab = mActivity.getActivityTabProvider().get();
         if (tab == null) return 0;
-        return (int) (tab.getHeight() * 0.9f);
+        return (int) (tab.getView().getHeight() * 0.9f);
     }
 
     private WebContentsObserver createWebContentsObserver() {

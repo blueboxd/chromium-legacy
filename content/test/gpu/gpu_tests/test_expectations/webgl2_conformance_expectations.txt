@@ -116,9 +116,6 @@ crbug.com/628395 [ d3d11 win intel ] conformance/* [ RetryOnFailure ]
 crbug.com/628395 [ d3d11 win intel ] conformance2/* [ RetryOnFailure ]
 crbug.com/628395 [ d3d11 win intel ] deqp/* [ RetryOnFailure ]
 
-crbug.com/1023745 [ win intel opengl passthrough ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1023745 [ win intel opengl passthrough ] conformance2/textures/video/* [ RetryOnFailure ]
-
 # Intel failed issues
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
 crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textures/misc/copy-texture-image-same-texture.html [ Failure ]
@@ -152,6 +149,12 @@ crbug.com/953243 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] confor
 # WEBGL_video_texture implementation.
 crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/ogles/GL/biuDepthRange/biuDepthRange_001_to_002.html [ Skip ]
 crbug.com/907195 [ opengl win passthrough intel intel_lt_25.20.100.6444 ] conformance/uniforms/no-over-optimization-on-uniform-array-09.html [ Skip ]
+
+# Flaky failure in IDirect3D9Ex::CreateDeviceEx during DXVAVideoDecodeAccelerator::Initialize on 26.20.100.7323 driver
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/video/* [ RetryOnFailure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/video/* [ RetryOnFailure ]
+crbug.com/1026468 [ win intel opengl passthrough ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 
 # Windows only.
 crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]

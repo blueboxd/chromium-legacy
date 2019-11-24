@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -152,7 +153,7 @@ public class PseudoTab {
      */
     public int getRootId() {
         if (mTab != null && mTab.get() != null) {
-            return mTab.get().getRootId();
+            return ((TabImpl) mTab.get()).getRootId();
         }
         assert mTabId != null;
         return TabAttributeCache.getRootId(mTabId);

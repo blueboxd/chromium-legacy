@@ -25,6 +25,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.vr.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.content_public.browser.WebContents;
@@ -60,7 +61,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
 
     private ConnectionInfoPopup(Context context, Tab tab) {
         mContext = context;
-        mModalDialogManager = tab.getActivity().getModalDialogManager();
+        mModalDialogManager = ((TabImpl) tab).getActivity().getModalDialogManager();
         mWebContents = tab.getWebContents();
 
         mCertificateViewer = new CertificateViewer(mContext);

@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.widget.Toast;
@@ -36,7 +37,7 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     public DevicePickerBottomSheetContent(ChromeActivity activity, NavigationEntry entry) {
         mActivity = activity;
         mAdapter = new DevicePickerBottomSheetAdapter(
-                activity.getActivityTabProvider().get().getProfile());
+                ((TabImpl) activity.getActivityTabProvider().get()).getProfile());
         mEntry = entry;
 
         createToolbarView();
@@ -136,8 +137,8 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
         TargetDeviceInfo targetDeviceInfo = mAdapter.getItem(position);
 
         Tab tab = mActivity.getActivityTabProvider().get();
-        SendTabToSelfAndroidBridge.addEntry(tab.getProfile(), mEntry.getUrl(), mEntry.getTitle(),
-                mEntry.getTimestamp(), targetDeviceInfo.cacheGuid);
+        SendTabToSelfAndroidBridge.addEntry(((TabImpl) tab).getProfile(), mEntry.getUrl(),
+                mEntry.getTitle(), mEntry.getTimestamp(), targetDeviceInfo.cacheGuid);
 
         Resources res = mActivity.getResources();
         String toastMessage =

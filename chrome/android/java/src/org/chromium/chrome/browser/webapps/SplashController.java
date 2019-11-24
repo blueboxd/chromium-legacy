@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -298,7 +299,7 @@ public class SplashController extends EmptyTabObserver implements InflationObser
         // Without this callback we were seeing a short flash of white between the splash screen and
         // the web content (crbug.com/734500).
         CompositorView compositorView =
-                tab.getActivity().getCompositorViewHolder().getCompositorView();
+                ((TabImpl) tab).getActivity().getCompositorViewHolder().getCompositorView();
         compositorView.surfaceRedrawNeededAsync(() -> { animateHideSplash(tab, reason); });
     }
 

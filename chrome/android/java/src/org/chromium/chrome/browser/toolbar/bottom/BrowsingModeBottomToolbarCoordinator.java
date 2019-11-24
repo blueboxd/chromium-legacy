@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserv
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
@@ -131,14 +132,15 @@ public class BrowsingModeBottomToolbarCoordinator {
             @Override
             public void onActivityTabChanged(Tab tab) {
                 if (tab == null) return;
-                final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+                TabImpl tabImpl = (TabImpl) tab;
+                final Tracker tracker = TrackerFactory.getTrackerForProfile(tabImpl.getProfile());
                 final Runnable completeRunnable = () -> {
                     listener.onClick(anchor);
                 };
-                tracker.addOnInitializedCallback(
-                        (ready)
-                                -> mMediator.showIPH(feature, tab.getActivity(), anchor, tracker,
-                                        completeRunnable));
+                tracker.addOnInitializedCallback((ready) -> {
+                    mMediator.showIPH(
+                            feature, tabImpl.getActivity(), anchor, tracker, completeRunnable);
+                });
                 mTabProvider.removeObserver(this);
             }
         });

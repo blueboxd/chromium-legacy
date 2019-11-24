@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.infobar.InstallableAmbientBadgeInfoBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -259,7 +260,9 @@ public class AppBannerManagerTest {
     }
 
     private String getExpectedDialogTitle(Tab tab) {
-        return tab.getActivity().getString(AppBannerManager.getHomescreenLanguageOption());
+        return ((TabImpl) tab)
+                .getActivity()
+                .getString(AppBannerManager.getHomescreenLanguageOption());
     }
 
     private void waitUntilNoDialogsShowing(final Tab tab) {

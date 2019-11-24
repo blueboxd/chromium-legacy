@@ -27,6 +27,7 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -67,8 +68,8 @@ public class TabSelectionEditorActionProviderUnitTest {
     @Mock
     TabGroupModelFilter mTabGroupModelFilter;
 
-    private Tab mTab1;
-    private Tab mTab2;
+    private TabImpl mTab1;
+    private TabImpl mTab2;
 
     @Before
     public void setUp() {
@@ -153,8 +154,8 @@ public class TabSelectionEditorActionProviderUnitTest {
         assertTrue(isProcessed.get());
     }
 
-    private Tab prepareTab(int id, String title) {
-        Tab tab = mock(Tab.class);
+    private TabImpl prepareTab(int id, String title) {
+        TabImpl tab = mock(TabImpl.class);
         when(tab.getView()).thenReturn(mock(View.class));
         when(tab.getUserDataHost()).thenReturn(new UserDataHost());
         doReturn(id).when(tab).getId();

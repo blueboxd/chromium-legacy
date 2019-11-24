@@ -13,6 +13,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -93,7 +94,7 @@ public class ChromeHttpAuthHandler extends EmptyTabObserver {
 
     @CalledByNative
     private void showDialog(Tab tab, WindowAndroid windowAndroid) {
-        if (tab == null || tab.isHidden() || windowAndroid == null) {
+        if (tab == null || ((TabImpl) tab).isHidden() || windowAndroid == null) {
             cancel();
             return;
         }

@@ -4,6 +4,7 @@ set noparent
 file://ipc/SECURITY_OWNERS
 
 per-file generate_vulkan_types.py=file://gpu/OWNERS
+per-file gpu_watchdog_timeout.h=file://gpu/OWNERS
 
 # The following lines are redundant, they're just to silence the presubmit
 per-file *_messages*.h=set noparent

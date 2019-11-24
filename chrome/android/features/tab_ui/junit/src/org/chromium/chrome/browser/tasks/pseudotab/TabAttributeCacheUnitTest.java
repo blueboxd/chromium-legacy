@@ -25,7 +25,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -67,8 +67,8 @@ public class TabAttributeCacheUnitTest {
     @Captor
     ArgumentCaptor<TabObserver> mTabObserverCaptor;
 
-    private Tab mTab1;
-    private Tab mTab2;
+    private TabImpl mTab1;
+    private TabImpl mTab2;
     private TabAttributeCache mCache;
 
     @Before
@@ -227,8 +227,8 @@ public class TabAttributeCacheUnitTest {
         Assert.assertEquals(rootId2, TabAttributeCache.getRootId(TAB2_ID));
     }
 
-    private Tab prepareTab(int id) {
-        Tab tab = mock(Tab.class);
+    private TabImpl prepareTab(int id) {
+        TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         return tab;
     }

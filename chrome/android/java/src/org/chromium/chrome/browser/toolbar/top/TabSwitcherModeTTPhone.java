@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
@@ -406,7 +407,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         // Check if there is no incognito tab, or all the incognito tabs are being closed.
         TabModel incognitoTabModel = mTabModelSelector.getModel(true);
         for (int i = 0; i < incognitoTabModel.getCount(); i++) {
-            if (!incognitoTabModel.getTabAt(i).isClosing()) return true;
+            if (!((TabImpl) incognitoTabModel.getTabAt(i)).isClosing()) return true;
         }
         return false;
     }

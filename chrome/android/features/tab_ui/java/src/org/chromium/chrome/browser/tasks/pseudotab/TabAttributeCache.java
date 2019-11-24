@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.LifetimeAssert;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -64,7 +65,7 @@ public class TabAttributeCache {
             @Override
             public void onRootIdChanged(Tab tab, int newRootId) {
                 if (tab.isIncognito()) return;
-                assert newRootId == tab.getRootId();
+                assert newRootId == ((TabImpl) tab).getRootId();
                 cacheRootId(tab.getId(), newRootId);
             }
         };
@@ -93,7 +94,7 @@ public class TabAttributeCache {
                     Tab tab = filter.getTabAt(i);
                     cacheUrl(tab.getId(), tab.getUrl());
                     cacheTitle(tab.getId(), tab.getTitle());
-                    cacheRootId(tab.getId(), tab.getRootId());
+                    cacheRootId(tab.getId(), ((TabImpl) tab).getRootId());
                 }
                 filter.addObserver(mTabModelObserver);
             }

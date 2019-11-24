@@ -135,6 +135,7 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
@@ -820,8 +821,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         Tab tab = getActivityTab();
         if (hasFocus) {
             if (tab != null) {
-                if (tab.isHidden()) {
-                    tab.show(TabSelectionType.FROM_USER);
+                if (((TabImpl) tab).isHidden()) {
+                    ((TabImpl) tab).show(TabSelectionType.FROM_USER);
                 } else {
                     // The visible Tab's renderer process may have died after the activity was
                     // paused. Ensure that it's restored appropriately.
@@ -837,7 +838,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             boolean stopped = ApplicationStatus.getStateForActivity(this) == ActivityState.STOPPED;
             if (stopped) {
                 VrModuleProvider.getDelegate().onActivityHidden(this);
-                if (tab != null) tab.hide(Tab.TabHidingType.ACTIVITY_HIDDEN);
+                if (tab != null) ((TabImpl) tab).hide(Tab.TabHidingType.ACTIVITY_HIDDEN);
             }
         }
 
@@ -965,7 +966,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         Tab tab = getActivityTab();
         if (!hasWindowFocus()) {
             VrModuleProvider.getDelegate().onActivityHidden(this);
-            if (tab != null) tab.hide(Tab.TabHidingType.ACTIVITY_HIDDEN);
+            if (tab != null) ((TabImpl) tab).hide(Tab.TabHidingType.ACTIVITY_HIDDEN);
         }
 
         if (GSAState.getInstance(this).isGsaAvailable() && !SysUtils.isLowEndDevice()) {
@@ -1662,7 +1663,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         bookmarkModel.finishLoadingBookmarkModel(() -> {
             // Gives up the bookmarking if the tab is being destroyed.
-            if (!tabToBookmark.isClosing() && tabToBookmark.isInitialized()) {
+            if (!((TabImpl) tabToBookmark).isClosing()
+                    && ((TabImpl) tabToBookmark).isInitialized()) {
                 // The BookmarkModel will be destroyed by BookmarkUtils#addOrEditBookmark() when
                 // done.
                 BookmarkId newBookmarkId = BookmarkUtils.addOrEditBookmark(bookmarkId,
@@ -2195,7 +2197,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             HistoryManagerUtils.showHistoryManager(this, currentTab);
         } else if (id == R.id.translate_id) {
             RecordUserAction.record("MobileMenuTranslate");
-            Tracker tracker = TrackerFactory.getTrackerForProfile(getActivityTab().getProfile());
+            Tracker tracker =
+                    TrackerFactory.getTrackerForProfile(((TabImpl) getActivityTab()).getProfile());
             tracker.notifyEvent(EventConstants.TRANSLATE_MENU_BUTTON_CLICKED);
             TranslateBridge.translateTabWhenReady(getActivityTab());
         } else if (id == R.id.print_id) {
@@ -2262,7 +2265,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public void addViewObscuringAllTabs(View view) {
         mViewsObscuringAllTabs.add(view);
 
-        Tab tab = getActivityTab();
+        TabImpl tab = (TabImpl) getActivityTab();
         if (tab != null) tab.updateAccessibilityVisibility();
     }
 
@@ -2274,7 +2277,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public void removeViewObscuringAllTabs(View view) {
         mViewsObscuringAllTabs.remove(view);
 
-        Tab tab = getActivityTab();
+        TabImpl tab = (TabImpl) getActivityTab();
         if (tab != null) tab.updateAccessibilityVisibility();
     }
 

@@ -268,41 +268,8 @@ h6 {
 
 /* Margins for Show Original link. */
 
-.light #closeReaderView {
-  border-top: 1px solid #E0E0E0;
-  color: rgb(66, 133, 244);
-}
-
-.dark #closeReaderView {
-  border-top: 1px solid #555;
-  color: rgb(58, 218, 255);
-}
-
-.sepia #closeReaderView {
-  border-top: 1px solid rgb(147, 125, 102);
-  color: rgb(85, 85, 255);
-}
-
 video::-webkit-media-controls-fullscreen-button {
   display: none;
-}
-
-#closeReaderView {
-  /*
-  TODO(mdjones): Remove the "display: none;" style when the Reader Mode bar
-                 behaves like the toolbar when scrolling.
-  */
-  display: none;
-  flex: 0 0 auto;
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 14px;
-  padding: 24px 16px;
-  text-align: right;
-  text-decoration: none;
-  text-transform: uppercase;
-  width: 100%;
 }
 
 #content {

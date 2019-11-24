@@ -164,14 +164,6 @@ function updateSliderFromElement(element) {
   }
 }
 
-// Add a listener to the "View Original" link to report opt-outs.
-document.getElementById('closeReaderView')
-    .addEventListener('click', function(e) {
-      if (distiller) {
-        distiller.closePanel(true);
-      }
-    }, true);
-
 updateToolbarColor();
 maybeSetWebFont();
 updateSliderFromElement(document.querySelector('#fontSizeSelection'));

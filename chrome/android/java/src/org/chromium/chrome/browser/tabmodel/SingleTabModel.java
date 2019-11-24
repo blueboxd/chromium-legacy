@@ -11,6 +11,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 
 import java.util.List;
 
@@ -53,20 +54,20 @@ public class SingleTabModel implements TabModel {
             int state = ApplicationStatus.getStateForActivity(mActivity);
             if (state == ActivityState.CREATED || state == ActivityState.STARTED
                     || state == ActivityState.RESUMED) {
-                mTab.show(TabSelectionType.FROM_USER);
+                ((TabImpl) mTab).show(TabSelectionType.FROM_USER);
             }
         }
-        if (oldTab != null && oldTab.isInitialized()) {
+        if (oldTab != null && ((TabImpl) oldTab).isInitialized()) {
             for (TabModelObserver observer : mObservers) {
                 observer.didCloseTab(oldTab.getId(), oldTab.isIncognito());
             }
-            oldTab.destroy();
+            ((TabImpl) oldTab).destroy();
         }
     }
 
     @Override
     public Profile getProfile() {
-        return mTab == null ? null : mTab.getProfile();
+        return mTab == null ? null : ((TabImpl) mTab).getProfile();
     }
 
     @Override
@@ -152,7 +153,7 @@ public class SingleTabModel implements TabModel {
 
     @Override
     public void destroy() {
-        if (mTab != null) mTab.destroy();
+        if (mTab != null) ((TabImpl) mTab).destroy();
         mTab = null;
     }
 

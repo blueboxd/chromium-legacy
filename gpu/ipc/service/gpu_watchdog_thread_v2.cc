@@ -178,8 +178,6 @@ void GpuWatchdogThreadImplV2::Init() {
     remaining_watched_thread_ticks_ = timeout;
   }
 #endif
-
-  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
 }
 
 // Running on the watchdog thread.
@@ -355,6 +353,17 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   DCHECK(!is_backgrounded_);
   DCHECK(!in_power_suspension_);
   DCHECK(!is_paused_);
+
+  // If this metric is added too early (eg. watchdog creation time), it cannot
+  // be persistent. The histogram data will be lost after crash or browser exit.
+  // Delay the recording of kGpuWatchdogStart until the firs
+  // OnWatchdogTimeout() to ensure this metric is created in the persistent
+  // memory.
+  if (!is_watchdog_start_histogram_recorded) {
+    is_watchdog_start_histogram_recorded = true;
+    GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
+  }
+
   base::subtle::Atomic32 arm_disarm_counter =
       base::subtle::NoBarrier_Load(&arm_disarm_counter_);
   GpuWatchdogTimeoutHistogram(GpuWatchdogTimeoutEvent::kTimeout);
@@ -553,17 +562,12 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
 
 void GpuWatchdogThreadImplV2::GpuWatchdogHistogram(
     GpuWatchdogThreadEvent thread_event) {
-  UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event.V2", thread_event);
-  UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event", thread_event);
+  base::UmaHistogramEnumeration("GPU.WatchdogThread.Event.V2", thread_event);
+  base::UmaHistogramEnumeration("GPU.WatchdogThread.Event", thread_event);
 }
 
 void GpuWatchdogThreadImplV2::GpuWatchdogTimeoutHistogram(
     GpuWatchdogTimeoutEvent timeout_event) {
-  // The histogram needs to be allocated in the persistent memory, or the data
-  // will be lost after crash.
-  if (!is_test_mode_)
-    DCHECK(base::GlobalHistogramAllocator::Get());
-
   if (in_gpu_initialization_) {
     base::UmaHistogramEnumeration("GPU.WatchdogThread.Timeout.Init",
                                   timeout_event);

@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.suggestions.tile.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
@@ -229,7 +230,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
             mIsLoaded = true;
             NewTabPageUma.recordNTPImpression(NewTabPageUma.NTP_IMPRESSION_REGULAR);
             // If not visible when loading completes, wait until onShown is received.
-            if (!mTab.isHidden()) recordNTPShown();
+            if (!((TabImpl) mTab).isHidden()) recordNTPShown();
         }
     }
 
@@ -282,7 +283,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mActivityTabProvider = activityTabProvider;
         mActivityLifecycleDispatcher = activityLifecycleDispatcher;
         mTab = nativePageHost.getActiveTab();
-        Profile profile = mTab.getProfile();
+        Profile profile = ((TabImpl) mTab).getProfile();
 
         SuggestionsDependencyFactory depsFactory = SuggestionsDependencyFactory.getInstance();
         SuggestionsSource suggestionsSource = depsFactory.createSuggestionSource(profile);
@@ -674,7 +675,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         assert !mIsDestroyed;
         assert !ViewCompat
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
-        if (mIsLoaded && !mTab.isHidden()) recordNTPHidden();
+        if (mIsLoaded && !((TabImpl) mTab).isHidden()) recordNTPHidden();
 
         mNewTabPageManager.onDestroy();
         mTileGroupDelegate.destroy();

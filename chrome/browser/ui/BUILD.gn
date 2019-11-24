@@ -461,6 +461,7 @@ jumbo_static_library("ui") {
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/browser:affiliation",
+    "//components/password_manager/core/browser:csv",
     "//components/payments/content:utils",
     "//components/payments/content/icon",
     "//components/payments/core:error_strings",

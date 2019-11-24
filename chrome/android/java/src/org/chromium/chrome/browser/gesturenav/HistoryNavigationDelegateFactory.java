@@ -14,6 +14,7 @@ import org.chromium.base.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 import java.lang.reflect.Field;
@@ -61,12 +62,12 @@ public class HistoryNavigationDelegateFactory {
      * TODO(jinsukkim): Remove the early returns when q is available for upstream.
      */
     public static HistoryNavigationDelegate create(Tab tab) {
-        if (!isFeatureFlagEnabled() || tab.getActivity() == null) return DEFAULT;
+        if (!isFeatureFlagEnabled() || ((TabImpl) tab).getActivity() == null) return DEFAULT;
 
         return new HistoryNavigationDelegate() {
             // TODO(jinsukkim): Avoid getting activity from tab.
             private final Supplier<BottomSheetController> mController = () -> {
-                ChromeActivity activity = tab.getActivity();
+                ChromeActivity activity = ((TabImpl) tab).getActivity();
                 return activity == null || activity.isActivityFinishingOrDestroyed()
                         ? null
                         : activity.getBottomSheetController();

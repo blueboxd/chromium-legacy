@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.instantapps.AuthenticatedProxyActivity;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -385,8 +386,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                             public void onClick(DialogInterface dialog, int which) {
                                 try {
                                     startActivity(intent, proxy);
-                                    if (mTab != null && !mTab.isClosing() && mTab.isInitialized()
-                                            && needsToCloseTab) {
+                                    TabImpl tab = (TabImpl) mTab;
+                                    if (mTab != null && !((TabImpl) tab).isClosing()
+                                            && ((TabImpl) tab).isInitialized() && needsToCloseTab) {
                                         closeTab();
                                     }
                                 } catch (ActivityNotFoundException e) {
@@ -459,7 +461,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     private void loadIntent(Intent intent, String referrerUrl, String fallbackUrl, Tab tab,
             boolean needsToCloseTab, boolean launchIncogntio) {
         boolean needsToStartIntent = false;
-        if (tab == null || tab.isClosing() || !tab.isInitialized()) {
+        if (tab == null || ((TabImpl) tab).isClosing() || !((TabImpl) tab).isInitialized()) {
             needsToStartIntent = true;
             needsToCloseTab = false;
         } else if (needsToCloseTab) {

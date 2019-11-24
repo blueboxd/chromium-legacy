@@ -18,7 +18,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
     private static final Class<TabBrowserControlsState> USER_DATA_KEY =
             TabBrowserControlsState.class;
 
-    private final Tab mTab;
+    private final TabImpl mTab;
     private long mNativeTabBrowserControlsState; // Lazily initialized in |update|
     private BrowserControlsVisibilityDelegate mVisibilityDelegate;
 
@@ -77,7 +77,7 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
     /** Constructor */
     private TabBrowserControlsState(Tab tab) {
         super(tab);
-        mTab = tab;
+        mTab = (TabImpl) tab;
         mTab.addObserver(new EmptyTabObserver() {
             @Override
             public void onSSLStateUpdated(Tab tab) {
@@ -87,14 +87,14 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
             @Override
             public void onInitialized(Tab tab, TabState tabState) {
                 mVisibilityDelegate =
-                        tab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
+                        mTab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
             }
 
             @Override
             public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
                 if (isAttached) {
                     mVisibilityDelegate =
-                            tab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
+                            mTab.getDelegateFactory().createBrowserControlsVisibilityDelegate(tab);
                 }
             }
 

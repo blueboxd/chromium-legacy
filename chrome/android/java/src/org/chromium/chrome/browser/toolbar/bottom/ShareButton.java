@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.ui.widget.ChromeImageButton;
 
@@ -96,7 +97,7 @@ class ShareButton extends ChromeImageButton implements TintObserver {
         final String url = tab.getUrl();
         final boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                 || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
-        final boolean isEnabled = !isChromeScheme && !tab.isShowingInterstitialPage();
+        final boolean isEnabled = !isChromeScheme && !((TabImpl) tab).isShowingInterstitialPage();
         setEnabled(isEnabled);
         if (mWrapper != null) mWrapper.setEnabled(isEnabled);
         if (mLabel != null) mLabel.setEnabled(isEnabled);

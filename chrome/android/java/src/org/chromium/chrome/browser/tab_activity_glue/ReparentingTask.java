@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.content_public.browser.WebContents;
@@ -134,7 +135,7 @@ public class ReparentingTask implements UserData {
             @Nullable Runnable finalizeCallback) {
         activity.getCompositorViewHolder().prepareForTabReparenting();
         attach(activity.getWindowAndroid(), tabDelegateFactory);
-        mTab.setIsTabStateDirty(true);
+        ((TabImpl) mTab).setIsTabStateDirty(true);
         if (finalizeCallback != null) finalizeCallback.run();
     }
 
@@ -147,7 +148,7 @@ public class ReparentingTask implements UserData {
      * @param tabDelegateFactory  The new delegate factory this tab should be using.
      */
     private void attach(WindowAndroid window, TabDelegateFactory tabDelegateFactory) {
-        assert Tab.isDetached(mTab);
+        assert TabImpl.isDetached(mTab);
         mTab.updateAttachment(window, tabDelegateFactory);
         ReparentingTaskJni.get().attachTab(mTab.getWebContents());
     }

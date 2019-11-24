@@ -171,7 +171,7 @@ public class SadTabTest {
      */
     private static void simulateRendererKilled(final Tab tab, final boolean visible) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            if (!visible) tab.hide(TabHidingType.CHANGED_TABS);
+            if (!visible) ((TabImpl) tab).hide(TabHidingType.CHANGED_TABS);
             ChromeTabUtils.simulateRendererKilledForTesting(tab, false);
         });
     }

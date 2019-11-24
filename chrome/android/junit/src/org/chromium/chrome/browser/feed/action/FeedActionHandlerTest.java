@@ -40,7 +40,7 @@ import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
@@ -70,7 +70,7 @@ public class FeedActionHandlerTest {
     @Mock
     private FeedLoggingBridge mLoggingBridge;
     @Mock
-    private Tab mTab;
+    private TabImpl mTab;
     @Mock
     private WebContents mWebContents;
     @Mock

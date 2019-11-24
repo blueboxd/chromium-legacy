@@ -19,7 +19,7 @@ import org.chromium.content_public.browser.WebContents;
 public class TrustedCdn extends TabWebContentsUserData {
     private static final Class<TrustedCdn> USER_DATA_KEY = TrustedCdn.class;
 
-    private final Tab mTab;
+    private final TabImpl mTab;
     private final long mNativeTrustedCdn;
 
     /**
@@ -50,7 +50,7 @@ public class TrustedCdn extends TabWebContentsUserData {
 
     private TrustedCdn(Tab tab) {
         super(tab);
-        mTab = tab;
+        mTab = (TabImpl) tab;
         mNativeTrustedCdn = TrustedCdnJni.get().init(TrustedCdn.this);
     }
 

@@ -32,12 +32,12 @@ import org.chromium.content_public.browser.WebContents;
  * some calls to the registered {@link TabObserver}.
  */
 public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
-    protected final Tab mTab;
+    protected final TabImpl mTab;
     protected Handler mHandler;
     private final Runnable mCloseContentsRunnable;
 
     public TabWebContentsDelegateAndroid(Tab tab) {
-        mTab = tab;
+        mTab = (TabImpl) tab;
         mHandler = new Handler();
         mCloseContentsRunnable = () -> {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();

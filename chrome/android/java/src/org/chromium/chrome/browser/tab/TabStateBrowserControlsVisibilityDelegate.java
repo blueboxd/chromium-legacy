@@ -32,7 +32,7 @@ public class TabStateBrowserControlsVisibilityDelegate
 
     private static boolean sDisableLoadingCheck;
 
-    protected final Tab mTab;
+    protected final TabImpl mTab;
 
     private boolean mIsFullscreenWaitingForLoad;
 
@@ -41,7 +41,7 @@ public class TabStateBrowserControlsVisibilityDelegate
      * @param tab The associated {@link Tab}.
      */
     public TabStateBrowserControlsVisibilityDelegate(Tab tab) {
-        mTab = tab;
+        mTab = (TabImpl) tab;
 
         mTab.addObserver(new EmptyTabObserver() {
             @SuppressLint("HandlerLeak")

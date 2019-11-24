@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -147,7 +148,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
             }
 
             private boolean hasSecurityWarningOrError(Tab tab) {
-                int securityLevel = tab.getSecurityLevel();
+                int securityLevel = ((TabImpl) tab).getSecurityLevel();
                 return securityLevel == ConnectionSecurityLevel.DANGEROUS;
             }
         };
@@ -245,7 +246,7 @@ public class CustomTabTaskDescriptionHelper implements NativeInitObserver, Destr
 
         final String currentUrl = currentTab.getUrl();
         mFaviconHelper.getLocalFaviconImageForURL(
-                currentTab.getProfile(), currentTab.getUrl(), 0, (image, iconUrl) -> {
+                ((TabImpl) currentTab).getProfile(), currentTab.getUrl(), 0, (image, iconUrl) -> {
                     if (mTabProvider.getTab() == null
                             || !TextUtils.equals(currentUrl, mTabProvider.getTab().getUrl())) {
                         return;

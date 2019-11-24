@@ -11,6 +11,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -137,7 +138,7 @@ public class PermissionDialogController
         assert mState == State.NOT_SHOWING;
 
         mDialogDelegate = mRequestQueue.remove(0);
-        ChromeActivity activity = mDialogDelegate.getTab().getActivity();
+        ChromeActivity activity = ((TabImpl) mDialogDelegate.getTab()).getActivity();
 
         // It's possible for the activity to be null if we reach here just after the user
         // backgrounds the browser and cleanup has happened. In that case, we can't show a prompt,
@@ -157,7 +158,8 @@ public class PermissionDialogController
             return;
         }
 
-        mModalDialogManager = mDialogDelegate.getTab().getActivity().getModalDialogManager();
+        mModalDialogManager =
+                ((TabImpl) mDialogDelegate.getTab()).getActivity().getModalDialogManager();
         mDialogModel = PermissionDialogModel.getModel(this, mDialogDelegate);
         mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.TAB);
         mState = State.PROMPT_OPEN;
@@ -203,7 +205,8 @@ public class PermissionDialogController
             // no system level permissions need to be requested, so just run the
             // accept callback.
             mState = State.REQUEST_ANDROID_PERMISSIONS;
-            if (!AndroidPermissionRequester.requestAndroidPermissions(mDialogDelegate.getTab(),
+            if (!AndroidPermissionRequester.requestAndroidPermissions(
+                        ((TabImpl) mDialogDelegate.getTab()),
                         mDialogDelegate.getContentSettingsTypes(),
                         PermissionDialogController.this)) {
                 onAndroidPermissionAccepted();

@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -529,7 +530,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         if (v == mTitleUrlContainer) {
             Tab tab = getCurrentTab();
             if (tab == null) return false;
-            Clipboard.getInstance().copyUrlToClipboard(tab.getOriginalUrl());
+            Clipboard.getInstance().copyUrlToClipboard(((TabImpl) tab).getOriginalUrl());
             return true;
         }
         return false;

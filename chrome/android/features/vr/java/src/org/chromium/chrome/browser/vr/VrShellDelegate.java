@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
@@ -793,14 +794,14 @@ public class VrShellDelegate
     private static void startFeedback(Tab tab) {
         // TODO(ymalik): This call will connect to the Google Services api which can be slow. Can we
         // connect to it beforehand when we know that we'll be prompting for feedback?
-        HelpAndFeedback.getInstance().showFeedback(tab.getActivity(), tab.getProfile(),
-                tab.getUrl(),
+        HelpAndFeedback.getInstance().showFeedback(((TabImpl) tab).getActivity(),
+                ((TabImpl) tab).getProfile(), tab.getUrl(),
                 ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_REPORT_TYPE);
     }
 
     private static void promptForFeedback(final Tab tab) {
         if (tab == null) return;
-        final ChromeActivity activity = tab.getActivity();
+        final ChromeActivity activity = ((TabImpl) tab).getActivity();
         SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {
             @Override
             public void onInfoBarDismissed() {}

@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -61,16 +61,16 @@ public class ChromeActivityTest {
     @RetryOnFailure
     public void testTabVisibility() {
         // Create two tabs - tab[0] in the foreground and tab[1] in the background.
-        final Tab[] tabs = new Tab[2];
+        final TabImpl[] tabs = new TabImpl[2];
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Foreground tab.
             ChromeTabCreator tabCreator =
                     mActivityTestRule.getActivity().getCurrentTabCreator();
-            tabs[0] = tabCreator.createNewTab(
-                    new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                    TabLaunchType.FROM_CHROME_UI, null);
+            tabs[0] = (TabImpl) tabCreator.createNewTab(
+                    new LoadUrlParams(mTestServer.getURL(FILE_PATH)), TabLaunchType.FROM_CHROME_UI,
+                    null);
             // Background tab.
-            tabs[1] = tabCreator.createNewTab(
+            tabs[1] = (TabImpl) tabCreator.createNewTab(
                     new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
                     TabLaunchType.FROM_LONGPRESS_BACKGROUND, null);
         });

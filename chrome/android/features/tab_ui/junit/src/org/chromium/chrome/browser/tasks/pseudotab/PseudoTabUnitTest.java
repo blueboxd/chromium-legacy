@@ -22,6 +22,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -50,9 +51,9 @@ public class PseudoTabUnitTest {
     @Mock
     TabModelFilterProvider mTabModelFilterProvider;
 
-    private Tab mTab1;
-    private Tab mTab2;
-    private Tab mTab3;
+    private TabImpl mTab1;
+    private TabImpl mTab2;
+    private TabImpl mTab3;
 
     @Before
     public void setUp() {
@@ -393,8 +394,8 @@ public class PseudoTabUnitTest {
         Assert.assertEquals(TAB2_ID, related.get(1).getId());
     }
 
-    private Tab prepareTab(int id) {
-        Tab tab = mock(Tab.class);
+    private TabImpl prepareTab(int id) {
+        TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         return tab;
     }

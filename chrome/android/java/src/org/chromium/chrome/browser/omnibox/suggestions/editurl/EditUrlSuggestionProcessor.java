@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionHost;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -302,7 +303,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.
-            activityTab.getActivity().getShareDelegate().share(activityTab, false);
+            ((TabImpl) activityTab).getActivity().getShareDelegate().share(activityTab, false);
         } else if (R.id.url_edit_icon == view.getId()) {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.EDIT);
             ACTION_EDIT_URL_SUGGESTION_EDIT.record();

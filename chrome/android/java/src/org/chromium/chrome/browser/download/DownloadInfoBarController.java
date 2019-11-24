@@ -19,6 +19,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeviceConditions;
@@ -31,6 +32,7 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -363,6 +365,11 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         return mCurrentInfoBar != null;
     }
 
+    private ChromeActivity getActivity() {
+        Tab tab = getCurrentTab();
+        return tab == null ? null : ((TabImpl) tab).getActivity();
+    }
+
     /**
      * Helper method to get the parameters for showing accelerated download infobar IPH.
      * @return The UI parameters to show IPH, if an IPH should be shown, null otherwise.
@@ -370,8 +377,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     public IPHInfoBarSupport.TrackerParameters getTrackerParameters() {
         if (getDownloadCount().inProgress == 0) return null;
 
-        if (getCurrentTab() == null || getCurrentTab().getActivity() == null
-                || getCurrentTab().getActivity().getBottomSheetController().isSheetOpen()) {
+        if (getActivity() == null || getActivity().getBottomSheetController().isSheetOpen()) {
             return null;
         }
 
@@ -840,12 +846,11 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     private void maybeShowDownloadsStillInProgressIPH() {
         if (getDownloadCount().inProgress == 0) return;
-        if (getCurrentTab() == null
-                || !(getCurrentTab().getActivity() instanceof ChromeTabbedActivity)) {
+        if (getCurrentTab() == null || !(getActivity() instanceof ChromeTabbedActivity)) {
             return;
         }
 
-        ChromeTabbedActivity activity = (ChromeTabbedActivity) getCurrentTab().getActivity();
+        ChromeTabbedActivity activity = (ChromeTabbedActivity) getActivity();
         Profile profile = mIsIncognito ? Profile.getLastUsedProfile().getOffTheRecordProfile()
                                        : Profile.getLastUsedProfile().getOriginalProfile();
         activity.getToolbarButtonInProductHelpController().maybeShowDownloadContinuingIPH(profile);

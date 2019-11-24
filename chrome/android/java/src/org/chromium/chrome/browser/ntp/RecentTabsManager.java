@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.signin.SigninPromoController;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChromeSigninController;
@@ -225,7 +226,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void openHistoryPage() {
         if (mIsDestroyed) return;
-        HistoryManagerUtils.showHistoryManager(mTab.getActivity(), mTab);
+        HistoryManagerUtils.showHistoryManager(((TabImpl) mTab).getActivity(), mTab);
     }
 
     /**

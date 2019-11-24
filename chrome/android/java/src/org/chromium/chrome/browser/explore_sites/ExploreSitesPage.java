@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.native_page.NativePageNavigationDelegateImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -198,7 +199,7 @@ public class ExploreSitesPage extends BasicNativePage {
         mTitle = activity.getString(R.string.explore_sites_title);
         mView = (HistoryNavigationLayout) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
-        mProfile = mHost.getActiveTab().getProfile();
+        mProfile = ((TabImpl) mHost.getActiveTab()).getProfile();
 
         mDenseVariation = ExploreSitesBridge.getDenseVariation();
         int maxRows;
@@ -256,7 +257,7 @@ public class ExploreSitesPage extends BasicNativePage {
 
         // Don't direct reference activity because it might change if tab is reparented.
         Runnable closeContextMenuCallback =
-                () -> host.getActiveTab().getActivity().closeContextMenu();
+                () -> ((TabImpl) host.getActiveTab()).getActivity().closeContextMenu();
 
         mContextMenuManager = createContextMenuManager(
                 navDelegate, closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);

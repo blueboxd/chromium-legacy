@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.offlinepages.SavePageResult;
@@ -318,7 +319,7 @@ public class OfflinePageUtilsTest {
             OfflinePageItem privateOfflinePageItem = new OfflinePageItem(uriPath, OFFLINE_ID,
                     namespace, PAGE_ID, TITLE, filePath, FILE_SIZE, 0, 0, 0, REQUEST_ORIGIN);
             OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(
-                    mActivityTestRule.getActivity().getActivityTab().getProfile());
+                    ((TabImpl) mActivityTestRule.getActivity().getActivityTab()).getProfile());
 
             boolean isSharable = OfflinePageUtils.isOfflinePageShareable(
                     offlinePageBridge, privateOfflinePageItem, Uri.parse(uriPath));

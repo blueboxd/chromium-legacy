@@ -89,6 +89,11 @@ public class BottomSheetControllerTest {
         return (BottomSheet) mSheetController.getBottomSheetViewForTesting();
     }
 
+    /** @return The height of the container view. */
+    private int getContainerHeight() {
+        return mActivityTestRule.getActivity().getActivityTabProvider().get().getView().getHeight();
+    }
+
     @Test
     @SmallTest
     @Feature({"BottomSheetController"})
@@ -377,8 +382,7 @@ public class BottomSheetControllerTest {
     @MediumTest
     public void testCustomHalfRatio() throws TimeoutException {
         final float customHalfHeight = 0.3f;
-        int containerHeight =
-                mActivityTestRule.getActivity().getActivityTabProvider().get().getHeight();
+        int containerHeight = getContainerHeight();
         mLowPriorityContent.setHalfHeightRatio(customHalfHeight);
         requestContentInSheet(mLowPriorityContent, true);
 
@@ -393,8 +397,7 @@ public class BottomSheetControllerTest {
     @MediumTest
     public void testCustomFullRatio() throws TimeoutException {
         final float customFullHeight = 0.5f;
-        int containerHeight =
-                mActivityTestRule.getActivity().getActivityTabProvider().get().getHeight();
+        int containerHeight = getContainerHeight();
         mLowPriorityContent.setFullHeightRatio(customFullHeight);
         requestContentInSheet(mLowPriorityContent, true);
 

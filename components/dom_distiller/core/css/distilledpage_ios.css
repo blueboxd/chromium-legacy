@@ -9,10 +9,6 @@
   -webkit-flex: 1 1 auto;
 }
 
-#closeReaderView {
-  -webkit-flex: 0 0 auto;
-}
-
 #contentWrap {
   -webkit-flex-flow: column;
   display: -webkit-flex;

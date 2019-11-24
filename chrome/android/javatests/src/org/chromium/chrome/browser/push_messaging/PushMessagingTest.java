@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.notifications.NotificationTestRule;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
@@ -235,7 +236,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
         Assert.assertEquals(1, mNotificationTestRule.getActivity().getCurrentTabModel().getCount());
         Tab tab = mNotificationTestRule.getActivity().getActivityTab();
         Assert.assertEquals(mPushTestPage, tab.getUrl());
-        Assert.assertFalse(tab.isHidden());
+        Assert.assertFalse(((TabImpl) tab).isHidden());
 
         // Set up the push subscription and capture its details.
         mNotificationTestRule.setNotificationContentSettingForOrigin(
@@ -249,7 +250,7 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
         Assert.assertEquals(2, mNotificationTestRule.getActivity().getCurrentTabModel().getCount());
         Assert.assertEquals(
                 ABOUT_BLANK, mNotificationTestRule.getActivity().getActivityTab().getUrl());
-        Assert.assertTrue(tab.isHidden());
+        Assert.assertTrue(((TabImpl) tab).isHidden());
 
         // The first time a push event is fired and no notification is shown from the service
         // worker, grace permits it so no default notification is shown.

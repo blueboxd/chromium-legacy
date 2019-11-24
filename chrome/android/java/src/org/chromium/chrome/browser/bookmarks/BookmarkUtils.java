@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -71,8 +72,8 @@ public class BookmarkUtils {
             return bookmarkId;
         }
 
-        BookmarkId bookmarkId =
-                addBookmarkInternal(activity, bookmarkModel, tab.getTitle(), tab.getOriginalUrl());
+        BookmarkId bookmarkId = addBookmarkInternal(
+                activity, bookmarkModel, tab.getTitle(), ((TabImpl) tab).getOriginalUrl());
 
         Snackbar snackbar = null;
         if (bookmarkId == null) {

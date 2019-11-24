@@ -59,6 +59,12 @@ class PasswordManagerPorter : public ui::SelectFileDialog::Listener,
   // password_manager::ImportFlow
   void Load() override;
 
+  // ImportPasswordsFromPathForTesting allows tests to call
+  // ImportPasswordsFromPath without the need to trigger UI with file choosers.
+  // It also allows to inject a testing profile.
+  void ImportPasswordsFromPathForTesting(const base::FilePath& path,
+                                         Profile* profile);
+
  private:
   enum Type {
     PASSWORD_IMPORT,

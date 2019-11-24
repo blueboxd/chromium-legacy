@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -175,7 +176,7 @@ public class SurveyInfoBar extends InfoBar {
         mDelegate.onSurveyTriggered();
 
         SurveyController.getInstance().showSurveyIfAvailable(
-                tab.getActivity(), mSiteId, mShowAsBottomSheet, mDisplayLogoResId);
+                ((TabImpl) tab).getActivity(), mSiteId, mShowAsBottomSheet, mDisplayLogoResId);
         super.onCloseButtonClicked();
     }
 

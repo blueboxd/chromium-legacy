@@ -11,6 +11,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 
 /**
  * A {@link TabObserver} that also handles screenshot related events.
@@ -41,7 +42,7 @@ public class ScreenshotTabObserver extends EmptyTabObserver implements UserData 
      * @return ScreenshotTabObserver to use, or null if the tab was null.
      */
     public static ScreenshotTabObserver from(Tab tab) {
-        if (tab == null || !tab.isInitialized()) return null;
+        if (tab == null || !((TabImpl) tab).isInitialized()) return null;
         // Get the current observer from the tab using UserData, if any.  If not, create a new
         // observer and put it into the UserData for the tab.
         ScreenshotTabObserver observer = get(tab);
@@ -59,7 +60,7 @@ public class ScreenshotTabObserver extends EmptyTabObserver implements UserData 
      */
     @Nullable
     public static ScreenshotTabObserver get(Tab tab) {
-        if (tab == null || !tab.isInitialized()) return null;
+        if (tab == null || !((TabImpl) tab).isInitialized()) return null;
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 

@@ -14,6 +14,7 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.banners.AppData;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 
 /**
  * Provides functionality related to native Android apps for its C++ counterpart,
@@ -32,9 +33,9 @@ class AddToHomescreenInstaller {
         } else {
             launchIntent = appData.installIntent();
         }
-        if (launchIntent != null && tab.getActivity() != null) {
+        if (launchIntent != null && ((TabImpl) tab).getActivity() != null) {
             try {
-                tab.getActivity().startActivity(launchIntent);
+                ((TabImpl) tab).getActivity().startActivity(launchIntent);
             } catch (ActivityNotFoundException e) {
                 Log.e(TAG, "Failed to install or open app : %s!", appData.packageName(), e);
                 return false;

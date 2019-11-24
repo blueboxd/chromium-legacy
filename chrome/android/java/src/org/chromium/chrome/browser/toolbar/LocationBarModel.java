@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -115,7 +116,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         // TODO(dtrainor, tedchoc): Remove the isInitialized() check when we no longer wait for
         // TAB_CLOSED events to remove this tab.  Otherwise there is a chance we use this tab after
         // {@link ChromeTab#destroy()} is called.
-        return mTab != null && mTab.isInitialized();
+        return mTab != null && ((TabImpl) mTab).isInitialized();
     }
 
     @Override
@@ -172,7 +173,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         }
 
         if (isOfflinePage()) {
-            String originalUrl = mTab.getOriginalUrl();
+            String originalUrl = ((TabImpl) mTab).getOriginalUrl();
             formattedUrl = UrlUtilities.stripScheme(
                     DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
 
@@ -333,7 +334,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @Override
     public boolean isPreview() {
-        return hasTab() && mTab.isPreview();
+        return hasTab() && ((TabImpl) mTab).isPreview();
     }
 
     @Override
@@ -367,7 +368,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             return ConnectionSecurityLevel.NONE;
         }
 
-        int securityLevel = tab.getSecurityLevel();
+        int securityLevel = ((TabImpl) tab).getSecurityLevel();
         if (publisherUrl != null) {
             assert securityLevel != ConnectionSecurityLevel.DANGEROUS;
             return (URI.create(publisherUrl).getScheme().equals(UrlConstants.HTTPS_SCHEME))
@@ -473,7 +474,9 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
     @Override
     public String getDisplaySearchTerms() {
         if (mNativeLocationBarModelAndroid == 0) return null;
-        if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
+        if (mTab != null && !(((TabImpl) mTab).getActivity() instanceof ChromeTabbedActivity)) {
+            return null;
+        }
         if (isPreview()) return null;
         return LocationBarModelJni.get().getDisplaySearchTerms(
                 mNativeLocationBarModelAndroid, LocationBarModel.this);

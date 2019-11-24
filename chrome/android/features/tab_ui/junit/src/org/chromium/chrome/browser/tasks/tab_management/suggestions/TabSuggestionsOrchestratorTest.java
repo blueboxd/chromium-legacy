@@ -29,6 +29,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -69,7 +70,7 @@ public class TabSuggestionsOrchestratorTest {
     private static Tab[] sTabs = {mockTab(TAB_IDS[0]), mockTab(TAB_IDS[1]), mockTab(TAB_IDS[2])};
 
     private static Tab mockTab(int id) {
-        Tab tab = mock(Tab.class);
+        Tab tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         return tab;
     }

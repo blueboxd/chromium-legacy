@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -120,9 +121,9 @@ public class TabGroupUiMediatorUnitTest {
     @Captor
     ArgumentCaptor<TabGroupModelFilter.Observer> mTabGroupModelFilterObserverArgumentCaptor;
 
-    private Tab mTab1;
-    private Tab mTab2;
-    private Tab mTab3;
+    private TabImpl mTab1;
+    private TabImpl mTab2;
+    private TabImpl mTab3;
     private List<Tab> mTabGroup1;
     private List<Tab> mTabGroup2;
     private PropertyModel mModel;
@@ -130,15 +131,15 @@ public class TabGroupUiMediatorUnitTest {
     private InOrder mResetHandlerInOrder;
     private InOrder mVisibilityControllerInOrder;
 
-    private Tab prepareTab(int tabId, int rootId) {
-        Tab tab = mock(Tab.class);
+    private TabImpl prepareTab(int tabId, int rootId) {
+        TabImpl tab = mock(TabImpl.class);
         doReturn(tabId).when(tab).getId();
         doReturn(rootId).when(tab).getRootId();
         return tab;
     }
 
     private TabModel prepareIncognitoTabModel() {
-        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        TabImpl newTab = prepareTab(TAB4_ID, TAB4_ID);
         List<Tab> tabs = new ArrayList<>(Arrays.asList(newTab));
         doReturn(tabs).when(mTabGroupModelFilter).getRelatedTabList(TAB4_ID);
         TabModel incognitoTabModel = mock(TabModel.class);
@@ -350,7 +351,7 @@ public class TabGroupUiMediatorUnitTest {
         initAndAssertProperties(mTab2);
 
         // Mock that tab 1 is not a single tab.
-        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        TabImpl newTab = prepareTab(TAB4_ID, TAB4_ID);
         List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, newTab));
         doReturn(tabs).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
 
@@ -425,7 +426,7 @@ public class TabGroupUiMediatorUnitTest {
     public void tabAddition_SingleTab() {
         initAndAssertProperties(mTab1);
 
-        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        TabImpl newTab = prepareTab(TAB4_ID, TAB4_ID);
         List<Tab> tabs = new ArrayList<>(Arrays.asList(newTab));
         doReturn(tabs).when(mTabGroupModelFilter).getRelatedTabList(TAB4_ID);
 
@@ -440,7 +441,7 @@ public class TabGroupUiMediatorUnitTest {
     public void tabAddition_TabGroup_NoRefresh() {
         initAndAssertProperties(mTab2);
 
-        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        TabImpl newTab = prepareTab(TAB4_ID, TAB4_ID);
         mTabGroup2.add(newTab);
         doReturn(mTabGroup1).when(mTabGroupModelFilter).getRelatedTabList(TAB4_ID);
 
@@ -455,7 +456,7 @@ public class TabGroupUiMediatorUnitTest {
     public void tabAddition_TabGroup_Refresh() {
         initAndAssertProperties(mTab2);
 
-        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        TabImpl newTab = prepareTab(TAB4_ID, TAB4_ID);
         mTabGroup2.add(newTab);
         doReturn(mTabGroup2).when(mTabGroupModelFilter).getRelatedTabList(TAB4_ID);
 
@@ -510,7 +511,7 @@ public class TabGroupUiMediatorUnitTest {
         assertThat(mTabGroupUiMediator.getIsShowingOverViewModeForTesting(), equalTo(false));
 
         // Simulate that another member of this group, newTab, is being undone from closure.
-        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        TabImpl newTab = prepareTab(TAB4_ID, TAB4_ID);
         doReturn(new ArrayList<>(Arrays.asList(mTab2, mTab3, newTab)))
                 .when(mTabGroupModelFilter)
                 .getRelatedTabList(TAB4_ID);
@@ -531,7 +532,7 @@ public class TabGroupUiMediatorUnitTest {
 
         // Simulate that newTab which was a tab in the same group as mTab1 is being undone from
         // closure.
-        Tab newTab = prepareTab(TAB4_ID, TAB4_ID);
+        TabImpl newTab = prepareTab(TAB4_ID, TAB4_ID);
         doReturn(new ArrayList<>(Arrays.asList(mTab1, newTab)))
                 .when(mTabGroupModelFilter)
                 .getRelatedTabList(TAB4_ID);

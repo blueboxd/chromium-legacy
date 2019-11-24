@@ -84,7 +84,7 @@ public class UndoIntegrationTest {
         // Attempt to close the tab, which will delay closing until the undo timeout goes away.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             TabModelUtils.closeTabById(model, tab.getId(), true);
-            Assert.assertTrue("Tab was not marked as closing", tab.isClosing());
+            Assert.assertTrue("Tab was not marked as closing", ((TabImpl) tab).isClosing());
             Assert.assertTrue("Tab is not actually closing", model.isClosurePending(tab.getId()));
         });
 

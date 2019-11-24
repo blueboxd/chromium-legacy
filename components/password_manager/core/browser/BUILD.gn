@@ -112,10 +112,6 @@ jumbo_static_library("browser") {
     "http_auth_observer.h",
     "http_password_store_migrator.cc",
     "http_password_store_migrator.h",
-    "import/csv_reader.cc",
-    "import/csv_reader.h",
-    "import/password_csv_reader.cc",
-    "import/password_csv_reader.h",
     "import/password_importer.cc",
     "import/password_importer.h",
     "leak_detection_delegate.cc",
@@ -541,8 +537,6 @@ source_set("unit_tests") {
     "generation/password_requirements_spec_fetcher_unittest.cc",
     "http_auth_manager_unittest.cc",
     "http_password_store_migrator_unittest.cc",
-    "import/csv_reader_unittest.cc",
-    "import/password_csv_reader_unittest.cc",
     "import/password_importer_unittest.cc",
     "leak_detection_delegate_helper_unittest.cc",
     "leak_detection_delegate_unittest.cc",
@@ -668,6 +662,7 @@ fuzzer_test("csv_reader_fuzzer") {
   ]
   deps = [
     ":browser",
+    ":csv",
     "//base:i18n",
     "//components/autofill/core/common:common",
   ]

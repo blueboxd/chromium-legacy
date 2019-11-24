@@ -56,7 +56,7 @@ public class TabUnitTest {
     @Mock
     private Activity mActivity;
 
-    private Tab mTab;
+    private TabImpl mTab;
 
     @Before
     public void setUp() {
@@ -73,7 +73,7 @@ public class TabUnitTest {
         features.put("ShoppingAssist", true);
         ChromeFeatureList.setTestFeatures(features);
 
-        mTab = new Tab(TAB1_ID, null, false, null);
+        mTab = new TabImpl(TAB1_ID, null, false, null);
         mTab.addObserver(mObserver);
     }
 

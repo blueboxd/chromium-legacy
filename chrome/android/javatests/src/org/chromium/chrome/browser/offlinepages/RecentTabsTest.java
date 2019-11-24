@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -105,7 +106,7 @@ public class RecentTabsTest {
         // The tab should be foreground and so no snapshot should exist.
         TabModelSelector tabModelSelector = TabModelSelector.from(tab);
         Assert.assertEquals(tabModelSelector.getCurrentTab(), tab);
-        Assert.assertFalse(tab.isHidden());
+        Assert.assertFalse(((TabImpl) tab).isHidden());
         Assert.assertNull(OfflineTestUtil.getPageByClientId(firstTabClientId));
 
         // The tab model is expected to support pending closures.
@@ -121,8 +122,8 @@ public class RecentTabsTest {
                     }
                 });
         Assert.assertTrue(closeTabReturnValue);
-        Assert.assertTrue(tab.isHidden());
-        Assert.assertTrue(tab.isClosing());
+        Assert.assertTrue(((TabImpl) tab).isHidden());
+        Assert.assertTrue(((TabImpl) tab).isClosing());
 
         // Wait a bit and checks that no snapshot was created.
         Thread.sleep(100); // Note: Flakiness potential here.
@@ -134,14 +135,14 @@ public class RecentTabsTest {
             int tabIndex = TabModelUtils.getTabIndexById(tabModel, tab.getId());
             TabModelUtils.setIndex(tabModel, tabIndex);
         });
-        Assert.assertFalse(tab.isHidden());
-        Assert.assertFalse(tab.isClosing());
+        Assert.assertFalse(((TabImpl) tab).isHidden());
+        Assert.assertFalse(((TabImpl) tab).isClosing());
         Assert.assertEquals(tabModelSelector.getCurrentTab(), tab);
 
         // Finally switch to a new tab and check that a snapshot is created.
         Tab newTab = mActivityTestRule.loadUrlInNewTab("about:blank");
         Assert.assertEquals(tabModelSelector.getCurrentTab(), newTab);
-        Assert.assertTrue(tab.isHidden());
+        Assert.assertTrue(((TabImpl) tab).isHidden());
         waitForPageWithClientId(firstTabClientId);
     }
 

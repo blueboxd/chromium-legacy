@@ -68,7 +68,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         int NUM_ENTRIES = 6;
     }
 
-    private final Tab mTab;
+    private final TabImpl mTab;
     private WebContentsObserver mObserver;
 
     public static void from(Tab tab) {
@@ -85,7 +85,7 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
     private TabWebContentsObserver(Tab tab) {
         super(tab);
-        mTab = tab;
+        mTab = (TabImpl) tab;
     }
 
     @Override

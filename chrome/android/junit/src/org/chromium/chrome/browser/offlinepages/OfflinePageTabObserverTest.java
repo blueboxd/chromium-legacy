@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 
@@ -53,7 +54,8 @@ public class OfflinePageTabObserverTest {
     private TabModelSelector mTabModelSelector;
     @Mock private SnackbarManager mSnackbarManager;
     @Mock private SnackbarController mSnackbarController;
-    @Mock private Tab mTab;
+    @Mock
+    private TabImpl mTab;
     @Mock
     private OfflinePageUtils.Internal mOfflinePageUtils;
 

@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -81,7 +82,6 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
   host_tty_ = GetActiveTTY();
 #endif
   base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer_);
-  GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
 }
 
 // static
@@ -124,7 +124,7 @@ void GpuWatchdogThreadImplV1::OnForegrounded() {
 
 void GpuWatchdogThreadImplV1::GpuWatchdogHistogram(
     GpuWatchdogThreadEvent thread_event) {
-  UMA_HISTOGRAM_ENUMERATION("GPU.WatchdogThread.Event", thread_event);
+  base::UmaHistogramEnumeration("GPU.WatchdogThread.Event", thread_event);
 }
 
 bool GpuWatchdogThreadImplV1::IsGpuHangDetectedForTesting() {
@@ -329,6 +329,14 @@ void GpuWatchdogThreadImplV1::OnCheckTimeout() {
 void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
   // Should not get here while the system is suspended.
   DCHECK(!suspension_counter_.HasRefs());
+
+  // If this metric is added too early (eg. watchdog creation time), it cannot
+  // be persistent. The histogram data will be lost after crash or browser exit.
+  // Delay the recording of kGpuWatchdogStart until the first OnCheckTimeout().
+  if (!is_watchdog_start_histogram_recorded) {
+    is_watchdog_start_histogram_recorded = true;
+    GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
+  }
 
   // If the watchdog woke up significantly behind schedule, disarm and reset
   // the watchdog check. This is to prevent the watchdog thread from terminating

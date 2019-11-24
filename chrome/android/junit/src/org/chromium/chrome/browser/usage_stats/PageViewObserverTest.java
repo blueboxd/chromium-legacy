@@ -33,8 +33,8 @@ import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -61,9 +61,9 @@ public final class PageViewObserverTest {
     @Mock
     private TabModel mTabModel;
     @Mock
-    private Tab mTab;
+    private TabImpl mTab;
     @Mock
-    private Tab mTab2;
+    private TabImpl mTab2;
     @Mock
     private EventTracker mEventTracker;
     @Mock
@@ -440,33 +440,33 @@ public final class PageViewObserverTest {
         return observer;
     }
 
-    private void updateUrl(Tab tab, String url) {
+    private void updateUrl(TabImpl tab, String url) {
         updateUrlNoPaint(tab, url);
         reportPaint(tab, url);
     }
 
-    private void updateUrlNoPaint(Tab tab, String url) {
+    private void updateUrlNoPaint(TabImpl tab, String url) {
         getTabObserver().onUpdateUrl(tab, url);
     }
 
-    private void reportPaint(Tab tab, String url) {
+    private void reportPaint(TabImpl tab, String url) {
         doReturn(url).when(tab).getUrl();
         getTabObserver().didFirstVisuallyNonEmptyPaint(tab);
     }
 
-    private void onHidden(Tab tab, @TabHidingType int hidingType) {
+    private void onHidden(TabImpl tab, @TabHidingType int hidingType) {
         getTabObserver().onHidden(tab, hidingType);
     }
 
-    private void onShown(Tab tab, @TabSelectionType int selectionType) {
+    private void onShown(TabImpl tab, @TabSelectionType int selectionType) {
         getTabObserver().onShown(tab, selectionType);
     }
 
-    private void didSelectTab(Tab tab, @TabSelectionType int selectionType) {
+    private void didSelectTab(TabImpl tab, @TabSelectionType int selectionType) {
         getTabModelObserver().didSelectTab(tab, selectionType, 0);
     }
 
-    private void didAddTab(Tab tab, @TabLaunchType int launchType) {
+    private void didAddTab(TabImpl tab, @TabLaunchType int launchType) {
         getTabModelObserver().didAddTab(tab, launchType);
     }
 

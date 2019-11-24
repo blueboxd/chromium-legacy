@@ -320,7 +320,13 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenu) {
   EXPECT_FALSE(IsMenuButtonVisible());
 }
 
-IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowMenuWithShowMenuOption) {
+// Fails on linux-chromeos-dbg see crbug/1027919.
+#if defined(OS_CHROMEOS)
+#define MAYBE_ShowMenuWithShowMenuOption DISABLED_ShowMenuWithShowMenuOption
+#else
+#define MAYBE_ShowMenuWithShowMenuOption ShowMenuWithShowMenuOption
+#endif
+IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, MAYBE_ShowMenuWithShowMenuOption) {
   SetShowAccessibilityOptionsInSystemTrayMenu(true);
 
   // Confirms that the menu is visible.

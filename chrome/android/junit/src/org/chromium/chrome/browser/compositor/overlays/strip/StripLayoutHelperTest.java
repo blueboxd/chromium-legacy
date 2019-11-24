@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -117,7 +118,7 @@ public class StripLayoutHelperTest {
         mIncognito = incognito;
         for (int i = 0; i < TEST_TAB_TITLES.length; i++) {
             mModel.addTab(TEST_TAB_TITLES[i]);
-            when(mModel.getTabAt(i).isHidden()).thenReturn(tabIndex != i);
+            when(((TabImpl) mModel.getTabAt(i)).isHidden()).thenReturn(tabIndex != i);
         }
         mModel.setIndex(tabIndex);
         mStripLayoutHelper.setTabModel(mModel, null);
@@ -182,7 +183,7 @@ public class StripLayoutHelperTest {
 
         public void addTab(final String title) {
             mMaxId++;
-            final Tab mockTab = mock(Tab.class);
+            final TabImpl mockTab = mock(TabImpl.class);
             final int tabId = mMaxId;
             when(mockTab.getId()).thenReturn(tabId);
             when(mockTab.getTitle()).thenReturn(title);

@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -748,7 +749,8 @@ public class TabPersistentStore extends TabPersister {
 
     private void addTabToSaveQueueIfApplicable(Tab tab) {
         if (tab == null) return;
-        if (mTabsToSave.contains(tab) || !tab.isTabStateDirty() || isTabUrlContentScheme(tab)) {
+        if (mTabsToSave.contains(tab) || !((TabImpl) tab).isTabStateDirty()
+                || isTabUrlContentScheme(tab)) {
             return;
         }
 
@@ -1163,7 +1165,7 @@ public class TabPersistentStore extends TabPersister {
         @Override
         protected void onPostExecute(Void v) {
             if (mDestroyed || isCancelled()) return;
-            if (mStateSaved) mTab.setIsTabStateDirty(false);
+            if (mStateSaved) ((TabImpl) mTab).setIsTabStateDirty(false);
             mSaveTabTask = null;
             saveNextTab();
         }

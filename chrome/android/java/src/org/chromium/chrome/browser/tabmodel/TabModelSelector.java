@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.util.List;
@@ -24,8 +25,8 @@ public interface TabModelSelector {
      *         {@link Tab}.
      */
     public static TabModelSelector from(Tab tab) {
-        if (tab == null || tab.getActivity() == null) return null;
-        return tab.getActivity().getTabModelSelector();
+        if (tab == null || ((TabImpl) tab).getActivity() == null) return null;
+        return ((TabImpl) tab).getActivity().getTabModelSelector();
     }
 
     /**

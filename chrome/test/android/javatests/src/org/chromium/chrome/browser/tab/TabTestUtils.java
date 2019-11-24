@@ -19,7 +19,7 @@ public class TabTestUtils {
      * @return The observers registered for the given tab.
      */
     public static ObserverList.RewindableIterator<TabObserver> getTabObservers(Tab tab) {
-        return tab.getTabObservers();
+        return ((TabImpl) tab).getTabObservers();
     }
 
     /**
@@ -27,7 +27,7 @@ public class TabTestUtils {
      * @param tab Tab on which the simulated event will be sent.
      */
     public static void simulateFirstVisuallyNonEmptyPaint(Tab tab) {
-        RewindableIterator<TabObserver> observers = tab.getTabObservers();
+        RewindableIterator<TabObserver> observers = ((TabImpl) tab).getTabObservers();
         while (observers.hasNext()) observers.next().didFirstVisuallyNonEmptyPaint(tab);
     }
 
@@ -36,7 +36,7 @@ public class TabTestUtils {
      * @param tab Tab on which the simulated event will be sent.
      */
     public static void simulatePageLoadFinished(Tab tab) {
-        RewindableIterator<TabObserver> observers = tab.getTabObservers();
+        RewindableIterator<TabObserver> observers = ((TabImpl) tab).getTabObservers();
         while (observers.hasNext()) observers.next().onPageLoadFinished(tab, tab.getUrl());
     }
 
@@ -46,7 +46,7 @@ public class TabTestUtils {
      * @param errorCode Errorcode to send to the page.
      */
     public static void simulatePageLoadFailed(Tab tab, int errorCode) {
-        RewindableIterator<TabObserver> observers = tab.getTabObservers();
+        RewindableIterator<TabObserver> observers = ((TabImpl) tab).getTabObservers();
         while (observers.hasNext()) observers.next().onPageLoadFailed(tab, errorCode);
     }
 
@@ -57,7 +57,7 @@ public class TabTestUtils {
      */
     public static void simulateCrash(Tab tab, boolean sadTabShown) {
         setupSadTab(tab, sadTabShown);
-        RewindableIterator<TabObserver> observers = tab.getTabObservers();
+        RewindableIterator<TabObserver> observers = ((TabImpl) tab).getTabObservers();
         while (observers.hasNext()) observers.next().onCrash(tab);
     }
 
@@ -70,7 +70,7 @@ public class TabTestUtils {
                 @Override
                 public View createView(Runnable suggestionAction, Runnable buttonAction,
                         boolean showSendFeedbackView, boolean isIncognito) {
-                    return new View(tab.getThemedApplicationContext());
+                    return new View(((TabImpl) tab).getThemedApplicationContext());
                 }
             };
             TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -86,7 +86,7 @@ public class TabTestUtils {
      * @param color Color to send to the tab.
      */
     public static void simulateChangeThemeColor(Tab tab, int color) {
-        RewindableIterator<TabObserver> observers = tab.getTabObservers();
+        RewindableIterator<TabObserver> observers = ((TabImpl) tab).getTabObservers();
         while (observers.hasNext()) observers.next().onDidChangeThemeColor(tab, color);
     }
 
@@ -96,7 +96,7 @@ public class TabTestUtils {
      * @param state {@link TabState} containing the state info to restore the tab with.
      */
     public static void restoreFieldsFromState(Tab tab, TabState state) {
-        tab.restoreFieldsFromState(state);
+        ((TabImpl) tab).restoreFieldsFromState(state);
     }
 
     /**
@@ -108,7 +108,7 @@ public class TabTestUtils {
      */
     public static void swapWebContents(
             Tab tab, WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        tab.swapWebContents(webContents, didStartLoad, didFinishLoad);
+        ((TabImpl) tab).swapWebContents(webContents, didStartLoad, didFinishLoad);
     }
 
     /**
@@ -116,7 +116,7 @@ public class TabTestUtils {
      * @return {@link TabDelegateFactory} for a given tab.
      */
     public static TabDelegateFactory getDelegateFactory(Tab tab) {
-        return tab.getDelegateFactory();
+        return ((TabImpl) tab).getDelegateFactory();
     }
 
     /**
@@ -132,6 +132,6 @@ public class TabTestUtils {
      * @return {@link TabWebContentsDelegateAndroid} object for a given tab.
      */
     public static TabWebContentsDelegateAndroid getTabWebContentsDelegate(Tab tab) {
-        return tab.getTabWebContentsDelegateAndroid();
+        return ((TabImpl) tab).getTabWebContentsDelegateAndroid();
     }
 }

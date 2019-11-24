@@ -17,6 +17,7 @@ import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.content_public.browser.WebContents;
@@ -100,9 +101,9 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
      * one.
      */
     private void maybeAddInsetObserver() {
-        if (mInsetObserverView != null || mTab.getActivity() == null) return;
+        if (mInsetObserverView != null || ((TabImpl) mTab).getActivity() == null) return;
 
-        mInsetObserverView = mTab.getActivity().getInsetObserverView();
+        mInsetObserverView = ((TabImpl) mTab).getActivity().getInsetObserverView();
 
         if (mInsetObserverView == null) return;
         mInsetObserverView.addObserver(this);
@@ -197,12 +198,12 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
 
     @VisibleForTesting
     protected Object getWindowAttributes() {
-        return mTab.getActivity().getWindow().getAttributes();
+        return ((TabImpl) mTab).getActivity().getWindow().getAttributes();
     }
 
     @VisibleForTesting
     protected void setWindowAttributes(Object attributes) {
-        mTab.getActivity().getWindow().setAttributes((LayoutParams) attributes);
+        ((TabImpl) mTab).getActivity().getWindow().setAttributes((LayoutParams) attributes);
     }
 
     /** Updates the layout based on internal state. */

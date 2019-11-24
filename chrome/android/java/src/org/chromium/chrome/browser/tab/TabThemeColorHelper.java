@@ -22,7 +22,7 @@ import org.chromium.content_public.browser.WebContents;
  */
 public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     private static final Class<TabThemeColorHelper> USER_DATA_KEY = TabThemeColorHelper.class;
-    private final Tab mTab;
+    private final TabImpl mTab;
 
     private int mDefaultColor;
     private int mColor;
@@ -78,7 +78,7 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     private TabThemeColorHelper(Tab tab) {
-        mTab = tab;
+        mTab = (TabImpl) tab;
         mDefaultColor = calculateDefaultColor();
         mIsDefaultColorUsed = true;
         mIsUsingColorFromTabContents = false;

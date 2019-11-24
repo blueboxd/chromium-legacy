@@ -10,6 +10,7 @@ import org.junit.Assert;
 
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -75,10 +76,10 @@ public class PrerenderTestHelper {
                                         new ExternalPrerenderHandler();
                                 Rect bounds = new Rect(0, 0, coord.getContentWidthPixInt(),
                                         coord.getContentHeightPixInt());
-                                boolean didPrerender =
-                                        prerenderHandler.addPrerender(currentTab.getProfile(),
-                                                currentTab.getWebContents(), testUrl, null, bounds,
-                                                true)
+                                boolean didPrerender = prerenderHandler.addPrerender(
+                                                               ((TabImpl) currentTab).getProfile(),
+                                                               currentTab.getWebContents(), testUrl,
+                                                               null, bounds, true)
                                         != null;
                                 Assert.assertTrue(
                                         "Failed to prerender test url: " + testUrl, didPrerender);

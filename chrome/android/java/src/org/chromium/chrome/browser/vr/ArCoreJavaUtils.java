@@ -17,6 +17,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 
 /**
  * Provides ARCore classes access to java-related app functionality.
@@ -78,7 +79,7 @@ public class ArCoreJavaUtils {
         if (DEBUG_LOGS) Log.i(TAG, "startSession");
         mArImmersiveOverlay = new ArImmersiveOverlay();
         sActiveSessionInstance = this;
-        mArImmersiveOverlay.show(tab.getActivity(), this, useOverlay);
+        mArImmersiveOverlay.show(((TabImpl) tab).getActivity(), this, useOverlay);
     }
 
     @CalledByNative

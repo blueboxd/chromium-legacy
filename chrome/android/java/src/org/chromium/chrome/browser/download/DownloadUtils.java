@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ConversionUtils;
@@ -169,7 +170,7 @@ public class DownloadUtils {
         if (isTablet) {
             // Download Home shows up as a tab on tablets.
             LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
-            if (tab == null || !tab.isInitialized()) {
+            if (tab == null || !((TabImpl) tab).isInitialized()) {
                 // Open a new tab, which pops Chrome into the foreground.
                 TabDelegate delegate = new TabDelegate(false);
                 delegate.createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);
@@ -206,7 +207,8 @@ public class DownloadUtils {
 
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isFullBrowserStarted()) {
-            Profile profile = (tab == null ? Profile.getLastUsedProfile() : tab.getProfile());
+            Profile profile =
+                    (tab == null ? Profile.getLastUsedProfile() : ((TabImpl) tab).getProfile());
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);
         }
@@ -287,7 +289,8 @@ public class DownloadUtils {
         if (tab.isShowingErrorPage()) {
             // The download needs to be scheduled to happen at later time due to current network
             // error.
-            final OfflinePageBridge bridge = OfflinePageBridge.getForProfile(tab.getProfile());
+            final OfflinePageBridge bridge =
+                    OfflinePageBridge.getForProfile(((TabImpl) tab).getProfile());
             bridge.scheduleDownload(tab.getWebContents(), OfflinePageBridge.ASYNC_NAMESPACE,
                     tab.getUrl(), DownloadUiActionFlags.PROMPT_DUPLICATE, origin);
         } else {
@@ -296,7 +299,7 @@ public class DownloadUtils {
             DownloadUtils.recordDownloadPageMetrics(tab);
         }
 
-        Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+        Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
         tracker.notifyEvent(EventConstants.DOWNLOAD_PAGE_STARTED);
     }
 
@@ -318,11 +321,12 @@ public class DownloadUtils {
 
         // Download will only be allowed for the error page if download button is shown in the page.
         if (tab.isShowingErrorPage()) {
-            final OfflinePageBridge bridge = OfflinePageBridge.getForProfile(tab.getProfile());
+            final OfflinePageBridge bridge =
+                    OfflinePageBridge.getForProfile(((TabImpl) tab).getProfile());
             return bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents());
         }
 
-        if (tab.isShowingInterstitialPage()) return false;
+        if (((TabImpl) tab).isShowingInterstitialPage()) return false;
 
         // Don't allow re-downloading the currently displayed offline page.
         if (OfflinePageUtils.isOfflinePage(tab)) return false;

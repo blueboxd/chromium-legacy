@@ -19,7 +19,7 @@ import org.chromium.content_public.browser.WebContents;
 public class TabFavicon extends TabWebContentsUserData {
     private static final Class<TabFavicon> USER_DATA_KEY = TabFavicon.class;
 
-    private final Tab mTab;
+    private final TabImpl mTab;
     private final long mNativeTabFavicon;
 
     /**
@@ -42,7 +42,7 @@ public class TabFavicon extends TabWebContentsUserData {
     }
 
     private static TabFavicon get(Tab tab) {
-        if (tab == null || !tab.isInitialized()) return null;
+        if (tab == null || !((TabImpl) tab).isInitialized()) return null;
         return tab.getUserDataHost().getUserData(USER_DATA_KEY);
     }
 
@@ -57,9 +57,9 @@ public class TabFavicon extends TabWebContentsUserData {
 
     private TabFavicon(Tab tab) {
         super(tab);
-        Resources resources = tab.getThemedApplicationContext().getResources();
+        mTab = (TabImpl) tab;
+        Resources resources = mTab.getThemedApplicationContext().getResources();
         mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
-        mTab = tab;
         mNativeTabFavicon = TabFaviconJni.get().init(TabFavicon.this);
     }
 

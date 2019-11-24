@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.styles.ChromeColors;
 
@@ -108,7 +109,7 @@ public class CustomTabToolbarColorController {
         final boolean shouldUpdateOriginal = manager.getShouldUpdateToolbarPrimaryColor();
         manager.setShouldUpdateToolbarPrimaryColor(true);
 
-        if (tab.isPreview()) {
+        if (((TabImpl) tab).isPreview()) {
             final int defaultColor =
                     ChromeColors.getDefaultThemeColor(mActivity.getResources(), false);
             manager.onThemeColorChanged(defaultColor, false);
@@ -118,7 +119,6 @@ public class CustomTabToolbarColorController {
             mTriggeredPreviewChange = false;
             mOriginalColor = 0;
         }
-
         manager.setShouldUpdateToolbarPrimaryColor(shouldUpdateOriginal);
     }
 }

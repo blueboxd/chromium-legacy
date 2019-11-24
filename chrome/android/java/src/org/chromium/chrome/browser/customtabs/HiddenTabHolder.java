@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBuilder;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab_activity_glue.ReparentingTask;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -165,7 +166,7 @@ public class HiddenTabHolder {
                 return tab;
             } else {
                 CustomTabsConnection.recordSpeculationStatusSwapTabNotMatched();
-                tab.destroy();
+                ((TabImpl) tab).destroy();
                 return null;
             }
         }
@@ -176,7 +177,7 @@ public class HiddenTabHolder {
         if (mSpeculation == null) return;
         if (session!= null && !session.equals(mSpeculation.session)) return;
 
-        mSpeculation.tab.destroy();
+        ((TabImpl) (mSpeculation.tab)).destroy();
         mSpeculation = null;
     }
 

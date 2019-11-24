@@ -77,6 +77,7 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -446,7 +447,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 }
 
                 // TODO(crbug.com/896476): Remove this.
-                if (tab.isPreview()) {
+                if (((TabImpl) tab).isPreview()) {
                     // Some previews (like Client LoFi) are not fully decided until the page
                     // finishes loading. If this is a preview, update the security icon which will
                     // also update the verbose status view to make sure the "Lite" badge is
@@ -587,7 +588,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     mToolbar.onNavigatedToDifferentPage();
                 }
 
-                if (navigation.hasCommitted() && tab.isPreview()) {
+                if (navigation.hasCommitted() && ((TabImpl) tab).isPreview()) {
                     // Some previews are not fully decided until the page commits. If this
                     // is a preview, update the security icon which will also update the verbose
                     // status view to make sure the "Lite" badge is displayed.
@@ -635,13 +636,14 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     return;
                 }
 
-                OfflinePageBridge bridge = OfflinePageBridge.getForProfile(tab.getProfile());
+                OfflinePageBridge bridge =
+                        OfflinePageBridge.getForProfile(((TabImpl) tab).getProfile());
                 if (bridge == null
                         || !bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents())) {
                     return;
                 }
 
-                Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+                Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
                 tracker.notifyEvent(EventConstants.USER_HAS_SEEN_DINO);
             }
         };
@@ -811,7 +813,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             boolean isIncognito = false;
             if (mTabModelSelector != null) {
                 tab = mTabModelSelector.getCurrentTab();
-                activity = tab.getActivity();
+                activity = ((TabImpl) tab).getActivity();
                 isIncognito = tab.isIncognito();
             }
             shareDelegate.share(tab, /*shareDirectly=*/false);
@@ -823,7 +825,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private void recordToolbarUseForIPH(String toolbarIPHEvent) {
         if (mTabModelSelector != null && mTabModelSelector.getCurrentTab() != null) {
             Tab tab = mTabModelSelector.getCurrentTab();
-            Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+            Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
             tracker.notifyEvent(toolbarIPHEvent);
         }
     }
@@ -889,13 +891,13 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (tab == null) return;
 
         // TODO(shaktisahu): Find out if the download menu button is enabled (crbug/712438).
-        ChromeActivity activity = tab.getActivity();
+        ChromeActivity activity = ((TabImpl) tab).getActivity();
         if (!(activity instanceof ChromeTabbedActivity) || activity.isTablet()
                 || activity.isInOverviewMode() || !DownloadUtils.isAllowedToDownloadPage(tab)) {
             return;
         }
 
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
         if (!tracker.shouldTriggerHelpUI(featureName)) return;
 
         showMenuIPHTextBubble(activity, tracker, featureName,
@@ -921,14 +923,14 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     // TODO(https://crbug.com/865801): Remove feature specific IPH from toolbar manager.
     public void showTranslateMenuButtonTextBubble(final Tab tab, String featureName) {
         if (tab == null) return;
-        ChromeActivity activity = tab.getActivity();
+        ChromeActivity activity = ((TabImpl) tab).getActivity();
 
         if (mAppMenuPropertiesDelegate == null || !TranslateUtils.canTranslateCurrentTab(tab)
                 || !TranslateBridge.shouldShowManualTranslateIPH(tab)) {
             return;
         }
         // Find out if the help UI should appear.
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
+        final Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
         if (!tracker.shouldTriggerHelpUI(featureName)) return;
 
         showMenuIPHTextBubble(activity, tracker, featureName,

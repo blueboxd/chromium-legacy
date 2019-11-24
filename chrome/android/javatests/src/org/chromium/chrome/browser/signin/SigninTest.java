@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.preferences.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.preferences.sync.SignInPreference;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -237,7 +238,8 @@ public class SigninTest {
 
             // Get these handles in the UI thread.
             mPrefService = PrefServiceBridge.getInstance();
-            Profile profile = mActivityTestRule.getActivity().getActivityTab().getProfile();
+            Profile profile =
+                    ((TabImpl) mActivityTestRule.getActivity().getActivityTab()).getProfile();
             mBookmarks = new BookmarkBridge(profile);
 
             // Add a test bookmark, to verify later if sign out cleared the bookmarks.

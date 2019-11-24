@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -886,8 +887,9 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      */
     public ChromeFullscreenManager getFullscreenManager() {
         if (mTabModelSelector == null) return null;
-        if (mTabModelSelector.getCurrentTab() == null) return null;
-        if (mTabModelSelector.getCurrentTab().getActivity() == null) return null;
-        return mTabModelSelector.getCurrentTab().getActivity().getFullscreenManager();
+        Tab tab = mTabModelSelector.getCurrentTab();
+        if (tab == null) return null;
+        if (((TabImpl) tab).getActivity() == null) return null;
+        return ((TabImpl) tab).getActivity().getFullscreenManager();
     }
 }

@@ -38,7 +38,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
      */
     /* package */ PaymentHandlerView(ChromeActivity activity, WebContents webContents,
             ContentView webContentView, View toolbarView) {
-        mTabHeight = activity.getActivityTab().getHeight();
+        mTabHeight = activity.getActivityTab().getView().getHeight();
         mToolbarView = toolbarView;
         mToolbarHeightPx =
                 activity.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);

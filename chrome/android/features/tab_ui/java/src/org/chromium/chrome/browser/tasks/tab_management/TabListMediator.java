@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -1136,7 +1137,7 @@ class TabListMediator {
         if (getRelatedTabsForId(tab.getId()).size() <= 1) {
             return originalTitle;
         }
-        String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(tab.getRootId());
+        String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(((TabImpl) tab).getRootId());
         return storedTitle == null ? originalTitle : storedTitle;
     }
 

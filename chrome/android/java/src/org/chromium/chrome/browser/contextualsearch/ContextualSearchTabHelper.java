@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -97,8 +98,9 @@ public class ContextualSearchTabHelper
             NetworkChangeNotifier.addConnectionTypeObserver(this);
         }
         float scaleFactor = 1.f;
-        if (tab != null && tab.getActivity() != null && tab.getActivity().getResources() != null) {
-            scaleFactor /= tab.getActivity().getResources().getDisplayMetrics().density;
+        if (tab != null && ((TabImpl) tab).getActivity() != null
+                && ((TabImpl) tab).getActivity().getResources() != null) {
+            scaleFactor /= ((TabImpl) tab).getActivity().getResources().getDisplayMetrics().density;
         }
         mPxToDp = scaleFactor;
     }
@@ -113,7 +115,7 @@ public class ContextualSearchTabHelper
             // This leaves the handling of the hooks to the responsibility of the activity tab.
             // Restoring them will be then done by the tab that was the activity tab when
             // the panel was shown.
-            Tab activityTab = mTab.getActivity().getActivityTabProvider().get();
+            Tab activityTab = ((TabImpl) mTab).getActivity().getActivityTabProvider().get();
             if (activityTab != mTab) return;
 
             // Removes the hooks if the panel other than contextual search panel just got shown.
@@ -162,8 +164,8 @@ public class ContextualSearchTabHelper
     }
 
     private static LayoutManager getLayoutManager(Tab tab) {
-        if (tab.getActivity() == null) return null;
-        CompositorViewHolder cvh = tab.getActivity().getCompositorViewHolder();
+        if (((TabImpl) tab).getActivity() == null) return null;
+        CompositorViewHolder cvh = ((TabImpl) tab).getActivity().getCompositorViewHolder();
         return cvh != null ? cvh.getLayoutManager() : null;
     }
 
@@ -201,7 +203,7 @@ public class ContextualSearchTabHelper
         // is initialized.
         if (mNativeHelper == 0) {
             mNativeHelper = ContextualSearchTabHelperJni.get().init(
-                    ContextualSearchTabHelper.this, tab.getProfile());
+                    ContextualSearchTabHelper.this, ((TabImpl) tab).getProfile());
         }
         if (mTemplateUrlObserver == null) {
             mTemplateUrlObserver = new TemplateUrlServiceObserver() {
@@ -391,7 +393,7 @@ public class ContextualSearchTabHelper
                 // Talkback has poor interaction with tap to search (see http://crbug.com/399708 and
                 // http://crbug.com/396934).
                 && !manager.isRunningInCompatibilityMode()
-                && !(mTab.isShowingErrorPage() || mTab.isShowingInterstitialPage())
+                && !(mTab.isShowingErrorPage() || ((TabImpl) mTab).isShowingInterstitialPage())
                 && isDeviceOnline(manager) && mUnhookedTab == null;
     }
 

@@ -15,6 +15,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -55,7 +56,7 @@ public class VrConsentDialog
     private static VrConsentDialog promptForUserConsent(
             long instance, final Tab tab, @XrConsentPromptLevel int consentLevel) {
         VrConsentDialog dialog = new VrConsentDialog(instance, tab.getWebContents(), consentLevel);
-        dialog.show(tab.getActivity(), new VrConsentListener() {
+        dialog.show(((TabImpl) tab).getActivity(), new VrConsentListener() {
             @Override
             public void onUserConsent(boolean allowed) {
                 dialog.onUserGesture(allowed);

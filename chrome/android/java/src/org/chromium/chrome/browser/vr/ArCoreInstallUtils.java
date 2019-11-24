@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.module_installer.engine.EngineFactory;
 import org.chromium.components.module_installer.engine.InstallEngine;
 
@@ -151,7 +152,7 @@ public class ArCoreInstallUtils implements ModuleInstallUi.FailureUiListener {
 
         @ArCoreShim.Availability
         int arCoreAvailability = getArCoreInstallStatus();
-        final Activity activity = tab.getActivity();
+        final Activity activity = ((TabImpl) tab).getActivity();
         String infobarText = null;
         String buttonText = null;
         switch (arCoreAvailability) {

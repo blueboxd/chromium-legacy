@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -28,7 +29,7 @@ public abstract class TabGroupTitleEditor {
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
             public void tabClosureCommitted(Tab tab) {
-                int tabRootId = tab.getRootId();
+                int tabRootId = ((TabImpl) tab).getRootId();
                 TabGroupModelFilter filter =
                         (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter();
@@ -43,10 +44,10 @@ public abstract class TabGroupTitleEditor {
         mFilterObserver = new EmptyTabGroupModelFilterObserver() {
             @Override
             public void willMergeTabToGroup(Tab movedTab, int newRootId) {
-                String sourceGroupTitle = getTabGroupTitle(movedTab.getRootId());
+                String sourceGroupTitle = getTabGroupTitle(getRootId(movedTab));
                 String targetGroupTitle = getTabGroupTitle(newRootId);
                 if (sourceGroupTitle == null) return;
-                deleteTabGroupTitle(movedTab.getRootId());
+                deleteTabGroupTitle(getRootId(movedTab));
                 // If the target group has no title but the source group has a title, handover the
                 // stored title to the group after merge.
                 if (targetGroupTitle == null) {
@@ -59,20 +60,24 @@ public abstract class TabGroupTitleEditor {
                 TabGroupModelFilter filter =
                         (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter();
-                String title = getTabGroupTitle(movedTab.getRootId());
+                String title = getTabGroupTitle(getRootId(movedTab));
                 if (title == null) return;
                 // If the group size is 2, i.e. the group becomes a single tab after ungroup, delete
                 // the stored title.
                 if (filter.getRelatedTabList(movedTab.getId()).size() == 2) {
-                    deleteTabGroupTitle(movedTab.getRootId());
+                    deleteTabGroupTitle(getRootId(movedTab));
                     return;
                 }
                 // If the root tab in group is moved out, re-assign the title to the new root tab in
                 // group.
-                if (movedTab.getRootId() != newRootId) {
-                    deleteTabGroupTitle(movedTab.getRootId());
+                if (getRootId(movedTab) != newRootId) {
+                    deleteTabGroupTitle(getRootId(movedTab));
                     storeTabGroupTitle(newRootId, title);
                 }
+            }
+
+            private int getRootId(Tab tab) {
+                return ((TabImpl) tab).getRootId();
             }
         };
 

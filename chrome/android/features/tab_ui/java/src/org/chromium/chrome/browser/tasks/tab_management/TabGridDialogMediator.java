@@ -20,6 +20,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -294,7 +295,7 @@ public class TabGridDialogMediator {
         }
         assert mTabGroupTitleEditor != null;
         Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
-        String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(currentTab.getRootId());
+        String storedTitle = mTabGroupTitleEditor.getTabGroupTitle(getRootId(currentTab));
         if (storedTitle != null && relatedTabs.size() > 1) {
             mModel.set(TabGridPanelProperties.HEADER_TITLE, storedTitle);
             return;
@@ -302,6 +303,10 @@ public class TabGridDialogMediator {
         mModel.set(TabGridPanelProperties.HEADER_TITLE,
                 mContext.getResources().getQuantityString(
                         R.plurals.bottom_tab_grid_title_placeholder, tabsCount, tabsCount));
+    }
+
+    private static int getRootId(Tab tab) {
+        return ((TabImpl) tab).getRootId();
     }
 
     private void updateDialogScrollPosition() {
@@ -443,7 +448,7 @@ public class TabGridDialogMediator {
         Tab currentTab = mTabModelSelector.getTabById(mCurrentTabId);
         if (mCurrentGroupModifiedTitle.length() == 0) {
             // When dialog title is empty, delete previously stored title and restore default title.
-            mTabGroupTitleEditor.deleteTabGroupTitle(currentTab.getRootId());
+            mTabGroupTitleEditor.deleteTabGroupTitle(getRootId(currentTab));
             int tabsCount = getRelatedTabs(mCurrentTabId).size();
             assert tabsCount >= 2;
 
@@ -453,7 +458,7 @@ public class TabGridDialogMediator {
             mTabGroupTitleEditor.updateTabGroupTitle(currentTab, originalTitle);
             return;
         }
-        mTabGroupTitleEditor.storeTabGroupTitle(currentTab.getRootId(), mCurrentGroupModifiedTitle);
+        mTabGroupTitleEditor.storeTabGroupTitle(getRootId(currentTab), mCurrentGroupModifiedTitle);
         mTabGroupTitleEditor.updateTabGroupTitle(currentTab, mCurrentGroupModifiedTitle);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, mCurrentGroupModifiedTitle);
         mCurrentGroupModifiedTitle = null;

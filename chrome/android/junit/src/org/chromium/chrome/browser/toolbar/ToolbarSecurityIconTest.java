@@ -28,7 +28,7 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
-import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 
 /**
@@ -49,7 +49,7 @@ public final class ToolbarSecurityIconTest {
     public JniMocker mocker = new JniMocker();
 
     @Mock
-    private Tab mTab;
+    private TabImpl mTab;
     @Mock
     private Context mContext;
     @Mock
@@ -114,12 +114,12 @@ public final class ToolbarSecurityIconTest {
                 LocationBarModel.getSecurityLevel(mTab, IS_OFFLINE_PAGE, null));
 
         for (int securityLevel : SECURITY_LEVELS) {
-            when(mTab.getSecurityLevel()).thenReturn(securityLevel);
+            when((mTab).getSecurityLevel()).thenReturn(securityLevel);
             assertEquals("Wrong security level returned for " + securityLevel, securityLevel,
                     LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, null));
         }
 
-        when(mTab.getSecurityLevel()).thenReturn(ConnectionSecurityLevel.SECURE);
+        when((mTab).getSecurityLevel()).thenReturn(ConnectionSecurityLevel.SECURE);
         assertEquals("Wrong security level returned for HTTPS publisher URL",
                 ConnectionSecurityLevel.SECURE,
                 LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "https://example.com"));
@@ -127,7 +127,7 @@ public final class ToolbarSecurityIconTest {
                 ConnectionSecurityLevel.WARNING,
                 LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "http://example.com"));
 
-        when(mTab.getSecurityLevel()).thenReturn(ConnectionSecurityLevel.DANGEROUS);
+        when((mTab).getSecurityLevel()).thenReturn(ConnectionSecurityLevel.DANGEROUS);
         assertEquals("Wrong security level returned for publisher URL on insecure page",
                 ConnectionSecurityLevel.DANGEROUS,
                 LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, null));

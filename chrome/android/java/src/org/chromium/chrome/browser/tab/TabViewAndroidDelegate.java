@@ -13,7 +13,7 @@ import org.chromium.ui.base.ViewAndroidDelegate;
  * Implementation of the abstract class {@link ViewAndroidDelegate} for Chrome.
  */
 public class TabViewAndroidDelegate extends ViewAndroidDelegate {
-    private final Tab mTab;
+    private final TabImpl mTab;
 
     /**
      * The inset for the bottom of the Visual Viewport in pixels, or 0 for no insetting.
@@ -23,7 +23,7 @@ public class TabViewAndroidDelegate extends ViewAndroidDelegate {
 
     TabViewAndroidDelegate(Tab tab, ViewGroup containerView) {
         super(containerView);
-        mTab = tab;
+        mTab = (TabImpl) tab;
     }
 
     @Override

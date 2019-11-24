@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.translate.TranslateUtils;
@@ -243,7 +244,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
             // Don't allow either "chrome://" pages or interstitial pages to be shared.
             menu.findItem(R.id.share_row_menu_id)
-                    .setVisible(!isChromeScheme && !currentTab.isShowingInterstitialPage());
+                    .setVisible(
+                            !isChromeScheme && !((TabImpl) currentTab).isShowingInterstitialPage());
 
             ShareHelper.configureDirectShareMenuItem(
                     mContext, menu.findItem(R.id.direct_share_menu_id));

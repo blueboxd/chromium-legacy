@@ -19,6 +19,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -70,9 +71,9 @@ public class TabContextTests {
         doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
     }
 
-    private static Tab mockTab(int id, int rootId, String title, String url, String originalUrl,
+    private static TabImpl mockTab(int id, int rootId, String title, String url, String originalUrl,
             String referrerUrl, long getTimestampMillis) {
-        Tab tab = mock(Tab.class);
+        TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         doReturn(rootId).when(tab).getRootId();
         doReturn(title).when(tab).getTitle();

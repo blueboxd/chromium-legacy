@@ -13,6 +13,7 @@ import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
@@ -36,7 +37,7 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
             return;
         }
 
-        ChromeActivity activity = tab.getActivity();
+        ChromeActivity activity = ((TabImpl) tab).getActivity();
         AssistantOnboardingCoordinator onboardingCoordinator = new AssistantOnboardingCoordinator(
                 experimentIds, activity, activity.getBottomSheetController(), tab);
         onboardingCoordinator.show(accepted -> {

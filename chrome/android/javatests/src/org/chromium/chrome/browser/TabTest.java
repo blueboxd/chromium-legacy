@@ -21,6 +21,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -103,10 +104,11 @@ public class TabTest {
     @Feature({"Tab"})
     public void testTabRestoredIfKilledWhileActivityStopped() throws Exception {
         // Ensure the tab is showing before stopping the activity.
-        TestThreadUtils.runOnUiThreadBlocking(() -> mTab.show(TabSelectionType.FROM_NEW));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> ((TabImpl) mTab).show(TabSelectionType.FROM_NEW));
 
         Assert.assertFalse(mTab.needsReload());
-        Assert.assertFalse(mTab.isHidden());
+        Assert.assertFalse(((TabImpl) mTab).isHidden());
         Assert.assertFalse(isShowingSadTab());
 
         // Stop the activity and simulate a killed renderer.
@@ -117,7 +119,7 @@ public class TabTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mTab.isHidden();
+                return ((TabImpl) mTab).isHidden();
             }
         });
         Assert.assertTrue(mTab.needsReload());
@@ -129,7 +131,7 @@ public class TabTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !mTab.isHidden();
+                return !((TabImpl) mTab).isHidden();
             }
         });
         Assert.assertFalse(mTab.needsReload());
@@ -143,6 +145,6 @@ public class TabTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) ()
                         -> Assert.assertEquals(
-                                ConnectionSecurityLevel.NONE, mTab.getSecurityLevel()));
+                                ConnectionSecurityLevel.NONE, ((TabImpl) mTab).getSecurityLevel()));
     }
 }

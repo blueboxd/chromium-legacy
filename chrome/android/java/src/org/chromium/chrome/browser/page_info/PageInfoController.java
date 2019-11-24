@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -181,7 +182,7 @@ public class PageInfoController
                 () -> Clipboard.getInstance().copyUrlToClipboard(mFullUrl);
 
         // Work out the URL and connection message and status visibility.
-        mFullUrl = isShowingOfflinePage() ? offlinePageUrl : mTab.getOriginalUrl();
+        mFullUrl = isShowingOfflinePage() ? offlinePageUrl : ((TabImpl) mTab).getOriginalUrl();
 
         // This can happen if an invalid chrome-distiller:// url was entered.
         if (mFullUrl == null) mFullUrl = "";
@@ -200,7 +201,7 @@ public class PageInfoController
         if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
             OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
                     OmniboxUrlEmphasizer.parseForEmphasizeComponents(
-                            mTab.getProfile(), displayUrlBuilder.toString());
+                            ((TabImpl) mTab).getProfile(), displayUrlBuilder.toString());
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
                         new TextAppearanceSpan(mContext, R.style.TextAppearance_RobotoMediumStyle),
@@ -209,12 +210,13 @@ public class PageInfoController
         }
 
         final boolean useDarkColors =
-                !mTab.getActivity().getNightModeStateProvider().isInNightMode();
+                !((TabImpl) mTab).getActivity().getNightModeStateProvider().isInNightMode();
         OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, mContext.getResources(),
-                mTab.getProfile(), mSecurityLevel, mIsInternalPage, useDarkColors, true);
+                ((TabImpl) mTab).getProfile(), mSecurityLevel, mIsInternalPage, useDarkColors,
+                true);
         viewParams.url = displayUrlBuilder;
         viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
-                displayUrlBuilder.toString(), mTab.getProfile());
+                displayUrlBuilder.toString(), ((TabImpl) mTab).getProfile());
 
         if (SiteSettingsHelper.isSiteSettingsAvailable(mTab)) {
             viewParams.siteSettingsButtonClickCallback = () -> {
@@ -293,7 +295,7 @@ public class PageInfoController
         };
 
         mDialog = new PageInfoDialog(mContext, mView, mTab.getView(), isSheet(),
-                mTab.getActivity().getModalDialogManager(), this);
+                ((TabImpl) mTab).getActivity().getModalDialogManager(), this);
         mDialog.show();
     }
 

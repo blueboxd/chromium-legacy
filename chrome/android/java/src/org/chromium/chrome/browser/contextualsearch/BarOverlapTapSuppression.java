@@ -97,7 +97,7 @@ public class BarOverlapTapSuppression extends ContextualSearchHeuristic {
         float bottomControlsOffset = fullscreenManager.getBottomControlOffset();
         float bottomControlsHeight = fullscreenManager.getBottomControlsHeight();
 
-        float tabHeight = currentTab.getHeight();
+        float tabHeight = currentTab.getView().getHeight();
         return (tabHeight - (topControlsHeight + topControlsOffset))
                 - (bottomControlsHeight - bottomControlsOffset);
     }

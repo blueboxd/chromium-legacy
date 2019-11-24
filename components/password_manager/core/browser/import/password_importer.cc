@@ -4,13 +4,15 @@
 
 #include "components/password_manager/core/browser/import/password_importer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
-#include "components/autofill/core/common/password_form.h"
-#include "components/password_manager/core/browser/import/password_csv_reader.h"
+#include "components/password_manager/core/browser/import/csv_password.h"
+#include "components/password_manager/core/browser/import/csv_password_sequence.h"
 
 namespace password_manager {
 
@@ -28,32 +30,44 @@ base::Optional<std::string> ReadFileToString(const base::FilePath& path) {
   return contents;
 }
 
+PasswordImporter::Result ToImporterError(CSVPassword::Status status) {
+  switch (status) {
+    case CSVPassword::Status::kOK:
+      return PasswordImporter::SUCCESS;
+    case CSVPassword::Status::kSyntaxError:
+      return PasswordImporter::SYNTAX_ERROR;
+    case CSVPassword::Status::kSemanticError:
+      return PasswordImporter::SEMANTIC_ERROR;
+  }
+}
+
 // Parses passwords from |input| using |password_reader| and synchronously calls
 // |completion| with the results.
-static void ParsePasswords(
-    const PasswordImporter::CompletionCallback& completion,
-    base::Optional<std::string> input) {
+static void ParsePasswords(PasswordImporter::CompletionCallback completion,
+                           base::Optional<std::string> input) {
   // Currently, CSV is the only supported format.
-  PasswordCSVReader password_reader;
-  std::vector<autofill::PasswordForm> passwords;
-  PasswordImporter::Result result = PasswordImporter::IO_ERROR;
-  if (input)
-    result = password_reader.DeserializePasswords(input.value(), &passwords);
-  completion.Run(result, passwords);
+  if (!input) {
+    std::move(completion)
+        .Run(PasswordImporter::IO_ERROR, CSVPasswordSequence(std::string()));
+    return;
+  }
+  CSVPasswordSequence seq(std::move(input.value()));
+  PasswordImporter::Result result = ToImporterError(seq.result());
+  std::move(completion).Run(result, std::move(seq));
 }
 
 }  // namespace
 
 // static
 void PasswordImporter::Import(const base::FilePath& path,
-                              const CompletionCallback& completion) {
+                              CompletionCallback completion) {
   // Posting with USER_VISIBLE priority, because the result of the import is
   // visible to the user in the password settings page.
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-      base::Bind(&ReadFileToString, path),
-      base::Bind(&ParsePasswords, completion));
+      base::BindOnce(&ReadFileToString, path),
+      base::BindOnce(&ParsePasswords, std::move(completion)));
 }
 
 // static

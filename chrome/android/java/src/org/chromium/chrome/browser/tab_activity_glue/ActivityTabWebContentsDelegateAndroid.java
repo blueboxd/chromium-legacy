@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
@@ -143,7 +144,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
         String url = mWebContentsUrlMapping.remove(webContents);
 
         // Skip opening a new Tab if it doesn't make sense.
-        if (mTab.isClosing()) return false;
+        if (((TabImpl) mTab).isClosing()) return false;
 
         // Creating new Tabs asynchronously requires starting a new Activity to create the Tab,
         // so the Tab returned will always be null.  There's no way to know synchronously
@@ -183,7 +184,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
             Log.e(TAG, "Activity destroyed before calling activateContents().  Bailing out.");
             return;
         }
-        if (!mTab.isInitialized()) {
+        if (!((TabImpl) mTab).isInitialized()) {
             Log.e(TAG, "Tab not initialized before calling activateContents().  Bailing out.");
             return;
         }
@@ -356,7 +357,7 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
                 @Override
                 public void onDismiss(PropertyModel model, int dismissalCause) {
                     mTab.removeObserver(RepostFormWarningHelper.this);
-                    if (!mTab.isInitialized()) return;
+                    if (!((TabImpl) mTab).isInitialized()) return;
                     switch (dismissalCause) {
                         case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
                             mTab.getWebContents().getNavigationController().continuePendingReload();

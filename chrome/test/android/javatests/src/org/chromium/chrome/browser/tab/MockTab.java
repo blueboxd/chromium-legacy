@@ -14,12 +14,12 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * Tab used for various testing purposes.
  */
-public class MockTab extends Tab {
+public class MockTab extends TabImpl {
     /**
      * Create a new Tab for testing and initializes Tab UserData objects.
      */
     public static Tab createAndInitialize(int id, boolean incognito) {
-        Tab tab = new MockTab(id, incognito);
+        TabImpl tab = new MockTab(id, incognito);
         tab.initialize(null, null, null, null, null, false, null, false);
         return tab;
     }

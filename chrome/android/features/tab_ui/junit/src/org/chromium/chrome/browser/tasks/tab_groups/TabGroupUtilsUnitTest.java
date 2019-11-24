@@ -30,6 +30,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -79,9 +80,9 @@ public class TabGroupUtilsUnitTest {
     @Mock
     SharedPreferences.Editor mRemoveEditor;
 
-    private Tab mTab1;
-    private Tab mTab2;
-    private Tab mTab3;
+    private TabImpl mTab1;
+    private TabImpl mTab2;
+    private TabImpl mTab3;
 
     @Before
     public void setUp() {
@@ -167,8 +168,8 @@ public class TabGroupUtilsUnitTest {
         verify(mPutStringEditor).apply();
     }
 
-    private Tab prepareTab(int id, String title) {
-        Tab tab = mock(Tab.class);
+    private TabImpl prepareTab(int id, String title) {
+        TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
         doReturn(id).when(tab).getRootId();
         doReturn("").when(tab).getUrl();
@@ -179,7 +180,7 @@ public class TabGroupUtilsUnitTest {
     private void createTabGroup(List<Tab> tabs, int rootId) {
         for (Tab tab : tabs) {
             when(mTabGroupModelFilter.getRelatedTabList(tab.getId())).thenReturn(tabs);
-            doReturn(rootId).when(tab).getRootId();
+            doReturn(rootId).when(((TabImpl) tab)).getRootId();
         }
     }
 }

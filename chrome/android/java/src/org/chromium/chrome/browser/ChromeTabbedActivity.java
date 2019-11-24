@@ -115,6 +115,7 @@ import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab_activity_glue.TabDelegateFactoryImpl;
@@ -2198,7 +2199,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         if (NavigationSheet.isEnabled()) {
             showFullHistoryOnNavigationSheet(tab);
         } else {
-            mNavigationPopup = new NavigationPopup(tab.getProfile(), this,
+            mNavigationPopup = new NavigationPopup(((TabImpl) tab).getProfile(), this,
                     tab.getWebContents().getNavigationController(),
                     NavigationPopup.Type.ANDROID_SYSTEM_BACK);
             mNavigationPopup.setOnDismissCallback(() -> mNavigationPopup = null);

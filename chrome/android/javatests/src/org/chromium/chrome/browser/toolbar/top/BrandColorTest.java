@@ -27,6 +27,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -240,7 +241,8 @@ public class BrandColorTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivityTestRule.getActivity().getActivityTab().isShowingInterstitialPage();
+                return ((TabImpl) mActivityTestRule.getActivity().getActivityTab())
+                        .isShowingInterstitialPage();
             }
         });
         checkForBrandColor(ChromeColors.getDefaultThemeColor(

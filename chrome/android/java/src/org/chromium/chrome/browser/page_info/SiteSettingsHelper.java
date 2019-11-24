@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.net.GURLUtils;
 
@@ -28,7 +29,7 @@ public class SiteSettingsHelper {
         boolean isOfflinePage = OfflinePageUtils.getOfflinePage(tab) != null;
         boolean isPreviewPage =
                 PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(tab.getWebContents());
-        String scheme = GURLUtils.getScheme(tab.getOriginalUrl());
+        String scheme = GURLUtils.getScheme(((TabImpl) tab).getOriginalUrl());
         return !isOfflinePage && !isPreviewPage
                 && (UrlConstants.HTTP_SCHEME.equals(scheme)
                         || UrlConstants.HTTPS_SCHEME.equals(scheme));

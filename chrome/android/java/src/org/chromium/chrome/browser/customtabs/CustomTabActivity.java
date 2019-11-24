@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -487,7 +488,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
         }
 
         Tab tab = mTabProvider.getTab();
-        if (tab != null && tab.isPreview()) {
+        if (tab != null && ((TabImpl) tab).isPreview()) {
             return false;
         }
 

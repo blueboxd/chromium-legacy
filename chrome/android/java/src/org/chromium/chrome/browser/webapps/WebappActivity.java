@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
@@ -738,7 +739,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         Tab tab = getActivityTab();
         if (tab == null) return false;
 
-        String url = tab.getOriginalUrl();
+        String url = ((TabImpl) tab).getOriginalUrl();
         if (TextUtils.isEmpty(url)) {
             url = IntentHandler.getUrlFromIntent(getIntent());
         }
@@ -873,9 +874,9 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     protected void createAndShowTab() {
-        Tab tab = createTab();
+        TabImpl tab = (TabImpl) createTab();
         getTabModelSelector().setTab(tab);
-        tab.show(TabSelectionType.FROM_NEW);
+        ((TabImpl) tab).show(TabSelectionType.FROM_NEW);
     }
 
     @Override

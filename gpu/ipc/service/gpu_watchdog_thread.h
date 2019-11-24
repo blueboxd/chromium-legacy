@@ -228,6 +228,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   base::Time check_time_;
   base::TimeTicks check_timeticks_;
 
+  // whether GpuWatchdogThreadEvent::kGpuWatchdogStart has been recorded.
+  bool is_watchdog_start_histogram_recorded = false;
+
 #if defined(USE_X11)
   FILE* tty_file_;
   int host_tty_;

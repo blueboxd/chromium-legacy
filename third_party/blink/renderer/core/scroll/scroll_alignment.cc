@@ -64,8 +64,6 @@ const ScrollAlignment ScrollAlignment::kAlignLeftAlways = {
 const ScrollAlignment ScrollAlignment::kAlignRightAlways = {
     kScrollAlignmentRight, kScrollAlignmentRight, kScrollAlignmentRight};
 
-#define MIN_INTERSECT_FOR_REVEAL 32
-
 ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
     const PhysicalRect& scroll_snapport_rect,
     const PhysicalRect& expose_rect,
@@ -88,8 +86,7 @@ ScrollOffset ScrollAlignment::GetScrollOffsetToExpose(
                              non_zero_visible_rect.Height());
   LayoutUnit intersect_width =
       Intersection(non_zero_visible_rect, expose_rect_x).Width();
-  if (intersect_width == expose_rect.Width() ||
-      intersect_width >= MIN_INTERSECT_FOR_REVEAL) {
+  if (intersect_width == expose_rect.Width()) {
     // If the rectangle is fully visible, use the specified visible behavior.
     // If the rectangle is partially visible, but over a certain threshold,
     // then treat it as fully visible to avoid unnecessary horizontal scrolling

@@ -20,8 +20,7 @@ void FakeImageBurnerClient::ResetEventHandlers() {
 
 void FakeImageBurnerClient::BurnImage(const std::string& from_path,
                                       const std::string& to_path,
-                                      const ErrorCallback& error_callback) {
-}
+                                      ErrorCallback error_callback) {}
 
 void FakeImageBurnerClient::SetEventHandlers(
     const BurnFinishedHandler& burn_finished_handler,

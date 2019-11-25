@@ -1776,6 +1776,11 @@ const char kWebAppInstallMetrics[] = "web_app_install_metrics";
 // Dictionary that maps web app URLs to Chrome extension IDs.
 const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 
+// Dictionary that maps web app ID to a dictionary of various preferences.
+// Used only in the new web applications system to store app preferences which
+// outlive the app installation and uninstallation.
+const char kWebAppsPreferences[] = "web_apps.web_app_ids";
+
 // A string representing the last version of Chrome that System Web Apps were
 // updated for.
 const char kSystemWebAppLastUpdateVersion[] =

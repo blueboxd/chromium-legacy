@@ -151,9 +151,8 @@ void HTMLIFrameElement::ParseAttribute(
         value.IsNull()
             ? WebSandboxFlags::kNone
             : ParseSandboxPolicy(sandbox_->TokenSet(), invalid_tokens);
-    SetAllowedToDownloadWithoutUserActivation(
-        (current_flags & WebSandboxFlags::kDownloads) ==
-        WebSandboxFlags::kNone);
+    SetAllowedToDownload((current_flags & WebSandboxFlags::kDownloads) ==
+                         WebSandboxFlags::kNone);
     // With FeaturePolicyForSandbox, sandbox flags are represented as part of
     // the container policies. However, not all sandbox flags are yet converted
     // and for now the residue will stay around in the stored flags.

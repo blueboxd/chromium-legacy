@@ -104,8 +104,8 @@ enum FeaturePolicyFeature {
   // Loading policies.
   kLoadingFrameDefaultEager = 48,
 
-  // Implements sandbox flag: allow-downloads-without-user-activation.
-  kDownloadsWithoutUserActivation = 49,
+  // Implements sandbox flag: allow-downloads.
+  kDownloads = 49,
 
   // Allow execution while not in the viewport.
   kExecutionWhileOutOfViewport = 50,

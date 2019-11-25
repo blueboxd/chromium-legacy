@@ -32,7 +32,6 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"

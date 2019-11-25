@@ -142,7 +142,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
 
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-        &controller().sync_bridge(), icon_manager_.get());
+        profile(), &controller().sync_bridge(), icon_manager_.get());
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
 
     install_finalizer_->SetSubsystems(&registrar(), ui_manager_.get());

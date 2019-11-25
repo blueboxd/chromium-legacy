@@ -93,7 +93,7 @@ def make_dict_member_set_def(cg_context):
     return func_def
 
 
-def make_dict_fill_with_members_def(cg_context):
+def make_fill_with_dict_members_def(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     T = TextNode
@@ -128,7 +128,7 @@ def make_dict_fill_with_members_def(cg_context):
     return func_def
 
 
-def make_dict_fill_with_own_members_def(cg_context):
+def make_fill_with_own_dict_members_def(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
     T = TextNode
@@ -190,8 +190,8 @@ def generate_dictionaries(web_idl_database, output_dirs):
 
     code_node = SymbolScopeNode()
 
-    code_node.append(make_dict_fill_with_members_def(cg_context))
-    code_node.append(make_dict_fill_with_own_members_def(cg_context))
+    code_node.append(make_fill_with_dict_members_def(cg_context))
+    code_node.append(make_fill_with_own_dict_members_def(cg_context))
     for member in sorted(dictionary.own_members, key=lambda x: x.identifier):
         code_node.extend([
             make_dict_member_get_def(cg_context.make_copy(dict_member=member)),

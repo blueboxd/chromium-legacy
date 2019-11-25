@@ -11,9 +11,9 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
+#include "ui/platform_window/extensions/x11_extension.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
-#include "ui/platform_window/platform_window_linux.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/window_event_filter_linux.h"
@@ -124,16 +124,25 @@ void DesktopWindowTreeHostLinux::SetPendingXVisualId(int x_visual_id) {
 }
 
 gfx::Rect DesktopWindowTreeHostLinux::GetXRootWindowOuterBounds() const {
-  return GetPlatformWindowLinux()->GetXRootWindowOuterBounds();
+  // TODO(msisov): must be removed as soon as all X11 low-level bits are moved
+  // to Ozone.
+  DCHECK(GetX11Extension());
+  return GetX11Extension()->GetXRootWindowOuterBounds();
 }
 
 bool DesktopWindowTreeHostLinux::ContainsPointInXRegion(
     const gfx::Point& point) const {
-  return GetPlatformWindowLinux()->ContainsPointInXRegion(point);
+  // TODO(msisov): must be removed as soon as all X11 low-level bits are moved
+  // to Ozone.
+  DCHECK(GetX11Extension());
+  return GetX11Extension()->ContainsPointInXRegion(point);
 }
 
 void DesktopWindowTreeHostLinux::LowerXWindow() {
-  GetPlatformWindowLinux()->LowerXWindow();
+  // TODO(msisov): must be removed as soon as all X11 low-level bits are moved
+  // to Ozone.
+  DCHECK(GetX11Extension());
+  GetX11Extension()->LowerXWindow();
 }
 
 base::OnceClosure DesktopWindowTreeHostLinux::DisableEventListening() {
@@ -153,7 +162,7 @@ base::OnceClosure DesktopWindowTreeHostLinux::DisableEventListening() {
 void DesktopWindowTreeHostLinux::Init(const Widget::InitParams& params) {
   DesktopWindowTreeHostPlatform::Init(params);
 
-  if (GetPlatformWindowLinux()->IsSyncExtensionAvailable()) {
+  if (GetX11Extension() && GetX11Extension()->IsSyncExtensionAvailable()) {
     compositor_observer_ = std::make_unique<SwapWithNewSizeObserverHelper>(
         compositor(),
         base::BindRepeating(
@@ -168,12 +177,6 @@ void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
 
   CreateNonClientEventFilter();
   DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
-}
-
-void DesktopWindowTreeHostLinux::SetOpacity(float opacity) {
-  DesktopWindowTreeHostPlatform::SetOpacity(opacity);
-  // Note that this is no-op for Wayland.
-  GetPlatformWindowLinux()->SetOpacityForXWindow(opacity);
 }
 
 base::flat_map<std::string, std::string>
@@ -338,22 +341,30 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_role_name = params.wm_role_name;
 
   properties->x_visual_id = pending_x_visual_id_;
+
+  DCHECK(!properties->x11_extension_delegate);
+  properties->x11_extension_delegate = this;
 }
 
 void DesktopWindowTreeHostLinux::OnCompleteSwapWithNewSize(
     const gfx::Size& size) {
-  GetPlatformWindowLinux()->OnCompleteSwapAfterResize();
+  if (GetX11Extension())
+    GetX11Extension()->OnCompleteSwapAfterResize();
 }
 
 void DesktopWindowTreeHostLinux::CreateNonClientEventFilter() {
   DCHECK(!non_client_window_event_filter_);
   non_client_window_event_filter_ = std::make_unique<WindowEventFilterLinux>(
-      this, GetWmMoveResizeHandler(*GetPlatformWindowLinux()));
+      this, GetWmMoveResizeHandler(*platform_window()));
 }
 
 void DesktopWindowTreeHostLinux::DestroyNonClientEventFilter() {
   non_client_window_event_filter_.reset();
 }
+
+void DesktopWindowTreeHostLinux::OnXWindowMapped() {}
+
+void DesktopWindowTreeHostLinux::OnXWindowUnmapped() {}
 
 void DesktopWindowTreeHostLinux::GetWindowMask(const gfx::Size& size,
                                                SkPath* window_mask) {
@@ -376,13 +387,12 @@ void DesktopWindowTreeHostLinux::EnableEventListening() {
     targeter_for_modal_.reset();
 }
 
-const ui::PlatformWindowLinux*
-DesktopWindowTreeHostLinux::GetPlatformWindowLinux() const {
-  return static_cast<const ui::PlatformWindowLinux*>(platform_window());
+ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() {
+  return ui::GetX11Extension(*(platform_window()));
 }
 
-ui::PlatformWindowLinux* DesktopWindowTreeHostLinux::GetPlatformWindowLinux() {
-  return static_cast<ui::PlatformWindowLinux*>(platform_window());
+const ui::X11Extension* DesktopWindowTreeHostLinux::GetX11Extension() const {
+  return ui::GetX11Extension(*(platform_window()));
 }
 
 std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostLinux::open_windows() {

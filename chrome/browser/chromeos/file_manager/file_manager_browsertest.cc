@@ -413,11 +413,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewImageExif"),
         TestCase("openQuickViewImageRaw"),
         TestCase("openQuickViewVideo"),
-// QuickView PDF test fails on MSAN, crbug.com/768070
-#if !defined(MEMORY_SANITIZER)
         TestCase("openQuickViewPdf"),
         TestCase("openQuickViewPdfPreviewsDisabled"),
-#endif
         TestCase("openQuickViewKeyboardUpDownChangesView"),
         TestCase("openQuickViewKeyboardLeftRightChangesView"),
         TestCase("openQuickViewSniffedText"),

@@ -218,8 +218,8 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
       AddMetadataParseErrorMessageToConsole(frame_tree_node_id_,
                                             metadata_error);
       std::move(forwarding_client_)
-          ->OnComplete(network::URLLoaderCompletionStatus(
-              net::ERR_INVALID_BUNDLED_EXCHANGES));
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
     DCHECK(reader_);
@@ -273,7 +273,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
 //     - If OnMetadataReady() has not been called yet:
 //         Wait for OnMetadataReady() to be called.
 //     - If OnMetadataReady() was called with an error:
-//         Completes the request with ERR_INVALID_BUNDLED_EXCHANGES.
+//         Completes the request with ERR_INVALID_WEB_BUNDLE.
 //     - If OnMetadataReady() was called whthout errors:
 //         A redirect loader is created to redirect the navigation request to
 //         the Bundle's primary URL ("https://example.com/a.html").
@@ -315,8 +315,8 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (metadata_error_) {
       mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
-          ->OnComplete(network::URLLoaderCompletionStatus(
-              net::ERR_INVALID_BUNDLED_EXCHANGES));
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
 
@@ -403,7 +403,7 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
 //       Content-Disposition header is set, returns false.
 //     - If the URL isn't HTTPS nor localhost HTTP, or the Content-Length header
 //       is not a positive value, completes the requests with
-//       ERR_INVALID_BUNDLED_EXCHANGES and returns true.
+//       ERR_INVALID_WEB_BUNDLE and returns true.
 //     - Otherwise starts reading the metadata and returns true. Once the
 //       metadata is read, OnMetadataReady() is called, and a redirect loader is
 //       created to redirect the navigation request to the Bundle's primary URL
@@ -467,8 +467,8 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
           "Web Bundle response must be served from HTTPS or localhost HTTP.");
       *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
       std::move(forwarding_client_)
-          ->OnComplete(network::URLLoaderCompletionStatus(
-              net::ERR_INVALID_BUNDLED_EXCHANGES));
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return true;
     }
 
@@ -478,8 +478,8 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
           "Web Bundle response must have valid Content-Length header.");
       *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
       std::move(forwarding_client_)
-          ->OnComplete(network::URLLoaderCompletionStatus(
-              net::ERR_INVALID_BUNDLED_EXCHANGES));
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return true;
     }
 
@@ -502,8 +502,8 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
     if (error) {
       AddMetadataParseErrorMessageToConsole(frame_tree_node_id_, error);
       std::move(forwarding_client_)
-          ->OnComplete(network::URLLoaderCompletionStatus(
-              net::ERR_INVALID_BUNDLED_EXCHANGES));
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
     primary_url_ = reader_->GetPrimaryURL();
@@ -512,8 +512,8 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
           frame_tree_node_id_,
           "The primary URL resource is not found in the web bundle.");
       std::move(forwarding_client_)
-          ->OnComplete(network::URLLoaderCompletionStatus(
-              net::ERR_INVALID_BUNDLED_EXCHANGES));
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
 
@@ -524,8 +524,8 @@ class InterceptorForNetwork final : public NavigationLoaderInterceptor {
                                "The origin of primary URL doesn't match with "
                                "the origin of the web bundle.");
       std::move(forwarding_client_)
-          ->OnComplete(network::URLLoaderCompletionStatus(
-              net::ERR_INVALID_BUNDLED_EXCHANGES));
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
     url_loader_factory_ = std::make_unique<WebBundleURLLoaderFactory>(
@@ -720,7 +720,7 @@ class InterceptorForTrackedNavigationFromFile final
 //   - If OnMetadataReady() has not been called yet:
 //       Wait for OnMetadataReady() to be called.
 //   - If OnMetadataReady() was called with an error:
-//       Completes the request with ERR_INVALID_BUNDLED_EXCHANGES.
+//       Completes the request with ERR_INVALID_WEB_BUNDLE.
 //   - If OnMetadataReady() was called whthout errors:
 //       Creates the loader for the main resource.
 class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
@@ -761,8 +761,8 @@ class InterceptorForNavigationInfo final : public NavigationLoaderInterceptor {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (metadata_error_) {
       mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
-          ->OnComplete(network::URLLoaderCompletionStatus(
-              net::ERR_INVALID_BUNDLED_EXCHANGES));
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
 

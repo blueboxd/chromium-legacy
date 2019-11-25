@@ -334,15 +334,15 @@ class TaskQueueCreationFromQueueTraitsTest :
     public FrameTaskQueueControllerTest,
     public testing::WithParamInterface<QueueTraits::PrioritisationType> {};
 
-INSTANTIATE_TEST_SUITE_P(,
-                         TaskQueueCreationFromQueueTraitsTest,
-                         ::testing::Values(
-                            QueueTraits::PrioritisationType::kVeryHigh,
-                            QueueTraits::PrioritisationType::kHigh,
-                            QueueTraits::PrioritisationType::kBestEffort,
-                            QueueTraits::PrioritisationType::kRegular,
-                            QueueTraits::PrioritisationType::kLoading,
-                            QueueTraits::PrioritisationType::kLoadingControl));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    TaskQueueCreationFromQueueTraitsTest,
+    ::testing::Values(QueueTraits::PrioritisationType::kVeryHigh,
+                      QueueTraits::PrioritisationType::kHigh,
+                      QueueTraits::PrioritisationType::kBestEffort,
+                      QueueTraits::PrioritisationType::kRegular,
+                      QueueTraits::PrioritisationType::kLoading,
+                      QueueTraits::PrioritisationType::kLoadingControl));
 
 TEST_P(TaskQueueCreationFromQueueTraitsTest,
         AddAndRetrieveAllTaskQueues) {

@@ -51,8 +51,7 @@ Commit::~Commit() {
 }
 
 // static
-std::unique_ptr<Commit> Commit::Init(ModelTypeSet requested_types,
-                                     ModelTypeSet enabled_types,
+std::unique_ptr<Commit> Commit::Init(ModelTypeSet enabled_types,
                                      size_t max_entries,
                                      const std::string& account_name,
                                      const std::string& cache_guid,
@@ -62,7 +61,7 @@ std::unique_ptr<Commit> Commit::Init(ModelTypeSet requested_types,
                                      ExtensionsActivity* extensions_activity) {
   // Gather per-type contributions.
   ContributionMap contributions = commit_processor->GatherCommitContributions(
-      requested_types, max_entries, cookie_jar_mismatch, cookie_jar_empty);
+      max_entries, cookie_jar_mismatch, cookie_jar_empty);
 
   // Give up if no one had anything to commit.
   if (contributions.empty())

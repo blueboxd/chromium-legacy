@@ -575,8 +575,7 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
   NavigationDownloadPolicy download_policy;
   RenderFrameImpl::MaybeSetDownloadFramePolicy(
       info->is_opener_navigation, info->url_request, current_origin,
-      has_download_sandbox_flag,
-      info->blocking_downloads_in_sandbox_without_user_activation_enabled,
+      has_download_sandbox_flag, info->blocking_downloads_in_sandbox_enabled,
       from_ad, &download_policy);
 
   return mojom::CommonNavigationParams::New(
@@ -1730,7 +1729,7 @@ void RenderFrameImpl::MaybeSetDownloadFramePolicy(
     const blink::WebURLRequest& request,
     const blink::WebSecurityOrigin& current_origin,
     bool has_download_sandbox_flag,
-    bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+    bool blocking_downloads_in_sandbox_enabled,
     bool from_ad,
     NavigationDownloadPolicy* download_policy) {
   bool has_gesture = request.HasUserGesture();
@@ -1746,14 +1745,10 @@ void RenderFrameImpl::MaybeSetDownloadFramePolicy(
   }
 
   if (has_download_sandbox_flag) {
-    download_policy->SetAllowed(NavigationDownloadType::kSandbox);
-    if (!has_gesture) {
-      if (blocking_downloads_in_sandbox_without_user_activation_enabled) {
-        download_policy->SetDisallowed(
-            NavigationDownloadType::kSandboxNoGesture);
-      } else {
-        download_policy->SetAllowed(NavigationDownloadType::kSandboxNoGesture);
-      }
+    if (blocking_downloads_in_sandbox_enabled) {
+      download_policy->SetDisallowed(NavigationDownloadType::kSandbox);
+    } else {
+      download_policy->SetAllowed(NavigationDownloadType::kSandbox);
     }
   }
 
@@ -6389,18 +6384,17 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
 
   params.href_translate = info->href_translate.Latin1();
 
-  bool current_frame_has_download_sandbox_flag =
-      !frame_->IsAllowedToDownloadWithoutUserActivation();
+  bool current_frame_has_download_sandbox_flag = !frame_->IsAllowedToDownload();
   bool has_download_sandbox_flag =
       info->initiator_frame_has_download_sandbox_flag ||
       current_frame_has_download_sandbox_flag;
   bool from_ad = info->initiator_frame_is_ad || frame_->IsAdSubframe();
 
-  MaybeSetDownloadFramePolicy(
-      info->is_opener_navigation, info->url_request,
-      frame_->GetSecurityOrigin(), has_download_sandbox_flag,
-      info->blocking_downloads_in_sandbox_without_user_activation_enabled,
-      from_ad, &params.download_policy);
+  MaybeSetDownloadFramePolicy(info->is_opener_navigation, info->url_request,
+                              frame_->GetSecurityOrigin(),
+                              has_download_sandbox_flag,
+                              info->blocking_downloads_in_sandbox_enabled,
+                              from_ad, &params.download_policy);
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
@@ -6701,8 +6695,7 @@ void RenderFrameImpl::BeginNavigationInternal(
   mojo::PendingRemote<blink::mojom::NavigationInitiator> navigation_initiator(
       std::move(info->navigation_initiator_handle), 0);
 
-  bool current_frame_has_download_sandbox_flag =
-      !frame_->IsAllowedToDownloadWithoutUserActivation();
+  bool current_frame_has_download_sandbox_flag = !frame_->IsAllowedToDownload();
   bool has_download_sandbox_flag =
       info->initiator_frame_has_download_sandbox_flag ||
       current_frame_has_download_sandbox_flag;

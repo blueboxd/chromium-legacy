@@ -242,7 +242,7 @@ class PLATFORM_EXPORT FontCache {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_LINUX)
-  static void GetFontForCharacter(UChar32,
+  static bool GetFontForCharacter(UChar32,
                                   const char* preferred_locale,
                                   gfx::FallbackFontData*);
 #endif  // defined(OS_LINUX)

@@ -233,7 +233,7 @@ TEST_F(CanvasCaptureHandlerTest, CheckNeedsNewFrame) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     CanvasCaptureHandlerTest,
     ::testing::Combine(::testing::Bool(),
                        ::testing::Values(kTestCanvasCaptureFrameEvenSize,

@@ -10,13 +10,16 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
-#include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/accessibility/view_accessibility.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 std::unique_ptr<ToolbarButton> CreateBackButton(views::ButtonListener* listener,
                                                 Browser* browser) {
@@ -59,8 +62,11 @@ std::unique_ptr<ToolbarButton> CreateForwardButton(
   return forward;
 }
 
-std::unique_ptr<ReloadButton> CreateReloadButton(Browser* browser) {
-  auto reload = std::make_unique<ReloadButton>(browser->command_controller());
+std::unique_ptr<ReloadButton> CreateReloadButton(
+    Browser* browser,
+    ReloadButton::IconStyle icon_style) {
+  auto reload =
+      std::make_unique<ReloadButton>(browser->command_controller(), icon_style);
   reload->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                                       ui::EF_MIDDLE_MOUSE_BUTTON);
   reload->set_tag(IDC_RELOAD);
@@ -83,3 +89,9 @@ std::unique_ptr<HomeButton> CreateHomeButton(views::ButtonListener* listener,
   home->SizeToPreferredSize();
   return home;
 }
+
+#if defined(OS_WIN)
+bool UseWindowsIconsForMinimalUI() {
+  return base::win::GetVersion() >= base::win::Version::WIN10;
+}
+#endif

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_BASE_H_
-#define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_BASE_H_
+#ifndef UI_PLATFORM_WINDOW_PLATFORM_WINDOW_H_
+#define UI_PLATFORM_WINDOW_PLATFORM_WINDOW_H_
 
 #include <memory>
 
@@ -25,15 +25,12 @@ class Transform;
 
 namespace ui {
 
-// Platform window.
-//
-// Each instance of PlatformWindowBase represents a single window in the
-// underlying platform windowing system (i.e. X11/Win/OSX).
-class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowBase
+// Generic PlatformWindow interface.
+class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindow
     : public PropertyHandler {
  public:
-  PlatformWindowBase();
-  ~PlatformWindowBase() override;
+  PlatformWindow();
+  ~PlatformWindow() override;
 
   // PlatformWindow may be called with the |inactive| set to true in some cases.
   // That means that the Window Manager must not activate the window when it is
@@ -136,8 +133,15 @@ class COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowBase
 
   // Returns true if the window supports translucency.
   virtual bool IsTranslucentWindowOpacitySupported() const;
+
+  // Sets opacity of the platform window.
+  virtual void SetOpacity(float opacity);
+
+  // Enables or disables platform provided animations of the PlatformWindow.
+  // If |enabled| is set to false, animations are disabled.
+  virtual void SetVisibilityChangedAnimationsEnabled(bool enabled);
 };
 
 }  // namespace ui
 
-#endif  // UI_PLATFORM_WINDOW_PLATFORM_WINDOW_BASE_H_
+#endif  // UI_PLATFORM_WINDOW_PLATFORM_WINDOW_H_

@@ -30,16 +30,26 @@ _setup_sys_path()
 
 
 from .ast_group import AstGroup
+from .attribute import Attribute
 from .callback_function import CallbackFunction
 from .callback_interface import CallbackInterface
 from .composition_parts import Component
+from .constant import Constant
+from .constructor import Constructor
+from .constructor import ConstructorGroup
 from .database import Database
 from .database_builder import build_database
 from .dictionary import Dictionary
+from .dictionary import DictionaryMember
 from .enumeration import Enumeration
+from .exposure import Exposure
+from .function_like import FunctionLike
 from .idl_type import IdlType
 from .interface import Interface
 from .namespace import Namespace
+from .operation import Operation
+from .operation import OperationGroup
+from .overload_group import OverloadGroup
 from .runtime_enabled_features import RuntimeEnabledFeatures
 from .typedef import Typedef
 from .union import Union

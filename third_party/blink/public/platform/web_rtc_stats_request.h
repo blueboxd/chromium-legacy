@@ -39,17 +39,17 @@ namespace blink {
 
 class RTCStatsRequest;
 class WebMediaStreamTrack;
-class WebRTCStatsResponse;
+class RTCStatsResponseBase;
 
 // The WebRTCStatsRequest class represents a JavaScript call on
 // RTCPeerConnection.getStats(). The user of this API will use
-// the calls on this class and WebRTCStatsResponse to fill in the
+// the calls on this class and RTCStatsResponseBase to fill in the
 // data that will be returned via a callback to the user in an
 // RTCStatsResponse structure.
 //
 // The typical usage pattern is:
 // WebRTCStatsRequest request = <from somewhere>
-// WebRTCStatsResponse response = request.CreateResponse();
+// RTCStatsResponseBase* response = request.CreateResponse();
 //
 // For each item on which statistics are going to be reported:
 //   WebRTCLegacyStats stats(...);
@@ -81,9 +81,9 @@ class WebRTCStatsRequest {
   // It is only useful to call it when HasSelector() returns true.
   BLINK_PLATFORM_EXPORT const WebMediaStreamTrack Component() const;
 
-  BLINK_PLATFORM_EXPORT void RequestSucceeded(const WebRTCStatsResponse&) const;
+  BLINK_PLATFORM_EXPORT void RequestSucceeded(RTCStatsResponseBase*) const;
 
-  BLINK_PLATFORM_EXPORT WebRTCStatsResponse CreateResponse() const;
+  BLINK_PLATFORM_EXPORT RTCStatsResponseBase* CreateResponse() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT WebRTCStatsRequest(RTCStatsRequest*);

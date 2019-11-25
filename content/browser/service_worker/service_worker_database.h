@@ -435,7 +435,7 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   bool IsDatabaseInMemory() const;
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDatabaseTest, OpenDatabase_InMemory);

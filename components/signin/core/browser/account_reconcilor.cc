@@ -736,9 +736,6 @@ void AccountReconcilor::FinishReconcile(
   DCHECK(delegate_->IsUnknownInvalidAccountInCookieAllowed())
       << "Only supported in UPDATE mode";
 
-  delegate_->MaybeLogInconsistencyReason(primary_account, chrome_accounts,
-                                         gaia_accounts, first_execution_);
-
   size_t number_gaia_accounts = gaia_accounts.size();
   // If there are any accounts in the gaia cookie but not in chrome, then
   // those accounts need to be removed from the cookie.  This means we need

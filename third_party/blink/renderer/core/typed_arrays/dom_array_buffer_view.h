@@ -66,7 +66,9 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
   unsigned deprecatedByteOffsetAsUnsigned() const {
     return base::checked_cast<unsigned>(View()->ByteOffset());
   }
-  unsigned byteLength() const { return View()->ByteLength(); }
+  unsigned byteLength() const {
+    return base::checked_cast<unsigned>(View()->ByteLengthAsSizeT());
+  }
   unsigned TypeSize() const { return View()->TypeSize(); }
   void SetDetachable(bool flag) { return View()->SetDetachable(flag); }
   bool IsShared() const { return View()->IsShared(); }

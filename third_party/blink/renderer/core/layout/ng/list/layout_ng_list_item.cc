@@ -159,6 +159,14 @@ void LayoutNGListItem::UpdateMarker() {
     marker_style = ComputedStyle::Create();
     marker_style->InheritFrom(style);
   }
+  if (marker_style->GetContentData()) {
+    // Don't create an anonymous layout for the marker, it will be generated
+    // by the ::marker pseudo-element.
+    DestroyMarker();
+    marker_type_ = kStatic;
+    is_marker_text_updated_ = true;
+    return;
+  }
   if (IsInside()) {
     if (marker_ && !marker_->IsLayoutInline())
       DestroyMarker();
@@ -205,7 +213,16 @@ LayoutNGListItem* LayoutNGListItem::FromMarker(const LayoutObject& marker) {
   for (LayoutObject* parent = marker.Parent(); parent;
        parent = parent->Parent()) {
     if (parent->IsLayoutNGListItem()) {
-      DCHECK(ToLayoutNGListItem(parent)->Marker() == &marker);
+#if DCHECK_IS_ON()
+      LayoutObject* parent_marker = ToLayoutNGListItem(parent)->Marker();
+      if (parent_marker) {
+        DCHECK(!marker.GetNode());
+        DCHECK_EQ(ToLayoutNGListItem(parent)->Marker(), &marker);
+      } else {
+        DCHECK(marker.GetNode()->IsMarkerPseudoElement());
+        DCHECK_EQ(marker.GetNode()->parentElement()->GetLayoutBox(), parent);
+      }
+#endif
       return ToLayoutNGListItem(parent);
     }
     // These DCHECKs are not critical but to ensure we cover all cases we know.

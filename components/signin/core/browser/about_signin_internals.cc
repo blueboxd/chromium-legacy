@@ -194,8 +194,6 @@ std::string GetAccountConsistencyDescription(
       return "None";
     case signin::AccountConsistencyMethod::kMirror:
       return "Mirror";
-    case signin::AccountConsistencyMethod::kDiceMigration:
-      return "DICE migration";
     case signin::AccountConsistencyMethod::kDice:
       return "DICE";
   }

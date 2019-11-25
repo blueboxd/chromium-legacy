@@ -48,6 +48,7 @@ class InflateTransformer final : public TransformStreamTransformer {
   Vector<uint8_t> out_buffer_;
 
   bool was_flush_called_ = false;
+  bool reached_end_ = false;
 
   // This buffer size has been experimentally verified to be optimal.
   static constexpr wtf_size_t kBufferSize = 65536;

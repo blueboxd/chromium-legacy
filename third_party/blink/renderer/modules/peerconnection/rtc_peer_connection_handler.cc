@@ -82,7 +82,7 @@ RTCSessionDescriptionPlatform* CreateWebKitSessionDescription(
     const std::string& sdp,
     const std::string& type) {
   return MakeGarbageCollected<RTCSessionDescriptionPlatform>(
-      blink::WebString::FromUTF8(type), blink::WebString::FromUTF8(sdp));
+      String::FromUTF8(type), String::FromUTF8(sdp));
 }
 
 RTCSessionDescriptionPlatform* CreateWebKitSessionDescription(
@@ -132,8 +132,8 @@ void RunSynchronousRepeatingClosure(const base::RepeatingClosure& closure,
 void GetRTCSessionDescriptionPlatformFromSessionDescriptionCallback(
     base::OnceCallback<const webrtc::SessionDescriptionInterface*()>
         description_callback,
-    WebString* out_type,
-    WebString* out_sdp,
+    String* out_type,
+    String* out_sdp,
     bool* success) {
   DCHECK(out_type);
   DCHECK(out_sdp);
@@ -144,8 +144,8 @@ void GetRTCSessionDescriptionPlatformFromSessionDescriptionCallback(
   if (description) {
     std::string sdp;
     description->ToString(&sdp);
-    *out_type = WebString::FromUTF8(description->type());
-    *out_sdp = WebString::FromUTF8(sdp);
+    *out_type = String::FromUTF8(description->type());
+    *out_sdp = String::FromUTF8(sdp);
     *success = true;
   }
 }
@@ -647,12 +647,12 @@ void LocalRTCStatsRequest::requestSucceeded(
 }
 
 // Implementation of LocalRTCStatsResponse.
-blink::WebRTCStatsResponse LocalRTCStatsResponse::webKitStatsResponse() const {
+RTCStatsResponseBase* LocalRTCStatsResponse::webKitStatsResponse() const {
   return impl_;
 }
 
 void LocalRTCStatsResponse::addStats(const blink::WebRTCLegacyStats& stats) {
-  impl_.AddStats(stats);
+  impl_->AddStats(stats);
 }
 
 // Processes the resulting state changes of a SetLocalDescription() or
@@ -2621,7 +2621,7 @@ RTCPeerConnectionHandler::GetRTCSessionDescriptionPlatformOnSignalingThread(
   // Initializing |description| on the signaling thread is safe because we
   // own it and wait for it to be initialized here.
 
-  WebString type, sdp;
+  String type, sdp;
   bool success = false;
   RunSynchronousOnceClosureOnSignalingThread(
       base::BindOnce(

@@ -426,17 +426,16 @@ class CachedFontSet {
     FcFontSetDestroy(font_set_);
   }
 
-  FallbackFontData GetFallbackFontForChar(UChar32 c) {
+  bool GetFallbackFontForChar(UChar32 c, FallbackFontData* fallback_font) {
     TRACE_EVENT0("fonts", "gfx::CachedFontSet::GetFallbackFontForChar");
 
     for (const auto& cached_font : fallback_list_) {
-      if (cached_font.HasGlyphForCharacter(c))
-        return cached_font.fallback_font();
+      if (cached_font.HasGlyphForCharacter(c)) {
+        *fallback_font = cached_font.fallback_font();
+        return true;
+      }
     }
-    // The previous code just returned garbage if the user didn't
-    // have the necessary fonts, this seems better than garbage.
-    // Current callers happen to ignore any values with an empty family string.
-    return FallbackFontData();
+    return false;
   }
 
  private:
@@ -512,11 +511,13 @@ base::LazyInstance<FontSetCache>::Leaky g_font_sets_by_locale =
 FallbackFontData::FallbackFontData() = default;
 FallbackFontData::FallbackFontData(const FallbackFontData& other) = default;
 
-FallbackFontData GetFallbackFontForChar(UChar32 c, const std::string& locale) {
+bool GetFallbackFontForChar(UChar32 c,
+                            const std::string& locale,
+                            FallbackFontData* fallback_font) {
   auto& cached_font_set = g_font_sets_by_locale.Get()[locale];
   if (!cached_font_set)
     cached_font_set = CachedFontSet::CreateForLocale(locale);
-  return cached_font_set->GetFallbackFontForChar(c);
+  return cached_font_set->GetFallbackFontForChar(c, fallback_font);
 }
 
 }  // namespace gfx

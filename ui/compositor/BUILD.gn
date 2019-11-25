@@ -6,6 +6,12 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("compositor") {
   sources = [
     "callback_layer_animation_observer.cc",
@@ -63,8 +69,6 @@ jumbo_component("compositor") {
     "paint_recorder.cc",
     "paint_recorder.h",
     "property_change_reason.h",
-    "recyclable_compositor_mac.cc",
-    "recyclable_compositor_mac.h",
     "reflector.cc",
     "reflector.h",
     "scoped_animation_duration_scale_mode.cc",
@@ -76,6 +80,13 @@ jumbo_component("compositor") {
     "transform_recorder.cc",
     "transform_recorder.h",
   ]
+
+  if (is_mac) {
+    sources += [
+      "recyclable_compositor_mac.cc",
+      "recyclable_compositor_mac.h",
+    ]
+  }
 
   defines = [ "COMPOSITOR_IMPLEMENTATION" ]
 
@@ -130,9 +141,6 @@ jumbo_static_library("test_support") {
     "test/multi_layer_animator_test_controller.h",
     "test/multi_layer_animator_test_controller_delegate.h",
     "test/test_compositor_host.h",
-    "test/test_compositor_host_android.cc",
-    "test/test_compositor_host_mac.mm",
-    "test/test_compositor_host_win.cc",
     "test/test_context_factories.cc",
     "test/test_context_factories.h",
     "test/test_layer_animation_delegate.cc",
@@ -146,6 +154,18 @@ jumbo_static_library("test_support") {
     "test/test_utils.cc",
     "test/test_utils.h",
   ]
+
+  if (is_android) {
+    sources += [ "test/test_compositor_host_android.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [ "test/test_compositor_host_mac.mm" ]
+  }
+
+  if (is_win) {
+    sources += [ "test/test_compositor_host_win.cc" ]
+  }
 
   public_deps = [
     ":compositor",

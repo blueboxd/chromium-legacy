@@ -115,7 +115,7 @@ IntentPickerAutoDisplayPref::QueryPlatform() {
   int platform = 0;
   pref_dict_->GetInteger(kPlatformKey, &platform);
   DCHECK_GE(platform, static_cast<int>(Platform::kNone));
-  DCHECK_LT(platform, static_cast<int>(Platform::kMaxValue));
+  DCHECK_LE(platform, static_cast<int>(Platform::kMaxValue));
 
   return static_cast<Platform>(platform);
 }

@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -124,7 +124,7 @@ ProtocolResponse AssertCacheStorage(
 
   if (it == caches->end()) {
     mojo::Remote<mojom::blink::CacheStorage> cache_storage_remote;
-    context->GetInterfaceProvider()->GetInterface(
+    context->GetBrowserInterfaceBroker().GetInterface(
         cache_storage_remote.BindNewPipeAndPassReceiver());
     *result = cache_storage_remote.get();
     caches->Set(security_origin, std::move(cache_storage_remote));

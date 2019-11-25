@@ -15,10 +15,6 @@
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/signin/scoped_account_consistency.h"
-#endif
-
-#if defined(OS_CHROMEOS)
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #endif
@@ -27,22 +23,10 @@ namespace browsing_data_counter_utils {
 
 class BrowsingDataCounterUtilsBrowserTest : public SyncTest {
  public:
-  BrowsingDataCounterUtilsBrowserTest()
-      : SyncTest(SINGLE_CLIENT)
-#if defined(OS_CHROMEOS)
-        ,
-        scoped_mirror_(std::make_unique<ScopedAccountConsistencyMirror>())
-#endif
-  {
-  }
+  BrowsingDataCounterUtilsBrowserTest() : SyncTest(SINGLE_CLIENT) {}
   ~BrowsingDataCounterUtilsBrowserTest() override = default;
 
  private:
-#if defined(OS_CHROMEOS)
-  // Need to manually turn on mirror for now.
-  const std::unique_ptr<ScopedAccountConsistencyMirror> scoped_mirror_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataCounterUtilsBrowserTest);
 };
 

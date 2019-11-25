@@ -116,10 +116,6 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       !parent_layout_object->BehavesLikeBlockContainer())
     return nullptr;
 
-  LayoutObject* marker =
-      parent_layout_object->IsLayoutNGListItem()
-          ? ToLayoutNGListItem(parent_layout_object)->Marker()
-          : nullptr;
   // Drill down into our children and look for our first text child.
   LayoutObject* first_letter_text_layout_object =
       parent_layout_object->SlowFirstChild();
@@ -146,8 +142,8 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
         break;
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
-    } else if (first_letter_text_layout_object->IsListMarker() ||
-               first_letter_text_layout_object == marker) {
+    } else if (first_letter_text_layout_object
+                   ->IsListMarkerIncludingNGInside()) {
       // The list item marker may have out-of-flow siblings inside an anonymous
       // block. Skip them to make sure we leave the anonymous block before
       // continuing looking for the first letter text.
@@ -186,9 +182,6 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       // setting up the first letter then.
       return nullptr;
     } else {
-      if (first_letter_text_layout_object->IsLayoutNGListItem())
-        marker = ToLayoutNGListItem(first_letter_text_layout_object)->Marker();
-
       first_letter_text_layout_object =
           first_letter_text_layout_object->SlowFirstChild();
     }

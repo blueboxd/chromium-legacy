@@ -10,6 +10,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/base/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/platform_window/extensions/x11_extension_delegate.h"
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
@@ -20,7 +21,7 @@ class ScopedWindowTargeter;
 }  // namespace aura
 
 namespace ui {
-class PlatformWindowLinux;
+class X11Extension;
 }  // namespace ui
 
 namespace views {
@@ -29,7 +30,8 @@ class WindowEventFilterLinux;
 
 // Contains Linux specific implementation.
 class VIEWS_EXPORT DesktopWindowTreeHostLinux
-    : public DesktopWindowTreeHostPlatform {
+    : public DesktopWindowTreeHostPlatform,
+      public ui::X11ExtensionDelegate {
  public:
   DesktopWindowTreeHostLinux(
       internal::NativeWidgetDelegate* native_widget_delegate,
@@ -77,18 +79,14 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
-  void SetOpacity(float opacity) override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   void InitModalType(ui::ModalType modal_type) override;
 
-  // PlatformWindowDelegateBase:
+  // PlatformWindowDelegate:
   void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnActivationChanged(bool active) override;
-#if BUILDFLAG(USE_ATK)
-  bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) override;
-#endif
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
@@ -108,15 +106,20 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void CreateNonClientEventFilter();
   void DestroyNonClientEventFilter();
 
-  // PlatformWindowDelegateLinux overrides:
+  // X11ExtensionDelegate overrides:
+  void OnXWindowMapped() override;
+  void OnXWindowUnmapped() override;
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void OnLostMouseGrab() override;
+#if BUILDFLAG(USE_ATK)
+  bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event) override;
+#endif
 
   // Enables event listening after closing |dialog|.
   void EnableEventListening();
 
-  const ui::PlatformWindowLinux* GetPlatformWindowLinux() const;
-  ui::PlatformWindowLinux* GetPlatformWindowLinux();
+  ui::X11Extension* GetX11Extension();
+  const ui::X11Extension* GetX11Extension() const;
 
   // See comment for variable open_windows_.
   static std::list<gfx::AcceleratedWidget>& open_windows();

@@ -57,13 +57,6 @@ class AccountReconcilorDelegate {
   // changes to the accounts are made. Defaults to false.
   virtual bool IsAccountConsistencyEnforced() const;
 
-  // Computes inconsistency reason and uploads it to UMA.
-  virtual void MaybeLogInconsistencyReason(
-      const CoreAccountId& primary_account,
-      const std::vector<CoreAccountId>& chrome_accounts,
-      const std::vector<gaia::ListedAccount>& gaia_accounts,
-      bool first_execution) const;
-
   // Returns the value to set in the "source" parameter for Gaia API calls.
   virtual gaia::GaiaSource GetGaiaApiSource() const;
 

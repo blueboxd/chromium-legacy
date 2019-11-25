@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -124,9 +125,10 @@ void ServiceWorkerNavigationLoader::StartRequest(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   resource_request_ = resource_request;
-  if (provider_host_ && provider_host_->fetch_request_window_id()) {
-    resource_request_.fetch_window_id =
-        base::make_optional(provider_host_->fetch_request_window_id());
+  if (provider_host_ &&
+      provider_host_->container_host()->fetch_request_window_id()) {
+    resource_request_.fetch_window_id = base::make_optional(
+        provider_host_->container_host()->fetch_request_window_id());
   }
 
   DCHECK(!receiver_.is_bound());
@@ -147,7 +149,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   }
 
   scoped_refptr<ServiceWorkerVersion> active_worker =
-      provider_host_->controller();
+      provider_host_->container_host()->controller();
   if (!active_worker) {
     CommitCompleted(net::ERR_FAILED, "No active worker");
     return;
@@ -165,7 +167,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
       blink::mojom::FetchAPIRequest::From(resource_request_),
       static_cast<ResourceType>(resource_request_.resource_type),
-      provider_host_->client_uuid(), active_worker,
+      provider_host_->container_host()->client_uuid(), active_worker,
       base::BindOnce(&ServiceWorkerNavigationLoader::DidPrepareFetchEvent,
                      weak_factory_.GetWeakPtr(), active_worker,
                      active_worker->running_status()),
@@ -173,7 +175,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                      weak_factory_.GetWeakPtr()));
   did_navigation_preload_ = fetch_dispatcher_->MaybeStartNavigationPreload(
       resource_request_, url_loader_factory_getter_.get(), std::move(context),
-      provider_host_->frame_tree_node_id());
+      provider_host_->container_host()->frame_tree_node_id());
 
   // Record worker start time here as |fetch_dispatcher_| will start a service
   // worker if there is no running service worker.

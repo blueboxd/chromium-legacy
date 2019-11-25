@@ -57,10 +57,6 @@
 #include "third_party/zlib/google/compression_utils.h"
 #include "url/url_constants.h"
 
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-#include "chrome/browser/signin/scoped_account_consistency.h"
-#endif
-
 namespace metrics {
 
 namespace {

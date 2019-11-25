@@ -152,16 +152,20 @@ void FontServiceApp::FallbackFontForCharacter(
     FallbackFontForCharacterCallback callback) {
   TRACE_EVENT0("fonts", "FontServiceApp::FallbackFontForCharacter");
 
-  auto fallback_font = gfx::GetFallbackFontForChar(character, locale);
-  size_t index = FindOrAddPath(fallback_font.filepath);
+  gfx::FallbackFontData fallback_font;
+  if (gfx::GetFallbackFontForChar(character, locale, &fallback_font)) {
+    size_t index = FindOrAddPath(fallback_font.filepath);
 
-  mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
-  identity->id = static_cast<uint32_t>(index);
-  identity->ttc_index = fallback_font.ttc_index;
-  identity->filepath = fallback_font.filepath;
+    mojom::FontIdentityPtr identity(mojom::FontIdentity::New());
+    identity->id = static_cast<uint32_t>(index);
+    identity->ttc_index = fallback_font.ttc_index;
+    identity->filepath = fallback_font.filepath;
 
-  std::move(callback).Run(std::move(identity), fallback_font.name,
-                          fallback_font.is_bold, fallback_font.is_italic);
+    std::move(callback).Run(std::move(identity), fallback_font.name,
+                            fallback_font.is_bold, fallback_font.is_italic);
+  } else {
+    std::move(callback).Run(nullptr, "", false, false);
+  }
 }
 
 void FontServiceApp::FontRenderStyleForStrike(

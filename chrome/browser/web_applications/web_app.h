@@ -91,6 +91,8 @@ class WebApp {
   bool HasOnlySource(Source::Type source) const;
 
   bool IsSynced() const;
+  bool IsDefaultApp() const;
+  bool CanUserUninstallExternalApp() const;
   bool WasInstalledByUser() const;
 
   void SetName(const std::string& name);
@@ -107,6 +109,9 @@ class WebApp {
   void SetSyncData(SyncData sync_data);
 
  private:
+  using Sources = std::bitset<Source::kMaxValue + 1>;
+  bool HasAnySpecifiedSourcesAndNoOtherSources(Sources specified_sources) const;
+
   friend class WebAppDatabase;
   friend bool operator==(const WebApp&, const WebApp&);
   friend std::ostream& operator<<(std::ostream&, const WebApp&);
@@ -114,7 +119,6 @@ class WebApp {
   AppId app_id_;
 
   // This set always contains at least one source.
-  using Sources = std::bitset<Source::kMaxValue + 1>;
   Sources sources_;
 
   std::string name_;

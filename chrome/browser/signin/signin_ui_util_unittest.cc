@@ -170,8 +170,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     histogram_tester.ExpectTotalCount(
         "Signin.SigninStartedAccessPoint.NotDefault", 0);
     histogram_tester.ExpectTotalCount(
-        "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
-    histogram_tester.ExpectTotalCount(
         "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
     histogram_tester.ExpectTotalCount(
         "Signin.SigninStartedAccessPoint.NewAccountExistingAccount", 0);
@@ -189,8 +187,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.WithDefault", 0);
         histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
-        histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountExistingAccount", 0);
@@ -200,8 +196,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
             "Signin.SigninStartedAccessPoint.NotDefault", 0);
         histogram_tester.ExpectUniqueSample(
             "Signin.SigninStartedAccessPoint.WithDefault", access_point_, 1);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
         histogram_tester.ExpectTotalCount(
@@ -213,21 +207,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
         histogram_tester.ExpectUniqueSample(
             "Signin.SigninStartedAccessPoint.NotDefault", access_point_, 1);
         histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountExistingAccount", 0);
-        break;
-      case signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE:
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.WithDefault", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NotDefault", 0);
-        histogram_tester.ExpectUniqueSample(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", access_point_,
-            1);
-        histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountExistingAccount", 0);
@@ -238,8 +217,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
             "Signin.SigninStartedAccessPoint.WithDefault", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NotDefault", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
         histogram_tester.ExpectUniqueSample(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount",
             access_point_, 1);
@@ -252,8 +229,6 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
             "Signin.SigninStartedAccessPoint.WithDefault", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NotDefault", 0);
-        histogram_tester.ExpectTotalCount(
-            "Signin.SigninStartedAccessPoint.NewAccountPreDice", 0);
         histogram_tester.ExpectTotalCount(
             "Signin.SigninStartedAccessPoint.NewAccountNoExistingAccount", 0);
         histogram_tester.ExpectUniqueSample(

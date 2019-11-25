@@ -12,7 +12,12 @@
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 
+class Profile;
 struct WebApplicationInfo;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
 
 namespace web_app {
 
@@ -22,9 +27,12 @@ class WebAppSyncBridge;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
  public:
-  WebAppInstallFinalizer(WebAppSyncBridge* sync_bridge,
+  WebAppInstallFinalizer(Profile* profile,
+                         WebAppSyncBridge* sync_bridge,
                          WebAppIconManager* icon_manager);
   ~WebAppInstallFinalizer() override;
+
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // InstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
@@ -43,11 +51,15 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
   void UninstallWebAppFromSyncByUser(const AppId& app_id,
                                      UninstallWebAppCallback callback) override;
+  bool CanUserUninstallExternalApp(const AppId& app_id) const override;
+  void UninstallExternalAppByUser(const AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
 
  private:
+  void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback);
   void UninstallWebAppOrRemoveSource(const AppId& app_id,
                                      Source::Type source,
                                      UninstallWebAppCallback callback);
@@ -66,6 +78,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
                                   const AppId& installed_app_id,
                                   InstallResultCode code);
 
+  Profile* const profile_;
   WebAppSyncBridge* const sync_bridge_;
   WebAppIconManager* const icon_manager_;
 

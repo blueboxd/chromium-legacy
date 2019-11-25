@@ -752,14 +752,13 @@ void RenderFrameProxy::ForwardPostMessage(
   Send(new FrameHostMsg_RouteMessageEvent(routing_id_, params));
 }
 
-void RenderFrameProxy::Navigate(
-    const blink::WebURLRequest& request,
-    bool should_replace_current_entry,
-    bool is_opener_navigation,
-    bool has_download_sandbox_flag,
-    bool blocking_downloads_in_sandbox_without_user_activation_enabled,
-    bool initiator_frame_is_ad,
-    mojo::ScopedMessagePipeHandle blob_url_token) {
+void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
+                                bool should_replace_current_entry,
+                                bool is_opener_navigation,
+                                bool has_download_sandbox_flag,
+                                bool blocking_downloads_in_sandbox_enabled,
+                                bool initiator_frame_is_ad,
+                                mojo::ScopedMessagePipeHandle blob_url_token) {
   // The request must always have a valid initiator origin.
   DCHECK(!request.RequestorOrigin().IsNull());
 
@@ -785,8 +784,7 @@ void RenderFrameProxy::Navigate(
   // augmented in RenderFrameProxyHost::OnOpenURL if the navigating frame is ad.
   RenderFrameImpl::MaybeSetDownloadFramePolicy(
       is_opener_navigation, request, web_frame_->GetSecurityOrigin(),
-      has_download_sandbox_flag,
-      blocking_downloads_in_sandbox_without_user_activation_enabled,
+      has_download_sandbox_flag, blocking_downloads_in_sandbox_enabled,
       initiator_frame_is_ad, &params.download_policy);
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));

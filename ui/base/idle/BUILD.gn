@@ -8,6 +8,12 @@ if (is_mac) {
   import("//build/config/mac/rules.gni")
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 component("idle") {
   output_name = "ui_base_idle"
 
@@ -32,12 +38,21 @@ component("idle") {
   sources = [
     "idle.cc",
     "idle.h",
-    "idle_chromeos.cc",
     "idle_internal.cc",
     "idle_internal.h",
-    "idle_mac.mm",
-    "idle_win.cc",
   ]
+
+  if (is_chromeos) {
+    sources += [ "idle_chromeos.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [ "idle_mac.mm" ]
+  }
+
+  if (is_win) {
+    sources += [ "idle_win.cc" ]
+  }
 
   if (is_fuchsia) {
     sources += [ "idle_fuchsia.cc" ]

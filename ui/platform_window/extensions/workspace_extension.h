@@ -11,7 +11,7 @@
 
 namespace ui {
 
-class PlatformWindowBase;
+class PlatformWindow;
 class WorkspaceExtensionDelegate;
 
 // A workspace extension that platforms can use to add support for workspaces.
@@ -40,13 +40,13 @@ class COMPONENT_EXPORT(EXTENSIONS) WorkspaceExtension {
   virtual ~WorkspaceExtension();
 
   // Sets the pointer to the extension as a property of the PlatformWindow.
-  void SetWorkspaceExtension(PlatformWindowBase* platform_window,
+  void SetWorkspaceExtension(PlatformWindow* platform_window,
                              WorkspaceExtension* workspace_extension);
 };
 
 COMPONENT_EXPORT(EXTENSIONS)
 WorkspaceExtension* GetWorkspaceExtension(
-    const PlatformWindowBase& platform_window);
+    const PlatformWindow& platform_window);
 
 }  // namespace ui
 

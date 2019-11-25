@@ -118,8 +118,8 @@
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
-      name: "DownloadsWithoutUserActivation",
-      feature_policy_name: "downloads-without-user-activation",
+      name: "Downloads",
+      feature_policy_name: "downloads",
       depends_on: ["FeaturePolicyForSandbox"],
     },
     {

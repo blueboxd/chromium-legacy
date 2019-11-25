@@ -225,14 +225,15 @@ def bind_v8_set_return_value(code_node, cg_context):
     _1 = "V8SetReturnValue"
     _2 = ["${info}", "${return_value}"]
 
-    if cg_context.return_type.unwrap().is_void:
+    return_type = cg_context.return_type.unwrap(nullable=True, typedef=True)
+    if return_type.is_void:
         # Render a SymbolNode |return_value| discarding the content text, and
         # let a symbol definition be added.
         pattern = "<% str(return_value) %>"
     elif (cg_context.for_world == cg_context.MAIN_WORLD
-          and cg_context.return_type.unwrap().is_interface):
+          and return_type.is_interface):
         _1 = "V8SetReturnValueForMainWorld"
-    elif cg_context.return_type.unwrap().is_interface:
+    elif return_type.is_interface:
         _2.append("${creation_context_object}")
 
     text = _format(pattern, _1=_1, _2=", ".join(_2))

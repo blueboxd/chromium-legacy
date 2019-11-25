@@ -187,7 +187,8 @@ void ToolbarView::Init() {
 
   std::unique_ptr<ToolbarButton> forward = CreateForwardButton(this, browser_);
 
-  std::unique_ptr<ReloadButton> reload = CreateReloadButton(browser_);
+  std::unique_ptr<ReloadButton> reload =
+      CreateReloadButton(browser_, ReloadButton::IconStyle::kBrowser);
 
   std::unique_ptr<HomeButton> home = CreateHomeButton(this, browser_);
 

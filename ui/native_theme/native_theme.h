@@ -348,6 +348,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,
+    kColorId_LabelSecondaryColor,
     kColorId_LabelTextSelectionColor,
     kColorId_LabelTextSelectionBackgroundFocused,
     // Link

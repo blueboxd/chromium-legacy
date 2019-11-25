@@ -12,7 +12,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"

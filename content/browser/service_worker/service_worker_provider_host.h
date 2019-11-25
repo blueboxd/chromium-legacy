@@ -34,7 +34,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
@@ -59,7 +58,6 @@ namespace content {
 class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
-class WebContents;
 
 // ServiceWorkerProviderHost is the browser-process representation of a
 // renderer-process entity that can involve service workers. Currently, these
@@ -118,8 +116,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       public blink::mojom::ServiceWorkerContainerHost,
       public service_manager::mojom::InterfaceProvider {
  public:
-  using WebContentsGetter = base::RepeatingCallback<WebContents*()>;
-
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerProviderContext will later be created in the renderer, should
   // the navigation succeed. |are_ancestors_secure| should be true for main
@@ -170,33 +166,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return RenderProcessHost::FromID(render_process_id_);
   }
 
-  const std::string& client_uuid() const { return client_uuid_; }
-  const base::UnguessableToken& fetch_request_window_id() const {
-    return fetch_request_window_id_;
-  }
   base::TimeTicks create_time() const { return create_time_; }
   int process_id() const { return render_process_id_; }
   int provider_id() const { return provider_id_; }
   int frame_id() const { return frame_id_; }
-  const WebContentsGetter& web_contents_getter() const {
-    return web_contents_getter_;
-  }
-  int frame_tree_node_id() const { return frame_tree_node_id_; }
-
-  // For service worker clients. Describes whether the client has a controller
-  // and if it has a fetch event handler.
-  blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
-
-  // For service worker clients. Returns this client's controller.
-  ServiceWorkerVersion* controller() const;
-
-  ServiceWorkerRegistration* controller_registration() const {
-#if DCHECK_IS_ON()
-    CheckControllerConsistency(false);
-#endif  // DCHECK_IS_ON()
-
-    return controller_registration_.get();
-  }
 
   // For service worker execution contexts. The version of the service worker.
   // This is nullptr when the worker is still starting up (until
@@ -254,20 +227,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
 
-  // For service worker clients. Makes this client be controlled by
-  // |registration|'s active worker, or makes this client be not
-  // controlled if |registration| is null. If |notify_controllerchange| is true,
-  // instructs the renderer to dispatch a 'controllerchange' event.
-  void SetControllerRegistration(
-      scoped_refptr<ServiceWorkerRegistration> controller_registration,
-      bool notify_controllerchange);
-
   // May return nullptr if the context has shut down.
   base::WeakPtr<ServiceWorkerContextCore> context() { return context_; }
-
-  // |registration| claims the document to be controlled.
-  void ClaimedByRegistration(
-      scoped_refptr<ServiceWorkerRegistration> registration);
 
   // For service worker window clients. Called when the navigation is ready to
   // commit. Updates this host with information about the frame committed to.
@@ -381,6 +342,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       base::WeakPtr<ServiceWorkerContextCore> context);
 
   // ServiceWorkerRegistration::Listener overrides.
+  // TODO(https://crbug.com/931087): Move these overrides to
+  // ServiceWorkerContainerHost.
   void OnVersionAttributesChanged(
       ServiceWorkerRegistration* registration,
       blink::mojom::ChangedServiceWorkerObjectsMaskPtr changed_mask,
@@ -389,13 +352,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void OnRegistrationFinishedUninstalling(
       ServiceWorkerRegistration* registration) override;
   void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
-
-  // Sets the controller to |controller_registration_->active_version()| or null
-  // if there is no associated registration.
-  //
-  // If |notify_controllerchange| is true, instructs the renderer to dispatch a
-  // 'controller' change event.
-  void UpdateController(bool notify_controllerchange);
 
   // Syncs matching registrations with live registrations.
   void SyncMatchingRegistrations();
@@ -408,15 +364,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void RemoveAllMatchingRegistrations();
 
   void ReturnRegistrationForReadyIfNeeded();
-
-  // Sends information about the controller to the providers of the service
-  // worker clients in the renderer. If |notify_controllerchange| is true,
-  // instructs the renderer to dispatch a 'controllerchange' event.
-  void SendSetControllerServiceWorker(bool notify_controllerchange);
-
-#if DCHECK_IS_ON()
-  void CheckControllerConsistency(bool should_crash) const;
-#endif  // DCHECK_IS_ON()
 
   // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
@@ -499,33 +446,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Unique among all provider hosts.
   const int provider_id_;
 
-  // A GUID that is web-exposed as FetchEvent.clientId.
-  std::string client_uuid_;
-
-  // For window clients. A token used internally to identify this context in
-  // requests. Corresponds to the Fetch specification's concept of a request's
-  // associated window: https://fetch.spec.whatwg.org/#concept-request-window
-  // This gets reset on redirects, unlike |client_uuid_|.
-  //
-  // TODO(falken): Consider using this for |client_uuid_| as well. We can't
-  // right now because this gets reset on redirects, and potentially sites rely
-  // on the GUID format.
-  base::UnguessableToken fetch_request_window_id_;
-
   const base::TimeTicks create_time_;
   int render_process_id_;
 
   // The window's RenderFrame id, if this is a service worker window client.
   // Otherwise, |MSG_ROUTING_NONE|.
   int frame_id_;
-
-  // FrameTreeNode id if this is a service worker window client.
-  // Otherwise, |FrameTreeNode::kFrameTreeNodeInvalidId|.
-  const int frame_tree_node_id_;
-
-  // Only set when this object is pre-created for a navigation. It indicates the
-  // tab where the navigation occurs. Otherwise, a null callback.
-  const WebContentsGetter web_contents_getter_;
 
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =
@@ -544,16 +470,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // 3. |*get_ready_callback_| is a null OnceCallback after the callback has
   //    been run.
   std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
-
-  // For service worker clients. The controller service worker (i.e.,
-  // ServiceWorkerContainer#controller) and its registration. The controller is
-  // typically the same as the registration's active version, but during
-  // algorithms such as the update, skipWaiting(), and claim() steps, the active
-  // version and controller may temporarily differ. For example, to perform
-  // skipWaiting(), the registration's active version is updated first and then
-  // the provider host's controller is updated to match it.
-  scoped_refptr<ServiceWorkerVersion> controller_;
-  scoped_refptr<ServiceWorkerRegistration> controller_registration_;
 
   // For service worker execution contexts. The ServiceWorkerVersion of the
   // service worker this is a provider for.

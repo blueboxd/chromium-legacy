@@ -21,7 +21,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -103,8 +102,6 @@ class MirrorBrowserTest : public InProcessBrowserTest {
     // load pages from "www.google.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
-
-  ScopedAccountConsistencyMirror scoped_mirror_;
 };
 
 // Verify the following items:

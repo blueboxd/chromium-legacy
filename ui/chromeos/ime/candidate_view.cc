@@ -123,8 +123,8 @@ views::Label* CreateAnnotationLabel(
   // Change the font size and color.
   annotation_label->SetFontList(
       annotation_label->font_list().DeriveWithSizeDelta(kFontSizeDelta));
-  annotation_label->SetEnabledColor(theme.GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor));
+  annotation_label->SetEnabledColor(
+      theme.GetSystemColor(ui::NativeTheme::kColorId_LabelSecondaryColor));
   annotation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   annotation_label->SetElideBehavior(gfx::NO_ELIDE);
 

@@ -96,9 +96,8 @@ struct BLINK_EXPORT WebNavigationInfo {
   // by the window.open'd frame.
   bool is_opener_navigation = false;
 
-  // Whether the runtime feature
-  // |BlockingDownloadsInSandboxWithoutUserActivation| is enabled.
-  bool blocking_downloads_in_sandbox_without_user_activation_enabled = false;
+  // Whether the runtime feature |BlockingDownloadsInSandbox| is enabled.
+  bool blocking_downloads_in_sandbox_enabled = false;
 
   // Event information. See TriggeringEventInfo.
   TriggeringEventInfo triggering_event_info = TriggeringEventInfo::kUnknown;

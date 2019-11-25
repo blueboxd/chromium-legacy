@@ -233,7 +233,7 @@ TEST_F(WebBundleURLLoaderFactoryTest,
 TEST_F(WebBundleURLLoaderFactoryTest, CreateEntryLoaderAndFailToReadResponse) {
   auto loader = CreateLoaderAndStart(/*response=*/nullptr);
 
-  RunAndCheckFailure(net::ERR_INVALID_BUNDLED_EXCHANGES);
+  RunAndCheckFailure(net::ERR_INVALID_WEB_BUNDLE);
 }
 
 TEST_F(WebBundleURLLoaderFactoryTest, CreateLoaderForPost) {

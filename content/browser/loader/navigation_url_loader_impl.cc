@@ -35,6 +35,7 @@
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -1077,7 +1078,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
                       base::WeakPtr<ServiceWorkerProviderHost> host =
                           core->provider_host();
                       if (host) {
-                        host->SetControllerRegistration(
+                        host->container_host()->SetControllerRegistration(
                             nullptr, false /* notify_controllerchange */);
                         host->UpdateUrls(GURL(), GURL(), base::nullopt);
                       }

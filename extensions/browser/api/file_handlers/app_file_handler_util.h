@@ -72,8 +72,8 @@ void PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths,
     content::BrowserContext* context,
     const std::set<base::FilePath>& directory_paths,
-    const base::Closure& on_success,
-    const base::Callback<void(const base::FilePath&)>& on_failure);
+    base::OnceClosure on_success,
+    base::OnceCallback<void(const base::FilePath&)> on_failure);
 
 // Returns whether |extension| has the fileSystem.write permission.
 bool HasFileSystemWritePermission(const Extension* extension);

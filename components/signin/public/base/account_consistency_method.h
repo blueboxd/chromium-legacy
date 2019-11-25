@@ -30,20 +30,11 @@ enum class AccountConsistencyMethod : int {
   // Account management UI in the avatar bubble.
   kMirror,
 
-  // Account management UI on Gaia webpages is enabled once the accounts become
-  // consistent.
-  kDiceMigration,
-
   // Account management UI on Gaia webpages is enabled. If accounts are not
   // consistent when this is enabled, the account reconcilor enforces the
   // consistency.
   kDice
 };
-
-// Returns true if the |a| comes after |b| in the AccountConsistencyMethod enum.
-// Should not be used for Mirror.
-bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
-                              AccountConsistencyMethod b);
 
 }  // namespace signin
 

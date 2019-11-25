@@ -36,7 +36,7 @@
           <div id="innerContentPanel" type$="[[type]]">
             <!-- PDF, Text -->
             <template is="dom-if" if="[[browsable]]">
-              <webview on-loadstart='applyTextCss' class="content text-content" src="[[contentUrl]]"></webview>
+              <webview style="color: transparent; background: transparent;" on-contentload='applyTextCss' class="content text-content" src="[[contentUrl]]"></webview>
             </template>
             <!-- document/HTML -->
             <template is="dom-if" if="[[isHtml_(type, subtype)]]">

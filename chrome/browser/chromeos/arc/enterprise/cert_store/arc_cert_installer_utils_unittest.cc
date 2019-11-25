@@ -146,7 +146,7 @@ TEST_P(ArcCertInstallerUtilsTest, Pkcs12) {
   RSA_free(rsa);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ArcCertInstallerUtilsTest,
                          testing::Values("",
                                          "name of the smart card",

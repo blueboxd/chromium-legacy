@@ -39,11 +39,11 @@ class TypedArray : public ArrayBufferView {
  public:
   typedef T ValueType;
 
-  static inline scoped_refptr<TypedArray<T, clamped>> Create(unsigned length);
+  static inline scoped_refptr<TypedArray<T, clamped>> Create(size_t length);
   static inline scoped_refptr<TypedArray<T, clamped>> Create(const T* array,
-                                                             unsigned length);
+                                                             size_t length);
   static inline scoped_refptr<TypedArray<T, clamped>>
-  Create(scoped_refptr<ArrayBuffer>, unsigned byte_offset, unsigned length);
+  Create(scoped_refptr<ArrayBuffer>, size_t byte_offset, size_t length);
 
   T* Data() const { return static_cast<T*>(BaseAddress()); }
 
@@ -51,26 +51,26 @@ class TypedArray : public ArrayBufferView {
     return static_cast<T*>(BaseAddressMaybeShared());
   }
 
-  unsigned length() const { return length_; }
+  size_t length() const { return length_; }
 
-  unsigned ByteLength() const final { return length_ * sizeof(T); }
+  size_t ByteLengthAsSizeT() const final { return length_ * sizeof(T); }
 
   unsigned TypeSize() const final { return sizeof(T); }
 
-  inline void Set(unsigned index, double value);
+  inline void Set(size_t index, double value);
 
-  inline void Set(unsigned index, uint64_t value);
+  inline void Set(size_t index, uint64_t value);
 
   ArrayBufferView::ViewType GetType() const override;
 
   TypedArray(scoped_refptr<ArrayBuffer> buffer,
-             unsigned byte_offset,
-             unsigned length)
+             size_t byte_offset,
+             size_t length)
       : ArrayBufferView(std::move(buffer), byte_offset), length_(length) {}
 
   // Invoked by the indexed getter. Does not perform range checks; caller
   // is responsible for doing so and returning undefined as necessary.
-  T Item(unsigned index) const {
+  T Item(size_t index) const {
     SECURITY_DCHECK(index < length_);
     return Data()[index];
   }
@@ -81,12 +81,12 @@ class TypedArray : public ArrayBufferView {
     length_ = 0;
   }
 
-  unsigned length_;
+  size_t length_;
 };
 
 template <typename T, bool clamped>
 scoped_refptr<TypedArray<T, clamped>> TypedArray<T, clamped>::Create(
-    unsigned length) {
+    size_t length) {
   scoped_refptr<ArrayBuffer> buffer = ArrayBuffer::Create(length, sizeof(T));
   return Create(std::move(buffer), 0, length);
 }
@@ -94,10 +94,10 @@ scoped_refptr<TypedArray<T, clamped>> TypedArray<T, clamped>::Create(
 template <typename T, bool clamped>
 scoped_refptr<TypedArray<T, clamped>> TypedArray<T, clamped>::Create(
     const T* array,
-    unsigned length) {
+    size_t length) {
   auto a = Create(length);
   if (a) {
-    std::memcpy(a->Data(), array, a->ByteLength());
+    std::memcpy(a->Data(), array, a->ByteLengthAsSizeT());
   }
   return a;
 }
@@ -125,15 +125,15 @@ bool VerifySubRange(const ArrayBuffer* buffer,
 template <typename T, bool clamped>
 scoped_refptr<TypedArray<T, clamped>> TypedArray<T, clamped>::Create(
     scoped_refptr<ArrayBuffer> buffer,
-    unsigned byte_offset,
-    unsigned length) {
+    size_t byte_offset,
+    size_t length) {
   CHECK(VerifySubRange<T>(buffer.get(), byte_offset, length));
   return base::AdoptRef(
       new TypedArray<T, clamped>(std::move(buffer), byte_offset, length));
 }
 
 template <typename T, bool clamped>
-inline void TypedArray<T, clamped>::Set(unsigned index, double value) {
+inline void TypedArray<T, clamped>::Set(size_t index, double value) {
   if (index >= length_)
     return;
   if (std::isnan(value))  // Clamp NaN to 0
@@ -144,7 +144,7 @@ inline void TypedArray<T, clamped>::Set(unsigned index, double value) {
 }
 
 template <>
-inline void TypedArray<uint8_t, true>::Set(unsigned index, double value) {
+inline void TypedArray<uint8_t, true>::Set(size_t index, double value) {
   if (index >= length_) {
     return;
   }
@@ -158,49 +158,49 @@ inline void TypedArray<uint8_t, true>::Set(unsigned index, double value) {
 }
 
 template <>
-inline void TypedArray<float, false>::Set(unsigned index, double value) {
+inline void TypedArray<float, false>::Set(size_t index, double value) {
   if (index >= length_)
     return;
   Data()[index] = static_cast<float>(value);
 }
 
 template <>
-inline void TypedArray<double, false>::Set(unsigned index, double value) {
+inline void TypedArray<double, false>::Set(size_t index, double value) {
   if (index >= length_)
     return;
   Data()[index] = value;
 }
 
 template <>
-inline void TypedArray<int64_t, false>::Set(unsigned index, uint64_t value) {
+inline void TypedArray<int64_t, false>::Set(size_t index, uint64_t value) {
   if (index >= length_)
     return;
   Data()[index] = static_cast<int64_t>(value);
 }
 
 template <>
-inline void TypedArray<uint64_t, false>::Set(unsigned index, uint64_t value) {
+inline void TypedArray<uint64_t, false>::Set(size_t index, uint64_t value) {
   if (index >= length_)
     return;
   Data()[index] = value;
 }
 
 template <>
-inline void TypedArray<int64_t, false>::Set(unsigned index, double value) {
+inline void TypedArray<int64_t, false>::Set(size_t index, double value) {
   // This version of {Set} is not supposed to be used for a TypedArray of type
   // int64_t.
   NOTREACHED();
 }
 
 template <>
-inline void TypedArray<uint64_t, false>::Set(unsigned index, double value) {
+inline void TypedArray<uint64_t, false>::Set(size_t index, double value) {
   // This version of {Set} is not supposed to be used for a TypedArray of type
   // uint64_t.
   NOTREACHED();
 }
 
 template <typename T, bool clamped>
-inline void TypedArray<T, clamped>::Set(unsigned index, uint64_t value) {
+inline void TypedArray<T, clamped>::Set(size_t index, uint64_t value) {
   // This version of {Set} is only supposed to be used for a TypedArrays of type
   // int64_t or uint64_t.
   NOTREACHED();

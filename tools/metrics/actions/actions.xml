@@ -20007,6 +20007,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromAvatarBubbleSignin">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -20017,6 +20018,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromBookmarkBubble">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -20027,6 +20029,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromBookmarkManager">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -20038,6 +20041,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromExtensionInstallBubble">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -20048,6 +20052,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromManageCardsBubble">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jsaul@chromium.org</owner>
   <owner>manasverma@google.com</owner>
@@ -20061,6 +20066,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromNTPContentSuggestions">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -20071,6 +20077,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromPasswordBubble">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <description>
@@ -20081,6 +20088,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromRecentTabs">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -20092,6 +20100,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromSaveCardBubble">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jsaul@chromium.org</owner>
   <owner>manasverma@google.com</owner>
@@ -20105,6 +20114,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromSettings">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -20116,6 +20126,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_SigninNewAccountPreDice_FromTabSwitcher">
+  <obsolete>Removed M80</obsolete>
   <owner>bsazonov@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>

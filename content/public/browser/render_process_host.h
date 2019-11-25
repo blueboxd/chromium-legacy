@@ -493,8 +493,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // The following several methods are for internal use only, and are only
   // exposed here to support MockRenderProcessHost usage in tests.
   virtual void BindCacheStorage(
-      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
-      const url::Origin& origin) = 0;
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) = 0;
   virtual void BindFileSystemManager(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;

@@ -2897,12 +2897,6 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
         rfh, blink::mojom::WebFeature::kDownloadWithoutUserGesture);
   }
 
-  // Log UseCounters for download in sandbox without user activation.
-  if (download_policy.IsType(NavigationDownloadType::kSandboxNoGesture)) {
-    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
-        rfh, blink::mojom::WebFeature::kDownloadInSandboxWithoutUserGesture);
-  }
-
   // Log UseCounters for download in ad frame without user activation.
   if (download_policy.IsType(NavigationDownloadType::kAdFrameNoGesture)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(

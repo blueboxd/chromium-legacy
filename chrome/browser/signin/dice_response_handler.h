@@ -58,7 +58,6 @@ class DiceResponseHandler : public KeyedService {
                       signin::IdentityManager* identity_manager,
                       AccountReconcilor* account_reconcilor,
                       AboutSigninInternals* about_signin_internals,
-                      signin::AccountConsistencyMethod account_consistency,
                       const base::FilePath& profile_path_);
   ~DiceResponseHandler() override;
 
@@ -150,7 +149,6 @@ class DiceResponseHandler : public KeyedService {
   signin::IdentityManager* identity_manager_;
   AccountReconcilor* account_reconcilor_;
   AboutSigninInternals* about_signin_internals_;
-  signin::AccountConsistencyMethod account_consistency_;
   base::FilePath profile_path_;
   std::vector<std::unique_ptr<DiceTokenFetcher>> token_fetchers_;
 

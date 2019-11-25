@@ -64,7 +64,7 @@ class MODULES_EXPORT QuicTransport final
   void Trace(Visitor* visitor) override;
 
  private:
-  void Init(ExceptionState&);
+  void Init(const String& url, ExceptionState&);
   void Dispose();
   void OnConnectionError();
 

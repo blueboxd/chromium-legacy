@@ -56,6 +56,14 @@ class BookmarkModelMerger {
   // a permanent node, keyed by server-defined unique tag of the root.
   using RemoteForest = std::unordered_map<std::string, RemoteTreeNode>;
 
+  // Represents a pair of bookmarks, one local and one remote, that have been
+  // matched by GUID. They are guaranteed to have the same type and URL (if
+  // applicable).
+  struct GuidMatch {
+    const bookmarks::BookmarkNode* local_node;
+    const RemoteTreeNode* remote_node;
+  };
+
   // Constructs the remote bookmark tree to be merged. Each entry in the
   // returned map is a permanent node, identified (keyed) by the server-defined
   // tag. All invalid updates are filtered out, including invalid bookmark
@@ -63,22 +71,12 @@ class BookmarkModelMerger {
   // sends tombstones as part of the initial download.
   static RemoteForest BuildRemoteForest(syncer::UpdateResponseDataList updates);
 
-  // Constructs a map from GUID to corresponding remote nodes, used in the merge
-  // process to determine GUID-based node matches.
-  static std::unordered_map<std::string, const RemoteTreeNode*>
-  BuildGUIDToRemoteNodeMap(const RemoteForest& remote_forest);
-
-  // Constructs a map from GUID to corresponding local node, used in the merge
-  // process to determine GUID-based node matches. |bookmark_model| must not be
-  // null. |guid_to_remote_node_map| is used to detect conflicting GUID matches
-  // between local and remote bookmarks for the cases where they cannot be
-  // merged (e.g. folder vs non-folder) and in such cases regenerate a random
-  // GUID for the local bookmark.
-  static std::unordered_map<std::string, const bookmarks::BookmarkNode*>
-  BuildGUIDToLocalNodeMap(
-      bookmarks::BookmarkModel* bookmark_model,
-      const std::unordered_map<std::string, const RemoteTreeNode*>&
-          guid_to_remote_node_map);
+  // Computes bookmark pairs that should be matched by GUID. Local bookmark
+  // GUIDs may be regenerated for the case where they collide with a remote GUID
+  // that is not compatible (e.g. folder vs non-folder).
+  static std::unordered_map<std::string, GuidMatch>
+  FindGuidMatchesOrReassignLocal(const RemoteForest& remote_forest,
+                                 bookmarks::BookmarkModel* bookmark_model);
 
   // Merges a local and a remote subtrees. The input nodes are two equivalent
   // local and remote nodes. This method tries to recursively match their
@@ -151,15 +149,7 @@ class BookmarkModelMerger {
   // Preprocessed remote nodes in the form a forest where each tree's root is a
   // permanent node. Computed upon construction via BuildRemoteForest().
   const RemoteForest remote_forest_;
-  // Maps GUIDs to their respective remote nodes. Used for GUID-based node
-  // matching and is populated at the beginning of the merge process.
-  const std::unordered_map<std::string, const RemoteTreeNode*>
-      guid_to_remote_node_map_;
-  // Maps GUIDs to their respective local nodes. Used for GUID-based
-  // node matching and is populated at the beginning of the merge process.
-  // Is not updated upon potential changes to the model during merge.
-  const std::unordered_map<std::string, const bookmarks::BookmarkNode*>
-      guid_to_local_node_map_;
+  std::unordered_map<std::string, GuidMatch> guid_to_match_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelMerger);
 };

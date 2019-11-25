@@ -6,11 +6,10 @@ import("//build/config/ui.gni")
 
 component("platform_window") {
   sources = [
-    "platform_window_base.cc",
-    "platform_window_base.h",
+    "platform_window.cc",
+    "platform_window.h",
+    "platform_window_delegate.cc",
     "platform_window_delegate.h",
-    "platform_window_delegate_base.cc",
-    "platform_window_delegate_base.h",
     "platform_window_init_properties.cc",
     "platform_window_init_properties.h",
   ]
@@ -35,19 +34,6 @@ component("platform_window") {
       "//third_party/fuchsia-sdk/sdk:ui_policy",
       "//third_party/fuchsia-sdk/sdk:ui_views",
     ]
-  }
-
-  if (is_linux) {
-    sources += [
-      "platform_window_delegate_linux.cc",
-      "platform_window_delegate_linux.h",
-      "platform_window_linux.cc",
-      "platform_window_linux.h",
-    ]
-  }
-
-  if (is_win) {
-    sources += [ "platform_window_win.h" ]
   }
 }
 

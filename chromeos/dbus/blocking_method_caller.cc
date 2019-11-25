@@ -51,11 +51,11 @@ BlockingMethodCaller::CallMethodAndBlockWithError(
     dbus::ScopedDBusError* error_out) {
   // on_blocking_method_call_->Signal() will be called when |signaler| is
   // destroyed.
-  base::Closure signal_task(
-      base::Bind(&base::WaitableEvent::Signal,
-                 base::Unretained(&on_blocking_method_call_)));
+  base::OnceClosure signal_task =
+      base::BindOnce(&base::WaitableEvent::Signal,
+                     base::Unretained(&on_blocking_method_call_));
   base::ScopedClosureRunner* signaler =
-      new base::ScopedClosureRunner(signal_task);
+      new base::ScopedClosureRunner(std::move(signal_task));
 
   std::unique_ptr<dbus::Response> response;
   bus_->GetDBusTaskRunner()->PostTask(

@@ -257,7 +257,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // is pending is separate from the actual play state.
   AnimationPlayState PlayStateInternal() const;
 
-  double CurrentTimeInternal() const;
+  base::Optional<double> CurrentTimeInternal() const;
   void SetCurrentTimeInternal(double new_current_time);
   void SetCurrentTimeInternal(double new_current_time, TimingUpdateReason);
 

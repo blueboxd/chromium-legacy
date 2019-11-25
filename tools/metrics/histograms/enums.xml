@@ -9447,7 +9447,7 @@ Called by update_net_error_codes.py.-->
   <int value="-603" label="FTP_TRANSFER_ABORTED"/>
   <int value="-602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="-601" label="FTP_FAILED"/>
-  <int value="-505" label="INVALID_BUNDLED_EXCHANGES"/>
+  <int value="-505" label="INVALID_WEB_BUNDLE"/>
   <int value="-504" label="INVALID_SIGNED_EXCHANGE"/>
   <int value="-503" label="ADD_USER_CERT_FAILED"/>
   <int value="-502" label="NO_PRIVATE_KEY_FOR_CERT"/>
@@ -25292,7 +25292,7 @@ Called by update_net_error_codes.py.-->
   <int value="2837" label="SandboxBackForwardAffectsFramesOutsideSubtree"/>
   <int value="2838" label="DownloadPrePolicyCheck"/>
   <int value="2839" label="DownloadPostPolicyCheck"/>
-  <int value="2840" label="DownloadInSandboxWithoutUserGesture"/>
+  <int value="2840" label="OBSOLETE_DownloadInSandboxWithoutUserGesture"/>
   <int value="2841" label="ReadableStreamGetReader"/>
   <int value="2842" label="ReadableStreamPipeThrough"/>
   <int value="2843" label="ReadableStreamPipeTo"/>
@@ -25633,7 +25633,7 @@ Called by update_net_error_codes.py.-->
   <int value="46" label="UnoptimizedLosslessImages"/>
   <int value="47" label="UnoptimizedLosslessImagesStrict"/>
   <int value="48" label="LoadingFrameDefaultEager"/>
-  <int value="49" label="DownloadsWithoutUserActivation"/>
+  <int value="49" label="Downloads"/>
   <int value="50" label="ExecutionWhileOutOfViewport"/>
   <int value="51" label="ExecutionWhileNotRendered"/>
   <int value="52" label="FocusWithoutUserActivation"/>
@@ -43126,7 +43126,7 @@ Called by update_net_error_codes.py.-->
   <int value="502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="503" label="ADD_USER_CERT_FAILED"/>
   <int value="504" label="INVALID_SIGNED_EXCHANGE"/>
-  <int value="505" label="INVALID_BUNDLED_EXCHANGES"/>
+  <int value="505" label="INVALID_WEB_BUNDLE"/>
   <int value="601" label="FTP_FAILED"/>
   <int value="602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="603" label="FTP_TRANSFER_ABORTED"/>
@@ -61677,6 +61677,12 @@ would be helpful to identify which type is being sent.
   <int value="1" label="CLIENT_ONLY"/>
   <int value="2" label="CLIENT_AND_SERVER"/>
   <int value="3" label="CLIENT_NO_CHANNEL_ID_SERVICE"/>
+</enum>
+
+<enum name="TokenStateOnRegistrationRequest">
+  <int value="0" label="Token was empty"/>
+  <int value="1" label="Token stayed unchanged"/>
+  <int value="2" label="Token has changed"/>
 </enum>
 
 <enum name="TouchActions">

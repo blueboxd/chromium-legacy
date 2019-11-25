@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -414,7 +415,7 @@ TEST_F(ServiceWorkerContextTest, NoControlleesObserver) {
 
   TestServiceWorkerContextObserver observer(context_wrapper());
 
-  version->RemoveControllee(host->client_uuid());
+  version->RemoveControllee(host->container_host()->client_uuid());
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(1u, observer.events().size());

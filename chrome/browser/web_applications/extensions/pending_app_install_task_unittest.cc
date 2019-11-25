@@ -210,6 +210,16 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     NOTIMPLEMENTED();
   }
 
+  bool CanUserUninstallExternalApp(const AppId& app_id) const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+  void UninstallExternalAppByUser(const AppId& app_id,
+                                  UninstallWebAppCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override {
     NOTIMPLEMENTED();
     return false;

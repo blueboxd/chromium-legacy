@@ -45,7 +45,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/buildflags.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
-#include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_linked_stack.h"
@@ -3882,8 +3881,6 @@ TEST_F(HeapTest, CheckAndMarkPointer) {
     ThreadHeapStatsCollector::Scope stats_scope(
         heap.stats_collector(),
         ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure);
-    heap.address_cache()->EnableLookup();
-    heap.address_cache()->Flush();
 
     // Conservative marker should find the interesting objects by using anything
     // between object start and end.
@@ -3915,8 +3912,6 @@ TEST_F(HeapTest, CheckAndMarkPointer) {
     ThreadHeapStatsCollector::Scope stats_scope(
         heap.stats_collector(),
         ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure);
-    heap.address_cache()->EnableLookup();
-    heap.address_cache()->Flush();
 
     // After collecting all interesting objects the conservative marker should
     // not find them anymore.

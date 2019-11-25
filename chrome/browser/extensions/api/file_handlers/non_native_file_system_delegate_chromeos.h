@@ -37,11 +37,11 @@ class NonNativeFileSystemDelegateChromeOS
   void IsNonNativeLocalPathDirectory(
       content::BrowserContext* context,
       const base::FilePath& path,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void PrepareNonNativeLocalFileForWritableApp(
       content::BrowserContext* context,
       const base::FilePath& path,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NonNativeFileSystemDelegateChromeOS);

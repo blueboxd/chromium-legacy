@@ -795,8 +795,7 @@
                   'ui/login/',
     },
     'chromeos_media_app': {
-      'filepath': 'chromeos/components/media_app_ui/|'\
-                  'chromeos/resources/media_app_resources.grdp',
+      'filepath': 'chromeos/components/media_app_ui/',
     },
     'chromeos_net': {
       'filepath': 'ash/system/network/|'\

@@ -34,7 +34,7 @@ QuicTransport* QuicTransport::Create(ScriptState* script_state,
   DVLOG(1) << "QuicTransport::Create() url=" << url;
   auto* transport =
       MakeGarbageCollected<QuicTransport>(PassKey(), script_state, url);
-  transport->Init(exception_state);
+  transport->Init(url, exception_state);
   return transport;
 }
 
@@ -92,12 +92,11 @@ void QuicTransport::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void QuicTransport::Init(ExceptionState& exception_state) {
-  DVLOG(1) << "QuicTransport::Init() url=" << url_ << " this=" << this;
+void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
+  DVLOG(1) << "QuicTransport::Init() url=" << url << " this=" << this;
   if (!url_.IsValid()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "The URL '" + url_.ElidedString() + "' is invalid.");
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "The URL '" + url + "' is invalid.");
     return;
   }
 

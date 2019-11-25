@@ -18,4 +18,12 @@ source_set("extensions") {
     "//ui/base",
     "//ui/platform_window",
   ]
+
+  if (is_linux) {
+    sources += [
+      "x11_extension.cc",
+      "x11_extension.h",
+      "x11_extension_delegate.h",
+    ]
+  }
 }

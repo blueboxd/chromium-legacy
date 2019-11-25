@@ -49,15 +49,16 @@ void FontCache::SetSystemFontFamily(const AtomicString& family_name) {
   MutableSystemFontFamily() = family_name;
 }
 
-void FontCache::GetFontForCharacter(UChar32 c,
+bool FontCache::GetFontForCharacter(UChar32 c,
                                     const char* preferred_locale,
                                     gfx::FallbackFontData* fallback_font) {
   if (Platform::Current()->GetSandboxSupport()) {
-    Platform::Current()->GetSandboxSupport()->GetFallbackFontForCharacter(
-        c, preferred_locale, fallback_font);
+    return Platform::Current()
+        ->GetSandboxSupport()
+        ->GetFallbackFontForCharacter(c, preferred_locale, fallback_font);
   } else {
     std::string locale = preferred_locale ? preferred_locale : std::string();
-    *fallback_font = gfx::GetFallbackFontForChar(c, locale);
+    return gfx::GetFallbackFontForChar(c, locale, fallback_font);
   }
 }
 
@@ -102,9 +103,9 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   }
 
   gfx::FallbackFontData fallback_font;
-  FontCache::GetFontForCharacter(
-      c, font_description.LocaleOrDefault().Ascii().c_str(), &fallback_font);
-  if (fallback_font.name.empty())
+  if (!FontCache::GetFontForCharacter(
+          c, font_description.LocaleOrDefault().Ascii().c_str(),
+          &fallback_font))
     return nullptr;
 
   FontFaceCreationParams creation_params;

@@ -171,8 +171,6 @@ enum class PromoAction : int {
   // On desktop, the user selected an account that is not the default. On
   // mobile, the user selected the generic "Use another account" button.
   PROMO_ACTION_NOT_DEFAULT,
-  // Non-personalized promo, pre-dice on desktop.
-  PROMO_ACTION_NEW_ACCOUNT_PRE_DICE,
   // Non personalized promo, when there is no account on the device.
   PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT,
   // The user clicked on the "Add account" button, when there are already

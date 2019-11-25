@@ -178,7 +178,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     FakeVideoCaptureDeviceTest,
     Combine(
         Values(PIXEL_FORMAT_I420, PIXEL_FORMAT_Y16, PIXEL_FORMAT_MJPEG),
@@ -479,7 +479,7 @@ TEST_P(FakeVideoCaptureDeviceFactoryTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     FakeVideoCaptureDeviceFactoryTest,
     Values(CommandLineTestData{"fps=-1",
                                5,

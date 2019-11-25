@@ -14,6 +14,7 @@ namespace blink {
 class ComputedStyle;
 class LayoutBlock;
 class LayoutBlockFlow;
+class LayoutObject;
 enum class LegacyLayout;
 class LayoutProgress;
 class LayoutTableCaption;
@@ -43,6 +44,9 @@ class LayoutObjectFactory {
   static LayoutBlockFlow* CreateListItem(Node&,
                                          const ComputedStyle&,
                                          LegacyLayout);
+  static LayoutObject* CreateListMarker(Node&,
+                                        const ComputedStyle&,
+                                        LegacyLayout);
   static LayoutTableCaption* CreateTableCaption(Node&,
                                                 const ComputedStyle&,
                                                 LegacyLayout);

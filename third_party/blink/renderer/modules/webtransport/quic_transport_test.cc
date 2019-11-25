@@ -159,6 +159,17 @@ TEST_F(QuicTransportTest, FailWithEmptyURL) {
   EXPECT_EQ("The URL '' is invalid.", exception_state.Message());
 }
 
+TEST_F(QuicTransportTest, FailWithNoScheme) {
+  V8TestingScope scope;
+  auto& exception_state = scope.GetExceptionState();
+  QuicTransport::Create(scope.GetScriptState(), String("no-scheme"),
+                        exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
+            exception_state.Code());
+  EXPECT_EQ("The URL 'no-scheme' is invalid.", exception_state.Message());
+}
+
 TEST_F(QuicTransportTest, FailWithHttpsURL) {
   V8TestingScope scope;
   auto& exception_state = scope.GetExceptionState();
@@ -180,7 +191,8 @@ TEST_F(QuicTransportTest, FailWithNoHost) {
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
             exception_state.Code());
-  EXPECT_EQ("The URL 'quic-transport:' is invalid.", exception_state.Message());
+  EXPECT_EQ("The URL 'quic-transport:///' is invalid.",
+            exception_state.Message());
 }
 
 TEST_F(QuicTransportTest, FailWithURLFragment) {

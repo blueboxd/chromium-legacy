@@ -9,6 +9,7 @@
 #include "base/numerics/ranges.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -111,6 +112,15 @@ void SetInsetsForWebAppToolbarButton(ToolbarButton* toolbar_button,
     constexpr gfx::Insets kInkDropInsets(2);
     toolbar_button->SetProperty(views::kInternalPaddingKey, kInkDropInsets);
   }
+}
+
+const gfx::VectorIcon& GetBackImage(bool touch_ui) {
+#if defined(OS_WIN)
+  if (UseWindowsIconsForMinimalUI())
+    return touch_ui ? kBackArrowWindowsTouchIcon : kBackArrowWindowsIcon;
+#endif
+
+  return touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
 }
 
 }  // namespace
@@ -296,8 +306,8 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
 
     back_ = left_container_->AddChildView(
         CreateBackButton(this, browser_view_->browser()));
-    reload_ = left_container_->AddChildView(
-        CreateReloadButton(browser_view_->browser()));
+    reload_ = left_container_->AddChildView(CreateReloadButton(
+        browser_view_->browser(), ReloadButton::IconStyle::kMinimalUi));
 
     SetInsetsForWebAppToolbarButton(back_, is_browser_focus_mode);
     SetInsetsForWebAppToolbarButton(reload_, is_browser_focus_mode);
@@ -712,8 +722,7 @@ void WebAppFrameToolbarView::GenerateMinimalUIButtonImages() {
 
   if (back_) {
     const bool touch_ui = ui::MaterialDesignController::touch_ui();
-    const gfx::VectorIcon& back_image =
-        touch_ui ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
+    const gfx::VectorIcon& back_image = GetBackImage(touch_ui);
     back_->SetImage(views::Button::STATE_NORMAL,
                     gfx::CreateVectorIcon(back_image, normal_color));
     back_->SetImage(views::Button::STATE_DISABLED,

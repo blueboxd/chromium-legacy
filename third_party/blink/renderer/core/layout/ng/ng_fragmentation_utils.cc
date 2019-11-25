@@ -267,7 +267,7 @@ void BreakBeforeChild(const NGConstraintSpace& space,
                       NGLayoutInputNode child,
                       const NGLayoutResult& layout_result,
                       LayoutUnit fragmentainer_block_offset,
-                      NGBreakAppeal appeal,
+                      base::Optional<NGBreakAppeal> appeal,
                       bool is_forced_break,
                       NGBoxFragmentBuilder* builder) {
 #if DCHECK_IS_ON()

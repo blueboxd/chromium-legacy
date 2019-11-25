@@ -26,12 +26,13 @@ class ReloadButton : public ToolbarButton,
                      public views::ButtonListener,
                      public ui::SimpleMenuModel::Delegate {
  public:
+  enum class IconStyle { kBrowser, kMinimalUi };
   enum class Mode { kReload = 0, kStop };
 
   // The button's class name.
   static const char kViewClassName[];
 
-  explicit ReloadButton(CommandUpdater* command_updater);
+  explicit ReloadButton(CommandUpdater* command_updater, IconStyle icon_style);
   ReloadButton(const ReloadButton&) = delete;
   ReloadButton& operator=(const ReloadButton&) = delete;
   ~ReloadButton() override;
@@ -84,6 +85,8 @@ class ReloadButton : public ToolbarButton,
 
   // This may be NULL when testing.
   CommandUpdater* command_updater_;
+
+  const IconStyle icon_style_;
 
   // The mode we should be in assuming no timers are running.
   Mode intended_mode_ = Mode::kReload;

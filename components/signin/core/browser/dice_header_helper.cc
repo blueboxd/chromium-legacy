@@ -20,8 +20,6 @@ namespace {
 
 // Request parameters.
 const char kRequestSigninAll[] = "all_accounts";
-const char kRequestSignoutNoConfirmation[] = "no_confirmation";
-const char kRequestSignoutShowConfirmation[] = "show_confirmation";
 
 // Signin response parameters.
 const char kSigninActionAttrName[] = "action";
@@ -209,12 +207,8 @@ std::string DiceHeaderHelper::BuildRequestHeader(
   std::string signin_mode = kRequestSigninAll;
   parts.push_back("signin_mode=" + signin_mode);
 
-  // Show the signout confirmation only when Dice is fully enabled.
-  const char* signout_mode_value =
-      (account_consistency_ == AccountConsistencyMethod::kDice)
-          ? kRequestSignoutShowConfirmation
-          : kRequestSignoutNoConfirmation;
-  parts.push_back(base::StringPrintf("signout_mode=%s", signout_mode_value));
+  // Show the signout confirmation when Dice is enabled.
+  parts.push_back("signout_mode=show_confirmation");
 
   return base::JoinString(parts, ",");
 }

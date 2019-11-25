@@ -192,7 +192,7 @@ TEST_P(HTMLVideoElementCapturerSourceTest, GetFormatsAndStartAndStop) {
   Mock::VerifyAndClearExpectations(this);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          HTMLVideoElementCapturerSourceTest,
                          ::testing::Bool());
 

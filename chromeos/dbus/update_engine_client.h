@@ -65,10 +65,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
 
   // Called once RequestUpdateCheck() is complete. Takes one parameter:
   // - UpdateCheckResult: the result of the update check.
-  using UpdateCheckCallback = base::Callback<void(UpdateCheckResult)>;
+  using UpdateCheckCallback = base::OnceCallback<void(UpdateCheckResult)>;
 
   // Requests an update check and calls |callback| when completed.
-  virtual void RequestUpdateCheck(const UpdateCheckCallback& callback) = 0;
+  virtual void RequestUpdateCheck(UpdateCheckCallback callback) = 0;
 
   // Reboots if update has been performed.
   virtual void RebootAfterUpdate() = 0;
@@ -78,16 +78,15 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
 
   // Called once CanRollbackCheck() is complete. Takes one parameter:
   // - bool: the result of the rollback availability check.
-  using RollbackCheckCallback = base::Callback<void(bool can_rollback)>;
+  using RollbackCheckCallback = base::OnceCallback<void(bool can_rollback)>;
 
   // Checks if Rollback is available and calls |callback| when completed.
-  virtual void CanRollbackCheck(
-      const RollbackCheckCallback& callback) = 0;
+  virtual void CanRollbackCheck(RollbackCheckCallback callback) = 0;
 
   // Called once GetChannel() is complete. Takes one parameter;
   // - string: the channel name like "beta-channel".
   using GetChannelCallback =
-      base::Callback<void(const std::string& channel_name)>;
+      base::OnceCallback<void(const std::string& channel_name)>;
 
   // Returns the last status the object received from the update engine.
   //
@@ -114,7 +113,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
   // device is supposed to be (in case of a pending channel
   // change). On error, calls |callback| with an empty string.
   virtual void GetChannel(bool get_current_channel,
-                          const GetChannelCallback& callback) = 0;
+                          GetChannelCallback callback) = 0;
 
   // Called once GetStatusAdvanced() is complete. Takes one parameter;
   // - EolInfo: Please look at EolInfo for param details, all params related to
@@ -127,15 +126,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
 
   // Either allow or disallow receiving updates over cellular connections.
   // Synchronous (blocking) method.
-  virtual void SetUpdateOverCellularPermission(
-      bool allowed,
-      const base::Closure& callback) = 0;
+  virtual void SetUpdateOverCellularPermission(bool allowed,
+                                               base::OnceClosure callback) = 0;
 
   // Called once SetUpdateOverCellularOneTimePermission() is complete. Takes one
   // parameter;
   // - success: indicates whether the permission is set successfully.
   using UpdateOverCellularOneTimePermissionCallback =
-      base::Callback<void(bool success)>;
+      base::OnceCallback<void(bool success)>;
 
   // Sets a one time permission on a certain update in Update Engine which then
   // performs downloading of that update after RequestUpdateCheck() is invoked
@@ -151,7 +149,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) UpdateEngineClient : public DBusClient {
   virtual void SetUpdateOverCellularOneTimePermission(
       const std::string& update_version,
       int64_t update_size,
-      const UpdateOverCellularOneTimePermissionCallback& callback) = 0;
+      UpdateOverCellularOneTimePermissionCallback callback) = 0;
 
   // Creates the instance.
   static UpdateEngineClient* Create(DBusClientImplementationType type);

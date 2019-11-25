@@ -81,6 +81,17 @@ void TestInstallFinalizer::UninstallWebAppFromSyncByUser(
   NOTIMPLEMENTED();
 }
 
+bool TestInstallFinalizer::CanUserUninstallExternalApp(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+void TestInstallFinalizer::UninstallExternalAppByUser(const AppId& app_id,
+                                                      UninstallWebAppCallback) {
+  NOTIMPLEMENTED();
+}
+
 bool TestInstallFinalizer::WasExternalAppUninstalledByUser(
     const AppId& app_id) const {
   return base::Contains(user_uninstalled_external_apps_, app_id);

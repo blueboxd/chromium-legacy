@@ -31,7 +31,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -97,13 +96,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   // ServiceWorkerProviderHost.
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(CreateWebSocketConnector));
-
-  parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
-         RenderProcessHost* host, const url::Origin& origin) {
-        static_cast<RenderProcessHostImpl*>(host)->BindCacheStorage(
-            std::move(receiver), origin);
-      }));
 
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));

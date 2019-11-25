@@ -37,7 +37,7 @@ namespace app_file_handler_util {
 void GetMimeTypeForLocalPath(
     content::BrowserContext* context,
     const base::FilePath& local_path,
-    const base::Callback<void(const std::string&)>& callback);
+    base::OnceCallback<void(const std::string&)> callback);
 
 // Collects MIME types for files passed in the input vector. For non-native
 // file systems tries to fetch the MIME type from metadata. For native ones,
@@ -45,8 +45,8 @@ void GetMimeTypeForLocalPath(
 // available, then an empty string is returned in the result vector.
 class MimeTypeCollector {
  public:
-  typedef base::Callback<void(std::unique_ptr<std::vector<std::string>>)>
-      CompletionCallback;
+  using CompletionCallback =
+      base::OnceCallback<void(std::unique_ptr<std::vector<std::string>>)>;
 
   explicit MimeTypeCollector(content::BrowserContext* context);
   virtual ~MimeTypeCollector();
@@ -54,12 +54,12 @@ class MimeTypeCollector {
   // Collects all mime types asynchronously for a vector of URLs and upon
   // completion, calls the |callback|. It can be called only once.
   void CollectForURLs(const std::vector<storage::FileSystemURL>& urls,
-                      const CompletionCallback& callback);
+                      CompletionCallback callback);
 
   // Collects all mime types asynchronously for a vector of local file paths and
   // upon completion, calls the |callback|. It can be called only once.
   void CollectForLocalPaths(const std::vector<base::FilePath>& local_paths,
-                            const CompletionCallback& callback);
+                            CompletionCallback callback);
 
  private:
   // Called, when the |index|-th input file (or URL) got processed.

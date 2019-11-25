@@ -37,6 +37,7 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorIcon] = {kColorSecondaryForeground};
   mixer[kColorLabelDisabledForeground] = {kColorDisabledForeground};
   mixer[kColorLabelForeground] = {kColorPrimaryForeground};
+  mixer[kColorLabelSecondaryForeground] = {kColorSecondaryForeground};
   mixer[kColorLabelSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorLabelSelectionForeground] = {kColorLabelForeground};
   mixer[kColorLinkDisabledForeground] = {kColorDisabledForeground};

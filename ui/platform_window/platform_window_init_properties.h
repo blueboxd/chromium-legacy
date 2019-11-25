@@ -41,6 +41,10 @@ enum class PlatformWindowOpacity {
 
 class WorkspaceExtensionDelegate;
 
+#if defined(OS_LINUX)
+class X11ExtensionDelegate;
+#endif
+
 // Initial properties which are passed to PlatformWindow to be initialized
 // with a desired set of properties.
 struct COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowInitProperties {
@@ -92,6 +96,8 @@ struct COMPONENT_EXPORT(PLATFORM_WINDOW) PlatformWindowInitProperties {
 
   // Stores visual id for the system tray in X11.
   base::Optional<int> x_visual_id;
+
+  X11ExtensionDelegate* x11_extension_delegate = nullptr;
 #endif
 };
 

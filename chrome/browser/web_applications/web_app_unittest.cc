@@ -96,4 +96,37 @@ TEST(WebAppTest, WasInstalledByUser) {
   EXPECT_FALSE(app.WasInstalledByUser());
 }
 
+TEST(WebAppTest, CanUserUninstallExternalApp) {
+  WebApp app{GenerateAppIdFromURL(GURL("https://example.com"))};
+
+  app.AddSource(Source::kDefault);
+  EXPECT_TRUE(app.IsDefaultApp());
+  EXPECT_TRUE(app.CanUserUninstallExternalApp());
+
+  app.AddSource(Source::kSync);
+  EXPECT_TRUE(app.CanUserUninstallExternalApp());
+  app.AddSource(Source::kWebAppStore);
+  EXPECT_TRUE(app.CanUserUninstallExternalApp());
+
+  app.AddSource(Source::kPolicy);
+  EXPECT_FALSE(app.CanUserUninstallExternalApp());
+  app.AddSource(Source::kSystem);
+  EXPECT_FALSE(app.CanUserUninstallExternalApp());
+
+  app.RemoveSource(Source::kSync);
+  EXPECT_FALSE(app.CanUserUninstallExternalApp());
+  app.RemoveSource(Source::kWebAppStore);
+  EXPECT_FALSE(app.CanUserUninstallExternalApp());
+
+  app.RemoveSource(Source::kSystem);
+  EXPECT_FALSE(app.CanUserUninstallExternalApp());
+
+  app.RemoveSource(Source::kPolicy);
+  EXPECT_TRUE(app.CanUserUninstallExternalApp());
+
+  EXPECT_TRUE(app.IsDefaultApp());
+  app.RemoveSource(Source::kDefault);
+  EXPECT_FALSE(app.IsDefaultApp());
+}
+
 }  // namespace web_app

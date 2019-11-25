@@ -15,6 +15,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
@@ -150,6 +151,15 @@ void PerUserTopicRegistrationManager::RegisterPrefs(
   registry->RegisterDictionaryPref(kActiveRegistrationTokens);
 }
 
+// State of the instance ID token when registration is requested.
+// Used by UMA histogram, so entries shouldn't be reordered or removed.
+enum class PerUserTopicRegistrationManager::TokenStateOnRegistrationRequest {
+  kTokenWasEmpty = 0,
+  kUnchangedToken = 1,
+  kTokenChanged = 2,
+  kMaxValue = kTokenChanged,
+};
+
 struct PerUserTopicRegistrationManager::RegistrationEntry {
   RegistrationEntry(const Topic& topic,
                     SubscriptionFinishedCallback completion_callback,
@@ -264,7 +274,8 @@ void PerUserTopicRegistrationManager::UpdateRegisteredTopics(
     const std::string& instance_id_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   instance_id_token_ = instance_id_token;
-  DropAllSavedRegistrationsOnTokenChange();
+  UMA_HISTOGRAM_ENUMERATION("FCMInvalidations.TokenStateOnRegistrationRequest",
+                            DropAllSavedRegistrationsOnTokenChange());
 
   for (const auto& topic : topics) {
     // If the topic isn't registered yet, schedule the registration.
@@ -491,18 +502,20 @@ void PerUserTopicRegistrationManager::OnAccessTokenRequestFailed(
                           base::Unretained(this)));
 }
 
-void PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange() {
+PerUserTopicRegistrationManager::TokenStateOnRegistrationRequest
+PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange() {
   {
     DictionaryPrefUpdate token_update(local_state_, kActiveRegistrationTokens);
     std::string current_token;
     token_update->GetString(project_id_, &current_token);
     if (current_token.empty()) {
       token_update->SetString(project_id_, instance_id_token_);
-      return;
+      return TokenStateOnRegistrationRequest::kTokenWasEmpty;
     }
     if (current_token == instance_id_token_) {
-      return;
+      return TokenStateOnRegistrationRequest::kUnchangedToken;
     }
+
     token_update->SetString(project_id_, instance_id_token_);
   }
 
@@ -510,6 +523,7 @@ void PerUserTopicRegistrationManager::DropAllSavedRegistrationsOnTokenChange() {
   *update = base::Value(base::Value::Type::DICTIONARY);
   topic_to_private_topic_.clear();
   private_topic_to_topic_.clear();
+  return TokenStateOnRegistrationRequest::kTokenChanged;
   // TODO(melandory): Figure out if the unsubscribe request should be
   // sent with the old token.
 }

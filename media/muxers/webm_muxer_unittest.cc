@@ -314,6 +314,6 @@ const TestParams kTestCases[] = {
     {kCodecVP8, kCodecPCM, 1, 1},
 };
 
-INSTANTIATE_TEST_SUITE_P(, WebmMuxerTest, ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(All, WebmMuxerTest, ValuesIn(kTestCases));
 
 }  // namespace media

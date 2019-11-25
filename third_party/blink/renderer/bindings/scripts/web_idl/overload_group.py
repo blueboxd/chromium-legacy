@@ -29,6 +29,38 @@ class OverloadGroup(WithIdentifier):
         def __len__(self):
             return len(self.functions)
 
+    class EffectiveOverloadItem(object):
+        """
+        Represents an item in an effective overload set.
+        https://heycam.github.io/webidl/#dfn-effective-overload-set
+        """
+
+        def __init__(self, function_like, type_list, opt_list):
+            assert len(type_list) == len(opt_list)
+            assert isinstance(function_like, FunctionLike)
+            assert isinstance(type_list, (list, tuple))
+            assert all(isinstance(idl_type, IdlType) for idl_type in type_list)
+            assert isinstance(opt_list, (list, tuple))
+            assert all(
+                isinstance(optionality, IdlType.Optionality.Type)
+                for optionality in opt_list)
+
+            self._function_like = function_like
+            self._type_list = tuple(type_list)
+            self._opt_list = tuple(opt_list)
+
+        @property
+        def function_like(self):
+            return self._function_like
+
+        @property
+        def type_list(self):
+            return self._type_list
+
+        @property
+        def opt_list(self):
+            return self._opt_list
+
     def __init__(self, functions):
         assert isinstance(functions, (list, tuple))
         assert all(
@@ -46,6 +78,9 @@ class OverloadGroup(WithIdentifier):
     def __len__(self):
         return len(self._functions)
 
+    def index(self, value):
+        return self._functions.index(value)
+
     @property
     def is_static(self):
         return self._is_static
@@ -61,27 +96,27 @@ class OverloadGroup(WithIdentifier):
     def effective_overload_set(self, argument_count=None):
         """
         Returns the effective overload set.
-
-        Returns:
-            List of (FunctionLike, (IdlType...), (IdlType.Optionality...)).
+        https://heycam.github.io/webidl/#compute-the-effective-overload-set
         """
         assert argument_count is None or isinstance(argument_count,
                                                     (int, long))
 
-        # https://heycam.github.io/webidl/#compute-the-effective-overload-set
         N = argument_count
         S = []
         F = self
 
         maxarg = max(map(lambda X: len(X.arguments), F))
         if N is None:
-            N = 1 + max([len(X.arguments) for X in F if not X.is_variadic])
+            arg_sizes = [len(X.arguments) for X in F if not X.is_variadic]
+            N = 1 + (max(arg_sizes) if arg_sizes else 0)
 
         for X in F:
             n = len(X.arguments)
 
-            S.append((X, map(lambda arg: arg.idl_type, X.arguments),
-                      map(lambda arg: arg.optionality, X.arguments)))
+            S.append(
+                OverloadGroup.EffectiveOverloadItem(
+                    X, map(lambda arg: arg.idl_type, X.arguments),
+                    map(lambda arg: arg.optionality, X.arguments)))
 
             if X.is_variadic:
                 for i in xrange(n, max(maxarg, N)):
@@ -90,24 +125,47 @@ class OverloadGroup(WithIdentifier):
                     for _ in xrange(n, i + 1):
                         t.append(X.arguments[-1].idl_type)
                         o.append(X.arguments[-1].optionality)
-                    S.append((X, t, o))
+                    S.append(OverloadGroup.EffectiveOverloadItem(X, t, o))
 
             t = map(lambda arg: arg.idl_type, X.arguments)
             o = map(lambda arg: arg.optionality, X.arguments)
             for i in xrange(n - 1, -1, -1):
                 if X.arguments[i].optionality == IdlType.Optionality.REQUIRED:
                     break
-                S.append((X, t[:i], o[:i]))
+                S.append(OverloadGroup.EffectiveOverloadItem(X, t[:i], o[:i]))
 
         return S
 
     @staticmethod
+    def distinguishing_argument_index(items_of_effective_overload_set):
+        """
+        Returns the distinguishing argument index.
+        https://heycam.github.io/webidl/#dfn-distinguishing-argument-index
+        """
+        items = items_of_effective_overload_set
+        assert isinstance(items, (list, tuple))
+        assert all(
+            isinstance(item, OverloadGroup.EffectiveOverloadItem)
+            for item in items)
+        assert len(items) > 1
+
+        for index in xrange(len(items[0].type_list)):
+            # Assume that the given items are valid, and we only need to test
+            # the two types.
+            if OverloadGroup.are_distinguishable_types(
+                    items[0].type_list[index], items[1].type_list[index]):
+                return index
+        assert False
+
+    @staticmethod
     def are_distinguishable_types(idl_type1, idl_type2):
-        """Returns True if the two given types are distinguishable."""
+        """
+        Returns True if the two given types are distinguishable.
+        https://heycam.github.io/webidl/#dfn-distinguishable
+        """
         assert isinstance(idl_type1, IdlType)
         assert isinstance(idl_type2, IdlType)
 
-        # https://heycam.github.io/webidl/#dfn-distinguishable
         # step 1. If one type includes a nullable type and the other type either
         #   includes a nullable type, is a union type with flattened member
         #   types including a dictionary type, or is a dictionary type, ...

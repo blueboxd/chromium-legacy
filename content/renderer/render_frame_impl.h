@@ -276,7 +276,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURLRequest& request,
       const blink::WebSecurityOrigin& current_origin,
       bool has_download_sandbox_flag,
-      bool blocking_downloads_in_sandbox_without_user_activation_enabled,
+      bool blocking_downloads_in_sandbox_enabled,
       bool from_ad,
       NavigationDownloadPolicy* download_policy);
 

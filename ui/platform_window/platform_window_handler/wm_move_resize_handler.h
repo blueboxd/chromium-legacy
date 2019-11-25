@@ -13,7 +13,7 @@ class Point;
 
 namespace ui {
 
-class PlatformWindowBase;
+class PlatformWindow;
 
 class WmMoveResizeHandler {
  public:
@@ -53,10 +53,10 @@ class WmMoveResizeHandler {
 };
 
 WM_PLATFORM_EXPORT void SetWmMoveResizeHandler(
-    PlatformWindowBase* platform_window,
+    PlatformWindow* platform_window,
     WmMoveResizeHandler* move_resize_handler);
 WM_PLATFORM_EXPORT WmMoveResizeHandler* GetWmMoveResizeHandler(
-    const PlatformWindowBase& platform_window);
+    const PlatformWindow& platform_window);
 
 }  // namespace ui
 

@@ -15,7 +15,7 @@ class PointF;
 }
 
 namespace ui {
-class PlatformWindowBase;
+class PlatformWindow;
 class OSExchangeData;
 
 class WM_PLATFORM_EXPORT WmDropHandler {
@@ -45,10 +45,10 @@ class WM_PLATFORM_EXPORT WmDropHandler {
   virtual ~WmDropHandler() {}
 };
 
-WM_PLATFORM_EXPORT void SetWmDropHandler(PlatformWindowBase* platform_window,
+WM_PLATFORM_EXPORT void SetWmDropHandler(PlatformWindow* platform_window,
                                          WmDropHandler* drop_handler);
 WM_PLATFORM_EXPORT WmDropHandler* GetWmDropHandler(
-    const PlatformWindowBase& platform_window);
+    const PlatformWindow& platform_window);
 
 }  // namespace ui
 

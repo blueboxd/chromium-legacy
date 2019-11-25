@@ -125,8 +125,8 @@ class WebBundleURLLoaderFactory::EntryLoader final
     if (!response || response->response_code != net::HTTP_OK) {
       if (error)
         AddResponseParseErrorMessageToConsole(frame_tree_node_id_, error);
-      loader_client_->OnComplete(network::URLLoaderCompletionStatus(
-          net::ERR_INVALID_BUNDLED_EXCHANGES));
+      loader_client_->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_INVALID_WEB_BUNDLE));
       return;
     }
 

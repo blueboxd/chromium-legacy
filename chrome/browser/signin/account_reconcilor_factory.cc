@@ -196,14 +196,11 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
     case signin::AccountConsistencyMethod::kDisabled:
       return std::make_unique<signin::AccountReconcilorDelegate>();
 
-    case signin::AccountConsistencyMethod::kDiceMigration:
     case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
       return std::make_unique<signin::DiceAccountReconcilorDelegate>(
           ChromeSigninClientFactory::GetForProfile(profile),
-          account_consistency,
-          account_consistency == signin::AccountConsistencyMethod::kDice &&
-              AccountConsistencyModeManager::IsDiceMigrationCompleted(profile));
+          AccountConsistencyModeManager::IsDiceMigrationCompleted(profile));
 #else
       NOTREACHED();
       return nullptr;

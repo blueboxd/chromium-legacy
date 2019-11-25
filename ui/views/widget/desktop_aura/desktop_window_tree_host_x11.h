@@ -51,11 +51,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
 
-  // PlatformWindowDelegate overrides:
+  // X11ExtensionDelegate overrides:
   //
-  // DWTHX11 temporarily overrides the PlatformWindowDelegate methods instead of
-  // underlying DWTHPlatform and WTHPlatform. Eventually, these will be removed
-  // from here as we progress in https://crbug.com/990756.
+  // DWTHX11 temporarily overrides the X11ExtensionDelegate
+  // methods instead of underlying DWTHPlatform and WTHPlatform. Eventually,
+  // these will be removed from here as we progress in https://crbug.com/990756.
   void OnXWindowMapped() override;
   void OnXWindowUnmapped() override;
 

@@ -50,9 +50,15 @@ var FilesQuickView = Polymer({
    * @param {!Event} e
    */
   applyTextCss: function(e) {
+    // Don't override the Chrome PDF viewer's CSS: crbug.com/1001034.
+    if (this.subtype === 'PDF') {
+      return;
+    }
+
     const webview = /** @type {WebView} */ (e.target);
-    webview.insertCSS(
-        {'file': 'foreground/elements/files_safe_text_webview_content.css'});
+    webview.insertCSS({
+      'file': 'foreground/elements/files_safe_text_webview_content.css',
+    });
   },
 
   // Clears fields.

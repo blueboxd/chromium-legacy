@@ -9,13 +9,15 @@
 #include "ui/base/x/x11_window.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/platform_window/extensions/workspace_extension.h"
+#include "ui/platform_window/extensions/x11_extension.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
-#include "ui/platform_window/platform_window_linux.h"
 #include "ui/platform_window/x11/x11_window_export.h"
 
 namespace ui {
 
+class X11ExtensionDelegate;
 class LocatedEvent;
 class WorkspaceExtensionDelegate;
 
@@ -32,13 +34,14 @@ class X11_WINDOW_EXPORT XEventDelegate {
 };
 
 // PlatformWindow implementation for X11. PlatformEvents are XEvents.
-class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
+class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
                                     public WmMoveResizeHandler,
                                     public XWindow,
                                     public PlatformEventDispatcher,
-                                    public WorkspaceExtension {
+                                    public WorkspaceExtension,
+                                    public X11Extension {
  public:
-  explicit X11Window(PlatformWindowDelegateLinux* platform_window_delegate);
+  explicit X11Window(PlatformWindowDelegate* platform_window_delegate);
   ~X11Window() override;
 
   void Initialize(PlatformWindowInitProperties properties);
@@ -72,8 +75,6 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   PlatformWindowState GetPlatformWindowState() const override;
   void Activate() override;
   void Deactivate() override;
-  bool IsSyncExtensionAvailable() const override;
-  void OnCompleteSwapAfterResize() override;
   void SetUseNativeFrame(bool use_native_frame) override;
   bool ShouldUseNativeFrame() const override;
   void SetCursor(PlatformCursor cursor) override;
@@ -87,17 +88,14 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   void StackAbove(gfx::AcceleratedWidget widget) override;
   void StackAtTop() override;
   void FlashFrame(bool flash_frame) override;
-  gfx::Rect GetXRootWindowOuterBounds() const override;
-  bool ContainsPointInXRegion(const gfx::Point& point) const override;
   void SetShape(std::unique_ptr<ShapeRects> native_shape,
                 const gfx::Transform& transform) override;
-  void SetOpacityForXWindow(float opacity) override;
   void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void SizeConstraintsChanged() override;
   bool IsTranslucentWindowOpacitySupported() const override;
-  void LowerXWindow() override;
+  void SetOpacity(float opacity) override;
 
   // WorkspaceExtension:
   std::string GetWorkspace() const override;
@@ -106,8 +104,16 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   void SetWorkspaceExtensionDelegate(
       WorkspaceExtensionDelegate* delegate) override;
 
+  // X11Extension:
+  bool IsSyncExtensionAvailable() const override;
+  void OnCompleteSwapAfterResize() override;
+  gfx::Rect GetXRootWindowOuterBounds() const override;
+  bool ContainsPointInXRegion(const gfx::Point& point) const override;
+  void LowerXWindow() override;
+  void SetX11ExtensionDelegate(X11ExtensionDelegate* delegate) override;
+
  protected:
-  PlatformWindowDelegateLinux* platform_window_delegate() const {
+  PlatformWindowDelegate* platform_window_delegate() const {
     return platform_window_delegate_;
   }
 
@@ -164,11 +170,13 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindowLinux,
   // Stores current state of this window.
   PlatformWindowState state_ = PlatformWindowState::kUnknown;
 
-  PlatformWindowDelegateLinux* const platform_window_delegate_;
+  PlatformWindowDelegate* const platform_window_delegate_;
 
   XEventDelegate* x_event_delegate_ = nullptr;
 
   WorkspaceExtensionDelegate* workspace_extension_delegate_ = nullptr;
+
+  X11ExtensionDelegate* x11_extension_delegate_ = nullptr;
 
   // Tells if the window got a ::Close call.
   bool is_shutting_down_ = false;

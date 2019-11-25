@@ -63,8 +63,8 @@ void SniffMimeType(const base::FilePath& local_path, std::string* result) {
 // to |callback|.
 void OnGetMimeTypeFromFileForNonNativeLocalPathCompleted(
     std::unique_ptr<std::string> mime_type,
-    const base::Callback<void(const std::string&)>& callback) {
-  callback.Run(*mime_type);
+    base::OnceCallback<void(const std::string&)> callback) {
+  std::move(callback).Run(*mime_type);
 }
 
 // Called when fetching MIME type for a non-native local path is completed.
@@ -72,10 +72,10 @@ void OnGetMimeTypeFromFileForNonNativeLocalPathCompleted(
 // file name.
 void OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted(
     const base::FilePath& local_path,
-    const base::Callback<void(const std::string&)>& callback,
+    base::OnceCallback<void(const std::string&)> callback,
     const base::Optional<std::string>& mime_type) {
   if (mime_type) {
-    callback.Run(mime_type.value());
+    std::move(callback).Run(mime_type.value());
     return;
   }
 
@@ -86,27 +86,27 @@ void OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted(
       mime_type_from_extension.get();
   base::PostTaskAndReply(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
-                 mime_type_from_extension_ptr),
-      base::Bind(&OnGetMimeTypeFromFileForNonNativeLocalPathCompleted,
-                 base::Passed(&mime_type_from_extension), callback));
+      base::BindOnce(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
+                     mime_type_from_extension_ptr),
+      base::BindOnce(&OnGetMimeTypeFromFileForNonNativeLocalPathCompleted,
+                     std::move(mime_type_from_extension), std::move(callback)));
 }
 #endif
 
 // Called when sniffing for MIME type in the native local file is completed.
 void OnSniffMimeTypeForNativeLocalPathCompleted(
     std::unique_ptr<std::string> mime_type,
-    const base::Callback<void(const std::string&)>& callback) {
+    base::OnceCallback<void(const std::string&)> callback) {
   // Do not return application/zip as sniffed result. If the file has .zip
   // extension, it should be already returned as application/zip. If the file
   // does not have .zip extension and couldn't find mime type from the
   // extension, it might be unknown internally zipped file.
   if (*mime_type == "application/zip") {
-    callback.Run(kMimeTypeApplicationOctetStream);
+    std::move(callback).Run(kMimeTypeApplicationOctetStream);
     return;
   }
 
-  callback.Run(*mime_type);
+  std::move(callback).Run(*mime_type);
 }
 
 }  // namespace
@@ -117,9 +117,9 @@ void OnSniffMimeTypeForNativeLocalPathCompleted(
 void OnGetMimeTypeFromFileForNativeLocalPathCompleted(
     const base::FilePath& local_path,
     std::unique_ptr<std::string> mime_type,
-    const base::Callback<void(const std::string&)>& callback) {
+    base::OnceCallback<void(const std::string&)> callback) {
   if (!mime_type->empty()) {
-    callback.Run(*mime_type);
+    std::move(callback).Run(*mime_type);
     return;
   }
 
@@ -128,16 +128,16 @@ void OnGetMimeTypeFromFileForNativeLocalPathCompleted(
   std::string* const sniffed_mime_type_ptr = sniffed_mime_type.get();
   base::PostTaskAndReply(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::Bind(&SniffMimeType, local_path, sniffed_mime_type_ptr),
-      base::Bind(&OnSniffMimeTypeForNativeLocalPathCompleted,
-                 base::Passed(&sniffed_mime_type), callback));
+      base::BindOnce(&SniffMimeType, local_path, sniffed_mime_type_ptr),
+      base::BindOnce(&OnSniffMimeTypeForNativeLocalPathCompleted,
+                     std::move(sniffed_mime_type), std::move(callback)));
 }
 
 // Fetches MIME type for a local path and returns it with a |callback|.
 void GetMimeTypeForLocalPath(
     content::BrowserContext* context,
     const base::FilePath& local_path,
-    const base::Callback<void(const std::string&)>& callback) {
+    base::OnceCallback<void(const std::string&)> callback) {
 #if defined(OS_CHROMEOS)
   NonNativeFileSystemDelegate* delegate =
       ExtensionsAPIClient::Get()->GetNonNativeFileSystemDelegate();
@@ -148,7 +148,7 @@ void GetMimeTypeForLocalPath(
     delegate->GetNonNativeLocalPathMimeType(
         context, local_path,
         base::BindOnce(&OnGetMimeTypeFromMetadataForNonNativeLocalPathCompleted,
-                       local_path, callback));
+                       local_path, std::move(callback)));
     return;
   }
 #endif
@@ -160,10 +160,11 @@ void GetMimeTypeForLocalPath(
       mime_type_from_extension.get();
   base::PostTaskAndReply(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::Bind(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
-                 mime_type_from_extension_ptr),
-      base::Bind(&OnGetMimeTypeFromFileForNativeLocalPathCompleted, local_path,
-                 base::Passed(&mime_type_from_extension), callback));
+      base::BindOnce(base::IgnoreResult(&net::GetMimeTypeFromFile), local_path,
+                     mime_type_from_extension_ptr),
+      base::BindOnce(&OnGetMimeTypeFromFileForNativeLocalPathCompleted,
+                     local_path, std::move(mime_type_from_extension),
+                     std::move(callback)));
 }
 
 MimeTypeCollector::MimeTypeCollector(content::BrowserContext* context)
@@ -173,20 +174,20 @@ MimeTypeCollector::~MimeTypeCollector() {}
 
 void MimeTypeCollector::CollectForURLs(
     const std::vector<storage::FileSystemURL>& urls,
-    const CompletionCallback& callback) {
+    CompletionCallback callback) {
   std::vector<base::FilePath> local_paths;
   for (size_t i = 0; i < urls.size(); ++i) {
     local_paths.push_back(urls[i].path());
   }
 
-  CollectForLocalPaths(local_paths, callback);
+  CollectForLocalPaths(local_paths, std::move(callback));
 }
 
 void MimeTypeCollector::CollectForLocalPaths(
     const std::vector<base::FilePath>& local_paths,
-    const CompletionCallback& callback) {
+    CompletionCallback callback) {
   DCHECK(!callback.is_null());
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   DCHECK(!result_.get());
   result_.reset(new std::vector<std::string>(local_paths.size()));
@@ -195,15 +196,16 @@ void MimeTypeCollector::CollectForLocalPaths(
   if (!left_) {
     // Nothing to process.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback_, std::move(result_)));
-    callback_ = CompletionCallback();
+        FROM_HERE, base::BindOnce(std::move(callback_), std::move(result_)));
+    callback_.Reset();
     return;
   }
 
   for (size_t i = 0; i < local_paths.size(); ++i) {
-    GetMimeTypeForLocalPath(context_, local_paths[i],
-                            base::Bind(&MimeTypeCollector::OnMimeTypeCollected,
-                                       weak_ptr_factory_.GetWeakPtr(), i));
+    GetMimeTypeForLocalPath(
+        context_, local_paths[i],
+        base::BindOnce(&MimeTypeCollector::OnMimeTypeCollected,
+                       weak_ptr_factory_.GetWeakPtr(), i));
   }
 }
 
@@ -212,11 +214,11 @@ void MimeTypeCollector::OnMimeTypeCollected(size_t index,
   (*result_)[index] = mime_type;
   if (!--left_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback_, std::move(result_)));
+        FROM_HERE, base::BindOnce(std::move(callback_), std::move(result_)));
     // Release the callback to avoid a circullar reference in case an instance
     // of this class is a member of a ref counted class, which instance is bound
     // to this callback.
-    callback_ = CompletionCallback();
+    callback_.Reset();
   }
 }
 

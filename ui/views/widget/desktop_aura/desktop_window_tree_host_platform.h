@@ -102,7 +102,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   void ShowImpl() override;
   void HideImpl() override;
 
-  // PlatformWindowDelegateBase:
+  // PlatformWindowDelegate:
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;

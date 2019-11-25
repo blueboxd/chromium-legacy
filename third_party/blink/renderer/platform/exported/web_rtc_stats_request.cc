@@ -32,7 +32,6 @@
 
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_stats_response.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats_response_base.h"
 
@@ -49,8 +48,8 @@ void WebRTCStatsRequest::Reset() {
   private_.Reset();
 }
 
-WebRTCStatsResponse WebRTCStatsRequest::CreateResponse() const {
-  return WebRTCStatsResponse(private_->CreateResponse());
+RTCStatsResponseBase* WebRTCStatsRequest::CreateResponse() const {
+  return private_->CreateResponse();
 }
 
 bool WebRTCStatsRequest::HasSelector() const {
@@ -62,7 +61,7 @@ const WebMediaStreamTrack WebRTCStatsRequest::Component() const {
 }
 
 void WebRTCStatsRequest::RequestSucceeded(
-    const WebRTCStatsResponse& response) const {
+    RTCStatsResponseBase* response) const {
   private_->RequestSucceeded(response);
 }
 

@@ -108,6 +108,11 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool made_from_readable_stream_;
   bool in_process_data_ = false;
   bool stream_broken_ = false;
+
+  // TODO(ricea): Remove this once the cause of https://crbug.com/1007162 has
+  // been established.
+  bool inside_create_stream_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(BodyStreamBuffer);
 };
 

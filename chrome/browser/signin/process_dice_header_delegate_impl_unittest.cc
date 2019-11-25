@@ -20,12 +20,6 @@
 
 namespace {
 
-// Constants defined for a better formatting of the test tables:
-const signin::AccountConsistencyMethod kDice =
-    signin::AccountConsistencyMethod::kDice;
-const signin::AccountConsistencyMethod kDiceMigration =
-    signin::AccountConsistencyMethod::kDiceMigration;
-
 class ProcessDiceHeaderDelegateImplTest
     : public ChromeRenderViewHostTestHarness {
  public:
@@ -40,11 +34,10 @@ class ProcessDiceHeaderDelegateImplTest
 
   // Creates a ProcessDiceHeaderDelegateImpl instance.
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> CreateDelegate(
-      bool is_sync_signin_tab,
-      signin::AccountConsistencyMethod account_consistency) {
+      bool is_sync_signin_tab) {
     return std::make_unique<ProcessDiceHeaderDelegateImpl>(
-        web_contents(), account_consistency,
-        identity_test_environment_.identity_manager(), is_sync_signin_tab,
+        web_contents(), identity_test_environment_.identity_manager(),
+        is_sync_signin_tab,
         base::BindOnce(&ProcessDiceHeaderDelegateImplTest::StartSyncCallback,
                        base::Unretained(this)),
         base::BindOnce(
@@ -86,7 +79,7 @@ TEST_F(ProcessDiceHeaderDelegateImplTest, CloseTabWhileStartingSync) {
   NavigateAndCommit(kSigninURL);
   ASSERT_EQ(kSigninURL, web_contents()->GetVisibleURL());
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> delegate =
-      CreateDelegate(true, signin::AccountConsistencyMethod::kDice);
+      CreateDelegate(true);
 
   // Close the tab.
   DeleteContents();
@@ -105,7 +98,7 @@ TEST_F(ProcessDiceHeaderDelegateImplTest, CloseTabWhileFailingSignin) {
   NavigateAndCommit(kSigninURL);
   ASSERT_EQ(kSigninURL, web_contents()->GetVisibleURL());
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> delegate =
-      CreateDelegate(true, signin::AccountConsistencyMethod::kDice);
+      CreateDelegate(true);
 
   // Close the tab.
   DeleteContents();
@@ -118,7 +111,6 @@ TEST_F(ProcessDiceHeaderDelegateImplTest, CloseTabWhileFailingSignin) {
 
 struct TestConfiguration {
   // Test setup.
-  signin::AccountConsistencyMethod account_consistency;
   bool signed_in;   // User was already signed in at the start of the flow.
   bool signin_tab;  // The tab is marked as a Sync signin tab.
 
@@ -129,15 +121,11 @@ struct TestConfiguration {
 
 TestConfiguration kEnableSyncTestCases[] = {
     // clang-format off
-    // AccountConsistency | signed_in | signin_tab | callback_called | show_ntp
-    {kDiceMigration,        false,      false,       false,            false},
-    {kDiceMigration,        false,      true,        true,             true},
-    {kDice,                 false,      false,       false,            false},
-    {kDice,                 false,      true,        true,             true},
-    {kDiceMigration,        true,       false,       false,            false},
-    {kDiceMigration,        true,       false,       false,            false},
-    {kDice,                 true,       false,       false,            false},
-    {kDice,                 true,       true,        false,            false},
+    // signed_in | signin_tab | callback_called | show_ntp
+    {  false,      false,       false,            false},
+    {  false,      true,        true,             true},
+    {  true,       false,       false,            false},
+    {  true,       true,        false,            false},
     // clang-format on
 };
 
@@ -155,7 +143,7 @@ TEST_P(ProcessDiceHeaderDelegateImplTestEnableSync, EnableSync) {
   if (GetParam().signed_in)
     identity_test_environment_.SetPrimaryAccount(email_);
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> delegate =
-      CreateDelegate(GetParam().signin_tab, GetParam().account_consistency);
+      CreateDelegate(GetParam().signin_tab);
 
   // Check expectations.
   delegate->EnableSync(account_id_);
@@ -172,15 +160,11 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
 
 TestConfiguration kHandleTokenExchangeFailureTestCases[] = {
     // clang-format off
-    // AccountConsistency | signed_in | signin_tab | callback_called | show_ntp
-    {kDiceMigration,        false,      false,       false,            false},
-    {kDiceMigration,        false,      true,        true,             true},
-    {kDice,                 false,      false,       true,             false},
-    {kDice,                 false,      true,        true,             true},
-    {kDiceMigration,        true,       false,       false,            false},
-    {kDiceMigration,        true,       false,       false,            false},
-    {kDice,                 true,       false,       true,             false},
-    {kDice,                 true,       true,        true,             false},
+    // signed_in | signin_tab | callback_called | show_ntp
+    {  false,      false,       true,             false},
+    {  false,      true,        true,             true},
+    {  true,       false,       true,             false},
+    {  true,       true,        true,             false},
     // clang-format on
 };
 
@@ -199,7 +183,7 @@ TEST_P(ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure,
   if (GetParam().signed_in)
     identity_test_environment_.SetPrimaryAccount(email_);
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> delegate =
-      CreateDelegate(GetParam().signin_tab, GetParam().account_consistency);
+      CreateDelegate(GetParam().signin_tab);
 
   // Check expectations.
   delegate->HandleTokenExchangeFailure(email_, auth_error_);

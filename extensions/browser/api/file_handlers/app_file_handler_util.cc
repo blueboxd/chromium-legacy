@@ -108,8 +108,8 @@ class WritableFileChecker
       const std::vector<base::FilePath>& paths,
       content::BrowserContext* context,
       const std::set<base::FilePath>& directory_paths,
-      const base::Closure& on_success,
-      const base::Callback<void(const base::FilePath&)>& on_failure);
+      base::OnceClosure on_success,
+      base::OnceCallback<void(const base::FilePath&)> on_failure);
 
   void Check();
 
@@ -136,22 +136,22 @@ class WritableFileChecker
   const std::set<base::FilePath> directory_paths_;
   size_t outstanding_tasks_;
   base::FilePath error_path_;
-  base::Closure on_success_;
-  base::Callback<void(const base::FilePath&)> on_failure_;
+  base::OnceClosure on_success_;
+  base::OnceCallback<void(const base::FilePath&)> on_failure_;
 };
 
 WritableFileChecker::WritableFileChecker(
     const std::vector<base::FilePath>& paths,
     content::BrowserContext* context,
     const std::set<base::FilePath>& directory_paths,
-    const base::Closure& on_success,
-    const base::Callback<void(const base::FilePath&)>& on_failure)
+    base::OnceClosure on_success,
+    base::OnceCallback<void(const base::FilePath&)> on_failure)
     : paths_(paths),
       context_(context),
       directory_paths_(directory_paths),
       outstanding_tasks_(1),
-      on_success_(on_success),
-      on_failure_(on_failure) {}
+      on_success_(std::move(on_success)),
+      on_failure_(std::move(on_failure)) {}
 
 void WritableFileChecker::Check() {
   outstanding_tasks_ = paths_.size();
@@ -164,11 +164,13 @@ void WritableFileChecker::Check() {
       if (is_directory) {
         delegate->IsNonNativeLocalPathDirectory(
             context_, path,
-            base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
+            base::BindOnce(&WritableFileChecker::OnPrepareFileDone, this,
+                           path));
       } else {
         delegate->PrepareNonNativeLocalFileForWritableApp(
             context_, path,
-            base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
+            base::BindOnce(&WritableFileChecker::OnPrepareFileDone, this,
+                           path));
       }
       continue;
     }
@@ -177,8 +179,9 @@ void WritableFileChecker::Check() {
         FROM_HERE,
         {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
          base::MayBlock()},
-        base::Bind(&PrepareNativeLocalFileForWritableApp, path, is_directory),
-        base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
+        base::BindOnce(&PrepareNativeLocalFileForWritableApp, path,
+                       is_directory),
+        base::BindOnce(&WritableFileChecker::OnPrepareFileDone, this, path));
   }
 }
 
@@ -188,9 +191,11 @@ void WritableFileChecker::TaskDone() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (--outstanding_tasks_ == 0) {
     if (error_path_.empty())
-      on_success_.Run();
+      std::move(on_success_).Run();
     else
-      on_failure_.Run(error_path_);
+      std::move(on_failure_).Run(error_path_);
+    on_success_.Reset();
+    on_failure_.Reset();
   }
 }
 
@@ -324,10 +329,11 @@ void PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths,
     content::BrowserContext* context,
     const std::set<base::FilePath>& directory_paths,
-    const base::Closure& on_success,
-    const base::Callback<void(const base::FilePath&)>& on_failure) {
+    base::OnceClosure on_success,
+    base::OnceCallback<void(const base::FilePath&)> on_failure) {
   auto checker = base::MakeRefCounted<WritableFileChecker>(
-      paths, context, directory_paths, on_success, on_failure);
+      paths, context, directory_paths, std::move(on_success),
+      std::move(on_failure));
   checker->Check();
 }
 

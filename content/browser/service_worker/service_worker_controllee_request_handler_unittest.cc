@@ -352,7 +352,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // claim().
   EXPECT_FALSE(test_resources.loader());
   EXPECT_FALSE(version_->HasControllee());
-  EXPECT_FALSE(provider_host_->controller());
+  EXPECT_FALSE(provider_host_->container_host()->controller());
   EXPECT_EQ(registration_.get(), provider_host_->MatchRegistration());
 }
 

@@ -349,8 +349,8 @@ void ProcessDiceHeader(
   dice_response_handler->ProcessDiceHeader(
       dice_params,
       std::make_unique<ProcessDiceHeaderDelegateImpl>(
-          web_contents, account_consistency,
-          IdentityManagerFactory::GetForProfile(profile), is_sync_signin_tab,
+          web_contents, IdentityManagerFactory::GetForProfile(profile),
+          is_sync_signin_tab,
           base::BindOnce(&CreateDiceTurnOnSyncHelper, base::Unretained(profile),
                          access_point, promo_action, reason),
           base::BindOnce(&ShowDiceSigninError, base::Unretained(profile)),

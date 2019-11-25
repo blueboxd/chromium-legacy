@@ -147,6 +147,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      switches::kEnableBlinkFeatures,
       switches::kRendererProcessLimit,
       switches::kMinHeightForGpuRasterTile,
   };

@@ -29,7 +29,6 @@ const char kUnknownAccountId[] = "{unknown account id}";
 const signin::AccountConsistencyMethod kTestedAccountConsistencyMethods[] = {
     signin::AccountConsistencyMethod::kDisabled,
     signin::AccountConsistencyMethod::kMirror,
-    signin::AccountConsistencyMethod::kDiceMigration,
     signin::AccountConsistencyMethod::kDice,
 };
 

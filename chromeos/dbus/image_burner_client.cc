@@ -29,16 +29,16 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
   // ImageBurnerClient override.
   void BurnImage(const std::string& from_path,
                  const std::string& to_path,
-                 const ErrorCallback& error_callback) override {
+                 ErrorCallback error_callback) override {
     dbus::MethodCall method_call(imageburn::kImageBurnServiceInterface,
                                  imageburn::kBurnImage);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(from_path);
     writer.AppendString(to_path);
-    proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&ImageBurnerClientImpl::OnBurnImage,
-                       weak_ptr_factory_.GetWeakPtr(), error_callback));
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::BindOnce(&ImageBurnerClientImpl::OnBurnImage,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      std::move(error_callback)));
   }
 
   // ImageBurnerClient override.
@@ -63,14 +63,14 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
     proxy_->ConnectToSignal(
         imageburn::kImageBurnServiceInterface,
         imageburn::kSignalBurnFinishedName,
-        base::Bind(&ImageBurnerClientImpl::OnBurnFinished,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&ImageBurnerClientImpl::OnBurnFinished,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ImageBurnerClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     proxy_->ConnectToSignal(
         imageburn::kImageBurnServiceInterface, imageburn::kSignalBurnUpdateName,
-        base::Bind(&ImageBurnerClientImpl::OnBurnProgressUpdate,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::BindRepeating(&ImageBurnerClientImpl::OnBurnProgressUpdate,
+                            weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ImageBurnerClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -79,7 +79,7 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
   // Called when a response for BurnImage is received
   void OnBurnImage(ErrorCallback error_callback, dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
   }

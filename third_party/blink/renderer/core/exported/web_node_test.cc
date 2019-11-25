@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
 
@@ -76,13 +77,20 @@ TEST_F(WebNodeSimTest, IsFocused) {
 
   css_resource.Start();
 
-  EXPECT_TRUE(GetDocument().GetStyleEngine().HasPendingRenderBlockingSheets());
-
   WebNode input_node(GetDocument().getElementById("focusable"));
   EXPECT_FALSE(input_node.IsFocusable());
+  EXPECT_EQ(!RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled(),
+            GetDocument().GetStyleEngine().HasPendingRenderBlockingSheets());
 
   main_resource.Finish();
   css_resource.Complete("dummy {}");
+  test::RunPendingTasks();
+
+  if (RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
+    // Need to re-initialize the WebNode since it was null on construction.
+    EXPECT_TRUE(input_node.IsNull());
+    input_node = GetDocument().getElementById("focusable");
+  }
   EXPECT_TRUE(input_node.IsFocusable());
 }
 

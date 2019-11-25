@@ -70,6 +70,11 @@ const QualifiedName& PseudoElementTagName(PseudoId pseudo_id) {
                           (g_null_atom, "<pseudo:first-letter>", g_null_atom));
       return first_letter;
     }
+    case kPseudoIdMarker: {
+      DEFINE_STATIC_LOCAL(QualifiedName, marker,
+                          (g_null_atom, "<pseudo:marker>", g_null_atom));
+      return marker;
+    }
     default:
       NOTREACHED();
   }
@@ -81,11 +86,14 @@ const QualifiedName& PseudoElementTagName(PseudoId pseudo_id) {
 String PseudoElement::PseudoElementNameForEvents(PseudoId pseudo_id) {
   DEFINE_STATIC_LOCAL(const String, after, ("::after"));
   DEFINE_STATIC_LOCAL(const String, before, ("::before"));
+  DEFINE_STATIC_LOCAL(const String, marker, ("::marker"));
   switch (pseudo_id) {
     case kPseudoIdAfter:
       return after;
     case kPseudoIdBefore:
       return before;
+    case kPseudoIdMarker:
+      return marker;
     default:
       return g_empty_string;
   }
@@ -175,7 +183,8 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
 
   const ComputedStyle& style = layout_object->StyleRef();
   if (style.StyleType() != kPseudoIdBefore &&
-      style.StyleType() != kPseudoIdAfter)
+      style.StyleType() != kPseudoIdAfter &&
+      style.StyleType() != kPseudoIdMarker)
     return;
   DCHECK(style.GetContentData());
 

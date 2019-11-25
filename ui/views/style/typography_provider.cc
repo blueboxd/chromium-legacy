@@ -106,6 +106,8 @@ ui::NativeTheme::ColorId GetColorId(int context, int style) {
     return ui::NativeTheme::kColorId_LinkEnabled;
   if (context == style::CONTEXT_BUTTON_MD)
     return ui::NativeTheme::kColorId_ButtonEnabledColor;
+  if (context == style::CONTEXT_LABEL && style == style::STYLE_SECONDARY)
+    return ui::NativeTheme::kColorId_LabelSecondaryColor;
   if (context == style::CONTEXT_MESSAGE_BOX_BODY_TEXT &&
       (style == style::STYLE_PRIMARY || style == style::STYLE_SECONDARY))
     return ui::NativeTheme::kColorId_DialogForeground;

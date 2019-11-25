@@ -152,11 +152,10 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
             identity_manager);
       case signin::AccountConsistencyMethod::kDisabled:
         return std::make_unique<signin::AccountReconcilorDelegate>();
-      case signin::AccountConsistencyMethod::kDiceMigration:
       case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
         return std::make_unique<signin::DiceAccountReconcilorDelegate>(
-            signin_client, account_consistency, dice_migration_completed);
+            signin_client, dice_migration_completed);
 #else
         NOTREACHED();
         return nullptr;
@@ -1053,47 +1052,6 @@ TEST_P(AccountReconcilorTestTable, TableRowTest) {
   RunReconcile();
   histogram_tester()->ExpectTotalCount("ForceDiceMigration.RevokeTokenAction",
                                        0);
-}
-
-// Checks one row of the kDiceParams table above.
-TEST_P(AccountReconcilorTestTable, InconsistencyReasonLogging) {
-  // Enable Dice Migration.
-  SetAccountConsistency(signin::AccountConsistencyMethod::kDiceMigration);
-  // Setup cookies.
-  std::vector<Cookie> cookies = ParseCookieString(cookies_);
-  ConfigureCookieManagerService(cookies);
-  // Setup tokens. This triggers listing cookies so we need to setup cookies
-  // before that.
-  SetupTokens(tokens_);
-  // Call list accounts now so that the next call completes synchronously.
-  identity_test_env()->identity_manager()->GetAccountsInCookieJar();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(testing::_))
-      .WillRepeatedly(testing::Return());
-  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction())
-      .WillRepeatedly(testing::Return());
-  // Reconcile.
-  AccountReconcilor* reconcilor = GetMockReconcilor();
-  bool first_execution =
-      GetParam().is_first_reconcile == IsFirstReconcile::kFirst;
-  reconcilor->first_execution_ = first_execution;
-  reconcilor->StartReconcile();
-  reconcilor->add_to_cookie_.clear();
-  reconcilor->CalculateIfReconcileIsDone();
-  ASSERT_FALSE(reconcilor->is_reconcile_started_);
-  std::string histogram_name_suffix =
-      first_execution ? "FirstExecution" : "NotFirstExecution";
-
-  histogram_tester()->ExpectUniqueSample(
-      "Signin.DiceMigrationNotReady.Reason." + histogram_name_suffix,
-      GetParam().inconsistency_reason, 1);
-
-  histogram_tester()->ExpectTotalCount("ForceDiceMigration.RevokeTokenAction",
-                                       0);
-
-  ConfigureCookieManagerService({});
-  base::RunLoop().RunUntilIdle();
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2760,7 +2718,6 @@ TEST_P(AccountReconcilorMethodParamTest,
         break;
       }
       case signin::AccountConsistencyMethod::kDisabled:
-      case signin::AccountConsistencyMethod::kDiceMigration:
         NOTREACHED();
         break;
     }
@@ -2826,7 +2783,6 @@ TEST_P(AccountReconcilorMethodParamTest, AccountReconcilorStateScheduled) {
         break;
       }
       case signin::AccountConsistencyMethod::kDisabled:
-      case signin::AccountConsistencyMethod::kDiceMigration:
         NOTREACHED();
         break;
     }

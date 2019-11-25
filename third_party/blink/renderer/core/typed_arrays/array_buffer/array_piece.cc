@@ -56,7 +56,7 @@ void ArrayPiece::InitWithArrayBuffer(ArrayBuffer* buffer) {
 
 void ArrayPiece::InitWithArrayBufferView(ArrayBufferView* buffer) {
   if (buffer) {
-    InitWithData(buffer->BaseAddress(), buffer->ByteLength());
+    InitWithData(buffer->BaseAddress(), buffer->ByteLengthAsSizeT());
     is_detached_ = buffer->Buffer() ? buffer->Buffer()->IsDetached() : true;
   } else {
     InitNull();

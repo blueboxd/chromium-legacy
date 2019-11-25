@@ -167,23 +167,6 @@ TEST_F(SigninMetricsTest, RecordSigninUserActionWithPromoAction) {
   }
 }
 
-TEST_F(SigninMetricsTest, RecordSigninUserActionWithNewPreDicePromoAction) {
-  for (const AccessPoint& ap : GetAllAccessPoints()) {
-    base::UserActionTester user_action_tester;
-    RecordSigninUserActionForAccessPoint(
-        ap, signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE);
-    if (AccessPointSupportsPersonalizedPromo(ap)) {
-      EXPECT_EQ(1, user_action_tester.GetActionCount(
-                       "Signin_SigninNewAccountPreDice_From" +
-                       GetAccessPointDescription(ap)));
-    } else {
-      EXPECT_EQ(0, user_action_tester.GetActionCount(
-                       "Signin_SigninNewAccountPreDice_From" +
-                       GetAccessPointDescription(ap)));
-    }
-  }
-}
-
 TEST_F(SigninMetricsTest, RecordSigninUserActionWithNewNoExistingPromoAction) {
   for (const AccessPoint& ap : GetAllAccessPoints()) {
     base::UserActionTester user_action_tester;

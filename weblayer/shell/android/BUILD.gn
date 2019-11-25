@@ -160,6 +160,7 @@ android_apk("weblayer_support_apk") {
 
   # Transitive dependencies
   deps += [
+    "//components/safe_browsing/android:safe_browsing_java",
     "//components/viz/service:service_java",
     "//media/base/android:media_java",
     "//media/capture/video/android:capture_java",

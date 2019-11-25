@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -396,7 +397,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
       provider_host_->UpdateUrls(request->url, request->url,
                                  url::Origin::Create(request->url));
       provider_host_->AddMatchingRegistration(registration_.get());
-      provider_host_->SetControllerRegistration(
+      provider_host_->container_host()->SetControllerRegistration(
           registration_, /*notify_controllerchange=*/false);
     }
 
@@ -804,7 +805,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
 
   // The request should not be handled by the loader, but it shouldn't be a
   // failure.
-  EXPECT_TRUE(provider_host_->controller());
+  EXPECT_TRUE(provider_host_->container_host()->controller());
   histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
 
@@ -846,7 +847,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
   // The fallback callback should be called.
   RunUntilFallbackCallback();
   EXPECT_TRUE(reset_subresource_loader_params_);
-  EXPECT_FALSE(provider_host_->controller());
+  EXPECT_FALSE(provider_host_->container_host()->controller());
 
   histogram_tester.ExpectUniqueSample(
       kHistogramMainResourceFetchEvent,

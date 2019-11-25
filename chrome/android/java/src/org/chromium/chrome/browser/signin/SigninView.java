@@ -68,7 +68,7 @@ public class SigninView extends LinearLayout {
         mMoreButton = findViewById(R.id.more_button);
         mAcceptButtonEndPadding = findViewById(R.id.positive_button_end_padding);
 
-        mAnimationLooper = AnimationLooper.create(mHeaderImage.getDrawable());
+        mAnimationLooper = new AnimationLooper(mHeaderImage.getDrawable());
     }
 
     SigninScrollView getScrollView() {

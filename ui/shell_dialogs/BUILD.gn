@@ -12,30 +12,51 @@ if (is_mac) {
   import("//build/config/mac/rules.gni")
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("shell_dialogs") {
   sources = [
     "base_shell_dialog.cc",
     "base_shell_dialog.h",
-    "base_shell_dialog_win.cc",
-    "base_shell_dialog_win.h",
-    "execute_select_file_win.cc",
-    "execute_select_file_win.h",
     "select_file_dialog.cc",
     "select_file_dialog.h",
     "select_file_dialog_factory.cc",
     "select_file_dialog_factory.h",
-    "select_file_dialog_mac.h",
-    "select_file_dialog_mac.mm",
-    "select_file_dialog_win.cc",
-    "select_file_dialog_win.h",
     "select_file_policy.cc",
     "select_file_policy.h",
     "selected_file_info.cc",
     "selected_file_info.h",
-    "shell_dialog_linux.cc",
-    "shell_dialog_linux.h",
     "shell_dialogs_export.h",
   ]
+
+  if (is_linux) {
+    sources += [
+      "shell_dialog_linux.cc",
+      "shell_dialog_linux.h",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "select_file_dialog_mac.h",
+      "select_file_dialog_mac.mm",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "base_shell_dialog_win.cc",
+      "base_shell_dialog_win.h",
+      "execute_select_file_win.cc",
+      "execute_select_file_win.h",
+      "select_file_dialog_win.cc",
+      "select_file_dialog_win.h",
+    ]
+  }
 
   defines = [ "SHELL_DIALOGS_IMPLEMENTATION" ]
 
@@ -90,12 +111,20 @@ jumbo_component("shell_dialogs") {
 test("shell_dialogs_unittests") {
   testonly = true
   sources = [
-    "execute_select_file_win_unittest.cc",
     "run_all_unittests.cc",
-    "select_file_dialog_mac_unittest.mm",
     "select_file_dialog_unittest.cc",
-    "select_file_dialog_win_unittest.cc",
   ]
+
+  if (is_mac) {
+    sources += [ "select_file_dialog_mac_unittest.mm" ]
+  }
+
+  if (is_win) {
+    sources += [
+      "execute_select_file_win_unittest.cc",
+      "select_file_dialog_win_unittest.cc",
+    ]
+  }
 
   deps = [
     ":shell_dialogs",

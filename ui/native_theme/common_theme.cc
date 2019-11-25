@@ -97,6 +97,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_LabelEnabledColor:
       case NativeTheme::kColorId_LabelTextSelectionColor:
         return gfx::kGoogleGrey200;
+      case NativeTheme::kColorId_LabelSecondaryColor:
+        return gfx::kGoogleGrey500;
       case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
         return gfx::kGoogleBlue800;
 
@@ -256,6 +258,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
           .color;
     }
+    case NativeTheme::kColorId_LabelSecondaryColor:
+      return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_LabelTextSelectionBackgroundFocused:
       return gfx::kGoogleBlue200;
 

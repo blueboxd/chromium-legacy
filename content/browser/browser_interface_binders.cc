@@ -55,6 +55,7 @@
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
@@ -429,6 +430,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::AudioContextManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetAudioContextManager, base::Unretained(host)));
 
+  map->Add<blink::mojom::CacheStorage>(base::BindRepeating(
+      &RenderFrameHostImpl::BindCacheStorage, base::Unretained(host)));
+
   map->Add<blink::mojom::ContactsManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetContactsManager, base::Unretained(host)));
 
@@ -661,6 +665,8 @@ void PopulateBinderMapWithContext(
   map->Add<payments::mojom::PaymentManager>(
       BindDedicatedWorkerReceiverForOrigin(
           &RenderProcessHost::CreatePaymentManagerForOrigin, host));
+  map->Add<blink::mojom::CacheStorage>(BindDedicatedWorkerReceiverForOrigin(
+      &RenderProcessHost::BindCacheStorage, host));
   map->Add<blink::mojom::PermissionService>(
       BindDedicatedWorkerReceiverForOrigin(
           &RenderProcessHost::CreatePermissionService, host));
@@ -724,6 +730,8 @@ void PopulateBinderMapWithContext(
     SharedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
   // render process host binders taking an origin
+  map->Add<blink::mojom::CacheStorage>(BindSharedWorkerReceiverForOrigin(
+      &RenderProcessHost::BindCacheStorage, host));
   map->Add<blink::mojom::FileSystemManager>(BindSharedWorkerReceiverForOrigin(
       &RenderProcessHost::BindFileSystemManager, host));
   map->Add<payments::mojom::PaymentManager>(BindSharedWorkerReceiverForOrigin(
@@ -814,6 +822,8 @@ void PopulateBinderMapWithContext(
   // render process host binders taking an origin
   map->Add<payments::mojom::PaymentManager>(BindServiceWorkerReceiverForOrigin(
       &RenderProcessHost::CreatePaymentManagerForOrigin, host));
+  map->Add<blink::mojom::CacheStorage>(BindServiceWorkerReceiverForOrigin(
+      &RenderProcessHost::BindCacheStorage, host));
   map->Add<blink::mojom::PermissionService>(BindServiceWorkerReceiverForOrigin(
       &RenderProcessHost::CreatePermissionService, host));
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {

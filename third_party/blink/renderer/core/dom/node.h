@@ -286,6 +286,9 @@ class CORE_EXPORT Node : public EventTarget {
   DISABLE_CFI_PERF bool IsAfterPseudoElement() const {
     return GetPseudoId() == kPseudoIdAfter;
   }
+  DISABLE_CFI_PERF bool IsMarkerPseudoElement() const {
+    return GetPseudoId() == kPseudoIdMarker;
+  }
   DISABLE_CFI_PERF bool IsFirstLetterPseudoElement() const {
     return GetPseudoId() == kPseudoIdFirstLetter;
   }

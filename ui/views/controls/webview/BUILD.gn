@@ -4,12 +4,16 @@
 
 import("//build/config/jumbo.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("webview") {
   sources = [
     "unhandled_keyboard_event_handler.cc",
     "unhandled_keyboard_event_handler.h",
-    "unhandled_keyboard_event_handler_mac.mm",
-    "unhandled_keyboard_event_handler_win.cc",
     "web_contents_set_background_color.cc",
     "web_contents_set_background_color.h",
     "web_dialog_view.cc",
@@ -18,6 +22,14 @@ jumbo_component("webview") {
     "webview.h",
     "webview_export.h",
   ]
+
+  if (is_mac) {
+    sources += [ "unhandled_keyboard_event_handler_mac.mm" ]
+  }
+
+  if (is_win) {
+    sources += [ "unhandled_keyboard_event_handler_win.cc" ]
+  }
 
   defines = [ "WEBVIEW_IMPLEMENTATION" ]
 

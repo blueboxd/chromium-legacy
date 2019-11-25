@@ -48,13 +48,32 @@ bool WebApp::HasAnySources() const {
 }
 
 bool WebApp::HasOnlySource(Source::Type source) const {
-  Sources mask;
-  mask[source] = true;
-  return (sources_ & ~mask).none() && sources_[source];
+  Sources specified_sources;
+  specified_sources[source] = true;
+  return HasAnySpecifiedSourcesAndNoOtherSources(specified_sources);
 }
 
 bool WebApp::IsSynced() const {
   return sources_[Source::kSync];
+}
+
+bool WebApp::IsDefaultApp() const {
+  return sources_[Source::kDefault];
+}
+
+bool WebApp::CanUserUninstallExternalApp() const {
+  Sources specified_sources;
+  specified_sources[Source::kDefault] = true;
+  specified_sources[Source::kSync] = true;
+  specified_sources[Source::kWebAppStore] = true;
+  return HasAnySpecifiedSourcesAndNoOtherSources(specified_sources);
+}
+
+bool WebApp::HasAnySpecifiedSourcesAndNoOtherSources(
+    Sources specified_sources) const {
+  bool has_any_specified_sources = (sources_ & specified_sources).any();
+  bool has_no_other_sources = (sources_ & ~specified_sources).none();
+  return has_any_specified_sources && has_no_other_sources;
 }
 
 bool WebApp::WasInstalledByUser() const {

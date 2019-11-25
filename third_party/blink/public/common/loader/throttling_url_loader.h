@@ -215,7 +215,7 @@ class BLINK_COMMON_EXPORT ThrottlingURLLoader
     uint32_t options;
 
     network::ResourceRequest url_request;
-    // |task_runner_| is used to set up |client_binding_|.
+    // |task_runner| is used to set up |client_receiver_|.
     scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   };
   // Holds any info needed to start or restart the request. Used when start is

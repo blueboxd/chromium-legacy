@@ -23,14 +23,14 @@ class CommitContributor;
 // This class manages the set of per-type committer objects.
 //
 // It owns these types and hides the details of iterating over all of them.
-// Many methods allow the caller to specify a subset of types on which the
-// operation is to be applied.  It is a logic error if the supplied set of types
-// contains a type which was not previously registered.
+// It is a logic error if the supplied set of types contains a type which was
+// not previously registered.
 class CommitProcessor {
  public:
-  // Contructs a CommitProcessor from a map of CommitContributors.
-  // The CommitProcessor does not own this map.
-  explicit CommitProcessor(CommitContributorMap* commit_contributor_map);
+  // |commit_types| must contain NIGORI. |commit_contributor_map| must be not
+  // null and must outlive this object.
+  CommitProcessor(ModelTypeSet commit_types,
+                  CommitContributorMap* commit_contributor_map);
   ~CommitProcessor();
 
   // Gathers a set of contributions to be used to populate a commit message.
@@ -39,10 +39,11 @@ class CommitProcessor {
   // map, gather any entries queued for commit into CommitContributions.  The
   // total number of entries in all the returned CommitContributions shall not
   // exceed |max_entries|.
+  // Returns no contribution if previous call collected them from all datatypes
+  // and total number of collected entries was less than |max_entries|.
   // Note: |cookie_jar_mismatch| and |cookie_jar_empty| are used only for
   // metrics recording purposes specific to the SESSIONS type.
-  Commit::ContributionMap GatherCommitContributions(ModelTypeSet commit_types,
-                                                    size_t max_entries,
+  Commit::ContributionMap GatherCommitContributions(size_t max_entries,
                                                     bool cookie_jar_mismatch,
                                                     bool cookie_jar_empty);
 
@@ -54,8 +55,11 @@ class CommitProcessor {
                                        bool cookie_jar_empty,
                                        Commit::ContributionMap* contributions);
 
+  const ModelTypeSet commit_types_;
+
   // A map of 'commit contributors', one for each enabled type.
   CommitContributorMap* commit_contributor_map_;
+  bool gathered_all_contributions_;
 
   DISALLOW_COPY_AND_ASSIGN(CommitProcessor);
 };

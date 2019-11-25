@@ -39,6 +39,8 @@ TEST_F(LayoutTreeBuilderTraversalTest, emptySubTree) {
 TEST_F(LayoutTreeBuilderTraversalTest, pseudos) {
   const char* const kHtml =
       "<style>"
+      "#top { display: list-item; }"
+      "#top::marker { content: \"baz\"; }"
       "#top::before { content: \"foo\"; }"
       "#top::after { content: \"bar\"; }"
       "</style>"
@@ -46,14 +48,17 @@ TEST_F(LayoutTreeBuilderTraversalTest, pseudos) {
   SetupSampleHTML(kHtml);
 
   Element* top = GetDocument().QuerySelector("#top");
+  Element* marker = top->GetPseudoElement(kPseudoIdMarker);
   Element* before = top->GetPseudoElement(kPseudoIdBefore);
   Element* after = top->GetPseudoElement(kPseudoIdAfter);
-  EXPECT_EQ(before, LayoutTreeBuilderTraversal::Next(*top, nullptr));
+  EXPECT_EQ(marker, LayoutTreeBuilderTraversal::Next(*top, nullptr));
+  EXPECT_EQ(before, LayoutTreeBuilderTraversal::NextSibling(*marker));
   EXPECT_EQ(after, LayoutTreeBuilderTraversal::NextSibling(*before));
-  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::PreviousSibling(*before));
   EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::NextSibling(*after));
   EXPECT_EQ(before, LayoutTreeBuilderTraversal::PreviousSibling(*after));
-  EXPECT_EQ(before, LayoutTreeBuilderTraversal::FirstChild(*top));
+  EXPECT_EQ(marker, LayoutTreeBuilderTraversal::PreviousSibling(*before));
+  EXPECT_EQ(nullptr, LayoutTreeBuilderTraversal::PreviousSibling(*marker));
+  EXPECT_EQ(marker, LayoutTreeBuilderTraversal::FirstChild(*top));
   EXPECT_EQ(after, LayoutTreeBuilderTraversal::LastChild(*top));
 }
 

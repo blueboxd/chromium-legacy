@@ -61,10 +61,8 @@ bool Syncer::NormalSyncShare(ModelTypeSet request_types,
     }
   }
 
-  CommitProcessor commit_processor(
-      cycle->context()->model_type_registry()->commit_contributor_map());
-  SyncerError commit_result = BuildAndPostCommits(request_types, nudge_tracker,
-                                                  cycle, &commit_processor);
+  SyncerError commit_result =
+      BuildAndPostCommits(request_types, nudge_tracker, cycle);
   cycle->mutable_status_controller()->set_commit_result(commit_result);
 
   return HandleCycleEnd(cycle, nudge_tracker->GetOrigin());
@@ -147,21 +145,23 @@ bool Syncer::DownloadAndApplyUpdates(ModelTypeSet* request_types,
 
 SyncerError Syncer::BuildAndPostCommits(const ModelTypeSet& request_types,
                                         NudgeTracker* nudge_tracker,
-                                        SyncCycle* cycle,
-                                        CommitProcessor* commit_processor) {
+                                        SyncCycle* cycle) {
   VLOG(1) << "Committing from types " << ModelTypeSetToString(request_types);
 
+  CommitProcessor commit_processor(
+      request_types,
+      cycle->context()->model_type_registry()->commit_contributor_map());
   // The ExitRequested() check is unnecessary, since we should start getting
   // errors from the ServerConnectionManager if an exist has been requested.
   // However, it doesn't hurt to check it anyway.
   while (!ExitRequested()) {
     std::unique_ptr<Commit> commit(
-        Commit::Init(request_types, cycle->context()->GetEnabledTypes(),
+        Commit::Init(cycle->context()->GetEnabledTypes(),
                      cycle->context()->max_commit_batch_size(),
                      cycle->context()->account_name(),
                      cycle->context()->directory()->cache_guid(),
                      cycle->context()->cookie_jar_mismatch(),
-                     cycle->context()->cookie_jar_empty(), commit_processor,
+                     cycle->context()->cookie_jar_empty(), &commit_processor,
                      cycle->context()->extensions_activity()));
     if (!commit) {
       break;

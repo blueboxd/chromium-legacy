@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_consts.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -1389,7 +1390,8 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   // Dooming the version should cause the resources to be deleted.
   base::RunLoop loop;
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
-  registration_->active_version()->RemoveControllee(host->client_uuid());
+  registration_->active_version()->RemoveControllee(
+      host->container_host()->client_uuid());
   registration_->active_version()->Doom();
   loop.Run();
   EXPECT_TRUE(GetPurgeableResourceIdsFromDB().empty());
@@ -1572,7 +1574,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   storage()->SetPurgingCompleteCallbackForTest(loop.QuitClosure());
   scoped_refptr<ServiceWorkerVersion> old_version(
       registration_->active_version());
-  old_version->RemoveControllee(host->client_uuid());
+  old_version->RemoveControllee(host->container_host()->client_uuid());
   registration_->ActivateWaitingVersionWhenReady();
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
 

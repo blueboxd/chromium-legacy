@@ -674,8 +674,8 @@ void CompleteRequest(RTCVoidRequest* request, bool resolve) {
 template <>
 void CompleteRequest(RTCSessionDescriptionRequest* request, bool resolve) {
   if (resolve) {
-    auto* description = MakeGarbageCollected<RTCSessionDescriptionPlatform>(
-        WebString(), WebString());
+    auto* description =
+        MakeGarbageCollected<RTCSessionDescriptionPlatform>(String(), String());
     request->RequestSucceeded(description);
   } else {
     request->RequestFailed(

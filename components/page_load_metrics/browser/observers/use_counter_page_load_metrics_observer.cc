@@ -57,15 +57,14 @@ void RecordUkmFeatures(const UkmFeatureList& features,
 void PossiblyWarnFeatureDeprecation(content::RenderFrameHost* rfh,
                                     WebFeature feature) {
   switch (feature) {
-    case WebFeature::kDownloadInSandboxWithoutUserGesture:
+    case WebFeature::kDownloadInSandbox:
       rfh->AddMessageToConsole(
           blink::mojom::ConsoleMessageLevel::kWarning,
-          "[Deprecation] Download in sandbox without user activation is "
-          "deprecated and will be removed in M76, around July 2019. You may "
-          "consider adding "
-          "'allow-downloads-without-user-activation' to the sandbox attribute "
-          "list. See https://www.chromestatus.com/feature/5706745674465280 for "
-          "more details.");
+          "[Deprecation] Download in sandbox is deprecated and will be removed "
+          "in M81. You may consider adding 'allow-downloads' to the sandbox "
+          "attribute list. See "
+          "https://www.chromestatus.com/feature/5706745674465280 for more "
+          "details.");
       return;
     case WebFeature::kDownloadInAdFrameWithoutUserGesture:
       rfh->AddMessageToConsole(

@@ -21,13 +21,13 @@
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
-#include "third_party/blink/public/platform/web_rtc_stats_response.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_track_metrics.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/transceiver_state_surfacer.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_stats_response_base.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 
@@ -42,13 +42,12 @@ class WebLocalFrame;
 class WebRTCLegacyStats;
 class WebRTCPeerConnectionHandlerClient;
 
-// Mockable wrapper for blink::WebRTCStatsResponse
+// Mockable wrapper for blink::RTCStatsResponseBase
 class MODULES_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
  public:
-  explicit LocalRTCStatsResponse(const blink::WebRTCStatsResponse& impl)
-      : impl_(impl) {}
+  explicit LocalRTCStatsResponse(RTCStatsResponseBase* impl) : impl_(impl) {}
 
-  virtual blink::WebRTCStatsResponse webKitStatsResponse() const;
+  virtual RTCStatsResponseBase* webKitStatsResponse() const;
   virtual void addStats(const blink::WebRTCLegacyStats& stats);
 
  protected:
@@ -57,7 +56,7 @@ class MODULES_EXPORT LocalRTCStatsResponse : public rtc::RefCountInterface {
   LocalRTCStatsResponse() {}
 
  private:
-  blink::WebRTCStatsResponse impl_;
+  Persistent<RTCStatsResponseBase> impl_;
 };
 
 // Mockable wrapper for blink::WebRTCStatsRequest

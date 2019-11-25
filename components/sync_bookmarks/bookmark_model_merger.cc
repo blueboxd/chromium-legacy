@@ -237,9 +237,8 @@ BookmarkModelMerger::BookmarkModelMerger(
       favicon_service_(favicon_service),
       bookmark_tracker_(bookmark_tracker),
       remote_forest_(BuildRemoteForest(std::move(updates))),
-      guid_to_remote_node_map_(BuildGUIDToRemoteNodeMap(remote_forest_)),
-      guid_to_local_node_map_(
-          BuildGUIDToLocalNodeMap(bookmark_model_, guid_to_remote_node_map_)) {
+      guid_to_match_map_(
+          FindGuidMatchesOrReassignLocal(remote_forest_, bookmark_model_)) {
   DCHECK(bookmark_tracker_->IsEmpty());
   DCHECK(favicon_service);
 }
@@ -307,63 +306,62 @@ BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
 }
 
 // static
-std::unordered_map<std::string, const BookmarkModelMerger::RemoteTreeNode*>
-BookmarkModelMerger::BuildGUIDToRemoteNodeMap(
-    const RemoteForest& remote_forest) {
+std::unordered_map<std::string, BookmarkModelMerger::GuidMatch>
+BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
+    const RemoteForest& remote_forest,
+    bookmarks::BookmarkModel* bookmark_model) {
+  DCHECK(bookmark_model);
+
   // TODO(crbug.com/978430): Handle potential duplicate GUIDs within remote
   // updates.
-  std::unordered_map<std::string, const RemoteTreeNode*>
-      guid_to_remote_node_map;
+
   if (!base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)) {
-    return guid_to_remote_node_map;
+    return {};
   }
 
+  // Build a temporary lookup table for remote GUIDs.
+  std::unordered_map<std::string, const RemoteTreeNode*>
+      guid_to_remote_node_map;
   for (const auto& tree_tag_and_root : remote_forest) {
     tree_tag_and_root.second.EmplaceSelfAndDescendantsByGUID(
         &guid_to_remote_node_map);
   }
 
-  return guid_to_remote_node_map;
-}
-
-// static
-std::unordered_map<std::string, const bookmarks::BookmarkNode*>
-BookmarkModelMerger::BuildGUIDToLocalNodeMap(
-    bookmarks::BookmarkModel* bookmark_model,
-    const std::unordered_map<std::string, const RemoteTreeNode*>&
-        guid_to_remote_node_map) {
-  DCHECK(bookmark_model);
-
-  std::unordered_map<std::string, const bookmarks::BookmarkNode*>
-      guid_to_local_node_map;
-  if (!base::FeatureList::IsEnabled(switches::kMergeBookmarksUsingGUIDs)) {
-    return guid_to_local_node_map;
-  }
-
+  // Iterate through all local bookmarks to find matches by GUID.
+  std::unordered_map<std::string, BookmarkModelMerger::GuidMatch>
+      guid_to_match_map;
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
       bookmark_model->root_node());
   while (iterator.has_next()) {
-    const bookmarks::BookmarkNode* node = iterator.Next();
+    const bookmarks::BookmarkNode* const node = iterator.Next();
     DCHECK(base::IsValidGUID(node->guid()));
+
     if (node->is_permanent_node()) {
       continue;
     }
+
     const auto remote_it = guid_to_remote_node_map.find(node->guid());
     if (remote_it == guid_to_remote_node_map.end()) {
       continue;
     }
-    // If local node and its remote node match are conflicting in node type or
-    // URL, replace local GUID with a random GUID.
-    const syncer::EntityData& remote_entity = remote_it->second->entity();
+
+    const RemoteTreeNode* const remote_node = remote_it->second;
+    const syncer::EntityData& remote_entity = remote_node->entity();
     if (node->is_folder() != remote_entity.is_folder ||
         (node->is_url() &&
          node->url() != remote_entity.specifics.bookmark().url())) {
-      node =
-          ReplaceBookmarkNodeGUID(node, base::GenerateGUID(), bookmark_model);
+      // If local node and its remote node match are conflicting in node type or
+      // URL, replace local GUID with a random GUID.
+      // TODO(crbug.com/978430): Local GUIDs should also be reassigned if they
+      // match a remote originator_item_id.
+      ReplaceBookmarkNodeGUID(node, base::GenerateGUID(), bookmark_model);
+      continue;
     }
-    guid_to_local_node_map.emplace(node->guid(), node);
+
+    guid_to_match_map.emplace(node->guid(), GuidMatch{node, remote_node});
   }
-  return guid_to_local_node_map;
+
+  return guid_to_match_map;
 }
 
 void BookmarkModelMerger::MergeSubtree(
@@ -422,25 +420,27 @@ const bookmarks::BookmarkNode* BookmarkModelMerger::FindMatchingLocalNode(
     const bookmarks::BookmarkNode* local_parent,
     size_t local_child_start_index) const {
   // Try to match child by GUID. If we can't, try to match child by semantics.
-  const bookmarks::BookmarkNode* matching_local_node =
+  const bookmarks::BookmarkNode* matching_local_node_by_guid =
       FindMatchingLocalNodeByGUID(remote_child);
-  if (!matching_local_node) {
-    // All local nodes up to |remote_index-1| have processed already. Look for a
-    // matching local node starting with the local node at position
-    // |local_child_start_index|. FindMatchingChildBySemanticsStartingAt()
-    // returns kInvalidIndex in the case where no semantics match was found or
-    // the semantics match found is GUID-matchable to a different node.
-    const size_t local_index = FindMatchingChildBySemanticsStartingAt(
-        /*remote_node=*/remote_child,
-        /*local_parent=*/local_parent,
-        /*starting_child_index=*/local_child_start_index);
-    if (local_index == kInvalidIndex) {
-      // If no match found, return.
-      return nullptr;
-    }
-    matching_local_node = local_parent->children()[local_index].get();
+  if (matching_local_node_by_guid) {
+    return matching_local_node_by_guid;
   }
-  return matching_local_node;
+
+  // All local nodes up to |remote_index-1| have processed already. Look for a
+  // matching local node starting with the local node at position
+  // |local_child_start_index|. FindMatchingChildBySemanticsStartingAt()
+  // returns kInvalidIndex in the case where no semantics match was found or
+  // the semantics match found is GUID-matchable to a different node.
+  const size_t local_index = FindMatchingChildBySemanticsStartingAt(
+      /*remote_node=*/remote_child,
+      /*local_parent=*/local_parent,
+      /*starting_child_index=*/local_child_start_index);
+  if (local_index == kInvalidIndex) {
+    // If no match found, return.
+    return nullptr;
+  }
+
+  return local_parent->children()[local_index].get();
 }
 
 const bookmarks::BookmarkNode*
@@ -471,8 +471,6 @@ BookmarkModelMerger::UpdateBookmarkNodeFromSpecificsIncludingGUID(
     return local_node;
   }
   DCHECK(base::IsValidGUID(specifics.guid()));
-  // We do not update the GUID maps upon node replacement as per the comment
-  // in bookmark_model_merger.h.
   return ReplaceBookmarkNodeGUID(local_node, specifics.guid(), bookmark_model_);
 }
 
@@ -574,7 +572,7 @@ void BookmarkModelMerger::ProcessLocalCreation(
     if (FindMatchingRemoteNodeByGUID(node->children()[i].get())) {
       continue;
     }
-    ProcessLocalCreation(node, i);
+    ProcessLocalCreation(/*parent=*/node, i);
   }
 }
 
@@ -612,36 +610,25 @@ const BookmarkModelMerger::RemoteTreeNode*
 BookmarkModelMerger::FindMatchingRemoteNodeByGUID(
     const bookmarks::BookmarkNode* local_node) const {
   DCHECK(local_node);
-  // Ensure matching nodes are of the same type and have the same URL,
-  // guaranteed by BuildGUIDToLocalNodeMap().
-  const auto it = guid_to_remote_node_map_.find(local_node->guid());
-  if (it == guid_to_remote_node_map_.end()) {
+
+  const auto it = guid_to_match_map_.find(local_node->guid());
+  if (it == guid_to_match_map_.end()) {
     return nullptr;
   }
 
-  const RemoteTreeNode* const remote_node = it->second;
-  DCHECK(remote_node);
-  DCHECK_EQ(local_node->is_folder(), remote_node->entity().is_folder);
-  DCHECK_EQ(local_node->url(),
-            remote_node->entity().specifics.bookmark().url());
-  return remote_node;
+  return it->second.remote_node;
 }
 
 const bookmarks::BookmarkNode* BookmarkModelMerger::FindMatchingLocalNodeByGUID(
     const RemoteTreeNode& remote_node) const {
   const syncer::EntityData& remote_entity = remote_node.entity();
   const auto it =
-      guid_to_local_node_map_.find(remote_entity.specifics.bookmark().guid());
-  if (it == guid_to_local_node_map_.end()) {
+      guid_to_match_map_.find(remote_entity.specifics.bookmark().guid());
+  if (it == guid_to_match_map_.end()) {
     return nullptr;
   }
-  DCHECK(!remote_entity.specifics.bookmark().guid().empty());
-  const bookmarks::BookmarkNode* local_node = it->second;
-  // Ensure matching nodes are of the same type and have the same URL,
-  // guaranteed by BuildGUIDToLocalNodeMap().
-  DCHECK_EQ(local_node->is_folder(), remote_entity.is_folder);
-  DCHECK_EQ(local_node->url(), remote_entity.specifics.bookmark().url());
-  return local_node;
+
+  return it->second.local_node;
 }
 
 }  // namespace sync_bookmarks

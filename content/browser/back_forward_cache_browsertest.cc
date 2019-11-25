@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/hash/hash.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -47,6 +49,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
+#include "unordered_map"
 
 using testing::Each;
 using testing::ElementsAre;
@@ -57,6 +60,20 @@ namespace content {
 namespace {
 
 const char* kDisabledReasonForTest = "DisabledByBackForwardCacheBrowserTest";
+
+// hash for std::unordered_map.
+struct FeatureHash {
+  size_t operator()(base::Feature feature) const {
+    return base::FastHash(feature.name);
+  }
+};
+
+// compare operator for std::unordered_map.
+struct FeatureEqualOperator {
+  bool operator()(base::Feature feature1, base::Feature feature2) const {
+    return std::strcmp(feature1.name, feature2.name) == 0;
+  }
+};
 
 // Test about the BackForwardCache.
 class BackForwardCacheBrowserTest : public ContentBrowserTest {
@@ -71,18 +88,32 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         switches::kIgnoreCertificateErrors);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    feature_list_.InitWithFeaturesAndParameters(
-        {{features::kBackForwardCache, {GetFeatureParams()}},
-         {features::kServiceWorkerOnUI, {}}},
-        {});
+    // TODO(sreejakshetty): Initialize ScopedFeatureLists from test constructor.
+    EnableFeatureAndSetParams(features::kBackForwardCache,
+                              "TimeToLiveInBackForwardCacheInSeconds", "3600");
+    EnableFeatureAndSetParams(features::kServiceWorkerOnUI, "", "");
+    SetupFeaturesAndParameters();
 
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
-  virtual base::FieldTrialParams GetFeatureParams() {
-    // Set a very long TTL before expiration (longer than the test timeout) so
-    // tests that are expecting deletion don't pass when they shouldn't.
-    return {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}};
+  void SetupFeaturesAndParameters() {
+    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
+        enabled_features;
+
+    for (auto feature_param = features_with_params_.begin();
+         feature_param != features_with_params_.end(); feature_param++) {
+      enabled_features.push_back({feature_param->first, feature_param->second});
+    }
+
+    feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                /*disabled_features*/ {});
+  }
+
+  void EnableFeatureAndSetParams(base::Feature feature,
+                                 std::string param_name,
+                                 std::string param_value) {
+    features_with_params_[feature][param_name] = param_value;
   }
 
   void SetUpOnMainThread() override {
@@ -256,8 +287,12 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
   std::vector<base::Bucket> expected_blocklisted_features_;
   std::vector<base::Bucket> expected_disabled_reasons_;
   std::vector<base::Bucket> expected_eviction_after_committing_;
-
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  std::unordered_map<base::Feature,
+                     std::map<std::string, std::string>,
+                     FeatureHash,
+                     FeatureEqualOperator>
+      features_with_params_;
 };
 
 // Match RenderFrameHostImpl* that are in the BackForwardCache.
@@ -2593,8 +2628,11 @@ class BackForwardCacheBrowserTestWithServiceWorkerEnabled
   ~BackForwardCacheBrowserTestWithServiceWorkerEnabled() override {}
 
  protected:
-  base::FieldTrialParams GetFeatureParams() override {
-    return {{"service_worker_supported", "true"}};
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableFeatureAndSetParams(features::kBackForwardCache,
+                              "service_worker_supported", "true");
+
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };
 
@@ -2915,8 +2953,11 @@ class GeolocationBackForwardCacheBrowserTest
  protected:
   GeolocationBackForwardCacheBrowserTest() : geo_override_(0.0, 0.0) {}
 
-  base::FieldTrialParams GetFeatureParams() override {
-    return {{"geolocation_supported", "true"}};
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableFeatureAndSetParams(features::kBackForwardCache,
+                              "geolocation_supported", "true");
+
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 
   device::ScopedGeolocationOverrider geo_override_;
@@ -3058,7 +3099,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
 
   base::TimeDelta time_to_live_in_back_forward_cache =
       BackForwardCacheImpl::GetTimeToLiveInBackForwardCache();
-  // This should match the value we set in GetFeatureParams.
+  // This should match the value we set in EnableFeatureAndSetParams.
   EXPECT_EQ(time_to_live_in_back_forward_cache,
             base::TimeDelta::FromSeconds(3600));
 
@@ -3286,18 +3327,16 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MetricsNotRecorded) {
 class BackForwardCacheBrowserTestWithDomainControlEnabled
     : public BackForwardCacheBrowserTest {
  protected:
-  base::FieldTrialParams GetFeatureParams() override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     // Sets the allowed websites for testing, additionally adding the params
     // used by BackForwardCacheBrowserTest.
-    std::map<std::string, std::string> domain_control_params = {
-        {"allowed_websites",
-         "https://a.allowed/back_forward_cache/, "
-         "https://b.allowed/back_forward_cache/allowed_path.html"}};
-    std::map<std::string, std::string> browser_test_params =
-        BackForwardCacheBrowserTest::GetFeatureParams();
-    domain_control_params.insert(browser_test_params.begin(),
-                                 browser_test_params.end());
-    return domain_control_params;
+    std::string allowed_websites =
+        "https://a.allowed/back_forward_cache/, "
+        "https://b.allowed/back_forward_cache/allowed_path.html";
+    EnableFeatureAndSetParams(features::kBackForwardCache, "allowed_websites",
+                              allowed_websites);
+
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };
 
@@ -3986,4 +4025,83 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                 FROM_HERE);
 }
 
+// Test for functionality of memory controls in back-forward cache for low
+// memory devices.
+class BackForwardCacheBrowserTestForLowMemoryDevices
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Set the value of memory threshold more than the physical memory and check
+    // if back-forward cache is disabled or not.
+    std::string memory_threshold =
+        base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB() + 1);
+    EnableFeatureAndSetParams(features::kBackForwardCacheMemoryControl,
+                              "memory_threshold_for_back_forward_cache_in_mb",
+                              memory_threshold);
+
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+// Navigate from A to B and go back.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestForLowMemoryDevices,
+                       DisableBFCacheForLowEndDevices) {
+  EXPECT_FALSE(IsBackForwardCacheEnabled());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 3) A shouldn't be stored in back-forward cache because the physical
+  // memory is less than the memory threshold.
+  delete_observer_rfh_a.WaitUntilDeleted();
+
+  // Nothing is recorded when the memory is less than the threshold value.
+  ExpectOutcomeDidNotChange(FROM_HERE);
+  ExpectNotRestoredDidNotChange(FROM_HERE);
+}
+
+// Test for functionality of memory controls in back-forward cache for high
+// memory devices.
+class BackForwardCacheBrowserTestForHighMemoryDevices
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Set the value of memory threshold less than the physical memory and check
+    // if back-forward cache is enabled or not.
+    std::string memory_threshold =
+        base::NumberToString(base::SysInfo::AmountOfPhysicalMemoryMB() - 1);
+    EnableFeatureAndSetParams(features::kBackForwardCacheMemoryControl,
+                              "memory_threshold_for_back_forward_cache_in_mb",
+                              memory_threshold);
+
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+// Navigate from A to B and go back.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestForHighMemoryDevices,
+                       EnableBFCacheForHighMemoryDevices) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 3) A should be stored in back-forward cache because the physical memory is
+  // greater than the memory threshold.
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+}
 }  // namespace content

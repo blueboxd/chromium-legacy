@@ -57,6 +57,7 @@ source_set("web_applications") {
     "//components/pref_registry",
     "//components/sync",
     "//content/public/browser",
+    "//services/preferences/public/cpp",
     "//skia",
   ]
 

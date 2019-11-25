@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/compression/zlib_partition_alloc.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -85,6 +86,10 @@ ScriptPromise InflateTransformer::Flush(
   was_flush_called_ = true;
   out_buffer_.clear();
 
+  if (!reached_end_) {
+    exception_state.ThrowTypeError("Compressed input was truncated.");
+  }
+
   return ScriptPromise::CastUndefined(script_state_);
 }
 
@@ -94,6 +99,13 @@ void InflateTransformer::Inflate(
     IsFinished finished,
     TransformStreamDefaultControllerInterface* controller,
     ExceptionState& exception_state) {
+  if (reached_end_ && length != 0) {
+    // zlib will ignore data after the end of the stream, so we have to
+    // explicitly throw an error.
+    exception_state.ThrowTypeError("Junk found after end of compressed data.");
+    return;
+  }
+
   stream_.avail_in = length;
   // Zlib treats this pointer as const, so this cast is safe.
   stream_.next_in = const_cast<uint8_t*>(start);
@@ -101,9 +113,15 @@ void InflateTransformer::Inflate(
   do {
     stream_.avail_out = out_buffer_.size();
     stream_.next_out = out_buffer_.data();
-    int err = inflate(&stream_, finished ? Z_FINISH : Z_NO_FLUSH);
+    const int err = inflate(&stream_, finished ? Z_FINISH : Z_NO_FLUSH);
     if (err != Z_OK && err != Z_STREAM_END && err != Z_BUF_ERROR) {
-      exception_state.ThrowTypeError("The compressed data was not valid.");
+      DCHECK_NE(err, Z_STREAM_ERROR);
+      if (err == Z_DATA_ERROR) {
+        exception_state.ThrowTypeError(
+            String("The compressed data was not valid: ") + stream_.msg + ".");
+      } else {
+        exception_state.ThrowTypeError("The compressed data was not valid.");
+      }
       return;
     }
 
@@ -115,6 +133,15 @@ void InflateTransformer::Inflate(
       if (exception_state.HadException()) {
         return;
       }
+    }
+
+    if (err == Z_STREAM_END) {
+      reached_end_ = true;
+      if (stream_.next_in < start + length) {
+        exception_state.ThrowTypeError(
+            "Junk found after end of compressed data.");
+      }
+      return;
     }
   } while (stream_.avail_out == 0);
 }

@@ -2217,7 +2217,6 @@ enum WebFeature {
   kSandboxBackForwardAffectsFramesOutsideSubtree = 2837,
   kDownloadPrePolicyCheck = 2838,
   kDownloadPostPolicyCheck = 2839,
-  kDownloadInSandboxWithoutUserGesture = 2840,
   kReadableStreamGetReader = 2841,
   kReadableStreamPipeThrough = 2842,
   kReadableStreamPipeTo = 2843,

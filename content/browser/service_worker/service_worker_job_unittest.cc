@@ -823,7 +823,8 @@ TEST_F(ServiceWorkerJobTest,
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATED, version->status());
 
-  registration->active_version()->RemoveControllee(host->client_uuid());
+  registration->active_version()->RemoveControllee(
+      host->container_host()->client_uuid());
   WaitForVersionRunningStatus(version, EmbeddedWorkerStatus::STOPPED);
 
   // The version should be stopped since there is no controllee.
@@ -871,7 +872,7 @@ TEST_F(ServiceWorkerJobTest, RegisterWhileUninstalling) {
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
 
   // Make the old version eligible for eviction.
-  old_version->RemoveControllee(host->client_uuid());
+  old_version->RemoveControllee(host->container_host()->client_uuid());
   RequestTermination(&initial_client->host());
 
   // Wait for activated.
@@ -930,7 +931,7 @@ TEST_F(ServiceWorkerJobTest, RegisterAndUnregisterWhileUninstalling) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, new_version->running_status());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLED, new_version->status());
 
-  old_version->RemoveControllee(host->client_uuid());
+  old_version->RemoveControllee(host->container_host()->client_uuid());
 
   WaitForVersionRunningStatus(old_version, EmbeddedWorkerStatus::STOPPED);
   WaitForVersionRunningStatus(new_version, EmbeddedWorkerStatus::STOPPED);
@@ -984,7 +985,7 @@ TEST_F(ServiceWorkerJobTest, RegisterSameScriptMultipleTimesWhileUninstalling) {
   EXPECT_FALSE(registration->is_uninstalling());
   EXPECT_EQ(new_version, registration->waiting_version());
 
-  old_version->RemoveControllee(host->client_uuid());
+  old_version->RemoveControllee(host->container_host()->client_uuid());
   RequestTermination(&initial_client->host());
 
   // Wait for activated.
@@ -1935,7 +1936,7 @@ TEST_P(ServiceWorkerUpdateJobTest, RegisterMultipleTimesWhileUninstalling) {
   EXPECT_FALSE(registration->is_uninstalling());
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, second_version->status());
 
-  first_version->RemoveControllee(host->client_uuid());
+  first_version->RemoveControllee(host->container_host()->client_uuid());
   RequestTermination(&initial_client->host());
 
   // Wait for activated.
@@ -2050,7 +2051,7 @@ TEST_P(ServiceWorkerUpdateJobTest, ActivateCancelsOnShutdown) {
 
   // Remove the controllee. The new version should be activating, and delayed
   // until the runner runs again.
-  first_version->RemoveControllee(host->client_uuid());
+  first_version->RemoveControllee(host->container_host()->client_uuid());
   base::RunLoop().RunUntilIdle();
 
   // Activating the new version won't happen until

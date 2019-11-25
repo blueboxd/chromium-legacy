@@ -61,7 +61,7 @@ TEST_F(IsDirectoryUtilTest, CollectForEntriesPaths) {
   IsDirectoryCollector collector(&context_);
   std::set<base::FilePath> result;
   collector.CollectForEntriesPaths(
-      paths, base::Bind(&OnCollectForEntriesPath, &result));
+      paths, base::BindOnce(&OnCollectForEntriesPath, &result));
   content::RunAllTasksUntilIdle();
 
   ASSERT_EQ(1u, result.size());

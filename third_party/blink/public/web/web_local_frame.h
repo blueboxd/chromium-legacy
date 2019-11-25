@@ -543,8 +543,8 @@ class WebLocalFrame : public WebFrame {
   virtual WebSandboxFlags EffectiveSandboxFlagsForTesting() const = 0;
 
   // Returns false if this frame, or any parent frame is sandboxed and does not
-  // have the flag "allow-downloads-without-user-activation" set.
-  virtual bool IsAllowedToDownloadWithoutUserActivation() const = 0;
+  // have the flag "allow-downloads" set.
+  virtual bool IsAllowedToDownload() const = 0;
 
   // Find-in-page -----------------------------------------------------------
 

@@ -1708,7 +1708,7 @@ void LayoutInline::InvalidateDisplayItemClients(
     PaintInvalidationReason invalidation_reason) const {
   ObjectPaintInvalidator paint_invalidator(*this);
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+  if (RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
     if (fragments.IsInLayoutNGInlineFormattingContext()) {
       for (NGPaintFragment* fragment : fragments) {
@@ -1717,6 +1717,18 @@ void LayoutInline::InvalidateDisplayItemClients(
       }
       return;
     }
+  }
+
+  if (IsInLayoutNGInlineFormattingContext()) {
+    if (!ShouldCreateBoxFragment())
+      return;
+    NGInlineCursor cursor;
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
+      DCHECK_EQ(cursor.CurrentLayoutObject(), this);
+      paint_invalidator.InvalidateDisplayItemClient(
+          *cursor.CurrentDisplayItemClient(), invalidation_reason);
+    }
+    return;
   }
 
   paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);

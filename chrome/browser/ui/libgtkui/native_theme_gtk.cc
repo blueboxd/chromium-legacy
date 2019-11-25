@@ -132,6 +132,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_LabelEnabledColor:
       return GetFgColor("GtkLabel");
     case ui::NativeTheme::kColorId_LabelDisabledColor:
+    case ui::NativeTheme::kColorId_LabelSecondaryColor:
       return GetFgColor("GtkLabel:disabled");
     case ui::NativeTheme::kColorId_LabelTextSelectionColor:
       return GetFgColor(GtkVersionCheck(3, 20) ? "GtkLabel #selection"

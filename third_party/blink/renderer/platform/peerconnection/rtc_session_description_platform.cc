@@ -6,9 +6,8 @@
 
 namespace blink {
 
-RTCSessionDescriptionPlatform::RTCSessionDescriptionPlatform(
-    const WebString& type,
-    const WebString& sdp)
+RTCSessionDescriptionPlatform::RTCSessionDescriptionPlatform(const String& type,
+                                                             const String& sdp)
     : type_(type), sdp_(sdp) {}
 
 }  // namespace blink

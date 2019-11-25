@@ -7,6 +7,11 @@ cr-button {
   padding-inline-start: 16px;
 }
 
-hd-iron-icon {
+:host-context([dir=ltr]) hd-iron-icon {
   padding-inline-start: 4px;
+}
+
+:host-context([dir=rtl]) hd-iron-icon {
+  padding-inline-end: 4px;
+  transform: rotate(180deg);
 }

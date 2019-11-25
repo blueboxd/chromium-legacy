@@ -41,7 +41,6 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // tab.
   ProcessDiceHeaderDelegateImpl(
       content::WebContents* web_contents,
-      signin::AccountConsistencyMethod account_consistency,
       signin::IdentityManager* identity_manager,
       bool is_sync_signin_tab,
       EnableSyncCallback enable_sync_callback,
@@ -58,7 +57,6 @@ class ProcessDiceHeaderDelegateImpl : public ProcessDiceHeaderDelegate,
   // Returns true if sync should be enabled after the user signs in.
   bool ShouldEnableSync();
 
-  signin::AccountConsistencyMethod account_consistency_;
   signin::IdentityManager* identity_manager_;
   EnableSyncCallback enable_sync_callback_;
   ShowSigninErrorCallback show_signin_error_callback_;

@@ -187,7 +187,7 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   auto icon_manager = std::make_unique<WebAppIconManager>(
       profile, *registrar, std::make_unique<FileUtilsWrapper>());
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-      sync_bridge.get(), icon_manager.get());
+      profile, sync_bridge.get(), icon_manager.get());
   file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
   shortcut_manager_ = std::make_unique<WebAppShortcutManager>(profile);
 
@@ -262,6 +262,7 @@ void WebAppProvider::CheckIsConnected() const {
 void WebAppProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   ExternallyInstalledWebAppPrefs::RegisterProfilePrefs(registry);
+  WebAppInstallFinalizer::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);
   SystemWebAppManager::RegisterProfilePrefs(registry);
   RegisterInstallBounceMetricProfilePrefs(registry);

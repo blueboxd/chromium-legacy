@@ -255,7 +255,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DidCallAddSearchProvider() override;
   void DidCallIsSearchProviderInstalled() override;
   WebSandboxFlags EffectiveSandboxFlagsForTesting() const override;
-  bool IsAllowedToDownloadWithoutUserActivation() const override;
+  bool IsAllowedToDownload() const override;
   bool FindForTesting(int identifier,
                       const WebString& search_text,
                       bool match_case,

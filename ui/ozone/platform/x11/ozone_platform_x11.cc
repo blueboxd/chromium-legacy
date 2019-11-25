@@ -25,7 +25,7 @@
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/system_input_injector.h"
-#include "ui/platform_window/platform_window_base.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if defined(OS_CHROMEOS)
@@ -80,7 +80,7 @@ class OzonePlatformX11 : public OzonePlatform {
     return gpu_platform_support_host_.get();
   }
 
-  std::unique_ptr<PlatformWindowBase> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
     std::unique_ptr<X11WindowOzone> window =

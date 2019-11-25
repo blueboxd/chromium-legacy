@@ -862,7 +862,7 @@ class MainThreadSchedulerImplTest
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImplTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MainThreadSchedulerImplTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -1337,7 +1337,7 @@ class DefaultUseCaseTest : public MainThreadSchedulerImplTest {
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          DefaultUseCaseTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -2199,7 +2199,7 @@ class MainThreadSchedulerImplWithMessageLoopTest
   DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImplWithMessageLoopTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MainThreadSchedulerImplWithMessageLoopTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -3535,7 +3535,7 @@ class MainThreadSchedulerImplWithInitalVirtualTimeTest
   }
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          MainThreadSchedulerImplWithInitalVirtualTimeTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -3559,7 +3559,7 @@ class CompositingExperimentWithExplicitSignalsTest
             {}) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CompositingExperimentWithExplicitSignalsTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -3601,7 +3601,7 @@ class CompositingExperimentWithImplicitSignalsTest
              kUseWillBeginMainFrameForCompositingPrioritization}) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          CompositingExperimentWithImplicitSignalsTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -3726,7 +3726,7 @@ class VeryHighPriorityForCompositingAlwaysExperimentTest
                                     {}) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VeryHighPriorityForCompositingAlwaysExperimentTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -3752,7 +3752,7 @@ class VeryHighPriorityForCompositingWhenFastExperimentTest
                                     {}) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VeryHighPriorityForCompositingWhenFastExperimentTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -3808,7 +3808,7 @@ class VeryHighPriorityForCompositingAlternatingExperimentTest
 };
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
+    All,
     VeryHighPriorityForCompositingAlternatingExperimentTest,
     testing::Values(AntiStarvationLogic::kEnabled,
                     AntiStarvationLogic::kDisabled),
@@ -3849,7 +3849,7 @@ class VeryHighPriorityForCompositingAfterDelayExperimentTest
                                     {}) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VeryHighPriorityForCompositingAfterDelayExperimentTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),
@@ -3905,7 +3905,7 @@ class VeryHighPriorityForCompositingBudgetExperimentTest
                                     {}) {}
 };
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          VeryHighPriorityForCompositingBudgetExperimentTest,
                          testing::Values(AntiStarvationLogic::kEnabled,
                                          AntiStarvationLogic::kDisabled),

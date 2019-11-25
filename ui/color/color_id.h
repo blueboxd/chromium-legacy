@@ -7,6 +7,7 @@
 
 #include "build/build_config.h"
 
+// clang-format off
 #define CROSS_PLATFORM_COLOR_IDS \
   /* Core color concepts */ \
   E(kColorAccent, kUiColorsStart), \
@@ -42,6 +43,7 @@
   E(kColorIcon), \
   E(kColorLabelDisabledForeground), \
   E(kColorLabelForeground), \
+  E(kColorLabelSecondaryForeground), \
   E(kColorLabelSelectionBackground), \
   E(kColorLabelSelectionForeground), \
   E(kColorLinkDisabledForeground), \
@@ -130,6 +132,7 @@
 #else
 #define COLOR_IDS CROSS_PLATFORM_COLOR_IDS
 #endif
+// clang-format on
 
 namespace ui {
 

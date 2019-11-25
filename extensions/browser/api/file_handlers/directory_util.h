@@ -27,8 +27,8 @@ namespace app_file_handler_util {
 
 class IsDirectoryCollector {
  public:
-  typedef base::Callback<void(std::unique_ptr<std::set<base::FilePath>>)>
-      CompletionCallback;
+  using CompletionCallback =
+      base::OnceCallback<void(std::unique_ptr<std::set<base::FilePath>>)>;
 
   explicit IsDirectoryCollector(content::BrowserContext* context);
   virtual ~IsDirectoryCollector();
@@ -36,7 +36,7 @@ class IsDirectoryCollector {
   // For the given paths obtains a set with which of them are directories.
   // The collector does not support virtual files if OS != CHROMEOS.
   void CollectForEntriesPaths(const std::vector<base::FilePath>& paths,
-                              const CompletionCallback& callback);
+                              CompletionCallback callback);
 
  private:
   void OnIsDirectoryCollected(size_t index, bool directory);

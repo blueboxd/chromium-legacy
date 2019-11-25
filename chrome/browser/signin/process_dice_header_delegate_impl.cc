@@ -27,14 +27,12 @@ void RedirectToNtp(content::WebContents* contents) {
 
 ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
     content::WebContents* web_contents,
-    signin::AccountConsistencyMethod account_consistency,
     signin::IdentityManager* identity_manager,
     bool is_sync_signin_tab,
     EnableSyncCallback enable_sync_callback,
     ShowSigninErrorCallback show_signin_error_callback,
     const GURL& redirect_url)
     : content::WebContentsObserver(web_contents),
-      account_consistency_(account_consistency),
       identity_manager_(identity_manager),
       enable_sync_callback_(std::move(enable_sync_callback)),
       show_signin_error_callback_(std::move(show_signin_error_callback)),
@@ -42,8 +40,6 @@ ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
       redirect_url_(redirect_url) {
   DCHECK(web_contents);
   DCHECK(identity_manager_);
-  DCHECK(signin::DiceMethodGreaterOrEqual(
-      account_consistency_, signin::AccountConsistencyMethod::kDiceMigration));
 }
 
 ProcessDiceHeaderDelegateImpl::~ProcessDiceHeaderDelegateImpl() = default;
@@ -95,9 +91,6 @@ void ProcessDiceHeaderDelegateImpl::HandleTokenExchangeFailure(
     const GoogleServiceAuthError& error) {
   DCHECK_NE(GoogleServiceAuthError::NONE, error.state());
   bool should_enable_sync = ShouldEnableSync();
-  if (!should_enable_sync &&
-      account_consistency_ != signin::AccountConsistencyMethod::kDice)
-    return;
 
   content::WebContents* web_contents = this->web_contents();
   if (should_enable_sync && web_contents)

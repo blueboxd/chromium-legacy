@@ -117,10 +117,7 @@ signin::LoadCredentialsState LoadCredentialsStateFromTokenResult(
 // TODO(droger): Remove this code once Dice is fully enabled.
 bool ShouldMigrateToDice(signin::AccountConsistencyMethod account_consistency,
                          PrefService* prefs) {
-  return (account_consistency != signin::AccountConsistencyMethod::kMirror) &&
-         signin::DiceMethodGreaterOrEqual(
-             account_consistency,
-             signin::AccountConsistencyMethod::kDiceMigration) &&
+  return account_consistency == signin::AccountConsistencyMethod::kDice &&
          !prefs->GetBoolean(prefs::kTokenServiceDiceCompatible);
 }
 
@@ -588,12 +585,9 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
 
         // Only load secondary accounts when account consistency is enabled.
         bool load_account =
-            (account_id == loading_primary_account_id_) ||
-            (account_consistency_ ==
-             signin::AccountConsistencyMethod::kMirror) ||
-            signin::DiceMethodGreaterOrEqual(
-                account_consistency_,
-                signin::AccountConsistencyMethod::kDiceMigration);
+            account_id == loading_primary_account_id_ ||
+            account_consistency_ == signin::AccountConsistencyMethod::kMirror ||
+            account_consistency_ == signin::AccountConsistencyMethod::kDice;
         LoadTokenFromDBStatus load_token_status =
             load_account
                 ? LoadTokenFromDBStatus::TOKEN_LOADED

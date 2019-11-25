@@ -88,40 +88,74 @@ LayoutObject* LayoutTreeBuilderTraversal::ParentLayoutObject(const Node& node) {
 }
 
 Node* LayoutTreeBuilderTraversal::NextSibling(const Node& node) {
-  if (node.IsBeforePseudoElement()) {
+  PseudoId pseudo_id = node.GetPseudoId();
+  Element* parent_element;
+  if (pseudo_id != kPseudoIdNone) {
     AssertPseudoElementParent(To<PseudoElement>(node));
-    if (Node* next = FlatTreeTraversal::FirstChild(*node.parentNode()))
-      return next;
-  } else {
-    if (node.IsAfterPseudoElement())
-      return nullptr;
-    if (Node* next = FlatTreeTraversal::NextSibling(node))
-      return next;
+    parent_element = DynamicTo<Element>(*node.parentNode());
   }
-
-  if (auto* parent_element =
-          DynamicTo<Element>(FlatTreeTraversal::Parent(node)))
-    return parent_element->GetPseudoElement(kPseudoIdAfter);
-
+  switch (pseudo_id) {
+    case kPseudoIdMarker:
+      if (Node* next = parent_element->GetPseudoElement(kPseudoIdBefore))
+        return next;
+      FALLTHROUGH;
+    case kPseudoIdBefore:
+      if (Node* next = FlatTreeTraversal::FirstChild(*parent_element))
+        return next;
+      FALLTHROUGH;
+    case kPseudoIdNone:
+      if (pseudo_id == kPseudoIdNone) {  // Not falling through
+        if (Node* next = FlatTreeTraversal::NextSibling(node))
+          return next;
+        parent_element = DynamicTo<Element>(FlatTreeTraversal::Parent(node));
+      }
+      if (parent_element) {
+        if (Node* next = parent_element->GetPseudoElement(kPseudoIdAfter))
+          return next;
+      }
+      FALLTHROUGH;
+    case kPseudoIdAfter:
+      break;
+    default:
+      NOTREACHED();
+  }
   return nullptr;
 }
 
 Node* LayoutTreeBuilderTraversal::PreviousSibling(const Node& node) {
-  if (node.IsAfterPseudoElement()) {
+  PseudoId pseudo_id = node.GetPseudoId();
+  Element* parent_element;
+  if (pseudo_id != kPseudoIdNone) {
     AssertPseudoElementParent(To<PseudoElement>(node));
-    if (Node* previous = FlatTreeTraversal::LastChild(*node.parentNode()))
-      return previous;
-  } else {
-    if (node.IsBeforePseudoElement())
-      return nullptr;
-    if (Node* previous = FlatTreeTraversal::PreviousSibling(node))
-      return previous;
+    parent_element = DynamicTo<Element>(*node.parentNode());
   }
-
-  if (auto* parent_element =
-          DynamicTo<Element>(FlatTreeTraversal::Parent(node)))
-    return parent_element->GetPseudoElement(kPseudoIdBefore);
-
+  switch (pseudo_id) {
+    case kPseudoIdAfter:
+      if (Node* previous = FlatTreeTraversal::LastChild(*parent_element))
+        return previous;
+      FALLTHROUGH;
+    case kPseudoIdNone:
+      if (pseudo_id == kPseudoIdNone) {  // Not falling through
+        if (Node* previous = FlatTreeTraversal::PreviousSibling(node))
+          return previous;
+        parent_element = DynamicTo<Element>(FlatTreeTraversal::Parent(node));
+      }
+      if (parent_element) {
+        if (Node* previous = parent_element->GetPseudoElement(kPseudoIdBefore))
+          return previous;
+      }
+      FALLTHROUGH;
+    case kPseudoIdBefore:
+      if (parent_element) {
+        if (Node* previous = parent_element->GetPseudoElement(kPseudoIdMarker))
+          return previous;
+      }
+      FALLTHROUGH;
+    case kPseudoIdMarker:
+      break;
+    default:
+      NOTREACHED();
+  }
   return nullptr;
 }
 
@@ -130,13 +164,13 @@ Node* LayoutTreeBuilderTraversal::LastChild(const Node& node) {
   if (!current_element)
     return FlatTreeTraversal::LastChild(node);
 
-  Node* last = current_element->GetPseudoElement(kPseudoIdAfter);
-  if (last)
+  if (Node* last = current_element->GetPseudoElement(kPseudoIdAfter))
     return last;
-  last = FlatTreeTraversal::LastChild(*current_element);
-  if (!last)
-    last = current_element->GetPseudoElement(kPseudoIdBefore);
-  return last;
+  if (Node* last = FlatTreeTraversal::LastChild(*current_element))
+    return last;
+  if (Node* last = current_element->GetPseudoElement(kPseudoIdBefore))
+    return last;
+  return current_element->GetPseudoElement(kPseudoIdMarker);
 }
 
 Node* LayoutTreeBuilderTraversal::Previous(const Node& node,
@@ -157,13 +191,13 @@ Node* LayoutTreeBuilderTraversal::FirstChild(const Node& node) {
   if (!current_element)
     return FlatTreeTraversal::FirstChild(node);
 
-  Node* first = current_element->GetPseudoElement(kPseudoIdBefore);
-  if (first)
+  if (Node* first = current_element->GetPseudoElement(kPseudoIdMarker))
     return first;
-  first = FlatTreeTraversal::FirstChild(node);
-  if (!first)
-    first = current_element->GetPseudoElement(kPseudoIdAfter);
-  return first;
+  if (Node* first = current_element->GetPseudoElement(kPseudoIdBefore))
+    return first;
+  if (Node* first = FlatTreeTraversal::FirstChild(node))
+    return first;
+  return current_element->GetPseudoElement(kPseudoIdAfter);
 }
 
 static Node* NextAncestorSibling(const Node& node, const Node* stay_within) {

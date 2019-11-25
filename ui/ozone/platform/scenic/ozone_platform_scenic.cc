@@ -91,7 +91,7 @@ class OzonePlatformScenic
     return nullptr;
   }
 
-  std::unique_ptr<PlatformWindowBase> CreatePlatformWindow(
+  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
     if (!properties.view_token.value) {

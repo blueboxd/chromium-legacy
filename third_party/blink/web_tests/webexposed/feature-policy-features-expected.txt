@@ -20,7 +20,7 @@ ch-width
 document-access
 document-domain
 document-write
-downloads-without-user-activation
+downloads
 encrypted-media
 execution-while-not-rendered
 execution-while-out-of-viewport

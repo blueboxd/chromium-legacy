@@ -23,7 +23,7 @@
 #include "ui/events/event.h"
 #include "ui/events/keyboard_hook.h"
 #include "ui/events/keycodes/dom/dom_code.h"
-#include "ui/platform_window/platform_window_base.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if defined(USE_OZONE)
@@ -86,7 +86,7 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
 }
 
 void WindowTreeHostPlatform::SetPlatformWindow(
-    std::unique_ptr<ui::PlatformWindowBase> window) {
+    std::unique_ptr<ui::PlatformWindow> window) {
   platform_window_ = std::move(window);
 }
 

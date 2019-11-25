@@ -26,7 +26,7 @@ const char* const kSupportedSandboxTokens[] = {
     "allow-scripts",
     "allow-top-navigation",
     "allow-top-navigation-by-user-activation",
-    "allow-downloads-without-user-activation"};
+    "allow-downloads"};
 
 // TODO (http://crbug.com/989663) move this into |kSupportedSandboxTokens| when
 // feature flag is enabled by default.

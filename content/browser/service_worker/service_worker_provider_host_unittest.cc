@@ -435,16 +435,17 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
 
   ServiceWorkerProviderHost* host = CreateProviderHost(url1);
   ServiceWorkerContainerHost* container_host = host->container_host();
-  const std::string uuid1 = host->client_uuid();
+  const std::string uuid1 = container_host->client_uuid();
   EXPECT_EQ(url1, container_host->url());
   EXPECT_EQ(url1, container_host->site_for_cookies());
 
   host->UpdateUrls(url2, url2, url::Origin::Create(url2));
   EXPECT_EQ(url2, container_host->url());
   EXPECT_EQ(url2, container_host->site_for_cookies());
-  EXPECT_EQ(uuid1, host->client_uuid());
+  EXPECT_EQ(uuid1, container_host->client_uuid());
 
-  EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
+  EXPECT_EQ(host,
+            context_->GetProviderHostByClientID(container_host->client_uuid()));
 }
 
 TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
@@ -453,17 +454,18 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
 
   ServiceWorkerProviderHost* host = CreateProviderHost(url1);
   ServiceWorkerContainerHost* container_host = host->container_host();
-  const std::string uuid1 = host->client_uuid();
+  const std::string uuid1 = container_host->client_uuid();
   EXPECT_EQ(url1, container_host->url());
   EXPECT_EQ(url1, container_host->site_for_cookies());
 
   host->UpdateUrls(url2, url2, url::Origin::Create(url2));
   EXPECT_EQ(url2, container_host->url());
   EXPECT_EQ(url2, container_host->site_for_cookies());
-  EXPECT_NE(uuid1, host->client_uuid());
+  EXPECT_NE(uuid1, container_host->client_uuid());
 
   EXPECT_FALSE(context_->GetProviderHostByClientID(uuid1));
-  EXPECT_EQ(host, context_->GetProviderHostByClientID(host->client_uuid()));
+  EXPECT_EQ(host, context_->GetProviderHostByClientID(
+                      host->container_host()->client_uuid()));
 }
 
 class MockServiceWorkerRegistration : public ServiceWorkerRegistration {
@@ -554,16 +556,18 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
   version->SetStatus(ServiceWorkerVersion::ACTIVATED);
   registration1_->SetActiveVersion(version);
 
+  ServiceWorkerContainerHost* container_host = host->container_host();
+
   // Finish the navigation.
-  FinishNavigation(host->container_host());
-  host->SetControllerRegistration(registration1_,
-                                  false /* notify_controllerchange */);
+  FinishNavigation(container_host);
+  container_host->SetControllerRegistration(
+      registration1_, false /* notify_controllerchange */);
   remote_endpoints_.back().host_remote()->get()->OnExecutionReady();
   base::RunLoop().RunUntilIdle();
 
   // The page should be controlled since there was an active version at the
   // time navigation started. The SetController IPC should have been sent.
-  EXPECT_TRUE(host->controller());
+  EXPECT_TRUE(container_host->controller());
   EXPECT_TRUE(container->was_set_controller_called());
   EXPECT_EQ(registration1_.get(), host->MatchRegistration());
 }
@@ -587,8 +591,10 @@ TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
       helper_->context()->AsWeakPtr());
   registration1_->SetInstallingVersion(version);
 
+  ServiceWorkerContainerHost* container_host = host->container_host();
+
   // Finish the navigation.
-  FinishNavigation(host->container_host());
+  FinishNavigation(container_host);
   // Promote the worker to active while navigation is still happening.
   registration1_->SetActiveVersion(version);
   base::RunLoop().RunUntilIdle();
@@ -596,7 +602,7 @@ TEST_F(ServiceWorkerProviderHostTest, UncontrolledWithMatchingRegistration) {
   // The page should not be controlled since there was no active version at the
   // time navigation started. Furthermore, no SetController IPC should have been
   // sent.
-  EXPECT_FALSE(host->controller());
+  EXPECT_FALSE(container_host->controller());
   EXPECT_FALSE(container->was_set_controller_called());
   // However, the host should know the registration is its best match, for
   // .ready and claim().

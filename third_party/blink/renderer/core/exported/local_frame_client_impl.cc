@@ -540,10 +540,8 @@ void LocalFrameClientImpl::BeginNavigation(
     navigation_info->initiator_frame_is_ad = frame->IsAdSubframe();
   }
 
-  navigation_info
-      ->blocking_downloads_in_sandbox_without_user_activation_enabled =
-      RuntimeEnabledFeatures::
-          BlockingDownloadsInSandboxWithoutUserActivationEnabled();
+  navigation_info->blocking_downloads_in_sandbox_enabled =
+      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
 
   // The frame has navigated either by itself or by the action of the
   // |origin_document| when it is defined. |source_location| represents the

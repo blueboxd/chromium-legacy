@@ -591,6 +591,7 @@ SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {
     case kColorId_DefaultIconColor:
     case kColorId_DialogForeground:
     case kColorId_LabelEnabledColor:
+    case kColorId_LabelSecondaryColor:
     case kColorId_TreeText:
     case kColorId_TableText:
     case kColorId_TableHeaderText:

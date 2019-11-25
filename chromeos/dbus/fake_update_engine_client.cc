@@ -28,20 +28,18 @@ bool FakeUpdateEngineClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 
-void FakeUpdateEngineClient::RequestUpdateCheck(
-    const UpdateCheckCallback& callback) {
+void FakeUpdateEngineClient::RequestUpdateCheck(UpdateCheckCallback callback) {
   request_update_check_call_count_++;
-  callback.Run(update_check_result_);
+  std::move(callback).Run(update_check_result_);
 }
 
 void FakeUpdateEngineClient::Rollback() {
   rollback_call_count_++;
 }
 
-void FakeUpdateEngineClient::CanRollbackCheck(
-    const RollbackCheckCallback& callback) {
+void FakeUpdateEngineClient::CanRollbackCheck(RollbackCheckCallback callback) {
   can_rollback_call_count_++;
-  callback.Run(can_rollback_stub_result_);
+  std::move(callback).Run(can_rollback_stub_result_);
 }
 
 void FakeUpdateEngineClient::RebootAfterUpdate() {
@@ -74,9 +72,9 @@ void FakeUpdateEngineClient::SetChannel(const std::string& target_channel,
 }
 
 void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
-                                        const GetChannelCallback& callback) {
+                                        GetChannelCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, std::string()));
+      FROM_HERE, base::BindOnce(std::move(callback), std::string()));
 }
 
 void FakeUpdateEngineClient::GetEolInfo(GetEolInfoCallback callback) {
@@ -88,17 +86,17 @@ void FakeUpdateEngineClient::GetEolInfo(GetEolInfoCallback callback) {
 
 void FakeUpdateEngineClient::SetUpdateOverCellularPermission(
     bool allowed,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   update_over_cellular_permission_count_++;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
 }
 
 void FakeUpdateEngineClient::SetUpdateOverCellularOneTimePermission(
     const std::string& target_version,
     int64_t target_size,
-    const UpdateOverCellularOneTimePermissionCallback& callback) {
+    UpdateOverCellularOneTimePermissionCallback callback) {
   update_over_cellular_one_time_permission_count_++;
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void FakeUpdateEngineClient::set_default_status(

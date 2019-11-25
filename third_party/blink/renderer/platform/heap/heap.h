@@ -60,9 +60,9 @@ namespace weakness_marking_test {
 class EphemeronCallbacksCounter;
 }  // namespace weakness_marking_test
 
-class AddressCache;
 class ConcurrentMarkingVisitor;
 class ThreadHeapStatsCollector;
+class PageBloomFilter;
 class PagePool;
 class ProcessHeapReporter;
 class RegionTree;
@@ -312,8 +312,6 @@ class PLATFORM_EXPORT ThreadHeap {
   size_t ObjectPayloadSizeForTesting();
   void ResetAllocationPointForTesting();
 
-  AddressCache* address_cache() const { return address_cache_.get(); }
-
   PagePool* GetFreePagePool() { return free_page_pool_.get(); }
 
   // This look-up uses the region search tree and a negative contains cache to
@@ -374,6 +372,8 @@ class PLATFORM_EXPORT ThreadHeap {
   }
 #endif
 
+  PageBloomFilter* page_bloom_filter() { return page_bloom_filter_.get(); }
+
  private:
   static int ArenaIndexForObjectSize(size_t);
 
@@ -388,7 +388,7 @@ class PLATFORM_EXPORT ThreadHeap {
   ThreadState* thread_state_;
   std::unique_ptr<ThreadHeapStatsCollector> heap_stats_collector_;
   std::unique_ptr<RegionTree> region_tree_;
-  std::unique_ptr<AddressCache> address_cache_;
+  std::unique_ptr<PageBloomFilter> page_bloom_filter_;
   std::unique_ptr<PagePool> free_page_pool_;
   std::unique_ptr<ProcessHeapReporter> process_heap_reporter_;
 

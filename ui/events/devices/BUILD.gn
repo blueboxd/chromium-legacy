@@ -9,29 +9,50 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("devices") {
   sources = [
     "device_data_manager.cc",
     "device_data_manager.h",
     "device_hotplug_event_observer.h",
-    "device_util_linux.cc",
-    "device_util_linux.h",
     "events_devices_export.h",
     "gamepad_device.cc",
     "gamepad_device.h",
     "input_device.cc",
     "input_device.h",
     "input_device_event_observer.h",
-    "input_device_observer_android.cc",
-    "input_device_observer_android.h",
-    "input_device_observer_win.cc",
-    "input_device_observer_win.h",
     "stylus_state.h",
     "touch_device_transform.cc",
     "touch_device_transform.h",
     "touchscreen_device.cc",
     "touchscreen_device.h",
   ]
+
+  if (is_linux) {
+    sources += [
+      "device_util_linux.cc",
+      "device_util_linux.h",
+    ]
+  }
+
+  if (is_android) {
+    sources += [
+      "input_device_observer_android.cc",
+      "input_device_observer_android.h",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "input_device_observer_win.cc",
+      "input_device_observer_win.h",
+    ]
+  }
 
   defines = [ "EVENTS_DEVICES_IMPLEMENTATION" ]
 

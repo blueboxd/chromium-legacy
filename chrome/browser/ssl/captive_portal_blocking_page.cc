@@ -13,10 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/certificate_error_reporter.h"
 #include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/captive_portal/captive_portal_detector.h"
@@ -43,6 +40,8 @@
 #include "content/public/common/referrer.h"
 #include "net/android/network_library.h"
 #include "ui/base/window_open_disposition.h"
+#else
+#include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
 
 namespace {

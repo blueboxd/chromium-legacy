@@ -696,7 +696,7 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback);
 
-  if (state_ != INITIALIZED) {
+  if (state_ != INITIALIZED || !GetDriveFsInterface()) {
     callback.Run(false);
     return;
   }

@@ -8,23 +8,9 @@
 
 namespace signin {
 
-namespace {
-bool AccountConsistencyMethodGreaterOrEqual(AccountConsistencyMethod a,
-                                            AccountConsistencyMethod b) {
-  return static_cast<int>(a) >= static_cast<int>(b);
-}
-}  // namespace
-
 #if defined(OS_ANDROID)
 const base::Feature kMiceFeature{"MobileIdentityConsistency",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-
-bool DiceMethodGreaterOrEqual(AccountConsistencyMethod a,
-                              AccountConsistencyMethod b) {
-  DCHECK_NE(AccountConsistencyMethod::kMirror, a);
-  DCHECK_NE(AccountConsistencyMethod::kMirror, b);
-  return AccountConsistencyMethodGreaterOrEqual(a, b);
-}
 
 }  // namespace signin

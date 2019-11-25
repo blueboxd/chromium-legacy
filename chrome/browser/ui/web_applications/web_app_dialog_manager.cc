@@ -88,7 +88,7 @@ bool WebAppDialogManager::CanUninstallWebApp(const AppId& app_id) const {
   if (!provider)
     return false;
 
-  return provider->install_finalizer().CanUserUninstallFromSync(app_id);
+  return provider->install_finalizer().CanUserUninstallExternalApp(app_id);
 }
 
 void WebAppDialogManager::UninstallWebApp(const AppId& app_id,
@@ -97,6 +97,8 @@ void WebAppDialogManager::UninstallWebApp(const AppId& app_id,
                                           Callback callback) {
   auto dialog = std::make_unique<DialogInstance>();
 
+  // TODO(loyso): Use install_finalizer().UninstallExternalAppByUser() in
+  // upcoming WebAppUninstallDialog.
   dialog->UninstallWebApp(
       profile_, parent_window, app_id, uninstall_source,
       base::BindOnce(&WebAppDialogManager::OnDialogCompleted,

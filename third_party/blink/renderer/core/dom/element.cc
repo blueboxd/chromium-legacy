@@ -2880,6 +2880,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   }
   children_context.use_previous_in_flow = true;
 
+  AttachPseudoElement(kPseudoIdMarker, children_context);
   AttachPseudoElement(kPseudoIdBefore, children_context);
 
   if (ShadowRoot* shadow_root = GetShadowRoot()) {
@@ -2933,6 +2934,7 @@ void Element::DetachLayoutTree(bool performing_reattach) {
     }
   }
 
+  DetachPseudoElement(kPseudoIdMarker, performing_reattach);
   DetachPseudoElement(kPseudoIdBefore, performing_reattach);
 
   // TODO(futhark): We need to traverse into IsUserActionElement() subtrees,
@@ -3078,6 +3080,7 @@ void Element::RecalcStyle(const StyleRecalcChange change) {
 
   if (child_change.TraversePseudoElements(*this)) {
     UpdatePseudoElement(kPseudoIdBackdrop, child_change);
+    UpdatePseudoElement(kPseudoIdMarker, child_change);
     UpdatePseudoElement(kPseudoIdBefore, child_change);
   }
 
@@ -3358,6 +3361,7 @@ void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
     else
       RebuildChildrenLayoutTrees(*child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdBefore, *child_attacher);
+    RebuildPseudoElementLayoutTree(kPseudoIdMarker, *child_attacher);
     RebuildPseudoElementLayoutTree(kPseudoIdBackdrop, *child_attacher);
     RebuildFirstLetterLayoutTree();
     ClearChildNeedsReattachLayoutTree();

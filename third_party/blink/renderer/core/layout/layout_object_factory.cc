@@ -22,7 +22,9 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_progress.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_caption.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_marker.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -87,6 +89,23 @@ LayoutBlockFlow* LayoutObjectFactory::CreateListItem(Node& node,
                                                      const ComputedStyle& style,
                                                      LegacyLayout legacy) {
   return CreateObject<LayoutBlockFlow, LayoutNGListItem, LayoutListItem>(
+      node, style, legacy);
+}
+
+LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
+                                                    const ComputedStyle& style,
+                                                    LegacyLayout legacy) {
+  // TODO(obrufau): allow ::marker pseudo-elements to generate legacy layout.
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled() ||
+      legacy == LegacyLayout::kForce)
+    return nullptr;
+  // TODO(obrufau): markers may be forced to be inside despite having
+  // `list-style-position: outside`.
+  if (style.ListStylePosition() == EListStylePosition::kInside) {
+    return CreateObject<LayoutObject, LayoutNGInsideListMarker,
+                        LayoutNGInsideListMarker>(node, style, legacy);
+  }
+  return CreateObject<LayoutObject, LayoutNGListMarker, LayoutNGListMarker>(
       node, style, legacy);
 }
 

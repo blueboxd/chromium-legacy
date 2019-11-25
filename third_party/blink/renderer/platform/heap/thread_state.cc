@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/cancelable_task_scheduler.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -1642,7 +1641,6 @@ void ThreadState::MarkPhaseVisitRoots() {
   if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack) {
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitStackRoots);
-    AddressCache::EnabledScope address_cache_scope(Heap().address_cache());
     PushRegistersAndVisitStack();
   }
 }

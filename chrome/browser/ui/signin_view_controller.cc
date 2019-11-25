@@ -84,11 +84,7 @@ int FindDiceSigninTab(TabStripModel* tab_strip, const GURL& signin_url) {
 
 // Returns the promo action to be used when signing with a new account.
 signin_metrics::PromoAction GetPromoActionForNewAccount(
-    signin::IdentityManager* identity_manager,
-    signin::AccountConsistencyMethod account_consistency) {
-  if (account_consistency != signin::AccountConsistencyMethod::kDice)
-    return signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_PRE_DICE;
-
+    signin::IdentityManager* identity_manager) {
   return !identity_manager->GetAccountsWithRefreshTokens().empty()
              ? signin_metrics::PromoAction::
                    PROMO_ACTION_NEW_ACCOUNT_EXISTING_ACCOUNT
@@ -119,16 +115,15 @@ void SigninViewController::ShowSignin(profiles::BubbleViewMode mode,
   DCHECK(ShouldShowSigninForMode(mode));
 
   Profile* profile = browser->profile();
-  signin::AccountConsistencyMethod account_consistency =
-      AccountConsistencyModeManager::GetMethodForProfile(profile);
   std::string email;
   signin_metrics::Reason signin_reason = GetSigninReasonFromMode(mode);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   if (signin_reason == signin_metrics::Reason::REASON_REAUTHENTICATION) {
-    auto* manager = IdentityManagerFactory::GetForProfile(profile);
-    email = manager->GetPrimaryAccountInfo().email;
+    email = identity_manager->GetPrimaryAccountInfo().email;
   }
-  signin_metrics::PromoAction promo_action = GetPromoActionForNewAccount(
-      IdentityManagerFactory::GetForProfile(profile), account_consistency);
+  signin_metrics::PromoAction promo_action =
+      GetPromoActionForNewAccount(identity_manager);
   ShowDiceSigninTab(browser, signin_reason, access_point, promo_action, email,
                     redirect_url);
 }
@@ -180,10 +175,8 @@ void SigninViewController::ShowDiceSigninTab(
     const std::string& email_hint,
     const GURL& redirect_url) {
 #if DCHECK_IS_ON()
-  if (!signin::DiceMethodGreaterOrEqual(
-          AccountConsistencyModeManager::GetMethodForProfile(
-              browser->profile()),
-          signin::AccountConsistencyMethod::kDiceMigration)) {
+  if (AccountConsistencyModeManager::GetMethodForProfile(browser->profile()) !=
+      signin::AccountConsistencyMethod::kDice) {
     // Developers often fall into the trap of not configuring the OAuth client
     // ID and client secret and then attempt to sign in to Chromium, which
     // fail as the account consistency is disabled. Explicitly check that the

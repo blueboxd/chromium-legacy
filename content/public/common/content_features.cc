@@ -63,6 +63,16 @@ const base::Feature kBackgroundFetch{"BackgroundFetch",
 const base::Feature kBackForwardCache{"BackForwardCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// BackForwardCache is disabled on low memory devices. The threshold is defined
+// via a field trial param: "memory_threshold_for_back_forward_cache_in_mb"
+// It is compared against base::SysInfo::AmountOfPhysicalMemoryMB().
+
+// "BackForwardCacheMemoryControls" is checked before "BackForwardCache". It
+// means the low memory devices will activate neither the control group nor the
+// experimental group of the BackForwardCache field trial.
+const base::Feature kBackForwardCacheMemoryControl{
+    "BackForwardCacheMemoryControls", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows swipe left/right from touchpad change browser navigation. Currently
 // only enabled by default on CrOS.
 const base::Feature kTouchpadOverscrollHistoryNavigation {

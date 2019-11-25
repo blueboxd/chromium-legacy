@@ -257,8 +257,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void LockToOrigin(const IsolationContext& isolation_context,
                     const GURL& lock_url) override;
   void BindCacheStorage(
-      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
-      const url::Origin& origin) override;
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) override;
   void BindIndexedDB(
       int render_frame_id,
       const url::Origin& origin,

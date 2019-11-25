@@ -7,7 +7,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_tree_host_platform.h"
 #include "ui/base/hit_test.h"
-#include "ui/platform_window/platform_window_base.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/views/test/views_interactive_ui_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -41,7 +41,7 @@ bool IsNonClientComponent(int hittest) {
 class FakeWmMoveResizeHandler : public ui::WmMoveResizeHandler {
  public:
   using SetBoundsCallback = base::RepeatingCallback<void(gfx::Rect)>;
-  explicit FakeWmMoveResizeHandler(ui::PlatformWindowBase* window)
+  explicit FakeWmMoveResizeHandler(ui::PlatformWindow* window)
       : platform_window_(window), hittest_(-1) {}
   ~FakeWmMoveResizeHandler() override = default;
 
@@ -66,7 +66,7 @@ class FakeWmMoveResizeHandler : public ui::WmMoveResizeHandler {
   }
 
  private:
-  ui::PlatformWindowBase* platform_window_;
+  ui::PlatformWindow* platform_window_;
   gfx::Rect bounds_;
 
   int hittest_ = -1;
@@ -157,7 +157,7 @@ class TestDesktopWindowTreeHostLinux : public DesktopWindowTreeHostLinux {
                                    desktop_native_widget_aura) {}
   ~TestDesktopWindowTreeHostLinux() override = default;
 
-  // PlatformWindowDelegateBase:
+  // PlatformWindowDelegate:
   // Instead of making these tests friends of the host, override the dispatch
   // method to make it public and nothing else.
   void DispatchEvent(ui::Event* event) override {

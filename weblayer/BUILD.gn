@@ -153,6 +153,8 @@ jumbo_static_library("weblayer_lib") {
     "browser/profile_impl.h",
     "browser/ssl_blocking_page.cc",
     "browser/ssl_blocking_page.h",
+    "browser/ssl_error_controller_client.cc",
+    "browser/ssl_error_controller_client.h",
     "browser/ssl_error_handler.cc",
     "browser/ssl_error_handler.h",
     "browser/ssl_host_state_delegate_impl.cc",

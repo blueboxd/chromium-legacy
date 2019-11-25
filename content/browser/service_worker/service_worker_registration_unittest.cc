@@ -26,6 +26,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/fake_embedded_worker_instance_client.h"
 #include "content/browser/service_worker/fake_service_worker.h"
+#include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -430,8 +431,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
     DCHECK(remote_endpoint_.client_receiver()->is_valid());
     DCHECK(remote_endpoint_.host_remote()->is_bound());
     host_->UpdateUrls(kUrl, kUrl, url::Origin::Create(kUrl));
-    host_->SetControllerRegistration(registration_,
-                                     false /* notify_controllerchange */);
+    host_->container_host()->SetControllerRegistration(
+        registration_, false /* notify_controllerchange */);
 
     // Setup the Mojo implementation fakes for the renderer-side service worker.
     // These will be bound once the service worker starts.
@@ -499,12 +500,12 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
   int inflight_request_id() const { return inflight_request_id_; }
 
   void AddControllee() {
-    controllee()->SetControllerRegistration(
+    controllee()->container_host()->SetControllerRegistration(
         registration(), false /* notify_controllerchange */);
   }
 
   void RemoveControllee() {
-    controllee()->SetControllerRegistration(
+    controllee()->container_host()->SetControllerRegistration(
         nullptr, false /* notify_controllerchange */);
   }
 

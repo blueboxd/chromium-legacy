@@ -20,16 +20,6 @@ class PrefRegistrySyncable;
 
 class Profile;
 
-// Account consistency feature. Only used on platforms where Mirror is not
-// always enabled (ENABLE_MIRROR is false).
-extern const base::Feature kAccountConsistencyFeature;
-
-// The account consistency method feature parameter name.
-extern const char kAccountConsistencyFeatureMethodParameter[];
-
-// Account consistency method feature values.
-extern const char kAccountConsistencyFeatureMethodMirror[];
-
 // Manages the account consistency mode for each profile.
 class AccountConsistencyModeManager : public KeyedService {
  public:

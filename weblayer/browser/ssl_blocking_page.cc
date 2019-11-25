@@ -7,80 +7,17 @@
 #include <memory>
 #include <utility>
 
-#include "components/security_interstitials/content/security_interstitial_controller_client.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/ssl_status.h"
-#include "content/public/browser/web_contents.h"
-#include "net/base/net_errors.h"
-#include "weblayer/browser/i18n_util.h"
-#include "weblayer/browser/tab_impl.h"
-#include "weblayer/public/error_page_delegate.h"
+#include "weblayer/browser/ssl_error_controller_client.h"
 
 namespace weblayer {
-
-namespace {
-
-// A stripped-down version of the class by the same name in
-// //chrome/browser/ssl, which provides basic functionality for interacting with
-// the SSL interstitial.
-class SSLErrorControllerClient
-    : public security_interstitials::SecurityInterstitialControllerClient {
- public:
-  SSLErrorControllerClient(
-      content::WebContents* web_contents,
-      int cert_error,
-      const net::SSLInfo& ssl_info,
-      const GURL& request_url,
-      std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper)
-      : security_interstitials::SecurityInterstitialControllerClient(
-            web_contents,
-            std::move(metrics_helper),
-            nullptr /*prefs*/,
-            i18n::GetApplicationLocale(),
-            GURL("about:blank") /*default_safe_page*/),
-        cert_error_(cert_error),
-        ssl_info_(ssl_info),
-        request_url_(request_url) {}
-
-  ~SSLErrorControllerClient() override = default;
-
-  void GoBack() override {
-    ErrorPageDelegate* delegate =
-        TabImpl::FromWebContents(web_contents_)->error_page_delegate();
-    if (delegate && delegate->OnBackToSafety())
-      return;
-
-    SecurityInterstitialControllerClient::GoBackAfterNavigationCommitted();
-  }
-
-  void Proceed() override {
-    web_contents_->GetBrowserContext()->GetSSLHostStateDelegate()->AllowCert(
-        request_url_.host(), *ssl_info_.cert.get(), cert_error_);
-    Reload();
-  }
-
-  void OpenUrlInNewForegroundTab(const GURL& url) override {
-    // For now WebLayer doesn't support multiple tabs, so just open the Learn
-    // More link in the current tab.
-    OpenUrlInCurrentTab(url);
-  }
-
- private:
-  const int cert_error_;
-  const net::SSLInfo ssl_info_;
-  const GURL request_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLErrorControllerClient);
-};
-
-}  // namespace
 
 // static
 const content::InterstitialPageDelegate::TypeID

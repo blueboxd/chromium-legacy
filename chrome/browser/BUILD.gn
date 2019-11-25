@@ -5565,8 +5565,6 @@ static_library("test_support") {
     "signin/e2e_tests/test_accounts_util.h",
     "signin/identity_test_environment_profile_adaptor.cc",
     "signin/identity_test_environment_profile_adaptor.h",
-    "signin/scoped_account_consistency.cc",
-    "signin/scoped_account_consistency.h",
     "ssl/ssl_client_auth_requestor_mock.cc",
     "ssl/ssl_client_auth_requestor_mock.h",
     "ssl/tls_deprecation_test_utils.cc",

@@ -223,6 +223,8 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
     }
     image->SetStyleInternal(nullptr);
     return image;
+  } else if (element->GetPseudoId() == kPseudoIdMarker) {
+    return LayoutObjectFactory::CreateListMarker(*element, style, legacy);
   }
 
   switch (style.Display()) {

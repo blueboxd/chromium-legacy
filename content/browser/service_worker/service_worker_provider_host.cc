@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/debug/alias.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -30,7 +29,6 @@
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/browser/web_contents/frame_tree_node_id_registry.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webtransport/quic_transport_connector_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -239,16 +237,9 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     scoped_refptr<ServiceWorkerVersion> running_hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
-      client_uuid_(base::GenerateGUID()),
       create_time_(base::TimeTicks::Now()),
       render_process_id_(ChildProcessHost::kInvalidUniqueID),
       frame_id_(MSG_ROUTING_NONE),
-      frame_tree_node_id_(frame_tree_node_id),
-      web_contents_getter_(
-          frame_tree_node_id == FrameTreeNode::kFrameTreeNodeInvalidId
-              ? base::NullCallback()
-              : base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                                    frame_tree_node_id_)),
       running_hosted_version_(std::move(running_hosted_version)),
       context_(context),
       interface_provider_binding_(this),
@@ -256,6 +247,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           type,
           is_parent_frame_secure,
+          frame_tree_node_id,
           std::move(container_remote),
           this,
           context)) {
@@ -270,7 +262,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
   // For service worker clients, ServiceWorkerProviderHost::UpdateUrls() will
   // be called later.
 
-  context_->RegisterProviderHostByClientID(client_uuid_, this);
+  context_->RegisterProviderHostByClientID(container_host_->client_uuid(),
+                                           this);
 
   DCHECK(host_receiver.is_valid());
   receiver_.Bind(std::move(host_receiver));
@@ -288,17 +281,7 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   }
 
   if (context_)
-    context_->UnregisterProviderHostByClientID(client_uuid_);
-  if (controller_)
-    controller_->OnControlleeDestroyed(client_uuid_);
-  if (fetch_request_window_id_)
-    FrameTreeNodeIdRegistry::GetInstance()->Remove(fetch_request_window_id_);
-
-  // Remove |this| as an observer of ServiceWorkerRegistrations.
-  // TODO(falken): Use ScopedObserver instead of this explicit call.
-  controller_.reset();
-  controller_registration_.reset();
-  RemoveAllMatchingRegistrations();
+    context_->UnregisterProviderHostByClientID(container_host_->client_uuid());
 
   // Explicitly destroy the ServiceWorkerContainerHost to release
   // ServiceWorkerObjectHosts and ServiceWorkerRegistrationObjectHosts owned by
@@ -308,31 +291,8 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   // destroyed while in this destructor (|running_hosted_version_|'s
   // |event_dispatcher_|). See https://crbug.com/854993.
   container_host_.reset();
-}
 
-ServiceWorkerVersion* ServiceWorkerProviderHost::controller() const {
-#if DCHECK_IS_ON()
-  CheckControllerConsistency(false);
-#endif  // DCHECK_IS_ON()
-  return controller_.get();
-}
-
-blink::mojom::ControllerServiceWorkerMode
-ServiceWorkerProviderHost::GetControllerMode() const {
-  if (!controller_)
-    return blink::mojom::ControllerServiceWorkerMode::kNoController;
-  switch (controller_->fetch_handler_existence()) {
-    case ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST:
-      return blink::mojom::ControllerServiceWorkerMode::kNoFetchEventHandler;
-    case ServiceWorkerVersion::FetchHandlerExistence::EXISTS:
-      return blink::mojom::ControllerServiceWorkerMode::kControlled;
-    case ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN:
-      // UNKNOWN means the controller is still installing. It's not possible to
-      // have a controller that hasn't finished installing.
-      NOTREACHED();
-  }
-  NOTREACHED();
-  return blink::mojom::ControllerServiceWorkerMode::kNoController;
+  RemoveAllMatchingRegistrations();
 }
 
 void ServiceWorkerProviderHost::OnVersionAttributesChanged(
@@ -362,7 +322,7 @@ void ServiceWorkerProviderHost::OnRegistrationFinishedUninstalling(
 
 void ServiceWorkerProviderHost::OnSkippedWaiting(
     ServiceWorkerRegistration* registration) {
-  if (controller_registration_ != registration)
+  if (container_host_->controller_registration() != registration)
     return;
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled() &&
@@ -377,12 +337,7 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
     return;
   }
 
-  DCHECK(controller_);
-  ServiceWorkerVersion* active = controller_registration_->active_version();
-  DCHECK(active);
-  DCHECK_NE(active, controller_.get());
-  DCHECK_EQ(active->status(), ServiceWorkerVersion::ACTIVATING);
-  UpdateController(true /* notify_controllerchange */);
+  container_host_->OnSkippedWaiting(registration);
 }
 
 ServiceWorkerVersion* ServiceWorkerProviderHost::running_hosted_version()
@@ -394,8 +349,8 @@ ServiceWorkerVersion* ServiceWorkerProviderHost::running_hosted_version()
 
 mojo::Remote<blink::mojom::ControllerServiceWorker>
 ServiceWorkerProviderHost::GetRemoteControllerServiceWorker() {
-  DCHECK(controller_);
-  if (controller_->fetch_handler_existence() ==
+  DCHECK(container_host_->controller());
+  if (container_host_->controller()->fetch_handler_existence() ==
       ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
     return mojo::Remote<blink::mojom::ControllerServiceWorker>();
   }
@@ -410,7 +365,7 @@ ServiceWorkerProviderHost::GetRemoteControllerServiceWorker() {
     pending_controller_receiver_ =
         remote_controller.BindNewPipeAndPassReceiver();
   } else {
-    controller_->controller()->Clone(
+    container_host_->controller()->controller()->Clone(
         remote_controller.BindNewPipeAndPassReceiver(),
         cross_origin_embedder_policy_.value());
   }
@@ -423,49 +378,9 @@ void ServiceWorkerProviderHost::UpdateUrls(
     const base::Optional<url::Origin>& top_frame_origin) {
   DCHECK(IsProviderForClient());
 
-  GURL previous_url = container_host_->url();
   container_host_->UpdateUrls(url, site_for_cookies, top_frame_origin);
   // TODO(https://crbug.com/931087): Move the remaining part to
   // ServiceWorkerContainerHost::UpdateUrls().
-
-  if (previous_url != url) {
-    // Revoke the token on URL change since any service worker holding the token
-    // may no longer be the potential controller of this frame and shouldn't
-    // have the power to display SSL dialogs for it.
-    if (provider_type() ==
-        blink::mojom::ServiceWorkerProviderType::kForWindow) {
-      auto* registry = FrameTreeNodeIdRegistry::GetInstance();
-      registry->Remove(fetch_request_window_id_);
-      fetch_request_window_id_ = base::UnguessableToken::Create();
-      registry->Add(fetch_request_window_id_, frame_tree_node_id_);
-    }
-  }
-
-  auto previous_origin = url::Origin::Create(previous_url);
-  auto new_origin = url::Origin::Create(url);
-  // Update client id on cross origin redirects. This corresponds to the HTML
-  // standard's "process a navigation fetch" algorithm's step for discarding
-  // |reservedEnvironment|.
-  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#process-a-navigate-fetch
-  // "If |reservedEnvironment| is not null and |currentURL|'s origin is not the
-  // same as |reservedEnvironment|'s creation URL's origin, then:
-  //    1. Run the environment discarding steps for |reservedEnvironment|.
-  //    2. Set |reservedEnvironment| to null."
-  if (previous_url.is_valid() &&
-      !new_origin.IsSameOriginWith(previous_origin)) {
-    // Remove old controller since we know the controller is definitely
-    // changed. We need to remove |this| from |controller_|'s controllee before
-    // updating UUID since ServiceWorkerVersion has a map from uuid to provider
-    // hosts.
-    SetControllerRegistration(nullptr, false /* notify_controllerchange */);
-
-    // Set UUID to the new one.
-    if (context_)
-      context_->UnregisterProviderHostByClientID(client_uuid_);
-    client_uuid_ = base::GenerateGUID();
-    if (context_)
-      context_->RegisterProviderHostByClientID(client_uuid_, this);
-  }
 
   SyncMatchingRegistrations();
 }
@@ -475,54 +390,12 @@ ServiceWorkerProviderHost::provider_type() const {
   return container_host_->type();
 }
 
-void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
-  ServiceWorkerVersion* version =
-      controller_registration_ ? controller_registration_->active_version()
-                               : nullptr;
-  CHECK(!version || container_host_->IsContextSecureForServiceWorker());
-  if (version == controller_.get())
-    return;
-
-  scoped_refptr<ServiceWorkerVersion> previous_version = controller_;
-  controller_ = version;
-
-  if (version)
-    version->AddControllee(this);
-  if (previous_version)
-    previous_version->RemoveControllee(client_uuid_);
-
-  // SetController message should be sent only for clients.
-  DCHECK(IsProviderForClient());
-
-  if (!container_host_->IsControllerDecided())
-    return;
-
-  SendSetControllerServiceWorker(notify_controllerchange);
-}
-
 bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
   return container_host_->IsContainerForServiceWorker();
 }
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
   return container_host_->IsContainerForClient();
-}
-
-void ServiceWorkerProviderHost::SetControllerRegistration(
-    scoped_refptr<ServiceWorkerRegistration> controller_registration,
-    bool notify_controllerchange) {
-  DCHECK(IsProviderForClient());
-
-  if (controller_registration) {
-    CHECK(container_host_->IsContextSecureForServiceWorker());
-    DCHECK(controller_registration->active_version());
-#if DCHECK_IS_ON()
-    DCHECK(IsMatchingRegistration(controller_registration.get()));
-#endif  // DCHECK_IS_ON()
-  }
-
-  controller_registration_ = controller_registration;
-  UpdateController(notify_controllerchange);
 }
 
 void ServiceWorkerProviderHost::AddMatchingRegistration(
@@ -541,7 +414,7 @@ void ServiceWorkerProviderHost::AddMatchingRegistration(
 
 void ServiceWorkerProviderHost::RemoveMatchingRegistration(
     ServiceWorkerRegistration* registration) {
-  DCHECK_NE(controller_registration_, registration);
+  DCHECK_NE(container_host_->controller_registration(), registration);
 #if DCHECK_IS_ON()
   DCHECK(IsMatchingRegistration(registration));
 #endif  // DCHECK_IS_ON()
@@ -573,7 +446,8 @@ bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
 }
 
 void ServiceWorkerProviderHost::NotifyControllerLost() {
-  SetControllerRegistration(nullptr, true /* notify_controllerchange */);
+  container_host_->SetControllerRegistration(
+      nullptr, true /* notify_controllerchange */);
 }
 
 void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
@@ -584,21 +458,6 @@ void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
             blink::mojom::ServiceWorkerProviderType::kForWindow);
 
   versions_to_update_.emplace(std::move(version));
-}
-
-void ServiceWorkerProviderHost::ClaimedByRegistration(
-    scoped_refptr<ServiceWorkerRegistration> registration) {
-  DCHECK(registration->active_version());
-  DCHECK(container_host_->is_execution_ready());
-
-  // TODO(falken): This should just early return, or DCHECK. claim() should have
-  // no effect on a page that's already using the registration.
-  if (registration == controller_registration_) {
-    UpdateController(true /* notify_controllerchange */);
-    return;
-  }
-
-  SetControllerRegistration(registration, true /* notify_controllerchange */);
 }
 
 void ServiceWorkerProviderHost::OnBeginNavigationCommit(
@@ -619,11 +478,13 @@ void ServiceWorkerProviderHost::OnBeginNavigationCommit(
 
   DCHECK(!cross_origin_embedder_policy_.has_value());
   cross_origin_embedder_policy_ = cross_origin_embedder_policy;
-  if (controller_ && controller_->fetch_handler_existence() ==
-                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
+  if (container_host_->controller() &&
+      container_host_->controller()->fetch_handler_existence() ==
+          ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
     DCHECK(pending_controller_receiver_);
-    controller_->controller()->Clone(std::move(pending_controller_receiver_),
-                                     cross_origin_embedder_policy_.value());
+    container_host_->controller()->controller()->Clone(
+        std::move(pending_controller_receiver_),
+        cross_origin_embedder_policy_.value());
   }
 
   if (IsBackForwardCacheEnabled() &&
@@ -666,11 +527,13 @@ void ServiceWorkerProviderHost::CompleteWebWorkerPreparation(
 
   DCHECK(!cross_origin_embedder_policy_.has_value());
   cross_origin_embedder_policy_ = cross_origin_embedder_policy;
-  if (controller_ && controller_->fetch_handler_existence() ==
-                         ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
+  if (container_host_->controller() &&
+      container_host_->controller()->fetch_handler_existence() ==
+          ServiceWorkerVersion::FetchHandlerExistence::EXISTS) {
     DCHECK(pending_controller_receiver_);
-    controller_->controller()->Clone(std::move(pending_controller_receiver_),
-                                     cross_origin_embedder_policy_.value());
+    container_host_->controller()->controller()->Clone(
+        std::move(pending_controller_receiver_),
+        cross_origin_embedder_policy_.value());
   }
 
   container_host_->TransitionToClientPhase(
@@ -679,7 +542,7 @@ void ServiceWorkerProviderHost::CompleteWebWorkerPreparation(
 }
 
 void ServiceWorkerProviderHost::SyncMatchingRegistrations() {
-  DCHECK(!controller_registration());
+  DCHECK(!container_host_->controller_registration());
 
   RemoveAllMatchingRegistrations();
   if (!context_)
@@ -711,7 +574,7 @@ bool ServiceWorkerProviderHost::IsMatchingRegistration(
 #endif  // DCHECK_IS_ON()
 
 void ServiceWorkerProviderHost::RemoveAllMatchingRegistrations() {
-  DCHECK(!controller_registration());
+  DCHECK(!container_host_ || !container_host_->controller_registration());
   for (const auto& it : matching_registrations_) {
     ServiceWorkerRegistration* registration = it.second.get();
     registration->RemoveListener(this);
@@ -738,95 +601,6 @@ void ServiceWorkerProviderHost::ReturnRegistrationForReadyIfNeeded() {
       .Run(container_host_->CreateServiceWorkerRegistrationObjectInfo(
           scoped_refptr<ServiceWorkerRegistration>(registration)));
 }
-
-void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
-    bool notify_controllerchange) {
-  DCHECK(IsProviderForClient());
-
-  auto controller_info = blink::mojom::ControllerServiceWorkerInfo::New();
-  controller_info->client_id = client_uuid();
-  // Set fetch_request_window_id only when |controller_| is available.  Setting
-  // |fetch_request_window_id| should not affect correctness, however, we have
-  // the extensions bug, https://crbug.com/963748, which we don't yet
-  // understand.  That is why we don't set |fetch_request_window_id| if there
-  // is no controller, at least, until we can fix the extension bug.
-  if (controller_ && fetch_request_window_id_) {
-    controller_info->fetch_request_window_id =
-        base::make_optional(fetch_request_window_id_);
-  }
-
-  if (!controller_) {
-    container_host_->SendSetControllerServiceWorker(std::move(controller_info),
-                                                    notify_controllerchange);
-    return;
-  }
-
-  DCHECK(controller_registration());
-  DCHECK_EQ(controller_registration_->active_version(), controller_.get());
-
-  controller_info->mode = GetControllerMode();
-
-  // Pass an endpoint for the client to talk to this controller.
-  mojo::Remote<blink::mojom::ControllerServiceWorker> remote =
-      GetRemoteControllerServiceWorker();
-  if (remote.is_bound()) {
-    controller_info->remote_controller = remote.Unbind();
-  }
-
-  // Set the info for the JavaScript ServiceWorkerContainer#controller object.
-  base::WeakPtr<ServiceWorkerObjectHost> object_host =
-      container_host_->GetOrCreateServiceWorkerObjectHost(controller_);
-  if (object_host)
-    controller_info->object_info =
-        object_host->CreateCompleteObjectInfoToSend();
-
-  // Populate used features for UseCounter purposes.
-  for (const blink::mojom::WebFeature feature : controller_->used_features())
-    controller_info->used_features.push_back(feature);
-
-  container_host_->SendSetControllerServiceWorker(std::move(controller_info),
-                                                  notify_controllerchange);
-}
-
-#if DCHECK_IS_ON()
-void ServiceWorkerProviderHost::CheckControllerConsistency(
-    bool should_crash) const {
-  if (!controller_) {
-    DCHECK(!controller_registration_);
-    return;
-  }
-
-  DCHECK(IsProviderForClient());
-  DCHECK(controller_registration_);
-  DCHECK_EQ(controller_->registration_id(), controller_registration_->id());
-
-  switch (controller_->status()) {
-    case ServiceWorkerVersion::NEW:
-    case ServiceWorkerVersion::INSTALLING:
-    case ServiceWorkerVersion::INSTALLED:
-      if (should_crash) {
-        ServiceWorkerVersion::Status status = controller_->status();
-        base::debug::Alias(&status);
-        CHECK(false) << "Controller service worker has a bad status: "
-                     << ServiceWorkerVersion::VersionStatusToString(status);
-      }
-      break;
-    case ServiceWorkerVersion::REDUNDANT: {
-      if (should_crash) {
-        DEBUG_ALIAS_FOR_CSTR(
-            redundant_callstack_str,
-            controller_->redundant_state_callstack().ToString().c_str(), 1024);
-        CHECK(false);
-      }
-      break;
-    }
-    case ServiceWorkerVersion::ACTIVATING:
-    case ServiceWorkerVersion::ACTIVATED:
-      // Valid status, controller is being activated.
-      break;
-  }
-}
-#endif  // DCHECK_IS_ON()
 
 void ServiceWorkerProviderHost::Register(
     const GURL& script_url,
@@ -1124,8 +898,8 @@ void ServiceWorkerProviderHost::StartControllerComplete(
     blink::ServiceWorkerStatusCode status) {
   if (status == blink::ServiceWorkerStatusCode::kOk) {
     DCHECK(container_host_->is_response_committed());
-    controller_->controller()->Clone(std::move(receiver),
-                                     cross_origin_embedder_policy_.value());
+    container_host_->controller()->controller()->Clone(
+        std::move(receiver), cross_origin_embedder_policy_.value());
   }
 }
 
@@ -1133,10 +907,10 @@ void ServiceWorkerProviderHost::EnsureControllerServiceWorker(
     mojo::PendingReceiver<blink::mojom::ControllerServiceWorker> receiver,
     blink::mojom::ControllerServiceWorkerPurpose purpose) {
   // TODO(kinuko): Log the reasons we drop the request.
-  if (!context_ || !controller_)
+  if (!context_ || !container_host_->controller())
     return;
 
-  controller_->RunAfterStartWorker(
+  container_host_->controller()->RunAfterStartWorker(
       PurposeToEventType(purpose),
       base::BindOnce(&ServiceWorkerProviderHost::StartControllerComplete,
                      AsWeakPtr(), std::move(receiver)));
@@ -1175,7 +949,8 @@ void ServiceWorkerProviderHost::OnExecutionReady() {
   // to false ServiceWorkerContainerHost::IsControllerDecided().
   // TODO(leonhsl): Create some layout tests covering the above case 1), in
   // which case we may also need to set |notify_controllerchange| correctly.
-  SendSetControllerServiceWorker(false /* notify_controllerchange */);
+  container_host_->SendSetControllerServiceWorker(
+      false /* notify_controllerchange */);
 
   container_host_->SetExecutionReady();
 }
@@ -1321,8 +1096,9 @@ void ServiceWorkerProviderHost::OnEnterBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK_EQ(provider_type(),
             blink::mojom::ServiceWorkerProviderType::kForWindow);
-  if (controller_)
-    controller_->MoveControlleeToBackForwardCacheMap(client_uuid_);
+  if (container_host_->controller())
+    container_host_->controller()->MoveControlleeToBackForwardCacheMap(
+        container_host_->client_uuid());
   is_in_back_forward_cache_ = true;
 }
 
@@ -1331,15 +1107,16 @@ void ServiceWorkerProviderHost::OnRestoreFromBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK_EQ(provider_type(),
             blink::mojom::ServiceWorkerProviderType::kForWindow);
-  if (controller_)
-    controller_->RestoreControlleeFromBackForwardCacheMap(client_uuid_);
+  if (container_host_->controller())
+    container_host_->controller()->RestoreControlleeFromBackForwardCacheMap(
+        container_host_->client_uuid());
   is_in_back_forward_cache_ = false;
 }
 
 void ServiceWorkerProviderHost::SetRenderProcessId(int process_id) {
   render_process_id_ = process_id;
-  if (controller_)
-    controller_->UpdateForegroundPriority();
+  if (container_host_->controller())
+    container_host_->controller()->UpdateForegroundPriority();
 }
 
 }  // namespace content

@@ -7,6 +7,12 @@ import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//ui/display/display.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("display") {
   sources = [
     "display.cc",
@@ -28,33 +34,48 @@ jumbo_component("display") {
     "display_observer.h",
     "display_switches.cc",
     "display_switches.h",
-    "ios/screen_ios.mm",
-    "mac/display_link_mac.cc",
-    "mac/display_link_mac.h",
-    "mac/screen_mac.mm",
     "screen.cc",
     "screen.h",
-    "screen_android.cc",
-    "screen_aura.cc",
     "screen_base.cc",
     "screen_base.h",
     "unified_desktop_utils.cc",
     "unified_desktop_utils.h",
-    "win/color_profile_reader.cc",
-    "win/color_profile_reader.h",
-    "win/display_info.cc",
-    "win/display_info.h",
-    "win/dpi.cc",
-    "win/dpi.h",
-    "win/scaling_util.cc",
-    "win/scaling_util.h",
-    "win/screen_win.cc",
-    "win/screen_win.h",
-    "win/screen_win_display.cc",
-    "win/screen_win_display.h",
-    "win/uwp_text_scale_factor.cc",
-    "win/uwp_text_scale_factor.h",
   ]
+
+  if (is_android) {
+    sources += [ "screen_android.cc" ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "mac/display_link_mac.cc",
+      "mac/display_link_mac.h",
+      "mac/screen_mac.mm",
+    ]
+  }
+
+  if (is_win) {
+    sources += [
+      "win/color_profile_reader.cc",
+      "win/color_profile_reader.h",
+      "win/display_info.cc",
+      "win/display_info.h",
+      "win/dpi.cc",
+      "win/dpi.h",
+      "win/scaling_util.cc",
+      "win/scaling_util.h",
+      "win/screen_win.cc",
+      "win/screen_win.h",
+      "win/screen_win_display.cc",
+      "win/screen_win_display.h",
+      "win/uwp_text_scale_factor.cc",
+      "win/uwp_text_scale_factor.h",
+    ]
+  }
+
+  if (is_ios) {
+    sources += [ "ios/screen_ios.mm" ]
+  }
 
   defines = [ "DISPLAY_IMPLEMENTATION" ]
 
@@ -77,8 +98,8 @@ jumbo_component("display") {
     output_name = "ui_display"
   }
 
-  if (!use_aura) {
-    sources -= [ "screen_aura.cc" ]
+  if (use_aura) {
+    sources += [ "screen_aura.cc" ]
   }
 
   if (is_mac) {
@@ -120,9 +141,14 @@ jumbo_static_library("test_support") {
     "test/scoped_screen_override.h",
     "test/test_screen.cc",
     "test/test_screen.h",
-    "win/test/screen_util_win.cc",
-    "win/test/screen_util_win.h",
   ]
+
+  if (is_win) {
+    sources += [
+      "win/test/screen_util_win.cc",
+      "win/test/screen_util_win.h",
+    ]
+  }
 
   if (build_display_configuration) {
     sources += [
@@ -159,7 +185,6 @@ jumbo_static_library("test_support") {
 # This test covers all testable components in display.
 test("display_unittests") {
   sources = [
-    "display_change_notifier_unittest.cc",
     "display_layout_builder_unittest.cc",
     "display_layout_unittest.cc",
     "display_list_unittest.cc",
@@ -173,9 +198,14 @@ test("display_unittests") {
     "unified_desktop_utils_unittests.cc",
     "util/display_util_unittest.cc",
     "util/edid_parser_unittest.cc",
-    "win/scaling_util_unittest.cc",
-    "win/screen_win_unittest.cc",
   ]
+
+  if (is_win) {
+    sources += [
+      "win/scaling_util_unittest.cc",
+      "win/screen_win_unittest.cc",
+    ]
+  }
 
   if (build_display_configuration) {
     sources += [
@@ -213,10 +243,10 @@ test("display_unittests") {
     "//ui/gfx/geometry",
   ]
 
-  if (is_android) {
+  if (!is_android) {
     # Do not run display_change_notifier_unittest.cc on Android because it
     # does not compile display_observer.cc
-    sources -= [ "display_change_notifier_unittest.cc" ]
+    sources += [ "display_change_notifier_unittest.cc" ]
   }
 
   if (is_chromeos) {

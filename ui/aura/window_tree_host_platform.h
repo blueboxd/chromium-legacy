@@ -18,7 +18,7 @@
 
 namespace ui {
 enum class DomCode;
-class PlatformWindowBase;
+class PlatformWindow;
 class KeyboardHook;
 struct PlatformWindowInitProperties;
 }  // namespace ui
@@ -62,9 +62,9 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   // installs it at as the PlatformWindow for this WindowTreeHostPlatform.
   void CreateAndSetPlatformWindow(ui::PlatformWindowInitProperties properties);
 
-  void SetPlatformWindow(std::unique_ptr<ui::PlatformWindowBase> window);
-  ui::PlatformWindowBase* platform_window() { return platform_window_.get(); }
-  const ui::PlatformWindowBase* platform_window() const {
+  void SetPlatformWindow(std::unique_ptr<ui::PlatformWindow> window);
+  ui::PlatformWindow* platform_window() { return platform_window_.get(); }
+  const ui::PlatformWindow* platform_window() const {
     return platform_window_.get();
   }
 
@@ -90,7 +90,7 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
 
  private:
   gfx::AcceleratedWidget widget_;
-  std::unique_ptr<ui::PlatformWindowBase> platform_window_;
+  std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::NativeCursor current_cursor_;
   gfx::Rect bounds_in_pixels_;
 

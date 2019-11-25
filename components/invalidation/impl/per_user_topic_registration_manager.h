@@ -59,6 +59,8 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
 
   virtual ~PerUserTopicRegistrationManager();
 
+  enum class TokenStateOnRegistrationRequest;
+
   // Just calls std::make_unique. For ease of base::Bind'ing
   static std::unique_ptr<PerUserTopicRegistrationManager> Create(
       invalidation::IdentityProvider* identity_provider,
@@ -122,7 +124,7 @@ class INVALIDATION_EXPORT PerUserTopicRegistrationManager {
   void OnAccessTokenRequestSucceeded(std::string access_token);
   void OnAccessTokenRequestFailed(GoogleServiceAuthError error);
 
-  void DropAllSavedRegistrationsOnTokenChange();
+  TokenStateOnRegistrationRequest DropAllSavedRegistrationsOnTokenChange();
   void NotifySubscriptionChannelStateChange(
       SubscriptionChannelState invalidator_state);
 

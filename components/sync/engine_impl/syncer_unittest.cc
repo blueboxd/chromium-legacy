@@ -2374,7 +2374,10 @@ TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
   mock_server_->SetMidCommitCallback(base::Bind(
       &EntryCreatedInNewFolderTest::CreateFolderInBob, base::Unretained(this)));
   EXPECT_TRUE(SyncShareNudge());
-  // We loop until no unsynced handles remain, so we will commit both ids.
+
+  mock_server_->SetMidCommitCallback(base::DoNothing());
+  EXPECT_TRUE(SyncShareNudge());
+
   EXPECT_EQ(2u, mock_server_->committed_ids().size());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -5102,11 +5105,14 @@ TEST_F(SyncerBookmarksTest, CreateThenDeleteDuringCommit) {
   ExpectUnsyncedCreation();
 
   // In the middle of the initial creation commit, perform a deletion.
-  // This should trigger performing two consecutive commit cycles, resulting
-  // in the bookmark being both deleted and synced.
   mock_server_->SetMidCommitCallback(
       base::Bind(&SyncerBookmarksTest::Delete, base::Unretained(this)));
 
+  // Commits creation.
+  EXPECT_TRUE(SyncShareNudge());
+
+  // Commits deletion.
+  mock_server_->SetMidCommitCallback(base::DoNothing());
   EXPECT_TRUE(SyncShareNudge());
   ExpectSyncedAndDeleted();
 }
@@ -5121,6 +5127,11 @@ TEST_F(SyncerBookmarksTest, CreateThenUpdateAndDeleteDuringCommit) {
   mock_server_->SetMidCommitCallback(base::Bind(
       &SyncerBookmarksTest::UpdateAndDelete, base::Unretained(this)));
 
+  // Commits creation.
+  EXPECT_TRUE(SyncShareNudge());
+
+  // Commits update and deletion.
+  mock_server_->SetMidCommitCallback(base::DoNothing());
   EXPECT_TRUE(SyncShareNudge());
   ExpectSyncedAndDeleted();
 }
@@ -5297,14 +5308,18 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   ExpectUnsyncedDeletion();
   mock_server_->SetMidCommitCallback(
       base::Bind(&SyncerUndeletionTest::Undelete, base::Unretained(this)));
+
+  // Commits deletion.
+  EXPECT_TRUE(SyncShareNudge());
+  sync_pb::SyncEntity deletion_update =
+      *mock_server_->AddUpdateFromLastCommit();
+
+  // Commits undeletion.
+  mock_server_->SetMidCommitCallback(base::DoNothing());
   EXPECT_TRUE(SyncShareNudge());
 
-  // We will continue to commit until all nodes are synced, so we expect
-  // that both the delete and following undelete were committed.  We haven't
-  // downloaded any updates, though, so the SERVER fields will be the same
-  // as they were at the start of the cycle.
   EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());
-  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+  EXPECT_EQ(2, mock_server_->GetAndClearNumGetUpdatesRequests());
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -5323,10 +5338,9 @@ TEST_F(SyncerUndeletionTest, UndeleteDuringCommit) {
   // the server.  The undeletion should prevail again and be committed.
   // None of this should trigger any conflict detection -- it is perfectly
   // normal to recieve updates from our own commits.
-  mock_server_->SetMidCommitCallback(base::Closure());
-  sync_pb::SyncEntity* update = mock_server_->AddUpdateFromLastCommit();
-  update->set_originator_cache_guid(local_cache_guid());
-  update->set_originator_client_item_id(local_id_.GetServerId());
+  deletion_update.set_originator_cache_guid(local_cache_guid());
+  deletion_update.set_originator_client_item_id(local_id_.GetServerId());
+  *mock_server_->AddUpdateFromLastCommit() = deletion_update;
 
   EXPECT_TRUE(SyncShareNudge());
   EXPECT_EQ(0, cycle_->status_controller().TotalNumConflictingItems());

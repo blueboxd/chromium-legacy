@@ -4,6 +4,12 @@
 
 import("//build/config/jumbo.gni")
 
+# Reset sources_assignment_filter for the BUILD.gn file to prevent
+# regression during the migration of Chromium away from the feature.
+# See build/no_sources_assignment_filter.md for more information.
+# TODO(crbug.com/1018739): remove this when migration is done.
+set_sources_assignment_filter([])
+
 jumbo_component("range") {
   sources = [
     "gfx_range_export.h",
@@ -11,14 +17,14 @@ jumbo_component("range") {
     "range.h",
     "range_f.cc",
     "range_f.h",
-    "range_mac.mm",
-    "range_win.cc",
   ]
 
-  if (is_ios) {
-    set_sources_assignment_filter([])
+  if (is_win) {
+    sources += [ "range_win.cc" ]
+  }
+
+  if (is_ios || is_mac) {
     sources += [ "range_mac.mm" ]
-    set_sources_assignment_filter(sources_assignment_filter)
   }
 
   if (is_mac) {

@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"

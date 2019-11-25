@@ -270,7 +270,7 @@ void ServiceWorkerRegistration::ClaimClients() {
 
     // This is part of step 5 but performed here as an optimization. Do nothing
     // if this version is already the controller.
-    if (host->controller() == active_version())
+    if (host->container_host()->controller() == active_version())
       continue;
 
     // "2. If client is not a secure context, continue."
@@ -285,7 +285,7 @@ void ServiceWorkerRegistration::ClaimClients() {
       continue;
 
     // The remaining steps are performed here:
-    host->ClaimedByRegistration(this);
+    host->container_host()->ClaimedByRegistration(this);
   }
 }
 

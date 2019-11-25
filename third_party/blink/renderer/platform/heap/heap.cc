@@ -39,11 +39,11 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
-#include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
+#include "third_party/blink/renderer/platform/heap/page_bloom_filter.h"
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
@@ -95,7 +95,7 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
       heap_stats_collector_(std::make_unique<ThreadHeapStatsCollector>()),
       region_tree_(std::make_unique<RegionTree>()),
-      address_cache_(std::make_unique<AddressCache>()),
+      page_bloom_filter_(std::make_unique<PageBloomFilter>()),
       free_page_pool_(std::make_unique<PagePool>()),
       process_heap_reporter_(std::make_unique<ProcessHeapReporter>()) {
   if (ThreadState::Current()->IsMainThread())
@@ -120,26 +120,21 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
   DCHECK(thread_state_->InAtomicMarkingPause());
 
 #if !DCHECK_IS_ON()
-  if (address_cache_->Lookup(address))
+  if (!page_bloom_filter_->MayContain(address)) {
     return nullptr;
+  }
 #endif
 
   if (BasePage* page = LookupPageForAddress(address)) {
 #if DCHECK_IS_ON()
     DCHECK(page->Contains(address));
 #endif
-    DCHECK(!address_cache_->Lookup(address));
+    DCHECK(page_bloom_filter_->MayContain(address));
     DCHECK(&visitor->Heap() == &page->Arena()->GetThreadState()->Heap());
     visitor->ConservativelyMarkAddress(page, address);
     return address;
   }
 
-#if !DCHECK_IS_ON()
-  address_cache_->AddEntry(address);
-#else
-  if (!address_cache_->Lookup(address))
-    address_cache_->AddEntry(address);
-#endif
   return nullptr;
 }
 

@@ -13,5 +13,5 @@ import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 struct FramePolicy {
   blink.mojom.WebSandboxFlags sandbox_flags;
   array<blink.mojom.ParsedFeaturePolicyDeclaration> container_policy;
-  bool allowed_to_download_without_user_activation = true;
+  bool allowed_to_download = true;
 };

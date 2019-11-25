@@ -2511,6 +2511,8 @@ class ComputedStyle : public ComputedStyleBase,
       return false;
     if (IsEnsuredInDisplayNone())
       return false;
+    if (pseudo == kPseudoIdMarker)
+      return Display() == EDisplay::kListItem;
     if (Display() != EDisplay::kContents)
       return true;
     // For display: contents elements, we still need to generate ::before and

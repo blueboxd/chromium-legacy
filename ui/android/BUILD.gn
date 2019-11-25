@@ -387,6 +387,7 @@ junit_binary("ui_junit_tests") {
     "junit/src/org/chromium/ui/base/EventOffsetHandlerTest.java",
     "junit/src/org/chromium/ui/base/LocalizationUtilsTest.java",
     "junit/src/org/chromium/ui/base/SelectFileDialogTest.java",
+    "junit/src/org/chromium/ui/drawable/AnimationLooperTest.java",
     "junit/src/org/chromium/ui/drawable/StateListDrawableBuilderTest.java",
     "junit/src/org/chromium/ui/modaldialog/ModalDialogManagerTest.java",
     "junit/src/org/chromium/ui/modelutil/LazyConstructionPropertyMcpTest.java",

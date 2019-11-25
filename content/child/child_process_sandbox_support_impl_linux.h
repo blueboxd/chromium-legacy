@@ -31,22 +31,23 @@ class WebSandboxSupportLinux : public blink::WebSandboxSupport {
   explicit WebSandboxSupportLinux(sk_sp<font_service::FontLoader> font_loader);
   ~WebSandboxSupportLinux() override;
 
-  // Returns a font family which provides glyphs for the Unicode code point
-  // specified by |character|, a UTF-32 character. |preferred_locale| contains
-  // the preferred locale identifier for |character|. The instance has an empty
-  // font name if the request could not be satisfied.
-  void GetFallbackFontForCharacter(blink::WebUChar32 character,
-                                   const char* preferred_locale,
-                                   gfx::FallbackFontData* font) override;
+  // |fallback_font| will be filled with a font family which provides glyphs for
+  // the Unicode code point specified by |character|, a UTF-32 character.
+  // |preferred_locale| contains the preferred locale identifier for
+  // |character|. Returns false if the request could not be satisfied.
+  bool GetFallbackFontForCharacter(
+      blink::WebUChar32 character,
+      const char* preferred_locale,
+      gfx::FallbackFontData* fallback_font) override;
 
   // Matches a font uniquely by postscript name or full font name.  Used in
   // Blink for @font-face { src: local(arg) } matching.  Provide full font name
-  // or postscript name as argument font_unique_name in UTF-8. fallback_font
-  // contains a filename and fontconfig interface id if a match was found. The
-  // filename is empty and the interface id is zero if no match is found.
-  void MatchFontByPostscriptNameOrFullFontName(
+  // or postscript name as argument font_unique_name in UTF-8. |fallback_font|
+  // contains a filename and fontconfig interface id if a match was found.
+  // Returns false, otherwise.
+  bool MatchFontByPostscriptNameOrFullFontName(
       const char* font_unique_name,
-      gfx::FallbackFontData* font) override;
+      gfx::FallbackFontData* fallback_font) override;
 
   // Returns rendering settings for a provided font family, size, and style.
   // |size_and_style| stores the bold setting in its least-significant bit, the

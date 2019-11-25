@@ -4,120 +4,83 @@
 
 package org.chromium.ui.drawable;
 
-import android.annotation.TargetApi;
-import android.graphics.drawable.Animatable2;
+import android.animation.ValueAnimator;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
+import android.provider.Settings;
 import android.support.graphics.drawable.Animatable2Compat;
+import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 
-import org.chromium.base.ThreadUtils;
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.ContextUtils;
 
 /**
- * Encapsulates the logic to loop animated drawables from both Android Framework (using Animatable2)
- * and Support Library (using Animatable2Compat). Should be instantiated by {@link #create}. The
- * animation should be started and stopped using {@link #start()} and {@link #stop()}.
+ * Encapsulates the logic to loop animated drawables from both Android Framework.
+ * The animation should be started and stopped using {@link #start()} and {@link #stop()}.
  */
-public interface AnimationLooper {
-    /** Starts the animation of the associated drawable. */
-    void start();
+public class AnimationLooper {
+    private static @Nullable Boolean sAreAnimatorsEnabledForTests;
 
-    /** Stops the animation of the associated drawable. */
-    void stop();
+    private final Handler mHandler;
+    private final Animatable mAnimatable;
+    private final Animatable2Compat.AnimationCallback mAnimationCallback;
+
+    private boolean mIsRunning;
 
     /**
-     * Instantiates proper implementation of AnimationLooper for the drawable.
-     * @param drawable The drawable to be animated. Created AnimationLooper instance will be
-     *         associated with this drawable. The drawable should implement either
-     *         {@link Animatable2} or {@link Animatable2Compat}.
-     * @return The new AnimationLooper.
+     * @param drawable The drawable should be drawable and animatable at the same time.
      */
-    static AnimationLooper create(Drawable drawable) {
-        // Animatable2 was added in API level 23 (Android M).
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return new Animatable2CompatImpl((Animatable2Compat) drawable);
-        }
-        if (drawable instanceof Animatable2Compat) {
-            return new Animatable2CompatImpl((Animatable2Compat) drawable);
-        }
-        return new Animatable2Impl((Animatable2) drawable);
+    public AnimationLooper(Drawable drawable) {
+        mHandler = new Handler();
+        mAnimatable = (Animatable) drawable;
+        mAnimationCallback = new Animatable2Compat.AnimationCallback() {
+            @Override
+            public void onAnimationEnd(Drawable drawable) {
+                mHandler.post(mAnimatable::start);
+            }
+        };
     }
 
-    /** Used with drawables that implement {@link Animatable2Compat}. */
-    class Animatable2CompatImpl implements AnimationLooper {
-        private final Animatable2Compat mAnimatable;
-        private final Animatable2Compat.AnimationCallback mAnimationCallback;
-        private boolean mRunning;
-
-        Animatable2CompatImpl(Animatable2Compat animatable) {
-            mAnimatable = animatable;
-            mAnimationCallback = new Animatable2Compat.AnimationCallback() {
-                @Override
-                public void onAnimationEnd(Drawable drawable) {
-                    restartAnimation(animatable);
-                }
-            };
-        }
-
-        @Override
-        public void start() {
-            assert !mRunning : "The animation is already running!";
-            mRunning = true;
-            mAnimatable.registerAnimationCallback(mAnimationCallback);
+    /** Starts the animation of the associated drawable. */
+    public void start() {
+        if (areAnimatorsEnabled()) {
+            assert !mIsRunning : "Animation is already running!";
+            AnimatedVectorDrawableCompat.registerAnimationCallback(
+                    (Drawable) mAnimatable, mAnimationCallback);
             mAnimatable.start();
-        }
-
-        @Override
-        public void stop() {
-            assert mRunning : "The animation isn't running!";
-            mRunning = false;
-            mAnimatable.unregisterAnimationCallback(mAnimationCallback);
-            mAnimatable.stop();
-        }
-
-        private void restartAnimation(Animatable2Compat animatable) {
-            ThreadUtils.postOnUiThread(() -> {
-                if (mRunning) animatable.start();
-            });
+            mIsRunning = true;
         }
     }
 
-    /** Used with drawables that implement {@link Animatable2}. */
-    @TargetApi(Build.VERSION_CODES.M)
-    class Animatable2Impl implements AnimationLooper {
-        private final Animatable2 mAnimatable;
-        private final Animatable2.AnimationCallback mAnimationCallback;
-        private boolean mRunning;
-
-        Animatable2Impl(Animatable2 animatable) {
-            mAnimatable = animatable;
-            mAnimationCallback = new Animatable2.AnimationCallback() {
-                @Override
-                public void onAnimationEnd(Drawable drawable) {
-                    restartAnimation(animatable);
-                }
-            };
-        }
-
-        @Override
-        public void start() {
-            assert !mRunning : "The animation is already running!";
-            mRunning = true;
-            mAnimatable.registerAnimationCallback(mAnimationCallback);
-            mAnimatable.start();
-        }
-
-        @Override
-        public void stop() {
-            assert mRunning : "The animation isn't running!";
-            mRunning = false;
-            mAnimatable.unregisterAnimationCallback(mAnimationCallback);
+    /** Stops the animation of the associated drawable. */
+    public void stop() {
+        if (mIsRunning) {
+            AnimatedVectorDrawableCompat.unregisterAnimationCallback(
+                    (Drawable) mAnimatable, mAnimationCallback);
             mAnimatable.stop();
+            mIsRunning = false;
         }
+    }
 
-        private void restartAnimation(Animatable2 animatable) {
-            ThreadUtils.postOnUiThread(() -> {
-                if (mRunning) animatable.start();
-            });
+    private static boolean areAnimatorsEnabled() {
+        if (sAreAnimatorsEnabledForTests != null) return sAreAnimatorsEnabledForTests;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return ValueAnimator.areAnimatorsEnabled();
+        } else {
+            return Settings.Global.getFloat(
+                           ContextUtils.getApplicationContext().getContentResolver(),
+                           Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f)
+                    != 0.0f;
         }
+    }
+
+    @VisibleForTesting
+    static void setAreAnimatorsEnabledForTests(@Nullable Boolean areAnimatorsEnabled) {
+        sAreAnimatorsEnabledForTests = areAnimatorsEnabled;
     }
 }

@@ -95,9 +95,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // Add a break token for a child that doesn't yet have any fragments, because
   // its first fragment is to be produced in the next fragmentainer. This will
-  // add a break token for the child, but no fragment.
+  // add a break token for the child, but no fragment. Break appeal should
+  // always be provided for regular in-flow children. For other types of
+  // children it may be omitted, if the break shouldn't affect the appeal of
+  // breaking inside this container.
   void AddBreakBeforeChild(NGLayoutInputNode child,
-                           NGBreakAppeal,
+                           base::Optional<NGBreakAppeal> appeal,
                            bool is_forced_break);
 
   // Add a layout result. This involves appending the fragment and its relative

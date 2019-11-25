@@ -77,6 +77,8 @@ CreditCardAccessoryControllerImpl::~CreditCardAccessoryControllerImpl() {
 
 void CreditCardAccessoryControllerImpl::OnFillingTriggered(
     const UserInfo::Field& selection) {
+  if (!web_contents_->GetFocusedFrame())
+    return;  // Without focused frame, driver and manager will be undefined.
   DCHECK(GetDriver());
 
   // Credit card number fields have a GUID populated to allow deobfuscation
@@ -147,10 +149,16 @@ CreditCardAccessoryController* CreditCardAccessoryController::GetIfExisting(
 }
 
 void CreditCardAccessoryControllerImpl::RefreshSuggestions() {
-  FetchSuggestionsFromPersonalDataManager();
+  bool valid_manager = web_contents_->GetFocusedFrame() && GetManager();
+  if (valid_manager) {
+    FetchSuggestionsFromPersonalDataManager();
+  } else {
+    cards_cache_.clear();  // If cards cannot be filled, don't show them.
+  }
   std::vector<UserInfo> info_to_add;
-  bool allow_filling = ShouldAllowCreditCardFallbacks(
-      GetManager()->client(), GetManager()->last_query_form());
+  bool allow_filling = valid_manager && ShouldAllowCreditCardFallbacks(
+                                            GetManager()->client(),
+                                            GetManager()->last_query_form());
   std::transform(cards_cache_.begin(), cards_cache_.end(),
                  std::back_inserter(info_to_add),
                  [allow_filling](const CreditCard* data) {
@@ -167,7 +175,7 @@ void CreditCardAccessoryControllerImpl::RefreshSuggestions() {
   AccessorySheetData data = autofill::CreateAccessorySheetData(
       AccessoryTabType::CREDIT_CARDS, GetTitle(has_suggestions),
       std::move(info_to_add), std::move(footer_commands));
-  if (has_suggestions && !allow_filling) {
+  if (has_suggestions && !allow_filling && valid_manager) {
     data.set_warning(
         l10n_util::GetStringUTF16(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
   }
@@ -184,6 +192,8 @@ void CreditCardAccessoryControllerImpl::OnCreditCardFetched(
     const base::string16& cvc) {
   if (!did_succeed)
     return;
+  if (!web_contents_->GetFocusedFrame())
+    return;  // If frame isn't focused anymore, don't attempt to fill.
   DCHECK(credit_card);
   DCHECK(GetDriver());
 
@@ -252,6 +262,7 @@ CreditCardAccessoryControllerImpl::GetManualFillingController() {
 }
 
 autofill::AutofillDriver* CreditCardAccessoryControllerImpl::GetDriver() {
+  DCHECK(web_contents_->GetFocusedFrame());
   return af_driver_for_testing_
              ? af_driver_for_testing_
              : autofill::ContentAutofillDriver::GetForRenderFrameHost(
@@ -259,6 +270,7 @@ autofill::AutofillDriver* CreditCardAccessoryControllerImpl::GetDriver() {
 }
 
 autofill::AutofillManager* CreditCardAccessoryControllerImpl::GetManager() {
+  DCHECK(web_contents_->GetFocusedFrame());
   return af_manager_for_testing_
              ? af_manager_for_testing_
              : autofill::ContentAutofillDriver::GetForRenderFrameHost(

@@ -27,13 +27,6 @@
 
 using signin::AccountConsistencyMethod;
 
-// TODO(droger): Verify if this feature flag is still required now that
-// DICE migration was enabled by default for all users.
-const base::Feature kAccountConsistencyFeature{
-    "AccountConsistency", base::FEATURE_ENABLED_BY_DEFAULT};
-const char kAccountConsistencyFeatureMethodParameter[] = "method";
-const char kAccountConsistencyFeatureMethodMirror[] = "mirror";
-
 namespace {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -59,9 +52,6 @@ DiceMigrationStatus GetDiceMigrationStatus(
   switch (account_consistency) {
     case AccountConsistencyMethod::kDice:
       return DiceMigrationStatus::kEnabled;
-    case AccountConsistencyMethod::kDiceMigration:
-      NOTREACHED();  // Dice migration is now complete.
-      return DiceMigrationStatus::kDisabledNotReadyForMigration;
     case AccountConsistencyMethod::kDisabled:
       return DiceMigrationStatus::kDisabled;
     case AccountConsistencyMethod::kMirror:
@@ -208,14 +198,8 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
   return AccountConsistencyMethod::kMirror;
 #endif
 
-  std::string method_value = base::GetFieldTrialParamValueByFeature(
-      kAccountConsistencyFeature, kAccountConsistencyFeatureMethodParameter);
-
 #if defined(OS_CHROMEOS)
-  if (chromeos::IsAccountManagerAvailable(profile))
-    return AccountConsistencyMethod::kMirror;
-
-  return (method_value == kAccountConsistencyFeatureMethodMirror ||
+  return (chromeos::IsAccountManagerAvailable(profile) ||
           profile->GetPrefs()->GetBoolean(
               prefs::kAccountConsistencyMirrorRequired))
              ? AccountConsistencyMethod::kMirror

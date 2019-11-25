@@ -144,6 +144,7 @@ struct TransferableMessage;
 struct WebScrollIntoViewParams;
 
 namespace mojom {
+class CacheStorage;
 class WebUsbService;
 }
 }  // namespace blink
@@ -1141,6 +1142,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #if defined(OS_ANDROID)
   void BindNFCReceiver(mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
+
+  void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver);
 
   void BindSmsReceiverReceiver(
       mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);

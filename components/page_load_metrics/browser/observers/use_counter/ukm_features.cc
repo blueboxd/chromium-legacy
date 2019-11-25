@@ -99,7 +99,6 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kOpenerNavigationDownloadCrossOrigin,
           WebFeature::kLinkRelPrerender,
           WebFeature::kAdClickNavigation,
-          WebFeature::kDownloadInSandboxWithoutUserGesture,
           WebFeature::kV8HTMLVideoElement_RequestPictureInPicture_Method,
           WebFeature::kMediaCapabilitiesDecodingInfoWithKeySystemConfig,
           WebFeature::kTextFragmentAnchor,

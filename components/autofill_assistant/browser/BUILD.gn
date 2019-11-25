@@ -2,29 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/android/rules.gni")
 import("//build/config/jumbo.gni")
 import("//third_party/protobuf/proto_library.gni")
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
 
 proto_library("proto") {
   sources = [
     "service.proto",
-  ]
-}
-
-proto_java_library("proto_java") {
-  proto_path = "//components/autofill_assistant/browser/"
-  sources = [
-    "$proto_path/service.proto",
-  ]
-}
-
-java_cpp_enum("autofill_assistant_enums_java") {
-  sources = [
-    "metrics.h",
-    "overlay_state.h",
-    "user_data.h",
-    "viewport_mode.h",
   ]
 }
 
@@ -245,18 +232,36 @@ source_set("unit_tests") {
   ]
 }
 
-static_library("test_support") {
-  testonly = true
-  sources = [
-    "java_service.cc",
-    "java_service.h",
-  ]
+if (is_android) {
+  proto_java_library("proto_java") {
+    proto_path = "//components/autofill_assistant/browser/"
+    sources = [
+      "$proto_path/service.proto",
+    ]
+  }
 
-  deps = [
-    ":browser",
-    ":proto",
-    "//base",
-    "//chrome/android/features/autofill_assistant:test_support_jni_headers",
-    "//url:url",
-  ]
+  java_cpp_enum("autofill_assistant_enums_java") {
+    sources = [
+      "metrics.h",
+      "overlay_state.h",
+      "user_data.h",
+      "viewport_mode.h",
+    ]
+  }
+
+  static_library("test_support") {
+    testonly = true
+    sources = [
+      "java_service.cc",
+      "java_service.h",
+    ]
+
+    deps = [
+      ":browser",
+      ":proto",
+      "//base",
+      "//chrome/android/features/autofill_assistant:test_support_jni_headers",
+      "//url:url",
+    ]
+  }
 }

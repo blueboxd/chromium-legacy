@@ -23,12 +23,11 @@ sk_sp<SkTypeface> FontUniqueNameLookupLinux::MatchUniqueName(
     return nullptr;
   }
 
-  Platform::Current()
-      ->GetSandboxSupport()
-      ->MatchFontByPostscriptNameOrFullFontName(
-          font_unique_name.Utf8(WTF::kStrictUTF8Conversion).c_str(),
-          &uniquely_matched_font);
-  if (uniquely_matched_font.filepath.empty())
+  if (!Platform::Current()
+           ->GetSandboxSupport()
+           ->MatchFontByPostscriptNameOrFullFontName(
+               font_unique_name.Utf8(WTF::kStrictUTF8Conversion).c_str(),
+               &uniquely_matched_font))
     return nullptr;
 
   return SkTypeface_Factory::FromFontConfigInterfaceIdAndTtcIndex(

@@ -67,6 +67,10 @@ class InstallFinalizer {
   virtual void UninstallWebAppFromSyncByUser(const AppId& app_id,
                                              UninstallWebAppCallback) = 0;
 
+  virtual bool CanUserUninstallExternalApp(const AppId& app_id) const = 0;
+  // If external app is synced, uninstalls it from sync and from all devices.
+  virtual void UninstallExternalAppByUser(const AppId& app_id,
+                                          UninstallWebAppCallback callback) = 0;
   // Returns true if the app with |app_id| was previously uninstalled by the
   // user. For example, if a user uninstalls a default app ('default apps' are
   // considered external apps), then this will return true.

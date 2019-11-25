@@ -3226,6 +3226,7 @@ if (use_libfuzzer) {
       ":policy_fuzzer_proto",
       "//chrome/browser",
       "//chrome/browser/chromeos",
+      "//chromeos/dbus:dbus",
       "//third_party/libprotobuf-mutator",
     ]
   }

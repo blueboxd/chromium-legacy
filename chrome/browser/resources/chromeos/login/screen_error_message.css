@@ -47,14 +47,8 @@ oobe-dialog .error-icon {
   display: none;
 }
 
-.error-message-paragraph {
-  font-size: 12px;
-  line-height: 18px;
-  margin-bottom: 20px;
-}
-
-.error-message-paragraph a {
-  color: rgb(17,85,204);
+#error-message-md-subtitle a {
+  color: var(--google-blue-600);
   text-decoration: none;
 }
 

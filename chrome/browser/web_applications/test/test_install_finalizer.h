@@ -42,6 +42,9 @@ class TestInstallFinalizer final : public InstallFinalizer {
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
   void UninstallWebAppFromSyncByUser(const AppId& app_id,
                                      UninstallWebAppCallback callback) override;
+  bool CanUserUninstallExternalApp(const AppId& app_id) const override;
+  void UninstallExternalAppByUser(const AppId& app_id,
+                                  UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;

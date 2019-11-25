@@ -18,7 +18,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/platform_window/extensions/workspace_extension_delegate.h"
-#include "ui/platform_window/platform_window_delegate_linux.h"
+#include "ui/platform_window/extensions/x11_extension_delegate.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
 #if defined(USE_OZONE)
@@ -91,7 +91,7 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
 
 }  // namespace
 
-X11Window::X11Window(PlatformWindowDelegateLinux* platform_window_delegate)
+X11Window::X11Window(PlatformWindowDelegate* platform_window_delegate)
     : platform_window_delegate_(platform_window_delegate) {
   // Set a class property key, which allows |this| to be used for interactive
   // events, e.g. move or resize.
@@ -100,6 +100,7 @@ X11Window::X11Window(PlatformWindowDelegateLinux* platform_window_delegate)
   // Set extensions property key that extends the interface of this platform
   // implementation.
   SetWorkspaceExtension(this, static_cast<WorkspaceExtension*>(this));
+  SetX11Extension(this, static_cast<X11Extension*>(this));
 }
 
 X11Window::~X11Window() {
@@ -116,6 +117,7 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
   config.bounds.set_size(adjusted_size_in_pixels);
 
   workspace_extension_delegate_ = properties.workspace_extension_delegate;
+  x11_extension_delegate_ = properties.x11_extension_delegate;
 
   Init(config);
 }
@@ -325,14 +327,6 @@ void X11Window::Deactivate() {
   XWindow::Deactivate();
 }
 
-bool X11Window::IsSyncExtensionAvailable() const {
-  return ui::IsSyncExtensionAvailable();
-}
-
-void X11Window::OnCompleteSwapAfterResize() {
-  XWindow::NotifySwapAfterResize();
-}
-
 void X11Window::SetUseNativeFrame(bool use_native_frame) {
   XWindow::SetUseNativeFrame(use_native_frame);
 }
@@ -404,21 +398,9 @@ void X11Window::FlashFrame(bool flash_frame) {
   XWindow::SetFlashFrameHint(flash_frame);
 }
 
-gfx::Rect X11Window::GetXRootWindowOuterBounds() const {
-  return XWindow::GetOutterBounds();
-}
-
-bool X11Window::ContainsPointInXRegion(const gfx::Point& point) const {
-  return XWindow::ContainsPointInRegion(point);
-}
-
 void X11Window::SetShape(std::unique_ptr<ShapeRects> native_shape,
                          const gfx::Transform& transform) {
   return XWindow::SetXWindowShape(std::move(native_shape), transform);
-}
-
-void X11Window::SetOpacityForXWindow(float opacity) {
-  XWindow::SetXWindowOpacity(opacity);
 }
 
 void X11Window::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
@@ -441,8 +423,8 @@ bool X11Window::IsTranslucentWindowOpacitySupported() const {
   return ui::XVisualManager::GetInstance()->ArgbVisualAvailable();
 }
 
-void X11Window::LowerXWindow() {
-  XWindow::LowerWindow();
+void X11Window::SetOpacity(float opacity) {
+  XWindow::SetXWindowOpacity(opacity);
 }
 
 std::string X11Window::GetWorkspace() const {
@@ -464,6 +446,30 @@ void X11Window::SetWorkspaceExtensionDelegate(
   workspace_extension_delegate_ = delegate;
 }
 
+bool X11Window::IsSyncExtensionAvailable() const {
+  return ui::IsSyncExtensionAvailable();
+}
+
+void X11Window::OnCompleteSwapAfterResize() {
+  XWindow::NotifySwapAfterResize();
+}
+
+gfx::Rect X11Window::GetXRootWindowOuterBounds() const {
+  return XWindow::GetOutterBounds();
+}
+
+bool X11Window::ContainsPointInXRegion(const gfx::Point& point) const {
+  return XWindow::ContainsPointInRegion(point);
+}
+
+void X11Window::LowerXWindow() {
+  XWindow::LowerWindow();
+}
+
+void X11Window::SetX11ExtensionDelegate(X11ExtensionDelegate* delegate) {
+  x11_extension_delegate_ = delegate;
+}
+
 bool X11Window::HandleAsAtkEvent(XEvent* xev) {
 #if !BUILDFLAG(USE_ATK)
   // TODO(crbug.com/1014934): Support ATK in Ozone/X11.
@@ -471,10 +477,11 @@ bool X11Window::HandleAsAtkEvent(XEvent* xev) {
   return false;
 #else
   DCHECK(xev);
-  if (xev->type != KeyPress && xev->type != KeyRelease)
+  if (!x11_extension_delegate_ ||
+      (xev->type != KeyPress && xev->type != KeyRelease))
     return false;
   auto atk_key_event = AtkKeyEventFromXEvent(xev);
-  return platform_window_delegate_->OnAtkKeyEvent(atk_key_event.get());
+  return x11_extension_delegate_->OnAtkKeyEvent(atk_key_event.get());
 #endif
 }
 
@@ -553,11 +560,13 @@ void X11Window::OnXWindowIsActiveChanged(bool active) {
 }
 
 void X11Window::OnXWindowMapped() {
-  platform_window_delegate_->OnXWindowMapped();
+  if (x11_extension_delegate_)
+    x11_extension_delegate_->OnXWindowMapped();
 }
 
 void X11Window::OnXWindowUnmapped() {
-  platform_window_delegate_->OnXWindowUnmapped();
+  if (x11_extension_delegate_)
+    x11_extension_delegate_->OnXWindowUnmapped();
 }
 
 void X11Window::OnXWindowWorkspaceChanged() {
@@ -566,7 +575,8 @@ void X11Window::OnXWindowWorkspaceChanged() {
 }
 
 void X11Window::OnXWindowLostPointerGrab() {
-  platform_window_delegate_->OnLostMouseGrab();
+  if (x11_extension_delegate_)
+    x11_extension_delegate_->OnLostMouseGrab();
 }
 
 void X11Window::OnXWindowEvent(ui::Event* event) {
@@ -623,7 +633,8 @@ base::Optional<gfx::Size> X11Window::GetMaximumSizeForXWindow() {
 
 void X11Window::GetWindowMaskForXWindow(const gfx::Size& size,
                                         SkPath* window_mask) {
-  platform_window_delegate_->GetWindowMask(size, window_mask);
+  if (x11_extension_delegate_)
+    x11_extension_delegate_->GetWindowMask(size, window_mask);
 }
 
 void X11Window::DispatchHostWindowDragMovement(

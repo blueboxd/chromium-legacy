@@ -20,7 +20,6 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/signin/scoped_account_consistency.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"

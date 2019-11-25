@@ -66,7 +66,7 @@ class CORE_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
   size_t ByteOffset() const { return byte_offset_; }
 
-  virtual unsigned ByteLength() const = 0;
+  virtual size_t ByteLengthAsSizeT() const = 0;
   virtual unsigned TypeSize() const = 0;
 
   void SetDetachable(bool flag) { is_detachable_ = flag; }

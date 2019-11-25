@@ -255,6 +255,12 @@ const bookmarks::BookmarkNode* ReplaceBookmarkNodeGUID(
   }
   const bookmarks::BookmarkNode* new_node;
   DCHECK(base::IsValidGUID(guid));
+
+  if (node->guid() == guid) {
+    // Nothing to do.
+    return node;
+  }
+
   if (node->is_folder()) {
     new_node =
         model->AddFolder(node->parent(), node->parent()->GetIndexOf(node),

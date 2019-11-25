@@ -18,14 +18,14 @@ namespace chromeos {
 content::WebUIDataSource* MediaAppGuestUI::CreateDataSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIMediaAppGuestHost);
-  // Add resources from chromeos_resources.pak.
+  // Add resources from chromeos_media_app_resources.pak.
   source->AddResourcePath("app.html", IDR_MEDIA_APP_APP_HTML);
   source->AddResourcePath("receiver.js", IDR_MEDIA_APP_RECEIVER_JS);
 
-  // Add resources from chromeos_media_app_bundle.pak that are also needed for
-  // mocks. If enable_cros_media_app = true, then these calls will happen a
-  // second time with the same parameters. When false, we need these to specify
-  // what routes are mocked by files in ./resources/mock/js. The loop is
+  // Add resources from chromeos_media_app_bundle_resources.pak that are also
+  // needed for mocks. If enable_cros_media_app = true, then these calls will
+  // happen a second time with the same parameters. When false, we need these to
+  // specify what routes are mocked by files in ./resources/mock/js. The loop is
   // irrelevant in that case.
   source->AddResourcePath("js/app_main.js", IDR_MEDIA_APP_APP_MAIN_JS);
   source->AddResourcePath("js/app_image_handler_module.js",
@@ -33,7 +33,7 @@ content::WebUIDataSource* MediaAppGuestUI::CreateDataSource() {
   source->AddResourcePath("js/app_drop_target_module.js",
                           IDR_MEDIA_APP_APP_DROP_TARGET_MODULE_JS);
 
-  // Add all resources from chromeos_media_app_bundle.pak.
+  // Add all resources from chromeos_media_app_bundle_resources.pak.
   for (size_t i = 0; i < kChromeosMediaAppBundleResourcesSize; i++) {
     source->AddResourcePath(kChromeosMediaAppBundleResources[i].name,
                             kChromeosMediaAppBundleResources[i].value);

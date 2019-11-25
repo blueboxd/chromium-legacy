@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPT_LOADER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPT_LOADER_H_
 
-#include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_installed_script_reader.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

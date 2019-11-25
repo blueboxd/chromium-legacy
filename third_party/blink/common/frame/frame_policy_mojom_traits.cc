@@ -9,8 +9,7 @@ namespace mojo {
 bool StructTraits<blink::mojom::FramePolicyDataView, blink::FramePolicy>::Read(
     blink::mojom::FramePolicyDataView in,
     blink::FramePolicy* out) {
-  out->allowed_to_download_without_user_activation =
-      in.allowed_to_download_without_user_activation();
+  out->allowed_to_download = in.allowed_to_download();
 
   return in.ReadSandboxFlags(&out->sandbox_flags) &&
          in.ReadContainerPolicy(&out->container_policy);

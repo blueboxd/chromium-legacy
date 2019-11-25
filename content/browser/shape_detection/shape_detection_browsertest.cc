@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_P(ShapeDetectionBrowserTest, MAYBE_DetectShapesInImage) {
                          GetParam().expected_bounding_boxes);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(All,
                          ShapeDetectionBrowserTest,
                          testing::ValuesIn(kTestParameters));
 

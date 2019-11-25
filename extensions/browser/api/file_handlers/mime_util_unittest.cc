@@ -94,9 +94,10 @@ class FileHandlersMimeUtilTest : public ExtensionsTest {
 TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
   {
     std::string result;
-    GetMimeTypeForLocalPath(browser_context(), base::FilePath::FromUTF8Unsafe(
-                                                   kJPEGExtensionFilePath),
-                            base::Bind(&OnMimeTypeResult, &result));
+    GetMimeTypeForLocalPath(
+        browser_context(),
+        base::FilePath::FromUTF8Unsafe(kJPEGExtensionFilePath),
+        base::BindOnce(&OnMimeTypeResult, &result));
     content::RunAllTasksUntilIdle();
     EXPECT_EQ("image/jpeg", result);
   }
@@ -106,7 +107,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
     GetMimeTypeForLocalPath(
         browser_context(),
         base::FilePath::FromUTF8Unsafe(kJPEGExtensionUpperCaseFilePath),
-        base::Bind(&OnMimeTypeResult, &result));
+        base::BindOnce(&OnMimeTypeResult, &result));
     content::RunAllTasksUntilIdle();
     EXPECT_EQ("image/jpeg", result);
   }
@@ -114,7 +115,7 @@ TEST_F(FileHandlersMimeUtilTest, GetMimeTypeForLocalPath) {
   {
     std::string result;
     GetMimeTypeForLocalPath(browser_context(), html_mime_file_path_,
-                            base::Bind(&OnMimeTypeResult, &result));
+                            base::BindOnce(&OnMimeTypeResult, &result));
     content::RunAllTasksUntilIdle();
     EXPECT_EQ("text/html", result);
   }
@@ -145,7 +146,8 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForURLs) {
                                                 html_mime_file_path_));
 
   std::vector<std::string> result;
-  collector.CollectForURLs(urls, base::Bind(&OnMimeTypesCollected, &result));
+  collector.CollectForURLs(urls,
+                           base::BindOnce(&OnMimeTypesCollected, &result));
   content::RunAllTasksUntilIdle();
 
   ASSERT_EQ(3u, result.size());
@@ -164,8 +166,8 @@ TEST_F(FileHandlersMimeUtilTest, MimeTypeCollector_ForLocalPaths) {
   local_paths.push_back(html_mime_file_path_);
 
   std::vector<std::string> result;
-  collector.CollectForLocalPaths(local_paths,
-                                 base::Bind(&OnMimeTypesCollected, &result));
+  collector.CollectForLocalPaths(
+      local_paths, base::BindOnce(&OnMimeTypesCollected, &result));
   content::RunAllTasksUntilIdle();
 
   ASSERT_EQ(3u, result.size());

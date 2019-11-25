@@ -40,6 +40,7 @@ namespace blink {
 
 namespace {
 
+const char kBufferTooBig[] = "The data buffer exceeded its maximum size.";
 const char kDetachedBuffer[] = "The data buffer has been detached.";
 const char kDeviceStateChangeInProgress[] =
     "An operation that changes the device state is in progress.";
@@ -114,9 +115,15 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
           DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
       return false;
     }
+    if (array_buffer->ByteLengthAsSizeT() >
+        std::numeric_limits<wtf_size_t>::max()) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kDataError, kBufferTooBig));
+      return false;
+    }
 
     vector->Append(static_cast<uint8_t*>(array_buffer->Data()),
-                   array_buffer->ByteLengthAsUnsigned());
+                   static_cast<wtf_size_t>(array_buffer->ByteLengthAsSizeT()));
   } else {
     ArrayBufferView* view = buffer_source.GetAsArrayBufferView().View()->View();
     if (!view->Buffer() || view->Buffer()->IsDetached()) {
@@ -124,9 +131,14 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
           DOMExceptionCode::kInvalidStateError, kDetachedBuffer));
       return false;
     }
+    if (view->ByteLengthAsSizeT() > std::numeric_limits<wtf_size_t>::max()) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kDataError, kBufferTooBig));
+      return false;
+    }
 
     vector->Append(static_cast<uint8_t*>(view->BaseAddress()),
-                   view->ByteLength());
+                   static_cast<wtf_size_t>(view->ByteLengthAsSizeT()));
   }
   return true;
 }

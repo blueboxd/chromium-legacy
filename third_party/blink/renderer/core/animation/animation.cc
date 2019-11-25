@@ -77,13 +77,6 @@ double MillisecondsToSeconds(double milliseconds) {
   return milliseconds / 1000;
 }
 
-bool AreEqualOrNull(double a, double b) {
-  // Null values are represented as NaNs, which have the property NaN != NaN.
-  if (IsNull(a) && IsNull(b))
-    return true;
-  return a == b;
-}
-
 double Max(base::Optional<double> a, double b) {
   if (a.has_value())
     return std::max(a.value(), b);
@@ -262,7 +255,7 @@ void Animation::setCurrentTime(double new_current_time,
 
   if (is_null) {
     // If the current time is resolved, then throw a TypeError.
-    if (!IsNull(CurrentTimeInternal())) {
+    if (CurrentTimeInternal()) {
       exception_state.ThrowTypeError(
           "currentTime may not be changed from resolved to unresolved");
     }
@@ -437,8 +430,8 @@ double Animation::currentTime() {
   return SecondsToMilliseconds(current_time);
 }
 
-double Animation::CurrentTimeInternal() const {
-  return hold_time_.value_or(CalculateCurrentTime().value_or(NullValue()));
+base::Optional<double> Animation::CurrentTimeInternal() const {
+  return hold_time_ ? hold_time_ : CalculateCurrentTime();
 }
 
 base::Optional<double> Animation::UnlimitedCurrentTimeInternal() const {
@@ -446,7 +439,7 @@ base::Optional<double> Animation::UnlimitedCurrentTimeInternal() const {
   CurrentTimeInternal();
 #endif
   return PlayStateInternal() == kPaused || !start_time_
-             ? ValueOrUnresolved(CurrentTimeInternal())
+             ? CurrentTimeInternal()
              : CalculateCurrentTime();
 }
 
@@ -718,7 +711,7 @@ void Animation::setStartTime(double start_time_ms,
     hold_time_ = base::nullopt;
 
   // 3. Let previous current time be animation’s current time.
-  double previous_current_time = CurrentTimeInternal();
+  base::Optional<double> previous_current_time = CurrentTimeInternal();
 
   // 4. Apply any pending playback rate on animation.
   ApplyPendingPlaybackRate();
@@ -741,7 +734,7 @@ void Animation::setStartTime(double start_time_ms,
     if (playback_rate_ != 0)
       hold_time_ = base::nullopt;
   } else {
-    hold_time_ = ValueOrUnresolved(previous_current_time);
+    hold_time_ = previous_current_time;
   }
 
   // TODO(crbug.com/960944): prune use of legacy flags.
@@ -769,8 +762,8 @@ void Animation::setStartTime(double start_time_ms,
   animation_play_state_ = CalculateAnimationPlayState();
 
   // Update user agent.
-  double new_current_time = CurrentTimeInternal();
-  if (!AreEqualOrNull(previous_current_time, new_current_time)) {
+  base::Optional<double> new_current_time = CurrentTimeInternal();
+  if (previous_current_time != new_current_time) {
     SetOutdated();
   } else if (!had_start_time && start_time_) {
     // Even though this animation is not outdated, time to effect change is
@@ -788,7 +781,7 @@ void Animation::setEffect(AnimationEffect* new_effect) {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand,
                                     kSetCompositorPendingWithEffectChanged);
 
-  double stored_current_time = CurrentTimeInternal();
+  base::Optional<double> stored_current_time = CurrentTimeInternal();
   if (content_)
     content_->Detach();
   content_ = new_effect;
@@ -801,8 +794,8 @@ void Animation::setEffect(AnimationEffect* new_effect) {
     new_effect->Attach(this);
     SetOutdated();
   }
-  if (!IsNull(stored_current_time))
-    SetCurrentTimeInternal(stored_current_time, kTimingUpdateOnDemand);
+  if (stored_current_time)
+    SetCurrentTimeInternal(stored_current_time.value(), kTimingUpdateOnDemand);
 }
 
 const char* Animation::PlayStateString(AnimationPlayState play_state) {
@@ -852,7 +845,7 @@ Animation::AnimationPlayState Animation::CalculateAnimationPlayState() const {
   //    * animation does not have either a pending play task or a pending pause
   //      task,
   //    then idle.
-  if (IsNull(CurrentTimeInternal()) && !pending())
+  if (!CurrentTimeInternal() && !pending())
     return kIdle;
 
   // 2. Either of the following conditions are true:
@@ -916,8 +909,8 @@ void Animation::pause(ExceptionState& exception_state) {
   //       If associated effect end for animation is positive infinity, throw an
   //       "InvalidStateError" DOMException and abort these steps. Otherwise,
   //       let animation’s hold time be associated effect end.
-  double current_time = CurrentTimeInternal();
-  if (IsNull(current_time)) {
+  base::Optional<double> current_time = CurrentTimeInternal();
+  if (!current_time) {
     if (playback_rate_ >= 0) {
       hold_time_ = 0;
     } else {
@@ -1017,14 +1010,13 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   //    is unresolved,
   //    Set animation’s hold time to zero.
   double effective_playback_rate = EffectivePlaybackRate();
-  double current_time = CurrentTimeInternal();
+  base::Optional<double> current_time = CurrentTimeInternal();
   if (effective_playback_rate > 0 && auto_rewind == AutoRewind::kEnabled &&
-      (IsNull(current_time) || current_time < 0 ||
-       current_time >= EffectEnd())) {
+      (!current_time || current_time < 0 || current_time >= EffectEnd())) {
     hold_time_ = 0;
   } else if (effective_playback_rate < 0 &&
              auto_rewind == AutoRewind::kEnabled &&
-             (IsNull(current_time) || current_time <= 0 ||
+             (!current_time || current_time <= 0 ||
               current_time > EffectEnd())) {
     if (EffectEnd() == std::numeric_limits<double>::infinity()) {
       exception_state.ThrowDOMException(
@@ -1033,7 +1025,7 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
       return;
     }
     hold_time_ = EffectEnd();
-  } else if (effective_playback_rate == 0 && IsNull(current_time)) {
+  } else if (effective_playback_rate == 0 && !current_time) {
     hold_time_ = 0;
   }
 
@@ -1193,12 +1185,11 @@ void Animation::UpdateFinishedState(UpdateType update_type,
   // required to accommodate timelines that may change direction. Without this
   // distinction, a once-finished animation would remain finished even when its
   // timeline progresses in the opposite direction.
-  double unconstrained_current_time =
-      did_seek ? CurrentTimeInternal()
-               : CalculateCurrentTime().value_or(NullValue());
+  base::Optional<double> unconstrained_current_time =
+      did_seek ? CurrentTimeInternal() : CalculateCurrentTime();
 
   // 2. Conditionally update the hold time.
-  if (!IsNull(unconstrained_current_time) && start_time_ && !pending_play_ &&
+  if (unconstrained_current_time && start_time_ && !pending_play_ &&
       !pending_pause_) {
     // Can seek outside the bounds of the active effect. Set the hold time to
     // the unconstrained value of the current time in the even that this update
@@ -1226,7 +1217,7 @@ void Animation::UpdateFinishedState(UpdateType update_type,
   }
 
   // 3. Set the previous current time.
-  previous_current_time_ = ValueOrUnresolved(CurrentTimeInternal());
+  previous_current_time_ = CurrentTimeInternal();
 
   // 4. Set the current finished state.
   AnimationPlayState play_state = CalculateAnimationPlayState();
@@ -1595,9 +1586,14 @@ void Animation::StartAnimationOnCompositor(
           start_time.value() - (EffectEnd() / fabs(EffectivePlaybackRate()));
     }
   } else {
-    time_offset =
-        reversed ? EffectEnd() - CurrentTimeInternal() : CurrentTimeInternal();
-    time_offset = time_offset / fabs(EffectivePlaybackRate());
+    base::Optional<double> current_time = CurrentTimeInternal();
+    if (current_time) {
+      time_offset =
+          reversed ? EffectEnd() - current_time.value() : current_time.value();
+      time_offset = time_offset / fabs(EffectivePlaybackRate());
+    } else {
+      time_offset = NullValue();
+    }
   }
 
   DCHECK(!start_time || !IsNull(start_time.value()));
@@ -1684,10 +1680,9 @@ bool Animation::Update(TimingUpdateReason reason) {
   bool idle = PlayStateInternal() == kIdle;
 
   if (content_) {
-    base::Optional<double> inherited_time =
-        idle || !timeline_->CurrentTime()
-            ? base::nullopt
-            : ValueOrUnresolved(CurrentTimeInternal());
+    base::Optional<double> inherited_time = idle || !timeline_->CurrentTime()
+                                                ? base::nullopt
+                                                : CurrentTimeInternal();
 
     // Special case for end-exclusivity when playing backwards.
     if (inherited_time == 0 && EffectivePlaybackRate() < 0)
@@ -1717,7 +1712,8 @@ bool Animation::Update(TimingUpdateReason reason) {
 void Animation::QueueFinishedEvent() {
   const AtomicString& event_type = event_type_names::kFinish;
   if (GetExecutionContext() && HasEventListeners(event_type)) {
-    double event_current_time = CurrentTimeInternal() * 1000;
+    double event_current_time =
+        SecondsToMilliseconds(CurrentTimeInternal().value_or(NullValue()));
     // TODO(crbug.com/916117): Handle NaN values for scroll-linked animations.
     pending_finished_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
         event_type, event_current_time, TimelineTime());
@@ -1751,11 +1747,13 @@ bool Animation::IsEventDispatchAllowed() const {
 
 base::Optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
   DCHECK(!outdated_);
-  if (!start_time_ || hold_time_)
+  if (!start_time_ || hold_time_ || !playback_rate_)
     return base::nullopt;
 
   if (!content_) {
-    return AnimationTimeDelta::FromSecondsD(-CurrentTimeInternal() /
+    base::Optional<double> current_time = CurrentTimeInternal();
+    DCHECK(current_time);
+    return AnimationTimeDelta::FromSecondsD(-current_time.value() /
                                             playback_rate_);
   }
 
@@ -1992,8 +1990,10 @@ void Animation::AddedEventListener(
 void Animation::PauseForTesting(double pause_time) {
   SetCurrentTimeInternal(pause_time, kTimingUpdateOnDemand);
   if (HasActiveAnimationsOnCompositor()) {
+    base::Optional<double> current_time = CurrentTimeInternal();
+    DCHECK(current_time);
     ToKeyframeEffect(content_.Get())
-        ->PauseAnimationForTestingOnCompositor(CurrentTimeInternal());
+        ->PauseAnimationForTestingOnCompositor(current_time.value());
   }
 
   // Do not wait for animation ready to lock in the hold time. Otherwise,

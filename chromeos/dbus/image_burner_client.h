@@ -25,22 +25,24 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ImageBurnerClient : public DBusClient {
   ~ImageBurnerClient() override;
 
   // A callback to be called when DBus method call fails.
-  typedef base::Callback<void()> ErrorCallback;
+  using ErrorCallback = base::OnceCallback<void()>;
 
   // A callback to handle burn_finished signal.
-  typedef base::Callback<void(const std::string& target_path,
-                              bool success,
-                              const std::string& error)> BurnFinishedHandler;
+  using BurnFinishedHandler =
+      base::RepeatingCallback<void(const std::string& target_path,
+                                   bool success,
+                                   const std::string& error)>;
 
   // A callback to handle burn_progress_update signal.
-  typedef base::Callback<void(const std::string& target_path,
-                              int64_t num_bytes_burnt,
-                              int64_t total_size)> BurnProgressUpdateHandler;
+  using BurnProgressUpdateHandler =
+      base::RepeatingCallback<void(const std::string& target_path,
+                                   int64_t num_bytes_burnt,
+                                   int64_t total_size)>;
 
   // Burns the image |from_path| to the disk |to_path|.
   virtual void BurnImage(const std::string& from_path,
                          const std::string& to_path,
-                         const ErrorCallback& error_callback) = 0;
+                         ErrorCallback error_callback) = 0;
 
   // Sets callbacks as event handlers.
   // |burn_finished_handler| is called when burn_finished signal is received.

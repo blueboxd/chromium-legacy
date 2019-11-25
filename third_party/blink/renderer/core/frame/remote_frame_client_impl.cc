@@ -105,15 +105,14 @@ void RemoteFrameClientImpl::Navigate(
     bool has_download_sandbox_flag,
     bool initiator_frame_is_ad,
     mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token) {
-  bool blocking_downloads_in_sandbox_without_user_activation_enabled =
-      RuntimeEnabledFeatures::
-          BlockingDownloadsInSandboxWithoutUserActivationEnabled();
+  bool blocking_downloads_in_sandbox_enabled =
+      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled();
   if (web_frame_->Client()) {
     web_frame_->Client()->Navigate(
         WrappedResourceRequest(request), should_replace_current_entry,
         is_opener_navigation, has_download_sandbox_flag,
-        blocking_downloads_in_sandbox_without_user_activation_enabled,
-        initiator_frame_is_ad, blob_url_token.PassPipe());
+        blocking_downloads_in_sandbox_enabled, initiator_frame_is_ad,
+        blob_url_token.PassPipe());
   }
 }
 

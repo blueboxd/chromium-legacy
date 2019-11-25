@@ -200,6 +200,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
@@ -6572,6 +6573,11 @@ RenderFrameHostImpl::BindFileChooserForTesting() {
   mojo::Remote<blink::mojom::FileChooser> chooser;
   FileChooserImpl::Create(this, chooser.BindNewPipeAndPassReceiver());
   return chooser;
+}
+
+void RenderFrameHostImpl::BindCacheStorage(
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
+  GetProcess()->BindCacheStorage(GetLastCommittedOrigin(), std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindSmsReceiverReceiver(

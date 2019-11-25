@@ -608,6 +608,7 @@ extern const char kWebAppInstallForceList[];
 extern const char kWebAppInstallMetrics[];
 
 extern const char kWebAppsExtensionIDs[];
+extern const char kWebAppsPreferences[];
 extern const char kSystemWebAppLastUpdateVersion[];
 extern const char kSystemWebAppLastInstalledLocale[];
 

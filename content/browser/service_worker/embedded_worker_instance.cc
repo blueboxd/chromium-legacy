@@ -199,8 +199,8 @@ void SetupOnUIThread(
   if (base::FeatureList::IsEnabled(
           blink::features::kEagerCacheStorageSetupForServiceWorkers) &&
       !params->pause_after_download) {
-    rph->BindCacheStorage(cache_storage.InitWithNewPipeAndPassReceiver(),
-                          url::Origin::Create(params->script_url));
+    rph->BindCacheStorage(url::Origin::Create(params->script_url),
+                          cache_storage.InitWithNewPipeAndPassReceiver());
   }
 
   // Bind |receiver|, which is attached to |EmbeddedWorkerInstance::client_|, to

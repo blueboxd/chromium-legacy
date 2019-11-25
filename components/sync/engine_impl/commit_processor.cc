@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/commit_contributor.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -16,35 +17,48 @@ namespace syncer {
 
 using TypeToIndexMap = std::map<ModelType, size_t>;
 
-CommitProcessor::CommitProcessor(CommitContributorMap* commit_contributor_map)
-    : commit_contributor_map_(commit_contributor_map) {}
+CommitProcessor::CommitProcessor(ModelTypeSet commit_types,
+                                 CommitContributorMap* commit_contributor_map)
+    : commit_types_(commit_types),
+      commit_contributor_map_(commit_contributor_map),
+      gathered_all_contributions_(false) {
+  // NIGORI contributions must be collected in every commit cycle.
+  DCHECK(commit_types_.Has(NIGORI));
+  DCHECK(commit_contributor_map);
+}
 
 CommitProcessor::~CommitProcessor() {}
 
 Commit::ContributionMap CommitProcessor::GatherCommitContributions(
-    ModelTypeSet commit_types,
     size_t max_entries,
     bool cookie_jar_mismatch,
     bool cookie_jar_empty) {
+  if (gathered_all_contributions_ &&
+      base::FeatureList::IsEnabled(
+          switches::kSyncPreventCommitsBypassingNudgeDelay)) {
+    return Commit::ContributionMap();
+  }
+
+  ModelTypeSet contributing_commit_types = commit_types_;
+
   Commit::ContributionMap contributions;
   size_t num_entries = 0;
 
   // NIGORI should be committed before any other datatype.
-  DCHECK(commit_types.Has(NIGORI));
-
-  commit_types.Remove(NIGORI);
   num_entries +=
       GatherCommitContributionsForType(NIGORI, max_entries, cookie_jar_mismatch,
                                        cookie_jar_empty, &contributions);
+
   if (num_entries != 0) {
     // If the outgoing commit has a NIGORI update, there are some risks if
     // changes from other datatypes are bundled together in the same commit, as
     // long as the datatype is encryptable. Hence, restrict to
     // PriorityUserTypes() which are never encrypted.
-    commit_types.RetainAll(PriorityUserTypes());
+    contributing_commit_types.RetainAll(PriorityUserTypes());
   }
 
-  for (ModelType type : commit_types) {
+  for (ModelType type :
+       Difference(contributing_commit_types, ModelTypeSet(NIGORI))) {
     num_entries += GatherCommitContributionsForType(
         type, max_entries - num_entries, cookie_jar_mismatch, cookie_jar_empty,
         &contributions);
@@ -53,6 +67,15 @@ Commit::ContributionMap CommitProcessor::GatherCommitContributions(
           << "Number of commit entries exceeds maximum";
       break;
     }
+  }
+
+  if (contributing_commit_types == commit_types_ && num_entries < max_entries) {
+    // Technically |num_entries| == |max_entries| may also mean that all
+    // contributions have been gathered, but it's safe to ignore, since this
+    // will lead to empty contribution in the next call and exiting commit
+    // cycle (or additional commit cycle in rare cases when new contributions
+    // come meanwhile).
+    gathered_all_contributions_ = true;
   }
 
   return contributions;

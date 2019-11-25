@@ -17,14 +17,14 @@ class DataView final : public ArrayBufferView {
  public:
   static scoped_refptr<DataView> Create(ArrayBuffer* buffer,
                                         unsigned byte_offset,
-                                        unsigned byte_length) {
+                                        size_t byte_length) {
     base::CheckedNumeric<uint32_t> checked_max = byte_offset;
     checked_max += byte_length;
     CHECK_LE(checked_max.ValueOrDie(), buffer->ByteLengthAsUnsigned());
     return base::AdoptRef(new DataView(buffer, byte_offset, byte_length));
   }
 
-  unsigned ByteLength() const override { return byte_length_; }
+  size_t ByteLengthAsSizeT() const override { return byte_length_; }
   ViewType GetType() const override { return kTypeDataView; }
   unsigned TypeSize() const override { return 1; }
 
@@ -35,10 +35,10 @@ class DataView final : public ArrayBufferView {
   }
 
  private:
-  DataView(ArrayBuffer* buffer, unsigned byte_offset, unsigned byte_length)
+  DataView(ArrayBuffer* buffer, unsigned byte_offset, size_t byte_length)
       : ArrayBufferView(buffer, byte_offset), byte_length_(byte_length) {}
 
-  unsigned byte_length_;
+  size_t byte_length_;
 };
 
 }  // anonymous namespace

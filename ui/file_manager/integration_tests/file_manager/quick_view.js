@@ -461,7 +461,7 @@
 
   /**
    * Tests opening Quick View on a text document to verify that the background
-   * color of the <webview> root (html) element is solid white.
+   * color of the <webview> root (html) element.
    */
   testcase.openQuickViewBackgroundColorText = async () => {
     const caller = getCaller();
@@ -501,8 +501,8 @@
     const backgroundColor = await remoteCall.callRemoteTestUtil(
         'deepExecuteScriptInWebView', appId, [webView, getBackgroundStyle]);
 
-    // Check: the <webview> root backgroundColor should be solid white.
-    chrome.test.assertEq('rgb(255, 255, 255)', backgroundColor[0]);
+    // Check: the <webview> root backgroundColor should be transparent.
+    chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
   };
 
   /**

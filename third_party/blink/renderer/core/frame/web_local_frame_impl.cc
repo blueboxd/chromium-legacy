@@ -2416,7 +2416,7 @@ WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
     // part of sandbox converted to FeaturePolicies. That said, with
     // FeaturePolicyForSandbox all such flags should be part of the document's
     // FeaturePolicy. For certain flags such as "downloads", dedicated API
-    // should be used (see IsAllowedToDownloadWithoutUserActivation()).
+    // should be used (see IsAllowedToDownload()).
     auto* local_owner = GetFrame()->DeprecatedLocalOwner();
     if (local_owner &&
         local_owner->OwnerType() == FrameOwnerElementType::kIframe) {
@@ -2427,23 +2427,20 @@ WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
   return static_cast<WebSandboxFlags>(flags);
 }
 
-bool WebLocalFrameImpl::IsAllowedToDownloadWithoutUserActivation() const {
+bool WebLocalFrameImpl::IsAllowedToDownload() const {
   if (!GetFrame())
     return true;
 
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // Downloads could be disabled if the parent frame's FeaturePolicy does not
-    // allow "downloads-without-user-activation".
+    // allow downloads.
     if (GetFrame()->Tree().Parent() &&
         !GetFrame()->Tree().Parent()->GetSecurityContext()->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation)) {
+            mojom::FeaturePolicyFeature::kDownloads)) {
       return false;
     }
     return !GetFrame()->Owner() ||
-           GetFrame()
-               ->Owner()
-               ->GetFramePolicy()
-               .allowed_to_download_without_user_activation;
+           GetFrame()->Owner()->GetFramePolicy().allowed_to_download;
   } else {
     return (GetFrame()->Loader().EffectiveSandboxFlags() &
             WebSandboxFlags::kDownloads) == WebSandboxFlags::kNone;

@@ -54,7 +54,7 @@ const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies() {
         {WebSandboxFlags::kPresentationController,
          mojom::FeaturePolicyFeature::kPresentation},
         {WebSandboxFlags::kDownloads,
-         mojom::FeaturePolicyFeature::kDownloadsWithoutUserActivation}}));
+         mojom::FeaturePolicyFeature::kDownloads}}));
   return array;
 }
 
@@ -109,8 +109,7 @@ WebSandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
     } else if (EqualIgnoringASCIICase(
                    sandbox_token, "allow-top-navigation-by-user-activation")) {
       flags = flags & ~WebSandboxFlags::kTopNavigationByUserActivation;
-    } else if (EqualIgnoringASCIICase(
-                   sandbox_token, "allow-downloads-without-user-activation")) {
+    } else if (EqualIgnoringASCIICase(sandbox_token, "allow-downloads")) {
       flags = flags & ~WebSandboxFlags::kDownloads;
     } else if (RuntimeEnabledFeatures::StorageAccessAPIEnabled() &&
                EqualIgnoringASCIICase(

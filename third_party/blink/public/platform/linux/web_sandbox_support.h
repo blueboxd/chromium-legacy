@@ -52,14 +52,15 @@ class WebSandboxSupport {
   // Get information to instantiate a font which contains glyphs for the given
   // Unicode code-point.
   //   character: a UTF-32 codepoint
-  //   preferredLocale: preferred locale identifier for the |characters|
-  //                    (e.g. "en", "ja", "zh-CN")
+  //   preferred_locale: preferred locale identifier for the |characters|
+  //                     (e.g. "en", "ja", "zh-CN")
   //
-  // Returns a FallbackFontData instance. If the request cannot be satisfied,
-  // the font name will be empty.
-  virtual void GetFallbackFontForCharacter(WebUChar32,
-                                           const char* preferred_locale,
-                                           gfx::FallbackFontData*) = 0;
+  // fallback_font will be filled with the font name and filename, among other
+  // data. Returns false if the request could not be satisfied.
+  virtual bool GetFallbackFontForCharacter(
+      WebUChar32 character,
+      const char* preferred_locale,
+      gfx::FallbackFontData* fallback_font) = 0;
 
   // Get a FallbackFontData specification for a font uniquely identified by full
   // font name or postscript name.  Specify full font name or postscript name as
@@ -67,8 +68,8 @@ class WebSandboxSupport {
   //
   // The FallbackFontData out parameter will contain a filename, ttc index and
   // fontconfig interface id, with the italic and bold members set always
-  // initialised to false.
-  virtual void MatchFontByPostscriptNameOrFullFontName(
+  // initialised to false. If a match is not found, return false.
+  virtual bool MatchFontByPostscriptNameOrFullFontName(
       const char* font_unique_name,
       gfx::FallbackFontData*) = 0;
 

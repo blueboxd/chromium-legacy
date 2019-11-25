@@ -158,7 +158,11 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   NavigationLoaderInterceptor::FallbackCallback fallback_callback_;
 
   network::ResourceRequest resource_request_;
+
+  // TODO(https://crbug.com/931087): Replace this with
+  // ServiceWorkerContainerHost.
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
   std::unique_ptr<StreamWaiter> stream_waiter_;

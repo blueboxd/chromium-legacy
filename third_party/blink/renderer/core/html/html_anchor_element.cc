@@ -80,13 +80,8 @@ bool ShouldInterveneDownloadByFramePolicy(LocalFrame* frame) {
   }
   if (document.IsSandboxed(WebSandboxFlags::kDownloads)) {
     UseCounter::Count(document, WebFeature::kDownloadInSandbox);
-    if (!has_gesture) {
-      UseCounter::Count(document,
-                        WebFeature::kDownloadInSandboxWithoutUserGesture);
-      if (RuntimeEnabledFeatures::
-              BlockingDownloadsInSandboxWithoutUserActivationEnabled())
-        should_intervene_download = true;
-    }
+    if (RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled())
+      should_intervene_download = true;
   }
   if (!should_intervene_download)
     UseCounter::Count(document, WebFeature::kDownloadPostPolicyCheck);
@@ -188,9 +183,10 @@ void HTMLAnchorElement::DefaultEventHandler(Event& event) {
       DispatchSimulatedClick(&event);
       return;
     }
-
-    if (IsLinkClick(event) && IsLiveLink()) {
-      HandleClick(event);
+    Event* click_event = GetClickEventOrNull(event);
+    if (click_event && IsLiveLink()) {
+      HandleClick(*click_event);
+      event.SetDefaultHandled();
       return;
     }
   }
@@ -463,17 +459,24 @@ bool IsEnterKeyKeydownEvent(Event& event) {
          !ToKeyboardEvent(event).repeat();
 }
 
-bool IsLinkClick(Event& event) {
-  if ((event.type() != event_type_names::kClick &&
-       event.type() != event_type_names::kAuxclick) ||
-      !event.IsMouseEvent()) {
-    return false;
+Event* GetClickEventOrNull(Event& event) {
+  // HTMLElement embedded in anchor tag dispatches a DOMActivate event when
+  // clicked on. The original click event is set as underlying event.
+  bool use_underlying_event =
+      event.type() == event_type_names::kDOMActivate && event.UnderlyingEvent();
+  Event* process_event =
+      use_underlying_event ? event.UnderlyingEvent() : &event;
+  if ((process_event->type() != event_type_names::kClick &&
+       process_event->type() != event_type_names::kAuxclick) ||
+      !process_event->IsMouseEvent()) {
+    return nullptr;
   }
-  auto& mouse_event = ToMouseEvent(event);
+  auto& mouse_event = ToMouseEvent(*process_event);
   int16_t button = mouse_event.button();
   return (button == static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
-          button ==
-              static_cast<int16_t>(WebPointerProperties::Button::kMiddle));
+          button == static_cast<int16_t>(WebPointerProperties::Button::kMiddle))
+             ? process_event
+             : nullptr;
 }
 
 bool HTMLAnchorElement::WillRespondToMouseClickEvents() {

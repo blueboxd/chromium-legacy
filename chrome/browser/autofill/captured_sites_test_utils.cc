@@ -1148,13 +1148,14 @@ bool TestRecipeReplayer::ExecuteValidateFieldValueAction(
 
     // If we are validating the value of a Chrome autofilled field, print the
     // Chrome Autofill's field annotation for debugging purpose.
-    std::string title;
-    if (GetElementProperty(frame, xpath, "return target.getAttribute('title');",
-                           &title)) {
-      VLOG(1) << title;
+    std::string autofill_information;
+    if (GetElementProperty(
+            frame, xpath, "return target.getAttribute('autofill-information');",
+            &autofill_information)) {
+      VLOG(1) << autofill_information;
     } else {
-      ADD_FAILURE()
-          << "Failed to obtain the field's Chrome Autofill annotation!";
+      // Only used for logging purposes, so don't ADD_FAILURE() if it fails.
+      VLOG(1) << "Failed to obtain the field's Chrome Autofill annotation!";
     }
 
     std::string expected_autofill_prediction_type =

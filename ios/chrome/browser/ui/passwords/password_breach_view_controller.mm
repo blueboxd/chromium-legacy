@@ -244,6 +244,11 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   [self.actionHandler passwordBreachDone];
 }
 
+// Handle taps on the help button.
+- (void)didTapHelpButton {
+  // TODO(crbug.com/1028095): Open help center article.
+}
+
 // Handle taps on the primary action button.
 - (void)didTapPrimaryActionButton {
   [self.actionHandler passwordBreachPrimaryAction];
@@ -257,6 +262,11 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
           forToolbarPosition:UIBarPositionAny];
   [topToolbar setBarTintColor:[UIColor colorNamed:kBackgroundColor]];
   topToolbar.delegate = self;
+  UIBarButtonItem* helpButton = [[UIBarButtonItem alloc]
+      initWithImage:[UIImage imageNamed:@"password_breach_ic_help"]
+              style:UIBarButtonItemStylePlain
+             target:self
+             action:@selector(didTapHelpButton)];
   UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
@@ -265,7 +275,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
       initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                            target:nil
                            action:nil];
-  topToolbar.items = @[ spacer, doneButton ];
+  topToolbar.items = @[ helpButton, spacer, doneButton ];
   topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
   return topToolbar;
 }

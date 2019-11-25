@@ -267,8 +267,8 @@ TEST_F(ServiceWorkerObjectHostTest,
   // object for the service worker, inside the service worker's own
   // execution context (e.g., self.registration.active inside the active
   // worker and self.serviceWorker).
-  ServiceWorkerProviderHost* provider_host = version_->provider_host();
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  ServiceWorkerContainerHost* container_host =
+      version_->provider_host()->container_host();
   blink::mojom::ServiceWorkerObjectInfoPtr info =
       container_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
@@ -395,13 +395,13 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
 
   // The worker should have received an ExtendableMessageEvent whose
-  // source is |provider_host|.
+  // source is |container_host|.
   const std::vector<blink::mojom::ExtendableMessageEventPtr>& events =
       worker->events();
   EXPECT_EQ(1u, events.size());
   EXPECT_FALSE(events[0]->source_info_for_service_worker);
   EXPECT_TRUE(events[0]->source_info_for_client);
-  EXPECT_EQ(provider_host->client_uuid(),
+  EXPECT_EQ(container_host->client_uuid(),
             events[0]->source_info_for_client->client_uuid);
   EXPECT_EQ(container_host->client_type(),
             events[0]->source_info_for_client->client_type);

@@ -375,11 +375,11 @@ ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
       embedded_worker()->process_id(), embedded_worker()->thread_id(),
       embedded_worker()->worker_devtools_agent_route_id());
   for (const auto& controllee : controllee_map_) {
-    const ServiceWorkerProviderHost* host = controllee.second;
+    ServiceWorkerProviderHost* host = controllee.second;
     info.clients.insert(std::make_pair(
-        host->client_uuid(),
+        host->container_host()->client_uuid(),
         ServiceWorkerClientInfo(host->process_id(), host->frame_id(),
-                                host->web_contents_getter(),
+                                host->container_host()->web_contents_getter(),
                                 host->provider_type())));
   }
 
@@ -715,8 +715,8 @@ void ServiceWorkerVersion::AddControllee(
   // TODO(crbug.com/1021718): Remove this CHECK once we figure out the cause of
   // crash.
   CHECK(provider_host);
-  const std::string& uuid = provider_host->client_uuid();
-  CHECK(!provider_host->client_uuid().empty());
+  const std::string& uuid = provider_host->container_host()->client_uuid();
+  CHECK(!provider_host->container_host()->client_uuid().empty());
   // TODO(crbug.com/1021718): Change to DCHECK once we figure out the cause of
   // crash.
   CHECK(!base::Contains(controllee_map_, uuid));
@@ -741,7 +741,7 @@ void ServiceWorkerVersion::AddControllee(
                      weak_factory_.GetWeakPtr(), uuid,
                      ServiceWorkerClientInfo(
                          provider_host->process_id(), provider_host->frame_id(),
-                         provider_host->web_contents_getter(),
+                         provider_host->container_host()->web_contents_getter(),
                          provider_host->provider_type())));
 }
 
@@ -809,7 +809,8 @@ void ServiceWorkerVersion::EvictBackForwardCachedControllees() {
   while (!bfcached_controllee_map_.empty()) {
     auto controllee = bfcached_controllee_map_.begin();
     controllee->second->EvictFromBackForwardCache();
-    RemoveControlleeFromBackForwardCacheMap(controllee->second->client_uuid());
+    RemoveControlleeFromBackForwardCacheMap(
+        controllee->second->container_host()->client_uuid());
   }
 }
 
@@ -1396,7 +1397,7 @@ void ServiceWorkerVersion::NavigateClient(const std::string& client_uuid,
     receiver_.reset();
     return;
   }
-  if (provider_host->controller() != this) {
+  if (container_host->controller() != this) {
     std::move(callback).Run(
         false /* success */, nullptr /* client */,
         std::string(

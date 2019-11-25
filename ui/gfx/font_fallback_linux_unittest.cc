@@ -29,13 +29,11 @@ class FontFallbackLinuxTest : public testing::Test {
 // for the PUA character 0xf6db. This test ensures we're not returning Type 1
 // fonts as fallback.
 TEST_F(FontFallbackLinuxTest, NoType1InFallbackFonts) {
-  FallbackFontData font_fallback_data =
-      GetFallbackFontForChar(0xf6db, std::string());
-  std::string extension = font_fallback_data.filepath.Extension();
-  if (!extension.empty()) {
-    EXPECT_NE(extension, ".pfb");
-  } else {
-    EXPECT_TRUE(font_fallback_data.filepath.empty());
+  FallbackFontData font_fallback_data;
+  if (GetFallbackFontForChar(0xf6db, std::string(), &font_fallback_data)) {
+    std::string extension = font_fallback_data.filepath.Extension();
+    if (!extension.empty())
+      EXPECT_NE(extension, ".pfb");
   }
 }
 

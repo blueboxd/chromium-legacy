@@ -11,6 +11,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/guest_session_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/offline_gaia_test_mixin.h"
@@ -23,6 +25,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/test_utils.h"
+#include "net/dns/mock_host_resolver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/test/rect_test_util.h"
 
@@ -75,6 +78,11 @@ class LoginTest : public MixinBasedInProcessBrowserTest {
   LoginTest() = default;
   ~LoginTest() override {}
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+  }
+
  protected:
   const LoginManagerMixin::TestUserInfo test_user_{
       AccountId::FromUserEmailGaiaId(kTestUser, kGaiaId),
@@ -82,6 +90,11 @@ class LoginTest : public MixinBasedInProcessBrowserTest {
 
   LoginManagerMixin login_manager_{&mixin_host_, {test_user_}};
   OfflineGaiaTestMixin offline_gaia_test_mixin_{&mixin_host_};
+  EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
+                                                     embedded_test_server()};
+  // We need Fake gaia to avoid network errors that can be caused by
+  // attempts to load real GAIA.
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 };
 
 // Used to make sure that the system tray is visible and within the screen
@@ -154,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
 }
 
 // Flaking: https://crbug.com/1023591
-IN_PROC_BROWSER_TEST_F(LoginTest, DISABLED_GaiaAuthOffline) {
+IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
   offline_gaia_test_mixin_.GoOffline();
   offline_gaia_test_mixin_.SignIn(test_user_.account_id, kPassword);
   TestSystemTrayIsVisible(false);

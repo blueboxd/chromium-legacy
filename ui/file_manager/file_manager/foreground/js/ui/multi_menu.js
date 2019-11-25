@@ -177,12 +177,8 @@ cr.define('cr.ui', () => {
       // allows the menu height to grow crbug/934207
       style.maxHeight =
           (viewportHeight - itemRect.top - this.menuEndGap_) + 'px';
-      if ((itemRect.top + childRect.height + this.menuEndGap_) >
-          viewportHeight) {
-        style.overflowY = 'scroll';
-      } else {
-        style.overflowY = 'auto';
-      }
+      // Let the browser deal with scroll bar generation.
+      style.overflowY = 'auto';
     }
 
     /**

@@ -1853,8 +1853,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 }
 
 void RenderProcessHostImpl::BindCacheStorage(
-    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::CacheStorage> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   storage_partition_impl_->GetCacheStorageContext()->AddReceiver(
       std::move(receiver), origin);

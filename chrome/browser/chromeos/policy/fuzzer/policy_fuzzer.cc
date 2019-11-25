@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/fuzzer/policy_fuzzer.pb.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/external_data_manager.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -13,13 +15,21 @@
 
 namespace policy {
 
+bool FuzzTestInitializer() {
+  base::CommandLine::Init(0, nullptr);
+  chromeos::DBusThreadManager::Initialize();
+  return true;
+}
+
 DEFINE_PROTO_FUZZER(const PolicyFuzzerProto& proto) {
+  static bool initialized = FuzzTestInitializer();
+  CHECK(initialized);
+
   if (!proto.has_chrome_device_settings())
     return;
 
   const enterprise_management::ChromeDeviceSettingsProto&
       chrome_device_settings = proto.chrome_device_settings();
-
   base::WeakPtr<ExternalDataManager> data_manager;
   PolicyMap policy_map;
   DecodeDevicePolicy(chrome_device_settings, data_manager, &policy_map);

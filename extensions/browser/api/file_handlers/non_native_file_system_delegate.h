@@ -46,7 +46,7 @@ class NonNativeFileSystemDelegate {
   virtual void IsNonNativeLocalPathDirectory(
       content::BrowserContext* context,
       const base::FilePath& path,
-      const base::Callback<void(bool)>& callback) = 0;
+      base::OnceCallback<void(bool)> callback) = 0;
 
   // Ensures a non-local file exists at |path|, i.e., it does nothing if a file
   // is already present, or creates a file there if it isn't. Asynchronously
@@ -54,7 +54,7 @@ class NonNativeFileSystemDelegate {
   virtual void PrepareNonNativeLocalFileForWritableApp(
       content::BrowserContext* context,
       const base::FilePath& path,
-      const base::Callback<void(bool)>& callback) = 0;
+      base::OnceCallback<void(bool)> callback) = 0;
 };
 
 }  // namespace extensions

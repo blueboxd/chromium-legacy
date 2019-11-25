@@ -4142,7 +4142,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 
   <!-- Strings for login screen extension UI -->
   <message name="IDS_LOGIN_EXTENSION_UI_DIALOG_TITLE" desc="Dialog title for windows opened from a login screen extension. These windows will be displayed over the login screen.">
-    Login provided by <ph name="EXTENSION_NAME">$1<ex>Identity Provider Name</ex></ph>
+    Sign-in provided by <ph name="EXTENSION_NAME">$1<ex>Identity Provider Name</ex></ph>
   </message>
 
   <!-- Strings for notifications about features which aren't supported in Crostini -->

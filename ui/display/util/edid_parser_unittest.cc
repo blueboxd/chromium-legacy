@@ -484,6 +484,6 @@ TEST_P(EDIDParserTest, ParseEdids) {
             parser_.supported_color_transfer_ids());
 }
 
-INSTANTIATE_TEST_SUITE_P(, EDIDParserTest, ValuesIn(kTestCases));
+INSTANTIATE_TEST_SUITE_P(All, EDIDParserTest, ValuesIn(kTestCases));
 
 }  // namespace display

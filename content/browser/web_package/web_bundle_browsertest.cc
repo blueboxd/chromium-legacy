@@ -398,7 +398,7 @@ IN_PROC_BROWSER_TEST_F(WebBundleTrustableFileNotFoundBrowserTest, NotFound) {
   EXPECT_FALSE(NavigateToURL(web_contents, test_data_url()));
   run_loop.Run();
   ASSERT_TRUE(finish_navigation_observer.error_code());
-  EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
+  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
             *finish_navigation_observer.error_code());
   if (console_delegate.messages().empty())
     console_delegate.Wait();
@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest, InvalidWebBundleFile) {
   EXPECT_FALSE(NavigateToURL(web_contents, test_data_url));
   run_loop.Run();
   ASSERT_TRUE(finish_navigation_observer.error_code());
-  EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
+  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
             *finish_navigation_observer.error_code());
 
   if (console_delegate.messages().empty())
@@ -545,7 +545,7 @@ IN_PROC_BROWSER_TEST_P(WebBundleFileBrowserTest,
   EXPECT_FALSE(NavigateToURL(web_contents, test_data_url));
   run_loop.Run();
   ASSERT_TRUE(finish_navigation_observer.error_code());
-  EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
+  EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
             *finish_navigation_observer.error_code());
 
   if (console_delegate.messages().empty())
@@ -676,7 +676,7 @@ class WebBundleNetworkBrowserTest : public WebBundleBrowserTestBase {
     EXPECT_FALSE(NavigateToURL(web_contents, url));
     run_loop.Run();
     ASSERT_TRUE(finish_navigation_observer.error_code());
-    EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
+    EXPECT_EQ(net::ERR_INVALID_WEB_BUNDLE,
               *finish_navigation_observer.error_code());
     if (console_delegate.messages().empty())
       console_delegate.Wait();

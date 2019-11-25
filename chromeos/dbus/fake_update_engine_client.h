@@ -28,22 +28,22 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool HasObserver(const Observer* observer) const override;
-  void RequestUpdateCheck(const UpdateCheckCallback& callback) override;
+  void RequestUpdateCheck(UpdateCheckCallback callback) override;
   void RebootAfterUpdate() override;
   void Rollback() override;
-  void CanRollbackCheck(const RollbackCheckCallback& callback) override;
+  void CanRollbackCheck(RollbackCheckCallback callback) override;
   update_engine::StatusResult GetLastStatus() override;
   void SetChannel(const std::string& target_channel,
                   bool is_powerwash_allowed) override;
   void GetChannel(bool get_current_channel,
-                  const GetChannelCallback& callback) override;
+                  GetChannelCallback callback) override;
   void GetEolInfo(GetEolInfoCallback callback) override;
   void SetUpdateOverCellularPermission(bool allowed,
-                                       const base::Closure& callback) override;
+                                       base::OnceClosure callback) override;
   void SetUpdateOverCellularOneTimePermission(
       const std::string& target_version,
       int64_t target_size,
-      const UpdateOverCellularOneTimePermissionCallback& callback) override;
+      UpdateOverCellularOneTimePermissionCallback callback) override;
   // Pushes update_engine::StatusResult in the queue to test changing status.
   // GetLastStatus() returns the status set by this method in FIFO order.
   // See set_default_status().

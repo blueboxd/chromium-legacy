@@ -9,7 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
@@ -38,7 +38,11 @@ enum class FinishReason {
   kAbandonContentHidden = 2,
   // Abandon if the WebContents is destroyed.
   kAbandonContentDestroyed = 3,
-  // Abandon if the WebContents navigates away from its initial page.
+  // Abandon if the WebContents navigates away from its initial page, as it:
+  //   (1) is no longer a fair timing; and
+  //   (2) can cause http://crbug.com/525209 where the first paint didn't fire
+  //       for the initial content but fires after a lot of idle time when the
+  //       user finally navigates to another page that does trigger it.
   kAbandonNewNavigation = 4,
   // Abandon if the WebContents fails to load (e.g. network error, etc.).
   kAbandonNavigationError = 5,
@@ -47,9 +51,13 @@ enum class FinishReason {
   kMaxValue = kAbandonNoInitiallyVisibleContent
 };
 
+// Per documentation in navigation_request.cc, a navigation id is guaranteed
+// nonzero.
+constexpr int64_t kInvalidNavigationId = 0;
+
 void RecordFinishReason(FinishReason finish_reason) {
-  UMA_HISTOGRAM_ENUMERATION("Startup.FirstWebContents.FinishReason",
-                            finish_reason);
+  base::UmaHistogramEnumeration("Startup.FirstWebContents.FinishReason",
+                                finish_reason);
 }
 
 class FirstWebContentsProfiler : public content::WebContentsObserver {
@@ -58,27 +66,14 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
                            startup_metric_utils::WebContentsWorkload workload);
 
  private:
-  // Steps of main frame navigation in a WebContents.
-  enum class NavigationStep {
-    // DidStartNavigation() is invalid
-    // DidFinishNavigation() transitions to kNavigationFinished
-    // DidFirstVisuallyNonEmptyPaint() is invalid
-    kNavigationStarted,
-
-    // DidStartNavigation() stops profiling with kAbandonNewNavigation
-    // DidFinishNavigation() is invalid
-    // DidFirstVisuallyNonEmptyPaint() stops profiling with kDone
-    kNavigationFinished,
-  };
-
   ~FirstWebContentsProfiler() override = default;
 
   // content::WebContentsObserver:
-  void DidFirstVisuallyNonEmptyPaint() override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidFirstVisuallyNonEmptyPaint() override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
@@ -86,7 +81,12 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   void FinishedCollectingMetrics(FinishReason finish_reason);
 
   const startup_metric_utils::WebContentsWorkload workload_;
-  NavigationStep navigation_step_ = NavigationStep::kNavigationStarted;
+
+  // The first NavigationHandle id observed by this.
+  int64_t first_navigation_id_ = kInvalidNavigationId;
+
+  // Whether a main frame navigation finished since this was created.
+  bool did_finish_first_navigation_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FirstWebContentsProfiler);
 };
@@ -94,14 +94,70 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
 FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents,
     startup_metric_utils::WebContentsWorkload workload)
-    : content::WebContentsObserver(web_contents), workload_(workload) {
-  // FirstWebContentsProfiler is always created with a WebContents that started
-  // but did not finish navigating.
-  DCHECK(web_contents->GetController().GetPendingEntry());
+    : content::WebContentsObserver(web_contents), workload_(workload) {}
+
+void FirstWebContentsProfiler::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Ignore subframe navigations and same-document navigations.
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  if (first_navigation_id_ != kInvalidNavigationId) {
+    // Abandon if this is not the first observed top-level navigation.
+    DCHECK_NE(first_navigation_id_, navigation_handle->GetNavigationId());
+    FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
+    return;
+  }
+
+  DCHECK(!did_finish_first_navigation_);
+
+  // Keep track of the first top-level navigation id observed by this.
+  first_navigation_id_ = navigation_handle->GetNavigationId();
+}
+
+void FirstWebContentsProfiler::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
+    FinishedCollectingMetrics(FinishReason::kAbandonBlockingUI);
+    return;
+  }
+
+  // Ignore subframe navigations and same-document navigations.
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
+
+  if (!navigation_handle->HasCommitted() ||
+      navigation_handle->IsErrorPage()) {
+    FinishedCollectingMetrics(FinishReason::kAbandonNavigationError);
+    return;
+  }
+
+  if (first_navigation_id_ == kInvalidNavigationId) {
+    // Keep track of the first top-level navigation id observed by this.
+    //
+    // Note: FirstWebContentsProfiler may be created before or after
+    // DidStartNavigation() is dispatched for the first navigation, which is why
+    // |first_navigation_id_| may be set in DidStartNavigation() or
+    // DidFinishNavigation().
+    first_navigation_id_ = navigation_handle->GetNavigationId();
+  }
+
+  DCHECK_EQ(first_navigation_id_, navigation_handle->GetNavigationId());
+  DCHECK(!did_finish_first_navigation_);
+  did_finish_first_navigation_ = true;
+
+  startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
+      navigation_handle->NavigationStart(), workload_);
+  startup_metric_utils::RecordFirstWebContentsMainNavigationFinished(
+      base::TimeTicks::Now());
 }
 
 void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
-  DCHECK_EQ(navigation_step_, NavigationStep::kNavigationFinished);
+  DCHECK(did_finish_first_navigation_);
 
   if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
     FinishedCollectingMetrics(FinishReason::kAbandonBlockingUI);
@@ -115,54 +171,6 @@ void FirstWebContentsProfiler::DidFirstVisuallyNonEmptyPaint() {
                                   ->GetInitTimeForNavigationMetrics());
 
   FinishedCollectingMetrics(FinishReason::kDone);
-}
-
-void FirstWebContentsProfiler::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Ignore subframe navigations and same-document navigations.
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  // DidFinishNavigation() should have been called to finish the preceding
-  // navigation.
-  DCHECK_EQ(navigation_step_, NavigationStep::kNavigationFinished);
-
-  // Abandon profiling on a top-level navigation to a different page as it:
-  //   (1) is no longer a fair timing; and
-  //   (2) can cause http://crbug.com/525209 where the first paint didn't fire
-  //       for the initial content but fires after a lot of idle time when the
-  //       user finally navigates to another page that does trigger it.
-  FinishedCollectingMetrics(FinishReason::kAbandonNewNavigation);
-}
-
-void FirstWebContentsProfiler::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  // Ignore subframe navigations and same-document navigations.
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  DCHECK_EQ(navigation_step_, NavigationStep::kNavigationStarted);
-  navigation_step_ = NavigationStep::kNavigationFinished;
-
-  if (!navigation_handle->HasCommitted() ||
-      navigation_handle->IsErrorPage()) {
-    FinishedCollectingMetrics(FinishReason::kAbandonNavigationError);
-    return;
-  }
-
-  if (startup_metric_utils::WasMainWindowStartupInterrupted()) {
-    FinishedCollectingMetrics(FinishReason::kAbandonBlockingUI);
-    return;
-  }
-
-  startup_metric_utils::RecordFirstWebContentsMainNavigationStart(
-      navigation_handle->NavigationStart(), workload_);
-  startup_metric_utils::RecordFirstWebContentsMainNavigationFinished(
-      base::TimeTicks::Now());
 }
 
 void FirstWebContentsProfiler::OnVisibilityChanged(

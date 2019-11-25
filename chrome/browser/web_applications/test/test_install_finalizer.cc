@@ -81,6 +81,11 @@ void TestInstallFinalizer::UninstallWebAppFromSyncByUser(
   NOTIMPLEMENTED();
 }
 
+bool TestInstallFinalizer::WasExternalAppUninstalledByUser(
+    const AppId& app_id) const {
+  return base::Contains(user_uninstalled_external_apps_, app_id);
+}
+
 bool TestInstallFinalizer::CanAddAppToQuickLaunchBar() const {
   return true;
 }
@@ -120,6 +125,12 @@ void TestInstallFinalizer::SetNextUninstallExternalWebAppResult(
     bool uninstalled) {
   DCHECK(!base::Contains(next_uninstall_external_web_app_results_, app_url));
   next_uninstall_external_web_app_results_[app_url] = uninstalled;
+}
+
+void TestInstallFinalizer::SimulateExternalAppUninstalledByUser(
+    const AppId& app_id) {
+  DCHECK(!base::Contains(user_uninstalled_external_apps_, app_id));
+  user_uninstalled_external_apps_.insert(app_id);
 }
 
 void TestInstallFinalizer::Finalize(const WebApplicationInfo& web_app_info,

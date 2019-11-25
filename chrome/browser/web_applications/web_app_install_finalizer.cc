@@ -277,6 +277,12 @@ void WebAppInstallFinalizer::UninstallWebAppFromSyncByUser(
   UninstallWebAppOrRemoveSource(app_id, Source::kSync, std::move(callback));
 }
 
+bool WebAppInstallFinalizer::WasExternalAppUninstalledByUser(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void WebAppInstallFinalizer::FinalizeUpdate(
     const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {

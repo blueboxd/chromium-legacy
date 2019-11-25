@@ -33,12 +33,6 @@ bool WebAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
   return web_app ? web_app->is_locally_installed() : false;
 }
 
-bool WebAppRegistrar::WasExternalAppUninstalledByUser(
-    const AppId& app_id) const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool WebAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
   const WebApp* web_app = GetAppById(app_id);
   return web_app && web_app->WasInstalledByUser();

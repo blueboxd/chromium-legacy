@@ -211,9 +211,13 @@ int MixerInput::FillAudioData(int num_frames,
   previous_ended_in_silence_ = redirected;
   first_buffer_ = false;
 
-  if (source_->playout_channel() != kChannelAll) {
-    DCHECK_LT(source_->playout_channel(), num_channels_);
-
+  // TODO(kmackay): If we ever support channel selections other than L and R,
+  // we should remix channels to a format that includes the selected channel
+  // and then do channel selection. Currently if the input is mono we don't
+  // bother doing channel selection since the result would be the same as
+  // doing nothing anyway.
+  if (source_->playout_channel() != kChannelAll &&
+      source_->playout_channel() < num_channels_) {
     // Duplicate selected channel to all channels.
     for (int c = 0; c < num_channels_; ++c) {
       if (c != source_->playout_channel()) {

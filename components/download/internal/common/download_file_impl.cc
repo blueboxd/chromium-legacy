@@ -136,7 +136,6 @@ void DownloadFileImpl::SourceStream::RegisterCompletionCallback(
 InputStream::StreamState DownloadFileImpl::SourceStream::Read(
     scoped_refptr<net::IOBuffer>* data,
     size_t* length) {
-  CHECK(input_stream_);
   return input_stream_->Read(data, length);
 }
 
@@ -178,8 +177,6 @@ DownloadFileImpl::DownloadFileImpl(
 
 DownloadFileImpl::~DownloadFileImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!use_test_task_runner_ && task_runner_)
-    CHECK(!main_task_runner_->BelongsToCurrentThread());
 
   TRACE_EVENT_NESTABLE_ASYNC_END0("download", "DownloadFileActive",
                                   download_id_);
@@ -251,7 +248,7 @@ void DownloadFileImpl::AddInputStream(std::unique_ptr<InputStream> stream,
     CancelRequest(offset);
     return;
   }
-  CHECK(source_streams_.find(offset) == source_streams_.end());
+  DCHECK(source_streams_.find(offset) == source_streams_.end());
   source_streams_[offset] =
       std::make_unique<SourceStream>(offset, offset, std::move(stream));
   OnSourceStreamAdded(source_streams_[offset].get());
@@ -582,17 +579,6 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
   base::TimeDelta delta(
       base::TimeDelta::FromMilliseconds(kMaxTimeBlockingFileThreadMs));
-
-  // TODO(qinmin): remove this once crbug.com/1009839 is fixed.
-  bool stream_exists = false;
-  for (auto& stream : source_streams_) {
-    SourceStream* stream_ptr = stream.second.get();
-    if (stream_ptr == source_stream) {
-      stream_exists = true;
-      break;
-    }
-  }
-  CHECK(stream_exists);
   // Take care of any file local activity required.
   do {
     state = source_stream->Read(&incoming_data, &incoming_data_size);
@@ -929,7 +915,6 @@ void DownloadFileImpl::DebugStates() const {
 void DownloadFileImpl::SetTaskRunnerForTesting(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   task_runner_ = std::move(task_runner);
-  use_test_task_runner_ = true;
 }
 
 DownloadFileImpl::RenameParameters::RenameParameters(

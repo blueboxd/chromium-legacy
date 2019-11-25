@@ -85,10 +85,10 @@ class BlobImplTest : public testing::Test {
     base::RunLoop loop;
     std::string received_uuid;
     blob->GetInternalUUID(base::BindOnce(
-        [](base::Closure quit_closure, std::string* uuid_out,
+        [](base::OnceClosure quit_closure, std::string* uuid_out,
            const std::string& uuid) {
           *uuid_out = uuid;
-          quit_closure.Run();
+          std::move(quit_closure).Run();
         },
         loop.QuitClosure(), &received_uuid));
     loop.Run();

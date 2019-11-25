@@ -72,10 +72,10 @@ bool SupportedAudioVideoChecker::SupportsFileType(const base::FilePath& path) {
 }
 
 void SupportedAudioVideoChecker::StartPreWriteValidation(
-    const storage::CopyOrMoveFileValidator::ResultCallback& result_callback) {
+    storage::CopyOrMoveFileValidator::ResultCallback result_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(callback_.is_null());
-  callback_ = result_callback;
+  callback_ = std::move(result_callback);
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -92,11 +92,11 @@ SupportedAudioVideoChecker::SupportedAudioVideoChecker(
 void SupportedAudioVideoChecker::OnFileOpen(base::File file) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!file.IsValid()) {
-    callback_.Run(base::File::FILE_ERROR_SECURITY);
+    std::move(callback_).Run(base::File::FILE_ERROR_SECURITY);
     return;
   }
 
-  safe_checker_ =
-      std::make_unique<SafeAudioVideoChecker>(std::move(file), callback_);
+  safe_checker_ = std::make_unique<SafeAudioVideoChecker>(std::move(file),
+                                                          std::move(callback_));
   safe_checker_->Start();
 }

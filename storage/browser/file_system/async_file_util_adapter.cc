@@ -158,7 +158,7 @@ void RunCreateOrOpenCallback(FileSystemOperationContext* context,
     return;
   }
 
-  std::move(callback).Run(std::move(file), base::Closure());
+  std::move(callback).Run(std::move(file), base::OnceClosure());
 }
 
 }  // namespace

@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/callback_list.h"
+
 namespace weblayer {
 namespace i18n {
 
@@ -16,6 +18,11 @@ std::string GetApplicationLocale();
 // Returns a list of locales suitable for use in the ACCEPT-LANGUAGE header.
 // This may be called on any thread.
 std::string GetAcceptLangs();
+
+using LocaleChangeSubscription = base::CallbackList<void()>::Subscription;
+
+std::unique_ptr<LocaleChangeSubscription> RegisterLocaleChangeCallback(
+    base::RepeatingClosure locale_changed);
 
 }  // namespace i18n
 }  // namespace weblayer

@@ -427,7 +427,7 @@ def main():
 
   targets = 'AArch64;ARM;Mips;PowerPC;SystemZ;WebAssembly;X86'
 
-  projects = 'clang;compiler-rt;lld;chrometools'
+  projects = 'clang;compiler-rt;lld;chrometools;clang-tools-extra'
 
   if sys.platform == 'darwin':
     # clang needs libc++, else -stdlib=libc++ won't find includes
@@ -611,6 +611,10 @@ def main():
     # training by actually building a target in Chromium. (For comparison, a
     # C++-y "Hello World" program only resulted in 14% faster builds.)
     # See https://crbug.com/966403#c16 for all numbers.
+    #
+    # NOTE: Tidy uses binaries built with this profile, but doesn't seem to
+    # gain much from it. If tidy's execution time becomes a concern, it might
+    # be good to investigate that.
     #
     # TODO(hans): Enhance the training, perhaps by including preprocessed code
     # from more platforms, and by doing some linking so that lld can benefit

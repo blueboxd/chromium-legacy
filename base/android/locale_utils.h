@@ -19,6 +19,10 @@ BASE_EXPORT std::string GetDefaultCountryCode();
 // Return the current default locale of the device as string.
 BASE_EXPORT std::string GetDefaultLocaleString();
 
+// Returns a list of user-selected locales as a comma separated string, ordered
+// by decreasing preference.
+BASE_EXPORT std::string GetDefaultLocaleListString();
+
 }  // namespace android
 }  // namespace base
 

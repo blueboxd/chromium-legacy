@@ -11,7 +11,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -55,10 +57,13 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
 
   // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
   // ServiceWorkerContainerType.
-  ServiceWorkerContainerHost(blink::mojom::ServiceWorkerProviderType type,
-                             bool is_parent_frame_secure,
-                             ServiceWorkerProviderHost* provider_host,
-                             base::WeakPtr<ServiceWorkerContextCore> context);
+  ServiceWorkerContainerHost(
+      blink::mojom::ServiceWorkerProviderType type,
+      bool is_parent_frame_secure,
+      mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+          container_remote,
+      ServiceWorkerProviderHost* provider_host,
+      base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerContainerHost();
 
   ServiceWorkerContainerHost(const ServiceWorkerContainerHost& other) = delete;
@@ -67,6 +72,22 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   ServiceWorkerContainerHost(ServiceWorkerContainerHost&& other) = delete;
   ServiceWorkerContainerHost& operator=(ServiceWorkerContainerHost&& other) =
       delete;
+
+  // Dispatches message event to the client (document, dedicated worker when
+  // PlzDedicatedWorker is enabled, or shared worker).
+  void PostMessageToClient(ServiceWorkerVersion* version,
+                           blink::TransferableMessage message);
+
+  // Notifies the client that its controller used a feature, for UseCounter
+  // purposes. This can only be called if IsContainerForClient() is true.
+  void CountFeature(blink::mojom::WebFeature feature);
+
+  // Sends information about the controller to the container of the service
+  // worker clients in the renderer. If |notify_controllerchange| is true,
+  // instructs the renderer to dispatch a 'controllerchange' event.
+  void SendSetControllerServiceWorker(
+      blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
+      bool notify_controllerchange);
 
   // Returns an object info representing |registration|. The object info holds a
   // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
@@ -205,6 +226,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // section.
   void TransitionToClientPhase(ClientPhase new_phase);
 
+  // For service worker clients. Returns false if it's not yet time to send the
+  // renderer information about the controller. Basically returns false if this
+  // client is still loading so due to potential redirects the initial
+  // controller has not yet been decided.
+  // TODO(https://crbug.com/931087): Move this function into the private
+  // section.
+  bool IsControllerDecided() const;
+
  private:
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
@@ -253,6 +282,10 @@ class CONTENT_EXPORT ServiceWorkerContainerHost {
   // renderer process.
   std::map<int64_t /* version_id */, std::unique_ptr<ServiceWorkerObjectHost>>
       service_worker_object_hosts_;
+
+  // |container_| is the remote renderer-side ServiceWorkerContainer that |this|
+  // is hosting.
+  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainer> container_;
 
   // This provider host owns |this|.
   // TODO(https://crbug.com/931087): Remove dependencies on |provider_host_|.

@@ -28,14 +28,6 @@ void TestAppRegistrar::RemoveExternalAppByInstallUrl(const GURL& install_url) {
   RemoveExternalApp(*LookupExternalAppId(install_url));
 }
 
-void TestAppRegistrar::SimulateExternalAppUninstalledByUser(
-    const AppId& app_id) {
-  DCHECK(!base::Contains(user_uninstalled_external_apps_, app_id));
-  user_uninstalled_external_apps_.insert(app_id);
-  if (base::Contains(installed_apps_, app_id))
-    RemoveExternalApp(app_id);
-}
-
 bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
   return base::Contains(installed_apps_, app_id);
 }
@@ -43,11 +35,6 @@ bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
 bool TestAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
   NOTIMPLEMENTED();
   return false;
-}
-
-bool TestAppRegistrar::WasExternalAppUninstalledByUser(
-    const AppId& app_id) const {
-  return base::Contains(user_uninstalled_external_apps_, app_id);
 }
 
 bool TestAppRegistrar::WasInstalledByUser(const AppId& app_id) const {

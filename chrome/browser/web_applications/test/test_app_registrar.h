@@ -33,15 +33,9 @@ class TestAppRegistrar : public AppRegistrar {
   void RemoveExternalApp(const AppId& app_id);
   void RemoveExternalAppByInstallUrl(const GURL& install_url);
 
-  // Uninstall the app and add |app_id| to the map of external extensions
-  // uninstalled by the user. May be called on an app that isn't installed to
-  // simulate that the app was uninstalled previously.
-  void SimulateExternalAppUninstalledByUser(const AppId& app_id);
-
   // AppRegistrar
   bool IsInstalled(const AppId& app_id) const override;
   bool IsLocallyInstalled(const AppId& app_id) const override;
-  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool WasInstalledByUser(const AppId& app_id) const override;
   std::map<AppId, GURL> GetExternallyInstalledApps(
       ExternalInstallSource install_source) const override;
@@ -62,7 +56,6 @@ class TestAppRegistrar : public AppRegistrar {
 
  private:
   std::map<AppId, AppInfo> installed_apps_;
-  std::set<AppId> user_uninstalled_external_apps_;
 };
 
 }  // namespace web_app

@@ -130,7 +130,15 @@ SANITIZER_HOOK_ATTRIBUTE const char *__msan_default_options() {
 //   strip_path_prefix=/../../ - prefixes up to and including this
 //     substring will be stripped from source file paths in symbolized reports.
 const char kLsanDefaultOptions[] =
-    "print_suppressions=1 strip_path_prefix=/../../ ";
+    "print_suppressions=1 strip_path_prefix=/../../ "
+#if defined(ARCH_CPU_64_BITS)
+    // When pointer compression in V8 is enabled the external pointers in the
+    // heap are guaranteed to be only 4 bytes aligned. So we need this option
+    // in order to ensure that LSAN will find all the external pointers.
+    // TODO(crbug.com/328552): see updates from 2019.
+    "use_unaligned=1 "
+#endif  // ARCH_CPU_64_BITS
+    ;
 
 SANITIZER_HOOK_ATTRIBUTE const char *__lsan_default_options() {
   return kLsanDefaultOptions;

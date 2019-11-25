@@ -35,11 +35,6 @@ class AppRegistrar {
   // Returns true if the app with |app_id| is currently fully locally installed.
   virtual bool IsLocallyInstalled(const AppId& app_id) const = 0;
 
-  // Returns true if the app with |app_id| was previously uninstalled by the
-  // user. For example, if a user uninstalls a default app ('default apps' are
-  // considered external apps), then this will return true.
-  virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
-
   // Returns true if the app was installed by user, false if default installed.
   virtual bool WasInstalledByUser(const AppId& app_id) const = 0;
 

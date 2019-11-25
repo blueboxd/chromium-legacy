@@ -49,10 +49,8 @@ namespace blink {
 // static
 FileMetadata FileMetadata::From(const base::File::Info& file_info) {
   FileMetadata file_metadata;
-  if (file_info.last_modified.is_null())
-    file_metadata.modification_time = std::numeric_limits<double>::quiet_NaN();
-  else
-    file_metadata.modification_time = file_info.last_modified.ToJsTime();
+  file_metadata.modification_time =
+      NullableTimeToOptionalTime(file_info.last_modified);
   file_metadata.length = file_info.size;
   if (file_info.is_directory)
     file_metadata.type = FileMetadata::kTypeDirectory;
@@ -69,7 +67,8 @@ bool GetFileSize(const String& path, int64_t& result) {
   return true;
 }
 
-bool GetFileModificationTime(const String& path, double& result) {
+bool GetFileModificationTime(const String& path,
+                             base::Optional<base::Time>& result) {
   FileMetadata metadata;
   if (!GetFileMetadata(path, metadata))
     return false;
@@ -91,10 +90,8 @@ bool GetFileMetadata(const String& path, FileMetadata& metadata) {
   if (!host->GetFileInfo(WebStringToFilePath(path), &file_info) || !file_info)
     return false;
 
-  // Blink now expects NaN as uninitialized/null Date.
-  metadata.modification_time = file_info->last_modified.is_null()
-                                   ? std::numeric_limits<double>::quiet_NaN()
-                                   : file_info->last_modified.ToJsTime();
+  metadata.modification_time =
+      NullableTimeToOptionalTime(file_info->last_modified);
   metadata.length = file_info->size;
   metadata.type = file_info->is_directory ? FileMetadata::kTypeDirectory
                                           : FileMetadata::kTypeFile;

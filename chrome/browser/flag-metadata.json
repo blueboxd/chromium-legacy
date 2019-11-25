@@ -2230,12 +2230,6 @@
     "expiry_milestone": 81
   },
   {
-    // See https://crbug.com/904630, offical builds only.
-    "name": "file-manager-piex-wasm",
-    "owners": [ "noel" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "files-ng",
     "owners": [ "adanilo", "noel" ],
     "expiry_milestone": 82

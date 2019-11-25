@@ -1083,9 +1083,6 @@ interface Functions {
   static void computeChecksum([instanceof=Entry] object entry,
                               ComputeChecksumCallback callback);
 
-  // Returns if Piex loader is enabled.
-  static void isPiexLoaderEnabled(BooleanCallback callback);
-
   // Returns list of available providers.
   static void getProviders(GetProvidersCallback callback);
 

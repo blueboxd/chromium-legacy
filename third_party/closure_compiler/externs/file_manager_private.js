@@ -856,12 +856,6 @@ chrome.fileManagerPrivate.openSettingsSubpage = function(sub_page) {};
 chrome.fileManagerPrivate.computeChecksum = function(entry, callback) {};
 
 /**
- * Gets a flag indicating whether PiexLoader is enabled.
- * @param {function((boolean|undefined))} callback
- */
-chrome.fileManagerPrivate.isPiexLoaderEnabled = function(callback) {};
-
-/**
  * Returns list of available providers.
  * @param {function((!Array<!chrome.fileManagerPrivate.Provider>|undefined))}
  *     callback

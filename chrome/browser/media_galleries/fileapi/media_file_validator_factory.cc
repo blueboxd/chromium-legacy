@@ -16,17 +16,15 @@ namespace {
 class InvalidFileValidator : public storage::CopyOrMoveFileValidator {
  public:
   ~InvalidFileValidator() override {}
-  void StartPreWriteValidation(
-      const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
-      override {
-    result_callback.Run(base::File::FILE_ERROR_SECURITY);
+  void StartPreWriteValidation(storage::CopyOrMoveFileValidator::ResultCallback
+                                   result_callback) override {
+    std::move(result_callback).Run(base::File::FILE_ERROR_SECURITY);
   }
 
-  void StartPostWriteValidation(
-      const base::FilePath& dest_platform_path,
-      const storage::CopyOrMoveFileValidator::ResultCallback& result_callback)
-      override {
-    result_callback.Run(base::File::FILE_ERROR_SECURITY);
+  void StartPostWriteValidation(const base::FilePath& dest_platform_path,
+                                storage::CopyOrMoveFileValidator::ResultCallback
+                                    result_callback) override {
+    std::move(result_callback).Run(base::File::FILE_ERROR_SECURITY);
   }
 
  private:

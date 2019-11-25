@@ -182,6 +182,11 @@ void BookmarkAppInstallFinalizer::UninstallWebAppFromSyncByUser(
   UninstallExtension(app_id, std::move(callback));
 }
 
+bool BookmarkAppInstallFinalizer::WasExternalAppUninstalledByUser(
+    const web_app::AppId& app_id) const {
+  return ExtensionPrefs::Get(profile_)->IsExternalExtensionUninstalled(app_id);
+}
+
 void BookmarkAppInstallFinalizer::UninstallExtension(
     const web_app::AppId& app_id,
     UninstallWebAppCallback callback) {

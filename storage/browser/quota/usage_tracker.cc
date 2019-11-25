@@ -134,7 +134,7 @@ void UsageTracker::GetHostUsageWithBreakdown(
 
   AccumulateInfo* info = new AccumulateInfo;
   // We use BarrierClosure here instead of manually counting pending_clients.
-  base::Closure barrier = base::BarrierClosure(
+  base::RepeatingClosure barrier = base::BarrierClosure(
       client_tracker_map_.size(),
       base::BindOnce(&UsageTracker::FinallySendHostUsageWithBreakdown,
                      weak_factory_.GetWeakPtr(), base::Owned(info), host));
@@ -249,12 +249,11 @@ void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
     std::move(callback).Run(info->usage, info->unlimited_usage);
 }
 
-void UsageTracker::AccumulateClientHostUsage(
-    const base::RepeatingClosure& barrier,
-    AccumulateInfo* info,
-    const std::string& host,
-    QuotaClient::ID client,
-    int64_t usage) {
+void UsageTracker::AccumulateClientHostUsage(base::OnceClosure callback,
+                                             AccumulateInfo* info,
+                                             const std::string& host,
+                                             QuotaClient::ID client,
+                                             int64_t usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   info->usage += usage;
   // Defend against confusing inputs from clients.
@@ -290,7 +289,7 @@ void UsageTracker::AccumulateClientHostUsage(
       break;
   }
 
-  barrier.Run();
+  std::move(callback).Run();
 }
 
 void UsageTracker::FinallySendHostUsageWithBreakdown(AccumulateInfo* info,

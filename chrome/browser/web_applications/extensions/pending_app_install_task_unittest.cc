@@ -210,6 +210,11 @@ class TestPendingAppInstallFinalizer : public InstallFinalizer {
     NOTIMPLEMENTED();
   }
 
+  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   bool CanAddAppToQuickLaunchBar() const override { return true; }
 
   void AddAppToQuickLaunchBar(const AppId& app_id) override {

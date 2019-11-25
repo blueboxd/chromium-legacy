@@ -34,6 +34,7 @@ public class BrowserImpl extends IBrowser.Stub {
     private FragmentWindowAndroid mWindowAndroid;
     private ArrayList<TabImpl> mTabs = new ArrayList<TabImpl>();
     private IBrowserClient mClient;
+    private LocaleChangedBroadcastReceiver mLocaleReceiver;
 
     public BrowserImpl(ProfileImpl profile, Bundle savedInstanceState) {
         mProfile = profile;
@@ -55,6 +56,8 @@ public class BrowserImpl extends IBrowser.Stub {
         addTab(tab);
         boolean set_active_result = setActiveTab(tab);
         assert set_active_result;
+
+        mLocaleReceiver = new LocaleChangedBroadcastReceiver(context);
     }
 
     public void onFragmentDetached() {
@@ -187,6 +190,10 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public void destroy() {
+        if (mLocaleReceiver != null) {
+            mLocaleReceiver.destroy();
+            mLocaleReceiver = null;
+        }
         if (mViewController != null) {
             mViewController.destroy();
             for (TabImpl tab : mTabs) {

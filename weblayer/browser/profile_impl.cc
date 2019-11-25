@@ -16,6 +16,8 @@
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "weblayer/browser/ssl_host_state_delegate_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/common/weblayer_paths.h"
@@ -225,6 +227,9 @@ ProfileImpl::ProfileImpl(const std::string& name) {
   web_cache::WebCacheManager::GetInstance();
 
   browser_context_ = std::make_unique<BrowserContextImpl>(path);
+
+  locale_change_subscription_ = i18n::RegisterLocaleChangeCallback(
+      base::Bind(&ProfileImpl::OnLocaleChanged, base::Unretained(this)));
 }
 
 ProfileImpl::~ProfileImpl() {
@@ -277,6 +282,18 @@ void ProfileImpl::ClearRendererCache() {
           render_process_host->GetID());
     }
   }
+}
+
+void ProfileImpl::OnLocaleChanged() {
+  content::BrowserContext::ForEachStoragePartition(
+      GetBrowserContext(),
+      base::BindRepeating(
+          [](const std::string& accept_language,
+             content::StoragePartition* storage_partition) {
+            storage_partition->GetNetworkContext()->SetAcceptLanguage(
+                accept_language);
+          },
+          i18n::GetAcceptLangs()));
 }
 
 std::unique_ptr<Profile> Profile::Create(const std::string& name) {

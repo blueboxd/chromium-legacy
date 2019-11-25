@@ -58,6 +58,12 @@ class CommonAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       apps::IntentPickerCloseReason close_reason,
       bool should_persist);
 
+  static void OnAppIconsLoaded(
+      content::WebContents* web_contents,
+      IntentPickerAutoDisplayService* ui_auto_display_service,
+      const GURL& url,
+      std::vector<apps::IntentPickerAppInfo> apps);
+
   explicit CommonAppsNavigationThrottle(
       content::NavigationHandle* navigation_handle);
   ~CommonAppsNavigationThrottle() override;

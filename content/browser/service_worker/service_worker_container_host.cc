@@ -29,6 +29,8 @@ void RunCallbacks(
 ServiceWorkerContainerHost::ServiceWorkerContainerHost(
     blink::mojom::ServiceWorkerProviderType type,
     bool is_parent_frame_secure,
+    mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
+        container_remote,
     ServiceWorkerProviderHost* provider_host,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : type_(type),
@@ -37,11 +39,51 @@ ServiceWorkerContainerHost::ServiceWorkerContainerHost(
       context_(std::move(context)) {
   DCHECK(provider_host_);
   DCHECK(context_);
+  if (container_remote) {
+    DCHECK(IsContainerForClient());
+    container_.Bind(std::move(container_remote));
+  } else {
+    DCHECK(IsContainerForServiceWorker());
+  }
 }
 
 ServiceWorkerContainerHost::~ServiceWorkerContainerHost() {
   // Ensure callbacks awaiting execution ready are notified.
   RunExecutionReadyCallbacks();
+}
+
+void ServiceWorkerContainerHost::PostMessageToClient(
+    ServiceWorkerVersion* version,
+    blink::TransferableMessage message) {
+  DCHECK(IsContainerForClient());
+
+  blink::mojom::ServiceWorkerObjectInfoPtr info;
+  base::WeakPtr<ServiceWorkerObjectHost> object_host =
+      GetOrCreateServiceWorkerObjectHost(version);
+  if (object_host)
+    info = object_host->CreateCompleteObjectInfoToSend();
+  container_->PostMessageToClient(std::move(info), std::move(message));
+}
+
+void ServiceWorkerContainerHost::CountFeature(
+    blink::mojom::WebFeature feature) {
+  // CountFeature is a message about the client's controller. It should be sent
+  // only for clients.
+  DCHECK(IsContainerForClient());
+
+  // And only when loading finished so the controller is really settled.
+  if (!IsControllerDecided())
+    return;
+
+  container_->CountFeature(feature);
+}
+
+void ServiceWorkerContainerHost::SendSetControllerServiceWorker(
+    blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
+    bool notify_controllerchange) {
+  DCHECK(IsContainerForClient());
+  container_->SetController(std::move(controller_info),
+                            notify_controllerchange);
 }
 
 blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
@@ -232,6 +274,36 @@ void ServiceWorkerContainerHost::TransitionToClientPhase(
       break;
   }
   client_phase_ = new_phase;
+}
+
+bool ServiceWorkerContainerHost::IsControllerDecided() const {
+  DCHECK(IsContainerForClient());
+
+  if (is_execution_ready())
+    return true;
+
+  // TODO(falken): This function just becomes |is_execution_ready()|
+  // when NetworkService is enabled, so remove/simplify it when
+  // non-NetworkService code is removed.
+
+  switch (client_type()) {
+    case blink::mojom::ServiceWorkerClientType::kWindow:
+      // |this| is hosting a reserved client undergoing navigation. Don't send
+      // the controller since it can be changed again before the final
+      // response. The controller will be sent on navigation commit. See
+      // CommitNavigation in frame.mojom.
+      return false;
+    case blink::mojom::ServiceWorkerClientType::kDedicatedWorker:
+    case blink::mojom::ServiceWorkerClientType::kSharedWorker:
+      // When PlzWorker is enabled, the controller will be sent when the
+      // response is committed to the renderer.
+      return false;
+    case blink::mojom::ServiceWorkerClientType::kAll:
+      NOTREACHED();
+  }
+
+  NOTREACHED();
+  return true;
 }
 
 void ServiceWorkerContainerHost::RunExecutionReadyCallbacks() {

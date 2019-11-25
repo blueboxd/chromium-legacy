@@ -162,11 +162,11 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        client_remote) {
+        container_remote) {
   DCHECK(context);
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       blink::mojom::ServiceWorkerProviderType::kForWindow, are_ancestors_secure,
-      frame_tree_node_id, std::move(host_receiver), std::move(client_remote),
+      frame_tree_node_id, std::move(host_receiver), std::move(container_remote),
       /*running_hosted_version=*/nullptr, context));
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
@@ -184,7 +184,7 @@ ServiceWorkerProviderHost::CreateForServiceWorker(
       blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
       /*is_parent_frame_secure=*/true, FrameTreeNode::kFrameTreeNodeInvalidId,
       (*out_provider_info)->host_remote.InitWithNewEndpointAndPassReceiver(),
-      /*client_remote=*/mojo::NullAssociatedRemote(), std::move(version),
+      /*container_remote=*/mojo::NullAssociatedRemote(), std::move(version),
       context));
   auto weak_ptr = host->AsWeakPtr();
   RegisterToContextCore(context, std::move(host));
@@ -200,7 +200,7 @@ ServiceWorkerProviderHost::CreateForWebWorker(
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        client_remote) {
+        container_remote) {
   using ServiceWorkerProviderType = blink::mojom::ServiceWorkerProviderType;
   DCHECK((base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker) &&
           provider_type == ServiceWorkerProviderType::kForDedicatedWorker) ||
@@ -208,7 +208,8 @@ ServiceWorkerProviderHost::CreateForWebWorker(
   auto host = base::WrapUnique(new ServiceWorkerProviderHost(
       provider_type, /*is_parent_frame_secure=*/true,
       FrameTreeNode::kFrameTreeNodeInvalidId, std::move(host_receiver),
-      std::move(client_remote), /*running_hosted_version=*/nullptr, context));
+      std::move(container_remote), /*running_hosted_version=*/nullptr,
+      context));
   host->SetRenderProcessId(process_id);
 
   auto weak_ptr = host->AsWeakPtr();
@@ -234,7 +235,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-        client_remote,
+        container_remote,
     scoped_refptr<ServiceWorkerVersion> running_hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
@@ -255,27 +256,23 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           type,
           is_parent_frame_secure,
+          std::move(container_remote),
           this,
           context)) {
   DCHECK_NE(blink::mojom::ServiceWorkerProviderType::kUnknown, type);
 
   if (type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
-    DCHECK(!client_remote);
     DCHECK(running_hosted_version_);
     container_host_->UpdateUrls(running_hosted_version_->script_url(),
                                 running_hosted_version_->script_url(),
                                 running_hosted_version_->script_origin());
-  } else {
-    DCHECK(client_remote.is_valid());
-    // For service worker clients, ServiceWorkerProviderHost::UpdateUrls() will
-    // be called later.
   }
+  // For service worker clients, ServiceWorkerProviderHost::UpdateUrls() will
+  // be called later.
 
   context_->RegisterProviderHostByClientID(client_uuid_, this);
 
   DCHECK(host_receiver.is_valid());
-  if (client_remote.is_valid())
-    container_.Bind(std::move(client_remote));
   receiver_.Bind(std::move(host_receiver));
 }
 
@@ -497,7 +494,7 @@ void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
   // SetController message should be sent only for clients.
   DCHECK(IsProviderForClient());
 
-  if (!IsControllerDecided())
+  if (!container_host_->IsControllerDecided())
     return;
 
   SendSetControllerServiceWorker(notify_controllerchange);
@@ -509,11 +506,6 @@ bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
 
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
   return container_host_->IsContainerForClient();
-}
-
-blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
-    const {
-  return container_host_->client_type();
 }
 
 void ServiceWorkerProviderHost::SetControllerRegistration(
@@ -592,31 +584,6 @@ void ServiceWorkerProviderHost::AddServiceWorkerToUpdate(
             blink::mojom::ServiceWorkerProviderType::kForWindow);
 
   versions_to_update_.emplace(std::move(version));
-}
-
-void ServiceWorkerProviderHost::PostMessageToClient(
-    ServiceWorkerVersion* version,
-    blink::TransferableMessage message) {
-  DCHECK(IsProviderForClient());
-
-  blink::mojom::ServiceWorkerObjectInfoPtr info;
-  base::WeakPtr<ServiceWorkerObjectHost> object_host =
-      container_host_->GetOrCreateServiceWorkerObjectHost(version);
-  if (object_host)
-    info = object_host->CreateCompleteObjectInfoToSend();
-  container_->PostMessageToClient(std::move(info), std::move(message));
-}
-
-void ServiceWorkerProviderHost::CountFeature(blink::mojom::WebFeature feature) {
-  // CountFeature is a message about the client's controller. It should be sent
-  // only for clients.
-  DCHECK(IsProviderForClient());
-
-  // And only when loading finished so the controller is really settled.
-  if (!IsControllerDecided())
-    return;
-
-  container_->CountFeature(feature);
 }
 
 void ServiceWorkerProviderHost::ClaimedByRegistration(
@@ -789,8 +756,8 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   }
 
   if (!controller_) {
-    container_->SetController(std::move(controller_info),
-                              notify_controllerchange);
+    container_host_->SendSetControllerServiceWorker(std::move(controller_info),
+                                                    notify_controllerchange);
     return;
   }
 
@@ -817,38 +784,8 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   for (const blink::mojom::WebFeature feature : controller_->used_features())
     controller_info->used_features.push_back(feature);
 
-  container_->SetController(std::move(controller_info),
-                            notify_controllerchange);
-}
-
-bool ServiceWorkerProviderHost::IsControllerDecided() const {
-  DCHECK(IsProviderForClient());
-
-  if (container_host_->is_execution_ready())
-    return true;
-
-  // TODO(falken): This function just becomes |is_execution_ready()|
-  // when NetworkService is enabled, so remove/simplify it when
-  // non-NetworkService code is removed.
-
-  switch (client_type()) {
-    case blink::mojom::ServiceWorkerClientType::kWindow:
-      // |this| is hosting a reserved client undergoing navigation. Don't send
-      // the controller since it can be changed again before the final
-      // response. The controller will be sent on navigation commit. See
-      // CommitNavigation in frame.mojom.
-      return false;
-    case blink::mojom::ServiceWorkerClientType::kDedicatedWorker:
-    case blink::mojom::ServiceWorkerClientType::kSharedWorker:
-      // When PlzWorker is enabled, the controller will be sent when the
-      // response is committed to the renderer.
-      return false;
-    case blink::mojom::ServiceWorkerClientType::kAll:
-      NOTREACHED();
-  }
-
-  NOTREACHED();
-  return true;
+  container_host_->SendSetControllerServiceWorker(std::move(controller_info),
+                                                  notify_controllerchange);
 }
 
 #if DCHECK_IS_ON()
@@ -906,7 +843,8 @@ void ServiceWorkerProviderHost::Register(
           nullptr)) {
     return;
   }
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (container_host_->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     mojo::ReportBadMessage(ServiceWorkerConsts::kBadMessageFromNonWindow);
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kUnknown,
                             std::string(), nullptr);
@@ -1234,7 +1172,7 @@ void ServiceWorkerProviderHost::OnExecutionReady() {
   // because 1) the controller might have changed since navigation commit due to
   // skipWaiting(), and 2) the UseCounter might have changed since navigation
   // commit, in such cases the updated information was prevented being sent due
-  // to false IsControllerDecided().
+  // to false ServiceWorkerContainerHost::IsControllerDecided().
   // TODO(leonhsl): Create some layout tests covering the above case 1), in
   // which case we may also need to set |notify_controllerchange| correctly.
   SendSetControllerServiceWorker(false /* notify_controllerchange */);
@@ -1245,7 +1183,8 @@ void ServiceWorkerProviderHost::OnExecutionReady() {
 bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
     const GURL& client_url,
     std::string* out_error) const {
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (container_host_->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1264,7 +1203,8 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationMessage(
 
 bool ServiceWorkerProviderHost::IsValidGetRegistrationsMessage(
     std::string* out_error) const {
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (container_host_->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
@@ -1278,7 +1218,8 @@ bool ServiceWorkerProviderHost::IsValidGetRegistrationsMessage(
 
 bool ServiceWorkerProviderHost::IsValidGetRegistrationForReadyMessage(
     std::string* out_error) const {
-  if (client_type() != blink::mojom::ServiceWorkerClientType::kWindow) {
+  if (container_host_->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }

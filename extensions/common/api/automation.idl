@@ -585,7 +585,7 @@
     DOMString? roleDescription;
 
     // The accessible name for this node, via the
-    // <a href="http://www.w3.org/TR/wai-aria/roles#namecalculation">
+    // <a href="http://www.w3.org/TR/wai-aria/#namecalculation">
     // Accessible Name Calculation</a> process.
     DOMString? name;
 
@@ -625,7 +625,7 @@
     long[]? nonInlineTextWordEnds;
 
     // The nodes, if any, which this node is specified to control via
-    // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls">
+    // <a href="http://www.w3.org/TR/wai-aria/#aria-controls">
     // <code>aria-controls</code></a>.
     AutomationNode[]? controls;
 
@@ -634,7 +634,7 @@
 
     // The nodes, if any, which may optionally be navigated to after this
     // one. See
-    // <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-flowto">
+    // <a href="http://www.w3.org/TR/wai-aria/#aria-flowto">
     // <code>aria-flowto</code></a>.
     AutomationNode[]? flowTo;
 

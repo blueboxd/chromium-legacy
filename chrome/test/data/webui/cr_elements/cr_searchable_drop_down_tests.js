@@ -213,6 +213,26 @@ suite('cr-searchable-drop-down', function() {
     assertFalse(dropDown.$$('iron-dropdown').opened);
   });
 
+  test('enter re-opens dropdown after selection', function() {
+    setItems(['dog', 'cat', 'mouse']);
+
+    dropDown.$.search.focus();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+
+    assertEquals(null, getSelectedElement());
+
+    down();
+    assertEquals('dog', getSelectedElement().textContent.trim());
+
+    enter();
+    assertEquals('dog', dropDown.value);
+    assertFalse(dropDown.$$('iron-dropdown').opened);
+
+    enter();
+    assertTrue(dropDown.$$('iron-dropdown').opened);
+    assertEquals(null, getSelectedElement());
+  });
+
   test('focus and up selects last item', function() {
     setItems(['dog', 'cat', 'mouse']);
 

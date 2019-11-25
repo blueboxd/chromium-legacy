@@ -45,6 +45,24 @@ class COMPONENT_EXPORT(PERMISSION_BROKER) FakePermissionBrokerClient
   void ReleaseUdpPort(uint16_t port,
                       const std::string& interface,
                       ResultCallback callback) override;
+  void RequestTcpPortForward(uint16_t in_port,
+                             const std::string& in_interface,
+                             const std::string& dst_ip,
+                             uint16_t dst_port,
+                             int lifeline_fd,
+                             ResultCallback callback) override;
+  void RequestUdpPortForward(uint16_t in_port,
+                             const std::string& in_interface,
+                             const std::string& dst_ip,
+                             uint16_t dst_port,
+                             int lifeline_fd,
+                             ResultCallback callback) override;
+  void ReleaseTcpPortForward(uint16_t in_port,
+                             const std::string& in_interface,
+                             ResultCallback callback) override;
+  void ReleaseUdpPortForward(uint16_t in_port,
+                             const std::string& in_interface,
+                             ResultCallback callback) override;
 
   // Add a rule to have RequestTcpPortAccess fail.
   void AddTcpDenyRule(uint16_t port, const std::string& interface);

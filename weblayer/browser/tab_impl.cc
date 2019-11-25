@@ -16,7 +16,6 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/file_select_helper.h"
-#include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
@@ -110,10 +109,9 @@ TabImpl::TabImpl(ProfileImpl* profile,
     web_contents_ = content::WebContents::Create(create_params);
   }
 
-  // TODO(estade): set more preferences, and set them dynamically rather than
-  // just at startup.
-  web_contents_->GetMutableRendererPrefs()->accept_languages =
-      i18n::GetAcceptLangs();
+  UpdateRendererPrefs(false);
+  locale_change_subscription_ = i18n::RegisterLocaleChangeCallback(
+      base::Bind(&TabImpl::UpdateRendererPrefs, base::Unretained(this), true));
 
   std::unique_ptr<UserData> user_data = std::make_unique<UserData>();
   user_data->controller = this;
@@ -393,6 +391,13 @@ void TabImpl::OnExitFullscreen() {
   LOG_IF(FATAL, processing_enter_fullscreen_)
       << "exiting fullscreen while entering fullscreen is not supported";
   web_contents_->ExitFullscreen(/* will_cause_resize */ false);
+}
+
+void TabImpl::UpdateRendererPrefs(bool should_sync_prefs) {
+  web_contents_->GetMutableRendererPrefs()->accept_languages =
+      i18n::GetAcceptLangs();
+  if (should_sync_prefs)
+    web_contents_->SyncRendererPrefs();
 }
 
 std::unique_ptr<Tab> Tab::Create(Profile* profile) {

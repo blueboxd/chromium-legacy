@@ -1736,6 +1736,12 @@ class FakeItem extends TreeItem {
     icon.classList.add('item-icon');
     icon.setAttribute('root-type-icon', rootType);
 
+    if (rootType === VolumeManagerCommon.RootType.RECENT) {
+      this.labelElement.scrollIntoViewIfNeeded = () => {
+        this.scrollIntoView(true);
+      };
+    }
+
     if (tree.disabledContextMenu) {
       cr.ui.contextMenuHandler.setContextMenu(this, tree.disabledContextMenu);
     }

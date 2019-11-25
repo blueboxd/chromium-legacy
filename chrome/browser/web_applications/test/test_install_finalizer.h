@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -41,6 +42,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
   void UninstallWebAppFromSyncByUser(const AppId& app_id,
                                      UninstallWebAppCallback callback) override;
+  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool CanAddAppToQuickLaunchBar() const override;
   void AddAppToQuickLaunchBar(const AppId& app_id) override;
   bool CanReparentTab(const AppId& app_id,
@@ -55,6 +57,11 @@ class TestInstallFinalizer final : public InstallFinalizer {
                                     InstallResultCode code);
   void SetNextUninstallExternalWebAppResult(const GURL& app_url,
                                             bool uninstalled);
+
+  // Uninstall the app and add |app_id| to the map of external extensions
+  // uninstalled by the user. May be called on an app that isn't installed to
+  // simulate that the app was uninstalled previously.
+  void SimulateExternalAppUninstalledByUser(const AppId& app_id);
 
   std::unique_ptr<WebApplicationInfo> web_app_info() {
     return std::move(web_app_info_copy_);
@@ -86,6 +93,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
   base::Optional<AppId> next_app_id_;
   base::Optional<InstallResultCode> next_result_code_;
   std::map<GURL, bool> next_uninstall_external_web_app_results_;
+  std::set<AppId> user_uninstalled_external_apps_;
 
   int num_reparent_tab_calls_ = 0;
   int num_reveal_appshim_calls_ = 0;

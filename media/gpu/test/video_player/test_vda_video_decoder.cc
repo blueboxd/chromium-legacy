@@ -196,7 +196,6 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
     const gfx::Rect& visible_rect,
     uint32_t texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(vda_wrapper_sequence_checker_);
-  ASSERT_EQ(video_frames_.size(), 0u);
   ASSERT_EQ(textures_per_buffer, 1u);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
             << " picture buffers with size " << dimensions.width() << "x"

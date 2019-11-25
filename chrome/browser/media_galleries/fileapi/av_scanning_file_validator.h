@@ -20,7 +20,7 @@ class AVScanningFileValidator : public storage::CopyOrMoveFileValidator {
   // Runs AV checks on the resulting file (Windows-only).
   // Subclasses will not typically override this method.
   void StartPostWriteValidation(const base::FilePath& dest_platform_path,
-                                const ResultCallback& result_callback) override;
+                                ResultCallback result_callback) override;
 
  protected:
   AVScanningFileValidator();

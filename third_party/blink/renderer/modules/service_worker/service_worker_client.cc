@@ -117,6 +117,12 @@ void ServiceWorkerClient::postMessage(ScriptState* script_state,
   if (exception_state.HadException())
     return;
 
+  if (msg.message->IsLockedToAgentCluster()) {
+    msg.locked_agent_cluster_id = context->GetAgentClusterID();
+  } else {
+    msg.locked_agent_cluster_id = base::nullopt;
+  }
+
   To<ServiceWorkerGlobalScope>(context)
       ->GetServiceWorkerHost()
       ->PostMessageToClient(uuid_, std::move(msg));

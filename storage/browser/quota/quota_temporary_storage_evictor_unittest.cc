@@ -143,7 +143,7 @@ class MockQuotaEvictionHandler : public storage::QuotaEvictionHandler {
   bool error_on_evict_origin_data_;
   bool error_on_get_usage_and_quota_;
 
-  base::Closure task_for_get_usage_and_quota_;
+  base::RepeatingClosure task_for_get_usage_and_quota_;
 };
 
 }  // namespace

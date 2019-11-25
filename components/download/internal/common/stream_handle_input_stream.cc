@@ -72,8 +72,6 @@ InputStream::StreamState StreamHandleInputStream::Read(
   if (!handle_watcher_)
     return InputStream::EMPTY;
 
-  CHECK(stream_handle_);
-  CHECK(stream_handle_->stream);
   *length = kBytesToRead;
   *data = base::MakeRefCounted<net::IOBuffer>(kBytesToRead);
   MojoResult mojo_result = stream_handle_->stream->ReadData(

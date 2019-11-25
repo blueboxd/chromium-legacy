@@ -201,6 +201,7 @@ public class LocaleUtils {
      *         Each language tag is well-formed IETF BCP 47 language tag with language and country
      *         code.
      */
+    @CalledByNative
     public static String getDefaultLocaleListString() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return toLanguageTags(LocaleList.getDefault());

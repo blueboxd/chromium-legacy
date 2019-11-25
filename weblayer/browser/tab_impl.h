@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/public/tab.h"
 
 #if defined(OS_ANDROID)
@@ -133,6 +134,8 @@ class TabImpl : public Tab,
   // Called from closure supplied to delegate to exit fullscreen.
   void OnExitFullscreen();
 
+  void UpdateRendererPrefs(bool should_sync_prefs);
+
   DownloadDelegate* download_delegate_ = nullptr;
   ErrorPageDelegate* error_page_delegate_ = nullptr;
   FullscreenDelegate* fullscreen_delegate_ = nullptr;
@@ -141,6 +144,7 @@ class TabImpl : public Tab,
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<NavigationControllerImpl> navigation_controller_;
   base::ObserverList<TabObserver>::Unchecked observers_;
+  std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
 #if defined(OS_ANDROID)
   TopControlsContainerView* top_controls_container_view_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;

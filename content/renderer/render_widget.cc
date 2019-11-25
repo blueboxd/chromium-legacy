@@ -3032,6 +3032,14 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     settings.default_tile_size.set_height(tile_height);
   }
 
+  if (cmd.HasSwitch(switches::kMinHeightForGpuRasterTile)) {
+    int min_height_for_gpu_raster_tile = 0;
+    switch_value_as_int(cmd, switches::kMinHeightForGpuRasterTile, 1,
+                        std::numeric_limits<int>::max(),
+                        &min_height_for_gpu_raster_tile);
+    settings.min_height_for_gpu_raster_tile = min_height_for_gpu_raster_tile;
+  }
+
   int max_untiled_layer_width = settings.max_untiled_layer_size.width();
   if (cmd.HasSwitch(switches::kMaxUntiledLayerWidth)) {
     switch_value_as_int(cmd, switches::kMaxUntiledLayerWidth, 1,
@@ -3237,19 +3245,6 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
         settings.unpremultiply_and_dither_low_bit_depth_tiles = true;
       }
     }
-
-    // Setting a lower |min_height_for_gpu_raster_tile| makes sure that we do
-    // not allocate extra memory for tiles on the edge of a layer and reduces
-    // memory requirements.
-    settings.min_height_for_gpu_raster_tile = 128;
-  }
-
-  if (cmd.HasSwitch(switches::kMinHeightForGpuRasterTile)) {
-    int min_height_for_gpu_raster_tile = 0;
-    switch_value_as_int(cmd, switches::kMinHeightForGpuRasterTile, 1,
-                        std::numeric_limits<int>::max(),
-                        &min_height_for_gpu_raster_tile);
-    settings.min_height_for_gpu_raster_tile = min_height_for_gpu_raster_tile;
   }
 
   if (cmd.HasSwitch(switches::kEnableLowResTiling))

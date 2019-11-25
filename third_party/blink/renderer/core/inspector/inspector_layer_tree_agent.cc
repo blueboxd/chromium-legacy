@@ -117,9 +117,9 @@ BuildScrollRectsForLayer(const cc::Layer* layer, bool report_wheel_scrollers) {
   }
   if (report_wheel_scrollers) {
     scroll_rects->emplace_back(BuildScrollRect(
-        // TODO(yutak): This truncates the floating point position to integers.
-        gfx::Rect(layer->position().x(), layer->position().y(),
-                  layer->bounds().width(), layer->bounds().height()),
+        // TODO(pdr): Use the correct region for wheel event handlers, see
+        // https://crbug.com/841364.
+        gfx::Rect(0, 0, layer->bounds().width(), layer->bounds().height()),
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
   return scroll_rects->empty() ? nullptr : std::move(scroll_rects);

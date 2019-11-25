@@ -86,16 +86,14 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
           reject_string_(reject_string) {}
     ~TestValidator() override = default;
 
-    void StartPreWriteValidation(
-        const ResultCallback& result_callback) override {
+    void StartPreWriteValidation(ResultCallback result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(result_callback, result_));
+          FROM_HERE, base::BindOnce(std::move(result_callback), result_));
     }
 
-    void StartPostWriteValidation(
-        const base::FilePath& dest_platform_path,
-        const ResultCallback& result_callback) override {
+    void StartPostWriteValidation(const base::FilePath& dest_platform_path,
+                                  ResultCallback result_callback) override {
       base::File::Error result = write_result_;
       std::string unsafe = dest_platform_path.BaseName().AsUTF8Unsafe();
       if (unsafe.find(reject_string_) != std::string::npos) {
@@ -103,7 +101,7 @@ class TestValidatorFactory : public storage::CopyOrMoveFileValidatorFactory {
       }
       // Post the result since a real validator must do work asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(result_callback, result));
+          FROM_HERE, base::BindOnce(std::move(result_callback), result));
     }
 
    private:

@@ -382,9 +382,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
   // TaskRunner this object lives on after initialization.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
-  // TODO(qinmin): remove this once crbug.com/1009839 is fixed.
-  bool use_test_task_runner_ = false;
-
 #if defined(OS_ANDROID)
   base::FilePath display_name_;
 #endif  // defined(OS_ANDROID)

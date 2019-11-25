@@ -95,11 +95,13 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileWithMetadata(
   std::unique_ptr<BlobData> blob_data;
   if (metadata.length == BlobData::kToEndOfFile) {
     blob_data = BlobData::CreateForFileWithUnknownSize(
-        metadata.platform_path, metadata.modification_time / kMsPerSecond);
+        metadata.platform_path,
+        ToJsTimeOrNaN(metadata.modification_time) / kMsPerSecond);
   } else {
     blob_data = std::make_unique<BlobData>();
-    blob_data->AppendFile(metadata.platform_path, 0, metadata.length,
-                          metadata.modification_time / kMsPerSecond);
+    blob_data->AppendFile(
+        metadata.platform_path, 0, metadata.length,
+        ToJsTimeOrNaN(metadata.modification_time) / kMsPerSecond);
   }
   blob_data->SetContentType(GetContentTypeFromFileName(
       file_system_name, File::kWellKnownContentTypes));
@@ -112,11 +114,13 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileSystemURL(
   std::unique_ptr<BlobData> blob_data;
   if (metadata.length == BlobData::kToEndOfFile) {
     blob_data = BlobData::CreateForFileSystemURLWithUnknownSize(
-        file_system_url, metadata.modification_time / kMsPerSecond);
+        file_system_url,
+        ToJsTimeOrNaN(metadata.modification_time) / kMsPerSecond);
   } else {
     blob_data = std::make_unique<BlobData>();
-    blob_data->AppendFileSystemURL(file_system_url, 0, metadata.length,
-                                   metadata.modification_time / kMsPerSecond);
+    blob_data->AppendFileSystemURL(
+        file_system_url, 0, metadata.length,
+        ToJsTimeOrNaN(metadata.modification_time) / kMsPerSecond);
   }
   blob_data->SetContentType(GetContentTypeFromFileName(
       file_system_url.GetPath(), File::kWellKnownContentTypes));
@@ -252,7 +256,8 @@ File::File(const String& name,
       user_visibility_(user_visibility),
       path_(metadata.platform_path),
       name_(name),
-      snapshot_modification_time_ms_(metadata.modification_time) {
+      snapshot_modification_time_ms_(
+          ToJsTimeOrNaN(metadata.modification_time)) {
   if (metadata.length >= 0)
     snapshot_size_ = metadata.length;
 }
@@ -268,7 +273,8 @@ File::File(const KURL& file_system_url,
       name_(DecodeURLEscapeSequences(file_system_url.LastPathComponent(),
                                      DecodeURLMode::kUTF8OrIsomorphic)),
       file_system_url_(file_system_url),
-      snapshot_modification_time_ms_(metadata.modification_time) {
+      snapshot_modification_time_ms_(
+          ToJsTimeOrNaN(metadata.modification_time)) {
   if (metadata.length >= 0)
     snapshot_size_ = metadata.length;
 }
@@ -296,11 +302,10 @@ double File::LastModifiedMS() const {
       IsValidFileTime(snapshot_modification_time_ms_))
     return snapshot_modification_time_ms_;
 
-  double modification_time_ms;
-  if (HasBackingFile() &&
-      GetFileModificationTime(path_, modification_time_ms) &&
-      IsValidFileTime(modification_time_ms))
-    return modification_time_ms;
+  base::Optional<base::Time> modification_time;
+  if (HasBackingFile() && GetFileModificationTime(path_, modification_time) &&
+      modification_time)
+    return modification_time->ToJsTimeIgnoringNull();
 
   return base::Time::Now().ToDoubleT() * 1000.0;
 }
@@ -392,7 +397,7 @@ void File::CaptureSnapshot(uint64_t& snapshot_size,
   }
 
   snapshot_size = static_cast<uint64_t>(metadata.length);
-  snapshot_modification_time_ms = metadata.modification_time;
+  snapshot_modification_time_ms = ToJsTimeOrNaN(metadata.modification_time);
 }
 
 void File::AppendTo(BlobData& blob_data) const {

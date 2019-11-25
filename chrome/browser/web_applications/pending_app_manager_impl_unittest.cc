@@ -1148,7 +1148,9 @@ TEST_F(PendingAppManagerImplTest, ExternalAppUninstalled) {
 
   // Simulate external app for the app getting uninstalled by the user.
   const std::string app_id = GenerateFakeAppId(kFooWebAppUrl);
-  registrar()->SimulateExternalAppUninstalledByUser(app_id);
+  install_finalizer()->SimulateExternalAppUninstalledByUser(app_id);
+  if (registrar()->IsInstalled(app_id))
+    registrar()->RemoveExternalApp(app_id);
 
   // The app was uninstalled by the user. Installing again should succeed
   // or fail depending on whether we set override_previous_user_uninstall. We

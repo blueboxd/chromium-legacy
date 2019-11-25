@@ -220,19 +220,17 @@ class TestCopyOrMoveFileValidatorFactory
                             : base::File::FILE_ERROR_SECURITY) {}
     ~TestCopyOrMoveFileValidator() override = default;
 
-    void StartPreWriteValidation(
-        const ResultCallback& result_callback) override {
+    void StartPreWriteValidation(ResultCallback result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(result_callback, result_));
+          FROM_HERE, base::BindOnce(std::move(result_callback), result_));
     }
 
-    void StartPostWriteValidation(
-        const base::FilePath& dest_platform_path,
-        const ResultCallback& result_callback) override {
+    void StartPostWriteValidation(const base::FilePath& dest_platform_path,
+                                  ResultCallback result_callback) override {
       // Post the result since a real validator must do work asynchronously.
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(result_callback, write_result_));
+          FROM_HERE, base::BindOnce(std::move(result_callback), write_result_));
     }
 
    private:

@@ -43,11 +43,6 @@ bool BookmarkAppRegistrar::IsLocallyInstalled(
   return extension && BookmarkAppIsLocallyInstalled(profile(), extension);
 }
 
-bool BookmarkAppRegistrar::WasExternalAppUninstalledByUser(
-    const web_app::AppId& app_id) const {
-  return ExtensionPrefs::Get(profile())->IsExternalExtensionUninstalled(app_id);
-}
-
 bool BookmarkAppRegistrar::WasInstalledByUser(
     const web_app::AppId& app_id) const {
   const Extension* extension = GetExtension(app_id);

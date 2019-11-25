@@ -23,5 +23,12 @@ std::string GetDefaultLocaleString() {
   return ConvertJavaStringToUTF8(locale);
 }
 
+std::string GetDefaultLocaleListString() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> locales =
+      Java_LocaleUtils_getDefaultLocaleListString(env);
+  return ConvertJavaStringToUTF8(locales);
+}
+
 }  // namespace android
 }  // namespace base

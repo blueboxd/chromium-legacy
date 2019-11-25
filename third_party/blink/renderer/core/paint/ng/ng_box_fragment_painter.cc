@@ -484,11 +484,6 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   if (!paint_info.GetCullRect().Intersects(content_ink_rect.ToLayoutRect()))
     return;
 
-  if (paint_info.phase == PaintPhase::kMask) {
-    PaintMask(paint_info, paint_offset);
-    return;
-  }
-
   DCHECK(layout_object->IsLayoutBlockFlow());
   const auto& layout_block = To<LayoutBlock>(*layout_object);
   DCHECK(layout_block.ChildrenInline());

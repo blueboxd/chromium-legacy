@@ -449,6 +449,17 @@ def main():
             filter=PrintTarProgress)
   MaybeUpload(args.upload, objdumpdir + '.tgz', platform)
 
+  # Zip up clang-tidy for users who opt into it, and Tricium.
+  clang_tidy_dir = 'clang-tidy-' + stamp
+  shutil.rmtree(clang_tidy_dir, ignore_errors=True)
+  os.makedirs(os.path.join(clang_tidy_dir, 'bin'))
+  shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'clang-tidy' + exe_ext),
+              os.path.join(clang_tidy_dir, 'bin'))
+  with tarfile.open(clang_tidy_dir + '.tgz', 'w:gz') as tar:
+    tar.add(os.path.join(clang_tidy_dir, 'bin'), arcname='bin',
+            filter=PrintTarProgress)
+  MaybeUpload(args.upload, clang_tidy_dir + '.tgz', platform)
+
   # On Mac, lld isn't part of the main zip.  Upload it in a separate zip.
   if sys.platform == 'darwin':
     llddir = 'lld-' + stamp

@@ -21,20 +21,19 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) CopyOrMoveFileValidator {
  public:
   // Callback that is invoked when validation completes. A result of
   // base::File::FILE_OK means the file validated.
-  using ResultCallback = base::Callback<void(base::File::Error result)>;
+  using ResultCallback = base::OnceCallback<void(base::File::Error result)>;
 
   virtual ~CopyOrMoveFileValidator() {}
 
   // Called on a source file before copying or moving to the final
   // destination.
-  virtual void StartPreWriteValidation(
-      const ResultCallback& result_callback) = 0;
+  virtual void StartPreWriteValidation(ResultCallback result_callback) = 0;
 
   // Called on a destination file after copying or moving to the final
   // destination. Suitable for running Anti-Virus checks.
   virtual void StartPostWriteValidation(
       const base::FilePath& dest_platform_path,
-      const ResultCallback& result_callback) = 0;
+      ResultCallback result_callback) = 0;
 };
 
 class CopyOrMoveFileValidatorFactory {

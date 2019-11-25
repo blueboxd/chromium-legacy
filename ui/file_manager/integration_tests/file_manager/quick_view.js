@@ -951,6 +951,14 @@
 
     // Check: the <webview> body backgroundColor should be transparent black.
     chrome.test.assertEq('rgba(0, 0, 0, 0)', backgroundColor[0]);
+
+    // Close Quick View.
+    await closeQuickView(appId);
+
+    // Check quickview video <files-safe-media> has no "src", so it stops
+    // playing the video. crbug.com/970192
+    const noSrcFilesSafeMedia = ['#quick-view', '#videoSafeMedia[src=""]'];
+    await remoteCall.waitForElement(appId, noSrcFilesSafeMedia);
   };
 
   /**
@@ -1096,7 +1104,6 @@
     const infoShown = ['#quick-view', '#contentPanel[metadata-box-active]'];
     const infoHidden =
         ['#quick-view', '#contentPanel:not([metadata-box-active])'];
-
 
     // Open Files app on Downloads containing ENTRIES.hello.
     const appId =

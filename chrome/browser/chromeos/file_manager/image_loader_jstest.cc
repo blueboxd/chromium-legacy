@@ -21,7 +21,3 @@ IN_PROC_BROWSER_TEST_F(ImageLoaderJsTest, CacheTest) {
 IN_PROC_BROWSER_TEST_F(ImageLoaderJsTest, ImageLoaderTest) {
   RunTestURL("image_loader_unittest_gen.html");
 }
-
-IN_PROC_BROWSER_TEST_F(ImageLoaderJsTest, PiexLoaderTest) {
-  RunTestURL("piex_loader_unittest_gen.html");
-}

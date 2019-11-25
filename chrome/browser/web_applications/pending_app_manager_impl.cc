@@ -185,7 +185,7 @@ void PendingAppManagerImpl::MaybeStartNext() {
     // The app is not installed, but it might have been previously uninstalled
     // by the user. If that's the case, don't install it again unless
     // |override_previous_user_uninstall| is true.
-    if (registrar()->WasExternalAppUninstalledByUser(app_id.value()) &&
+    if (finalizer()->WasExternalAppUninstalledByUser(app_id.value()) &&
         !install_options.override_previous_user_uninstall) {
       std::move(front->callback)
           .Run(install_options.url, InstallResultCode::kPreviouslyUninstalled);

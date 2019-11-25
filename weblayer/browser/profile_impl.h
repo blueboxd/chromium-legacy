@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/public/profile.h"
 
 #if defined(OS_ANDROID)
@@ -51,7 +52,12 @@ class ProfileImpl : public Profile {
 
   void ClearRendererCache();
 
+  // Callback when the system locale has been updated.
+  void OnLocaleChanged();
+
   std::unique_ptr<BrowserContextImpl> browser_context_;
+
+  std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };

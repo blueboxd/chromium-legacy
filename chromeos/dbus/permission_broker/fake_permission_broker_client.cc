@@ -135,6 +135,40 @@ bool FakePermissionBrokerClient::HasUdpHole(uint16_t port,
   return udp_hole_set_.find(rule) != udp_hole_set_.end();
 }
 
+void FakePermissionBrokerClient::RequestTcpPortForward(
+    uint16_t in_port,
+    const std::string& in_interface,
+    const std::string& dst_ip,
+    uint16_t dst_port,
+    int lifeline_fd,
+    ResultCallback callback) {
+  std::move(callback).Run(false);
+}
+
+void FakePermissionBrokerClient::RequestUdpPortForward(
+    uint16_t in_port,
+    const std::string& in_interface,
+    const std::string& dst_ip,
+    uint16_t dst_port,
+    int lifeline_fd,
+    ResultCallback callback) {
+  std::move(callback).Run(false);
+}
+
+void FakePermissionBrokerClient::ReleaseTcpPortForward(
+    uint16_t in_port,
+    const std::string& in_interface,
+    ResultCallback callback) {
+  std::move(callback).Run(false);
+}
+
+void FakePermissionBrokerClient::ReleaseUdpPortForward(
+    uint16_t in_port,
+    const std::string& in_interface,
+    ResultCallback callback) {
+  std::move(callback).Run(false);
+}
+
 bool FakePermissionBrokerClient::RequestPortImpl(uint16_t port,
                                                  const std::string& interface,
                                                  const RuleSet& deny_rule_set,

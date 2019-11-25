@@ -102,9 +102,9 @@ chrome.automation.RoleType = {
   CAPTION: 'caption',
   CARET: 'caret',
   CELL: 'cell',
-  CODE: 'code',
   CHECK_BOX: 'checkBox',
   CLIENT: 'client',
+  CODE: 'code',
   COLOR_WELL: 'colorWell',
   COLUMN: 'column',
   COLUMN_HEADER: 'columnHeader',
@@ -623,7 +623,7 @@ chrome.automation.AutomationNode.prototype.placeholder;
 chrome.automation.AutomationNode.prototype.roleDescription;
 
 /**
- * The accessible name for this node, via the <a href="http://www.w3.org/TR/wai-aria/roles#namecalculation"> Accessible Name Calculation</a> process.
+ * The accessible name for this node, via the <a href="http://www.w3.org/TR/wai-aria/#namecalculation"> Accessible Name Calculation</a> process.
  * @type {(string|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-name
  */
@@ -699,7 +699,7 @@ chrome.automation.AutomationNode.prototype.nonInlineTextWordStarts;
 chrome.automation.AutomationNode.prototype.nonInlineTextWordEnds;
 
 /**
- * The nodes, if any, which this node is specified to control via <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-controls"> <code>aria-controls</code></a>.
+ * The nodes, if any, which this node is specified to control via <a href="http://www.w3.org/TR/wai-aria/#aria-controls"> <code>aria-controls</code></a>.
  * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-controls
  */
@@ -713,7 +713,7 @@ chrome.automation.AutomationNode.prototype.controls;
 chrome.automation.AutomationNode.prototype.describedBy;
 
 /**
- * The nodes, if any, which may optionally be navigated to after this one. See <a href="http://www.w3.org/TR/wai-aria/states_and_properties#aria-flowto"> <code>aria-flowto</code></a>.
+ * The nodes, if any, which may optionally be navigated to after this one. See <a href="http://www.w3.org/TR/wai-aria/#aria-flowto"> <code>aria-flowto</code></a>.
  * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-flowTo
  */

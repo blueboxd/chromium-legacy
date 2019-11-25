@@ -27,8 +27,6 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   // AppRegistrar:
   bool IsInstalled(const web_app::AppId& app_id) const override;
   bool IsLocallyInstalled(const web_app::AppId& app_id) const override;
-  bool WasExternalAppUninstalledByUser(
-      const web_app::AppId& app_id) const override;
   bool WasInstalledByUser(const web_app::AppId& app_id) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const web_app::AppId& app_id) const override;

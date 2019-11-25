@@ -67,6 +67,11 @@ class InstallFinalizer {
   virtual void UninstallWebAppFromSyncByUser(const AppId& app_id,
                                              UninstallWebAppCallback) = 0;
 
+  // Returns true if the app with |app_id| was previously uninstalled by the
+  // user. For example, if a user uninstalls a default app ('default apps' are
+  // considered external apps), then this will return true.
+  virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
+
   // |virtual| for testing.
   virtual bool CanAddAppToQuickLaunchBar() const;
   virtual void AddAppToQuickLaunchBar(const AppId& app_id);

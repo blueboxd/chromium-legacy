@@ -171,10 +171,11 @@ class FileSystemOperationImplTest : public testing::Test {
 
   // Callbacks for recording test results.
   FileSystemOperation::StatusCallback RecordStatusCallback(
-      const base::Closure& closure,
+      base::OnceClosure closure,
       base::File::Error* status) {
     return base::BindOnce(&FileSystemOperationImplTest::DidFinish,
-                          weak_factory_.GetWeakPtr(), closure, status);
+                          weak_factory_.GetWeakPtr(), std::move(closure),
+                          status);
   }
 
   FileSystemOperation::ReadDirectoryCallback RecordReadDirectoryCallback(
@@ -186,24 +187,26 @@ class FileSystemOperationImplTest : public testing::Test {
   }
 
   FileSystemOperation::GetMetadataCallback RecordMetadataCallback(
-      const base::Closure& closure,
+      base::OnceClosure closure,
       base::File::Error* status) {
     return base::BindOnce(&FileSystemOperationImplTest::DidGetMetadata,
-                          weak_factory_.GetWeakPtr(), closure, status);
+                          weak_factory_.GetWeakPtr(), std::move(closure),
+                          status);
   }
 
   FileSystemOperation::SnapshotFileCallback RecordSnapshotFileCallback(
-      const base::Closure& closure,
+      base::OnceClosure closure,
       base::File::Error* status) {
     return base::BindOnce(&FileSystemOperationImplTest::DidCreateSnapshotFile,
-                          weak_factory_.GetWeakPtr(), closure, status);
+                          weak_factory_.GetWeakPtr(), std::move(closure),
+                          status);
   }
 
-  void DidFinish(const base::Closure& closure,
+  void DidFinish(base::OnceClosure closure,
                  base::File::Error* status,
                  base::File::Error actual) {
     *status = actual;
-    closure.Run();
+    std::move(closure).Run();
   }
 
   void DidReadDirectory(base::RepeatingClosure closure,
@@ -216,17 +219,17 @@ class FileSystemOperationImplTest : public testing::Test {
     closure.Run();
   }
 
-  void DidGetMetadata(const base::Closure& closure,
+  void DidGetMetadata(base::OnceClosure closure,
                       base::File::Error* status,
                       base::File::Error actual,
                       const base::File::Info& info) {
     info_ = info;
     *status = actual;
-    closure.Run();
+    std::move(closure).Run();
   }
 
   void DidCreateSnapshotFile(
-      const base::Closure& closure,
+      base::OnceClosure closure,
       base::File::Error* status,
       base::File::Error actual,
       const base::File::Info& info,
@@ -236,7 +239,7 @@ class FileSystemOperationImplTest : public testing::Test {
     path_ = platform_path;
     *status = actual;
     shareable_file_ref_ = std::move(shareable_file_ref);
-    closure.Run();
+    std::move(closure).Run();
   }
 
   int64_t GetDataSizeOnDisk() {

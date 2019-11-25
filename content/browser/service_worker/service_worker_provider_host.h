@@ -137,7 +137,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          client_remote);
+          container_remote);
 
   // Used for starting a service worker. Returns a provider host for the service
   // worker and partially fills |out_provider_info|.  The host stays alive as
@@ -161,7 +161,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          client_remote);
+          container_remote);
 
   ~ServiceWorkerProviderHost() override;
 
@@ -253,8 +253,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   blink::mojom::ServiceWorkerProviderType provider_type() const;
   bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
-  // Can only be called when IsProviderForClient() is true.
-  blink::mojom::ServiceWorkerClientType client_type() const;
 
   // For service worker clients. Makes this client be controlled by
   // |registration|'s active worker, or makes this client be not
@@ -266,14 +264,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // May return nullptr if the context has shut down.
   base::WeakPtr<ServiceWorkerContextCore> context() { return context_; }
-
-  // Dispatches message event to the document.
-  void PostMessageToClient(ServiceWorkerVersion* version,
-                           blink::TransferableMessage message);
-
-  // Notifies the client that its controller used a feature, for UseCounter
-  // purposes. This can only be called if IsProviderForClient() is true.
-  void CountFeature(blink::mojom::WebFeature feature);
 
   // |registration| claims the document to be controlled.
   void ClaimedByRegistration(
@@ -386,7 +376,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
-          client_remote,
+          container_remote,
       scoped_refptr<ServiceWorkerVersion> running_hosted_version,
       base::WeakPtr<ServiceWorkerContextCore> context);
 
@@ -423,12 +413,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // worker clients in the renderer. If |notify_controllerchange| is true,
   // instructs the renderer to dispatch a 'controllerchange' event.
   void SendSetControllerServiceWorker(bool notify_controllerchange);
-
-  // For service worker clients. Returns false if it's not yet time to send the
-  // renderer information about the controller. Basically returns false if this
-  // client is still loading so due to potential redirects the initial
-  // controller has not yet been decided.
-  bool IsControllerDecided() const;
 
 #if DCHECK_IS_ON()
   void CheckControllerConsistency(bool should_crash) const;
@@ -582,9 +566,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // just be a raw ptr that is never null.
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
-  // |container_| is the remote renderer-side ServiceWorkerContainer that |this|
-  // is a ServiceWorkerContainerHost for.
-  mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainer> container_;
   // |receiver_| keeps the connection to the renderer-side counterpart
   // (content::ServiceWorkerProviderContext). When the connection bound on
   // |receiver_| gets killed from the renderer side, or the bound

@@ -58,6 +58,7 @@ PASS window.cached_navigator_serial.ondisconnect is null
 PASS window.cached_navigator_serviceWorker.controller is null
 PASS window.cached_navigator_serviceWorker.oncontrollerchange is null
 PASS window.cached_navigator_serviceWorker.onmessage is null
+PASS window.cached_navigator_serviceWorker.onmessageerror is null
 PASS window.cached_navigator_usb.onconnect is null
 PASS window.cached_navigator_usb.ondisconnect is null
 PASS window.cached_navigator_userActivation.hasBeenActive is false

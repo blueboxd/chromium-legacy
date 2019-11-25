@@ -288,7 +288,8 @@ FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
     } else {
       const auto& fs_info = file->get_file_system();
       FileMetadata metadata;
-      metadata.modification_time = fs_info->modification_time.ToJsTime();
+      metadata.modification_time =
+          NullableTimeToOptionalTime(fs_info->modification_time);
       metadata.length = fs_info->length;
       metadata.type = FileMetadata::kTypeFile;
       file_list->Append(File::CreateForFileSystemFile(fs_info->url, metadata,

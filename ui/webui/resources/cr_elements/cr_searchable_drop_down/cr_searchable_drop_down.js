@@ -257,6 +257,14 @@ Polymer({
   onKeyDown_: function(event) {
     const dropdown = this.$$('iron-dropdown');
     if (!dropdown.opened) {
+      if (this.readonly) {
+        return;
+      }
+      if (event.code == 'Enter') {
+        this.openDropdown_();
+        // Stop the default submit action.
+        event.preventDefault();
+      }
       return;
     }
 

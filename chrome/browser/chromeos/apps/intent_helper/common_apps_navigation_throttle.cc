@@ -9,11 +9,36 @@
 #include "base/bind.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/display/types/display_constants.h"
+
+namespace {
+
+apps::PickerEntryType GetPickerEntryType(apps::mojom::AppType app_type) {
+  apps::PickerEntryType picker_entry_type = apps::PickerEntryType::kUnknown;
+  switch (app_type) {
+    case apps::mojom::AppType::kUnknown:
+    case apps::mojom::AppType::kBuiltIn:
+    case apps::mojom::AppType::kCrostini:
+    case apps::mojom::AppType::kExtension:
+      break;
+    case apps::mojom::AppType::kArc:
+      picker_entry_type = apps::PickerEntryType::kArc;
+      break;
+    case apps::mojom::AppType::kWeb:
+      picker_entry_type = apps::PickerEntryType::kWeb;
+      break;
+    case apps::mojom::AppType::kMacNative:
+      picker_entry_type = apps::PickerEntryType::kMacNative;
+      break;
+  }
+  return picker_entry_type;
+}
+
+}  // namespace
 
 namespace apps {
 
@@ -39,12 +64,10 @@ void CommonAppsNavigationThrottle::ShowIntentPickerBubble(
   std::vector<apps::IntentPickerAppInfo> apps_for_picker =
       FindAllAppsForUrl(web_contents, url, {});
 
-  apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
+  IntentPickerTabHelper::LoadAppIcons(
       web_contents, std::move(apps_for_picker),
-      /*show_stay_in_chrome=*/false,
-      /*show_remember_selection=*/true,
-      base::BindOnce(&OnIntentPickerClosed, web_contents,
-                     ui_auto_display_service, url));
+      base::BindOnce(&OnAppIconsLoaded, web_contents, ui_auto_display_service,
+                     url));
 }
 
 // static
@@ -81,6 +104,20 @@ void CommonAppsNavigationThrottle::OnIntentPickerClosed(
   }
 }
 
+// static
+void CommonAppsNavigationThrottle::OnAppIconsLoaded(
+    content::WebContents* web_contents,
+    IntentPickerAutoDisplayService* ui_auto_display_service,
+    const GURL& url,
+    std::vector<apps::IntentPickerAppInfo> apps) {
+  apps::AppsNavigationThrottle::ShowIntentPickerBubbleForApps(
+      web_contents, std::move(apps),
+      /*show_stay_in_chrome=*/false,
+      /*show_remember_selection=*/true,
+      base::BindOnce(&OnIntentPickerClosed, web_contents,
+                     ui_auto_display_service, url));
+}
+
 CommonAppsNavigationThrottle::CommonAppsNavigationThrottle(
     content::NavigationHandle* navigation_handle)
     : apps::AppsNavigationThrottle(navigation_handle) {}
@@ -111,43 +148,22 @@ CommonAppsNavigationThrottle::FindAllAppsForUrl(
     return apps;
 
   std::vector<std::string> app_ids = proxy->GetAppIdsForUrl(url);
-  auto* menu_manager =
-      extensions::MenuManager::Get(web_contents->GetBrowserContext());
+
   auto preferred_app_id = proxy->PreferredApps().FindPreferredAppForUrl(url);
 
   for (const std::string app_id : app_ids) {
     proxy->AppRegistryCache().ForOneApp(
-        app_id, [&apps, menu_manager,
-                 &preferred_app_id](const apps::AppUpdate& update) {
-          PickerEntryType type = PickerEntryType::kUnknown;
-          switch (update.AppType()) {
-            case apps::mojom::AppType::kUnknown:
-            case apps::mojom::AppType::kBuiltIn:
-            case apps::mojom::AppType::kCrostini:
-            case apps::mojom::AppType::kExtension:
-              break;
-            case apps::mojom::AppType::kArc:
-              type = PickerEntryType::kArc;
-              break;
-            case apps::mojom::AppType::kWeb:
-              type = PickerEntryType::kWeb;
-              break;
-            default:
-              NOTREACHED();
-          }
+        app_id, [&preferred_app_id, &apps](const apps::AppUpdate& update) {
           // TODO(crbug.com/853604): Automatically launch the app. At the moment
           // just mark the app as preferred to minimize the change to
           // AppsNavigationThrottle.
           std::string display_name = update.Name();
           if (update.AppId() == preferred_app_id)
             display_name = update.Name() + " (preferred)";
-          // TODO(crbug.com/853604): Get icon from App Service.
-          apps.emplace(apps.begin(), type,
-                       menu_manager->GetIconForExtension(update.AppId()),
-                       update.AppId(), display_name);
+          apps.emplace(apps.begin(), GetPickerEntryType(update.AppType()),
+                       gfx::Image(), update.AppId(), display_name);
         });
   }
-
   return apps;
 }
 
@@ -166,4 +182,5 @@ IntentPickerResponse CommonAppsNavigationThrottle::GetOnPickerClosedCallback(
   return base::BindOnce(&OnIntentPickerClosed, web_contents,
                         ui_auto_display_service, url);
 }
+
 }  // namespace apps

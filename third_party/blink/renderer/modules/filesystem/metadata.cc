@@ -14,9 +14,7 @@ ScriptValue Metadata::modificationTime(ScriptState* script_state) const {
   // metadata.modificationTime returns a Date object with an invalid state.
   // Passing Time::Max() here creates such a Date object.
   base::Time time =
-      std::isfinite(platform_metadata_.modification_time)
-          ? base::Time::FromJsTime(platform_metadata_.modification_time)
-          : base::Time::Max();
+      platform_metadata_.modification_time.value_or(base::Time::Max());
   return ScriptValue(script_state->GetIsolate(), ToV8(time, script_state));
 }
 

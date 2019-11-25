@@ -43,6 +43,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
   void UninstallWebAppFromSyncByUser(const AppId& app_id,
                                      UninstallWebAppCallback callback) override;
+  bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
 

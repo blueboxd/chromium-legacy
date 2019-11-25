@@ -118,10 +118,6 @@ const base::Feature kEduCoexistence{"EduCoexistence",
 const base::Feature kEnableFileManagerFeedbackPanel{
     "EnableFeedbackPanel", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enable the piex-wasm module for raw image preview image extraction.
-const base::Feature kEnableFileManagerPiexWasm{
-    "PiexWasm", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Device End Of Lifetime warning notifications.
 const base::Feature kEolWarningNotifications{"EolWarningNotifications",
                                              base::FEATURE_ENABLED_BY_DEFAULT};

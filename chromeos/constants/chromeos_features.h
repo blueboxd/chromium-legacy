@@ -63,8 +63,6 @@ extern const base::Feature kEduCoexistence;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kEnableFileManagerFeedbackPanel;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kEnableFileManagerPiexWasm;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kExoPointerLock;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesNG;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMojoDBusRelay;

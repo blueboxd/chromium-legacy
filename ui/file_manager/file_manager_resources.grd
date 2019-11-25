@@ -223,12 +223,6 @@
         <include compress="gzip" name="IDR_IMAGE_LOADER_CLIENT_JS" file="image_loader/image_loader_client.js" type="BINDATA" />
         <include compress="gzip" name="IDR_IMAGE_LOADER_PIEX_WASM_JS" file="image_loader/piex/piex.js.wasm" type="BINDATA" />
         <include compress="gzip" name="IDR_IMAGE_LOADER_PIEX_WASM" file="image_loader/piex/piex.out.wasm" type="BINDATA" />
-
-        <!-- Internal resources. -->
-        <if expr="_google_chrome">
-          <include name="IDR_IMAGE_LOADER_PIEX_LOADER_MANIFEST" file="image_loader/piex/piex.nmf.txt" type="BINDATA" />
-          <include name="IDR_IMAGE_LOADER_PIEX_LOADER_PNACL" flattenhtml="true" file="image_loader/piex/piex.pexe.txt" type="BINDATA" />
-        </if>
       </if>
     </includes>
   </release>

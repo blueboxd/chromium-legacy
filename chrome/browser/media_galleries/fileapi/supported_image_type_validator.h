@@ -24,7 +24,7 @@ class SupportedImageTypeValidator : public AVScanningFileValidator {
 
   static bool SupportsFileType(const base::FilePath& path);
 
-  void StartPreWriteValidation(const ResultCallback& result_callback) override;
+  void StartPreWriteValidation(ResultCallback result_callback) override;
 
  private:
   friend class MediaFileValidatorFactory;

@@ -95,17 +95,7 @@ js_library("piex_loader") {
     ":load_image_request",
     "//ui/file_manager/file_manager/foreground/js/metadata:image_orientation",
   ]
-  externs_list = [
-    "$externs_path/chrome_extensions.js",
-    "//ui/file_manager/externs/platform.js",
-  ]
-}
-
-js_unittest("piex_loader_unittest") {
-  deps = [
-    ":piex_loader",
-    "//ui/file_manager/base/js:test_error_reporting",
-  ]
+  externs_list = [ "//ui/file_manager/externs/platform.js" ]
 }
 
 js_library("request") {
@@ -131,7 +121,6 @@ js_test_gen_html("js_test_gen_html") {
     ":cache_unittest",
     ":image_loader_client_unittest",
     ":image_loader_unittest",
-    ":piex_loader_unittest",
   ]
 }
 

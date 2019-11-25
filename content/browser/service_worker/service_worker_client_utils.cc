@@ -324,8 +324,10 @@ void AddWindowClient(
     std::vector<std::tuple<int, int, base::TimeTicks, std::string>>*
         client_info) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  if (host->client_type() != blink::mojom::ServiceWorkerClientType::kWindow)
+  if (host->container_host()->client_type() !=
+      blink::mojom::ServiceWorkerClientType::kWindow) {
     return;
+  }
   if (!host->container_host()->is_execution_ready())
     return;
   client_info->push_back(std::make_tuple(host->process_id(), host->frame_id(),
@@ -337,7 +339,8 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
                         blink::mojom::ServiceWorkerClientType client_type,
                         ServiceWorkerClientPtrs* out_clients) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  blink::mojom::ServiceWorkerClientType host_client_type = host->client_type();
+  blink::mojom::ServiceWorkerClientType host_client_type =
+      host->container_host()->client_type();
   if (host_client_type == blink::mojom::ServiceWorkerClientType::kWindow)
     return;
   if (client_type != blink::mojom::ServiceWorkerClientType::kAll &&
@@ -548,7 +551,7 @@ void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
                        ClientCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK_EQ(blink::mojom::ServiceWorkerClientType::kWindow,
-            provider_host->client_type());
+            provider_host->container_host()->client_type());
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     blink::mojom::ServiceWorkerClientInfoPtr info =
@@ -603,7 +606,7 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   blink::mojom::ServiceWorkerClientType client_type =
-      provider_host->client_type();
+      provider_host->container_host()->client_type();
   DCHECK(client_type == blink::mojom::ServiceWorkerClientType::kWindow ||
          client_type ==
              blink::mojom::ServiceWorkerClientType::kDedicatedWorker ||
@@ -633,7 +636,8 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
   auto client_info = blink::mojom::ServiceWorkerClientInfo::New(
       provider_host->container_host()->url(),
       network::mojom::RequestContextFrameType::kNone,
-      provider_host->client_uuid(), provider_host->client_type(),
+      provider_host->client_uuid(),
+      provider_host->container_host()->client_type(),
       /*page_hidden=*/true,
       /*is_focused=*/false,
       blink::mojom::ServiceWorkerClientLifecycleState::kActive,

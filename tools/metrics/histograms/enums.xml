@@ -32026,6 +32026,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Emoji"/>
 </enum>
 
+<enum name="IMEVKMode">
+  <int value="0" label="FULL_WIDTH_MODE"/>
+  <int value="1" label="FLOATING_MODE"/>
+</enum>
+
 <enum name="ImportantSitesReason">
   <int value="0" label="Engagement"/>
   <int value="1" label="Durable"/>

@@ -654,16 +654,32 @@ void ServiceWorkerContainer::DispatchMessageEvent(
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(msg.ports));
   ServiceWorker* service_worker =
       ServiceWorker::From(GetExecutionContext(), std::move(source));
-  MessageEvent* event;
-  if (!msg.locked_agent_cluster_id ||
-      GetExecutionContext()->IsSameAgentCluster(*msg.locked_agent_cluster_id)) {
-    event = MessageEvent::Create(
-        ports, std::move(msg.message),
-        GetExecutionContext()->GetSecurityOrigin()->ToString(),
-        String() /* lastEventId */, service_worker);
-  } else {
-    event = MessageEvent::CreateError(
-        GetExecutionContext()->GetSecurityOrigin()->ToString(), service_worker);
+  Event* event = nullptr;
+  // TODO(crbug.com/1018092): Factor out these security checks so they aren't
+  // duplicated in so many places.
+  if (msg.message->IsOriginCheckRequired()) {
+    const SecurityOrigin* target_origin =
+        GetExecutionContext()->GetSecurityOrigin();
+    if (!msg.sender_origin ||
+        !msg.sender_origin->IsSameSchemeHostPort(target_origin)) {
+      event = MessageEvent::CreateError(
+          GetExecutionContext()->GetSecurityOrigin()->ToString(),
+          service_worker);
+    }
+  }
+  if (!event) {
+    if (!msg.locked_agent_cluster_id ||
+        GetExecutionContext()->IsSameAgentCluster(
+            *msg.locked_agent_cluster_id)) {
+      event = MessageEvent::Create(
+          ports, std::move(msg.message),
+          GetExecutionContext()->GetSecurityOrigin()->ToString(),
+          String() /* lastEventId */, service_worker);
+    } else {
+      event = MessageEvent::CreateError(
+          GetExecutionContext()->GetSecurityOrigin()->ToString(),
+          service_worker);
+    }
   }
   // Schedule the event to be dispatched on the correct task source:
   // https://w3c.github.io/ServiceWorker/#dfn-client-message-queue

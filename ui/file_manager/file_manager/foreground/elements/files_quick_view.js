@@ -10,28 +10,33 @@ var FilesQuickView = Polymer({
     type: String,
     subtype: String,
     filePath: String,
-    // If there is a task to open the file.
+
+    // True if there is a file task that can open the file type.
     hasTask: Boolean,
-    // URLs should be accessible from webview since contets are rendered inside
-    // it. Hint: use URL.createObjectURL.
+
+    // URLs should be accessible from the <webview> since their content is
+    // rendered inside the <wevbiew>. Hint: use URL.createObjectURL.
     contentUrl: String,
     videoPoster: String,
     audioArtwork: String,
+
+    // Autoplay property for audio, video.
     autoplay: Boolean,
-    // True if this file is not image, audio, video nor HTML but supported on
-    // Chrome, i.e. preview-able by directly src-ing the file path to webview.
-    // Example: pdf, text.
+
+    // True if this file is not image, audio, video nor HTML but is supported
+    // by Chrome - content that is directly preview-able in Chrome by setting
+    // the <webview> src attribute. Examples: pdf, text.
     browsable: Boolean,
 
-    // metadata-box-active-changed event is fired on attribute change.
+    // The metadata-box-active-changed event is fired on attribute change.
     metadataBoxActive: {
       value: true,
       type: Boolean,
       notify: true,
     },
-    // Text shown when no playback is available.
+
+    // Text shown when there is no playback/preview available.
     noPlaybackText: String,
-    // Text shown when no preview is available.
     noPreviewText: String,
   },
 

@@ -31,16 +31,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_METADATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FILE_METADATA_H_
 
-#include <time.h>
 #include "base/files/file.h"
+#include "base/optional.h"
+#include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
+// TODO(crbug.com/988343): InvalidFileTime() and IsValidFileTime() should be
+// removed. File timestamps should be represented as base::Optional<base::Time>.
 inline double InvalidFileTime() {
   return std::numeric_limits<double>::quiet_NaN();
 }
@@ -53,13 +55,12 @@ class FileMetadata {
 
  public:
   FileMetadata()
-      : modification_time(InvalidFileTime()), length(-1), type(kTypeUnknown) {}
+      : modification_time(base::nullopt), length(-1), type(kTypeUnknown) {}
 
   PLATFORM_EXPORT static FileMetadata From(const base::File::Info& file_info);
 
-  // The last modification time of the file, in milliseconds.
-  // The value NaN means that the time is not known.
-  double modification_time;
+  // The last modification time of the file.
+  base::Optional<base::Time> modification_time;
 
   // The length of the file in bytes.
   // The value -1 means that the length is not set.
@@ -72,9 +73,23 @@ class FileMetadata {
 };
 
 PLATFORM_EXPORT bool GetFileSize(const String&, int64_t& result);
-PLATFORM_EXPORT bool GetFileModificationTime(const String&, double& result);
+PLATFORM_EXPORT bool GetFileModificationTime(
+    const String&,
+    base::Optional<base::Time>& result);
 PLATFORM_EXPORT bool GetFileMetadata(const String&, FileMetadata&);
 PLATFORM_EXPORT KURL FilePathToURL(const String&);
+
+// TODO(crbug.com/988343): Temporary conversion function. This should be
+// removed.
+inline double ToJsTimeOrNaN(base::Optional<base::Time> time) {
+  return time ? time->ToJsTimeIgnoringNull() : InvalidFileTime();
+}
+
+inline base::Optional<base::Time> NullableTimeToOptionalTime(base::Time time) {
+  if (time.is_null())
+    return base::nullopt;
+  return time;
+}
 
 }  // namespace blink
 

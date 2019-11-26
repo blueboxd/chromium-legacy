@@ -2151,8 +2151,7 @@ void CrostiniManager::OnDefaultContainerConfigured(bool success) {
   CrostiniResult result = CrostiniResult::SUCCESS;
   if (!success) {
     LOG(ERROR) << "Failed to configure default Crostini container";
-    // TODO(https://crbug.com/998124): Add a proper error.
-    result = CrostiniResult::UNKNOWN_ERROR;
+    result = CrostiniResult::CONTAINER_CONFIGURATION_FAILED;
   }
 
   InvokeAndErasePendingContainerCallbacks(

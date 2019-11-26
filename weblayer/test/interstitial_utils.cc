@@ -5,7 +5,7 @@
 #include "weblayer/test/interstitial_utils.h"
 
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "weblayer/browser/ssl_blocking_page.h"
+#include "components/security_interstitials/content/ssl_blocking_page.h"
 #include "weblayer/browser/tab_impl.h"
 
 namespace weblayer {

@@ -13,11 +13,11 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_source.h"
 
 namespace blink {
 
@@ -76,8 +76,7 @@ class FakeRTCRtpReceiverImpl : public blink::WebRTCRtpReceiver {
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
   const blink::WebMediaStreamTrack& Track() const override;
   blink::WebVector<blink::WebString> StreamIds() const override;
-  blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> GetSources()
-      override;
+  blink::WebVector<std::unique_ptr<RTCRtpSource>> GetSources() override;
   void GetStats(blink::WebRTCStatsReportCallback,
                 const blink::WebVector<webrtc::NonStandardGroupId>&) override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;

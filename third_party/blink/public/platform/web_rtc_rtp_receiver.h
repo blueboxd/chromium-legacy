@@ -18,8 +18,8 @@
 
 namespace blink {
 
+class RTCRtpSource;
 class WebMediaStreamTrack;
-class WebRTCRtpSource;
 
 // Implementations of this interface keep the corresponding WebRTC-layer
 // receiver alive through reference counting. Multiple |WebRTCRtpReceiver|s
@@ -40,7 +40,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
   virtual webrtc::DtlsTransportInformation DtlsTransportInformation() = 0;
   virtual const WebMediaStreamTrack& Track() const = 0;
   virtual WebVector<WebString> StreamIds() const = 0;
-  virtual WebVector<std::unique_ptr<WebRTCRtpSource>> GetSources() = 0;
+  virtual WebVector<std::unique_ptr<RTCRtpSource>> GetSources() = 0;
   virtual void GetStats(blink::WebRTCStatsReportCallback,
                         const WebVector<webrtc::NonStandardGroupId>&) = 0;
   virtual std::unique_ptr<webrtc::RtpParameters> GetParameters() const = 0;

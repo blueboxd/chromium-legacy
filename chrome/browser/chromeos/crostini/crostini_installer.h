@@ -7,6 +7,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -22,7 +24,8 @@ namespace crostini {
 
 class CrostiniInstaller : public KeyedService,
                           public CrostiniManager::RestartObserver,
-                          public CrostiniInstallerUIDelegate {
+                          public CrostiniInstallerUIDelegate,
+                          public AnsibleManagementService::Observer {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -53,7 +56,10 @@ class CrostiniInstaller : public KeyedService,
 
     kErrorInsufficientDiskSpace = 22,
 
-    kMaxValue = kErrorInsufficientDiskSpace,
+    kErrorConfiguringContainer = 23,
+    kUserCancelledConfiguringContainer = 24,
+
+    kMaxValue = kUserCancelledConfiguringContainer,
   };
 
   static CrostiniInstaller* GetForProfile(Profile* profile);
@@ -83,6 +89,10 @@ class CrostiniInstaller : public KeyedService,
   void OnContainerStarted(crostini::CrostiniResult result) override;
   void OnSshKeysFetched(bool success) override;
   void OnContainerMounted(bool success) override;
+
+  // AnsibleManagementService::Observer:
+  void OnAnsibleSoftwareConfigurationStarted() override;
+  void OnAnsibleSoftwareConfigurationFinished(bool success) override;
 
   // Return true if internal state allows starting installation.
   bool CanInstall();
@@ -134,6 +144,9 @@ class CrostiniInstaller : public KeyedService,
   ProgressCallback progress_callback_;
   ResultCallback result_callback_;
   base::OnceClosure cancel_callback_;
+
+  ScopedObserver<AnsibleManagementService, AnsibleManagementService::Observer>
+      ansible_management_service_observer_{this};
 
   base::WeakPtrFactory<CrostiniInstaller> weak_ptr_factory_{this};
 

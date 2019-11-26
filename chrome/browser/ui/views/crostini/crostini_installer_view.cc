@@ -84,6 +84,9 @@ base::string16 GetErrorMessage(InstallerError error) {
     case InstallerError::kErrorStartingContainer:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR);
+    case InstallerError::kErrorConfiguringContainer:
+      return l10n_util::GetStringUTF16(
+          IDS_CROSTINI_INSTALLER_CONFIGURE_CONTAINER_ERROR);
     case InstallerError::kErrorOffline:
       return l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_OFFLINE_ERROR,
                                         ui::GetChromeOSDeviceName());
@@ -446,6 +449,9 @@ void CrostiniInstallerView::SetMessageLabel() {
       break;
     case InstallerState::kStartContainer:
       message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
+      break;
+    case InstallerState::kConfigureContainer:
+      message_id = IDS_CROSTINI_INSTALLER_CONFIGURE_CONTAINER_MESSAGE;
       break;
     case InstallerState::kFetchSshKeys:
       message_id = IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_MESSAGE;

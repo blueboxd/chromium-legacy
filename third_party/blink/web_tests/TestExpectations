@@ -5779,9 +5779,6 @@ crbug.com/1016457 [ Linux Mac Debug ] external/wpt/dom/ranges/Range-mutations-da
 # ecosystem-infra sheriff 2019-10-22
 crbug.com/1016762 external/wpt/html/cross-origin-opener-policy/popup-redirect-cache.https.html [ Pass Failure ]
 
-# cci-trooper 2019-10-22
-crbug.com/1016804 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Pass Failure ]
-
 # Sheriff 2019-10-24
 crbug.com/1017626 [ Linux ] external/wpt/compat/idlharness.window.html [ Pass Timeout ]
 crbug.com/925325 [ Win ] storage/indexeddb/index-population.html [ Pass Timeout ]
@@ -5907,7 +5904,4 @@ crbug.com/1028116 virtual/gpu-rasterization/images/webp-color-profile-lossy-alph
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-filter.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/color-profile-image.html [ Pass Failure ]
 crbug.com/1028116 virtual/gpu-rasterization/images/yuv-decode-eligible/webp-color-profile-lossy.html [ Pass Failure ]
-
-crbug.com/1025557 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Failure Pass ]
-crbug.com/1025557 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Failure Pass ]
 

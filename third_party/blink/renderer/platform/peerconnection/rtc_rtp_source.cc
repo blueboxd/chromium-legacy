@@ -12,24 +12,19 @@
 
 namespace blink {
 
-std::unique_ptr<WebRTCRtpSource> CreateRTCRtpSource(
-    const webrtc::RtpSource& source) {
-  return std::make_unique<RTCRtpSource>(source);
-}
-
 RTCRtpSource::RTCRtpSource(const webrtc::RtpSource& source) : source_(source) {}
 
 RTCRtpSource::~RTCRtpSource() {}
 
-WebRTCRtpSource::Type RTCRtpSource::SourceType() const {
+RTCRtpSource::Type RTCRtpSource::SourceType() const {
   switch (source_.source_type()) {
     case webrtc::RtpSourceType::SSRC:
-      return WebRTCRtpSource::Type::kSSRC;
+      return RTCRtpSource::Type::kSSRC;
     case webrtc::RtpSourceType::CSRC:
-      return WebRTCRtpSource::Type::kCSRC;
+      return RTCRtpSource::Type::kCSRC;
     default:
       NOTREACHED();
-      return WebRTCRtpSource::Type::kSSRC;
+      return RTCRtpSource::Type::kSSRC;
   }
 }
 

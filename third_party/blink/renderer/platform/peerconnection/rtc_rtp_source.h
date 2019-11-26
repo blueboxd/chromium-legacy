@@ -6,22 +6,35 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_RTP_SOURCE_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_source.h"
+#include "base/optional.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
+
+namespace base {
+class TimeTicks;
+}
+
+namespace webrtc {
+class RtpSource;
+}
 
 namespace blink {
 
-class RTCRtpSource : public WebRTCRtpSource {
+class PLATFORM_EXPORT RTCRtpSource {
  public:
-  explicit RTCRtpSource(const webrtc::RtpSource& source);
-  ~RTCRtpSource() override;
+  enum class Type {
+    kSSRC,
+    kCSRC,
+  };
 
-  WebRTCRtpSource::Type SourceType() const override;
-  base::TimeTicks Timestamp() const override;
-  uint32_t Source() const override;
-  base::Optional<double> AudioLevel() const override;
-  uint32_t RtpTimestamp() const override;
+  explicit RTCRtpSource(const webrtc::RtpSource& source);
+  ~RTCRtpSource();
+
+  Type SourceType() const;
+  base::TimeTicks Timestamp() const;
+  uint32_t Source() const;
+  base::Optional<double> AudioLevel() const;
+  uint32_t RtpTimestamp() const;
 
  private:
   const webrtc::RtpSource source_;

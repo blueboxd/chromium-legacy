@@ -802,6 +802,8 @@ source_set("chromeos") {
     "concierge_helper_service.h",
     "crostini/ansible/ansible_management_service.cc",
     "crostini/ansible/ansible_management_service.h",
+    "crostini/ansible/ansible_management_service_factory.cc",
+    "crostini/ansible/ansible_management_service_factory.h",
     "crostini/ansible/ansible_management_util.cc",
     "crostini/ansible/ansible_management_util.h",
     "crostini/ansible/pending_software_changes.cc",

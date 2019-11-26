@@ -7,8 +7,9 @@ FAIL local offer created before setRemoteDescription(remote offer) with differen
 FAIL rollback of a remote offer should remove a transceiver assert_equals: expected 1 but got 0
 FAIL rollback of a remote offer should remove touched transceiver assert_equals: expected 1 but got 0
 FAIL rollback of a remote offer should keep a transceiver assert_equals: expected 1 but got 0
+FAIL rollback of a remote offer should keep a transceiver created by addtrack assert_equals: expected 1 but got 0
 FAIL rollback of a remote offer should keep a transceiver without tracks assert_equals: expected 1 but got 0
-FAIL rollback local offer explicitly promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Rollback not supported in Plan B"
+FAIL explicit rollback of local offer should remove transceivers and transport promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'sender' of undefined"
 FAIL implicit rollback of a local offer should visit stable state and fire negotiationneeded promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Failed to set remote offer sdp: Called in wrong state: kHaveLocalOffer"
 FAIL rollback of a remote offer to negotiated stable state should enable applying of a local offer promise_test: Unhandled rejection with value: object "OperationError: Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': Rollback not supported in Plan B"
 FAIL rollback of a local offer to negotiated stable state should enable applying of a remote offer assert_equals: expected 2 but got 0

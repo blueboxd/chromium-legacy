@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/chromeos/crostini/ansible/ansible_management_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
@@ -140,6 +141,8 @@ class CrostiniInstallerTest : public testing::Test {
   }
 
   void Install() {
+    CrostiniManager::GetForProfile(profile_.get())
+        ->SetInstallerViewStatus(true);
     crostini_installer_->Install(
         CrostiniManager::RestartOptions{},
         base::BindRepeating(&MockCallbacks::OnProgress,
@@ -191,6 +194,51 @@ TEST_F(CrostiniInstallerTest, InstallFlow) {
       .After(expectation_set);
 
   Install();
+  mount_path_waiter_.WaitForMountPathCalled();
+
+  ASSERT_TRUE(mount_path_waiter_.get_mount_point_info());
+  disk_mount_manager_mock_->NotifyMountEvent(
+      chromeos::disks::DiskMountManager::MountEvent::MOUNTING,
+      chromeos::MountError::MOUNT_ERROR_NONE,
+      *mount_path_waiter_.get_mount_point_info());
+
+  task_environment_.RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample(
+      "Crostini.SetupResult",
+      static_cast<base::HistogramBase::Sample>(
+          CrostiniInstaller::SetupResult::kSuccess),
+      1);
+
+  EXPECT_TRUE(crostini_installer_->CanInstall())
+      << "Installer should recover to installable state";
+}
+
+TEST_F(CrostiniInstallerTest, InstallFlowWithAnsibleInfra) {
+  AnsibleManagementTestHelper test_helper(profile_.get());
+  test_helper.SetUpAnsibleInfra();
+
+  double last_progress = 0.0;
+  auto greater_equal_last_progress = Truly(
+      [&last_progress](double progress) { return progress >= last_progress; });
+
+  ExpectationSet expectation_set;
+  expectation_set +=
+      EXPECT_CALL(mock_callbacks_,
+                  OnProgress(_, AllOf(greater_equal_last_progress, Le(1.0))))
+          .WillRepeatedly(SaveArg<1>(&last_progress));
+  expectation_set +=
+      EXPECT_CALL(*disk_mount_manager_mock_,
+                  MountPath("sshfs://test@hostname:", _, _, _, _, _))
+          .WillOnce(Invoke(&mount_path_waiter_, &MountPathWaiter::MountPath));
+  // |OnProgress()| should not happens after |OnFinished()|
+  EXPECT_CALL(mock_callbacks_, OnFinished(InstallerError::kNone))
+      .After(expectation_set);
+
+  Install();
+
+  base::RunLoop().RunUntilIdle();
+  test_helper.SendSucceededApplySignal();
+
   mount_path_waiter_.WaitForMountPathCalled();
 
   ASSERT_TRUE(mount_path_waiter_.get_mount_point_info());

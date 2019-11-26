@@ -14,6 +14,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/crostini/ansible/ansible_management_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
@@ -57,6 +58,7 @@ class CrostiniInstallerFactory : public BrowserContextKeyedServiceFactory {
             "CrostiniInstallerService",
             BrowserContextDependencyManager::GetInstance()) {
     DependsOn(crostini::CrostiniManagerFactory::GetInstance());
+    DependsOn(crostini::AnsibleManagementServiceFactory::GetInstance());
   }
 
   // BrowserContextKeyedServiceFactory:
@@ -112,6 +114,8 @@ SetupResult ErrorToSetupResult(InstallerError error) {
       return SetupResult::kErrorStartingTermina;
     case InstallerError::kErrorStartingContainer:
       return SetupResult::kErrorStartingContainer;
+    case InstallerError::kErrorConfiguringContainer:
+      return SetupResult::kErrorConfiguringContainer;
     case InstallerError::kErrorOffline:
       return SetupResult::kErrorOffline;
     case InstallerError::kErrorFetchingSshKeys:
@@ -146,6 +150,8 @@ SetupResult InstallStateToCancelledSetupResult(
       return SetupResult::kUserCancelledSetupContainer;
     case InstallerState::kStartContainer:
       return SetupResult::kUserCancelledStartContainer;
+    case InstallerState::kConfigureContainer:
+      return SetupResult::kUserCancelledConfiguringContainer;
     case InstallerState::kFetchSshKeys:
       return SetupResult::kUserCancelledFetchSshKeys;
     case InstallerState::kMountContainer:
@@ -355,10 +361,35 @@ void CrostiniInstaller::OnContainerSetup(bool success) {
     return;
   }
   UpdateInstallingState(InstallerState::kStartContainer);
+  ansible_management_service_observer_.Add(
+      AnsibleManagementService::GetForProfile(profile_));
+}
+
+void CrostiniInstaller::OnAnsibleSoftwareConfigurationStarted() {
+  DCHECK_EQ(installing_state_, InstallerState::kStartContainer);
+  UpdateInstallingState(InstallerState::kConfigureContainer);
+}
+
+void CrostiniInstaller::OnAnsibleSoftwareConfigurationFinished(bool success) {
+  DCHECK_EQ(installing_state_, InstallerState::kConfigureContainer);
+  ansible_management_service_observer_.Remove(
+      AnsibleManagementService::GetForProfile(profile_));
+
+  if (!success) {
+    LOG(ERROR) << "Failed to configure container";
+    HandleError(InstallerError::kErrorConfiguringContainer);
+    return;
+  }
 }
 
 void CrostiniInstaller::OnContainerStarted(CrostiniResult result) {
-  DCHECK_EQ(installing_state_, InstallerState::kStartContainer);
+  if (result == CrostiniResult::CONTAINER_CONFIGURATION_FAILED) {
+    DCHECK_EQ(state_, State::ERROR);
+    return;
+  }
+
+  DCHECK(installing_state_ == InstallerState::kStartContainer ||
+         installing_state_ == InstallerState::kConfigureContainer);
 
   if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to start container with error code: "
@@ -410,36 +441,42 @@ void CrostiniInstaller::RunProgressCallback() {
       break;
     case InstallerState::kInstallImageLoader:
       state_start_mark = 0.0;
-      state_end_mark = 0.25;
+      state_end_mark = 0.20;
       state_max_seconds = 30;
       break;
     case InstallerState::kStartConcierge:
-      state_start_mark = 0.25;
-      state_end_mark = 0.26;
+      state_start_mark = 0.20;
+      state_end_mark = 0.21;
       break;
     case InstallerState::kCreateDiskImage:
-      state_start_mark = 0.26;
-      state_end_mark = 0.27;
+      state_start_mark = 0.21;
+      state_end_mark = 0.22;
       break;
     case InstallerState::kStartTerminaVm:
-      state_start_mark = 0.27;
-      state_end_mark = 0.35;
+      state_start_mark = 0.22;
+      state_end_mark = 0.28;
       state_max_seconds = 8;
       break;
     case InstallerState::kCreateContainer:
-      state_start_mark = 0.35;
-      state_end_mark = 0.90;
+      state_start_mark = 0.28;
+      state_end_mark = 0.72;
       state_max_seconds = 180;
       break;
     case InstallerState::kSetupContainer:
-      state_start_mark = 0.90;
-      state_end_mark = 0.95;
+      state_start_mark = 0.72;
+      state_end_mark = 0.76;
       state_max_seconds = 8;
       break;
     case InstallerState::kStartContainer:
-      state_start_mark = 0.95;
-      state_end_mark = 0.99;
+      state_start_mark = 0.76;
+      state_end_mark = 0.79;
       state_max_seconds = 8;
+      break;
+    case InstallerState::kConfigureContainer:
+      state_start_mark = 0.79;
+      state_end_mark = 0.99;
+      // Ansible installation and playbook application.
+      state_max_seconds = 140 + 300;
       break;
     case InstallerState::kFetchSshKeys:
       state_start_mark = 0.99;
@@ -461,6 +498,8 @@ void CrostiniInstaller::RunProgressCallback() {
     state_fraction =
         0.5 * (state_fraction + 0.01 * container_download_percent_);
   }
+  // TODO(https://crbug.com/1000173): Calculate configure container step
+  // progress based on real progress.
 
   double progress =
       state_start_mark + base::ClampToRange(state_fraction, 0.0, 1.0) *

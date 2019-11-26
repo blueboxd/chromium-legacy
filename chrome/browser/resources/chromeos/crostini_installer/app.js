@@ -236,6 +236,9 @@ Polymer({
       case InstallerState.kStartContainer:
         messageId = 'startContainerMessage';
         break;
+      case InstallerState.kConfigureContainer:
+        messageId = 'configureContainerMessage';
+        break;
       case InstallerState.kFetchSshKeys:
         messageId = 'fetchSshKeysMessage';
         break;
@@ -271,6 +274,9 @@ Polymer({
         break;
       case InstallerError.kErrorStartingContainer:
         messageId = 'startContainerError';
+        break;
+      case InstallerError.kErrorConfiguringContainer:
+        messageId = 'configureContainerError';
         break;
       case InstallerError.kErrorOffline:
         messageId = 'offlineError';

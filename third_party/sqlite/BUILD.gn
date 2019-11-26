@@ -493,6 +493,19 @@ fuzzer_test("sqlite3_fts3_lpm_fuzzer") {
   ]
 }
 
+fuzzer_test("sqlite3_shadow_table_fuzzer") {
+    sources = [
+       "fuzz/shadow_table_fuzzer.cc",
+    ]
+    deps = [
+      ":sqlite",
+    ]
+    additional_configs = [
+      ":sqlite_warnings",
+    ]
+}
+
+
 fuzzer_test("sqlite3_select_printf_lpm_fuzzer") {
   sources = [
     "fuzz/sql_printf_fuzzer.cc",

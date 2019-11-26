@@ -6,7 +6,6 @@
 
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_transport.h"
@@ -76,7 +75,7 @@ RTCRtpReceiver::getSynchronizationSources() {
 
   HeapVector<Member<RTCRtpSynchronizationSource>> synchronization_sources;
   for (const auto& web_source : web_sources_) {
-    if (web_source->SourceType() != WebRTCRtpSource::Type::kSSRC)
+    if (web_source->SourceType() != RTCRtpSource::Type::kSSRC)
       continue;
     RTCRtpSynchronizationSource* synchronization_source =
         MakeGarbageCollected<RTCRtpSynchronizationSource>();
@@ -103,7 +102,7 @@ RTCRtpReceiver::getContributingSources() {
 
   HeapVector<Member<RTCRtpContributingSource>> contributing_sources;
   for (const auto& web_source : web_sources_) {
-    if (web_source->SourceType() != WebRTCRtpSource::Type::kCSRC)
+    if (web_source->SourceType() != RTCRtpSource::Type::kCSRC)
       continue;
     RTCRtpContributingSource* contributing_source =
         MakeGarbageCollected<RTCRtpContributingSource>();

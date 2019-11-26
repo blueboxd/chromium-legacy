@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/chromeos/crostini/ansible/ansible_management_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -21,39 +22,6 @@
 namespace crostini {
 
 namespace {
-
-class AnsibleManagementServiceFactory
-    : public BrowserContextKeyedServiceFactory {
- public:
-  static AnsibleManagementService* GetForProfile(Profile* profile) {
-    return static_cast<AnsibleManagementService*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
-  }
-
-  static AnsibleManagementServiceFactory* GetInstance() {
-    static base::NoDestructor<AnsibleManagementServiceFactory> factory;
-    return factory.get();
-  }
-
- private:
-  friend class base::NoDestructor<AnsibleManagementServiceFactory>;
-
-  AnsibleManagementServiceFactory()
-      : BrowserContextKeyedServiceFactory(
-            "AnsibleManagementService",
-            BrowserContextDependencyManager::GetInstance()) {
-    DependsOn(CrostiniManagerFactory::GetInstance());
-  }
-
-  ~AnsibleManagementServiceFactory() override = default;
-
-  // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* context) const override {
-    Profile* profile = Profile::FromBrowserContext(context);
-    return new AnsibleManagementService(profile);
-  }
-};
 
 chromeos::CiceroneClient* GetCiceroneClient() {
   return chromeos::DBusThreadManager::Get()->GetCiceroneClient();
@@ -75,16 +43,16 @@ void AnsibleManagementService::ConfigureDefaultContainer(
   DCHECK(!configuration_finished_callback_);
   configuration_finished_callback_ = std::move(callback);
 
-  // TODO(okalitova): Reflect configuration progress in installer view when
-  // Crostini is being installed.
-
   // Popup dialog is shown in case Crostini has already been installed.
   if (!CrostiniManager::GetForProfile(profile_)->GetInstallerViewStatus())
     ShowCrostiniAnsibleSoftwareConfigView(profile_);
 
+  for (auto& observer : observers_) {
+    observer.OnAnsibleSoftwareConfigurationStarted();
+  }
+
   CrostiniManager::GetForProfile(profile_)
       ->AddLinuxPackageOperationProgressObserver(this);
-
   CrostiniManager::GetForProfile(profile_)->InstallLinuxPackageFromApt(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       kCrostiniDefaultAnsibleVersion,
@@ -245,10 +213,10 @@ void AnsibleManagementService::OnUninstallPackageProgress(
 
 void AnsibleManagementService::OnConfigurationFinished(bool success) {
   DCHECK(configuration_finished_callback_);
-  std::move(configuration_finished_callback_).Run(success);
   for (auto& observer : observers_) {
     observer.OnAnsibleSoftwareConfigurationFinished(success);
   }
+  std::move(configuration_finished_callback_).Run(success);
 }
 
 }  // namespace crostini

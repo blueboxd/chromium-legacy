@@ -531,7 +531,6 @@ jumbo_component("platform") {
     "exported/web_resource_timing_info.cc",
     "exported/web_rtc_peer_connection_handler_client.cc",
     "exported/web_rtc_rtp_receiver.cc",
-    "exported/web_rtc_rtp_source.cc",
     "exported/web_rtc_rtp_transceiver.cc",
     "exported/web_rtc_stats.cc",
     "exported/web_runtime_features.cc",

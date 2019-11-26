@@ -1585,7 +1585,7 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerAnsibleInstallFailure) {
   crostini_manager()->StartLxdContainer(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
-                     CrostiniResult::UNKNOWN_ERROR));
+                     CrostiniResult::CONTAINER_CONFIGURATION_FAILED));
 
   run_loop()->Run();
 }
@@ -1599,7 +1599,8 @@ TEST_F(CrostiniManagerAnsibleInfraTest, StartContainerApplyFailure) {
   crostini_manager()->StartLxdContainer(
       kCrostiniDefaultVmName, kCrostiniDefaultContainerName,
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
-                     CrostiniResult::UNKNOWN_ERROR));
+                     CrostiniResult::CONTAINER_CONFIGURATION_FAILED));
+
   base::RunLoop().RunUntilIdle();
 
   ansible_management_test_helper_->SendSucceededInstallSignal();

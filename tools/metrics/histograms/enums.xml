@@ -12288,6 +12288,14 @@ Called by update_net_error_codes.py.-->
   <int value="37" label="CONTAINER_EXPORT_IMPORT_CANCELLED"/>
   <int value="38" label="RESTART_ABORTED"/>
   <int value="39" label="RESTART_FAILED_VM_STOPPED"/>
+  <int value="40" label="UPGRADE_CONTAINER_STARTED"/>
+  <int value="41" label="UPGRADE_CONTAINER_ALREADY_RUNNING"/>
+  <int value="42" label="UPGRADE_CONTAINER_NOT_SUPPORTED"/>
+  <int value="43" label="UPGRADE_CONTAINER_ALREADY_UPGRADED"/>
+  <int value="44" label="UPGRADE_CONTAINER_FAILED"/>
+  <int value="45" label="CANCEL_UPGRADE_CONTAINER_FAILED"/>
+  <int value="46" label="CONCIERGE_START_FAILED"/>
+  <int value="47" label="CONTAINER_CONFIGURATION_FAILED"/>
 </enum>
 
 <enum name="CrostiniSettingsEvent">
@@ -12319,6 +12327,8 @@ Called by update_net_error_codes.py.-->
   <int value="20" label="User Cancelled While Fetching SSH Keys"/>
   <int value="21" label="User Cancelled While Mounting Container"/>
   <int value="22" label="Insufficient Disk Space"/>
+  <int value="23" label="Error Configuring Container"/>
+  <int value="24" label="User Cancelled While Configuring Container"/>
 </enum>
 
 <enum name="CrostiniUISurface">

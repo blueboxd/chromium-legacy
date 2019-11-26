@@ -9,13 +9,13 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_platform.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
@@ -136,8 +136,8 @@ class DummyWebRTCRtpReceiver : public WebRTCRtpReceiver {
   WebVector<WebString> StreamIds() const override {
     return WebVector<WebString>();
   }
-  WebVector<std::unique_ptr<WebRTCRtpSource>> GetSources() override {
-    return WebVector<std::unique_ptr<WebRTCRtpSource>>();
+  WebVector<std::unique_ptr<RTCRtpSource>> GetSources() override {
+    return WebVector<std::unique_ptr<RTCRtpSource>>();
   }
   void GetStats(WebRTCStatsReportCallback,
                 const WebVector<webrtc::NonStandardGroupId>&) override {}
